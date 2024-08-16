@@ -31,6 +31,7 @@ const { S3Client } = require('@aws-sdk/client-s3');
 const { Upload } = require('@aws-sdk/lib-storage');
 const multerS3 = require('multer-s3');
 const aws = require('aws-sdk');
+const S3 = new aws.S3();
 aws.config.update({
     accessKeyId: process.env.aws_access_key_id,
     secretAccessKey: process.env.aws_secret_access_key,
@@ -1336,7 +1337,7 @@ exports.markAsPaid = async (req, res) => {
                 code: constant.errorCode,
                 message: "unable to update the payment status"
             };
-            await LOG(logData).save(); 
+            await LOG(logData).save();
             res.send({
                 code: constant.errorCode,
                 message: "unable to udpate the paytment status"
@@ -2064,76 +2065,58 @@ async function generateTC(orderData) {
 
         pdf.create(html, options).toFile(orderFile, async (err, result) => {
             if (err) return console.log(err);
-            // -------------------merging pdfs 
             const { PDFDocument, rgb } = require('pdf-lib');
             const fs = require('fs').promises;
-            // Upload the generated order PDF to S3
+            const fileContent = await fs.readFile(orderFile);
             const bucketName = process.env.bucket_name
             const s3Key = `pdfs/${mergeFileName}`;
+            //Upload to S3 bucket
             await uploadToS3(orderFile, bucketName, s3Key);
+            const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : "file-1723185474819.pdf"
+            const termPath = termConditionFile
+            //Download from S3 bucket 
+            const termPathBucket = await downloadFromS3(bucketName, termPath);
+            const orderPathBucket = await downloadFromS3(bucketName, s3Key);
+            async function mergePDFs(pdfBytes1, pdfBytes2, outputPath) {
+                const pdfDoc1 = await PDFDocument.load(pdfBytes1);
+                const pdfDoc2 = await PDFDocument.load(pdfBytes2);
 
-            async function mergePDFs(pdfPath1, pdfPath2, outputPath) {
-                // Load the PDFs
-                const pdfDoc1Bytes = await fs.readFile(pdfPath1);
-                const pdfDoc2Bytes = await fs.readFile(pdfPath2);
-
-                const pdfDoc1 = await PDFDocument.load(pdfDoc1Bytes);
-                const pdfDoc2 = await PDFDocument.load(pdfDoc2Bytes);
-
-                // Create a new PDF Document
                 const mergedPdf = await PDFDocument.create();
 
-                // Add the pages of the first PDF
                 const pdfDoc1Pages = await mergedPdf.copyPages(pdfDoc1, pdfDoc1.getPageIndices());
                 pdfDoc1Pages.forEach((page) => mergedPdf.addPage(page));
 
-                // Add the pages of the second PDF
                 const pdfDoc2Pages = await mergedPdf.copyPages(pdfDoc2, pdfDoc2.getPageIndices());
                 pdfDoc2Pages.forEach((page) => mergedPdf.addPage(page));
 
-                // Serialize the PDF
                 const mergedPdfBytes = await mergedPdf.save();
 
-                // Write the merged PDF to a file
                 await fs.writeFile(outputPath, mergedPdfBytes);
+                return mergedPdfBytes;
             }
-
-            const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : checkOrder.termCondition.filename
-            // Usage
-            const pdfPath1 = process.env.MAIN_FILE_PATH + "uploads/" + termConditionFile;
-            const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
-            const outputPath = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName;
-            link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
-            let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
-            const pathToAttachment = process.env.MAIN_FILE_PATH + "/uploads/mergedFile/" + mergeFileName
-            fs.readFile(pathToAttachment)
-                .then(async (fileData) => {
-                    const attachment = fileData.toString('base64');
-                    try {
-                        //sendTermAndCondition
-                        // Send Email code here
-                        let notificationEmails = await supportingFunction.getUserEmails();
-                        notificationEmails.push(DealerUser.email)
-                        notificationEmails.push(resellerUser?.email)
-                        let emailData = {
-                            senderName: customerUser.firstName,
-                            content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
-                            subject: 'Order Term and Condition-' + checkOrder.unique_key,
-                        }
-                        let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
-
-                    } catch (error) {
-                        console.error('Error sending email:', error);
-                        if (error.response) {
-                            console.error('Error response:', error.response.body);
-                        }
-                    }
-                })
-                .catch(err => {
-                    console.error("Error reading the file:", err);
-                });
-
-
+            // Merge PDFs
+            const mergedPdf = await mergePDFs(termPathBucket, orderPathBucket, `/tmp/merged_${mergeFileName}`);
+            // Upload merged PDF to S3
+            const mergedKey = `mergedFile/${mergeFileName}`;
+            await uploadToS3(`/tmp/merged_${mergeFileName}`, bucketName, mergedKey);
+            const params = {
+                Bucket: bucketName,
+                Key: `mergedFile/${mergeFileName}`
+            };
+            //Read from the s3 bucket
+            const data = await S3.getObject(params).promise();
+            let attachment = data.Body.toString('base64');
+            //sendTermAndCondition
+            // Send Email code here
+            let notificationEmails = await supportingFunction.getUserEmails();
+            notificationEmails.push(DealerUser.email)
+            notificationEmails.push(resellerUser?.email)
+            let emailData = {
+                senderName: customerUser.firstName,
+                content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
+                subject: 'Order Term and Condition-' + checkOrder.unique_key,
+            }
+            let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
         })
         return 1
 
@@ -2154,5 +2137,15 @@ const uploadToS3 = async (filePath, bucketName, key) => {
         Key: key,
         Body: fileContent,
     };
-    return s3.upload(params).promise();
+    return S3.upload(params).promise();
+};
+
+//Download to S3
+const downloadFromS3 = async (bucketName, key) => {
+    const params = {
+        Bucket: bucketName,
+        Key: key,
+    };
+    const data = await S3.getObject(params).promise();
+    return data.Body;
 };

@@ -509,7 +509,7 @@ async function generateTC(orderData) {
             const fileContent = await fs.readFile(orderFile);
             const bucketName = process.env.bucket_name
             const s3Key = `pdfs/${mergeFileName}`;
-
+            //Upload to S3 bucket
             await uploadToS3(orderFile, bucketName, s3Key);
             const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : "file-1723185474819.pdf"
             const termPath = termConditionFile
@@ -541,6 +541,7 @@ async function generateTC(orderData) {
                 Bucket: bucketName,
                 Key: `mergedFile/${mergeFileName}`
             };
+            //Read from the s3 bucket
             const data = await S3.getObject(params).promise();
             let attachment = data.Body.toString('base64');
             //sendTermAndCondition
@@ -554,7 +555,6 @@ async function generateTC(orderData) {
                 subject: 'Order Term and Condition-' + checkOrder.unique_key,
             }
             let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
-
         })
         return 1
 
@@ -703,25 +703,7 @@ exports.generateHtmltopdf = async (req, res) => {
         </table > `;
         const checkFileExist = await checkFileExistsInS3(process.env.bucket_name, `mergedFile/${mergeFileName}`)
         if (checkFileExist) {
-            console.log("yes i am here")
             // link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
-            const params = {
-                Bucket: process.env.bucket_name,
-                Key: `mergedFile/${mergeFileName}`
-            };
-            const data = await S3.getObject(params).promise();
-            let attachment = data.Body.toString('base64');
-            //sendTermAndCondition
-            // Send Email code here
-            let notificationEmails = await supportingFunction.getUserEmails();
-            notificationEmails.push(DealerUser.email)
-            notificationEmails.push(resellerUser?.email)
-            let emailData = {
-                senderName: customerUser.firstName,
-                content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
-                subject: 'Order Term and Condition-' + checkOrder.unique_key,
-            }
-            let mailing = await sgMail.send(emailConstant.sendTermAndCondition("amit@codenomad.net", notificationEmails, emailData, attachment))
             response = { link: link, fileName: mergeFileName, bucketName: process.env.bucket_name, key: "mergedFile" }
             res.send({
                 code: constant.successCode,
@@ -763,8 +745,6 @@ exports.generateHtmltopdf = async (req, res) => {
                 // Upload merged PDF to S3
                 const mergedKey = `mergedFile/${mergeFileName}`;
                 await uploadToS3(`/tmp/merged_${mergeFileName}`, bucketName, mergedKey);
-
-
                 response = { link: link, fileName: mergeFileName, bucketName: process.env.bucket_name, key: "mergedFile" }
 
                 res.send({
