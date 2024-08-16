@@ -729,6 +729,13 @@ exports.claimDailyReporting = async (data) => {
             dailyQuery2[0].$match.servicerId = servicerId
             dailyQuery3[0].$match.servicerId = servicerId
         }
+        if (data.categoryId != "") {
+            let categoryId = new mongoose.Types.ObjectId(data.categoryId)
+            dailyQuery[0].$match.categoryId = categoryId
+            dailyQuery1[0].$match.categoryId = categoryId
+            dailyQuery2[0].$match.categoryId = categoryId
+            dailyQuery3[0].$match.categoryId = categoryId
+        }
         if (data.customerId) {
             let customerId = new mongoose.Types.ObjectId(data.customerId)
             dailyQuery[0].$match.customerId = customerId
@@ -1099,6 +1106,13 @@ exports.claimWeeklyReporting = async (data) => {
             dailyQuery1[0].$match.orderId = { $in: orderIds }
             dailyQuery2[0].$match.orderId = { $in: orderIds }
             dailyQuery3[0].$match.orderId = { $in: orderIds }
+        }
+        if (data.categoryId != "") {
+            let categoryId = new mongoose.Types.ObjectId(data.categoryId)
+            dailyQuery[0].$match.categoryId = categoryId
+            dailyQuery1[0].$match.categoryId = categoryId
+            dailyQuery2[0].$match.categoryId = categoryId
+            dailyQuery3[0].$match.categoryId = categoryId
         }
 
         let getData = await claimService.getClaimWithAggregate(dailyQuery)
