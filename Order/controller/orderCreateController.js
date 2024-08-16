@@ -314,7 +314,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     });
                     return;
                 }
-                if (allDataComing.data.length > 0) {
+                if (allDataComing.length > 0) {
                     const isValidLength1 = allDataComing.map((obj) => {
                         if (!obj.data || typeof obj.data !== "object") {
                             return false; // 'data' should be an object
