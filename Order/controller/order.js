@@ -2106,7 +2106,6 @@ async function generateTC(orderData) {
             //Read from the s3 bucket
             const data = await S3.getObject(params).promise();
             let attachment = data.Body.toString('base64');
-            console.log("hereeeeeeeeeeeeeeeeeeeeeeeeee",attachment)
             //sendTermAndCondition
             // Send Email code here
             let notificationEmails = await supportingFunction.getUserEmails();
