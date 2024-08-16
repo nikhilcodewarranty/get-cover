@@ -714,8 +714,8 @@ exports.generateHtmltopdf = async (req, res) => {
                <td> ${tableRows}   </td>                 
             </tr >
             
-        </table > `;
-        const checkFileExist = await S3.headObject({ Bucket: process.env.bucket_name, Key: `mergedFile/${mergeFileName}` }).promise();
+        </table > `;      
+        const checkFileExist = await checkFileExistsInS3(process.env.bucket_name,`mergedFile/${mergeFileName}`)
         if (checkFileExist) {
             console.log("yes i am here")
             // link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
@@ -781,6 +781,19 @@ exports.generateHtmltopdf = async (req, res) => {
         return;
     }
 }
+
+//check file exist in S3 bucket
+const checkFileExistsInS3 = async (bucketName, key) => {
+    try {
+        await S3.headObject({ Bucket: bucketName, Key: key }).promise();
+        return true; // File exists
+    } catch (err) {
+        if (err.code === 'NotFound') {
+            return false; // File does not exist
+        }
+        throw err; // Some other error occurred
+    }
+};
 
 //Upload to S3
 const uploadToS3 = async (filePath, bucketName, key) => {
