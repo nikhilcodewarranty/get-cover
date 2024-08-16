@@ -282,6 +282,8 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 for (let j = 0; j < productsWithFiles.length; j++) {
                     const bucketReadUrl = productsWithFiles[j].products.file
                     // Await the getObjectFromS3 function to complete
+                    console.log("bucketReadUrl-------------------",bucketReadUrl);
+                    return
                     const result = await getObjectFromS3(bucketReadUrl);
 
                     allDataComing.push({
