@@ -716,6 +716,7 @@ exports.generateHtmltopdf = async (req, res) => {
             
         </table > `;
         if (fs.existsSync(process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName)) {
+            console.log("yes i am here")
             // link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
             response = { link: link, fileName: mergeFileName, bucketName: process.env.bucket_name, key: "mergedFile" }
             res.send({
@@ -724,6 +725,7 @@ exports.generateHtmltopdf = async (req, res) => {
                 result: response
             })
         } else {
+            console.log("yes i am else")
             pdf.create(html, options).toFile(orderFile, async (err, result) => {
                 if (err) return console.log(err);
                 const { PDFDocument, rgb } = require('pdf-lib');
