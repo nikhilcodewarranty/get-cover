@@ -94,7 +94,7 @@ exports.checkFileValidation = async (req, res) => {
         uploadP(req, res, async (err) => {
             let data = req.body;
             let file = req.file;
-            console.log("sigle--------------------",file)
+            console.log("sigle--------------------", file)
             let csvName = file.key;
             let originalName = file.originalname;
             let size = file.size;
@@ -280,24 +280,27 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 const headers = [];
                 //Collect all header length for all csv
                 for (let j = 0; j < productsWithFiles.length; j++) {
-                    const bucketReadUrl = productsWithFiles[j].products.file
-                    // Await the getObjectFromS3 function to complete
-                    const result = await getObjectFromS3(bucketReadUrl);                  
+                    if (productsWithFiles[j].file != undefined) {
+                        const bucketReadUrl = productsWithFiles[j].products.file
+                        // Await the getObjectFromS3 function to complete
+                        const result = await getObjectFromS3(bucketReadUrl);
 
-                    allDataComing.push({
-                        key: productsWithFiles[j].products.key,
-                        checkNumberProducts: productsWithFiles[j].products.checkNumberProducts,
-                        noOfProducts: productsWithFiles[j].products.noOfProducts,
-                        priceType: productsWithFiles[j].products.priceType,
-                        rangeStart: productsWithFiles[j].products.rangeStart,
-                        rangeEnd: productsWithFiles[j].products.rangeEnd,
-                        data: result.data,
-                    });
+                        allDataComing.push({
+                            key: productsWithFiles[j].products.key,
+                            checkNumberProducts: productsWithFiles[j].products.checkNumberProducts,
+                            noOfProducts: productsWithFiles[j].products.noOfProducts,
+                            priceType: productsWithFiles[j].products.priceType,
+                            rangeStart: productsWithFiles[j].products.rangeStart,
+                            rangeEnd: productsWithFiles[j].products.rangeEnd,
+                            data: result.data,
+                        });
 
-                    allHeaders.push({
-                        key: productsWithFiles[j].products.key,
-                        headers: result.headers,
-                    });
+                        allHeaders.push({
+                            key: productsWithFiles[j].products.key,
+                            headers: result.headers,
+                        });
+
+                    }
                 }
                 const errorMessages = allHeaders
                     .filter((headerObj) => headerObj.headers.length !== 8)
@@ -332,9 +335,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 purchaseDate: item[keys[7]],
                             };
                         });
-
-                        console.log("orderFileData-------------------",orderFileData);
-                        return
                         orderFileData.forEach((fileData) => {
                             let brand = fileData.brand.toString().replace(/\s+/g, ' ').trim()
                             let serial = fileData.serial.toString().replace(/\s+/g, ' ').trim()
@@ -727,7 +727,7 @@ async function generateTC(orderData) {
             //Read from the s3 bucket
             const data = await S3.getObject(params).promise();
             let attachment = data.Body.toString('base64');
-           
+
             //sendTermAndCondition
             // Send Email code here
             let notificationEmails = await supportingFunction.getUserEmails();
@@ -739,7 +739,7 @@ async function generateTC(orderData) {
                 subject: 'Order Term and Condition-' + checkOrder.unique_key,
             }
             let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
-          
+
         })
         return 1
 
