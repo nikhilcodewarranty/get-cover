@@ -77,6 +77,7 @@ var upload = multer({
         fileSize: 500 * 1024 * 1024, // 500 MB limit
     },
 }).array("file", 100);
+
 var uploadP = multer({
     storage: Storage,
     limits: {
@@ -92,6 +93,7 @@ exports.checkFileValidation = async (req, res) => {
         uploadP(req, res, async (err) => {
             let data = req.body;
             let file = req.file;
+            console.log("sigle--------------------",file)
             let csvName = file.key;
             let originalName = file.originalname;
             let size = file.size;
