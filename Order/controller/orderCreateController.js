@@ -237,6 +237,13 @@ exports.checkFileValidation = async (req, res) => {
 exports.checkMultipleFileValidation = async (req, res) => {
     try {
         upload(req, res, async (err) => {
+            if (req.files.length == 0) {
+                res.send({
+                    code: constant.successCode,
+                    message: "Success"
+                })
+                return
+            }
             let data = req.body;
             if (data.productsArray.length > 0) {
                 let fileIndex = 0;

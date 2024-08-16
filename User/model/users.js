@@ -7,13 +7,23 @@ const userSchema = new mongoose.Schema({
     default: ''
   },
   lastName: {
-    type: String, 
+    type: String,
     default: ''
   },
   notificationTo: {
     type: Array,
     default: []
-  }, 
+  },
+  customerData: {
+    type: Array,
+    default: [{
+      firstName: "",
+      lastName: "",
+      phoneNumber: "",
+      isPrimary: "",
+      status: false
+    }]
+  },
   email: {
     type: String,
     default: '',
@@ -26,7 +36,7 @@ const userSchema = new mongoose.Schema({
   },
   accountId: {
     type: String,
-    default:''
+    default: ''
   },
   metaId: {
     type: mongoose.Schema.Types.ObjectId,
