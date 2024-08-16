@@ -715,7 +715,8 @@ exports.generateHtmltopdf = async (req, res) => {
             </tr >
             
         </table > `;
-        if (fs.existsSync(process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName)) {
+        const checkFileExist = await S3.headObject({ Bucket: process.env.bucket_name, Key: `mergedFile/${mergeFileName}` }).promise();
+        if (checkFileExist) {
             console.log("yes i am here")
             // link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
             response = { link: link, fileName: mergeFileName, bucketName: process.env.bucket_name, key: "mergedFile" }
@@ -725,7 +726,6 @@ exports.generateHtmltopdf = async (req, res) => {
                 result: response
             })
         } else {
-            console.log("yes i am else")
             pdf.create(html, options).toFile(orderFile, async (err, result) => {
                 if (err) return console.log(err);
                 const { PDFDocument, rgb } = require('pdf-lib');
