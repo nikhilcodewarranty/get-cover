@@ -241,14 +241,14 @@ exports.checkFileValidation = async (req, res) => {
 exports.checkMultipleFileValidation = async (req, res) => {
     try {
         upload(req, res, async (err) => {
-            console.log("files+++++++++++++++",req.files)
-            if (req.files.length == 0) {
-                res.send({
-                    code: constant.successCode,
-                    message: "Success"
-                })
-                return
-            }
+            // console.log("files+++++++++++++++",req.files)
+            // if (req.files.length == 0) {
+            //     res.send({
+            //         code: constant.successCode,
+            //         message: "Success"
+            //     })
+            //     return
+            // }
             let data = req.body;
             if (data.productsArray.length > 0) {
                 let fileIndex = 0;
@@ -335,7 +335,8 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             };
                         });
 
-                        console.log("orderFileData-------------------",orderFileData)
+                        console.log("orderFileData-------------------",orderFileData);
+                        return
                         orderFileData.forEach((fileData) => {
                             let brand = fileData.brand.toString().replace(/\s+/g, ' ').trim()
                             let serial = fileData.serial.toString().replace(/\s+/g, ' ').trim()
