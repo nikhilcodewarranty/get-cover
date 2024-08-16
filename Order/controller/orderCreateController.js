@@ -35,6 +35,7 @@ aws.config.update({
     accessKeyId: process.env.aws_access_key_id,
     secretAccessKey: process.env.aws_secret_access_key,
 });
+const S3 = new aws.S3();
 const S3Bucket = new aws.S3();
 // s3 bucket connections
 const s3 = new S3Client({
@@ -2235,13 +2236,14 @@ exports.editOrderDetail = async (req, res) => {
 
 //Upload to S3
 const uploadToS3 = async (filePath, bucketName, key) => {
+    const fs = require('fs').promises;
     const fileContent = await fs.readFile(filePath);
     const params = {
         Bucket: bucketName,
         Key: key,
         Body: fileContent,
     };
-    return S3Bucket.upload(params).promise();
+    return S3.upload(params).promise();
 };
 
 //Download to S3
@@ -2250,7 +2252,7 @@ const downloadFromS3 = async (bucketName, key) => {
         Bucket: bucketName,
         Key: key,
     };
-    const data = await S3Bucket.getObject(params).promise();
+    const data = await S3.getObject(params).promise();
     return data.Body;
 };
 

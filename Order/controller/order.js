@@ -2130,7 +2130,9 @@ async function generateTC(orderData) {
     }
 }
 
+//Upload to S3
 const uploadToS3 = async (filePath, bucketName, key) => {
+    const fs = require('fs').promises;
     const fileContent = await fs.readFile(filePath);
     const params = {
         Bucket: bucketName,
