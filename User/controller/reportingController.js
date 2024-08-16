@@ -757,7 +757,7 @@ exports.claimDailyReporting = async (data) => {
         let getData1 = await claimService.getClaimWithAggregate(dailyQuery1)
         let getData2 = await claimService.getClaimWithAggregate(dailyQuery2)
         let getData3 = await claimService.getClaimWithAggregate(dailyQuery3)
-        console.log("data++++++++++++++++++++++++++++++++",getData,getData1,getData2,getData3)
+        console.log("data++++++++++++++++++++++++++++++++", getData, getData1, getData2, getData3)
 
 
         const result = datesArray.map(date => {
