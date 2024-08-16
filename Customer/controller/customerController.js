@@ -122,8 +122,8 @@ exports.createCustomer = async (req, res, next) => {
 
     // Primary User Welcoime email
     let notificationEmails = await supportingFunction.getUserEmails();
-    let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
-    let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkReseller?._id, isPrimary: true })
+    let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
+    let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkReseller?._id, isPrimary: true })
     IDs.push(resellerPrimary?._id)
 
     notificationEmails.push(getPrimary.email)
@@ -218,9 +218,9 @@ exports.getAllCustomers = async (req, res, next) => {
       });
       return;
     };
-    const customersId = customers.map(obj => obj._id.toString());
+    const customersId = customers.map(obj => obj._id);
     const customersOrderId = customers.map(obj => obj._id);
-    const queryUser = { accountId: { $in: customersId }, isPrimary: true };
+    const queryUser = { metaId: { $in: customersId }, isPrimary: true };
 
     //Get Resselers
     const resellerId = customers.map(obj => new mongoose.Types.ObjectId(obj.resellerId ? obj.resellerId : '61c8c7d38e67bb7c7f7eeeee'));
@@ -248,7 +248,7 @@ exports.getAllCustomers = async (req, res, next) => {
     let ordersData = await orderService.getAllOrderInCustomers(orderQuery, project, "$customerId")
 
     const result_Array = customers.map(customer => {
-      const matchingItem = getPrimaryUser.find(user => user.accountId.toString() === customer._id.toString())
+      const matchingItem = getPrimaryUser.find(user => user.metaId.toString() === customer._id.toString())
       const matchingReseller = customer.resellerId != null ? resellerData.find(reseller => reseller._id.toString() === customer.resellerId.toString()) : ''
       const order = ordersData.find(order => order._id.toString() === customer._id.toString())
       if (matchingItem || matchingReseller || order) {
@@ -407,9 +407,9 @@ exports.getResellerCustomers = async (req, res) => {
       });
       return;
     };
-    const customersId = customers.map(obj => obj._id.toString());
+    const customersId = customers.map(obj => obj._id);
     const orderCustomerIds = customers.map(obj => obj._id);
-    const queryUser = { accountId: { $in: customersId }, isPrimary: true };
+    const queryUser = { metaId: { $in: customersId }, isPrimary: true };
 
     let getPrimaryUser = await userService.findUserforCustomer(queryUser)
 
@@ -437,8 +437,8 @@ exports.getResellerCustomers = async (req, res) => {
     let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project, '$customerId');
 
     let result_Array = getPrimaryUser.map(item1 => {
-      const matchingItem = customers.find(item2 => item2._id.toString() === item1.accountId.toString());
-      const order = ordersResult.find(order => order._id.toString() === item1.accountId)
+      const matchingItem = customers.find(item2 => item2._id.toString() === item1.metaId.toString());
+      const order = ordersResult.find(order => order._id.toString() === item1.metaId.toString())
       if (matchingItem || order) {
         return {
           ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
@@ -513,17 +513,17 @@ exports.editCustomer = async (req, res) => {
     }
     if (data.hasOwnProperty("isAccountCreate")) {
       if ((data.isAccountCreate || data.isAccountCreate == 'true')) {
-        let updatePrimaryUser = await userService.updateSingleUser({ accountId: req.params.customerId, isPrimary: true }, { status: true }, { new: true })
+        let updatePrimaryUser = await userService.updateSingleUser({ metaId: req.params.customerId, isPrimary: true }, { status: true }, { new: true })
       } else {
-        let updatePrimaryUser = await userService.updateUser({ accountId: req.params.customerId }, { status: false }, { new: true })
+        let updatePrimaryUser = await userService.updateUser({ metaId: req.params.customerId }, { status: false }, { new: true })
       }
     }
 
     //send notification to dealer,customer,admin,reseller
     let IDs = await supportingFunction.getUserIds()
-    let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
-    let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer.dealerId, isPrimary: true })
-    let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer.resellerId, isPrimary: true })
+    let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
+    let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer.dealerId, isPrimary: true })
+    let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer.resellerId, isPrimary: true })
     IDs.push(customerPrimary._id)
     IDs.push(dealerPrimary._id)
     IDs.push(resellerPrimary?._id)
@@ -597,7 +597,7 @@ exports.changePrimaryUser = async (req, res) => {
       })
       return;
     };
-    let updateLastPrimary = await userService.updateSingleUser({ accountId: checkUser.accountId, isPrimary: true }, { isPrimary: false }, { new: true })
+    let updateLastPrimary = await userService.updateSingleUser({ metaId: checkUser.metaId, isPrimary: true }, { isPrimary: false }, { new: true })
     if (!updateLastPrimary) {
       //Save Logs changePrimaryUser
       let logData = {
@@ -642,13 +642,13 @@ exports.changePrimaryUser = async (req, res) => {
     } else {
       //Send notification for dealer change primary user
       let IDs = await supportingFunction.getUserIds()
-      let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkUser.accountId, isPrimary: true })
+      let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkUser.metaId, isPrimary: true })
       let notificationData = {
         title: updateLastPrimary?.role + " primary user change",
         description: "The primary user has been changed!",
         userId: req.teammateId,
         flag: updateLastPrimary?.role,
-        redirectionId: checkUser.accountId,
+        redirectionId: checkUser.metaId,
         notificationFor: [getPrimary._id]
       };
       let createNotification = await userService.createNotification(notificationData);
@@ -724,7 +724,7 @@ exports.addCustomerUser = async (req, res) => {
       })
       return;
     };
-    let checkUser = await userService.getUserById1({ accountId: data.customerId, isPrimary: true }, { isDeleted: false })
+    let checkUser = await userService.getUserById1({ metaId: data.customerId, isPrimary: true }, { isDeleted: false })
     data.accountId = checkCustomer._id
     data.metaId = checkCustomer._id
     data.status = checkUser.status ? true : false;
@@ -803,7 +803,7 @@ exports.getCustomerById = async (req, res) => {
         message: "Invalid customer ID"
       })
     } else {
-      let getPrimaryUser = await userService.findOneUser({ accountId: checkCustomer._id.toString(), isPrimary: true }, {})
+      let getPrimaryUser = await userService.findOneUser({ metaId: checkCustomer._id, isPrimary: true }, {})
       let checkReseller = await resellerService.getReseller({ _id: checkCustomer.resellerId }, { isDeleted: 0 });
       let checkDealer = await dealerService.getDealerByName({ _id: checkCustomer.dealerId }, { isDeleted: 0 });
       let project = {
@@ -945,7 +945,7 @@ exports.getCustomerById = async (req, res) => {
 exports.getCustomerUsers = async (req, res) => {
   try {
     let data = req.body
-    let getCustomerUsers = await userService.findUser({ accountId: req.params.customerId, isDeleted: false }, { isPrimary: -1 })
+    let getCustomerUsers = await userService.findUser({ metaId: req.params.customerId, isDeleted: false }, { isPrimary: -1 })
     if (!getCustomerUsers) {
       res.send({
         code: constant.errorCode,
@@ -1073,7 +1073,7 @@ exports.customerOrders = async (req, res) => {
     let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
     let userResellerIds = ordersResult
       .filter(result => result.resellerId !== null)
-      .map(result => result.resellerId?.toString());
+      .map(result => result.resellerId);
 
     let mergedArray = userDealerIds.concat(userResellerIds);
     //Get Respective Dealers
@@ -1097,10 +1097,10 @@ exports.customerOrders = async (req, res) => {
     );
     let userCustomerIds = ordersResult
       .filter(result => result.customerId !== null)
-      .map(result => result.customerId?.toString());
+      .map(result => result.customerId);
 
     const allUserIds = mergedArray.concat(userCustomerIds);
-    const queryUser = { accountId: { $in: allUserIds }, isPrimary: true };
+    const queryUser = { metaId: { $in: allUserIds }, isPrimary: true };
     let getPrimaryUser = await userService.findUserforCustomer(queryUser)
     let servicerIdArray = ordersResult.map((result) => result.servicerId);
 
@@ -1198,13 +1198,13 @@ exports.customerOrders = async (req, res) => {
         item.flag = true
       }
       if (item.dealerName) {
-        username = getPrimaryUser.find(user => user.accountId?.toString() === item.dealerName._id?.toString());
+        username = getPrimaryUser.find(user => user.metaId?.toString() === item.dealerName._id?.toString());
       }
       if (item.resellerName) {
-        resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.accountId?.toString() === item.resellerName._id?.toString()) : {};
+        resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.metaId?.toString() === item.resellerName._id?.toString()) : {};
       }
       if (item.customerName) {
-        customerUserData = item.customerName._id != null ? getPrimaryUser.find(user => user.accountId?.toString() === item.customerName._id?.toString()) : {};
+        customerUserData = item.customerName._id != null ? getPrimaryUser.find(user => user.metaId?.toString() === item.customerName._id?.toString()) : {};
       }
       return {
         ...item,
