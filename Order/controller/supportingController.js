@@ -716,8 +716,8 @@ exports.generateHtmltopdf = async (req, res) => {
             
         </table > `;
         if (fs.existsSync(process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName)) {
-            link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
-            response = { link: link, fileName: mergeFileName }
+            // link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
+            response = { link: link, fileName: mergeFileName, bucketName: process.env.bucket_name, key: "mergedFile" }
             res.send({
                 code: constant.successCode,
                 message: 'Success!',
@@ -726,50 +726,41 @@ exports.generateHtmltopdf = async (req, res) => {
         } else {
             pdf.create(html, options).toFile(orderFile, async (err, result) => {
                 if (err) return console.log(err);
-                // -------------------merging pdfs 
                 const { PDFDocument, rgb } = require('pdf-lib');
                 const fs = require('fs').promises;
                 const fileContent = await fs.readFile(orderFile);
                 const bucketName = process.env.bucket_name
                 const s3Key = `pdfs/${mergeFileName}`;
                 await uploadToS3(orderFile, bucketName, s3Key);
+                const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : "file-1723185474819.pdf"
+                const termPath = termConditionFile
+                const termPathBucket = await downloadFromS3(bucketName, termPath);
+                const orderPathBucket = await downloadFromS3(bucketName, s3Key);
+                async function mergePDFs(pdfBytes1, pdfBytes2, outputPath) {
+                    const pdfDoc1 = await PDFDocument.load(pdfBytes1);
+                    const pdfDoc2 = await PDFDocument.load(pdfBytes2);
 
-                async function mergePDFs(pdfPath1, pdfPath2, outputPath) {
-                    // Load the PDFs
-                    const pdfDoc1Bytes = await fs.readFile(pdfPath1);
-                    const pdfDoc2Bytes = await fs.readFile(pdfPath2);
-
-                    const pdfDoc1 = await PDFDocument.load(pdfDoc1Bytes);
-                    const pdfDoc2 = await PDFDocument.load(pdfDoc2Bytes);
-
-                    // Create a new PDF Document
                     const mergedPdf = await PDFDocument.create();
 
-                    // Add the pages of the first PDF
                     const pdfDoc1Pages = await mergedPdf.copyPages(pdfDoc1, pdfDoc1.getPageIndices());
                     pdfDoc1Pages.forEach((page) => mergedPdf.addPage(page));
 
-                    // Add the pages of the second PDF
                     const pdfDoc2Pages = await mergedPdf.copyPages(pdfDoc2, pdfDoc2.getPageIndices());
                     pdfDoc2Pages.forEach((page) => mergedPdf.addPage(page));
 
-                    // Serialize the PDF
                     const mergedPdfBytes = await mergedPdf.save();
 
-                    // Write the merged PDF to a file
                     await fs.writeFile(outputPath, mergedPdfBytes);
+                    return mergedPdfBytes;
                 }
+                // Merge PDFs
+                const mergedPdf = await mergePDFs(termPathBucket, orderPathBucket, `/tmp/merged_${mergeFileName}`);
+                // Upload merged PDF to S3
+                const mergedKey = `mergedFile/${mergeFileName}`;
+                await uploadToS3(`/tmp/merged_${mergeFileName}`, bucketName, mergedKey);
+                // response = { link: link, fileName: mergeFileName }
+                response = { link: link, fileName: mergeFileName, bucketName: process.env.bucket_name, key: "mergedFile" }
 
-                //  const termConditionFile = checkDealer.termCondition.fileName ? checkDealer.termCondition.fileName : checkDealer.termCondition.filename
-
-                const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : checkOrder.termCondition.filename
-                // Usage
-                const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
-                const pdfPath1 = process.env.MAIN_FILE_PATH + "uploads/" + termConditionFile;
-                const outputPath = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName;
-                link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
-                let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
-                response = { link: link, fileName: mergeFileName }
                 res.send({
                     code: constant.successCode,
                     message: 'Success!',
@@ -807,7 +798,7 @@ const downloadFromS3 = async (bucketName, key) => {
         Bucket: bucketName,
         Key: key,
     };
-    const data = await s3.getObject(params).promise();
+    const data = await S3.getObject(params).promise();
     return data.Body;
 };
 // reporting data creating script for all orders 
@@ -1112,7 +1103,7 @@ exports.getDealerResellers = async (req, res) => {
         };
 
 
-        const resellerId = resellers.map(obj => obj._id.toString());
+        const resellerId = resellers.map(obj => obj._id);
 
         const orderResellerId = resellers.map(obj => obj._id);
         const queryUser = { metaId: { $in: resellerId }, isPrimary: true };
@@ -1143,7 +1134,7 @@ exports.getDealerResellers = async (req, res) => {
 
         const result_Array = getPrimaryUser.map(item1 => {
             const matchingItem = resellers.find(item2 => item2._id.toString() === item1.metaId.toString());
-            const order = ordersResult.find(order => order._id.toString() === item1.metaId)
+            const order = ordersResult.find(order => order._id.toString() === item1.metaId.toString())
 
             if (matchingItem || order) {
                 return {
