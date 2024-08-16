@@ -1715,12 +1715,22 @@ exports.claimReportinDropdown = async (req, res) => {
                     };
                 })
             };
-            result = {
-                dealers: filteredData.dealers,
-                priceBooks: getPriceBooks1,
-                servicers: getServicer,
-                categories: getCategories1
+            if (data.servicerId == "") {
+                result = {
+                    dealers: [],
+                    priceBooks: [],
+                    servicers: getServicer,
+                    categories: []
+                }
+            } else {
+                result = {
+                    dealers: filteredData.dealers,
+                    priceBooks: getPriceBooks1,
+                    servicers: getServicer,
+                    categories: getCategories1
+                }
             }
+
 
         }
 
