@@ -1130,8 +1130,8 @@ exports.getResellerServicers = async (req, res) => {
 
         const servicerIds = servicer.map(obj => obj._id);
         // Get servicer with claim
-        const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
-        const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
+        const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "Completed", resellerId: new mongoose.Types.ObjectId(req.userId) };
+        const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "Completed", resellerId: new mongoose.Types.ObjectId(req.userId) };
         let claimAggregateQuery1 = [
             {
                 $match: servicerCompleted

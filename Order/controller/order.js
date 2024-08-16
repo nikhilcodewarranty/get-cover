@@ -1285,6 +1285,7 @@ exports.getSingleOrder = async (req, res) => {
             }, []);
         }
         result_Array = makeUnique(result_Array, '_id');
+        checkOrder.bucket_name = process.env.bucket_name
         res.send({
             code: constant.successCode,
             message: "Success!",

@@ -757,7 +757,7 @@ exports.claimDailyReporting = async (data) => {
         let getData1 = await claimService.getClaimWithAggregate(dailyQuery1)
         let getData2 = await claimService.getClaimWithAggregate(dailyQuery2)
         let getData3 = await claimService.getClaimWithAggregate(dailyQuery3)
-        console.log("data++++++++++++++++++++++++++++++++",getData,getData1,getData2,getData3)
+        console.log("data++++++++++++++++++++++++++++++++", getData, getData1, getData2, getData3)
 
 
         const result = datesArray.map(date => {
@@ -1715,12 +1715,22 @@ exports.claimReportinDropdown = async (req, res) => {
                     };
                 })
             };
-            result = {
-                dealers: filteredData.dealers,
-                priceBooks: getPriceBooks1,
-                servicers: getServicer,
-                categories: getCategories1
+            if (data.servicerId == "") {
+                result = {
+                    dealers: [],
+                    priceBooks: [],
+                    servicers: getServicer,
+                    categories: []
+                }
+            } else {
+                result = {
+                    dealers: filteredData.dealers,
+                    priceBooks: getPriceBooks1,
+                    servicers: getServicer,
+                    categories: getCategories1
+                }
             }
+
 
         }
 
