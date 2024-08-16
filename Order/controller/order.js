@@ -31,11 +31,12 @@ const { S3Client } = require('@aws-sdk/client-s3');
 const { Upload } = require('@aws-sdk/lib-storage');
 const multerS3 = require('multer-s3');
 const aws = require('aws-sdk');
-const S3 = new aws.S3();
+
 aws.config.update({
     accessKeyId: process.env.aws_access_key_id,
     secretAccessKey: process.env.aws_secret_access_key,
 });
+const S3 = new aws.S3();
 const S3Bucket = new aws.S3();
 // s3 bucket connections
 const s3 = new S3Client({
@@ -1462,10 +1463,8 @@ exports.markAsPaid = async (req, res) => {
                 function findMinDate(d1, d2, d3) {
                     return new Date(Math.min(new Date(d1).getTime(), new Date(d2).getTime(), new Date(d3).getTime()));
                 }
-
                 // Find the minimum date
                 let minDate;
-
                 if (checkOrder.coverageType == "Breakdown") {
                     if (checkOrder.serviceCoverageType == "Labour") {
                         minDate = findMinDate(new Date(dateCheck).setHours(0, 0, 0, 0), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
@@ -2095,6 +2094,7 @@ async function generateTC(orderData) {
                 return mergedPdfBytes;
             }
             // Merge PDFs
+            
             const mergedPdf = await mergePDFs(termPathBucket, orderPathBucket, `/tmp/merged_${mergeFileName}`);
             // Upload merged PDF to S3
             const mergedKey = `mergedFile/${mergeFileName}`;
@@ -2106,6 +2106,7 @@ async function generateTC(orderData) {
             //Read from the s3 bucket
             const data = await S3.getObject(params).promise();
             let attachment = data.Body.toString('base64');
+            console.log("hereeeeeeeeeeeeeeeeeeeeeeeeee",attachment)
             //sendTermAndCondition
             // Send Email code here
             let notificationEmails = await supportingFunction.getUserEmails();
@@ -2116,7 +2117,7 @@ async function generateTC(orderData) {
                 content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
                 subject: 'Order Term and Condition-' + checkOrder.unique_key,
             }
-            let mailing = await sgMail.send(emailConstant.sendTermAndCondition("amit@codenomae.net", notificationEmails, emailData, attachment))
+            let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
         })
         return 1
 
