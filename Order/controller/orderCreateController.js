@@ -278,13 +278,17 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 let message = [];
                 let finalRetailValue = [];
                 const headers = [];
+                console.log("productsWithFiles-------------------",productsWithFiles);
+
                 //Collect all header length for all csv
                 for (let j = 0; j < productsWithFiles.length; j++) {
                     const bucketReadUrl = productsWithFiles[j].products.file
                     // Await the getObjectFromS3 function to complete
                     console.log("bucketReadUrl-------------------",bucketReadUrl);
-                    return
                     const result = await getObjectFromS3(bucketReadUrl);
+                    console.log("result-------------------",result);
+
+                    return
 
                     allDataComing.push({
                         key: productsWithFiles[j].products.key,
