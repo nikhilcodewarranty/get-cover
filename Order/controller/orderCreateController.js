@@ -716,37 +716,20 @@ async function generateTC(orderData) {
                 Key: `mergedFile/${mergeFileName}`
             };
             //Read from the s3 bucket
-            const data = await S3Bucket.getObject(params).promise();
+            const data = await S3.getObject(params).promise();
             let attachment = data.Body.toString('base64');
-
-            fs.readFile(pathToAttachment)
-                .then(async (fileData) => {
-                    const attachment = fileData.toString('base64');
-                    try {
-                        //sendTermAndCondition
-                        // Send Email code here
-                        let notificationEmails = await supportingFunction.getUserEmails();
-                        notificationEmails.push(DealerUser.email)
-                        notificationEmails.push(resellerUser?.email)
-                        let emailData = {
-                            senderName: customerUser.firstName,
-                            content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
-                            subject: 'Order Term and Condition-' + checkOrder.unique_key,
-                        }
-                        let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
-
-                    } catch (error) {
-                        console.error('Error sending email:', error);
-                        if (error.response) {
-                            console.error('Error response:', error.response.body);
-                        }
-                    }
-                })
-                .catch(err => {
-                    console.error("Error reading the file:", err);
-                });
-
-
+            //sendTermAndCondition
+            // Send Email code here
+            let notificationEmails = await supportingFunction.getUserEmails();
+            notificationEmails.push(DealerUser.email)
+            notificationEmails.push(resellerUser?.email)
+            let emailData = {
+                senderName: customerUser.firstName,
+                content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
+                subject: 'Order Term and Condition-' + checkOrder.unique_key,
+            }
+            let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
+          
         })
         return 1
 
