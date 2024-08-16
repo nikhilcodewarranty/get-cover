@@ -278,17 +278,11 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 let message = [];
                 let finalRetailValue = [];
                 const headers = [];
-                console.log("productsWithFiles-------------------",productsWithFiles);
-
                 //Collect all header length for all csv
                 for (let j = 0; j < productsWithFiles.length; j++) {
                     const bucketReadUrl = productsWithFiles[j].products.file
                     // Await the getObjectFromS3 function to complete
-                    console.log("bucketReadUrl-------------------",bucketReadUrl);
-                    const result = await getObjectFromS3(bucketReadUrl);
-                    console.log("result-------------------",result);
-
-                    return
+                    const result = await getObjectFromS3(bucketReadUrl);                  
 
                     allDataComing.push({
                         key: productsWithFiles[j].products.key,
@@ -305,7 +299,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         headers: result.headers,
                     });
                 }
-
                 const errorMessages = allHeaders
                     .filter((headerObj) => headerObj.headers.length !== 8)
                     .map((headerObj) => ({
@@ -321,12 +314,13 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     });
                     return;
                 }
-                if (allDataComing.length > 0) {
+                if (allDataComing.data.length > 0) {
                     const isValidLength1 = allDataComing.map((obj) => {
                         if (!obj.data || typeof obj.data !== "object") {
                             return false; // 'data' should be an object
                         }
-
+                        console.log("orderFileData-------------------",orderFileData);
+                        return
                         const orderFileData = obj.data.map(item => {
                             const keys = Object.keys(item);
                             return {
