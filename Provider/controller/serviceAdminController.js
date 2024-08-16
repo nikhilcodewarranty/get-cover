@@ -27,7 +27,7 @@ exports.createServiceProvider = async (req, res, next) => {
     let data = req.body
     data.accountName = data.accountName.trim().replace(/\s+/g, ' ');
     const count = await providerService.getServicerCount();
-    const admin = await userService.getUserById1({ accountId: req.userId, isPrimary: true }, {})
+    const admin = await userService.getUserById1({ metaId: req.userId, isPrimary: true }, {})
     let servicerObject = {
       name: data.accountName,
       street: data.street,
@@ -86,7 +86,7 @@ exports.createServiceProvider = async (req, res, next) => {
         })
         return;
       };
-      teamMembers = teamMembers.map(member => ({ ...member, accountId: createServiceProvider._id, metaId: createServiceProvider._id, approvedStatus: "Approved", roleId: "65719c8368a8a86ef8e1ae4d" }));
+      teamMembers = teamMembers.map(member => ({ ...member, metaId: createServiceProvider._id, approvedStatus: "Approved", roleId: "65719c8368a8a86ef8e1ae4d" }));
       let saveMembers = await userService.insertManyUser(teamMembers)
       // Primary User Welcoime email
       let notificationEmails = await supportingFunction.getUserEmails();
@@ -221,7 +221,7 @@ exports.createServiceProvider = async (req, res, next) => {
       let updatePrimaryCode = await userService.updateSingleUser({ email: primaryEmail }, { resetPasswordCode: primaryCode, status: data.status ? true : false }, { new: true });
       let updatePrimaryLInk = `${process.env.SITE_URL}newPassword/${updatePrimaryCode._id}/${primaryCode}`
       mailing = sgMail.send(emailConstant.servicerApproval(updatePrimaryCode.email, { flag: "Approved", subject: "Set Password", link: updatePrimaryLInk, role: "Servicer", servicerName: updatePrimaryCode?.firstName }))
-      teamMembers = teamMembers.slice(1).map(member => ({ ...member, accountId: updateServicer._id, metaId: updateServicer._id, approvedStatus: "Approved", status: true }));
+      teamMembers = teamMembers.slice(1).map(member => ({ ...member, metaId: updateServicer._id, approvedStatus: "Approved", status: true }));
 
       if (teamMembers.length > 0) {
         let saveMembers = await userService.insertManyUser(teamMembers)
@@ -343,7 +343,7 @@ exports.approveServicer = async (req, res, next) => {
 
     let teamMembers = data.members
     // to string to object 
-    let getUserId = await userService.findOneUser({ accountId: checkDetail._id, isPrimary: true }, {})
+    let getUserId = await userService.findOneUser({ metaId: checkDetail._id, isPrimary: true }, {})
     const updateServicer = await providerService.updateServiceProvider({ _id: checkDetail._id }, servicerObject);
 
     if (!updateServicer) {
@@ -354,7 +354,7 @@ exports.approveServicer = async (req, res, next) => {
       return;
     };
 
-    teamMembers = teamMembers.map(member => ({ ...member, accountId: updateServicer._id, roleId: '65719c8368a8a86ef8e1ae4d' }));
+    teamMembers = teamMembers.map(member => ({ ...member, metaId: updateServicer._id, roleId: '65719c8368a8a86ef8e1ae4d' }));
 
     let saveMembers = await userService.insertManyUser(teamMembers)
     let resetPasswordCode = randtoken.generate(4, '123456789')
@@ -393,7 +393,7 @@ exports.getServicer = async (req, res) => {
 
     const servicerIds = servicer.map(obj => obj._id);
     // Get Dealer Primary Users from colection
-    const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+    const query1 = { metaId: { $in: servicerIds }, isPrimary: true };
 
     let servicerUser = await userService.getMembers(query1, projection)
 
@@ -441,9 +441,9 @@ exports.getServicer = async (req, res) => {
     let numberOfClaims = await claimService.getClaimWithAggregate(claimAggregateQuery);
 
     const result_Array = servicerUser.map(item1 => {
-      const matchingItem = servicer.find(item2 => item2._id.toString() === item1.accountId.toString());
-      const claimValue = valueClaim.find(claim => claim._id.toString() === item1.accountId.toString())
-      const claimNumber = numberOfClaims.find(claim => claim._id.toString() === item1.accountId.toString())
+      const matchingItem = servicer.find(item2 => item2._id.toString() === item1.metaId.toString());
+      const claimValue = valueClaim.find(claim => claim._id.toString() === item1.metaId.toString())
+      const claimNumber = numberOfClaims.find(claim => claim._id.toString() === item1.metaId.toString())
       if (matchingItem) {
         return {
           ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
@@ -493,7 +493,7 @@ exports.getServiceProviderById = async (req, res, next) => {
       return;
     };
 
-    let getMetaData = await userService.findOneUser({ accountId: singleServiceProvider._id, isPrimary: true })
+    let getMetaData = await userService.findOneUser({ metaId: singleServiceProvider._id, isPrimary: true })
     let resultUser = getMetaData.toObject()
     let claimQueryAggregate = [
       {
@@ -539,7 +539,7 @@ exports.rejectServicer = async (req, res) => {
     let IDs = await supportingFunction.getUserIds()
     let getServicer = await providerService.getServiceProviderById({ _id: req.params.servicerId });
     let checkServicer = await providerService.deleteServicer({ _id: req.params.servicerId })
-    let getPrimary = await supportingFunction.getPrimaryUser({ accountId: req.params.servicerId, isPrimary: true })
+    let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.servicerId, isPrimary: true })
     IDs.push(getPrimary._id)
 
     if (!checkServicer) {
@@ -550,7 +550,7 @@ exports.rejectServicer = async (req, res) => {
       return;
     };
 
-    let deleteUser = await userService.deleteUser({ accountId: getServicer._id })
+    let deleteUser = await userService.deleteUser({ metaId: getServicer._id })
     let notificationData = {
       title: "Rejection Servicer Account",
       description: "The " + getServicer.name + " account has been rejected",
@@ -624,7 +624,7 @@ exports.editServicerDetail = async (req, res) => {
 
     let criteria = { _id: checkServicer._id }
     let updateData = await providerService.updateServiceProvider(criteria, data)
-    let servicerUserCreateria = { accountId: req.params.servicerId };
+    let servicerUserCreateria = { metaId: req.params.servicerId };
     let newValue = {
       $set: {
         status: false
@@ -632,7 +632,7 @@ exports.editServicerDetail = async (req, res) => {
     };
 
     if (data.isAccountCreate) {
-      servicerUserCreateria = { accountId: req.params.servicerId, isPrimary: true };
+      servicerUserCreateria = { metaId: req.params.servicerId, isPrimary: true };
       newValue = {
         $set: {
           status: true
@@ -665,7 +665,7 @@ exports.editServicerDetail = async (req, res) => {
 
     //send notification to admin and servicer
     let IDs = await supportingFunction.getUserIds()
-    let getPrimary = await supportingFunction.getPrimaryUser({ accountId: req.params.servicerId, isPrimary: true })
+    let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.servicerId, isPrimary: true })
     IDs.push(getPrimary._id)
     let notificationData = {
       title: "Servicer Detail Update",
@@ -737,7 +737,7 @@ exports.updateStatus = async (req, res) => {
       })
       return;
     }
-    let getPrimary = await supportingFunction.getPrimaryUser({ accountId: req.params.servicerId, isPrimary: true })
+    let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.servicerId, isPrimary: true })
     let criteria = { _id: checkServicer._id }
     let updateData = await providerService.updateServiceProvider(criteria, data)
 
@@ -764,7 +764,7 @@ exports.updateStatus = async (req, res) => {
     }
 
     if (data.status == "false" || !data.status) {
-      let criteria1 = { accountId: checkServicer._id }
+      let criteria1 = { metaId: checkServicer._id }
       let updateMetaData = await userService.updateUser(criteria1, { status: data.status }, { new: true })
       if (!updateMetaData) {
         //Save Logs
@@ -788,7 +788,7 @@ exports.updateStatus = async (req, res) => {
       } else {
         //Send notification to servicer and admin
         let IDs = await supportingFunction.getUserIds()
-        let getPrimary = await supportingFunction.getPrimaryUser({ accountId: req.params.servicerId, isPrimary: true })
+        let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.servicerId, isPrimary: true })
         IDs.push(getPrimary._id)
         let notificationData = {
           title: "Servicer status update",
@@ -833,7 +833,7 @@ exports.updateStatus = async (req, res) => {
 
       let createNotification = await userService.createNotification(notificationData);
       if (checkServicer.isAccountCreate) {
-        let criteria1 = { accountId: checkServicer._id, isPrimary: true }
+        let criteria1 = { metaId: checkServicer._id, isPrimary: true }
         let updateMetaData = await userService.updateSingleUser(criteria1, { status: data.status }, { new: true })
         if (!updateMetaData) {
           res.send({
@@ -926,7 +926,7 @@ exports.getAllServiceProviders = async (req, res, next) => {
 
     const servicerIds = serviceProviders.map(obj => obj._id);
     // Get Dealer Primary Users from colection
-    const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+    const query1 = { metaId: { $in: servicerIds }, isPrimary: true };
     let servicerUser = await userService.getMembers(query1, projection)
 
     if (!servicerUser) {
@@ -938,7 +938,7 @@ exports.getAllServiceProviders = async (req, res, next) => {
     };
 
     const result_Array = servicerUser.map(item1 => {
-      const matchingItem = serviceProviders.find(item2 => item2._id.toString() === item1.accountId.toString());
+      const matchingItem = serviceProviders.find(item2 => item2._id.toString() === item1.metaId.toString());
 
       if (matchingItem) {
         return {
@@ -1005,7 +1005,7 @@ exports.registerServiceProvider = async (req, res) => {
     // Check if the email already exists
     const existingUser = await userService.findOneUser({ email: req.body.email });
     if (existingUser) {
-      const existingServicer3 = await providerService.getServicerByName({ _id: existingUser.accountId }, { isDeleted: 0, __v: 0 });
+      const existingServicer3 = await providerService.getServicerByName({ _id: existingUser.metaId }, { isDeleted: 0, __v: 0 });
       if (existingServicer3) {
         if (existingServicer3.accountStatus == "Pending") {
           res.send({
@@ -1052,7 +1052,6 @@ exports.registerServiceProvider = async (req, res) => {
       lastName: data.lastName,
       phoneNumber: data.phoneNumber,
       roleId: "65719c8368a8a86ef8e1ae4d",
-      accountId: createMetaData._id,
       metaId: createMetaData._id,
     };
 
@@ -1165,7 +1164,7 @@ exports.statusUpdate = async (req, res) => {
     };
 
     if (req.body.status == false) {
-      let criteria1 = { accountId: updatedResult._id }
+      let criteria1 = { metaId: updatedResult._id }
       let option = { new: true }
       let updateUsers = await userService.updateUser(criteria1, { status: req.body.status }, option)
       if (!updateUsers) {
@@ -1180,7 +1179,7 @@ exports.statusUpdate = async (req, res) => {
         message: "Updated Successfully",
       })
     } else {
-      let criteria1 = { accountId: updatedResult._id, isPrimary: true }
+      let criteria1 = { metaId: updatedResult._id, isPrimary: true }
       let option = { new: true }
       let updateUsers = await userService.updateUser(criteria1, { status: req.body.status }, option)
       if (!updateUsers) {
@@ -1209,7 +1208,7 @@ exports.statusUpdate = async (req, res) => {
 exports.getSerivicerUsers = async (req, res) => {
   try {
     let data = req.body
-    let getUsers = await userService.findUser({ accountId: req.params.servicerId }, { isPrimary: -1 })
+    let getUsers = await userService.findUser({ metaId: req.params.servicerId }, { isPrimary: -1 })
     if (!getUsers) {
       res.send({
         code: constant.errorCode,
@@ -1266,7 +1265,7 @@ exports.addServicerUser = async (req, res) => {
       return
     }
     let checkEmail = await userService.findOneUser({ email: data.email })
-    let checkUser = await userService.getUserById1({ accountId: req.params.servicerId, isPrimary: true }, { isDeleted: false })
+    let checkUser = await userService.getUserById1({ metaId: req.params.servicerId, isPrimary: true }, { isDeleted: false })
     data.status = checkUser.status ? true : false;
     if (checkEmail) {
       res.send({
@@ -1275,7 +1274,6 @@ exports.addServicerUser = async (req, res) => {
       })
     } else {
       data.isPrimary = false
-      data.accountId = checkServicer._id
       data.metaId = checkServicer._id
       let statusCheck;
 
@@ -1443,7 +1441,7 @@ exports.getServicerDealers = async (req, res) => {
     };
     // return false;
 
-    let dealarUser = await userService.getMembers({ accountId: { $in: ids }, isPrimary: true }, {})
+    let dealarUser = await userService.getMembers({ metaId: { $in: ids }, isPrimary: true }, {})
     let orderQuery = { dealerId: { $in: ids }, status: "Active" };
     let project = {
       productsArray: 1,
@@ -1501,8 +1499,8 @@ exports.getServicerDealers = async (req, res) => {
     const dealerClaims = await dealerService.getDealerAndClaims(dealerAggregationQuery);
 
     const result_Array = dealarUser.map(item1 => {
-      const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
-      const orders = orderData.find(order => order._id.toString() === item1.accountId.toString())
+      const matchingItem = dealers.find(item2 => item2._id.toString() === item1.metaId.toString());
+      const orders = orderData.find(order => order._id.toString() === item1.metaId.toString())
 
       if (matchingItem || orders) {
         return {

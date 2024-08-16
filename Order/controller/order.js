@@ -220,7 +220,7 @@ exports.getAllOrders = async (req, res) => {
 
         const allUserIds = mergedArray.concat(userCustomerIds);
 
-        const queryUser = { accountId: { $in: allUserIds }, isPrimary: true };
+        const queryUser = { metaId: { $in: allUserIds }, isPrimary: true };
 
         let getPrimaryUser = await userService.findUserforCustomer(queryUser)
         //Get Respective Customer
@@ -335,13 +335,13 @@ exports.getAllOrders = async (req, res) => {
             let resellerUsername = null; // Initialize username as null
             let customerUserData = null; // Initialize username as null
             if (item.dealerName._id) {
-                username = getPrimaryUser.find(user => user.accountId.toString() === item.dealerName._id.toString());
+                username = getPrimaryUser.find(user => user.metaId.toString() === item.dealerName._id.toString());
             }
             if (item.resellerName._id) {
-                resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.accountId.toString() === item.resellerName._id.toString()) : {};
+                resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.metaId.toString() === item.resellerName._id.toString()) : {};
             }
             if (item.customerName._id) {
-                customerUserData = item.customerName._id != null ? getPrimaryUser.find(user => user.accountId.toString() === item.customerName._id.toString()) : {};
+                customerUserData = item.customerName._id != null ? getPrimaryUser.find(user => user.metaId.toString() === item.customerName._id.toString()) : {};
             }
             return {
                 ...item,
@@ -575,13 +575,13 @@ exports.getCustomerInOrder = async (req, res) => {
             return;
         }
         const customerIds = getCustomers.map(customer => customer._id.toString());
-        let query1 = { accountId: { $in: customerIds }, isPrimary: true };
+        let query1 = { metaId: { $in: customerIds }, isPrimary: true };
         let projection = { __v: 0, isDeleted: 0 }
 
         let customerUser = await userService.getMembers(query1, projection)
 
         const result_Array = customerUser.map(item1 => {
-            const matchingItem = getCustomers.find(item2 => item2._id.toString() === item1.accountId.toString());
+            const matchingItem = getCustomers.find(item2 => item2._id.toString() === item1.metaId.toString());
             if (matchingItem) {
                 return {
                     ...matchingItem.toObject(),
@@ -656,7 +656,7 @@ exports.getServicerByOrderId = async (req, res) => {
             servicer.unshift(checkDealer);
         }
         const servicerIds = servicer.map((obj) => obj._id);
-        const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+        const query1 = { metaId: { $in: servicerIds }, isPrimary: true };
 
         let servicerUser = await userService.getMembers(query1, {});
         if (!servicerUser) {
@@ -669,7 +669,7 @@ exports.getServicerByOrderId = async (req, res) => {
 
         const result_Array = servicer.map((item1) => {
             const matchingItem = servicerUser.find(
-                (item2) => item2.accountId.toString() === item1._id.toString()
+                (item2) => item2.metaId.toString() === item1._id.toString()
             );
 
             if (matchingItem) {
@@ -1094,9 +1094,9 @@ exports.archiveOrder = async (req, res) => {
         }
         //send notification to dealer,reseller,admin,customer
         let IDs = await supportingFunction.getUserIds()
-        let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
-        let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.customerId, isPrimary: true })
-        let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.resellerId, isPrimary: true })
+        let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.dealerId, isPrimary: true })
+        let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.customerId, isPrimary: true })
+        let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.resellerId, isPrimary: true })
         if (resellerPrimary) {
             IDs.push(resellerPrimary._id)
         }
@@ -1211,9 +1211,9 @@ exports.getSingleOrder = async (req, res) => {
             ],
         };
         let checkServicer = await servicerService.getServiceProviderById(query1);
-        let singleDealerUser = await userService.getUserById1({ accountId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false });
-        let singleResellerUser = await userService.getUserById1({ accountId: checkOrder.resellerId, isPrimary: true }, { isDeleted: false });
-        let singleCustomerUser = await userService.getUserById1({ accountId: checkOrder.customerId, isPrimary: true }, { isDeleted: false });
+        let singleDealerUser = await userService.getUserById1({ metaId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false });
+        let singleResellerUser = await userService.getUserById1({ metaId: checkOrder.resellerId, isPrimary: true }, { isDeleted: false });
+        let singleCustomerUser = await userService.getUserById1({ metaId: checkOrder.customerId, isPrimary: true }, { isDeleted: false });
         // ------------------------------------Get Dealer Servicer -----------------------------
         let getServicersIds = await dealerRelationService.getDealerRelations({
             dealerId: checkOrder.dealerId,
@@ -1241,12 +1241,12 @@ exports.getSingleOrder = async (req, res) => {
             //servicer.unshift(dealer);
         }
         const servicerIds = servicer.map((obj) => obj._id);
-        const servicerQuery = { accountId: { $in: servicerIds }, isPrimary: true };
+        const servicerQuery = { metaId: { $in: servicerIds }, isPrimary: true };
 
         let servicerUser = await userService.getMembers(servicerQuery, {});
         let result_Array = servicer.map((item1) => {
             const matchingItem = servicerUser.find(
-                (item2) => item2.accountId.toString() === item1._id.toString()
+                (item2) => item2.metaId.toString() === item1._id.toString()
             );
 
             if (matchingItem) {
@@ -1397,11 +1397,11 @@ exports.markAsPaid = async (req, res) => {
             const result = await getObjectFromS3(bucketReadUrl);
             headerLength = result.headers
             if (headerLength.length !== 8) {
-              res.send({
-                code: constant.errorCode,
-                message: "Invalid file format detected. The sheet should contain exactly four columns."
-              })
-              return
+                res.send({
+                    code: constant.errorCode,
+                    message: "Invalid file format detected. The sheet should contain exactly four columns."
+                })
+                return
             }
             const totalDataComing1 = result.data;
             const totalDataComing = totalDataComing1.map((item) => {
@@ -1549,9 +1549,9 @@ exports.markAsPaid = async (req, res) => {
                 }
                 // send notification to dealer,admin, customer
                 let IDs = await supportingFunction.getUserIds()
-                let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
-                let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.customerId, isPrimary: true })
-                let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.resellerId, isPrimary: true })
+                let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.dealerId, isPrimary: true })
+                let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.customerId, isPrimary: true })
+                let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.resellerId, isPrimary: true })
                 if (resellerPrimary) {
                     IDs.push(resellerPrimary._id)
                 }
@@ -1634,8 +1634,6 @@ exports.markAsPaid = async (req, res) => {
         })
     }
 };
-
-
 //Get File data from S3 bucket
 const getObjectFromS3 = (bucketReadUrl) => {
     return new Promise((resolve, reject) => {
@@ -1723,9 +1721,9 @@ exports.getOrderPdf = async (req, res) => {
 
         let reseller = await resellerService.getReseller({ _id: checkOrder[0].order[0].resellerId }, { isDeleted: 0 })
 
-        const queryDealerUser = { accountId: { $in: [checkOrder[0].order[0].dealerId != null ? checkOrder[0].order[0].dealerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
+        const queryDealerUser = { metaId: { $in: [checkOrder[0].order[0].dealerId != null ? checkOrder[0].order[0].dealerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
 
-        const queryResselerUser = { accountId: { $in: [checkOrder[0].order[0].resellerId != null ? checkOrder[0].order[0].resellerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
+        const queryResselerUser = { metaId: { $in: [checkOrder[0].order[0].resellerId != null ? checkOrder[0].order[0].resellerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
 
         let dealerUser = await userService.findUserforCustomer(queryDealerUser)
 
@@ -2006,7 +2004,8 @@ async function generateTC(orderData) {
             }
         }
         let mergeFileName = checkOrder.unique_key + '.pdf'
-        const orderFile = 'pdfs/' + mergeFileName;
+        //  const orderFile = 'pdfs/' + mergeFileName;
+        const orderFile = `/tmp/${mergeFileName}`; // Temporary local storage
         const html = `<head>
         <link rel="stylesheet" href="https://gistcdn.githack.com/mfd/09b70eb47474836f25a21660282ce0fd/raw/e06a670afcb2b861ed2ac4a1ef752d062ef6b46b/Gilroy.css"></link>
         </head>
@@ -2062,6 +2061,10 @@ async function generateTC(orderData) {
             // -------------------merging pdfs 
             const { PDFDocument, rgb } = require('pdf-lib');
             const fs = require('fs').promises;
+            // Upload the generated order PDF to S3
+            const bucketName = process.env.bucket_name
+            const s3Key = `pdfs/${mergeFileName}`;
+            await uploadToS3(orderFile, bucketName, s3Key);
 
             async function mergePDFs(pdfPath1, pdfPath2, outputPath) {
                 // Load the PDFs
@@ -2091,8 +2094,8 @@ async function generateTC(orderData) {
 
             const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : checkOrder.termCondition.filename
             // Usage
-            const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
             const pdfPath1 = process.env.MAIN_FILE_PATH + "uploads/" + termConditionFile;
+            const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
             const outputPath = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName;
             link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
             let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
@@ -2137,3 +2140,13 @@ async function generateTC(orderData) {
         return;
     }
 }
+
+const uploadToS3 = async (filePath, bucketName, key) => {
+    const fileContent = await fs.readFile(filePath);
+    const params = {
+        Bucket: bucketName,
+        Key: key,
+        Body: fileContent,
+    };
+    return s3.upload(params).promise();
+};
