@@ -175,10 +175,10 @@ exports.getAllOrders = async (req, res) => {
         let limitData = Number(pageLimit)
         let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, limitData);
         let dealerIdsArray = ordersResult.map((result) => result.dealerId);
-        let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
+        let userDealerIds = ordersResult.map((result) => result.dealerId);
         let userResellerIds = ordersResult
             .filter(result => result.resellerId !== null)
-            .map(result => result.resellerId?.toString());
+            .map(result => result.resellerId);
 
         let mergedArray = userDealerIds.concat(userResellerIds);
 
@@ -219,7 +219,7 @@ exports.getAllOrders = async (req, res) => {
         let customerIdsArray = ordersResult.map((result) => result.customerId);
         let userCustomerIds = ordersResult
             .filter(result => result.customerId !== null)
-            .map(result => result.customerId?.toString());
+            .map(result => result.customerId);
 
         const customerCreteria = { _id: { $in: customerIdsArray } };
 
@@ -579,7 +579,7 @@ exports.getCustomerInOrder = async (req, res) => {
             });
             return;
         }
-        const customerIds = getCustomers.map(customer => customer._id.toString());
+        const customerIds = getCustomers.map(customer => customer._id);
         let query1 = { metaId: { $in: customerIds }, isPrimary: true };
         let projection = { __v: 0, isDeleted: 0 }
 
