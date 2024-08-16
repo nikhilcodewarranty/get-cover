@@ -730,11 +730,12 @@ exports.claimDailyReporting = async (data) => {
             dailyQuery3[0].$match.servicerId = servicerId
         }
         if (data.categoryId != "") {
-            let categoryId = new mongoose.Types.ObjectId(data.categoryId)
-            dailyQuery[0].$match.categoryId = categoryId
-            dailyQuery1[0].$match.categoryId = categoryId
-            dailyQuery2[0].$match.categoryId = categoryId
-            dailyQuery3[0].$match.categoryId = categoryId
+            let getOrders = await orderService.getOrders({ productsArray: { $elemMatch: { categoryId: { $in: data.categoryId } } } })
+            let orderIds = getOrders.map(ID => ID.unique_key)
+            dailyQuery[0].$match.orderId = { $in: orderIds }
+            dailyQuery1[0].$match.orderId = { $in: orderIds }
+            dailyQuery2[0].$match.orderId = { $in: orderIds }
+            dailyQuery3[0].$match.orderId = { $in: orderIds }
         }
         if (data.customerId) {
             let customerId = new mongoose.Types.ObjectId(data.customerId)
@@ -1108,11 +1109,12 @@ exports.claimWeeklyReporting = async (data) => {
             dailyQuery3[0].$match.orderId = { $in: orderIds }
         }
         if (data.categoryId != "") {
-            let categoryId = new mongoose.Types.ObjectId(data.categoryId)
-            dailyQuery[0].$match.categoryId = categoryId
-            dailyQuery1[0].$match.categoryId = categoryId
-            dailyQuery2[0].$match.categoryId = categoryId
-            dailyQuery3[0].$match.categoryId = categoryId
+            let getOrders = await orderService.getOrders({ productsArray: { $elemMatch: { categoryId: { $in: data.categoryId } } } })
+            let orderIds = getOrders.map(ID => ID.unique_key)
+            dailyQuery[0].$match.orderId = { $in: orderIds }
+            dailyQuery1[0].$match.orderId = { $in: orderIds }
+            dailyQuery2[0].$match.orderId = { $in: orderIds }
+            dailyQuery3[0].$match.orderId = { $in: orderIds }
         }
 
         let getData = await claimService.getClaimWithAggregate(dailyQuery)
