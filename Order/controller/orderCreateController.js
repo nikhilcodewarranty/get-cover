@@ -319,8 +319,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         if (!obj.data || typeof obj.data !== "object") {
                             return false; // 'data' should be an object
                         }
-                        console.log("orderFileData-------------------",orderFileData);
-                        return
                         const orderFileData = obj.data.map(item => {
                             const keys = Object.keys(item);
                             return {
