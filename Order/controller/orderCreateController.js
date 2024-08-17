@@ -407,8 +407,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             }
                         } else {
                             if (parseInt(obj.noOfProducts) != obj.data.length) {
-                                console.log("I am here", obj.noOfProducts)
-                                console.log("I am length", obj.data.length)
                                 // Handle case where 'noOfProducts' doesn't match the length of 'data'
                                 message.push({
                                     code: constant.errorCode,
@@ -445,6 +443,15 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         });
                         if (priceObj.length > 0) {
                             priceObj.map((obj, index) => {
+                                //check Purchase date is valid or not
+                                if (!isValidDate(obj.purchaseDate)) {
+                                    message.push({
+                                        code: constant.errorCode,
+                                        key: obj.key,
+                                        message: `Purchase date should be in the format MM/DD/YYYY `
+                                    });
+                                    return;
+                                }
                                 if (isNaN(obj.retailValue) || obj.retailValue < 0) {
                                     {
                                         message.push({
@@ -542,6 +549,26 @@ exports.checkMultipleFileValidation = async (req, res) => {
     }
 };
 
+//Check date is valid or not
+function isValidDate(dateString) {
+    // Check the format with a regular expression
+    const regex = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/;
+
+    if (!regex.test(dateString)) {
+        return false;
+    }
+
+    // Parse the date parts to integers
+    const [month, day, year] = dateString.split("/").map(Number);
+
+    // Check if the date is valid using the Date object
+    const date = new Date(year, month - 1, day);
+
+    // Check if the date parts match the parsed date
+    return date.getFullYear() === year &&
+        date.getMonth() === month - 1 &&
+        date.getDate() === day;
+}
 
 //Generate T and C
 async function generateTC(orderData) {
