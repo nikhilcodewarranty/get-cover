@@ -271,6 +271,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 let finalRetailValue = [];
                 const headers = [];
                 //Collect all header length for all csv
+                console.log("productsWithFiles-----------------",productsWithFiles)
                 for (let j = 0; j < productsWithFiles.length; j++) {
                     if (productsWithFiles[j].file != undefined) {
                         console.log("i am here for length")
