@@ -241,14 +241,6 @@ exports.checkFileValidation = async (req, res) => {
 exports.checkMultipleFileValidation = async (req, res) => {
     try {
         upload(req, res, async (err) => {
-            // console.log("files+++++++++++++++",req.files)
-            // if (req.files.length == 0) {
-            //     res.send({
-            //         code: constant.successCode,
-            //         message: "Success"
-            //     })
-            //     return
-            // }
             let data = req.body;
             if (data.productsArray.length > 0) {
                 let fileIndex = 0;
@@ -279,8 +271,10 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 let finalRetailValue = [];
                 const headers = [];
                 //Collect all header length for all csv
+                console.log("productsWithFiles-----------------",productsWithFiles)
                 for (let j = 0; j < productsWithFiles.length; j++) {
-                    if (productsWithFiles[j].file != undefined) {
+                    if (productsWithFiles[j].flag == 'true') {
+                        console.log("i am here for length")
                         const bucketReadUrl = productsWithFiles[j].products.file
                         // Await the getObjectFromS3 function to complete
                         const result = await getObjectFromS3(bucketReadUrl);
@@ -415,6 +409,8 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             }
                         } else {
                             if (parseInt(obj.noOfProducts) != obj.data.length) {
+                                console.log("I am here",obj.noOfProducts)
+                                console.log("I am length",obj.data.length)
                                 // Handle case where 'noOfProducts' doesn't match the length of 'data'
                                 message.push({
                                     code: constant.errorCode,
