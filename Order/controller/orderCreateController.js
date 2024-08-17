@@ -804,7 +804,13 @@ const getObjectFromS3 = (bucketReadUrl) => {
 
                 const result = {
                     headers: headers,
-                    data: XLSX.utils.sheet_to_json(sheet),
+                    data: XLSX.utils.sheet_to_json(sheet,{
+                        raw: false, // this ensures all cell values are parsed as text
+                        dateNF: 'mm/dd/yyyy', // optional: specifies the date format if Excel stores dates as numbers
+                        defval: '', // fills in empty cells with an empty string
+                        cellDates: true, // ensures dates are parsed as JavaScript Date objects
+                        cellText: false, // don't convert dates to text
+                    }),
                 };
 
                 resolve(result);
