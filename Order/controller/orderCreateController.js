@@ -31,11 +31,12 @@ const { S3Client } = require('@aws-sdk/client-s3');
 const aws = require('aws-sdk');
 const { Upload } = require('@aws-sdk/lib-storage');
 const multerS3 = require('multer-s3');
+const S3 = new aws.S3();
 aws.config.update({
     accessKeyId: process.env.aws_access_key_id,
     secretAccessKey: process.env.aws_secret_access_key,
 });
-const S3 = new aws.S3();
+
 const S3Bucket = new aws.S3();
 // s3 bucket connections
 const s3 = new S3Client({
@@ -77,6 +78,7 @@ var upload = multer({
         fileSize: 500 * 1024 * 1024, // 500 MB limit
     },
 }).array("file", 100);
+
 var uploadP = multer({
     storage: Storage,
     limits: {
@@ -92,6 +94,7 @@ exports.checkFileValidation = async (req, res) => {
         uploadP(req, res, async (err) => {
             let data = req.body;
             let file = req.file;
+            console.log("sigle--------------------", file)
             let csvName = file.key;
             let originalName = file.originalname;
             let size = file.size;
@@ -238,6 +241,14 @@ exports.checkFileValidation = async (req, res) => {
 exports.checkMultipleFileValidation = async (req, res) => {
     try {
         upload(req, res, async (err) => {
+            // console.log("files+++++++++++++++",req.files)
+            // if (req.files.length == 0) {
+            //     res.send({
+            //         code: constant.successCode,
+            //         message: "Success"
+            //     })
+            //     return
+            // }
             let data = req.body;
             if (data.productsArray.length > 0) {
                 let fileIndex = 0;
@@ -269,26 +280,28 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 const headers = [];
                 //Collect all header length for all csv
                 for (let j = 0; j < productsWithFiles.length; j++) {
-                    const bucketReadUrl = productsWithFiles[j].products.file
-                    // Await the getObjectFromS3 function to complete
-                    const result = await getObjectFromS3(bucketReadUrl);
+                    if (productsWithFiles[j].file != undefined) {
+                        const bucketReadUrl = productsWithFiles[j].products.file
+                        // Await the getObjectFromS3 function to complete
+                        const result = await getObjectFromS3(bucketReadUrl);
 
-                    allDataComing.push({
-                        key: productsWithFiles[j].products.key,
-                        checkNumberProducts: productsWithFiles[j].products.checkNumberProducts,
-                        noOfProducts: productsWithFiles[j].products.noOfProducts,
-                        priceType: productsWithFiles[j].products.priceType,
-                        rangeStart: productsWithFiles[j].products.rangeStart,
-                        rangeEnd: productsWithFiles[j].products.rangeEnd,
-                        data: result.data,
-                    });
+                        allDataComing.push({
+                            key: productsWithFiles[j].products.key,
+                            checkNumberProducts: productsWithFiles[j].products.checkNumberProducts,
+                            noOfProducts: productsWithFiles[j].products.noOfProducts,
+                            priceType: productsWithFiles[j].products.priceType,
+                            rangeStart: productsWithFiles[j].products.rangeStart,
+                            rangeEnd: productsWithFiles[j].products.rangeEnd,
+                            data: result.data,
+                        });
 
-                    allHeaders.push({
-                        key: productsWithFiles[j].products.key,
-                        headers: result.headers,
-                    });
+                        allHeaders.push({
+                            key: productsWithFiles[j].products.key,
+                            headers: result.headers,
+                        });
+
+                    }
                 }
-
                 const errorMessages = allHeaders
                     .filter((headerObj) => headerObj.headers.length !== 8)
                     .map((headerObj) => ({
@@ -309,7 +322,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         if (!obj.data || typeof obj.data !== "object") {
                             return false; // 'data' should be an object
                         }
-
                         const orderFileData = obj.data.map(item => {
                             const keys = Object.keys(item);
                             return {
@@ -523,9 +535,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     }
                 }
             }
-
-
-
             res.send({
                 code: constant.successCode,
                 message: "SuccessfileName!",
