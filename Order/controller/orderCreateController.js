@@ -1615,6 +1615,15 @@ exports.editFileCase = async (req, res) => {
                         });
                         if (priceObj.length > 0) {
                             priceObj.map((obj, index) => {
+                                //check Purchase date is valid or not
+                                if (!isValidDate(obj.purchaseDate)) {
+                                    message.push({
+                                        code: constant.errorCode,
+                                        key: obj.key,
+                                        message: `Purchase date should be in the format MM/DD/YYYY `
+                                    });
+                                    return;
+                                }
                                 if (isNaN(obj.retailValue) || obj.retailValue < 0) {
                                     {
                                         message.push({
