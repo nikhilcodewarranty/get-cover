@@ -1733,6 +1733,14 @@ exports.getDashboardInfo = async (req, res) => {
   })
 }
 
+const checkCustomerEmail = async(data)=>{
+  try{
+    let checkEmail = await userService.check
+  }catch(err){
+    return {code:constant.errorCode,message:err.message}
+  }
+}
+
 // create customer with multiple dealer
 exports.createCustomerNew = async (req, res, next) => {
   try {
