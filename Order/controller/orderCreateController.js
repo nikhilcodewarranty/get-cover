@@ -241,6 +241,14 @@ exports.checkFileValidation = async (req, res) => {
 exports.checkMultipleFileValidation = async (req, res) => {
     try {
         upload(req, res, async (err) => {
+            // console.log("files+++++++++++++++",req.files)
+            // if (req.files.length == 0) {
+            //     res.send({
+            //         code: constant.successCode,
+            //         message: "Success"
+            //     })
+            //     return
+            // }
             let data = req.body;
             if (data.productsArray.length > 0) {
                 let fileIndex = 0;
@@ -271,10 +279,8 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 let finalRetailValue = [];
                 const headers = [];
                 //Collect all header length for all csv
-                console.log("productsWithFiles-----------------", productsWithFiles)
                 for (let j = 0; j < productsWithFiles.length; j++) {
-                    if (productsWithFiles[j].products.file != undefined) {
-                        console.log("i am here for length")
+                    if (productsWithFiles[j].file != undefined) {
                         const bucketReadUrl = productsWithFiles[j].products.file
                         // Await the getObjectFromS3 function to complete
                         const result = await getObjectFromS3(bucketReadUrl);
@@ -409,8 +415,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             }
                         } else {
                             if (parseInt(obj.noOfProducts) != obj.data.length) {
-                                console.log("I am here", obj.noOfProducts)
-                                console.log("I am length", obj.data.length)
                                 // Handle case where 'noOfProducts' doesn't match the length of 'data'
                                 message.push({
                                     code: constant.errorCode,
@@ -784,26 +788,6 @@ const getObjectFromS3 = (bucketReadUrl) => {
     });
 };
 
-function isValidDate(dateString) {
-    // Check the format with a regular expression
-    const regex = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/;
-
-    if (!regex.test(dateString)) {
-        return false;
-    }
-
-    // Parse the date parts to integers
-    const [month, day, year] = dateString.split("/").map(Number);
-
-    // Check if the date is valid using the Date object
-    const date = new Date(year, month - 1, day);
-
-    // Check if the date parts match the parsed date
-    return date.getFullYear() === year &&
-        date.getMonth() === month - 1 &&
-        date.getDate() === day;
-}
-
 
 
 
@@ -1144,15 +1128,6 @@ exports.createOrder1 = async (req, res) => {
                     let labourWarrantyMonth = Number(data.labourWarranty ? data.labourWarranty : 0)
 
                     dateCheck = new Date(dateCheck.setDate(dateCheck.getDate() + Number(adhDays)))
-                    if (!isValidDate(data.purchaseDate)) {
-                        res.send({
-                            code: constant.successCode,
-                            message: `All date should be in the format MM/DD/YYYY , order has been created please update the file in edit order to create the contracts `
-                        })
-                        return
-                    }
-
-
                     let p_date = new Date(data.purchaseDate)
                     let p_date1 = new Date(data.purchaseDate)
                     let l_date = new Date(data.purchaseDate)
