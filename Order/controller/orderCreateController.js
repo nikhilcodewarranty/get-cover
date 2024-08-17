@@ -786,7 +786,12 @@ const getObjectFromS3 = (bucketReadUrl) => {
             if (err) {
                 reject(err);
             } else {
-                const wb = XLSX.read(data.Body, { type: 'buffer' });
+                const wb = XLSX.read(data.Body,{
+                    type: 'buffer',
+                    cellDates: true,
+                    cellNF: false,
+                    cellText: false
+                  });
                 const sheetName = wb.SheetNames[0];
                 const sheet = wb.Sheets[sheetName];
                 let headers = [];
