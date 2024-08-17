@@ -327,6 +327,9 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 purchaseDate: item[keys[7]],
                             };
                         });
+                        console.log("checking file data+++++++++++++++++", obj.data)
+
+
                         orderFileData.forEach((fileData) => {
                             let brand = fileData.brand.toString().replace(/\s+/g, ' ').trim()
                             let serial = fileData.serial.toString().replace(/\s+/g, ' ').trim()
