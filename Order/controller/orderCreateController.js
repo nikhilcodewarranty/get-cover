@@ -784,6 +784,29 @@ const getObjectFromS3 = (bucketReadUrl) => {
     });
 };
 
+function isValidDate(dateString) {
+    // Check the format with a regular expression
+    const regex = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/;
+
+    if (!regex.test(dateString)) {
+        return false;
+    }
+
+    // Parse the date parts to integers
+    const [month, day, year] = dateString.split("/").map(Number);
+
+    // Check if the date is valid using the Date object
+    const date = new Date(year, month - 1, day);
+
+    // Check if the date parts match the parsed date
+    return date.getFullYear() === year &&
+        date.getMonth() === month - 1 &&
+        date.getDate() === day;
+}
+
+
+
+
 // Create Order
 exports.createOrder1 = async (req, res) => {
     try {
@@ -1121,6 +1144,14 @@ exports.createOrder1 = async (req, res) => {
                     let labourWarrantyMonth = Number(data.labourWarranty ? data.labourWarranty : 0)
 
                     dateCheck = new Date(dateCheck.setDate(dateCheck.getDate() + Number(adhDays)))
+                    if (!isValidDate(data.purchaseDate)) {
+                        res.send({
+                            code: constant.errorCode,
+                            message: `All date should be in the format MM/DD/YYYY `
+                        })
+                    }
+
+
                     let p_date = new Date(data.purchaseDate)
                     let p_date1 = new Date(data.purchaseDate)
                     let l_date = new Date(data.purchaseDate)
