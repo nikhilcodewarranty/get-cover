@@ -1084,6 +1084,7 @@ exports.createOrder1 = async (req, res) => {
                 );
 
                 const totalDataComing1 = result.data
+                console.log("checking file data+++++++++++++++++++++++++++++++++", totalDataComing1)
                 const totalDataComing = totalDataComing1.map((item) => {
                     const keys = Object.keys(item);
                     return {
