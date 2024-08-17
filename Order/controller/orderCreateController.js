@@ -444,6 +444,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         if (priceObj.length > 0) {
                             priceObj.map((obj, index) => {
                                 //check Purchase date is valid or not
+                                console.log("date check ak ++++++++++++++++++++++", obj)
                                 if (!isValidDate(obj.purchaseDate)) {
                                     message.push({
                                         code: constant.errorCode,
