@@ -327,6 +327,9 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 purchaseDate: item[keys[7]],
                             };
                         });
+                        console.log("checking file data+++++++++++++++++", obj.data)
+
+
                         orderFileData.forEach((fileData) => {
                             let brand = fileData.brand.toString().replace(/\s+/g, ' ').trim()
                             let serial = fileData.serial.toString().replace(/\s+/g, ' ').trim()
@@ -444,6 +447,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         if (priceObj.length > 0) {
                             priceObj.map((obj, index) => {
                                 //check Purchase date is valid or not
+                                console.log("date check ak ++++++++++++++++++++++", obj)
                                 if (!isValidDate(obj.purchaseDate)) {
                                     message.push({
                                         code: constant.errorCode,
