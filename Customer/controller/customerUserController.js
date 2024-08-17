@@ -1733,6 +1733,7 @@ exports.getDashboardInfo = async (req, res) => {
   })
 }
 
+// create customer with multiple dealer
 exports.createCustomerNew = async (req, res, next) => {
   try {
     let data = req.body;
@@ -1854,6 +1855,7 @@ exports.createCustomerNew = async (req, res, next) => {
       } else {
         let customerMeta = checkEmail.customerData
         customerMeta.push(memberObject.customerData[0])
+        let updateCustomerData = await userService.updateUser({ email: emailToCheck }, { customerData: customerMeta }, { new: true })
       }
     }
 

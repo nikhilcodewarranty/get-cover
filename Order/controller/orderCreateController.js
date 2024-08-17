@@ -238,14 +238,6 @@ exports.checkFileValidation = async (req, res) => {
 exports.checkMultipleFileValidation = async (req, res) => {
     try {
         upload(req, res, async (err) => {
-            console.log("files+++++++++++++++",req.files)
-            if (req.files.length == 0) {
-                res.send({
-                    code: constant.successCode,
-                    message: "Success"
-                })
-                return
-            }
             let data = req.body;
             if (data.productsArray.length > 0) {
                 let fileIndex = 0;
@@ -726,7 +718,7 @@ async function generateTC(orderData) {
             //Read from the s3 bucket
             const data = await S3.getObject(params).promise();
             let attachment = data.Body.toString('base64');
-           
+
             //sendTermAndCondition
             // Send Email code here
             let notificationEmails = await supportingFunction.getUserEmails();
@@ -738,7 +730,7 @@ async function generateTC(orderData) {
                 subject: 'Order Term and Condition-' + checkOrder.unique_key,
             }
             let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
-          
+
         })
         return 1
 
@@ -1089,6 +1081,7 @@ exports.createOrder1 = async (req, res) => {
                 );
 
                 const totalDataComing1 = result.data
+                console.log("checking file data+++++++++++++++++++++++++++++++++", totalDataComing1)
                 const totalDataComing = totalDataComing1.map((item) => {
                     const keys = Object.keys(item);
                     return {
