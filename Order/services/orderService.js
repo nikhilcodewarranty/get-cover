@@ -38,7 +38,7 @@ module.exports = class orderService {
     }
   }
 
-  // Get order with contract with unique key number
+  // Get order with contract with unique key number 
   static async getOrderWithContract1(query, skipLimit, limitData) {
     try {
       const allOrders = await order.aggregate(query).sort({ updatedAt: -1 }).skip(skipLimit).limit(limitData)
