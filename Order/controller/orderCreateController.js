@@ -271,7 +271,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 let finalRetailValue = [];
                 const headers = [];
                 //Collect all header length for all csv
-                console.log("productsWithFiles-----------------",productsWithFiles)
+                console.log("productsWithFiles-----------------", productsWithFiles)
                 for (let j = 0; j < productsWithFiles.length; j++) {
                     if (productsWithFiles[j].flag == 'true') {
                         console.log("i am here for length")
@@ -409,8 +409,8 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             }
                         } else {
                             if (parseInt(obj.noOfProducts) != obj.data.length) {
-                                console.log("I am here",obj.noOfProducts)
-                                console.log("I am length",obj.data.length)
+                                console.log("I am here", obj.noOfProducts)
+                                console.log("I am length", obj.data.length)
                                 // Handle case where 'noOfProducts' doesn't match the length of 'data'
                                 message.push({
                                     code: constant.errorCode,
@@ -1146,9 +1146,10 @@ exports.createOrder1 = async (req, res) => {
                     dateCheck = new Date(dateCheck.setDate(dateCheck.getDate() + Number(adhDays)))
                     if (!isValidDate(data.purchaseDate)) {
                         res.send({
-                            code: constant.errorCode,
-                            message: `All date should be in the format MM/DD/YYYY `
+                            code: constant.successCode,
+                            message: `All date should be in the format MM/DD/YYYY , order has been created please update the file in edit order to create the contracts `
                         })
+                        return
                     }
 
 
