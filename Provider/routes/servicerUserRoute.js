@@ -3,6 +3,7 @@ const router = express.Router();
 const validator = require('../config/validation'); // validation handler as a middleware
 const servicerController = require("../controller/servicerController");
 const { verifyToken } = require('../../middleware/auth'); // authentication with jwt as middleware
+const supportingFunction = require("../../config/supportingFunction");
 
 // POST routes
 router.post("/getServicerUsers", [verifyToken], servicerController.getServicerUsers); // get servicer users
@@ -20,6 +21,6 @@ router.get("/getServicerDetail", [verifyToken], servicerController.getServicerDe
 router.get("/getDashboardData", [verifyToken], servicerController.getDashboardData); // get dashboard data
 router.get("/getDashboardGraph", [verifyToken], servicerController.getDashboardGraph); // get dashboard graph
 router.get("/getDashboardInfo", [verifyToken], servicerController.getDashboardInfo); // get dashboard info
-router.get("/getUserId/:userId", [verifyToken], servicerController.getUserId); // get user by ID
+router.get("/getUserId/:userId", [verifyToken], supportingFunction.checkObjectId,servicerController.getUserId); // get user by ID
 
 module.exports = router;
