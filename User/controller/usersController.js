@@ -101,7 +101,7 @@ exports.validateData = async (req, res) => {
     });
     return
   }
-
+ 
   // Check if the specified role exists
   const checkRole = await role.findOne({ role: { '$regex': data.role, '$options': 'i' } });
   if (!checkRole) {
