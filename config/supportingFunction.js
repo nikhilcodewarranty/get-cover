@@ -65,22 +65,29 @@ exports.checkObjectId = async (req, res, next) => {
         function isValidObjectId(id) {
             return mongoose.Types.ObjectId.isValid(id);
         }
-        if (!isValidObjectId(req.params.resellerId)) {
-            res.send({
-                code: 401,
-                message: "Invalid resellerId sdfsdfsdfs"
-            })
-            return
+
+        const keys = Object.keys(req.params);
+
+        for (const key of keys) {
+            const paramValue = req.params[key];
+
+            if (!isValidObjectId(paramValue)) {
+                res.send({
+                    code: 401,
+                    message: "Invalid ID"
+                });
+                return
+            }
         }
-        next()
+
+        next();
     } catch (err) {
-        res.send({
+        return res.status(401).send({
             code: 401,
             message: err.message
-        })
+        });
     }
 }
-
 
 
 

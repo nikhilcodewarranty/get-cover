@@ -4,13 +4,14 @@ const resellerController = require("../controller/resellerUserController");
 const resellerUserGetController = require("../controller/resellerUserGet");
 const { verifyToken } = require('../../middleware/auth'); // authentication with jwt as middleware
 const validator = require('../config/validation');
+const supportingFunction = require('../../config/supportingFunction')
 
 router.post('/createReseller', [verifyToken], validator('create_reseller'), resellerController.createReseller); // create reseller
 router.post("/addResellerUser", [verifyToken], resellerController.addResellerUser); // add reseller user
 router.post("/changeResellerStatus", [verifyToken], resellerController.changeResellerStatus); // change reseller status
 router.post("/create-customer", [verifyToken], validator('create_customer'), [verifyToken], resellerController.createCustomer); // create customer
 router.post('/createOrder', [verifyToken], resellerController.createOrder); // create order
-router.post('/editOrderDetail/:orderId', [verifyToken], resellerController.editOrderDetail); // edit order detail
+router.post('/editOrderDetail/:orderId', [verifyToken], supportingFunction.checkObjectId, resellerController.editOrderDetail); // edit order detail
 router.post('/saleReporting', [verifyToken], resellerController.saleReporting); // sale reporting
 router.post('/claimReporting', [verifyToken], resellerController.claimReporting); // claim reporting
 router.post('/saleReportinDropDown', [verifyToken], resellerController.saleReportinDropDown); // sale reporting dropdown
@@ -20,8 +21,8 @@ router.put("/editResellers", [verifyToken], resellerController.editResellers); /
 
 router.post('/getAllResellers', [verifyToken], resellerUserGetController.getAllResellers); // get all resellers
 router.post("/getResellerServicers", [verifyToken], resellerUserGetController.getResellerServicers); // get reseller servicers
-router.post("/getResellerByDealerId/:dealerId", [verifyToken], resellerUserGetController.getResellerByDealerId); // get reseller by dealer ID
-router.post("/getResselerByCustomer/:customerId", [verifyToken], resellerUserGetController.getResselerByCustomer); // get reseller by customer ID
+router.post("/getResellerByDealerId/:dealerId", [verifyToken], supportingFunction.checkObjectId, resellerUserGetController.getResellerByDealerId); // get reseller by dealer ID
+router.post("/getResselerByCustomer/:customerId", [verifyToken], supportingFunction.checkObjectId, resellerUserGetController.getResselerByCustomer); // get reseller by customer ID
 router.post("/getResellerClaims", [verifyToken], resellerUserGetController.getResellerClaims); // get reseller claims
 router.post("/getResellerCustomers", [verifyToken], resellerUserGetController.getResellerCustomers); // get reseller customers
 router.post('/getCustomerInOrder', [verifyToken], resellerUserGetController.getCustomerInOrder); // get customer in order
