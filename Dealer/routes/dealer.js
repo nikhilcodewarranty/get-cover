@@ -38,6 +38,6 @@ router.get("/dealerPriceBooks", [verifyToken], dealerSupportingController.getAll
 router.get("/getDealerPriceBookById/:dealerPriceBookId", [verifyToken], supportingFunction.checkObjectId, dealerSupportingController.getDealerPriceBookById); // get dealer price book by ID
 router.get("/getDealerPriceBookByDealerId/:dealerId", [verifyToken], supportingFunction.checkObjectId, dealerSupportingController.getDealerPriceBookByDealerId); // get dealer price book by dealer ID
 router.get("/getServicersList/:dealerId", [verifyToken], supportingFunction.checkObjectId, dealerSupportingController.getServicersList); // get servicers list
-
+ 
 
 module.exports = router;
