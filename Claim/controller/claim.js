@@ -1299,12 +1299,6 @@ exports.saveBulkClaim = async (req, res) => {
         dateNF: 'm"/"d"/"yyyy' 
         // <--- need dateNF in sheet_to_json options (note the escape chars)
       }
-      // const wb = XLSX.readFile(fileUrl, {
-      //   type: 'binary',
-      //   cellDates: true,
-      //   cellNF: false,
-      //   cellText: false
-      // });
       headerLength = result.headers
       if (headerLength.length !== 4) {
         res.send({
@@ -1314,7 +1308,6 @@ exports.saveBulkClaim = async (req, res) => {
         return
       }
 
-      //const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]], { defval: "" });
       const totalDataComing1 = result.data;
       let totalDataComing = totalDataComing1.map((item, i) => {
         const keys = Object.keys(item);
@@ -1357,7 +1350,6 @@ exports.saveBulkClaim = async (req, res) => {
           data.status = "Loss date cannot be empty"
           data.exit = true
         }
-        // data.lossDate = data.lossDate.split('-').join('/');
         const formats = [
           'MM/DD/YYYY',
           'MM-DD-YYYY'

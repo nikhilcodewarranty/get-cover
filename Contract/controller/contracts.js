@@ -92,7 +92,7 @@ exports.getContracts = async (req, res) => {
     }
 
     let orderIds = []
-    
+
     if (orderAndCondition.length > 0) {
       let getOrders = await orderService.getOrders({
         $and: orderAndCondition
@@ -282,7 +282,7 @@ exports.getContracts = async (req, res) => {
     })
 
   } catch (err) {
-     res.send({
+    res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -320,7 +320,7 @@ exports.editContract = async (req, res) => {
     //check if claim value is less then product value update eligibilty true
 
     if (!updateContracts) {
-       res.send({
+      res.send({
         code: constant.errorCode,
         message: "Unable to update the contract"
       })
@@ -332,7 +332,7 @@ exports.editContract = async (req, res) => {
       result: updateContracts
     })
   } catch (err) {
-     res.send({
+    res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -491,7 +491,7 @@ exports.getContractById = async (req, res) => {
 
     })
     if (!getData) {
-       res.send({
+      res.send({
         code: constant.errorCode,
         message: "Unable to get contract"
       })
@@ -503,7 +503,7 @@ exports.getContractById = async (req, res) => {
       result: getData[0]
     })
   } catch (err) {
-     res.send({
+    res.send({
       code: constant.errorCode,
       message: err.message + ":" + err.stack
     })
@@ -520,7 +520,7 @@ exports.deleteOrdercontractbulk = async (req, res) => {
       result: deleteContract
     })
   } catch (err) {
-     res.send({
+    res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -537,7 +537,6 @@ exports.cronJobEligible = async (req, res) => {
 
     while (hasMore) {
       const result = await contractService.findContracts2(query, limit, page);
-
       if (result.length === 0) {
         hasMore = false;
         break;
@@ -545,8 +544,6 @@ exports.cronJobEligible = async (req, res) => {
 
       let bulk = [];
       let contractIds = [];
-      let contractIdsToBeUpdate = [];
-      let contractIdToBeUpdate;
       let updateDoc;
       for (let i = 0; i < result.length; i++) {
         let product = result[i];
@@ -578,8 +575,8 @@ exports.cronJobEligible = async (req, res) => {
 
       // Fetch claims for contracts
       let checkClaim = await claimService.getClaims({ contractId: { $in: contractIds } });
+      //filter contracts id for open claims
       const openContractIds = checkClaim.filter(claim => claim.claimFile === 'Open').map(claim => claim.contractId);
-
       openContractIds.forEach(openContract => {
         bulk.push({
           'updateMany': {
@@ -593,7 +590,8 @@ exports.cronJobEligible = async (req, res) => {
       // Update when claim is open for contract
       await contractService.allUpdate(bulk);
       bulk = [];
-
+      //filter contracts id for closed claims
+      
       const notOpenContractIds = checkClaim.filter(claim => claim.claimFile !== 'Open').map(claim => claim.contractId);
 
       if (notOpenContractIds.length > 0) {
@@ -614,7 +612,8 @@ exports.cronJobEligible = async (req, res) => {
                 'upsert': false
               }
             });
-          } else {
+          }
+           else {
             bulk.push({
               'updateMany': {
                 'filter': { '_id': notOpenContractIds[j] },
@@ -636,7 +635,7 @@ exports.cronJobEligible = async (req, res) => {
     });
 
   } catch (err) {
-     res.send({
+    res.send({
       code: constant.errorCode,
       message: err.message
     });

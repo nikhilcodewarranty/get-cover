@@ -3,7 +3,6 @@ const router = express.Router(); // Express router
 const claimController = require("../controller/claim"); // claim controller
 const claimGetController = require("../controller/claimGet"); // claim get functions controller
 const { verifyToken } = require("../../middleware/auth"); // authentication with JWT as middleware
-
 // POST routes
 router.post("/searchClaim", [verifyToken], claimController.searchClaim); // search claim
 router.post("/s3Bucket", claimController.s3Bucket); // s3 bucket operations
