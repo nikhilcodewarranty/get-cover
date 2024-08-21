@@ -3,6 +3,7 @@ const router = express.Router(); // Express router
 const claimController = require("../controller/claim"); // claim controller
 const claimGetController = require("../controller/claimGet"); // claim get functions controller
 const { verifyToken } = require("../../middleware/auth"); // authentication with JWT as middleware
+const supportingFunction = require("../../config/supportingFunction");
 // POST routes
 router.post("/searchClaim", [verifyToken], claimController.searchClaim); // search claim
 router.post("/s3Bucket", claimController.s3Bucket); // s3 bucket operations
@@ -22,7 +23,7 @@ router.put("/editClaimStatus/:claimId", [verifyToken], claimController.editClaim
 router.put("/editServicer/:claimId", [verifyToken], claimController.editServicer); // edit servicer for a claim by ID
 //GET Routes
 router.get("/statusClaim", claimController.statusClaim); // get claim status
-router.get("/getContractById/:contractId", [verifyToken], claimGetController.getContractById); // get contract by ID
+router.get("/getContractById/:contractId", [verifyToken], supportingFunction.checkObjectId,claimGetController.getContractById); // get contract by ID
 router.get("/getMaxClaimAmount/:contractId", [verifyToken], claimGetController.getMaxClaimAmount); // get max claim amount by contract ID
 router.get("/getMessages/:claimId", [verifyToken], claimGetController.getMessages); // get messages for a claim
 

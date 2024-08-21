@@ -15,7 +15,7 @@ router.post('/getOrderContract/:orderId', [verifyToken], supportingFunction.chec
 //GET Routes
 router.get('/changePrimaryUser/:userId', [verifyToken], customerController.changePrimaryUser); // changePrimaryUser route
 router.get('/getCustomerById', [verifyToken], customerController.getCustomerById); // getCustomerById route
-router.get('/getContractById/:contractId', [verifyToken], customerController.getContractById); // getContractById route
+router.get('/getContractById/:contractId', [verifyToken], supportingFunction.checkObjectId,customerController.getContractById); // getContractById route
 router.get('/getOrderById/:orderId', [verifyToken], supportingFunction.checkObjectId,customerController.getSingleOrder); // getOrderById route
 router.get('/getDashboardData', [verifyToken], customerController.getDashboardData); // getDashboardData route
 router.get('/getCustomerDetails', [verifyToken], customerController.getCustomerDetails); // getCustomerDetails route

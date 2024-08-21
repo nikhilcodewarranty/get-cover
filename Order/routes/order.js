@@ -25,7 +25,7 @@ router.post('/getCustomerInOrder', [verifyToken], orderController.getCustomerInO
 router.post('/getCategoryAndPriceBooks/:dealerId', [verifyToken], orderController.getCategoryAndPriceBooks); // get category and price books by dealer ID
 router.post('/getPriceBooksInOrder/:dealerId', [verifyToken], orderController.getPriceBooksInOrder); // get price books in order by dealer ID
 router.put('/updateServicerByOrder/:orderId', [verifyToken], orderController.updateServicerByOrder); // update servicer by order ID
-router.get('/getOrderById/:orderId', [verifyToken], orderController.getSingleOrder); // get order by ID
+router.get('/getOrderById/:orderId', [verifyToken],supportingFunction.checkObjectId, orderController.getSingleOrder); // get order by ID
 router.get('/markAsPaid/:orderId', [verifyToken], orderController.markAsPaid); // mark order as paid
 router.get('/getServiceCoverage/:dealerId', [verifyToken], orderController.getServiceCoverage); // get service coverage by dealer ID
 
