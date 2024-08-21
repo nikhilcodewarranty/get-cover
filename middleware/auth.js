@@ -14,7 +14,7 @@ verifyToken = async (req, res, next) => {
       if (err) {
         res.send({
           'status': 400,
-          Message: "auth token verification failed"
+          Message: "auth token verification failed",err
         })
         return
       }

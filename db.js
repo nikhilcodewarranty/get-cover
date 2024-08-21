@@ -24,13 +24,6 @@ const makeNewConnection = (uri) => {
     return db;
 }
 
-// //db's connection strings
-// const userConnection = makeNewConnection(`${process.env.DB_URL}getcover_test`); //getcover_test database 
-// const userConnection = makeNewConnection(`${process.env.DB_URL}getcover_test`); // dealer database
-// const userConnection = makeNewConnection(`${process.env.DB_URL}getcover_test`); //service provider database
-// const orderConnection = makeNewConnection(`${process.env.DB_URL}getcover_test`); // order database
-// const claimConnection = makeNewConnection(`${process.env.DB_URL}getcover_test`); // claim database 
-// const CustomerConnection = makeNewConnection(`${process.env.DB_URL}getcover_test`); // claim database 
 
 const userConnection = makeNewConnection(`${process.env.DB_URL}` + process.env.dbName); //user database 
 const reportingConnection = makeNewConnection(`${process.env.DB_URL}` + process.env.reportingDbName); // reporting database 

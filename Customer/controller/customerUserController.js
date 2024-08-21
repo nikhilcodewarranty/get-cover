@@ -1733,216 +1733,48 @@ exports.getDashboardInfo = async (req, res) => {
   })
 }
 
-// create customer with multiple dealer
-exports.createCustomerNew = async (req, res, next) => {
+const checkCustomerEmail = async (data) => {
   try {
-    let data = req.body;
-    data.accountName = data.accountName.trim().replace(/\s+/g, ' ');
-    let getCount = await customerService.getCustomersCount({})
-    data.unique_key = getCount[0] ? getCount[0].unique_key + 1 : 1
-
-    // check dealer ID
-    let checkDealer = await dealerService.getDealerByName({ _id: data.dealerName }, {});
-    let IDs = await supportingFunction.getUserIds()
-    if (!checkDealer) {
-      res.send({
-        code: constant.errorCode,
-        message: "Invalid dealer"
-      })
-      return;
-    };
-
-    // check reseller valid or not
-    if (data.resellerName && data.resellerName != "") {
-      var checkReseller = await resellerService.getReseller({ _id: data.resellerName }, {})
-      if (!checkReseller) {
-        res.send({
-          code: constant.errorCode,
-          message: "Invalid Reseller."
-        })
-        return;
-      }
-
-    }
-
-    // check customer acccount name 
-    let checkAccountName = await customerService.getCustomerByName({
-      username: new RegExp(`^${data.accountName}$`, 'i'), dealerId: data.dealerName
-    });
-
-    let checkCustomerEmail = await userService.findOneUser({ email: data.email });
-    if (checkCustomerEmail) {
-      res.send({
-        code: constant.errorCode,
-        message: "Primary user email already exist"
-      })
-      return;
-    }
-
-    let customerObject = {
-      username: data.accountName,
-      street: data.street,
-      city: data.city,
-      isAccountCreate: data?.isAccountCreate ? data.isAccountCreate : data.status,
-      dealerId: checkDealer._id,
-      resellerId: checkReseller ? checkReseller._id : null,
-      resellerId1: checkReseller ? checkReseller._id : null,
-      zip: data.zip,
-      state: data.state,
-      country: data.country,
-      status: data.status,
-      unique_key: data.unique_key,
-      accountStatus: "Approved",
-      dealerName: checkDealer.name,
-    }
-
+    let data = req.body
     let teamMembers = data.members
-    const emailSet = new Set();
-    let isDuplicate = false;
-    let emailsToCheck = teamMembers.map(member => member.email);
-    let queryEmails = { email: { $in: emailsToCheck } };
-    let checkEmails = await customerService.getAllCustomers(queryEmails, {});
-
-    if (checkEmails.length > 0) {
-      res.send({
-        code: constant.errorCode,
-        message: "Some email ids already exist"
-      })
-    }
-    const createdCustomer = await customerService.createCustomer(customerObject);
-    if (!createdCustomer) {
-      //Save Logs create Customer
-      let logData = {
-        userId: req.userId,
-        endpoint: "/create-customer",
-        body: data,
-        response: {
-          code: constant.errorCode,
-          message: createdCustomer
-        }
-      }
-      await LOG(logData).save()
-
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to create the customer"
-      })
-      return;
-    };
-
-    teamMembers = teamMembers.map(member => ({ ...member, accountId: createdCustomer._id, status: !data.status ? false : member.status, metaId: createdCustomer._id, roleId: process.env.customer }));
-
     for (let m = 0; m < teamMembers.length; m++) {
       let emailToCheck = teamMembers[m].email
       let checkEmail = await userService.getUserById1({ email: emailToCheck, roleId: process.env.customer })
-      let memberObject = {
-        email: teamMembers[m].email,
-        customerData: [
-          {
-            accountId: createdCustomer._id,
-            status: teamMembers[m].status,
-            metaId: createdCustomer._id,
-            roleId: process.env.customer,
-            firstName: teamMembers[m].firstName,
-            lastName: teamMembers[m].lastName,
-            phoneNumber: teamMembers[m].phoneNumber,
-            isPrimary: teamMembers[m].isPrimary,
+      if (checkEmail) {
+        if (data.resellerId != "") {
+          let resellerIds = checkEmail.customerData.map(ID => ID.resellerId.toString())
+          let dealerIds = checkEmail.customerData.map(ID => ID.dealerId.toString())
+
+          const includesAny = (arr, values) => values.some(v => arr.includes(v));
+
+
+          if (includesAny(resellerIds, [data.resellerId]) && includesAny(dealerIds, [data.dealerId])) {
+            return {
+              code: constant.errorCode, message: "Email alrady exist with same dealer and reseller"
+            }
           }
-        ]
-      }
-      if (!checkEmail) {
-        let createCustomerData = await userService.createUser(memberObject)
-      } else {
-        let customerMeta = checkEmail.customerData
-        customerMeta.push(memberObject.customerData[0])
-        let updateCustomerData = await userService.updateUser({ email: emailToCheck }, { customerData: customerMeta }, { new: true })
-      }
-    }
+        } else {
+          let dealerIds = checkEmail.customerData.map(ID => ID.dealerId.toString())
 
-    // create members account 
-    let saveMembers = await userService.insertManyUser(teamMembers)
+          const includesAny = (arr, values) => values.some(v => arr.includes(v));
 
-    // Primary User Welcoime email
-    let notificationEmails = await supportingFunction.getUserEmails();
-    let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
-    let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkReseller?._id, isPrimary: true })
-    IDs.push(resellerPrimary?._id)
-
-    notificationEmails.push(getPrimary.email)
-    notificationEmails.push(resellerPrimary?.email)
-    //SEND EMAIL
-    let emailData = {
-      senderName: getPrimary.firstName,
-      content: "We are delighted to inform you that the customer account for " + createdCustomer.username + " has been created.",
-      subject: "Customer Account Created - " + createdCustomer.username
-    }
-
-    // Send Email code here
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
-
-    if (saveMembers.length > 0) {
-      if (data.status) {
-        for (let i = 0; i < saveMembers.length; i++) {
-          if (saveMembers[i].status) {
-            let email = saveMembers[i].email
-            let userId = saveMembers[i]._id
-            let resetPasswordCode = randtoken.generate(4, '123456789')
-            let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
-            let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-            const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { flag: "created", link: resetLink, subject: "Set Password", role: "Customer", servicerName: saveMembers[i].firstName }))
-
+          if (includesAny(dealerIds, [data.dealerId])) {
+            return {
+              code: constant.errorCode, message: "Email alrady exist with same dealer"
+            }
           }
 
         }
       }
     }
-
-    //Send Notification to customer,admin,reseller,dealer 
-    IDs.push(getPrimary._id)
-    let notificationData = {
-      title: "New Customer Created",
-      description: data.accountName + " " + "customer account has been created successfully!",
-      userId: req.teammateId,
-      flag: 'customer',
-      notificationFor: IDs
-    };
-
-    let createNotification = await userService.createNotification(notificationData);
-    //Save Logs create Customer
-    let logData = {
-      userId: req.userId,
-      endpoint: "/create-customer",
-      body: data,
-      response: {
-        code: constant.successCode,
-        message: "Customer created successfully",
-        result: data
-      }
-    }
-    await LOG(logData).save()
-
-    res.send({
-      code: constant.successCode,
-      message: "Customer created successfully",
-      result: createdCustomer
-    })
   } catch (err) {
-    //Save Logs create Customer
-    let logData = {
-      userId: req.userId,
-      endpoint: "/create-customer catch",
-      body: req.body ? req.body : { "type": "Catch Error" },
-      response: {
-        code: constant.errorCode,
-        message: err.message
-      }
-    }
-    await LOG(logData).save()
-
-    res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
+    return { code: constant.errorCode, message: err.message }
   }
-};
+}
+
+
+
+
+
+
 

@@ -16,7 +16,9 @@ const role = require("../model/role");
 const constant = require('../../config/constant');
 const emailConstant = require('../../config/emailConstant');
 const multer = require('multer');
-const path = require('path'); 
+const AWS = require('aws-sdk');
+const fs = require('fs');
+const path = require('path');
 // Promisify fs.createReadStream for asynchronous file reading
 const logs = require('../../User/model/logs');
 const customerService = require("../../Customer/services/customerService");
@@ -708,7 +710,7 @@ exports.resetPassword = async (req, res) => {
         message: "Link has been expired"
       })
       return;
-    }; 
+    };
     let hash = await bcrypt.hashSync(data.password, 10);
     let newValues = {
       $set: {
@@ -1356,6 +1358,44 @@ exports.checkIdAndToken = async (req, res) => {
       code: constant.successCode,
       message: "Verified"
     })
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+
+//get s3 bucket file
+
+AWS.config.update({
+  accessKeyId: process.env.aws_access_key_id,
+  secretAccessKey: process.env.aws_secret_access_key,
+  region: process.env.region
+});
+
+const S3FILE = new AWS.S3();
+
+exports.downloadFile = async (req, res) => {
+  try {
+    console.log("ksjdfskdf")
+    const bucketName = process.env.bucket_name
+    const key = "orderFile/file-1723638930538.xlsx"
+    const params = {
+      Bucket: bucketName,
+      Key: key
+    };
+    const s3Object = await S3FILE.getObject(params).promise();
+
+    // Set the headers to trigger a download in the browser
+    res.setHeader('Content-Disposition', `attachment; filename="${key.split('/').pop()}"`);
+    res.setHeader('Content-Type', s3Object.ContentType);
+
+    // Send the file data to the client
+    console.log("check++++++++================",s3Object.Body)
+    res.send(s3Object.Body);
+
   } catch (err) {
     res.send({
       code: constant.errorCode,

@@ -25,8 +25,6 @@ router.get("/readAllNotification", [verifyToken], userController.readAllNotifica
 router.get("/readNotification/:notificationId", [verifyToken], userController.readNotification); // read notification by ID
 router.get("/getCountNotification", [verifyToken], userController.getCountNotification); // get notification count
 
-//-------------------- get api's endpoints--------------------------//
-
 router.post("/createSuperAdmin", userController.createSuperAdmin); // create super admin credentials
 router.post("/addMember", [verifyToken], userController.addMembers); // add member
 router.post("/getMembers", [verifyToken], userController.getMembers); // get members
@@ -43,6 +41,7 @@ router.put("/rejectDealer/:dealerId", [verifyToken], validator("approve_reject_d
 router.put("/updateUserData/:userId", [verifyToken], userController.updateUserData); // update user data
 router.put("/updateUser/:userId", [verifyToken], userController.updateUser); // update user
 router.post("/checkEmail", [verifyToken], validator("email_validation"), userController.checkEmail); // check email
+router.get("/downloadFile", userController.downloadFile); // check email
 router.post("/validateData", [verifyToken], userController.validateData); // validate data
 router.get("/checkToken", [verifyToken], userController.checkToken); // check token
 router.get("/getAccountInfo", [verifyToken], userController.getAccountInfo); // get account info

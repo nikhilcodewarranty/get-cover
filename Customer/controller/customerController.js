@@ -334,13 +334,9 @@ exports.getDealerCustomers = async (req, res) => {
     const queryReseller = { _id: { $in: resellerId } }
     const resellerData = await resellerService.getResellers(queryReseller, { isDeleted: 0 })
     let getPrimaryUser = await userService.findUserforCustomer(queryUser)
-    console.log("=4333333333333333333333")
     const result_Array = getPrimaryUser.map(item1 => {
-      console.log("=22222222222222222222222")
       const matchingItem = customers.find(item2 => item2._id.toString() === item1.metaId.toString());
-      console.log("=33333333333333333333333333")
       const matchingReseller = matchingItem ? resellerData.find(reseller => reseller._id?.toString() === matchingItem.resellerId?.toString()) : {};
-      console.log("=4444444444444444444444444444444444444")
       const order = ordersResult.find(order => order._id.toString() === item1.metaId.toString())
 
       if (matchingItem || order || matchingReseller) {
@@ -1823,5 +1819,306 @@ exports.customerClaims = async (req, res) => {
 }
 
 
+// -----------------------------------------add cutomer with multiple dealer code --------------------------------------------------------------------------------
+
+
+exports.createCustomerNew = async (req, res, next) => {
+  try {
+    console.log("api hitted")
+    let data = req.body;
+    data.accountName = data.accountName.trim().replace(/\s+/g, ' ');
+    let getCount = await customerService.getCustomersCount({})
+    data.unique_key = getCount[0] ? getCount[0].unique_key + 1 : 1
+
+    // check dealer ID
+    let checkDealer = await dealerService.getDealerByName({ _id: data.dealerName }, {});
+    let IDs = await supportingFunction.getUserIds()
+    if (!checkDealer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid dealer"
+      })
+      return;
+    };
+
+    // check reseller valid or not
+    if (data.resellerName && data.resellerName != "") {
+      var checkReseller = await resellerService.getReseller({ _id: data.resellerName }, {})
+      if (!checkReseller) {
+        res.send({
+          code: constant.errorCode,
+          message: "Invalid Reseller."
+        })
+        return;
+      }
+
+    }
+
+    // check customer acccount name 
+    let checkAccountName = await customerService.getCustomerByName({
+      username: new RegExp(`^${data.accountName}$`, 'i'), dealerId: data.dealerName
+    });
+
+    let checkCustomerEmail = await userService.findOneUser({ email: data.email });
+    // if (checkCustomerEmail) {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Primary user email already exist"
+    //   })
+    //   return;
+    // }
+
+    let customerObject = {
+      username: data.accountName,
+      street: data.street,
+      city: data.city,
+      isAccountCreate: data?.isAccountCreate ? data.isAccountCreate : data.status,
+      dealerId: checkDealer._id,
+      resellerId: checkReseller ? checkReseller._id : null,
+      resellerId1: checkReseller ? checkReseller._id : null,
+      zip: data.zip,
+      state: data.state,
+      country: data.country,
+      status: data.status,
+      unique_key: data.unique_key,
+      accountStatus: "Approved",
+      dealerName: checkDealer.name,
+    }
+
+    let teamMembers = data.members
+    const emailSet = new Set();
+    let isDuplicate = false;
+    let emailsToCheck = teamMembers.map(member => member.email);
+    let queryEmails = { email: { $in: emailsToCheck } };
+    let checkEmails = await customerService.getAllCustomers(queryEmails, {});
+
+    // if (checkEmails.length > 0) {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Some email ids already exist"
+    //   })
+    // }
+    const createdCustomer = await customerService.createCustomer(customerObject);
+    if (!createdCustomer) {
+      //Save Logs create Customer
+      let logData = {
+        userId: req.userId,
+        endpoint: "/create-customer",
+        body: data,
+        response: {
+          code: constant.errorCode,
+          message: createdCustomer
+        }
+      }
+      await LOG(logData).save()
+
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to create the customer"
+      })
+      return;
+    };
+
+    teamMembers = teamMembers.map(member => ({ ...member, accountId: createdCustomer._id, status: !data.status ? false : member.status, metaId: createdCustomer._id, roleId: process.env.customer }));
+
+    for (let m = 0; m < teamMembers.length; m++) {
+      let emailToCheck = teamMembers[m].email
+      let checkEmail = await userService.getUserById1({ email: emailToCheck, roleId: process.env.customer })
+      let memberObject = {
+        email: teamMembers[m].email,
+        roleId: process.env.customer,
+        customerData: [
+          {
+            accountId: createdCustomer._id,
+            status: teamMembers[m].status,
+            metaId: createdCustomer._id,
+            roleId: process.env.customer,
+            firstName: teamMembers[m].firstName,
+            lastName: teamMembers[m].lastName,
+            phoneNumber: teamMembers[m].phoneNumber,
+            isPrimary: teamMembers[m].isPrimary,
+          }
+        ]
+      }
+      if (!checkEmail) {
+        let createCustomerData = await userService.createUser(memberObject)
+      } else {
+        let customerMeta = checkEmail.customerData
+        customerMeta.push(memberObject.customerData[0])
+        let updateCustomerData = await userService.updateUser({ email: emailToCheck }, { customerData: customerMeta }, { new: true })
+      }
+    }
+
+    // create members account 
+    // let saveMembers = await userService.insertManyUser(teamMembers)
+
+    // Primary User Welcoime email
+    let notificationEmails = await supportingFunction.getUserEmails();
+    let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
+    let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkReseller?._id, isPrimary: true })
+    IDs.push(resellerPrimary?._id)
+
+    notificationEmails.push(getPrimary.email)
+    notificationEmails.push(resellerPrimary?.email)
+    //SEND EMAIL
+    let emailData = {
+      senderName: getPrimary.firstName,
+      content: "We are delighted to inform you that the customer account for " + createdCustomer.username + " has been created.",
+      subject: "Customer Account Created - " + createdCustomer.username
+    }
+
+    // Send Email code here
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+
+    // if (saveMembers.length > 0) {
+    //   if (data.status) {
+    //     for (let i = 0; i < saveMembers.length; i++) {
+    //       if (saveMembers[i].status) {
+    //         let email = saveMembers[i].email
+    //         let userId = saveMembers[i]._id
+    //         let resetPasswordCode = randtoken.generate(4, '123456789')
+    //         let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
+    //         let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
+    //         const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { flag: "created", link: resetLink, subject: "Set Password", role: "Customer", servicerName: saveMembers[i].firstName }))
+
+    //       }
+
+    //     }
+    //   }
+    // }
+
+    //Send Notification to customer,admin,reseller,dealer 
+
+    IDs.push(getPrimary._id)
+    let notificationData = {
+      title: "New Customer Created",
+      description: data.accountName + " " + "customer account has been created successfully!",
+      userId: req.teammateId,
+      flag: 'customer',
+      notificationFor: IDs
+    };
+
+    let createNotification = await userService.createNotification(notificationData);
+    //Save Logs create Customer
+    let logData = {
+      userId: req.userId,
+      endpoint: "/create-customer",
+      body: data,
+      response: {
+        code: constant.successCode,
+        message: "Customer created successfully",
+        result: data
+      }
+    }
+    await LOG(logData).save()
+
+    res.send({
+      code: constant.successCode,
+      message: "Customer created successfully",
+      result: createdCustomer
+    })
+  } catch (err) {
+    //Save Logs create Customer
+    let logData = {
+      userId: req.userId,
+      endpoint: "/create-customer catch",
+      body: req.body ? req.body : { "type": "Catch Error" },
+      response: {
+        code: constant.errorCode,
+        message: err.message
+      }
+    }
+    await LOG(logData).save()
+
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+};
+
+//get all customers
+exports.getAllCustomersNew = async (req, res, next) => {
+  try {
+    let data = req.body
+    let query = { isDeleted: false }
+    let projection = { __v: 0, firstName: 0, lastName: 0, email: 0, password: 0 }
+    const customers = await customerService.getAllCustomers(query, projection);
+    if (!customers) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the customer"
+      });
+      return;
+    };
+    const customersId = customers.map(obj => obj._id);
+    const customersOrderId = customers.map(obj => obj._id);
+    const queryUser = { customerData: { $elemMatch: { metaId: { $in: customersId } } }, isPrimary: true };
+
+    //Get Resselers
+    const resellerId = customers.map(obj => new mongoose.Types.ObjectId(obj.resellerId ? obj.resellerId : '61c8c7d38e67bb7c7f7eeeee'));
+    const queryReseller = { _id: { $in: resellerId } }
+    const resellerData = await resellerService.getResellers(queryReseller, { isDeleted: 0 })
+
+    let getPrimaryUser = await userService.findUserforCustomer(queryUser)
+
+    //Get customer Orders
+    let project = {
+      productsArray: 1,
+      dealerId: 1,
+      unique_key: 1,
+      servicerId: 1,
+      customerId: 1,
+      resellerId: 1,
+      paymentStatus: 1,
+      status: 1,
+      venderOrder: 1,
+      orderAmount: 1,
+    }
+
+    let orderQuery = { customerId: { $in: customersOrderId }, status: "Active" };
+
+    let ordersData = await orderService.getAllOrderInCustomers(orderQuery, project, "$customerId")
+
+    const result_Array = customers.map(customer => {
+      const matchingItem = getPrimaryUser.find(user => user.customerData.some(user1 => user1.metaId.toString() === customer._id.toString()))
+      const matchingReseller = customer.resellerId != null ? resellerData.find(reseller => reseller._id.toString() === customer.resellerId.toString()) : ''
+      const order = ordersData.find(order => order._id.toString() === customer._id.toString())
+      if (matchingItem || matchingReseller || order) {
+        return {
+          ...matchingItem ? matchingItem : {},
+          customerData: customer ? customer : {},
+          reseller: matchingReseller ? matchingReseller : {},
+          order: order ? order : {}
+        };
+      }
+
+    }).filter(item => item !== undefined);
+    let emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
+    let nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
+    let phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
+    let dealerRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
+    let resellerRegex = new RegExp(data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', 'i')
+    let filteredData = result_Array.filter(entry => {
+      return (
+        nameRegex.test(entry.customerData.username) &&
+        emailRegex.test(entry.email) &&
+        dealerRegex.test(entry.customerData.dealerName) &&
+        resellerRegex.test(entry.reseller?.name) &&
+        phoneRegex.test(entry.phoneNumber)
+      );
+    });
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: filteredData
+    })
+  } catch (err) {
+    res.send({
+      code: constant.successCode,
+      message: err.message,
+    })
+  }
+};
 
 
