@@ -27,7 +27,6 @@ const { S3Client } = require('@aws-sdk/client-s3');
 const { Upload } = require('@aws-sdk/lib-storage');
 const multerS3 = require('multer-s3');
 
-
 // s3 bucket connections
 const s3 = new S3Client({
   region: process.env.region,
@@ -102,7 +101,7 @@ exports.validateData = async (req, res) => {
     });
     return
   }
-
+ 
   // Check if the specified role exists
   const checkRole = await role.findOne({ role: { '$regex': data.role, '$options': 'i' } });
   if (!checkRole) {
@@ -220,7 +219,7 @@ exports.validateData = async (req, res) => {
   });
 }
 
-// Login User
+// Login User 
 exports.login = async (req, res) => {
   try {
     // Check if the user with the provided email exists
