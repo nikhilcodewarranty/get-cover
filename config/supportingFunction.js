@@ -74,7 +74,7 @@ exports.checkObjectId = async (req, res, next) => {
             if (!isValidObjectId(paramValue)) {
                 res.send({
                     code: 401,
-                    message: "invalid ID"
+                    message: "Invalid ID"
                 });
                 return
             }
