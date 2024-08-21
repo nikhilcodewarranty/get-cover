@@ -3,6 +3,7 @@ const router = express.Router();// Create a new router instance
 const customerController = require("../controller/customerController");// Import the customer controller module
 const { verifyToken } = require('../../middleware/auth'); // authentication with jwt as middleware
 const validator = require('../config/validation'); // Import the verifyToken middleware
+const supportingFunction = require("../../config/supportingFunction")
 
 //POST Routes
 router.post("/customer", [verifyToken], customerController.getAllCustomers); //  getAllCustomers route
@@ -18,7 +19,7 @@ router.post('/getCustomerContract/:customerId', [verifyToken], customerControlle
 router.put('/editCustomer/:customerId', [verifyToken], customerController.editCustomer); //editCustomer route
 //GET Routes
 router.get('/changePrimaryUser/:userId', [verifyToken], customerController.changePrimaryUser); //changePrimaryUser route
-router.get('/getCustomerById/:customerId', [verifyToken], customerController.getCustomerById); //getCustomerById route
+router.get('/getCustomerById/:customerId', [verifyToken], supportingFunction.checkObjectId,customerController.getCustomerById); //getCustomerById route
 router.get("/create-customer", [verifyToken], validator('createCustomerValidation'), [verifyToken], customerController.createCustomer); // createCustomer route
 
 
