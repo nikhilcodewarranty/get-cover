@@ -307,163 +307,183 @@ exports.getResellerByDealerId = async (req, res) => {
 
 //Get reseller by id
 exports.getResellerById = async (req, res) => {
-    let checkReseller = await resellerService.getResellers({ _id: req.params.resellerId }, { isDeleted: 0 });
-    if (!checkReseller[0]) {
-        res.send({
-            code: constant.errorCode,
-            message: 'Reseller not found'
-        })
-        return;
-    }
-    let checkDealerStatus = await dealerService.getDealerByName({ _id: checkReseller[0].dealerId })
-    const query1 = { metaId: { $in: [checkReseller[0]._id] }, isPrimary: true };
-    let resellerUser = await userService.getMembers(query1, { isDeleted: false })
-    if (!resellerUser) {
-        res.send({
-            code: constant.errorCode,
-            message: 'Primary user not found of this reseller'
-        })
-        return;
-    }
+    try {
 
-    let project = {
-        productsArray: 1,
-        dealerId: 1,
-        unique_key: 1,
-        servicerId: 1,
-        customerId: 1,
-        resellerId: 1,
-        paymentStatus: 1,
-        status: 1,
-        venderOrder: 1,
-        orderAmount: 1,
-    }
-    let orderQuery = {
-        $and: [
-            { resellerId: { $in: [checkReseller[0]._id] }, status: "Active" },
-        ]
-    }
-    let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project, "$resellerId");
-    //Get Claim Result 
-    const claimQuery = { claimFile: 'Completed' }
-    let lookupQuery = [
-        {
-            $match: claimQuery
-        },
-        {
-            $lookup: {
-                from: "contracts",
-                localField: "contractId",
-                foreignField: "_id",
-                as: "contracts",
-            }
-        },
-        {
-            $unwind: "$contracts"
-        },
-        {
-            $lookup: {
-                from: "orders",
-                localField: "contracts.orderId",
-                foreignField: "_id",
-                as: "contracts.orders",
-            },
+        function isValidObjectId(id) {
+            return mongoose.Types.ObjectId.isValid(id);
+        }
+        if (!isValidObjectId(req.params.resellerId)) {
+            res.send({
+                code: constant.errorCode,
+                message: "Invalid resellerId"
+            })
+            return
+        }
 
-        },
-        {
-            $unwind: "$contracts.orders"
-        },
-        {
-            $match:
+        let checkReseller = await resellerService.getResellers({ _id: req.params.resellerId }, { isDeleted: 0 });
+        if (!checkReseller[0]) {
+            res.send({
+                code: constant.errorCode,
+                message: 'Reseller not found'
+            })
+            return;
+        }
+        let checkDealerStatus = await dealerService.getDealerByName({ _id: checkReseller[0].dealerId })
+        const query1 = { metaId: { $in: [checkReseller[0]._id] }, isPrimary: true };
+        let resellerUser = await userService.getMembers(query1, { isDeleted: false })
+        if (!resellerUser) {
+            res.send({
+                code: constant.errorCode,
+                message: 'Primary user not found of this reseller'
+            })
+            return;
+        }
+
+        let project = {
+            productsArray: 1,
+            dealerId: 1,
+            unique_key: 1,
+            servicerId: 1,
+            customerId: 1,
+            resellerId: 1,
+            paymentStatus: 1,
+            status: 1,
+            venderOrder: 1,
+            orderAmount: 1,
+        }
+        let orderQuery = {
+            $and: [
+                { resellerId: { $in: [checkReseller[0]._id] }, status: "Active" },
+            ]
+        }
+        let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project, "$resellerId");
+        //Get Claim Result 
+        const claimQuery = { claimFile: 'Completed' }
+        let lookupQuery = [
             {
-                $and: [
-                    { "contracts.orders.resellerId": new mongoose.Types.ObjectId(req.params.resellerId) },
-                ]
+                $match: claimQuery
             },
-        },
-        {
-            "$group": {
-                "_id": "",
-                "totalAmount": {
-                    "$sum": {
-                        "$sum": "$totalAmount"
-                    }
+            {
+                $lookup: {
+                    from: "contracts",
+                    localField: "contractId",
+                    foreignField: "_id",
+                    as: "contracts",
+                }
+            },
+            {
+                $unwind: "$contracts"
+            },
+            {
+                $lookup: {
+                    from: "orders",
+                    localField: "contracts.orderId",
+                    foreignField: "_id",
+                    as: "contracts.orders",
+                },
+
+            },
+            {
+                $unwind: "$contracts.orders"
+            },
+            {
+                $match:
+                {
+                    $and: [
+                        { "contracts.orders.resellerId": new mongoose.Types.ObjectId(req.params.resellerId) },
+                    ]
                 },
             },
-
-        },
-    ]
-
-    let valueClaim = await claimService.getClaimWithAggregate(lookupQuery);
-    const rejectedQuery = { claimFile: { $ne: "Rejected" } }
-    //Get number of claims
-    let numberOfCompleletedClaims = [
-        {
-            $match: claimQuery
-        },
-        {
-            $lookup: {
-                from: "contracts",
-                localField: "contractId",
-                foreignField: "_id",
-                as: "contracts",
-            }
-        },
-        {
-            $unwind: "$contracts"
-        },
-        {
-            $lookup: {
-                from: "orders",
-                localField: "contracts.orderId",
-                foreignField: "_id",
-                as: "contracts.orders",
-            },
-
-        },
-        {
-            $unwind: "$contracts.orders"
-        },
-        {
-            $match:
             {
-                $and: [
-                    { "contracts.orders.resellerId": new mongoose.Types.ObjectId(req.params.resellerId) },
-                ]
+                "$group": {
+                    "_id": "",
+                    "totalAmount": {
+                        "$sum": {
+                            "$sum": "$totalAmount"
+                        }
+                    },
+                },
+
             },
-        },
-    ]
+        ]
 
-    let numberOfClaims = await claimService.getClaimWithAggregate(numberOfCompleletedClaims);
-    const claimData = {
-        numberOfClaims: numberOfClaims.length,
-        valueClaim: valueClaim[0]?.totalAmount
+        let valueClaim = await claimService.getClaimWithAggregate(lookupQuery);
+        const rejectedQuery = { claimFile: { $ne: "Rejected" } }
+        //Get number of claims
+        let numberOfCompleletedClaims = [
+            {
+                $match: claimQuery
+            },
+            {
+                $lookup: {
+                    from: "contracts",
+                    localField: "contractId",
+                    foreignField: "_id",
+                    as: "contracts",
+                }
+            },
+            {
+                $unwind: "$contracts"
+            },
+            {
+                $lookup: {
+                    from: "orders",
+                    localField: "contracts.orderId",
+                    foreignField: "_id",
+                    as: "contracts.orders",
+                },
+
+            },
+            {
+                $unwind: "$contracts.orders"
+            },
+            {
+                $match:
+                {
+                    $and: [
+                        { "contracts.orders.resellerId": new mongoose.Types.ObjectId(req.params.resellerId) },
+                    ]
+                },
+            },
+        ]
+
+        let numberOfClaims = await claimService.getClaimWithAggregate(numberOfCompleletedClaims);
+        const claimData = {
+            numberOfClaims: numberOfClaims.length,
+            valueClaim: valueClaim[0]?.totalAmount
+        }
+        const result_Array = resellerUser.map(user => {
+            let matchItem = checkReseller.find(reseller => reseller._id.toString() == user.metaId.toString());
+            let order = ordersResult.find(order => order._id.toString() === user.metaId.toString())
+            if (matchItem || order) {
+                return {
+                    ...user.toObject(),
+                    resellerData: matchItem.toObject(),
+                    orderData: order ? order : {},
+                    claimData: claimData
+                }
+            }
+            else {
+                return {
+                    ...user.toObject(),
+                    resellerData: {}
+                }
+            }
+        })
+
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            reseller: result_Array,
+            dealerStatus: checkDealerStatus.accountStatus
+        })
+
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
     }
-    const result_Array = resellerUser.map(user => {
-        let matchItem = checkReseller.find(reseller => reseller._id.toString() == user.metaId.toString());
-        let order = ordersResult.find(order => order._id.toString() === user.metaId.toString())
-        if (matchItem || order) {
-            return {
-                ...user.toObject(),
-                resellerData: matchItem.toObject(),
-                orderData: order ? order : {},
-                claimData: claimData
-            }
-        }
-        else {
-            return {
-                ...user.toObject(),
-                resellerData: {}
-            }
-        }
-    })
-
-    res.send({
-        code: constant.successCode,
-        message: "Success",
-        reseller: result_Array,
-        dealerStatus: checkDealerStatus.accountStatus
-    })
 
 
 }
@@ -950,8 +970,8 @@ exports.getResellerServicers = async (req, res) => {
 
         const servicerIds = servicer.map(obj => obj._id);
         // Get servicer with claim
-        const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "Completed",resellerId:new mongoose.Types.ObjectId(req.params.resellerId) };
-        const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "Completed",resellerId:new mongoose.Types.ObjectId(req.params.resellerId) };
+        const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "Completed", resellerId: new mongoose.Types.ObjectId(req.params.resellerId) };
+        const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "Completed", resellerId: new mongoose.Types.ObjectId(req.params.resellerId) };
         let claimAggregateQuery1 = [
             {
                 $match: servicerCompleted
