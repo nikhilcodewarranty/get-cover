@@ -63,8 +63,6 @@ var upload = multer({
     { name: "termCondition" },
 ])
 
-
-
 //Create Dealer by super admin
 exports.createDealer = async (req, res) => {
     try {
