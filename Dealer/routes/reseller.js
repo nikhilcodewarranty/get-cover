@@ -1,6 +1,7 @@
 
 const express = require("express");
 const router = express.Router();
+const supportingFunction = require('../../config/supportingFunction')
 const resellerController = require("../controller/resellerController");
 const { verifyToken } = require('../../middleware/auth'); // authentication with jwt as middleware
 const validator = require('../config/validation');
@@ -13,7 +14,7 @@ router.post("/addResellerUser", [verifyToken], resellerController.addResellerUse
 router.post("/getResselerByCustomer/:customerId", [verifyToken], resellerController.getResselerByCustomer) // Get a reseller by customer ID
 router.post("/changeResellerStatus/:resellerId", [verifyToken], resellerController.changeResellerStatus) // Change the status of a reseller
 router.post("/getResellerClaims/:resellerId", [verifyToken], resellerController.getResellerClaims) // Get claims for a reseller by reseller ID
-router.get("/getResellerById/:resellerId", [verifyToken], resellerController.getResellerById) // Get a reseller by reseller ID
+router.get("/getResellerById/:resellerId", [verifyToken],supportingFunction.checkObjectId, resellerController.getResellerById) // Get a reseller by reseller ID
 router.get("/getDealerByReseller/:resellerId", [verifyToken], resellerController.getDealerByReseller) // Get a dealer by reseller ID
 router.post("/getResellerPriceBook/:resellerId", [verifyToken], resellerController.getResellerPriceBook) // Get the price book for a reseller by reseller ID
 router.post("/getResellerUsers/:resellerId", [verifyToken], resellerController.getResellerUsers) // Get all users for a reseller by reseller ID
