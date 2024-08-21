@@ -60,5 +60,29 @@ exports.checkReporting = async (data) => {
     }
 }
 
+exports.checkObjectId = async (req, res, next) => {
+    try {
+        function isValidObjectId(id) {
+            return mongoose.Types.ObjectId.isValid(id);
+        }
+        if (!isValidObjectId(req.params.resellerId)) {
+            res.send({
+                code: 401,
+                message: "Invalid resellerId sdfsdfsdfs"
+            })
+            return
+        }
+        next()
+    } catch (err) {
+        res.send({
+            code: 401,
+            message: err.message
+        })
+    }
+}
+
+
+
+
 
 // module.exports = getUserIds;
