@@ -1,22 +1,20 @@
-const { serviceProvider } = require("../model/serviceProvider");
-const serviceResourceResponse = require("../utils/constant");
-const providerService = require("../services/providerService");
-const dealerRelationService = require("../../Dealer/services/dealerRelationService");
-const role = require("../../User/model/role");
-const claimService = require("../../Claim/services/claimService");
-const LOG = require('../../User/model/logs')
-
-const userService = require("../../User/services/userService");
-const moment = require("moment");
+const { serviceProvider } = require("../../models/Provider/serviceProvider");
+const providerService = require("../../services/Provider/providerService");
+const dealerRelationService = require("../../services/Dealer/dealerRelationService");
+const role = require("../../models/User/role");
+const claimService = require("../../services/Claim/claimService");
+const LOG = require('../../models/User/logs')
+const userService = require("../../services/User/userService");
 const constant = require('../../config/constant')
 const emailConstant = require('../../config/emailConstant');
+const dealerService = require("../../services/Dealer/dealerService");
+const supportingFunction = require('../../config/supportingFunction');
+const orderService = require("../../services/Order/orderService");
+const moment = require("moment");
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.sendgrid_key);
 const bcrypt = require("bcrypt");
-const dealerService = require("../../Dealer/services/dealerService");
 const mongoose = require('mongoose')
-const supportingFunction = require('../../config/supportingFunction');
-const orderService = require("../../Order/services/orderService");
 require("dotenv").config();
 const randtoken = require('rand-token').generator()
 
@@ -498,7 +496,7 @@ exports.getServicer = async (req, res) => {
       } else {
         return servicerData.toObject();
       }
-    }); 
+    });
 
     const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
     const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
@@ -1033,9 +1031,10 @@ exports.updateServiceProvide = async (req, res, next) => {
     }
     res.json(updatedServiceProvide);
   } catch (error) {
-    res
-      .status(serviceResourceResponse.serverError.statusCode)
-      .json({ error: "Internal server error" });
+    res.send({
+      code: constant.errorCode,
+      message: "Internal server error"
+    })
   }
 };
 

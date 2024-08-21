@@ -1,26 +1,23 @@
 require("dotenv").config();
+const dealerService = require('../../services/Dealer/dealerService')
+const priceBookService = require('../../services/PriceBook/priceBookService')
+const providerService = require('../../services/Provider/providerService')
+const reportingController = require("./reportingController");
+const orderService = require("../../services/Order/orderService");
+const claimService = require("../../services/Claim/claimService");
+const users = require("../../models/User/users");
+const role = require("../../models/User/role");
+const constant = require('../../config/constant');
+const emailConstant = require('../../config/emailConstant');
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey('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');
 const XLSX = require("xlsx");
-const userResourceResponse = require("../utils/constant");
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
-const dealerService = require('../../Dealer/services/dealerService')
-const uploadMiddleware = require('../../Dealer/middleware/uploadMiddleware')
-const priceBookService = require('../../PriceBook/services/priceBookService')
-const providerService = require('../../Provider/services/providerService')
-const users = require("../model/users");
-const role = require("../model/role");
-const constant = require('../../config/constant');
-const emailConstant = require('../../config/emailConstant');
 const mail = require("@sendgrid/mail");
 const multer = require('multer');
 const path = require('path');
 // Promisify fs.createReadStream for asynchronous file reading
-const logs = require('../../User/model/logs');
 const csvParser = require('csv-parser');
-const reportingController = require("./reportingController");
-const orderService = require("../../Order/services/orderService");
-const claimService = require("../../Claim/services/claimService");
 
 
 //Get Sales Reporting
@@ -29,7 +26,6 @@ exports.saleReporting = async (req, res) => {
 
     let bodyData = req.body
     bodyData.role = req.role
-
     bodyData.returnValue = {
       total_broker_fee: 1,
       total_admin_fee: 1,

@@ -1,28 +1,25 @@
 require("dotenv").config();
+const dealerRelationService = require("../../services/Dealer/dealerRelationService");
+const dealerService = require('../../services/Dealer/dealerService')
+const servicerService = require("../../services/Provider/providerService")
+const resellerService = require('../../services/Dealer/resellerService')
+const dealerPriceService = require('../../services/Dealer/dealerPriceService')
+const priceBookService = require('../../services/PriceBook/priceBookService')
+const providerService = require('../../services/Provider/providerService')
+const role = require("../../models/User/role");
+const constant = require('../../config/constant');
+const logs = require('../../models/User/logs');
+const orderService = require("../../services/Order/orderService");
+const REPORTING = require('../../models/Order/reporting');
+// const { message } = require("../../Dealer/validators/register_dealer");
+const claimService = require("../../services/Claim/claimService");
 const moment = require('moment')
 const mongoose = require('mongoose')
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.sendgrid_key);
 const XLSX = require("xlsx");
-const userResourceResponse = require("../utils/constant");
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
-const userService = require("../services/userService");
-const userMetaService = require("../services/userMetaService");
-const dealerRelationService = require("../../Dealer/services/dealerRelationService");
-const dealerService = require('../../Dealer/services/dealerService')
-const servicerService = require("../../Provider/services/providerService")
-const resellerService = require('../../Dealer/services/resellerService')
-const dealerPriceService = require('../../Dealer/services/dealerPriceService')
-const priceBookService = require('../../PriceBook/services/priceBookService')
-const providerService = require('../../Provider/services/providerService')
-const role = require("../model/role");
-const constant = require('../../config/constant');
 const mail = require("@sendgrid/mail");
-const logs = require('../../User/model/logs');
-const orderService = require("../../Order/services/orderService");
-const REPORTING = require('../../Order/model/reporting');
-const { message } = require("../../Dealer/validators/register_dealer");
-const claimService = require("../../Claim/services/claimService");
 
 
 //weekly grouping of the data

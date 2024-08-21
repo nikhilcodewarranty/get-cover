@@ -1,26 +1,23 @@
-const { serviceProvider } = require("../model/serviceProvider");
-const providerService = require("../services/providerService");
-const dealerRelationService = require("../../Dealer/services/dealerRelationService");
-const claimService = require("../../Claim/services/claimService");
-
-const role = require("../../User/model/role");
-const userService = require("../../User/services/userService");
+const { serviceProvider } = require("../../models/Provider/serviceProvider");
+const role = require("../../models/User/role");
 const constant = require('../../config/constant')
 const emailConstant = require('../../config/emailConstant');
+const reportingController = require('../../controllers/User/reportingController')
+const providerService = require("../../services/Provider/providerService");
+const dealerRelationService = require("../../services/Dealer/dealerRelationService");
+const claimService = require("../../services/Claim/claimService");
+const userService = require("../../services/User/userService");
+const dealerService = require("../../services/Dealer/dealerService");
+const orderService = require("../../services/Order/orderService");
+const resellerService = require("../../services/Dealer/resellerService");
+const dealerPriceService = require("../../services/Dealer/dealerPriceService");
+const priceBookService = require("../../services/PriceBook/priceBookService");
 const sgMail = require('@sendgrid/mail')
 sgMail.setApiKey(process.env.sendgrid_key);
-
 const bcrypt = require("bcrypt");
-const dealerService = require("../../Dealer/services/dealerService");
 const mongoose = require('mongoose');
-const orderService = require("../../Order/services/orderService");
-const resellerService = require("../../Dealer/services/resellerService");
-const dealerPriceService = require("../../Dealer/services/dealerPriceService");
-const priceBookService = require("../../PriceBook/services/priceBookService");
-const reportingController = require('../../User/controller/reportingController')
 require("dotenv").config();
 
-const randtoken = require('rand-token').generator()
 
 //get servicer detail
 exports.getServicerDetail = async (req, res) => {

@@ -1,4 +1,18 @@
 require("dotenv").config();
+const userService = require("../../services/User/userService");
+const customerService = require("../../services/Customer/customerService");
+const dealerService = require('../../services/Dealer/dealerService')
+const resellerService = require('../../services/Dealer/resellerService')
+const dealerPriceService = require('../../services/Dealer/dealerPriceService')
+const priceBookService = require('../../services/PriceBook/priceBookService')
+const providerService = require('../../services/Provider/providerService')
+const users = require("../../models/User/users");
+const role = require("../../models/User/role");
+const logs = require('../../models/User/logs');
+const setting = require("../../models/User/setting");
+const constant = require('../../config/constant');
+const supportingFunction = require('../../config/supportingFunction')
+const emailConstant = require('../../config/emailConstant');
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const randtoken = require('rand-token').generator()
@@ -6,25 +20,10 @@ const mongoose = require('mongoose')
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.sendgrid_key);
 const XLSX = require("xlsx");
-const userResourceResponse = require("../utils/constant");
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
-const userService = require("../services/userService");
-const dealerService = require('../../Dealer/services/dealerService')
-const resellerService = require('../../Dealer/services/resellerService')
-const dealerPriceService = require('../../Dealer/services/dealerPriceService')
-const priceBookService = require('../../PriceBook/services/priceBookService')
-const providerService = require('../../Provider/services/providerService')
-const users = require("../model/users");
-const role = require("../model/role");
-const setting = require("../model/setting");
-const constant = require('../../config/constant');
-const emailConstant = require('../../config/emailConstant');
 const multer = require('multer');
 const path = require('path'); 
 // Promisify fs.createReadStream for asynchronous file reading
-const logs = require('../../User/model/logs');
-const customerService = require("../../Customer/services/customerService");
-const supportingFunction = require('../../config/supportingFunction')
 const { S3Client } = require('@aws-sdk/client-s3');
 const { Upload } = require('@aws-sdk/lib-storage');
 const multerS3 = require('multer-s3');
