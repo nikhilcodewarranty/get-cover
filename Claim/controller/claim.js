@@ -1296,7 +1296,8 @@ exports.saveBulkClaim = async (req, res) => {
         defval: '',
         blankrows: true,
         raw: false,
-        dateNF: 'm"/"d"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
+        dateNF: 'm"/"d"/"yyyy' 
+        // <--- need dateNF in sheet_to_json options (note the escape chars)
       }
       // const wb = XLSX.readFile(fileUrl, {
       //   type: 'binary',

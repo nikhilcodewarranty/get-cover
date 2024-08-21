@@ -22,6 +22,12 @@ router.get('/getCustomerById/:customerId', [verifyToken], customerController.get
 router.get("/create-customer", [verifyToken], validator('createCustomerValidation'), [verifyToken], customerController.createCustomer); // createCustomer route
 
 
+router.post("/createCustomerNew", [verifyToken], customerController.createCustomerNew); //  getAllCustomers route
+router.post("/customerNew", [verifyToken], customerController.getAllCustomersNew); //  getAllCustomers route
+
+
+
+
 
 module.exports = router;
 
