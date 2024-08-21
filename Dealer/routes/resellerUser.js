@@ -34,7 +34,7 @@ router.post("/getResellerDetails", [verifyToken], resellerUserGetController.getR
 router.post("/resellerOrders", [verifyToken], resellerUserGetController.getResellerOrders); // get reseller orders
 router.post("/getResellerContract", [verifyToken], resellerUserGetController.getResellerContract); // get reseller contract
 router.post('/getCategoryAndPriceBooks', [verifyToken], resellerUserGetController.getCategoryAndPriceBooks); // get category and price books
-router.get("/getResellerById", [verifyToken], resellerUserGetController.getResellerById); // get reseller by ID
+router.get("/getResellerById", [verifyToken], supportingFunction.checkObjectId,resellerUserGetController.getResellerById); // get reseller by ID
 router.get("/getDashboardData", [verifyToken], resellerUserGetController.getDashboardData); // get dashboard data
 router.get("/getDealerByReseller", [verifyToken], resellerUserGetController.getDealerByReseller); // get dealer by reseller
 router.get('/getDashboardGraph', [verifyToken], resellerUserGetController.getDashboardGraph); // get dashboard graph

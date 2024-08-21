@@ -70,7 +70,6 @@ exports.checkObjectId = async (req, res, next) => {
 
         for (const key of keys) {
             const paramValue = req.params[key];
-
             if (!isValidObjectId(paramValue)) {
                 res.send({
                     code: 401,
