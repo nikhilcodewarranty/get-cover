@@ -1,22 +1,22 @@
-const { Order } = require("../model/order");
 require("dotenv").config()
-const orderResourceResponse = require("../utils/constant");
+const orderService = require("../../services/Order/orderService");
+const supportingFunction = require('../../config/supportingFunction')
+const LOG = require('../../models/User/logs')
+const emailConstant = require('../../config/emailConstant');
+const dealerService = require("../../services/Dealer/dealerService");
+const dealerRelationService = require("../../services/Dealer/dealerRelationService");
+const resellerService = require("../../services/Dealer/resellerService");
+const servicerService = require("../../services/Provider/providerService");
+const contractService = require("../../services/Contract/contractService");
+const customerService = require("../../services/Customer/customerService");
+const priceBookService = require("../../services/PriceBook/priceBookService");
+const constant = require("../../config/constant");
+const dealerPriceService = require("../../services/Dealer/dealerPriceService");
+const userService = require("../../services/User/userService");
+const claimService = require("../../services/Claim/claimService");
 const pdf = require('html-pdf');
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.sendgrid_key);
-
-const orderService = require("../services/orderService");
-const supportingFunction = require('../../config/supportingFunction')
-const LOG = require('../../User/model/logs')
-const emailConstant = require('../../config/emailConstant');
-const dealerService = require("../../Dealer/services/dealerService");
-const dealerRelationService = require("../../Dealer/services/dealerRelationService");
-const resellerService = require("../../Dealer/services/resellerService");
-const servicerService = require("../../Provider/services/providerService");
-const contractService = require("../../Contract/services/contractService");
-const customerService = require("../../Customer/services/customerService");
-const priceBookService = require("../../PriceBook/services/priceBookService");
-const constant = require("../../config/constant");
 const mongoose = require("mongoose");
 const multer = require("multer");
 const path = require("path");
@@ -24,10 +24,7 @@ const createCsvWriter = require("csv-writer").createObjectCsvWriter;
 const XLSX = require("xlsx");
 const fs = require("fs");
 const moment = require("moment");
-const dealerPriceService = require("../../Dealer/services/dealerPriceService");
-const userService = require("../../User/services/userService");
 const PDFDocument = require('pdfkit');
-const claimService = require("../../Claim/services/claimService");
 const { S3Client } = require('@aws-sdk/client-s3');
 const { Upload } = require('@aws-sdk/lib-storage');
 const multerS3 = require('multer-s3');
@@ -1631,7 +1628,7 @@ exports.markAsPaid = async (req, res) => {
                 mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
                 //Email to customer code here........
                 if (index == checkLength) {
-            
+
                     let reportingData = {
                         orderId: savedResponse._id,
                         products: pricebookDetail,

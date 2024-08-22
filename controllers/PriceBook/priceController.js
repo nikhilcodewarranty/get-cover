@@ -1,13 +1,13 @@
 const { PriceBook } = require("../../models/PriceBook/priceBook");
 const priceBookService = require("../../services/PriceBook/priceBookService");
-const dealerService = require("../../Dealer/services/dealerService");
-const orderService = require("../../Order/services/orderService");
-const userService = require("../../User/services/userService");
-const dealerPriceService = require("../../Dealer/services/dealerPriceService");
+const dealerService = require("../../services/Dealer/dealerService");
+const orderService = require("../../services/Order/orderService");
+const userService = require("../../services/User/userService");
+const dealerPriceService = require("../../services/Dealer/dealerPriceService");
 const constant = require("../../config/constant");
 const randtoken = require('rand-token').generator()
 const mongoose = require('mongoose');
-const logs = require("../../User/model/logs");
+const logs = require("../../models/User/logs");
 const supportingFunction = require('../../config/supportingFunction')
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey('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 ');

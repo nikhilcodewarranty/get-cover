@@ -1,20 +1,22 @@
-const { Order } = require("../model/order");
+
 require("dotenv").config()
-const orderResourceResponse = require("../utils/constant");
+const orderService = require("../../services/Order/orderService");
+const supportingFunction = require('../../config/supportingFunction')
+const LOG = require('../../models/User/logs')
+const emailConstant = require('../../config/emailConstant');
+const dealerService = require("../../services/Dealer/dealerService");
+const dealerRelationService = require("../../services/Dealer/dealerRelationService");
+const resellerService = require("../../services/Dealer/resellerService");
+const servicerService = require("../../services/Provider/providerService");
+const contractService = require("../../services/Contract/contractService");
+const customerService = require("../../services/Customer/customerService");
+const priceBookService = require("../../services/PriceBook/priceBookService");
+const dealerPriceService = require("../../services/Dealer/dealerPriceService");
+const userService = require("../../services/User/userService");
+const claimService = require("../../services/Claim/claimService");
 const pdf = require('html-pdf');
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey('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');
-const orderService = require("../services/orderService");
-const supportingFunction = require('../../config/supportingFunction')
-const LOG = require('../../User/model/logs')
-const emailConstant = require('../../config/emailConstant');
-const dealerService = require("../../Dealer/services/dealerService");
-const dealerRelationService = require("../../Dealer/services/dealerRelationService");
-const resellerService = require("../../Dealer/services/resellerService");
-const servicerService = require("../../Provider/services/providerService");
-const contractService = require("../../Contract/services/contractService");
-const customerService = require("../../Customer/services/customerService");
-const priceBookService = require("../../PriceBook/services/priceBookService");
 const constant = require("../../config/constant");
 const mongoose = require("mongoose");
 const multer = require("multer");
@@ -23,10 +25,7 @@ const createCsvWriter = require("csv-writer").createObjectCsvWriter;
 const XLSX = require("xlsx");
 const fs = require("fs");
 const moment = require("moment");
-const dealerPriceService = require("../../Dealer/services/dealerPriceService");
-const userService = require("../../User/services/userService");
 const PDFDocument = require('pdfkit');
-const claimService = require("../../Claim/services/claimService");
 const { S3Client } = require('@aws-sdk/client-s3');
 const AWS = require('aws-sdk');
 const { Upload } = require('@aws-sdk/lib-storage');
@@ -98,7 +97,7 @@ exports.checkFileValidation = async (req, res) => {
         uploadP(req, res, async (err) => {
             let data = req.body;
             let file = req.file;
-<<<<<<< HEAD
+            console.log("sigle--------------------", file)
             let csvName = file.key;
             let originalName = file.originalname;
             let size = file.size;
@@ -128,67 +127,6 @@ exports.checkFileValidation = async (req, res) => {
                             headers.push(ws[cell].v);
                         }
                     }
-=======
-            let csvName = req.file.filename;
-            let originalName = req.file.originalname;
-            let size = req.file.size;
-            const csvWriter = createCsvWriter({
-                path: "./uploads/resultFile/" + csvName,
-                header: [
-                    { id: "Brand", title: "Brand" },
-                    { id: "Model", title: "Model" },
-                    { id: "Serial", title: "Serial" },
-                    { id: "Class", title: "Class" },
-                    { id: "Condition", title: "Condition" },
-                    { id: "Retail Value", title: "Retail Value" },
-                    // Add more headers as needed
-                ],
-            });
-
-            const params = {
-                Bucket: file.bucket, // replace with your bucket name
-                Key: file.key // replace with the path and file name in the bucket
-            };
-
-            kkkk.getObject(params, (err, data) => {
-                if (err) {
-                    console.error('Error getting file from S3:', err);
-                } else {
-                    // If successful, the file contents are in data.Body
-                    console.log('File retrieved successfully:', data.Body.toString('utf-8'));
-                    let csvData = data.Body.toString('utf-8')
-                    const rows = XLSX.utils.sheet_to_json(XLSX.utils.csv_to_sheet(csvData));
-                    const worksheet = XLSX.utils.json_to_sheet(rows);
-                    const workbook = XLSX.utils.book_new();
-                    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
-                    XLSX.writeFile(workbook, 'output.xlsx');
-                }
-            });
-
-
-            return;
-
-
-
-            const fileUrl = req.file.destination + '/' + req.file.filename
-            const wb = XLSX.readFile(fileUrl);
-            const sheets = wb.SheetNames;
-            const ws = wb.Sheets[sheets[0]];
-            let message = [];
-            const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
-            const headers = [];
-            for (let cell in ws) {
-                // Check if the cell is in the first row and has a non-empty value
-                if (
-                    /^[A-Z]1$/.test(cell) &&
-                    ws[cell].v !== undefined &&
-                    ws[cell].v !== null &&
-                    ws[cell].v.trim() !== ""
-                ) {
-                    headers.push(ws[cell].v);
-                }
-            }
->>>>>>> 265cfffaf5587bee35b906e62ae92d156300063f
 
                     if (headers.length !== 8) {
                         // fs.unlink('../../uploads/orderFile/' + req.file.filename)
@@ -299,6 +237,7 @@ exports.checkFileValidation = async (req, res) => {
             message: err.message,
         });
     }
+}; }
 };
 
 
