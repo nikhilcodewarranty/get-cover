@@ -94,7 +94,6 @@ exports.checkFileValidation = async (req, res) => {
         uploadP(req, res, async (err) => {
             let data = req.body;
             let file = req.file;
-            console.log("sigle--------------------", file)
             let csvName = file.key;
             let originalName = file.originalname;
             let size = file.size;
@@ -327,8 +326,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 purchaseDate: item[keys[7]],
                             };
                         });
-                        console.log("checking file data+++++++++++++++++", obj.data)
-
 
                         orderFileData.forEach((fileData) => {
                             let brand = fileData.brand.toString().replace(/\s+/g, ' ').trim()
@@ -447,7 +444,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         if (priceObj.length > 0) {
                             priceObj.map((obj, index) => {
                                 //check Purchase date is valid or not
-                                console.log("date check ak ++++++++++++++++++++++", obj)
                                 if (!isValidDate(obj.purchaseDate)) {
                                     message.push({
                                         code: constant.errorCode,

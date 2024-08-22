@@ -41,7 +41,9 @@ const s3 = new S3Client({
     secretAccessKey: process.env.aws_secret_access_key,
   }
 });
+
 const folderName = 'claimFile'; // Replace with your specific folder name
+
 const StorageP = multerS3({
   s3: s3,
   bucket: process.env.bucket_name,

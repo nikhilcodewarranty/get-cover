@@ -1379,7 +1379,6 @@ const S3FILE = new AWS.S3();
 
 exports.downloadFile = async (req, res) => {
   try {
-    console.log("ksjdfskdf")
     const bucketName = process.env.bucket_name
     const key = "orderFile/file-1723638930538.xlsx"
     const params = {
@@ -1393,7 +1392,6 @@ exports.downloadFile = async (req, res) => {
     res.setHeader('Content-Type', s3Object.ContentType);
 
     // Send the file data to the client
-    console.log("check++++++++================",s3Object.Body)
     res.send(s3Object.Body);
 
   } catch (err) {
