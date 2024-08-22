@@ -1394,7 +1394,7 @@ exports.downloadFile = async (req, res) => {
     // Send the file data to the client
     res.send(s3Object.Body);
 
-  } catch (err) {
+  } catch (err) { 
     res.send({
       code: constant.errorCode,
       message: err.message
