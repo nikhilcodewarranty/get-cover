@@ -1,7 +1,7 @@
-const dealer = require("../model/dealer");
-const dealerPrice = require("../model/dealerPrice");
-const users = require("../../User/model/users");
-const { $_match } = require("../validators/register_dealer");
+const dealer = require("../../models/Dealer/dealer");
+const dealerPrice = require("../../models/Dealer/dealerPrice");
+const users = require("../../models/User/users");
+
 
 module.exports = class dealerService {
   // Get all dealers

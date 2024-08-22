@@ -14,6 +14,7 @@ const constant = require('../../config/constant');
 const supportingFunction = require('../../config/supportingFunction')
 const emailConstant = require('../../config/emailConstant');
 const bcrypt = require("bcrypt");
+const AWS = require('aws-sdk');
 const jwt = require("jsonwebtoken");
 const randtoken = require('rand-token').generator()
 const mongoose = require('mongoose')
@@ -103,7 +104,7 @@ exports.validateData = async (req, res) => {
     });
     return
   }
-
+ 
   // Check if the specified role exists
   const checkRole = await role.findOne({ role: { '$regex': data.role, '$options': 'i' } });
   if (!checkRole) {
@@ -221,7 +222,7 @@ exports.validateData = async (req, res) => {
   });
 }
 
-// Login User
+// Login User 
 exports.login = async (req, res) => {
   try {
     // Check if the user with the provided email exists
@@ -269,6 +270,7 @@ exports.login = async (req, res) => {
         return
       }
     }
+
     if (user.status == false) {
       res.send({
         code: constant.errorCode,
@@ -486,7 +488,7 @@ exports.updateUserData = async (req, res) => {
     let criteria = { _id: req.params.userId ? req.params.userId : req.teammateId };
     let option = { new: true };
     const updateUser = await userService.updateSingleUser(criteria, data, option);
-    const settingData = await userService.getSetting({});
+
     if (!updateUser) {
       //Save Logs updateUserData
       let logData = {
@@ -531,12 +533,8 @@ exports.updateUserData = async (req, res) => {
 
     if (data.firstName) {
       emailData = {
-        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        address: settingData[0]?.address,
-        websiteSetting: settingData[0],
         senderName: updateUser.firstName,
-        content: "The user information has been updated successfully.",
+        content: "The user information has been updated successfully!.",
         subject: "Update User Info"
       }
     }
@@ -544,10 +542,6 @@ exports.updateUserData = async (req, res) => {
     else {
       const status_content = req.body.status ? 'Active' : 'Inactive';
       emailData = {
-        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        address: settingData[0]?.address,
-        websiteSetting: settingData[0],
         senderName: updateUser.firstName,
         content: "Status has been changed to " + status_content + " " + ", effective immediately.",
         subject: "Update Status"
@@ -678,17 +672,9 @@ exports.sendLinkToEmail = async (req, res) => {
       }
       let resetLink = `${process.env.SITE_URL}newPassword/${checkEmail._id}/${resetPasswordCode}`
 
-      let settingData = await userService.getSetting({});
-
       let data = {
         link: resetLink,
-        name: checkEmail.name,
-        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        address: settingData[0]?.address,
-        title: settingData[0]?.title,
-        websiteSetting: settingData[0],
-        subject: "Set Password"
+        name: checkEmail.firstName
       }
       const mailing = sgMail.send(emailConstant.resetpassword(checkEmail._id, resetPasswordCode, checkEmail.email, data))
 
@@ -727,7 +713,7 @@ exports.resetPassword = async (req, res) => {
         message: "Link has been expired"
       })
       return;
-    }; 
+    };
     let hash = await bcrypt.hashSync(data.password, 10);
     let newValues = {
       $set: {
@@ -767,7 +753,7 @@ exports.deleteUser = async (req, res) => {
     let option = { new: true }
     const checkUser = await userService.getUserById1({ _id: req.params.userId }, {});
     const deleteUser = await userService.deleteUser(criteria, newValue, option);
-    let settingData = await userService.getSetting({});
+
     if (!deleteUser) {
       //Save Logs delete user
       let logData = {
@@ -808,10 +794,6 @@ exports.deleteUser = async (req, res) => {
     notificationEmails.push(checkUser.email);
 
     let emailData = {
-      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-      address: settingData[0]?.address,
-      websiteSetting: settingData[0],
       senderName: checkUser.firstName,
       content: "Your account has been deleted by Get-Cover team.",
       subject: "Delete User"
@@ -1198,7 +1180,7 @@ exports.addMembers = async (req, res) => {
     };
 
     let notificationEmails = await supportingFunction.getUserEmails();
-    let settingData = await userService.getSetting({});
+
     let IDs = await supportingFunction.getUserIds()
 
     let notificationData = {
@@ -1212,20 +1194,11 @@ exports.addMembers = async (req, res) => {
 
     let createNotification = await userService.createNotification(notificationData);
 
-
     let resetPasswordCode = randtoken.generate(4, '123456789')
     let checkPrimaryEmail2 = await userService.updateSingleUser({ email: data.email }, { resetPasswordCode: resetPasswordCode }, { new: true });
     let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-    const resetPassword = sgMail.send(emailConstant.servicerApproval(data.email, {
-      link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-      address: settingData[0]?.address, role: req.role == 'Super Admin' ? 'Admin' : req.role,
-      subject: "Set Password",
-      flag: "created",
-      title: settingData[0]?.title,
-      servicerName: data.firstName
-    }))
-
+    const resetPassword = sgMail.send(emailConstant.servicerApproval(data.email, { flag: "created", subject: "Set Password", link: resetLink, role: req.role == 'Super Admin' ? 'Admin' : req.role, servicerName: data.firstName }))
+    // // Create the user
     res.send({
       code: constant.successCode,
       message: "Created Successfully"
@@ -1395,81 +1368,36 @@ exports.checkIdAndToken = async (req, res) => {
     })
   }
 }
-// Setting Function
-exports.accountSetting = async (req, res) => {
+
+
+//get s3 bucket file
+
+AWS.config.update({
+  accessKeyId: process.env.aws_access_key_id,
+  secretAccessKey: process.env.aws_secret_access_key,
+  region: process.env.region
+});
+
+const S3FILE = new AWS.S3();
+
+exports.downloadFile = async (req, res) => {
   try {
-    if (req.role != "Super Admin") {
-      res.send({
-        code: constant.errorCode,
-        message: "Only super admin allow to do this action!"
-      });
-      return
-    }
-    const data = req.body;
-    let response;
-    const getData = await userService.getSetting({});
-    if (getData.length > 0) {
-      response = await userService.updateSetting({ _id: getData[0]?._id }, data, { new: true })
+    const bucketName = process.env.bucket_name
+    const key = "orderFile/file-1723638930538.xlsx"
+    const params = {
+      Bucket: bucketName,
+      Key: key
+    };
+    const s3Object = await S3FILE.getObject(params).promise();
 
-    }
-    else {
-      response = await userService.saveSetting(data)
-    }
+    // Set the headers to trigger a download in the browser
+    res.setHeader('Content-Disposition', `attachment; filename="${key.split('/').pop()}"`);
+    res.setHeader('Content-Type', s3Object.ContentType);
 
-    res.send({
-      code: constant.successCode,
-      message: "Success!",
-      result: response
-    })
+    // Send the file data to the client
+    res.send(s3Object.Body);
 
-  }
-  catch (err) {
-    res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  }
-}
-
-exports.getSetting = async (req, res) => {
-  try {
-    // if (req.role != "Super Admin") {
-    //   res.send({
-    //     code: constant.errorCode,
-    //     message: "Only super admin allow to do this action!"
-    //   });
-    //   return
-    // }
-    const setting = await userService.getSetting({});
-    res.send({
-      code: constant.successCode,
-      message: "Success!",
-      result: setting
-    });
-  }
-  catch (err) {
-    res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  }
-}
-exports.uploadLogo = async (req, res) => {
-  try {
-    logoImageUpload(req, res, async (err) => {
-      let file = req.file;
-      res.send({
-        code: constant.successCode,
-        message: 'Success!',
-        result: {
-          fileName: file.filename,
-          name: file.originalname,
-          size: file.size
-        }
-      })
-    })
-  }
-  catch (err) {
+  } catch (err) { 
     res.send({
       code: constant.errorCode,
       message: err.message

@@ -14,7 +14,6 @@ const supportingFunction = require('../../config/supportingFunction')
 const { default: mongoose } = require("mongoose");
 const randtoken = require('rand-token').generator()
 const sgMail = require('@sendgrid/mail');
-
 sgMail.setApiKey(process.env.sendgrid_key);
 
 //create custoemr api
@@ -120,25 +119,21 @@ exports.createCustomer = async (req, res, next) => {
 
     // Primary User Welcoime email
     let notificationEmails = await supportingFunction.getUserEmails();
-    let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
-    let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkReseller?._id, isPrimary: true })
+    let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
+    let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkReseller?._id, isPrimary: true })
     IDs.push(resellerPrimary?._id)
 
     notificationEmails.push(getPrimary.email)
     notificationEmails.push(resellerPrimary?.email)
     //SEND EMAIL
-    let settingData = await userService.getSetting({});
     let emailData = {
-      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-      address: settingData[0]?.address,
-      websiteSetting: settingData[0],
       senderName: getPrimary.firstName,
       content: "We are delighted to inform you that the customer account for " + createdCustomer.username + " has been created.",
       subject: "Customer Account Created - " + createdCustomer.username
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
 
+    // Send Email code here
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
 
     if (saveMembers.length > 0) {
       if (data.status) {
@@ -149,18 +144,7 @@ exports.createCustomer = async (req, res, next) => {
             let resetPasswordCode = randtoken.generate(4, '123456789')
             let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
             let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-            // const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
-            const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, {
-              link: resetLink,
-              role: "Customer",
-              flag: "created",
-              subject: "Set Password",
-              title: settingData[0]?.title,
-              darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-              lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-              address: settingData[0]?.address,
-              servicerName: saveMembers[i].firstName
-            }))
+            const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { flag: "created", link: resetLink, subject: "Set Password", role: "Customer", servicerName: saveMembers[i].firstName }))
 
           }
 
@@ -231,9 +215,9 @@ exports.getAllCustomers = async (req, res, next) => {
       });
       return;
     };
-    const customersId = customers.map(obj => obj._id.toString());
+    const customersId = customers.map(obj => obj._id);
     const customersOrderId = customers.map(obj => obj._id);
-    const queryUser = { accountId: { $in: customersId }, isPrimary: true };
+    const queryUser = { metaId: { $in: customersId }, isPrimary: true };
 
     //Get Resselers
     const resellerId = customers.map(obj => new mongoose.Types.ObjectId(obj.resellerId ? obj.resellerId : '61c8c7d38e67bb7c7f7eeeee'));
@@ -261,7 +245,7 @@ exports.getAllCustomers = async (req, res, next) => {
     let ordersData = await orderService.getAllOrderInCustomers(orderQuery, project, "$customerId")
 
     const result_Array = customers.map(customer => {
-      const matchingItem = getPrimaryUser.find(user => user.accountId.toString() === customer._id.toString())
+      const matchingItem = getPrimaryUser.find(user => user.metaId.toString() === customer._id.toString())
       const matchingReseller = customer.resellerId != null ? resellerData.find(reseller => reseller._id.toString() === customer.resellerId.toString()) : ''
       const order = ordersData.find(order => order._id.toString() === customer._id.toString())
       if (matchingItem || matchingReseller || order) {
@@ -315,9 +299,9 @@ exports.getDealerCustomers = async (req, res) => {
       });
       return;
     };
-    const customersId = customers.map(obj => obj._id.toString());
+    const customersId = customers.map(obj => obj._id);
     const orderCustomerId = customers.map(obj => obj._id);
-    const queryUser = { accountId: { $in: customersId }, isPrimary: true };
+    const queryUser = { metaId: { $in: customersId }, isPrimary: true };
 
     //Get Dealer Customer Orders
     let project = {
@@ -342,17 +326,15 @@ exports.getDealerCustomers = async (req, res) => {
       ]
     }
     let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project, '$customerId');
-
-
     //Get Resseler
     const resellerId = customers.map(obj => new mongoose.Types.ObjectId(obj.resellerId ? obj.resellerId : '61c8c7d38e67bb7c7f7eeeee'));
     const queryReseller = { _id: { $in: resellerId } }
     const resellerData = await resellerService.getResellers(queryReseller, { isDeleted: 0 })
     let getPrimaryUser = await userService.findUserforCustomer(queryUser)
     const result_Array = getPrimaryUser.map(item1 => {
-      const matchingItem = customers.find(item2 => item2._id.toString() === item1.accountId.toString());
-      const matchingReseller = matchingItem ? resellerData.find(reseller => reseller._id.toString() === matchingItem.resellerId.toString()) : {};
-      const order = ordersResult.find(order => order._id.toString() === item1.accountId)
+      const matchingItem = customers.find(item2 => item2._id.toString() === item1.metaId.toString());
+      const matchingReseller = matchingItem ? resellerData.find(reseller => reseller._id?.toString() === matchingItem.resellerId?.toString()) : {};
+      const order = ordersResult.find(order => order._id.toString() === item1.metaId.toString())
 
       if (matchingItem || order || matchingReseller) {
         return {
@@ -418,9 +400,9 @@ exports.getResellerCustomers = async (req, res) => {
       });
       return;
     };
-    const customersId = customers.map(obj => obj._id.toString());
+    const customersId = customers.map(obj => obj._id);
     const orderCustomerIds = customers.map(obj => obj._id);
-    const queryUser = { accountId: { $in: customersId }, isPrimary: true };
+    const queryUser = { metaId: { $in: customersId }, isPrimary: true };
 
     let getPrimaryUser = await userService.findUserforCustomer(queryUser)
 
@@ -448,8 +430,8 @@ exports.getResellerCustomers = async (req, res) => {
     let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project, '$customerId');
 
     let result_Array = getPrimaryUser.map(item1 => {
-      const matchingItem = customers.find(item2 => item2._id.toString() === item1.accountId.toString());
-      const order = ordersResult.find(order => order._id.toString() === item1.accountId)
+      const matchingItem = customers.find(item2 => item2._id.toString() === item1.metaId.toString());
+      const order = ordersResult.find(order => order._id.toString() === item1.metaId.toString())
       if (matchingItem || order) {
         return {
           ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
@@ -524,17 +506,17 @@ exports.editCustomer = async (req, res) => {
     }
     if (data.hasOwnProperty("isAccountCreate")) {
       if ((data.isAccountCreate || data.isAccountCreate == 'true')) {
-        let updatePrimaryUser = await userService.updateSingleUser({ accountId: req.params.customerId, isPrimary: true }, { status: true }, { new: true })
+        let updatePrimaryUser = await userService.updateSingleUser({ metaId: req.params.customerId, isPrimary: true }, { status: true }, { new: true })
       } else {
-        let updatePrimaryUser = await userService.updateUser({ accountId: req.params.customerId }, { status: false }, { new: true })
+        let updatePrimaryUser = await userService.updateUser({ metaId: req.params.customerId }, { status: false }, { new: true })
       }
     }
 
     //send notification to dealer,customer,admin,reseller
     let IDs = await supportingFunction.getUserIds()
-    let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
-    let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer.dealerId, isPrimary: true })
-    let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer.resellerId, isPrimary: true })
+    let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
+    let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer.dealerId, isPrimary: true })
+    let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer.resellerId, isPrimary: true })
     IDs.push(customerPrimary._id)
     IDs.push(dealerPrimary._id)
     IDs.push(resellerPrimary?._id)
@@ -554,13 +536,7 @@ exports.editCustomer = async (req, res) => {
     let notificationEmails = await supportingFunction.getUserEmails();
     notificationEmails.push(resellerPrimary?.email);
     notificationEmails.push(dealerPrimary.email);
-
-    let settingData = await userService.getSetting({});
     let emailData = {
-      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-      address: settingData[0]?.address,
-      websiteSetting: settingData[0],
       senderName: checkDealer.username,
       content: "The customer " + checkDealer.username + "" + " " + "has been updated successfully.",
       subject: "Customer Update"
@@ -614,7 +590,7 @@ exports.changePrimaryUser = async (req, res) => {
       })
       return;
     };
-    let updateLastPrimary = await userService.updateSingleUser({ accountId: checkUser.accountId, isPrimary: true }, { isPrimary: false }, { new: true })
+    let updateLastPrimary = await userService.updateSingleUser({ metaId: checkUser.metaId, isPrimary: true }, { isPrimary: false }, { new: true })
     if (!updateLastPrimary) {
       //Save Logs changePrimaryUser
       let logData = {
@@ -659,13 +635,13 @@ exports.changePrimaryUser = async (req, res) => {
     } else {
       //Send notification for dealer change primary user
       let IDs = await supportingFunction.getUserIds()
-      let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkUser.accountId, isPrimary: true })
+      let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkUser.metaId, isPrimary: true })
       let notificationData = {
         title: updateLastPrimary?.role + " primary user change",
         description: "The primary user has been changed!",
         userId: req.teammateId,
         flag: updateLastPrimary?.role,
-        redirectionId: checkUser.accountId,
+        redirectionId: checkUser.metaId,
         notificationFor: [getPrimary._id]
       };
       let createNotification = await userService.createNotification(notificationData);
@@ -674,12 +650,7 @@ exports.changePrimaryUser = async (req, res) => {
       let notificationEmails = await supportingFunction.getUserEmails();
       notificationEmails.push(updateLastPrimary.email);
       notificationEmails.push(updatePrimary.email);
-      let settingData = await userService.getSetting({});
       let emailData = {
-        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        address: settingData[0]?.address,
-        websiteSetting: settingData[0],
         senderName: checkUser.firstName,
         content: "The primary user for your account has been changed from " + updateLastPrimary.firstName + " to " + updatePrimary.firstName + ".",
         subject: "Primary User change"
@@ -746,7 +717,7 @@ exports.addCustomerUser = async (req, res) => {
       })
       return;
     };
-    let checkUser = await userService.getUserById1({ accountId: data.customerId, isPrimary: true }, { isDeleted: false })
+    let checkUser = await userService.getUserById1({ metaId: data.customerId, isPrimary: true }, { isDeleted: false })
     data.accountId = checkCustomer._id
     data.metaId = checkCustomer._id
     data.status = checkUser.status ? true : false;
@@ -825,7 +796,7 @@ exports.getCustomerById = async (req, res) => {
         message: "Invalid customer ID"
       })
     } else {
-      let getPrimaryUser = await userService.findOneUser({ accountId: checkCustomer._id.toString(), isPrimary: true }, {})
+      let getPrimaryUser = await userService.findOneUser({ metaId: checkCustomer._id, isPrimary: true }, {})
       let checkReseller = await resellerService.getReseller({ _id: checkCustomer.resellerId }, { isDeleted: 0 });
       let checkDealer = await dealerService.getDealerByName({ _id: checkCustomer.dealerId }, { isDeleted: 0 });
       let project = {
@@ -967,7 +938,7 @@ exports.getCustomerById = async (req, res) => {
 exports.getCustomerUsers = async (req, res) => {
   try {
     let data = req.body
-    let getCustomerUsers = await userService.findUser({ accountId: req.params.customerId, isDeleted: false }, { isPrimary: -1 })
+    let getCustomerUsers = await userService.findUser({ metaId: req.params.customerId, isDeleted: false }, { isPrimary: -1 })
     if (!getCustomerUsers) {
       res.send({
         code: constant.errorCode,
@@ -1095,7 +1066,7 @@ exports.customerOrders = async (req, res) => {
     let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
     let userResellerIds = ordersResult
       .filter(result => result.resellerId !== null)
-      .map(result => result.resellerId?.toString());
+      .map(result => result.resellerId);
 
     let mergedArray = userDealerIds.concat(userResellerIds);
     //Get Respective Dealers
@@ -1119,10 +1090,10 @@ exports.customerOrders = async (req, res) => {
     );
     let userCustomerIds = ordersResult
       .filter(result => result.customerId !== null)
-      .map(result => result.customerId?.toString());
+      .map(result => result.customerId);
 
     const allUserIds = mergedArray.concat(userCustomerIds);
-    const queryUser = { accountId: { $in: allUserIds }, isPrimary: true };
+    const queryUser = { metaId: { $in: allUserIds }, isPrimary: true };
     let getPrimaryUser = await userService.findUserforCustomer(queryUser)
     let servicerIdArray = ordersResult.map((result) => result.servicerId);
 
@@ -1220,13 +1191,13 @@ exports.customerOrders = async (req, res) => {
         item.flag = true
       }
       if (item.dealerName) {
-        username = getPrimaryUser.find(user => user.accountId?.toString() === item.dealerName._id?.toString());
+        username = getPrimaryUser.find(user => user.metaId?.toString() === item.dealerName._id?.toString());
       }
       if (item.resellerName) {
-        resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.accountId?.toString() === item.resellerName._id?.toString()) : {};
+        resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.metaId?.toString() === item.resellerName._id?.toString()) : {};
       }
       if (item.customerName) {
-        customerUserData = item.customerName._id != null ? getPrimaryUser.find(user => user.accountId?.toString() === item.customerName._id?.toString()) : {};
+        customerUserData = item.customerName._id != null ? getPrimaryUser.find(user => user.metaId?.toString() === item.customerName._id?.toString()) : {};
       }
       return {
         ...item,
@@ -1844,9 +1815,13 @@ exports.customerClaims = async (req, res) => {
   }
 }
 
-//
-exports.addCustomerNew = async (req, res) => {
+
+// -----------------------------------------add cutomer with multiple dealer code --------------------------------------------------------------------------------
+
+
+exports.createCustomerNew = async (req, res, next) => {
   try {
+    console.log("api hitted")
     let data = req.body;
     data.accountName = data.accountName.trim().replace(/\s+/g, ' ');
     let getCount = await customerService.getCustomersCount({})
@@ -1882,13 +1857,13 @@ exports.addCustomerNew = async (req, res) => {
     });
 
     let checkCustomerEmail = await userService.findOneUser({ email: data.email });
-    if (checkCustomerEmail) {
-      res.send({
-        code: constant.errorCode,
-        message: "Primary user email already exist"
-      })
-      return;
-    }
+    // if (checkCustomerEmail) {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Primary user email already exist"
+    //   })
+    //   return;
+    // }
 
     let customerObject = {
       username: data.accountName,
@@ -1906,6 +1881,20 @@ exports.addCustomerNew = async (req, res) => {
       accountStatus: "Approved",
       dealerName: checkDealer.name,
     }
+
+    let teamMembers = data.members
+    const emailSet = new Set();
+    let isDuplicate = false;
+    let emailsToCheck = teamMembers.map(member => member.email);
+    let queryEmails = { email: { $in: emailsToCheck } };
+    let checkEmails = await customerService.getAllCustomers(queryEmails, {});
+
+    // if (checkEmails.length > 0) {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Some email ids already exist"
+    //   })
+    // }
     const createdCustomer = await customerService.createCustomer(customerObject);
     if (!createdCustomer) {
       //Save Logs create Customer
@@ -1926,33 +1915,207 @@ exports.addCustomerNew = async (req, res) => {
       })
       return;
     };
-    for (let m = 0; m < data.members.length; m++) {
-      let user = data.members[m]
-      let userEmail = user.email
-      let customerUserObject = {
-        email: userEmail,
-        userData: [
-          { ...user, customerId: createdCustomer._id, status: !data.status ? false : member.status, metaId: createdCustomer._id, roleId: process.env.customer }
+
+    teamMembers = teamMembers.map(member => ({ ...member, accountId: createdCustomer._id, status: !data.status ? false : member.status, metaId: createdCustomer._id, roleId: process.env.customer }));
+
+    for (let m = 0; m < teamMembers.length; m++) {
+      let emailToCheck = teamMembers[m].email
+      let checkEmail = await userService.getUserById1({ email: emailToCheck, roleId: process.env.customer })
+      let memberObject = {
+        email: teamMembers[m].email,
+        roleId: process.env.customer,
+        customerData: [
+          {
+            accountId: createdCustomer._id,
+            status: teamMembers[m].status,
+            metaId: createdCustomer._id,
+            roleId: process.env.customer,
+            firstName: teamMembers[m].firstName,
+            lastName: teamMembers[m].lastName,
+            phoneNumber: teamMembers[m].phoneNumber,
+            isPrimary: teamMembers[m].isPrimary,
+          }
         ]
       }
-      let checkEmail = await customerService.getCustomerByName({ email: userEmail })
       if (!checkEmail) {
-
+        let createCustomerData = await userService.createUser(memberObject)
       } else {
-
+        let customerMeta = checkEmail.customerData
+        customerMeta.push(memberObject.customerData[0])
+        let updateCustomerData = await userService.updateUser({ email: emailToCheck }, { customerData: customerMeta }, { new: true })
       }
     }
 
+    // create members account 
+    // let saveMembers = await userService.insertManyUser(teamMembers)
+
+    // Primary User Welcoime email
+    let notificationEmails = await supportingFunction.getUserEmails();
+    let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
+    let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkReseller?._id, isPrimary: true })
+    IDs.push(resellerPrimary?._id)
+
+    notificationEmails.push(getPrimary.email)
+    notificationEmails.push(resellerPrimary?.email)
+    //SEND EMAIL
+    let emailData = {
+      senderName: getPrimary.firstName,
+      content: "We are delighted to inform you that the customer account for " + createdCustomer.username + " has been created.",
+      subject: "Customer Account Created - " + createdCustomer.username
+    }
+
+    // Send Email code here
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+
+    // if (saveMembers.length > 0) {
+    //   if (data.status) {
+    //     for (let i = 0; i < saveMembers.length; i++) {
+    //       if (saveMembers[i].status) {
+    //         let email = saveMembers[i].email
+    //         let userId = saveMembers[i]._id
+    //         let resetPasswordCode = randtoken.generate(4, '123456789')
+    //         let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
+    //         let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
+    //         const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { flag: "created", link: resetLink, subject: "Set Password", role: "Customer", servicerName: saveMembers[i].firstName }))
+
+    //       }
+
+    //     }
+    //   }
+    // }
+
+    //Send Notification to customer,admin,reseller,dealer 
+
+    IDs.push(getPrimary._id)
+    let notificationData = {
+      title: "New Customer Created",
+      description: data.accountName + " " + "customer account has been created successfully!",
+      userId: req.teammateId,
+      flag: 'customer',
+      notificationFor: IDs
+    };
+
+    let createNotification = await userService.createNotification(notificationData);
+    //Save Logs create Customer
+    let logData = {
+      userId: req.userId,
+      endpoint: "/create-customer",
+      body: data,
+      response: {
+        code: constant.successCode,
+        message: "Customer created successfully",
+        result: data
+      }
+    }
+    await LOG(logData).save()
+
+    res.send({
+      code: constant.successCode,
+      message: "Customer created successfully",
+      result: createdCustomer
+    })
   } catch (err) {
+    //Save Logs create Customer
+    let logData = {
+      userId: req.userId,
+      endpoint: "/create-customer catch",
+      body: req.body ? req.body : { "type": "Catch Error" },
+      response: {
+        code: constant.errorCode,
+        message: err.message
+      }
+    }
+    await LOG(logData).save()
+
     res.send({
       code: constant.errorCode,
       message: err.message
     })
   }
-}
+};
 
+//get all customers
+exports.getAllCustomersNew = async (req, res, next) => {
+  try {
+    let data = req.body
+    let query = { isDeleted: false }
+    let projection = { __v: 0, firstName: 0, lastName: 0, email: 0, password: 0 }
+    const customers = await customerService.getAllCustomers(query, projection);
+    if (!customers) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the customer"
+      });
+      return;
+    };
+    const customersId = customers.map(obj => obj._id);
+    const customersOrderId = customers.map(obj => obj._id);
+    const queryUser = { customerData: { $elemMatch: { metaId: { $in: customersId } } }, isPrimary: true };
 
+    //Get Resselers
+    const resellerId = customers.map(obj => new mongoose.Types.ObjectId(obj.resellerId ? obj.resellerId : '61c8c7d38e67bb7c7f7eeeee'));
+    const queryReseller = { _id: { $in: resellerId } }
+    const resellerData = await resellerService.getResellers(queryReseller, { isDeleted: 0 })
 
+    let getPrimaryUser = await userService.findUserforCustomer(queryUser)
 
+    //Get customer Orders
+    let project = {
+      productsArray: 1,
+      dealerId: 1,
+      unique_key: 1,
+      servicerId: 1,
+      customerId: 1,
+      resellerId: 1,
+      paymentStatus: 1,
+      status: 1,
+      venderOrder: 1,
+      orderAmount: 1,
+    }
+
+    let orderQuery = { customerId: { $in: customersOrderId }, status: "Active" };
+
+    let ordersData = await orderService.getAllOrderInCustomers(orderQuery, project, "$customerId")
+
+    const result_Array = customers.map(customer => {
+      const matchingItem = getPrimaryUser.find(user => user.customerData.some(user1 => user1.metaId.toString() === customer._id.toString()))
+      const matchingReseller = customer.resellerId != null ? resellerData.find(reseller => reseller._id.toString() === customer.resellerId.toString()) : ''
+      const order = ordersData.find(order => order._id.toString() === customer._id.toString())
+      if (matchingItem || matchingReseller || order) {
+        return {
+          ...matchingItem ? matchingItem : {},
+          customerData: customer ? customer : {},
+          reseller: matchingReseller ? matchingReseller : {},
+          order: order ? order : {}
+        };
+      }
+
+    }).filter(item => item !== undefined);
+    let emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
+    let nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
+    let phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
+    let dealerRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
+    let resellerRegex = new RegExp(data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', 'i')
+    let filteredData = result_Array.filter(entry => {
+      return (
+        nameRegex.test(entry.customerData.username) &&
+        emailRegex.test(entry.email) &&
+        dealerRegex.test(entry.customerData.dealerName) &&
+        resellerRegex.test(entry.reseller?.name) &&
+        phoneRegex.test(entry.phoneNumber)
+      );
+    });
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: filteredData
+    })
+  } catch (err) {
+    res.send({
+      code: constant.successCode,
+      message: err.message,
+    })
+  }
+};
 
 

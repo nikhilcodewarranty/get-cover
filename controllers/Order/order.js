@@ -168,10 +168,10 @@ exports.getAllOrders = async (req, res) => {
         let limitData = Number(pageLimit)
         let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, limitData);
         let dealerIdsArray = ordersResult.map((result) => result.dealerId);
-        let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
+        let userDealerIds = ordersResult.map((result) => result.dealerId);
         let userResellerIds = ordersResult
             .filter(result => result.resellerId !== null)
-            .map(result => result.resellerId?.toString());
+            .map(result => result.resellerId);
 
         let mergedArray = userDealerIds.concat(userResellerIds);
 
@@ -212,13 +212,13 @@ exports.getAllOrders = async (req, res) => {
         let customerIdsArray = ordersResult.map((result) => result.customerId);
         let userCustomerIds = ordersResult
             .filter(result => result.customerId !== null)
-            .map(result => result.customerId?.toString());
+            .map(result => result.customerId);
 
         const customerCreteria = { _id: { $in: customerIdsArray } };
 
         const allUserIds = mergedArray.concat(userCustomerIds);
 
-        const queryUser = { accountId: { $in: allUserIds }, isPrimary: true };
+        const queryUser = { metaId: { $in: allUserIds }, isPrimary: true };
 
         let getPrimaryUser = await userService.findUserforCustomer(queryUser)
         //Get Respective Customer
@@ -333,13 +333,13 @@ exports.getAllOrders = async (req, res) => {
             let resellerUsername = null; // Initialize username as null
             let customerUserData = null; // Initialize username as null
             if (item.dealerName._id) {
-                username = getPrimaryUser.find(user => user.accountId.toString() === item.dealerName._id.toString());
+                username = getPrimaryUser.find(user => user.metaId.toString() === item.dealerName._id.toString());
             }
             if (item.resellerName._id) {
-                resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.accountId.toString() === item.resellerName._id.toString()) : {};
+                resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.metaId.toString() === item.resellerName._id.toString()) : {};
             }
             if (item.customerName._id) {
-                customerUserData = item.customerName._id != null ? getPrimaryUser.find(user => user.accountId.toString() === item.customerName._id.toString()) : {};
+                customerUserData = item.customerName._id != null ? getPrimaryUser.find(user => user.metaId.toString() === item.customerName._id.toString()) : {};
             }
             return {
                 ...item,
@@ -572,14 +572,14 @@ exports.getCustomerInOrder = async (req, res) => {
             });
             return;
         }
-        const customerIds = getCustomers.map(customer => customer._id.toString());
-        let query1 = { accountId: { $in: customerIds }, isPrimary: true };
+        const customerIds = getCustomers.map(customer => customer._id);
+        let query1 = { metaId: { $in: customerIds }, isPrimary: true };
         let projection = { __v: 0, isDeleted: 0 }
 
         let customerUser = await userService.getMembers(query1, projection)
 
         const result_Array = customerUser.map(item1 => {
-            const matchingItem = getCustomers.find(item2 => item2._id.toString() === item1.accountId.toString());
+            const matchingItem = getCustomers.find(item2 => item2._id.toString() === item1.metaId.toString());
             if (matchingItem) {
                 return {
                     ...matchingItem.toObject(),
@@ -654,7 +654,7 @@ exports.getServicerByOrderId = async (req, res) => {
             servicer.unshift(checkDealer);
         }
         const servicerIds = servicer.map((obj) => obj._id);
-        const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+        const query1 = { metaId: { $in: servicerIds }, isPrimary: true };
 
         let servicerUser = await userService.getMembers(query1, {});
         if (!servicerUser) {
@@ -667,7 +667,7 @@ exports.getServicerByOrderId = async (req, res) => {
 
         const result_Array = servicer.map((item1) => {
             const matchingItem = servicerUser.find(
-                (item2) => item2.accountId.toString() === item1._id.toString()
+                (item2) => item2.metaId.toString() === item1._id.toString()
             );
 
             if (matchingItem) {
@@ -1092,9 +1092,9 @@ exports.archiveOrder = async (req, res) => {
         }
         //send notification to dealer,reseller,admin,customer
         let IDs = await supportingFunction.getUserIds()
-        let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
-        let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.customerId, isPrimary: true })
-        let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.resellerId, isPrimary: true })
+        let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.dealerId, isPrimary: true })
+        let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.customerId, isPrimary: true })
+        let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.resellerId, isPrimary: true })
         if (resellerPrimary) {
             IDs.push(resellerPrimary._id)
         }
@@ -1125,22 +1125,13 @@ exports.archiveOrder = async (req, res) => {
         await LOG(logData).save()
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
-        let settingData = await userService.getSetting({});
         let emailData = {
-            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-            address: settingData[0]?.address,
-            websiteSetting: settingData[0],
             senderName: dealerPrimary.firstName,
             content: "The order " + checkOrder.unique_key + " has been archeived!.",
             subject: "Archeive Order"
         }
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
         emailData = {
-            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-            address: settingData[0]?.address,
-            websiteSetting: settingData[0],
             senderName: resellerPrimary?.firstName,
             content: "The order " + checkOrder.unique_key + " has been archeived!.",
             subject: "Archeive Order"
@@ -1218,9 +1209,9 @@ exports.getSingleOrder = async (req, res) => {
             ],
         };
         let checkServicer = await servicerService.getServiceProviderById(query1);
-        let singleDealerUser = await userService.getUserById1({ accountId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false });
-        let singleResellerUser = await userService.getUserById1({ accountId: checkOrder.resellerId, isPrimary: true }, { isDeleted: false });
-        let singleCustomerUser = await userService.getUserById1({ accountId: checkOrder.customerId, isPrimary: true }, { isDeleted: false });
+        let singleDealerUser = await userService.getUserById1({ metaId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false });
+        let singleResellerUser = await userService.getUserById1({ metaId: checkOrder.resellerId, isPrimary: true }, { isDeleted: false });
+        let singleCustomerUser = await userService.getUserById1({ metaId: checkOrder.customerId, isPrimary: true }, { isDeleted: false });
         // ------------------------------------Get Dealer Servicer -----------------------------
         let getServicersIds = await dealerRelationService.getDealerRelations({
             dealerId: checkOrder.dealerId,
@@ -1248,12 +1239,12 @@ exports.getSingleOrder = async (req, res) => {
             //servicer.unshift(dealer);
         }
         const servicerIds = servicer.map((obj) => obj._id);
-        const servicerQuery = { accountId: { $in: servicerIds }, isPrimary: true };
+        const servicerQuery = { metaId: { $in: servicerIds }, isPrimary: true };
 
         let servicerUser = await userService.getMembers(servicerQuery, {});
         let result_Array = servicer.map((item1) => {
             const matchingItem = servicerUser.find(
-                (item2) => item2.accountId.toString() === item1._id.toString()
+                (item2) => item2.metaId.toString() === item1._id.toString()
             );
 
             if (matchingItem) {
@@ -1265,18 +1256,9 @@ exports.getSingleOrder = async (req, res) => {
                 return {};
             }
         });
-        //Get setting of website
-        let settingData = await userService.getSetting({});
         let userData = {
             dealerData: dealer ? dealer : {},
             customerData: customer ? customer : {},
-            websiteSetting: {
-                darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-                lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-                address: settingData[0]?.address,
-                paymentDetail: settingData[0]?.paymentDetail,
-                title: settingData[0]?.title,
-            },
             resellerData: reseller ? reseller : {},
             username: singleDealerUser ? singleDealerUser : {},
             resellerUsername: singleResellerUser ? singleResellerUser : {},
@@ -1296,6 +1278,7 @@ exports.getSingleOrder = async (req, res) => {
             }, []);
         }
         result_Array = makeUnique(result_Array, '_id');
+        checkOrder.bucket_name = process.env.bucket_name
         res.send({
             code: constant.successCode,
             message: "Success!",
@@ -1362,10 +1345,9 @@ exports.markAsPaid = async (req, res) => {
         let count1 = await contractService.getContractsCountNew();
         var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
         let checkLength = savedResponse.productsArray.length - 1
-        var pricebookDetail = []
-
         let save = savedResponse.productsArray.map(async (product, index) => {
             const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
+            let headerLength;
             const readOpts = {
                 // <--- need these settings in readFile options //cellText:false, 
                 cellDates: true
@@ -1378,7 +1360,6 @@ exports.markAsPaid = async (req, res) => {
                 dateNF: 'm"/"d"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
             }
             let priceBookId = product.priceBookId;
-
             let orderProductId = product._id;
             let coverageStartDate = product.coverageStartDate;
             let coverageEndDate = product.coverageEndDate;
@@ -1388,12 +1369,11 @@ exports.markAsPaid = async (req, res) => {
                 query,
                 projection
             );
-            const wb = XLSX.readFile(pathFile, readOpts);
-            const sheets = wb.SheetNames;
+            var pricebookDetail = []
             // reporting codes
+            let dealerBookDetail = []
             let pricebookDetailObject = {}
             let dealerPriceBookObject = {}
-            let dealerBookDetail = []
 
             pricebookDetailObject.frontingFee = product?.priceBookDetails.frontingFee
             pricebookDetailObject.reserveFutureFee = product?.priceBookDetails.reserveFutureFee
@@ -1404,16 +1384,24 @@ exports.markAsPaid = async (req, res) => {
             pricebookDetailObject.term = product?.priceBookDetails.term
             pricebookDetailObject.adminFee = product?.priceBookDetails.adminFee
             pricebookDetailObject.price = product.price
-            pricebookDetailObject.noOfProducts = product.noOfProducts
+            pricebookDetailObject.noOfProducts = product.checkNumberProducts
 
             pricebookDetailObject.retailPrice = product.unitPrice
             pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
             pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
-            // dealerPriceBookObject.brokerFee = getDealerPriceBookDetail.brokerFee
             pricebookDetail.push(pricebookDetailObject)
             dealerBookDetail.push(dealerPriceBookObject)
-            const ws = wb.Sheets[sheets[0]];
-
+            const bucketReadUrl = { Bucket: process.env.bucket_name, Key: product.orderFile.fileName };
+            // Await the getObjectFromS3 function to complete
+            const result = await getObjectFromS3(bucketReadUrl);
+            headerLength = result.headers
+            if (headerLength.length !== 8) {
+                res.send({
+                    code: constant.errorCode,
+                    message: "Invalid file format detected. The sheet should contain exactly four columns."
+                })
+                return
+            }
             const totalDataComing1 = result.data;
             const totalDataComing = totalDataComing1.map((item) => {
                 const keys = Object.keys(item);
@@ -1447,6 +1435,7 @@ exports.markAsPaid = async (req, res) => {
                 let labourWarrantyMonth = Number(data.labourWarranty ? data.labourWarranty : 0)
 
                 dateCheck = new Date(dateCheck.setDate(dateCheck.getDate() + adhDays))
+                
                 let p_date = new Date(data.purchaseDate)
                 let p_date1 = new Date(data.purchaseDate)
                 let l_date = new Date(data.purchaseDate)
@@ -1466,10 +1455,8 @@ exports.markAsPaid = async (req, res) => {
                 function findMinDate(d1, d2, d3) {
                     return new Date(Math.min(new Date(d1).getTime(), new Date(d2).getTime(), new Date(d3).getTime()));
                 }
-
                 // Find the minimum date
                 let minDate;
-
                 if (checkOrder.coverageType == "Breakdown") {
                     if (checkOrder.serviceCoverageType == "Labour") {
                         minDate = findMinDate(new Date(dateCheck).setHours(0, 0, 0, 0), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
@@ -1503,28 +1490,6 @@ exports.markAsPaid = async (req, res) => {
                     serviceCoverage = "Parts & Labor"
                 }
 
-                // reporting codes
-                let pricebookDetailObject = {}
-                let dealerPriceBookObject = {}
-
-                pricebookDetailObject.frontingFee = product?.priceBookDetails.frontingFee
-                pricebookDetailObject.reserveFutureFee = product?.priceBookDetails.reserveFutureFee
-                pricebookDetailObject.reinsuranceFee = product?.priceBookDetails.reinsuranceFee
-                pricebookDetailObject._id = product?.priceBookDetails._id
-                pricebookDetailObject.name = product?.priceBookDetails.name
-                pricebookDetailObject.categoryId = product?.priceBookDetails.category
-                pricebookDetailObject.term = product?.priceBookDetails.term
-                pricebookDetailObject.adminFee = product?.priceBookDetails.adminFee
-                pricebookDetailObject.price = product.price
-                pricebookDetailObject.noOfProducts = product.noOfProducts
-
-                pricebookDetailObject.retailPrice = product.unitPrice
-                pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
-                pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
-                // dealerPriceBookObject.brokerFee = getDealerPriceBookDetail.brokerFee
-                pricebookDetail.push(pricebookDetailObject)
-                dealerBookDetail.push(dealerPriceBookObject)
-                // let eligibilty = claimStatus == "Active" ? true : false
                 let contractObject = {
                     orderId: savedResponse._id,
                     orderUniqueKey: savedResponse.unique_key,
@@ -1582,9 +1547,9 @@ exports.markAsPaid = async (req, res) => {
                 }
                 // send notification to dealer,admin, customer
                 let IDs = await supportingFunction.getUserIds()
-                let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
-                let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.customerId, isPrimary: true })
-                let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.resellerId, isPrimary: true })
+                let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.dealerId, isPrimary: true })
+                let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.customerId, isPrimary: true })
+                let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.resellerId, isPrimary: true })
                 if (resellerPrimary) {
                     IDs.push(resellerPrimary._id)
                 }
@@ -1602,12 +1567,7 @@ exports.markAsPaid = async (req, res) => {
                 // Send Email code here
                 let notificationEmails = await supportingFunction.getUserEmails();
                 //Email to Dealer
-                let settingData = await userService.getSetting({});
                 let emailData = {
-                    darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-                    lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-                    address: settingData[0]?.address,
-                    websiteSetting: settingData[0],
                     senderName: dealerPrimary.firstName,
                     content: "The  order " + savedResponse.unique_key + " has been paid",
                     subject: "Mark as paid"
@@ -1616,10 +1576,6 @@ exports.markAsPaid = async (req, res) => {
                 let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
                 //Email to Reseller 
                 emailData = {
-                    darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-                    lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-                    address: settingData[0]?.address,
-                    websiteSetting: settingData[0],
                     senderName: resellerPrimary?.firstName,
                     content: "The  order " + savedResponse.unique_key + " has been paid",
                     subject: "Mark As paid"
@@ -1676,7 +1632,39 @@ exports.markAsPaid = async (req, res) => {
         })
     }
 };
+//Get File data from S3 bucket
+const getObjectFromS3 = (bucketReadUrl) => {
+    return new Promise((resolve, reject) => {
+        S3Bucket.getObject(bucketReadUrl, (err, data) => {
+            if (err) {
+                reject(err);
+            } else {
+                const wb = XLSX.read(data.Body, { type: 'buffer' });
+                const sheetName = wb.SheetNames[0];
+                const sheet = wb.Sheets[sheetName];
+                let headers = [];
 
+                for (let cell in sheet) {
+                    if (
+                        /^[A-Z]1$/.test(cell) &&
+                        sheet[cell].v !== undefined &&
+                        sheet[cell].v !== null &&
+                        sheet[cell].v.trim() !== ""
+                    ) {
+                        headers.push(sheet[cell].v);
+                    }
+                }
+
+                const result = {
+                    headers: headers,
+                    data: XLSX.utils.sheet_to_json(sheet),
+                };
+
+                resolve(result);
+            }
+        });
+    });
+};
 // get the pdf file with order ID
 exports.getOrderPdf = async (req, res) => {
     try {
@@ -1731,9 +1719,9 @@ exports.getOrderPdf = async (req, res) => {
 
         let reseller = await resellerService.getReseller({ _id: checkOrder[0].order[0].resellerId }, { isDeleted: 0 })
 
-        const queryDealerUser = { accountId: { $in: [checkOrder[0].order[0].dealerId != null ? checkOrder[0].order[0].dealerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
+        const queryDealerUser = { metaId: { $in: [checkOrder[0].order[0].dealerId != null ? checkOrder[0].order[0].dealerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
 
-        const queryResselerUser = { accountId: { $in: [checkOrder[0].order[0].resellerId != null ? checkOrder[0].order[0].resellerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
+        const queryResselerUser = { metaId: { $in: [checkOrder[0].order[0].resellerId != null ? checkOrder[0].order[0].resellerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
 
         let dealerUser = await userService.findUserforCustomer(queryDealerUser)
 
@@ -2014,7 +2002,8 @@ async function generateTC(orderData) {
             }
         }
         let mergeFileName = checkOrder.unique_key + '.pdf'
-        const orderFile = 'pdfs/' + mergeFileName;
+        //  const orderFile = 'pdfs/' + mergeFileName;
+        const orderFile = `/tmp/${mergeFileName}`; // Temporary local storage
         const html = `<head>
         <link rel="stylesheet" href="https://gistcdn.githack.com/mfd/09b70eb47474836f25a21660282ce0fd/raw/e06a670afcb2b861ed2ac4a1ef752d062ef6b46b/Gilroy.css"></link>
         </head>
@@ -2067,72 +2056,59 @@ async function generateTC(orderData) {
 
         pdf.create(html, options).toFile(orderFile, async (err, result) => {
             if (err) return console.log(err);
-            // -------------------merging pdfs 
             const { PDFDocument, rgb } = require('pdf-lib');
             const fs = require('fs').promises;
+            const fileContent = await fs.readFile(orderFile);
+            const bucketName = process.env.bucket_name
+            const s3Key = `pdfs/${mergeFileName}`;
+            //Upload to S3 bucket
+            await uploadToS3(orderFile, bucketName, s3Key);
+            const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : "file-1723185474819.pdf"
+            const termPath = termConditionFile
+            //Download from S3 bucket 
+            const termPathBucket = await downloadFromS3(bucketName, termPath);
+            const orderPathBucket = await downloadFromS3(bucketName, s3Key);
+            async function mergePDFs(pdfBytes1, pdfBytes2, outputPath) {
+                const pdfDoc1 = await PDFDocument.load(pdfBytes1);
+                const pdfDoc2 = await PDFDocument.load(pdfBytes2);
 
-            async function mergePDFs(pdfPath1, pdfPath2, outputPath) {
-                // Load the PDFs
-                const pdfDoc1Bytes = await fs.readFile(pdfPath1);
-                const pdfDoc2Bytes = await fs.readFile(pdfPath2);
-
-                const pdfDoc1 = await PDFDocument.load(pdfDoc1Bytes);
-                const pdfDoc2 = await PDFDocument.load(pdfDoc2Bytes);
-
-                // Create a new PDF Document
                 const mergedPdf = await PDFDocument.create();
 
-                // Add the pages of the first PDF
                 const pdfDoc1Pages = await mergedPdf.copyPages(pdfDoc1, pdfDoc1.getPageIndices());
                 pdfDoc1Pages.forEach((page) => mergedPdf.addPage(page));
 
-                // Add the pages of the second PDF
                 const pdfDoc2Pages = await mergedPdf.copyPages(pdfDoc2, pdfDoc2.getPageIndices());
                 pdfDoc2Pages.forEach((page) => mergedPdf.addPage(page));
 
-                // Serialize the PDF
                 const mergedPdfBytes = await mergedPdf.save();
 
-                // Write the merged PDF to a file
                 await fs.writeFile(outputPath, mergedPdfBytes);
+                return mergedPdfBytes;
             }
-
-            const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : checkOrder.termCondition.filename
-            // Usage
-            const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
-            const pdfPath1 = process.env.MAIN_FILE_PATH + "uploads/" + termConditionFile;
-            const outputPath = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName;
-            link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
-            let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
-            const pathToAttachment = process.env.MAIN_FILE_PATH + "/uploads/mergedFile/" + mergeFileName
-            fs.readFile(pathToAttachment)
-                .then(async (fileData) => {
-                    const attachment = fileData.toString('base64');
-                    try {
-                        //sendTermAndCondition
-                        // Send Email code here
-                        let notificationEmails = await supportingFunction.getUserEmails();
-                        notificationEmails.push(DealerUser.email)
-                        notificationEmails.push(resellerUser?.email)
-                        let emailData = {
-                            senderName: customerUser.firstName,
-                            content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
-                            subject: 'Order Term and Condition-' + checkOrder.unique_key,
-                        }
-                        let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
-
-                    } catch (error) {
-                        console.error('Error sending email:', error);
-                        if (error.response) {
-                            console.error('Error response:', error.response.body);
-                        }
-                    }
-                })
-                .catch(err => {
-                    console.error("Error reading the file:", err);
-                });
-
-
+            // Merge PDFs
+            
+            const mergedPdf = await mergePDFs(termPathBucket, orderPathBucket, `/tmp/merged_${mergeFileName}`);
+            // Upload merged PDF to S3
+            const mergedKey = `mergedFile/${mergeFileName}`;
+            await uploadToS3(`/tmp/merged_${mergeFileName}`, bucketName, mergedKey);
+            const params = {
+                Bucket: bucketName,
+                Key: `mergedFile/${mergeFileName}`
+            };
+            //Read from the s3 bucket
+            const data = await S3.getObject(params).promise();
+            let attachment = data.Body.toString('base64');
+            //sendTermAndCondition
+            // Send Email code here
+            let notificationEmails = await supportingFunction.getUserEmails();
+            notificationEmails.push(DealerUser.email)
+            notificationEmails.push(resellerUser?.email)
+            let emailData = {
+                senderName: customerUser.firstName,
+                content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
+                subject: 'Order Term and Condition-' + checkOrder.unique_key,
+            }
+            let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
         })
         return 1
 
@@ -2145,3 +2121,25 @@ async function generateTC(orderData) {
         return;
     }
 }
+
+//Upload to S3
+const uploadToS3 = async (filePath, bucketName, key) => {
+    const fs = require('fs').promises;
+    const fileContent = await fs.readFile(filePath);
+    const params = {
+        Bucket: bucketName,
+        Key: key,
+        Body: fileContent,
+    };
+    return S3.upload(params).promise();
+};
+
+//Download to S3
+const downloadFromS3 = async (bucketName, key) => {
+    const params = {
+        Bucket: bucketName,
+        Key: key,
+    };
+    const data = await S3.getObject(params).promise();
+    return data.Body;
+};

@@ -93,7 +93,7 @@ exports.updateDealer = async (req, res) => {
       return;
     };
 
-    let primaryUser = await supportingFunction.getPrimaryUser({ accountId: req.params.dealerId, isPrimary: true })
+    let primaryUser = await supportingFunction.getPrimaryUser({ metaId: req.params.dealerId, isPrimary: true })
 
     let IDs = await supportingFunction.getUserIds()
     IDs.push(primaryUser._id)
@@ -129,44 +129,14 @@ exports.uploadTermAndCondition = async (req, res, next) => {
         return;
       }
       let file = req.file;
-      //constant params
-      // const constantParams = {
-      //   Bucket: process.env.bucket_name
-      // }
-      // const downloadParams = {
-      //   Delimiter: '/',
-      //   ...constantParams,
-      //   Prefix: file.key
-      // };
-      // S3Bucket.listObjects(downloadParams, function (err, data) {
-      //   if (err) throw err;
-      //   console.log(data);
-      // });
-      var params = { Bucket: process.env.bucket_name, Key: 'orderFile/file-1723564622427.xlsx' };
-      S3Bucket.getObject(params, function (err, data) {
-
-        if (err) {
-          console.log(err);
-        } else {
-          // Parse the buffer as an Excel file
-          const workbook = XLSX.read(data.Body, { type: 'buffer' });
-          // Extract the data from the first sheet
-          const sheetName = workbook.SheetNames[0];
-          const worksheet = workbook.Sheets[sheetName];
-          const jsonData = XLSX.utils.sheet_to_json(worksheet);
-          console.log(jsonData);
-        }
-
-      })
-
-
+      file.fileName = file.key
       // Log or process the content as needed
 
       res.send({
         code: constant.successCode,
         message: 'Success!',
         file
-        
+
       })
     })
   }
@@ -217,7 +187,7 @@ exports.registerDealer = async (req, res) => {
     // Check if the email already exists
     const pendingUser = await userService.findOneUser({ email: req.body.email });
     if (pendingUser) {
-      let checkDealer = await dealerService.getDealerByName({ _id: pendingUser.accountId })
+      let checkDealer = await dealerService.getDealerByName({ _id: pendingUser.metaId })
       if (checkDealer) {
         if (checkDealer.status == "Pending") {
           res.send({
@@ -277,7 +247,6 @@ exports.registerDealer = async (req, res) => {
       lastName: data.lastName,
       phoneNumber: data.phoneNumber,
       roleId: checkRole._id,
-      accountId: createdDealer._id,
       metaId: createdDealer._id,
     };
 
@@ -305,15 +274,8 @@ exports.registerDealer = async (req, res) => {
     };
     // Create the user
     let createNotification = await userService.createNotification(notificationData);
-
-    let settingData = await userService.getSetting({});
-
-    // if (createNotification) { 
     let emailData = {
       dealerName: createdDealer.name,
-      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-      address: settingData[0]?.address,
       subject: "New Dealer Registration Request Received",
       c1: "Thank you for",
       c2: "Registering! as a",
@@ -322,18 +284,13 @@ exports.registerDealer = async (req, res) => {
       c5: "We appreciate your patience.",
       role: "Dealer"
     }
-    let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email,[], emailData))
+    let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
     const admin = await supportingFunction.getPrimaryUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true })
     const notificationEmail = await supportingFunction.getUserEmails();
     emailData = {
-      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-      address: settingData[0]?.address,
-      websiteSetting: settingData[0],
       senderName: admin.firstName,
       subject: "Notification of New Dealer Registration",
       content: "A new dealer " + createdDealer.name + " has been registered"
-
     }
     mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmail, [], emailData))
     let logData = {
@@ -430,7 +387,7 @@ exports.statusUpdate = async (req, res) => {
     }
 
     let IDs = await supportingFunction.getUserIds()
-    let getPrimary = await supportingFunction.getPrimaryUser({ accountId: existingDealerPriceBook.dealerId, isPrimary: true })
+    let getPrimary = await supportingFunction.getPrimaryUser({ metaId: existingDealerPriceBook.dealerId, isPrimary: true })
     IDs.push(getPrimary._id)
     let getDealerDetail = await dealerService.getDealerByName({ _id: existingDealerPriceBook.dealerId })
     let notificationData = {
@@ -444,16 +401,9 @@ exports.statusUpdate = async (req, res) => {
     };
 
     let createNotification = await userService.createNotification(notificationData);
-
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
-    let settingData = await userService.getSetting({});
-
     let emailData = {
-      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-      address: settingData[0]?.address,
-      websiteSetting: settingData[0],
       senderName: getPrimary.firstName,
       content: "The price book " + priceBookData[0]?.pName + " has been updated",
       subject: "Update Price Book"
@@ -521,7 +471,7 @@ exports.changeDealerStatus = async (req, res) => {
     }
     //Update Dealer User Status if inactive
     if (!req.body.status) {
-      let dealerUserCreateria = { accountId: req.params.dealerId };
+      let dealerUserCreateria = { metaId: req.params.dealerId };
       let newValue = {
         $set: {
           status: req.body.status
@@ -539,7 +489,7 @@ exports.changeDealerStatus = async (req, res) => {
 
     else {
       if (singleDealer.isAccountCreate) {
-        let dealerUserCreateria = { accountId: req.params.dealerId, isPrimary: true };
+        let dealerUserCreateria = { metaId: req.params.dealerId, isPrimary: true };
         let newValue = {
           $set: {
             status: req.body.status
@@ -564,7 +514,7 @@ exports.changeDealerStatus = async (req, res) => {
     const changedDealerStatus = await dealerService.updateDealerStatus({ _id: req.params.dealerId }, newValue, option);
     if (changedDealerStatus) {
       let IDs = await supportingFunction.getUserIds()
-      let getPrimary = await supportingFunction.getPrimaryUser({ accountId: req.params.dealerId, isPrimary: true })
+      let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.dealerId, isPrimary: true })
 
       IDs.push(getPrimary._id)
       let notificationData = {
@@ -580,13 +530,7 @@ exports.changeDealerStatus = async (req, res) => {
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
       const status_content = req.body.status ? 'Active' : 'Inactive';
-      let settingData = await userService.getSetting({});
-
       let emailData = {
-        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        address: settingData[0]?.address,
-        websiteSetting: settingData[0],
         senderName: singleDealer.name,
         content: "Status has been changed to " + status_content + " " + ", effective immediately.",
         subject: "Update Status"
@@ -693,7 +637,7 @@ exports.createDealerPriceBook = async (req, res) => {
       })
     } else {
       let IDs = await supportingFunction.getUserIds()
-      let getPrimary = await supportingFunction.getPrimaryUser({ accountId: data.dealerId, isPrimary: true })
+      let getPrimary = await supportingFunction.getPrimaryUser({ metaId: data.dealerId, isPrimary: true })
       IDs.push(getPrimary._id)
       let notificationData = {
         title: "New dealer price book created",
@@ -708,15 +652,8 @@ exports.createDealerPriceBook = async (req, res) => {
       let createNotification = await userService.createNotification(notificationData);
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
-      let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
-
-      let settingData = await userService.getSetting({});
-
+      let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
       let emailData = {
-        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        address: settingData[0]?.address,
-        websiteSetting: settingData[0],
         senderName: checkDealer.name,
         content: "The price book name" + " " + checkPriceBookMain[0]?.pName + " has been created successfully! effective immediately.",
         subject: "New Price Book"
@@ -823,9 +760,9 @@ exports.rejectDealer = async (req, res) => {
     //if status is rejected
     if (req.body.status == 'Rejected') {
       let IDs = await supportingFunction.getUserIds()
-      let getPrimary = await supportingFunction.getPrimaryUser({ accountId: singleDealer._id, isPrimary: true })
+      let getPrimary = await supportingFunction.getPrimaryUser({ metaId: singleDealer._id, isPrimary: true })
       IDs.push(getPrimary._id)
-      const deleteUser = await userService.deleteUser({ accountId: req.params.dealerId })
+      const deleteUser = await userService.deleteUser({ metaId: req.params.dealerId })
       if (!deleteUser) {
         res.send({
           code: constant.errorCode,
@@ -854,13 +791,7 @@ exports.rejectDealer = async (req, res) => {
       let createNotification = await userService.createNotification(notificationData);
       // Primary User Welcoime email
       let notificationEmails = await supportingFunction.getUserEmails();
-      let settingData = await userService.getSetting({});
-
       let emailData = {
-        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        address: settingData[0]?.address,
-        websiteSetting: settingData[0],
         senderName: singleDealer.name,
         content: "Dear " + singleDealer.name + ",\n\nWe regret to inform you that your registration as a dealer has been rejected by our admin team. If you have any questions or require further assistance, please feel free to contact us.\n\nBest regards,\nAdmin Team",
         subject: "Rejection Account"
@@ -976,7 +907,7 @@ exports.updateDealerMeta = async (req, res) => {
       await userService.updateUser({ metaId: checkDealer._id }, { status: false }, { new: true })
     }
     let IDs = await supportingFunction.getUserIds()
-    let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
+    let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
     IDs.push(getPrimary._id)
     let notificationData = {
       title: "Dealer updated",
@@ -990,15 +921,7 @@ exports.updateDealerMeta = async (req, res) => {
     let createNotification = await userService.createNotification(notificationData);
     // Send Email code here 
     let notificationEmails = await supportingFunction.getUserEmails();
-
-
-    let settingData = await userService.getSetting({});
-
     let emailData = {
-      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-      address: settingData[0]?.address,
-      websiteSetting: settingData[0],
       senderName: checkDealer.name,
       content: "The information has been updated successfully! effective immediately.",
       subject: "Update Info"
@@ -1065,7 +988,6 @@ exports.addDealerUser = async (req, res) => {
       return;
     }
 
-    data.accountId = checkDealer._id
     data.metaId = checkDealer._id
     data.roleId = '656f08041eb1acda244af8c6'
     let statusCheck;
@@ -1098,7 +1020,7 @@ exports.addDealerUser = async (req, res) => {
       })
     } else {
       let IDs = await supportingFunction.getUserIds()
-      let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
+      let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
       IDs.push(getPrimary._id)
 
       let notificationData = {
@@ -1171,25 +1093,18 @@ exports.uploadDealerPriceBook = async (req, res) => {
         })
         return;
       }
-
-      let csvName = req.file.filename
-      const wb = XLSX.readFile(req.file.path);
-      const sheets = wb.SheetNames;
-      const ws = wb.Sheets[sheets[0]];
-      let totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
+      //Get from S3 Bucket
+      const bucketReadUrl = { Bucket: process.env.bucket_name, Key: file.key };
+      // Await the getObjectFromS3 function to complete
+      const result = await getObjectFromS3(bucketReadUrl);  
+      let totalDataComing1 = result.data;
       totalDataComing1 = totalDataComing1.map(item => {
         if (!item['Product SKU']) {
           return { priceBook: '', 'RetailPrice': item['retailPrice'] };
         }
         return item;
       });
-      const headers = [];
-      for (let cell in ws) {
-        // Check if the cell is in the first row and has a non-empty value
-        if (/^[A-Z]1$/.test(cell) && ws[cell].v !== undefined && ws[cell].v !== null && ws[cell].v.trim() !== '') {
-          headers.push(ws[cell].v);
-        }
-      }
+      const headers = result.headers    
 
       if (headers.length !== 2) {
         res.send({
@@ -1366,7 +1281,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
         //Send notification to admin,dealer,reseller
 
         let IDs = await supportingFunction.getUserIds()
-        let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: req.body.dealerId, isPrimary: true })
+        let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: req.body.dealerId, isPrimary: true })
         IDs.push(dealerPrimary?._id)
         let notificationData = {
           title: "Dealer Price Book Uploaded",
@@ -1395,6 +1310,39 @@ exports.uploadDealerPriceBook = async (req, res) => {
   }
 }
 
+//Get File data from S3 bucket
+const getObjectFromS3 = (bucketReadUrl) => {
+  return new Promise((resolve, reject) => {
+    S3Bucket.getObject(bucketReadUrl, (err, data) => {
+      if (err) {
+        reject(err);
+      } else {
+        const wb = XLSX.read(data.Body, { type: 'buffer' });
+        const sheetName = wb.SheetNames[0];
+        const sheet = wb.Sheets[sheetName];
+        let headers = [];
+
+        for (let cell in sheet) {
+          if (
+            /^[A-Z]1$/.test(cell) &&
+            sheet[cell].v !== undefined &&
+            sheet[cell].v !== null &&
+            sheet[cell].v.trim() !== ""
+          ) {
+            headers.push(sheet[cell].v);
+          }
+        }
+
+        const result = {
+          headers: headers,
+          data: XLSX.utils.sheet_to_json(sheet),
+        };
+
+        resolve(result);
+      }
+    });
+  });
+};
 //Create relation with dealer
 exports.createDeleteRelation = async (req, res) => {
   try {

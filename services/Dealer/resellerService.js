@@ -1,5 +1,5 @@
-const reseller = require("../model/reseller")
-const user = require('../../User/model/users')
+const reseller = require("../../models/Dealer/reseller")
+const user = require('../../models/User/users')
 
 module.exports = class resellerService {
     // Create a new reseller

@@ -559,23 +559,16 @@ exports.createCustomer = async (req, res, next) => {
             })
             return;
         };
-        teamMembers = teamMembers.map(member => ({ ...member, accountId: createdCustomer._id, status: !data.status ? false : member.status, metaId: createdCustomer._id, roleId: process.env.customer }));
+        teamMembers = teamMembers.map(member => ({ ...member,  status: !data.status ? false : member.status, metaId: createdCustomer._id, roleId: process.env.customer }));
         // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
         // Primary User Welcoime email
         let notificationEmails = await supportingFunction.getUserEmails();
-        let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
-        let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkReseller?._id, isPrimary: true })
+        let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
+        let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkReseller?._id, isPrimary: true })
         notificationEmails.push(getPrimary.email)
         notificationEmails.push(resellerPrimary?.email)
-
-        let settingData = await userService.getSetting({});
-
         let emailData = {
-            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-            address: settingData[0]?.address,
-            websiteSetting: settingData[0],
             senderName: getPrimary.firstName,
             content: "We are delighted to inform you that the customer account for " + createdCustomer.username + " has been created.",
             subject: "Customer Account Created - " + createdCustomer.username
@@ -583,6 +576,7 @@ exports.createCustomer = async (req, res, next) => {
 
         // Send Email code here
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+
         if (saveMembers.length > 0) {
             if (data.status) {
                 for (let i = 0; i < saveMembers.length; i++) {
@@ -592,19 +586,7 @@ exports.createCustomer = async (req, res, next) => {
                         let resetPasswordCode = randtoken.generate(4, '123456789')
                         let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
                         let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-                        // const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
-                        const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, {
-                            link: resetLink,
-                            role: "Customer",
-                            flag: "created",
-                            subject: "Set Password",
-                            title: settingData[0]?.title,
-                            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-                            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-                            address: settingData[0]?.address,
-                            servicerName: saveMembers[i].firstName
-                        }))
-
+                        const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { flag: "created", link: resetLink, subject: "Set Password", role: "Customer", servicerName: saveMembers[i].firstName }))
                     }
 
                 }
@@ -727,7 +709,7 @@ exports.createReseller = async (req, res) => {
             })
             return;
         };
-        teamMembers = teamMembers.map(member => ({ ...member, accountId: createdReseler._id, metaId: createdReseler._id, roleId: '65bb94b4b68e5a4a62a0b563' }));
+        teamMembers = teamMembers.map(member => ({ ...member,  metaId: createdReseler._id, roleId: '65bb94b4b68e5a4a62a0b563' }));
         // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
 
@@ -750,15 +732,9 @@ exports.createReseller = async (req, res) => {
         }
         // Primary User Welcoime email
         let notificationEmails = await supportingFunction.getUserEmails();
-        let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
+        let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
         notificationEmails.push(getPrimary.email)
-        let settingData = await userService.getSetting({});
         let emailData = {
-            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-            address: settingData[0]?.address,
-            title: settingData[0]?.title,
-            websiteSetting: settingData[0],
             senderName: getPrimary.firstName,
             content: "We are delighted to inform you that the reseller account for " + createdReseler.name + " has been created.",
             subject: "Reseller Account Created - " + createdReseler.name
@@ -766,6 +742,7 @@ exports.createReseller = async (req, res) => {
 
         // Send Email code here
         let mailing1 = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+
         if (data.status) {
             for (let i = 0; i < saveMembers.length; i++) {
                 if (saveMembers[i].status) {
@@ -774,14 +751,7 @@ exports.createReseller = async (req, res) => {
                     let resetPasswordCode = randtoken.generate(4, '123456789')
                     let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
                     let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-                    const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, {
-                        link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-                        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-                        flag: "created",
-                        subject: "Set Password",
-                        title: settingData[0]?.title,
-                        address: settingData[0]?.address, role: "Reseller", servicerName: saveMembers[i].firstName
-                    }))
+                    const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { flag: "created", link: resetLink, subject: "Set Password", role: "Reseller", servicerName: saveMembers[i].firstName }))
                 }
             }
         }
@@ -920,7 +890,7 @@ exports.createOrder = async (req, res) => {
 
         data.status = "Pending";
         if (data.billTo == "Dealer") {
-            let getUser = await userService.getSingleUserByEmail({ accountId: checkDealer._id, isPrimary: true })
+            let getUser = await userService.getSingleUserByEmail({ metaId: checkDealer._id, isPrimary: true })
             data.billDetail = {
                 billTo: "Dealer",
                 detail: {
@@ -935,7 +905,7 @@ exports.createOrder = async (req, res) => {
 
         if (data.billTo == "Reseller") {
             let getReseller = await resellerService.getReseller({ _id: data.resellerId })
-            let getUser = await userService.getSingleUserByEmail({ accountId: getReseller._id, isPrimary: true })
+            let getUser = await userService.getSingleUserByEmail({ metaId: getReseller._id, isPrimary: true })
             data.billDetail = {
                 billTo: "Reseller",
                 detail: {
@@ -1009,7 +979,7 @@ exports.createOrder = async (req, res) => {
 
         //send notification to admin and dealer 
         let IDs = await supportingFunction.getUserIds()
-        let getPrimary = await supportingFunction.getPrimaryUser({ accountId: req.userId, isPrimary: true })
+        let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.userId, isPrimary: true })
         IDs.push(getPrimary._id)
         let notificationData = {
             title: "New order created",
@@ -1023,13 +993,7 @@ exports.createOrder = async (req, res) => {
         let createNotification = await userService.createNotification(notificationData);
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
-        let settingData = await userService.getSetting({});
-
         let emailData = {
-            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-            address: settingData[0]?.address,
-            websiteSetting: settingData[0],
             senderName: getPrimary.firstName,
             content: "The new order " + savedResponse.unique_key + "  has been created for " + getPrimary.firstName + "",
             subject: "New Order"
@@ -1208,7 +1172,7 @@ exports.editOrderDetail = async (req, res) => {
             let checkDealer = await dealerService.getDealerById(
                 req.userId
             );
-            let getUser = await userService.getSingleUserByEmail({ accountId: checkDealer._id, isPrimary: true })
+            let getUser = await userService.getSingleUserByEmail({ metaId: checkDealer._id, isPrimary: true })
             data.billDetail = {
                 billTo: "Dealer",
                 detail: {
@@ -1222,7 +1186,7 @@ exports.editOrderDetail = async (req, res) => {
         }
         if (data.billTo == "Reseller") {
             let getReseller = await resellerService.getReseller({ _id: data.resellerId })
-            let getUser = await userService.getSingleUserByEmail({ accountId: getReseller._id, isPrimary: true })
+            let getUser = await userService.getSingleUserByEmail({ metaId: getReseller._id, isPrimary: true })
             data.billDetail = {
                 billTo: "Reseller",
                 detail: {
@@ -1306,7 +1270,7 @@ exports.editOrderDetail = async (req, res) => {
 
         //send notification to dealer,reseller,admin,customer
         let IDs = await supportingFunction.getUserIds()
-        let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
+        let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.dealerId, isPrimary: true })
         IDs.push(dealerPrimary._id)
         let notificationData = {
             title: "Order update",
@@ -1321,13 +1285,7 @@ exports.editOrderDetail = async (req, res) => {
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
 
-        let settingData = await userService.getSetting({});
-
         let emailData = {
-            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-            address: settingData[0]?.address,
-            websiteSetting: settingData[0],
             senderName: dealerPrimary.firstName,
             content: "The  order " + checkOrder.unique_key + " has been updated",
             subject: "Order Updated"
@@ -1340,15 +1298,19 @@ exports.editOrderDetail = async (req, res) => {
                 { status: "Active" },
                 { new: true }
             );
+            let contractArray = [];
             var pricebookDetail = [];
             let dealerBookDetail = [];
             let count1 = await contractService.getContractsCountNew();
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             let checkLength = savedResponse.productsArray.length - 1
             await savedResponse.productsArray.map(async (product, index) => {
-                let contractArray = [];
                 let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: checkOrder.dealerId, priceBook: product.priceBookId })
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
+                let headerLength;
+                const bucketReadUrl = { Bucket: process.env.bucket_name, Key: product.orderFile.fileName };
+                // Await the getObjectFromS3 function to complete
+                const result = await getObjectFromS3(bucketReadUrl);
                 let priceBookId = product.priceBookId;
                 let coverageStartDate = product.coverageStartDate;
                 let coverageEndDate = product.coverageEndDate;
@@ -1378,10 +1340,18 @@ exports.editOrderDetail = async (req, res) => {
                 pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
                 pricebookDetail.push(pricebookDetailObject)
                 dealerBookDetail.push(dealerPriceBookObject)
-                const wb = XLSX.readFile(pathFile);
-                const sheets = wb.SheetNames;                
-                const ws = wb.Sheets[sheets[0]];
-                const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
+
+                headerLength = result.headers
+                if (headerLength.length !== 8) {
+                  res.send({
+                    code: constant.errorCode,
+                    message: "Invalid file format detected. The sheet should contain exactly four columns."
+                  })
+                  return
+                }
+
+                const totalDataComing1 = result.data
+                
                 const totalDataComing = totalDataComing1.map((item) => {
                     const keys = Object.keys(item);
                     return {
@@ -1453,7 +1423,6 @@ exports.editOrderDetail = async (req, res) => {
                         }
                     }
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
-            
                     let contractObject = {
                         orderId: savedResponse._id,
                         orderProductId: orderProductId,
@@ -1513,9 +1482,9 @@ exports.editOrderDetail = async (req, res) => {
                     await LOG(logData).save();
                     //send notification to dealer,reseller,admin,customer
                     let IDs = await supportingFunction.getUserIds()
-                    let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: savedResponse.dealerId, isPrimary: true })
-                    let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: savedResponse.customerId, isPrimary: true })
-                    let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: savedResponse.resellerId, isPrimary: true })
+                    let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: savedResponse.dealerId, isPrimary: true })
+                    let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: savedResponse.customerId, isPrimary: true })
+                    let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: savedResponse.resellerId, isPrimary: true })
                     if (resellerPrimary) {
                         IDs.push(resellerPrimary._id)
                     }
@@ -1531,25 +1500,14 @@ exports.editOrderDetail = async (req, res) => {
                     let createNotification = await userService.createNotification(notificationData1);
                     // Send Email code here
                     let notificationEmails = await supportingFunction.getUserEmails();
-                    let settingData = await userService.getSetting({});
-
                     let emailData = {
-                        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-                        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-                        address: settingData[0]?.address,
-                        websiteSetting: settingData[0],
                         senderName: dealerPrimary.firstName,
                         content: "The  order " + savedResponse.unique_key + " has been updated and processed",
                         subject: "Process Order"
                     }
                     let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
                     //Email to Reseller
-
                     emailData = {
-                        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-                        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-                        address: settingData[0]?.address,
-                        websiteSetting: settingData[0],
                         senderName: resellerPrimary?.firstName,
                         content: "The  order " + savedResponse.unique_key + " has been updated and processed",
                         subject: "Process Order"
@@ -1559,6 +1517,7 @@ exports.editOrderDetail = async (req, res) => {
                     //generate T anc C
 
                     if (index == checkLength) {
+
                         let reportingData = {
                             orderId: savedResponse._id,
                             products: pricebookDetail,
@@ -1605,7 +1564,6 @@ async function generateTC(orderData) {
     try {
         let response;
         let link;
-        let websiteData = await supportingFunction.websiteSetting();
         const checkOrder = await orderService.getOrder({ _id: orderData._id }, { isDeleted: false })
         let coverageStartDate = checkOrder.productsArray[0]?.coverageStartDate;
         let coverageEndDate = checkOrder.productsArray[0]?.coverageEndDate;
@@ -1633,6 +1591,7 @@ async function generateTC(orderData) {
             }
         })
         const contractArray = await Promise.all(contractArrayPromise);
+
         for (let i = 0; i < checkOrder?.productsArray.length; i++) {
             if (checkOrder?.productsArray[i].priceType == 'Quantity Pricing') {
                 for (let j = 0; j < checkOrder?.productsArray[i].QuantityPricing.length; j++) {
@@ -1647,6 +1606,7 @@ async function generateTC(orderData) {
             }
             else {
                 let findContract = contractArray.find(contract => contract.orderProductId.toString() === checkOrder?.productsArray[i]._id.toString())
+
                 let obj = {
                     productName: findContract.productName,
                     noOfProducts: checkOrder?.productsArray[i].noOfProducts
@@ -1655,6 +1615,7 @@ async function generateTC(orderData) {
             }
 
         }
+        // return;
         const tableRows = productCoveredArray.map(product => `
         <p style="font-size:13px;">${product.productName} : ${product.noOfProducts}</p>
 
@@ -1669,6 +1630,7 @@ async function generateTC(orderData) {
         }, { isDeleted: false })
 
         const servicerUser = await userService.getUserById1({ metaId: checkOrder.servicerId, isPrimary: true }, { isDeleted: false })
+        //res.json(checkDealer);return
         const options = {
             format: 'A4',
             orientation: 'portrait',
@@ -1680,13 +1642,14 @@ async function generateTC(orderData) {
             }
         }
         let mergeFileName = checkOrder.unique_key + '.pdf'
-        const orderFile = 'pdfs/' + mergeFileName;
+        //  const orderFile = 'pdfs/' + mergeFileName;
+        const orderFile = `/tmp/${mergeFileName}`; // Temporary local storage
         const html = `<head>
         <link rel="stylesheet" href="https://gistcdn.githack.com/mfd/09b70eb47474836f25a21660282ce0fd/raw/e06a670afcb2b861ed2ac4a1ef752d062ef6b46b/Gilroy.css"></link>
         </head>
         <table border='1' border-collapse='collapse' style=" border-collapse: collapse; font-size:13px;font-family:  'Gilroy', sans-serif;">
                             <tr>
-                                <td style="width:50%; font-size:13px;padding:15px;">  ${websiteData[0].title} service contract number:</td>
+                                <td style="width:50%; font-size:13px;padding:15px;">  GET COVER service contract number:</td>
                                 <td style="font-size:13px;">${checkOrder.unique_key}</td>
                             </tr>
                             <tr>
@@ -1698,7 +1661,7 @@ async function generateTC(orderData) {
                                 </td>
                             </tr>
                         <tr>
-                            <td style="font-size:13px;padding:15px;"> ${websiteData[0].title}  service contract holder name:</td>
+                            <td style="font-size:13px;padding:15px;">GET COVER service contract holder name:</td>
                             <td style="font-size:13px;">
                             <p> <b>Attention –</b>${checkCustomer ? checkCustomer?.username : ''}</p>
                             <p> <b>Email Address –</b>${checkCustomer ? customerUser?.email : ''}</p>
@@ -1706,16 +1669,15 @@ async function generateTC(orderData) {
                             </td>
                         </tr>
                     <tr>
-                        <td style="font-size:13px;padding:15px;">Address of  ${websiteData[0].title}  service contract holder:</td>
-                        <td style="font-size:13px;">
-                        ${checkCustomer ? checkCustomer?.street : ''}, ${checkCustomer ? checkCustomer?.city : ''}, ${checkCustomer ? checkCustomer?.state : ''}, ${checkCustomer ? checkCustomer?.country : ''}</td>                
-                          </tr>
+                        <td style="font-size:13px;padding:15px;">Address of GET COVER service contract holder:</td>
+                        <td style="font-size:13px;">${checkCustomer ? checkCustomer?.street : ''}, ${checkCustomer ? checkCustomer?.city : ''}, ${checkCustomer ? checkCustomer?.state : ''}, ${checkCustomer ? checkCustomer?.country : ''}</td>
+                   </tr>
                 <tr>
                     <td style="font-size:13px;padding:15px;">Coverage Start Date:</td>
                     <td style="font-size:13px;"> ${moment(coverageStartDate).format("MM/DD/YYYY")}</td>
                 </tr>
             <tr>
-                <td style="font-size:13px;padding:15px;"> ${websiteData[0].title}  service contract period:</td>
+                <td style="font-size:13px;padding:15px;">GET COVER service contract period:</td>
                 <td style="font-size:13px;">
                 ${checkOrder.productsArray[0]?.term / 12} 
                 ${checkOrder.productsArray[0]?.term / 12 === 1 ? 'Year' : 'Years'}
@@ -1734,84 +1696,70 @@ async function generateTC(orderData) {
 
         pdf.create(html, options).toFile(orderFile, async (err, result) => {
             if (err) return console.log(err);
-            // -------------------merging pdfs 
             const { PDFDocument, rgb } = require('pdf-lib');
             const fs = require('fs').promises;
+            const fileContent = await fs.readFile(orderFile);
+            const bucketName = process.env.bucket_name
+            const s3Key = `pdfs/${mergeFileName}`;
+            //Upload to S3 bucket
+            await uploadToS3(orderFile, bucketName, s3Key);
+            const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : "file-1723185474819.pdf"
+            const termPath = termConditionFile
+            //Download from S3 bucket 
+            const termPathBucket = await downloadFromS3(bucketName, termPath);
+            const orderPathBucket = await downloadFromS3(bucketName, s3Key);
+            async function mergePDFs(pdfBytes1, pdfBytes2, outputPath) {
+                const pdfDoc1 = await PDFDocument.load(pdfBytes1);
+                const pdfDoc2 = await PDFDocument.load(pdfBytes2);
 
-            async function mergePDFs(pdfPath1, pdfPath2, outputPath) {
-                // Load the PDFs
-                const pdfDoc1Bytes = await fs.readFile(pdfPath1);
-                const pdfDoc2Bytes = await fs.readFile(pdfPath2);
-
-                const pdfDoc1 = await PDFDocument.load(pdfDoc1Bytes);
-                const pdfDoc2 = await PDFDocument.load(pdfDoc2Bytes);
-
-                // Create a new PDF Document
                 const mergedPdf = await PDFDocument.create();
 
-                // Add the pages of the first PDF
                 const pdfDoc1Pages = await mergedPdf.copyPages(pdfDoc1, pdfDoc1.getPageIndices());
                 pdfDoc1Pages.forEach((page) => mergedPdf.addPage(page));
 
-                // Add the pages of the second PDF
                 const pdfDoc2Pages = await mergedPdf.copyPages(pdfDoc2, pdfDoc2.getPageIndices());
                 pdfDoc2Pages.forEach((page) => mergedPdf.addPage(page));
 
-                // Serialize the PDF
                 const mergedPdfBytes = await mergedPdf.save();
 
-                // Write the merged PDF to a file
                 await fs.writeFile(outputPath, mergedPdfBytes);
+                return mergedPdfBytes;
             }
-
-            const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : checkOrder.termCondition.filename
-            // Usage
-            const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
-            const pdfPath1 = process.env.MAIN_FILE_PATH + "uploads/" + termConditionFile;
-            const outputPath = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName;
-            link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
-            let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
-            const pathToAttachment = process.env.MAIN_FILE_PATH + "/uploads/mergedFile/" + mergeFileName
-            fs.readFile(pathToAttachment)
-                .then(async (fileData) => {
-                    const attachment = fileData.toString('base64');
-                    try {
-                        //sendTermAndCondition
-                        // Send Email code here
-                        let notificationEmails = await supportingFunction.getUserEmails();
-                        notificationEmails.push(DealerUser.email)
-                        notificationEmails.push(resellerUser?.email)
-                        let settingData = await userService.getSetting({});
-                        let emailData = {
-                            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-                            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-                            address: settingData[0]?.address,
-                            websiteSetting: settingData[0],
-                            senderName: customerUser.firstName,
-                            content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
-                            subject: 'Order Term and Condition-' + checkOrder.unique_key,
-                        }
-                        let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
-
-                    } catch (error) {
-                        console.error('Error sending email:', error);
-                        if (error.response) {
-                            console.error('Error response:', error.response.body);
-                        }
-                    }
-                })
-                .catch(err => {
-                    console.error("Error reading the file:", err);
-                });
+            // Merge PDFs
+            const mergedPdf = await mergePDFs(termPathBucket, orderPathBucket, `/tmp/merged_${mergeFileName}`);
+            // Upload merged PDF to S3
+            const mergedKey = `mergedFile/${mergeFileName}`;
+            await uploadToS3(`/tmp/merged_${mergeFileName}`, bucketName, mergedKey);
+            const params = {
+                Bucket: bucketName,
+                Key: `mergedFile/${mergeFileName}`
+            };
+            //Read from the s3 bucket
+            const data = await S3.getObject(params).promise();
+            let attachment = data.Body.toString('base64');
+           
+            //sendTermAndCondition
+            // Send Email code here
+            let notificationEmails = await supportingFunction.getUserEmails();
+            notificationEmails.push(DealerUser.email)
+            notificationEmails.push(resellerUser?.email)
+            let emailData = {
+                senderName: customerUser.firstName,
+                content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
+                subject: 'Order Term and Condition-' + checkOrder.unique_key,
+            }
+            let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
+          
         })
         return 1
 
     }
-    catch (error) {
-        console.error('Error :', error);
-        if (error.response) {
-            console.error('Error:', error.response.body);
-        }
+    catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+        return;
     }
 }
 
@@ -2184,6 +2132,62 @@ exports.claimReportinDropdown = async (req, res) => {
             message: err.message
         })
     }
+};
+
+//Get File data from S3 bucket
+const getObjectFromS3 = (bucketReadUrl) => {
+    return new Promise((resolve, reject) => {
+        S3Bucket.getObject(bucketReadUrl, (err, data) => {
+            if (err) {
+                reject(err);
+            } else {
+                const wb = XLSX.read(data.Body, { type: 'buffer' });
+                const sheetName = wb.SheetNames[0];
+                const sheet = wb.Sheets[sheetName];
+                let headers = [];
+
+                for (let cell in sheet) {
+                    if (
+                        /^[A-Z]1$/.test(cell) &&
+                        sheet[cell].v !== undefined &&
+                        sheet[cell].v !== null &&
+                        sheet[cell].v.trim() !== ""
+                    ) {
+                        headers.push(sheet[cell].v);
+                    }
+                }
+
+                const result = {
+                    headers: headers,
+                    data: XLSX.utils.sheet_to_json(sheet),
+                };
+
+                resolve(result);
+            }
+        });
+    });
+};
+
+//Upload to S3
+const uploadToS3 = async (filePath, bucketName, key) => {
+    const fs = require('fs').promises;
+    const fileContent = await fs.readFile(filePath);
+    const params = {
+        Bucket: bucketName,
+        Key: key,
+        Body: fileContent,
+    };
+    return S3.upload(params).promise();
+};
+
+//Download to S3
+const downloadFromS3 = async (bucketName, key) => {
+    const params = {
+        Bucket: bucketName,
+        Key: key,
+    };
+    const data = await S3.getObject(params).promise();
+    return data.Body;
 };
 
 

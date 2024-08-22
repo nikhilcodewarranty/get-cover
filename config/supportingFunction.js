@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-const userService = require('../User/services/userService')
-const REPORTING = require('../Order/model/reporting')
+const userService = require('../services/User/userService')
+const REPORTING = require('../models/Order/reporting')
 
 
 exports.getUserIds = async () => {
@@ -59,6 +59,35 @@ exports.checkReporting = async (data) => {
         return { code: 401, message: err.message }
     }
 }
+
+exports.checkObjectId = async (req, res, next) => {
+    try {
+        function isValidObjectId(id) {
+            return mongoose.Types.ObjectId.isValid(id);
+        }
+
+        const keys = Object.keys(req.params);
+
+        for (const key of keys) {
+            const paramValue = req.params[key];
+            if (!isValidObjectId(paramValue)) {
+                res.send({
+                    code: 401,
+                    message: "Invalid ID"
+                });
+                return
+            }
+        }
+
+        next();
+    } catch (err) {
+        return res.status(401).send({
+            code: 401,
+            message: err.message
+        });
+    }
+}
+
 
 
 // module.exports = getUserIds;

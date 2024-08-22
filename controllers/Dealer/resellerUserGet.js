@@ -16,7 +16,6 @@ const priceBookService = require("../../services/PriceBook/priceBookService");
 const providerService = require("../../services/Provider/providerService")
 const userService = require("../../services/User/userService");
 const reportingController = require("../../controllers/User/reportingController");
-const dealerResourceResponse = require("../utils/constant");
 const supportingFunction = require('../../config/supportingFunction')
 const constant = require('../../config/constant')
 const bcrypt = require("bcrypt");

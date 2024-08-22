@@ -80,17 +80,18 @@ exports.createReseller = async (req, res) => {
             })
             return;
         };
+        //Send Notification to reseller and admin
 
         let IDs = await supportingFunction.getUserIds()
 
         // Create the user
-        teamMembers = teamMembers.map(member => ({ ...member, accountId: createdReseler._id, metaId: createdReseler._id, roleId: '65bb94b4b68e5a4a62a0b563' }));
+        teamMembers = teamMembers.map(member => ({ ...member, metaId: createdReseler._id, roleId: '65bb94b4b68e5a4a62a0b563' }));
 
         // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
         // Primary User Welcoime email
         let notificationEmails = await supportingFunction.getUserEmails();
-        let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
+        let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
         notificationEmails.push(getPrimary.email)
         IDs.push(getPrimary._id)
         let notificationData = {
@@ -100,22 +101,17 @@ exports.createReseller = async (req, res) => {
             flag: 'reseller',
             notificationFor: IDs
         };
-        //Send Notification to reseller and admin
 
         let createNotification = await userService.createNotification(notificationData);
-        let settingData = await userService.getSetting({});
         let emailData = {
-            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-            address: settingData[0]?.address,
-            websiteSetting: settingData[0],
             senderName: getPrimary.firstName,
             content: "We are delighted to inform you that the reseller account for " + createdReseler.name + " has been created.",
             subject: "Reseller Account Created - " + createdReseler.name
         }
+
+        // Send Email code here
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
 
-        // // Send Email code here
         if (data.status) {
             for (let i = 0; i < saveMembers.length; i++) {
                 if (saveMembers[i].status) {
@@ -124,13 +120,7 @@ exports.createReseller = async (req, res) => {
                     let resetPasswordCode = randtoken.generate(4, '123456789')
                     let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
                     let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-                    const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, {
-                        link: resetLink, flag: "created", darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-                        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-                        title: settingData[0]?.title,
-                        subject: "Set Password",
-                        address: settingData[0]?.address, role: "Reseller", servicerName: saveMembers[i].firstName
-                    }))
+                    const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { flag: "created", link: resetLink, subject: "Set Password", role: "Reseller", servicerName: saveMembers[i].firstName }))
                 }
 
             }
@@ -205,9 +195,9 @@ exports.getAllResellers = async (req, res) => {
             return;
         };
 
-        const resellerId = resellers.map(obj => obj._id.toString());
+        const resellerId = resellers.map(obj => obj._id);
         const resellerOrderIds = resellers.map(obj => obj._id);
-        const queryUser = { accountId: { $in: resellerId }, isPrimary: true };
+        const queryUser = { metaId: { $in: resellerId }, isPrimary: true };
         let getPrimaryUser = await userService.findUserforCustomer(queryUser)
         //Get Reseller Orders
         let project = {
@@ -226,8 +216,8 @@ exports.getAllResellers = async (req, res) => {
         let orderQuery = { resellerId: { $in: resellerOrderIds }, status: "Active" };
         let ordersData = await orderService.getAllOrderInCustomers(orderQuery, project, "$resellerId")
         const result_Array = getPrimaryUser.map(item1 => {
-            const matchingItem = resellers.find(item2 => item2._id.toString() === item1.accountId.toString());
-            const orders = ordersData.find(order => order._id.toString() === item1.accountId.toString())
+            const matchingItem = resellers.find(item2 => item2._id.toString() === item1.metaId.toString());
+            const orders = ordersData.find(order => order._id.toString() === item1.metaId.toString())
             if (matchingItem || orders) {
                 return {
                     ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
@@ -284,11 +274,11 @@ exports.getResellerByDealerId = async (req, res) => {
         return;
     };
     let resellerData = await resellerService.getResellers({ dealerId: req.params.dealerId }, { isDeleted: 0 })
-    const resellerIds = resellerData.map(reseller => reseller._id.toString())
-    const queryUser = { accountId: { $in: resellerIds }, isPrimary: true };
+    const resellerIds = resellerData.map(reseller => reseller._id)
+    const queryUser = { metaId: { $in: resellerIds }, isPrimary: true };
     let getPrimaryUser = await userService.findUserforCustomer(queryUser)
     const result_Array = getPrimaryUser.map(item1 => {
-        const matchingItem = resellerData.find(item2 => item2._id.toString() === item1.accountId.toString());
+        const matchingItem = resellerData.find(item2 => item2._id.toString() === item1.metaId.toString());
 
         if (matchingItem) {
             return {
@@ -308,163 +298,183 @@ exports.getResellerByDealerId = async (req, res) => {
 
 //Get reseller by id
 exports.getResellerById = async (req, res) => {
-    let checkReseller = await resellerService.getResellers({ _id: req.params.resellerId }, { isDeleted: 0 });
-    if (!checkReseller[0]) {
-        res.send({
-            code: constant.errorCode,
-            message: 'Reseller not found'
-        })
-        return;
-    }
-    let checkDealerStatus = await dealerService.getDealerByName({ _id: checkReseller[0].dealerId })
-    const query1 = { accountId: { $in: [checkReseller[0]._id] }, isPrimary: true };
-    let resellerUser = await userService.getMembers(query1, { isDeleted: false })
-    if (!resellerUser) {
-        res.send({
-            code: constant.errorCode,
-            message: 'Primary user not found of this reseller'
-        })
-        return;
-    }
+    try {
 
-    let project = {
-        productsArray: 1,
-        dealerId: 1,
-        unique_key: 1,
-        servicerId: 1,
-        customerId: 1,
-        resellerId: 1,
-        paymentStatus: 1,
-        status: 1,
-        venderOrder: 1,
-        orderAmount: 1,
-    }
-    let orderQuery = {
-        $and: [
-            { resellerId: { $in: [checkReseller[0]._id] }, status: "Active" },
-        ]
-    }
-    let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project, "$resellerId");
-    //Get Claim Result 
-    const claimQuery = { claimFile: 'Completed' }
-    let lookupQuery = [
-        {
-            $match: claimQuery
-        },
-        {
-            $lookup: {
-                from: "contracts",
-                localField: "contractId",
-                foreignField: "_id",
-                as: "contracts",
-            }
-        },
-        {
-            $unwind: "$contracts"
-        },
-        {
-            $lookup: {
-                from: "orders",
-                localField: "contracts.orderId",
-                foreignField: "_id",
-                as: "contracts.orders",
-            },
+        function isValidObjectId(id) {
+            return mongoose.Types.ObjectId.isValid(id);
+        }
+        if (!isValidObjectId(req.params.resellerId)) {
+            res.send({
+                code: constant.errorCode,
+                message: "Invalid resellerId"
+            })
+            return
+        }
 
-        },
-        {
-            $unwind: "$contracts.orders"
-        },
-        {
-            $match:
+        let checkReseller = await resellerService.getResellers({ _id: req.params.resellerId }, { isDeleted: 0 });
+        if (!checkReseller[0]) {
+            res.send({
+                code: constant.errorCode,
+                message: 'Reseller not found'
+            })
+            return;
+        }
+        let checkDealerStatus = await dealerService.getDealerByName({ _id: checkReseller[0].dealerId })
+        const query1 = { metaId: { $in: [checkReseller[0]._id] }, isPrimary: true };
+        let resellerUser = await userService.getMembers(query1, { isDeleted: false })
+        if (!resellerUser) {
+            res.send({
+                code: constant.errorCode,
+                message: 'Primary user not found of this reseller'
+            })
+            return;
+        }
+
+        let project = {
+            productsArray: 1,
+            dealerId: 1,
+            unique_key: 1,
+            servicerId: 1,
+            customerId: 1,
+            resellerId: 1,
+            paymentStatus: 1,
+            status: 1,
+            venderOrder: 1,
+            orderAmount: 1,
+        }
+        let orderQuery = {
+            $and: [
+                { resellerId: { $in: [checkReseller[0]._id] }, status: "Active" },
+            ]
+        }
+        let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project, "$resellerId");
+        //Get Claim Result 
+        const claimQuery = { claimFile: 'Completed' }
+        let lookupQuery = [
             {
-                $and: [
-                    { "contracts.orders.resellerId": new mongoose.Types.ObjectId(req.params.resellerId) },
-                ]
+                $match: claimQuery
             },
-        },
-        {
-            "$group": {
-                "_id": "",
-                "totalAmount": {
-                    "$sum": {
-                        "$sum": "$totalAmount"
-                    }
+            {
+                $lookup: {
+                    from: "contracts",
+                    localField: "contractId",
+                    foreignField: "_id",
+                    as: "contracts",
+                }
+            },
+            {
+                $unwind: "$contracts"
+            },
+            {
+                $lookup: {
+                    from: "orders",
+                    localField: "contracts.orderId",
+                    foreignField: "_id",
+                    as: "contracts.orders",
+                },
+
+            },
+            {
+                $unwind: "$contracts.orders"
+            },
+            {
+                $match:
+                {
+                    $and: [
+                        { "contracts.orders.resellerId": new mongoose.Types.ObjectId(req.params.resellerId) },
+                    ]
                 },
             },
-
-        },
-    ]
-
-    let valueClaim = await claimService.getClaimWithAggregate(lookupQuery);
-    const rejectedQuery = { claimFile: { $ne: "Rejected" } }
-    //Get number of claims
-    let numberOfCompleletedClaims = [
-        {
-            $match: claimQuery
-        },
-        {
-            $lookup: {
-                from: "contracts",
-                localField: "contractId",
-                foreignField: "_id",
-                as: "contracts",
-            }
-        },
-        {
-            $unwind: "$contracts"
-        },
-        {
-            $lookup: {
-                from: "orders",
-                localField: "contracts.orderId",
-                foreignField: "_id",
-                as: "contracts.orders",
-            },
-
-        },
-        {
-            $unwind: "$contracts.orders"
-        },
-        {
-            $match:
             {
-                $and: [
-                    { "contracts.orders.resellerId": new mongoose.Types.ObjectId(req.params.resellerId) },
-                ]
+                "$group": {
+                    "_id": "",
+                    "totalAmount": {
+                        "$sum": {
+                            "$sum": "$totalAmount"
+                        }
+                    },
+                },
+
             },
-        },
-    ]
+        ]
 
-    let numberOfClaims = await claimService.getClaimWithAggregate(numberOfCompleletedClaims);
-    const claimData = {
-        numberOfClaims: numberOfClaims.length,
-        valueClaim: valueClaim[0]?.totalAmount
+        let valueClaim = await claimService.getClaimWithAggregate(lookupQuery);
+        const rejectedQuery = { claimFile: { $ne: "Rejected" } }
+        //Get number of claims
+        let numberOfCompleletedClaims = [
+            {
+                $match: claimQuery
+            },
+            {
+                $lookup: {
+                    from: "contracts",
+                    localField: "contractId",
+                    foreignField: "_id",
+                    as: "contracts",
+                }
+            },
+            {
+                $unwind: "$contracts"
+            },
+            {
+                $lookup: {
+                    from: "orders",
+                    localField: "contracts.orderId",
+                    foreignField: "_id",
+                    as: "contracts.orders",
+                },
+
+            },
+            {
+                $unwind: "$contracts.orders"
+            },
+            {
+                $match:
+                {
+                    $and: [
+                        { "contracts.orders.resellerId": new mongoose.Types.ObjectId(req.params.resellerId) },
+                    ]
+                },
+            },
+        ]
+
+        let numberOfClaims = await claimService.getClaimWithAggregate(numberOfCompleletedClaims);
+        const claimData = {
+            numberOfClaims: numberOfClaims.length,
+            valueClaim: valueClaim[0]?.totalAmount
+        }
+        const result_Array = resellerUser.map(user => {
+            let matchItem = checkReseller.find(reseller => reseller._id.toString() == user.metaId.toString());
+            let order = ordersResult.find(order => order._id.toString() === user.metaId.toString())
+            if (matchItem || order) {
+                return {
+                    ...user.toObject(),
+                    resellerData: matchItem.toObject(),
+                    orderData: order ? order : {},
+                    claimData: claimData
+                }
+            }
+            else {
+                return {
+                    ...user.toObject(),
+                    resellerData: {}
+                }
+            }
+        })
+
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            reseller: result_Array,
+            dealerStatus: checkDealerStatus.accountStatus
+        })
+
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
     }
-    const result_Array = resellerUser.map(user => {
-        let matchItem = checkReseller.find(reseller => reseller._id.toString() == user.accountId.toString());
-        let order = ordersResult.find(order => order._id.toString() === user.accountId.toString())
-        if (matchItem || order) {
-            return {
-                ...user.toObject(),
-                resellerData: matchItem.toObject(),
-                orderData: order ? order : {},
-                claimData: claimData
-            }
-        }
-        else {
-            return {
-                ...user.toObject(),
-                resellerData: {}
-            }
-        }
-    })
-
-    res.send({
-        code: constant.successCode,
-        message: "Success",
-        reseller: result_Array,
-        dealerStatus: checkDealerStatus.accountStatus
-    })
 
 
 }
@@ -482,7 +492,7 @@ exports.getResellerUsers = async (req, res) => {
     }
     const queryUser = {
         $and: [
-            { accountId: { $in: checkReseller._id } },
+            { metaId: { $in: checkReseller._id } },
             { firstName: { '$regex': data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { lastName: { '$regex': data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -730,12 +740,12 @@ exports.editResellers = async (req, res) => {
             }
 
         }
-        let resellerUserCreateria = { accountId: req.params.resellerId };
+        let resellerUserCreateria = { metaId: req.params.resellerId };
         let newValue = {
             status: false
         };
         if (data.isAccountCreate && checkReseller.status) {
-            resellerUserCreateria = { accountId: req.params.resellerId, isPrimary: true };
+            resellerUserCreateria = { metaId: req.params.resellerId, isPrimary: true };
             newValue = {
                 status: true
             };
@@ -744,8 +754,8 @@ exports.editResellers = async (req, res) => {
         //Send notification to admin,dealer,reseller
 
         let IDs = await supportingFunction.getUserIds()
-        let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkReseller.dealerId, isPrimary: true })
-        let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkReseller._id, isPrimary: true })
+        let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkReseller.dealerId, isPrimary: true })
+        let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkReseller._id, isPrimary: true })
         IDs.push(dealerPrimary._id)
         IDs.push(resellerPrimary._id)
         let notificationData = {
@@ -761,12 +771,7 @@ exports.editResellers = async (req, res) => {
         let notificationEmails = await supportingFunction.getUserEmails();
         //notificationEmails.push(resellerPrimary.email);
         notificationEmails.push(dealerPrimary.email);
-        let settingData = await userService.getSetting({});
         let emailData = {
-            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-            address: settingData[0]?.address,
-            websiteSetting: settingData[0],
             senderName: checkReseller.name,
             content: "The information has been updated successfully! effective immediately.",
             subject: "Update Info"
@@ -836,9 +841,8 @@ exports.addResellerUser = async (req, res) => {
             return;
         }
 
-        let checkUser = await userService.getUserById1({ accountId: data.resellerId, isPrimary: true }, { isDeleted: false })
+        let checkUser = await userService.getUserById1({ metaId: data.resellerId, isPrimary: true }, { isDeleted: false })
         data.status = checkUser.status == 'no' || !checkUser.status || checkUser.status == 'false' ? false : true;
-        data.accountId = checkReseller._id
         data.metaId = checkReseller._id
         data.roleId = '65bb94b4b68e5a4a62a0b563'
         let statusCheck;
@@ -957,8 +961,8 @@ exports.getResellerServicers = async (req, res) => {
 
         const servicerIds = servicer.map(obj => obj._id);
         // Get servicer with claim
-        const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
-        const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
+        const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "Completed", resellerId: new mongoose.Types.ObjectId(req.params.resellerId) };
+        const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "Completed", resellerId: new mongoose.Types.ObjectId(req.params.resellerId) };
         let claimAggregateQuery1 = [
             {
                 $match: servicerCompleted
@@ -988,7 +992,7 @@ exports.getResellerServicers = async (req, res) => {
             },
         ]
         let numberOfClaims = await claimService.getClaimWithAggregate(claimAggregateQuery);
-        const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+        const query1 = { metaId: { $in: servicerIds }, isPrimary: true };
         let servicerUser = await userService.getMembers(query1, {})
         if (!servicerUser) {
             res.send({
@@ -998,7 +1002,7 @@ exports.getResellerServicers = async (req, res) => {
             return;
         };
         result_Array = servicer.map(servicer => {
-            const matchingItem = servicerUser.find(user => user.accountId.toString() === servicer._id.toString())
+            const matchingItem = servicerUser.find(user => user.metaId.toString() === servicer._id.toString())
             const claimValue = valueClaim.find(claim => claim._id.toString() === servicer._id.toString())
             const claimNumber = numberOfClaims.find(claim => claim._id.toString() === servicer._id.toString())
             if (matchingItem) {
@@ -1195,7 +1199,7 @@ exports.getResellerOrders = async (req, res) => {
         let userDealerIds = ordersResult.map((result) => result.dealerId?.toString());
         let userResellerIds = ordersResult
             .filter(result => result.resellerId !== null)
-            .map(result => result.resellerId?.toString());
+            .map(result => result.resellerId);
 
         let mergedArray = userDealerIds.concat(userResellerIds);
         //Get Respective Dealers
@@ -1235,10 +1239,10 @@ exports.getResellerOrders = async (req, res) => {
 
         let userCustomerIds = ordersResult
             .filter(result => result.customerId !== null)
-            .map(result => result.customerId?.toString());
+            .map(result => result.customerId);
 
         const allUserIds = mergedArray.concat(userCustomerIds);
-        const queryUser = { accountId: { $in: allUserIds }, isPrimary: true };
+        const queryUser = { metaId: { $in: allUserIds }, isPrimary: true };
         let getPrimaryUser = await userService.findUserforCustomer(queryUser)
 
         const result_Array = ordersResult.map((item1) => {
@@ -1324,13 +1328,13 @@ exports.getResellerOrders = async (req, res) => {
                 item.flag = true
             }
             if (item.dealerName) {
-                username = getPrimaryUser.find(user => user.accountId.toString() === item.dealerName._id.toString());
+                username = getPrimaryUser.find(user => user.metaId.toString() === item.dealerName._id.toString());
             }
             if (item.resellerName) {
-                resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.accountId?.toString() === item.resellerName._id?.toString()) : {};
+                resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.metaId?.toString() === item.resellerName._id?.toString()) : {};
             }
             if (item.customerName) {
-                customerUserData = item.customerName._id != null ? getPrimaryUser.find(user => user.accountId?.toString() === item.customerName._id?.toString()) : {};
+                customerUserData = item.customerName._id != null ? getPrimaryUser.find(user => user.metaId?.toString() === item.customerName._id?.toString()) : {};
             }
             return {
                 ...item,
@@ -1631,7 +1635,7 @@ exports.getResellerContract = async (req, res) => {
     }
 }
 
-//Change reseller status
+//Change reseller status 
 exports.changeResellerStatus = async (req, res) => {
     try {
         const singleReseller = await resellerService.getReseller({ _id: req.params.resellerId });
@@ -1644,7 +1648,7 @@ exports.changeResellerStatus = async (req, res) => {
         }
         //Update Reseller User Status if inactive
         if (!req.body.status) {
-            let resellerUserCreateria = { accountId: req.params.resellerId };
+            let resellerUserCreateria = { metaId: req.params.resellerId };
             let newValue = {
                 $set: {
                     status: req.body.status
@@ -1656,7 +1660,7 @@ exports.changeResellerStatus = async (req, res) => {
         }
 
         else if (singleReseller.isAccountCreate && req.body.status) {
-            let resellerUserCreateria = { accountId: req.params.resellerId, isPrimary: true };
+            let resellerUserCreateria = { metaId: req.params.resellerId, isPrimary: true };
             let newValue = {
                 $set: {
                     status: req.body.status
@@ -1680,8 +1684,8 @@ exports.changeResellerStatus = async (req, res) => {
             const updateServicer = await providerService.updateServiceProvider({ resellerId: req.params.resellerId }, { status: req.body.status })
             //Send notification to reseller,dealer and admin
             let IDs = await supportingFunction.getUserIds()
-            let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: singleReseller.dealerId, isPrimary: true })
-            let getPrimary = await supportingFunction.getPrimaryUser({ accountId: req.params.resellerId, isPrimary: true })
+            let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: singleReseller.dealerId, isPrimary: true })
+            let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.resellerId, isPrimary: true })
             IDs.push(dealerPrimary._id)
             IDs.push(getPrimary._id)
             let notificationData = {
@@ -1698,13 +1702,7 @@ exports.changeResellerStatus = async (req, res) => {
             let notificationEmails = await supportingFunction.getUserEmails();
             notificationEmails.push(dealerPrimary.email);
             const status_content = req.body.status ? 'Active' : 'Inactive';
-
-            let settingData = await userService.getSetting({});
             let emailData = {
-                darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-                lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-                address: settingData[0]?.address,
-                websiteSetting: settingData[0],
                 senderName: singleReseller.name,
                 content: "Status has been changed to " + status_content + " " + ", effective immediately.",
                 subject: "Update Status"

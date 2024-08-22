@@ -25,7 +25,7 @@ exports.createServiceProvider = async (req, res, next) => {
     let data = req.body
     data.accountName = data.accountName.trim().replace(/\s+/g, ' ');
     const count = await providerService.getServicerCount();
-    const admin = await userService.getUserById1({ accountId: req.userId, isPrimary: true }, {})
+    const admin = await userService.getUserById1({ metaId: req.userId, isPrimary: true }, {})
     let servicerObject = {
       name: data.accountName,
       street: data.street,
@@ -84,19 +84,12 @@ exports.createServiceProvider = async (req, res, next) => {
         })
         return;
       };
-      teamMembers = teamMembers.map(member => ({ ...member, accountId: createServiceProvider._id, metaId: createServiceProvider._id, approvedStatus: "Approved", roleId: "65719c8368a8a86ef8e1ae4d" }));
+      teamMembers = teamMembers.map(member => ({ ...member, metaId: createServiceProvider._id, approvedStatus: "Approved", roleId: "65719c8368a8a86ef8e1ae4d" }));
       let saveMembers = await userService.insertManyUser(teamMembers)
       // Primary User Welcoime email
       let notificationEmails = await supportingFunction.getUserEmails();
 
-      let settingData = await userService.getSetting({});
-      // Send Email code here
       let emailData = {
-        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        address: settingData[0]?.address,
-        websiteSetting: settingData[0],
-        title: settingData[0]?.title,
         senderName: admin.firstName,
         content: "We are delighted to inform you that the servicer account for " + createServiceProvider.name + " has been created.",
         subject: "Servicer Account Created - " + createServiceProvider.name
@@ -112,14 +105,7 @@ exports.createServiceProvider = async (req, res, next) => {
             let resetPasswordCode = randtoken.generate(4, '123456789')
             let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
             let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-            const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, {
-              link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-              lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-              title: settingData[0]?.title,
-              flag: "Approved",
-              subject: "Set Password",
-              address: settingData[0]?.address, flag: "created", role: "Servicer", servicerName: saveMembers[i].firstName
-            }))
+            const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { flag: "Approved", link: resetLink, subject: "Set Password", role: "Servicer", servicerName: saveMembers[i].firstName }))
           }
 
         }
@@ -222,11 +208,6 @@ exports.createServiceProvider = async (req, res, next) => {
 
       let emailData = {
         senderName: admin.firstName,
-        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        address: settingData[0]?.address,
-        title: settingData[0]?.title,
-        websiteSetting: settingData[0],
         content: "We are delighted to inform you that the servicer account for " + checkDetail.name + " has been created.",
         subject: "Servicer Account Approved - " + checkDetail.name
       }
@@ -234,23 +215,11 @@ exports.createServiceProvider = async (req, res, next) => {
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
 
       let primaryEmail = teamMembers[0].email
-      let settingData = await userService.getSetting({});
-
       let primaryCode = randtoken.generate(4, '123456789')
       let updatePrimaryCode = await userService.updateSingleUser({ email: primaryEmail }, { resetPasswordCode: primaryCode, status: data.status ? true : false }, { new: true });
       let updatePrimaryLInk = `${process.env.SITE_URL}newPassword/${updatePrimaryCode._id}/${primaryCode}`
-      // const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
-      mailing = sgMail.send(emailConstant.servicerApproval(updatePrimaryCode.email, {
-        link: updatePrimaryLInk, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        flag: "Approved",
-        subject: "Set Password",
-        title: settingData[0]?.title,
-        address: settingData[0]?.address, role: req.role, servicerName: updatePrimaryCode?.firstName
-      }))
-      // let getUserId = await userService.updateSingleUser({ accountId: checkDetail._id, isPrimary: true }, { resetPasswordCode: resetPasswordCode }, { new: true })  // to String to object
-      //let getUserId = await userService.updateSingleUser({ accountId: checkDetail._id, isPrimary: true }, { resetPasswordCode: resetPasswordCode }, { new: true })
-      teamMembers = teamMembers.slice(1).map(member => ({ ...member, accountId: updateServicer._id, metaId: updateServicer._id, approvedStatus: "Approved", status: true }));
+      mailing = sgMail.send(emailConstant.servicerApproval(updatePrimaryCode.email, { flag: "Approved", subject: "Set Password", link: updatePrimaryLInk, role: "Servicer", servicerName: updatePrimaryCode?.firstName }))
+      teamMembers = teamMembers.slice(1).map(member => ({ ...member, metaId: updateServicer._id, approvedStatus: "Approved", status: true }));
 
       if (teamMembers.length > 0) {
         let saveMembers = await userService.insertManyUser(teamMembers)
@@ -262,15 +231,7 @@ exports.createServiceProvider = async (req, res, next) => {
               let resetPasswordCode = randtoken.generate(4, '123456789')
               let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
               let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-              // const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
-              const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, {
-                link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-                lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-                flag: "Approved",
-                subject: "Set Password",
-                title: settingData[0]?.title,
-                address: settingData[0]?.address, role: 'Servicer', servicerName: saveMembers[i].firstName
-              }))
+              const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { subject: "Set Password", link: resetLink, role: 'Servicer', servicerName: saveMembers[i].firstName }))
 
             }
 
@@ -380,7 +341,7 @@ exports.approveServicer = async (req, res, next) => {
 
     let teamMembers = data.members
     // to string to object 
-    let getUserId = await userService.findOneUser({ accountId: checkDetail._id, isPrimary: true }, {})
+    let getUserId = await userService.findOneUser({ metaId: checkDetail._id, isPrimary: true }, {})
     const updateServicer = await providerService.updateServiceProvider({ _id: checkDetail._id }, servicerObject);
 
     if (!updateServicer) {
@@ -391,18 +352,13 @@ exports.approveServicer = async (req, res, next) => {
       return;
     };
 
-    teamMembers = teamMembers.map(member => ({ ...member, accountId: updateServicer._id, roleId: '65719c8368a8a86ef8e1ae4d' }));
+    teamMembers = teamMembers.map(member => ({ ...member, metaId: updateServicer._id, roleId: '65719c8368a8a86ef8e1ae4d' }));
 
     let saveMembers = await userService.insertManyUser(teamMembers)
     let resetPasswordCode = randtoken.generate(4, '123456789')
     let resetLink = `${process.env.SITE_URL}newPassword/${getUserId._id}/${resetPasswordCode}`
-    const mailing = sgMail.send(emailConstant.servicerApproval(data.email, {
-      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-      title: settingData[0]?.title,
-      subject: "Set Password",
-      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-      address: settingData[0]?.address, link: resetLink
-    }))
+    const mailing = sgMail.send(emailConstant.servicerApproval(data.email, { subject: "Set Password", link: resetLink }))
+
     res.send({
       code: constant.successCode,
       message: "Approve successfully",
@@ -435,7 +391,7 @@ exports.getServicer = async (req, res) => {
 
     const servicerIds = servicer.map(obj => obj._id);
     // Get Dealer Primary Users from colection
-    const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+    const query1 = { metaId: { $in: servicerIds }, isPrimary: true };
 
     let servicerUser = await userService.getMembers(query1, projection)
 
@@ -483,9 +439,9 @@ exports.getServicer = async (req, res) => {
     let numberOfClaims = await claimService.getClaimWithAggregate(claimAggregateQuery);
 
     const result_Array = servicerUser.map(item1 => {
-      const matchingItem = servicer.find(item2 => item2._id.toString() === item1.accountId.toString());
-      const claimValue = valueClaim.find(claim => claim._id.toString() === item1.accountId.toString())
-      const claimNumber = numberOfClaims.find(claim => claim._id.toString() === item1.accountId.toString())
+      const matchingItem = servicer.find(item2 => item2._id.toString() === item1.metaId.toString());
+      const claimValue = valueClaim.find(claim => claim._id.toString() === item1.metaId.toString())
+      const claimNumber = numberOfClaims.find(claim => claim._id.toString() === item1.metaId.toString())
       if (matchingItem) {
         return {
           ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
@@ -535,7 +491,7 @@ exports.getServiceProviderById = async (req, res, next) => {
       return;
     };
 
-    let getMetaData = await userService.findOneUser({ accountId: singleServiceProvider._id, isPrimary: true })
+    let getMetaData = await userService.findOneUser({ metaId: singleServiceProvider._id, isPrimary: true })
     let resultUser = getMetaData.toObject()
     let claimQueryAggregate = [
       {
@@ -581,7 +537,7 @@ exports.rejectServicer = async (req, res) => {
     let IDs = await supportingFunction.getUserIds()
     let getServicer = await providerService.getServiceProviderById({ _id: req.params.servicerId });
     let checkServicer = await providerService.deleteServicer({ _id: req.params.servicerId })
-    let getPrimary = await supportingFunction.getPrimaryUser({ accountId: req.params.servicerId, isPrimary: true })
+    let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.servicerId, isPrimary: true })
     IDs.push(getPrimary._id)
 
     if (!checkServicer) {
@@ -592,7 +548,7 @@ exports.rejectServicer = async (req, res) => {
       return;
     };
 
-    let deleteUser = await userService.deleteUser({ accountId: getServicer._id })
+    let deleteUser = await userService.deleteUser({ metaId: getServicer._id })
     let notificationData = {
       title: "Rejection Servicer Account",
       description: "The " + getServicer.name + " account has been rejected",
@@ -604,12 +560,7 @@ exports.rejectServicer = async (req, res) => {
     let createNotification = await userService.createNotification(notificationData);
     // Primary User Welcoime email
     let notificationEmails = await supportingFunction.getUserEmails();
-    let settingData = await userService.getSetting({});
     let emailData = {
-      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-      address: settingData[0]?.address,
-      websiteSetting: settingData[0],
       senderName: getServicer.name,
       content: "Dear " + getServicer.name + ",\n\nWe regret to inform you that your registration as an authorized dealer has been rejected by our admin team. If you have any questions or require further assistance, please feel free to contact us.\n\nBest regards,\nAdmin Team",
       subject: "Rejection Account"
@@ -671,7 +622,7 @@ exports.editServicerDetail = async (req, res) => {
 
     let criteria = { _id: checkServicer._id }
     let updateData = await providerService.updateServiceProvider(criteria, data)
-    let servicerUserCreateria = { accountId: req.params.servicerId };
+    let servicerUserCreateria = { metaId: req.params.servicerId };
     let newValue = {
       $set: {
         status: false
@@ -679,7 +630,7 @@ exports.editServicerDetail = async (req, res) => {
     };
 
     if (data.isAccountCreate) {
-      servicerUserCreateria = { accountId: req.params.servicerId, isPrimary: true };
+      servicerUserCreateria = { metaId: req.params.servicerId, isPrimary: true };
       newValue = {
         $set: {
           status: true
@@ -712,7 +663,7 @@ exports.editServicerDetail = async (req, res) => {
 
     //send notification to admin and servicer
     let IDs = await supportingFunction.getUserIds()
-    let getPrimary = await supportingFunction.getPrimaryUser({ accountId: req.params.servicerId, isPrimary: true })
+    let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.servicerId, isPrimary: true })
     IDs.push(getPrimary._id)
     let notificationData = {
       title: "Servicer Detail Update",
@@ -725,14 +676,7 @@ exports.editServicerDetail = async (req, res) => {
     let createNotification = await userService.createNotification(notificationData);
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
-
-
-    let settingData = await userService.getSetting({});
     let emailData = {
-      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-      address: settingData[0]?.address,
-      websiteSetting: settingData[0],
       senderName: checkServicer.name,
       content: "Information has been updated successfully! effective immediately.",
       subject: "Update Info"
@@ -791,7 +735,7 @@ exports.updateStatus = async (req, res) => {
       })
       return;
     }
-    let getPrimary = await supportingFunction.getPrimaryUser({ accountId: req.params.servicerId, isPrimary: true })
+    let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.servicerId, isPrimary: true })
     let criteria = { _id: checkServicer._id }
     let updateData = await providerService.updateServiceProvider(criteria, data)
 
@@ -818,7 +762,7 @@ exports.updateStatus = async (req, res) => {
     }
 
     if (data.status == "false" || !data.status) {
-      let criteria1 = { accountId: checkServicer._id }
+      let criteria1 = { metaId: checkServicer._id }
       let updateMetaData = await userService.updateUser(criteria1, { status: data.status }, { new: true })
       if (!updateMetaData) {
         //Save Logs
@@ -842,7 +786,7 @@ exports.updateStatus = async (req, res) => {
       } else {
         //Send notification to servicer and admin
         let IDs = await supportingFunction.getUserIds()
-        let getPrimary = await supportingFunction.getPrimaryUser({ accountId: req.params.servicerId, isPrimary: true })
+        let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.servicerId, isPrimary: true })
         IDs.push(getPrimary._id)
         let notificationData = {
           title: "Servicer status update",
@@ -887,7 +831,7 @@ exports.updateStatus = async (req, res) => {
 
       let createNotification = await userService.createNotification(notificationData);
       if (checkServicer.isAccountCreate) {
-        let criteria1 = { accountId: checkServicer._id, isPrimary: true }
+        let criteria1 = { metaId: checkServicer._id, isPrimary: true }
         let updateMetaData = await userService.updateSingleUser(criteria1, { status: data.status }, { new: true })
         if (!updateMetaData) {
           res.send({
@@ -909,12 +853,7 @@ exports.updateStatus = async (req, res) => {
     let notificationEmails = await supportingFunction.getUserEmails();
     const status_content = req.body.status || req.body.status == "true" ? 'Active' : 'Inactive';
 
-    let settingData = await userService.getSetting({});
     let emailData = {
-      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-      address: settingData[0]?.address,
-      websiteSetting: settingData[0],
       senderName: checkServicer.name,
       content: "Status has been changed to " + status_content + " " + ", effective immediately.",
       subject: "Update Status"
@@ -985,7 +924,7 @@ exports.getAllServiceProviders = async (req, res, next) => {
 
     const servicerIds = serviceProviders.map(obj => obj._id);
     // Get Dealer Primary Users from colection
-    const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+    const query1 = { metaId: { $in: servicerIds }, isPrimary: true };
     let servicerUser = await userService.getMembers(query1, projection)
 
     if (!servicerUser) {
@@ -997,7 +936,7 @@ exports.getAllServiceProviders = async (req, res, next) => {
     };
 
     const result_Array = servicerUser.map(item1 => {
-      const matchingItem = serviceProviders.find(item2 => item2._id.toString() === item1.accountId.toString());
+      const matchingItem = serviceProviders.find(item2 => item2._id.toString() === item1.metaId.toString());
 
       if (matchingItem) {
         return {
@@ -1034,7 +973,7 @@ exports.updateServiceProvide = async (req, res, next) => {
     res.send({
       code: constant.errorCode,
       message: "Internal server error"
-    })
+    });
   }
 };
 
@@ -1065,7 +1004,7 @@ exports.registerServiceProvider = async (req, res) => {
     // Check if the email already exists
     const existingUser = await userService.findOneUser({ email: req.body.email });
     if (existingUser) {
-      const existingServicer3 = await providerService.getServicerByName({ _id: existingUser.accountId }, { isDeleted: 0, __v: 0 });
+      const existingServicer3 = await providerService.getServicerByName({ _id: existingUser.metaId }, { isDeleted: 0, __v: 0 });
       if (existingServicer3) {
         if (existingServicer3.accountStatus == "Pending") {
           res.send({
@@ -1112,7 +1051,6 @@ exports.registerServiceProvider = async (req, res) => {
       lastName: data.lastName,
       phoneNumber: data.phoneNumber,
       roleId: "65719c8368a8a86ef8e1ae4d",
-      accountId: createMetaData._id,
       metaId: createMetaData._id,
     };
 
@@ -1140,13 +1078,8 @@ exports.registerServiceProvider = async (req, res) => {
 
     // Create the user
     const createNotification = await userService.createNotification(notificationData);
-
-    let settingData = await userService.getSetting({});
     let emailData = {
       dealerName: ServicerMeta.name,
-      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-      address: settingData[0]?.address,
       c1: "Thank you for",
       c2: "Registering as a",
       c3: "Your account is currently pending approval from our admin.",
@@ -1160,12 +1093,7 @@ exports.registerServiceProvider = async (req, res) => {
     let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
     const admin = await supportingFunction.getPrimaryUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true })
     const notificationEmail = await supportingFunction.getUserEmails();
-
     emailData = {
-      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-      address: settingData[0]?.address,
-      websiteSetting: settingData[0],
       senderName: admin.firstName,
       content: "A new servicer " + ServicerMeta.name + " has been registered",
       subject: 'New Servicer Registration'
@@ -1235,7 +1163,7 @@ exports.statusUpdate = async (req, res) => {
     };
 
     if (req.body.status == false) {
-      let criteria1 = { accountId: updatedResult._id }
+      let criteria1 = { metaId: updatedResult._id }
       let option = { new: true }
       let updateUsers = await userService.updateUser(criteria1, { status: req.body.status }, option)
       if (!updateUsers) {
@@ -1250,7 +1178,7 @@ exports.statusUpdate = async (req, res) => {
         message: "Updated Successfully",
       })
     } else {
-      let criteria1 = { accountId: updatedResult._id, isPrimary: true }
+      let criteria1 = { metaId: updatedResult._id, isPrimary: true }
       let option = { new: true }
       let updateUsers = await userService.updateUser(criteria1, { status: req.body.status }, option)
       if (!updateUsers) {
@@ -1279,7 +1207,7 @@ exports.statusUpdate = async (req, res) => {
 exports.getSerivicerUsers = async (req, res) => {
   try {
     let data = req.body
-    let getUsers = await userService.findUser({ accountId: req.params.servicerId }, { isPrimary: -1 })
+    let getUsers = await userService.findUser({ metaId: req.params.servicerId }, { isPrimary: -1 })
     if (!getUsers) {
       res.send({
         code: constant.errorCode,
@@ -1336,7 +1264,7 @@ exports.addServicerUser = async (req, res) => {
       return
     }
     let checkEmail = await userService.findOneUser({ email: data.email })
-    let checkUser = await userService.getUserById1({ accountId: req.params.servicerId, isPrimary: true }, { isDeleted: false })
+    let checkUser = await userService.getUserById1({ metaId: req.params.servicerId, isPrimary: true }, { isDeleted: false })
     data.status = checkUser.status ? true : false;
     if (checkEmail) {
       res.send({
@@ -1345,7 +1273,6 @@ exports.addServicerUser = async (req, res) => {
       })
     } else {
       data.isPrimary = false
-      data.accountId = checkServicer._id
       data.metaId = checkServicer._id
       let statusCheck;
 
@@ -1503,6 +1430,7 @@ exports.getServicerDealers = async (req, res) => {
     let ids = getDealersIds.map((item) => item.dealerId)
     let idsq = getDealersIds.map((item) => new mongoose.Types.ObjectId(item.dealerId))
     let dealers = await dealerService.getAllDealers({ _id: { $in: ids } }, {})
+
     if (!dealers) {
       res.send({
         code: constant.errorCode,
@@ -1512,7 +1440,7 @@ exports.getServicerDealers = async (req, res) => {
     };
     // return false;
 
-    let dealarUser = await userService.getMembers({ accountId: { $in: ids }, isPrimary: true }, {})
+    let dealarUser = await userService.getMembers({ metaId: { $in: ids }, isPrimary: true }, {})
     let orderQuery = { dealerId: { $in: ids }, status: "Active" };
     let project = {
       productsArray: 1,
@@ -1570,8 +1498,8 @@ exports.getServicerDealers = async (req, res) => {
     const dealerClaims = await dealerService.getDealerAndClaims(dealerAggregationQuery);
 
     const result_Array = dealarUser.map(item1 => {
-      const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
-      const orders = orderData.find(order => order._id.toString() === item1.accountId.toString())
+      const matchingItem = dealers.find(item2 => item2._id.toString() === item1.metaId.toString());
+      const orders = orderData.find(order => order._id.toString() === item1.metaId.toString())
 
       if (matchingItem || orders) {
         return {
@@ -1614,7 +1542,6 @@ exports.getServicerDealers = async (req, res) => {
 exports.getServicerDealers1 = async (req, res) => {
   try {
     let data = req.body
-
 
     let query = [
       {

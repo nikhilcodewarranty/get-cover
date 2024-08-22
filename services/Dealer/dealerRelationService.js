@@ -1,8 +1,8 @@
-const dealer = require("../model/dealer");
-const servier = require('../../Provider/model/serviceProvider')
-const relationTable = require('../../Provider/model/dealerServicer')
-const dealerPrice = require("../model/dealerPrice");
-const users = require("../../User/model/users");
+const dealer = require("../../models/Dealer/dealer");
+const servier = require('../../models/Provider/serviceProvider')
+const relationTable = require('../../models/Provider/dealerServicer')
+const dealerPrice = require("../../models/Dealer/dealerPrice");
+const users = require("../../models/User/users");
 
 module.exports = class dealerService {
     // Create a relation with a service provider

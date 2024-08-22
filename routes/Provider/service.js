@@ -1,8 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const validator = require('../config/validation'); // validation handler as a middleware
+const validator = require('../../middleware/validator'); // validation handler as a middleware
 const servicerAdminController = require("../../controllers/Provider/serviceAdminController");
 const { verifyToken } = require('../../middleware/auth'); // authentication with jwt as middleware
+const supportingFunction = require('../../config/supportingFunction');
 
 // POST routes
 router.post("/createServiceProvider", validator('create_servicer_validation'), [verifyToken], servicerAdminController.createServiceProvider); // create service provider
@@ -22,10 +23,10 @@ router.put("/editServicerDetail/:servicerId", [verifyToken], servicerAdminContro
 router.put("/updateStatus/:servicerId", [verifyToken], servicerAdminController.updateStatus); // update status
 // GET routes
 router.get("/serviceProvider", servicerAdminController.getAllServiceProviders); // get all service providers
-router.get("/getServiceProviderById/:servicerId", [verifyToken], servicerAdminController.getServiceProviderById); // get service provider by ID
+router.get("/getServiceProviderById/:servicerId", [verifyToken], supportingFunction.checkObjectId, servicerAdminController.getServiceProviderById); // get service provider by ID
 router.get("/serviceProvider/create-serviceProvider", servicerAdminController.createServiceProvider); // create service provider page
-router.get("/getDealerList/:servicerId", [verifyToken], servicerAdminController.getDealerList); // get dealer list by servicer ID
+router.get("/getDealerList/:servicerId", [verifyToken], supportingFunction.checkObjectId, servicerAdminController.getDealerList); // get dealer list by servicer ID
 // DELETE routes
-router.delete("/rejectServicer/:servicerId", [verifyToken], servicerAdminController.rejectServicer); // reject servicer
+router.delete("/rejectServicer/:servicerId", [verifyToken], supportingFunction.checkObjectId, servicerAdminController.rejectServicer); // reject servicer
 
 module.exports = router;

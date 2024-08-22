@@ -1,12 +1,11 @@
 require('dotenv').config()
 const USER = require('../../models/User/users')
-const dealerResourceResponse = require("../utils/constant");
 const dealerService = require("../../services/Dealer/dealerService");
 const orderService = require("../../services/Order/orderService");
 const contractService = require("../../services/Contract/contractService");
 const resellerService = require("../../services/Dealer/resellerService");
 let claimService = require('../../services/Claim/claimService')
-const LOG = require('../../User/model/logs')
+const LOG = require('../../models/User/logs')
 const supportingFunction = require('../../config/supportingFunction')
 const dealerRelationService = require("../../services/Dealer/dealerRelationService");
 const customerService = require("../../services/Customer/customerService");
@@ -28,7 +27,7 @@ const json2csv = require('json-2-csv').json2csv;
 const connection = require('../../db')
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.sendgrid_key);
-const reportingController = require("../../User/controller/reportingController");
+const reportingController = require("../../controllers/User/reportingController");
 
 //Create Reseller
 exports.createReseller = async (req, res) => {
@@ -89,7 +88,7 @@ exports.createReseller = async (req, res) => {
             return;
         };
 
-        teamMembers = teamMembers.map(member => ({ ...member, accountId: createdReseler._id, metaId: createdReseler._id, roleId: '65bb94b4b68e5a4a62a0b563' }));
+        teamMembers = teamMembers.map(member => ({ ...member, metaId: createdReseler._id, roleId: '65bb94b4b68e5a4a62a0b563' }));
         let saveMembers = await userService.insertManyUser(teamMembers)
 
         if (data.isServicer) {
@@ -203,7 +202,7 @@ exports.createCustomer = async (req, res, next) => {
             return;
         };
 
-        teamMembers = teamMembers.map(member => ({ ...member, accountId: createdCustomer._id, metaId: createdCustomer._id, roleId: process.env.customer }));
+        teamMembers = teamMembers.map(member => ({ ...member,  metaId: createdCustomer._id, roleId: process.env.customer }));
         // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
         res.send({
@@ -325,7 +324,7 @@ exports.createOrder = async (req, res) => {
 
         data.status = "Pending";
         if (data.billTo == "Dealer") {
-            let getUser = await userService.getSingleUserByEmail({ accountId: checkDealer._id, isPrimary: true })
+            let getUser = await userService.getSingleUserByEmail({ metaId: checkDealer._id, isPrimary: true })
             data.billDetail = {
                 billTo: "Dealer",
                 detail: {
@@ -340,7 +339,7 @@ exports.createOrder = async (req, res) => {
 
         if (data.billTo == "Reseller") {
             let getReseller = await resellerService.getReseller({ _id: data.resellerId })
-            let getUser = await userService.getSingleUserByEmail({ accountId: getReseller._id, isPrimary: true })
+            let getUser = await userService.getSingleUserByEmail({ metaId: getReseller._id, isPrimary: true })
             data.billDetail = {
                 billTo: "Reseller",
                 detail: {
@@ -425,9 +424,9 @@ exports.createOrder = async (req, res) => {
         returnField.push(obj);
         //send notification to admin and dealer 
         let IDs = await supportingFunction.getUserIds()
-        let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
+        let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
         if (data.resellerId) {
-            let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: data.resellerId, isPrimary: true })
+            let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: data.resellerId, isPrimary: true })
             IDs.push(resellerPrimary._id)
         }
         IDs.push(getPrimary._id)
@@ -443,12 +442,7 @@ exports.createOrder = async (req, res) => {
         let createNotification = await userService.createNotification(notificationData);
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
-        let settingData = await userService.getSetting({});
         let emailData = {
-            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-            address: settingData[0]?.address,
-            websiteSetting: settingData[0],
             senderName: getPrimary.firstName,
             content: "The new order " + checkOrder.unique_key + "  has been created for " + getPrimary.firstName + "",
             subject: "New Order"
@@ -461,7 +455,6 @@ exports.createOrder = async (req, res) => {
                 { status: "Active" },
                 { new: true }
             );
-
             let count1 = await contractService.getContractsCountNew();
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             let mapOnProducts = savedResponse.productsArray.map(async (product, index) => {
@@ -582,9 +575,9 @@ exports.createOrder = async (req, res) => {
                 let saveContracts = await contractService.createBulkContracts(contractArray);
                 //send notification to dealer,reseller,admin,customer
                 let IDs = await supportingFunction.getUserIds()
-                let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: savedResponse.dealerId, isPrimary: true })
-                let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: savedResponse.customerId, isPrimary: true })
-                let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: savedResponse.resellerId, isPrimary: true })
+                let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: savedResponse.dealerId, isPrimary: true })
+                let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: savedResponse.customerId, isPrimary: true })
+                let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: savedResponse.resellerId, isPrimary: true })
                 if (resellerPrimary) {
                     IDs.push(resellerPrimary?._id)
                 }
@@ -603,12 +596,7 @@ exports.createOrder = async (req, res) => {
                 notificationEmails.push(customerPrimary.email);
                 notificationEmails.push(dealerPrimary.email);
                 notificationEmails.push(resellerPrimary?.email);
-                let settingData = await userService.getSetting({});
                 let emailData = {
-                    darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-                    lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-                    address: settingData[0]?.address,
-                    websiteSetting: settingData[0],
                     senderName: '',
                     content: "The order " + savedResponse.unique_key + " has been updated and processed",
                     subject: "Order Processed"
@@ -760,7 +748,7 @@ exports.editOrderDetail = async (req, res) => {
             return;
         }
         if (data.billTo == "Dealer") {
-            let getUser = await userService.getSingleUserByEmail({ accountId: checkDealer._id, isPrimary: true })
+            let getUser = await userService.getSingleUserByEmail({ metaId: checkDealer._id, isPrimary: true })
             data.billDetail = {
                 billTo: "Dealer",
                 detail: {
@@ -774,7 +762,7 @@ exports.editOrderDetail = async (req, res) => {
         }
         if (data.billTo == "Reseller") {
             let getReseller = await resellerService.getReseller({ _id: checkReseller._id })
-            let getUser = await userService.getSingleUserByEmail({ accountId: getReseller._id, isPrimary: true })
+            let getUser = await userService.getSingleUserByEmail({ metaId: getReseller._id, isPrimary: true })
             data.billDetail = {
                 billTo: "Reseller",
                 detail: {
@@ -933,7 +921,7 @@ exports.editOrderDetail = async (req, res) => {
 
         //send notification to dealer,reseller,admin,customer
         let IDs = await supportingFunction.getUserIds()
-        let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
+        let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.dealerId, isPrimary: true })
         IDs.push(dealerPrimary._id)
         let notificationData = {
             title: "Order update",
@@ -948,12 +936,7 @@ exports.editOrderDetail = async (req, res) => {
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
         //Email to Dealer
-        let settingData = await userService.getSetting({});
         let emailData = {
-            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-            address: settingData[0]?.address,
-            websiteSetting: settingData[0],
             senderName: dealerPrimary.firstName,
             content: "The  order " + checkOrder.unique_key + " has been updated",
             subject: "Order Update"
@@ -1062,7 +1045,6 @@ exports.addResellerUser = async (req, res) => {
             return;
         }
 
-        data.accountId = checkReseller._id
         data.metaId = checkReseller._id
         data.roleId = '65bb94b4b68e5a4a62a0b563'
 
@@ -1144,7 +1126,7 @@ exports.changeResellerStatus = async (req, res) => {
         }
         //Update Reseller User Status if inactive
         if (!req.body.status) {
-            let resellerUserCreateria = { accountId: req.userId };
+            let resellerUserCreateria = { metaId: req.userId };
             let newValue = {
                 $set: {
                     status: req.body.status
@@ -1156,9 +1138,9 @@ exports.changeResellerStatus = async (req, res) => {
         }
 
         else {
-            let resellerUserCreateria = { accountId: req.userId, isPrimary: true };
+            let resellerUserCreateria = { metaId: req.userId, isPrimary: true };
             let newValue = {
-                $set: {
+                $set: { 
                     status: req.body.status
                 }
             };

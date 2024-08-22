@@ -296,17 +296,6 @@ module.exports = class userService {
     }
   }
 
-  //get website setting information
-  static async getSetting(query) {
-    try {
-      const settingData = await setting.find(query);
-      return settingData;
-    }
-    catch (error) {
-      return `Could not fetch setting: ${err}`;
-    }
-  }
-
   //save setting information
   static async saveSetting(data) {
     try {
