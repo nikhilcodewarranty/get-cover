@@ -1,10 +1,10 @@
 
 const express = require("express");
 const router = express.Router();
-const supportingFunction = require('../../config/supportingFunction')
 const resellerController = require("../controller/resellerController");
 const { verifyToken } = require('../../middleware/auth'); // authentication with jwt as middleware
 const validator = require('../config/validation');
+const supportingFunction = require('../../config/supportingFunction')
 
 router.post('/createReseller', [verifyToken], validator('create_reseller'), resellerController.createReseller) // Create a new reseller
 router.post('/getAllResellers', [verifyToken], resellerController.getAllResellers) // Get all resellers
