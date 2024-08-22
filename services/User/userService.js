@@ -1,9 +1,9 @@
-const user = require("../model/users");
-const role = require("../model/role");
-const setting = require("../model/setting");
-const notification = require("../model/notification");
-const terms = require("../model/terms");
-const dealerModel = require("../../Dealer/model/dealer");
+const user = require("../../models/User/users");
+const role = require("../../models/User/role");
+const setting = require("../../models/User/setting");
+const notification = require("../../models/User/notification");
+const terms = require("../../models/User/terms");
+const dealerModel = require("../../models/Dealer/dealer");
 const { userConnection } = require("../../db");
 
 //-------------------------- user's services ------------------------------//

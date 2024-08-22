@@ -1,5 +1,5 @@
-const claim = require("../model/claim");
-const comments = require("../model/comments");
+const claim = require("../../models/Claim/claim");
+const comments = require("../../models/Claim/comment");
 
 module.exports = class claimService {
 

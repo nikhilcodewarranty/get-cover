@@ -1,4 +1,4 @@
-const contract = require("../model/contract");
+const contract = require("../../models/Contract/contract");
 
 module.exports = class contractService {
   // Fetch all contracts based on a query with pagination

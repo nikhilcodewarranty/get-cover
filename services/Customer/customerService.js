@@ -1,4 +1,4 @@
-const customer = require("../model/customer");
+const customer = require("../../models/Customer/customer");
 
 module.exports = class customerService {
   // Get all customer  

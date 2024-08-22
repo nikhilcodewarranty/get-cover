@@ -1,4 +1,4 @@
-const order = require("../model/order");
+const order = require("../../models/Order/order");
 
 module.exports = class orderService {
   // Get all orders

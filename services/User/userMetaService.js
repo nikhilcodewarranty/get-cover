@@ -1,5 +1,5 @@
-const user = require("../model/userMeta");
-const role = require("../model/role");
+const user = require("../../models/User/userMeta");
+const role = require("../../models/User/role");
 const { userConnection } = require("../../db");
 
 //-------------------------- user's services ------------------------------//

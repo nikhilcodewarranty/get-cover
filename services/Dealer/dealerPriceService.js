@@ -1,5 +1,5 @@
 const { default: mongoose } = require("mongoose");
-const dealerPrice = require("../model/dealerPrice");
+const dealerPrice = require("../../models/Dealer/dealerPrice");
 
 module.exports = class dealerPriceService {
   // Get all dealer prices with additional lookups and calculations

@@ -1,5 +1,5 @@
-const priceBook = require("../model/priceBook");
-const priceCategory = require("../model/priceCategory");
+const priceBook = require("../../models/PriceBook/priceBook");
+const priceCategory = require("../../models/PriceBook/priceCategory");
 
 module.exports = class priceBookService {
 

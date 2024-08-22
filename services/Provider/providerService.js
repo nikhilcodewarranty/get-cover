@@ -1,4 +1,4 @@
-const serviceProvider = require("../model/serviceProvider");
+const serviceProvider = require("../../models/Provider/serviceProvider");
 
 module.exports = class providerService {
   // Get all service providers based on a query and projection
