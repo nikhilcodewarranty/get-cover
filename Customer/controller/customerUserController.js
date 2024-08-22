@@ -394,6 +394,7 @@ exports.getSingleOrder = async (req, res) => {
       code: constant.successCode,
       message: "Success!",
       result: checkOrder,
+      bucket_name: process.env.bucket_name,
       orderUserData: userData,
       servicers: result_Array
     });
