@@ -1048,12 +1048,13 @@ exports.getServicerInOrders = async (req, res) => {
         return;
     }
 
+    console.log("servicer user ++++++++++++++++++++++++++",servicer,servicerUser)
 
     const result_Array = servicer.map((item1) => {
         const matchingItem = servicerUser.find(
             (item2) => item2.metaId.toString() === item1?._id.toString());
         let matchingItem2 = servicerUser.find(
-            (item2) => item2.metaId.toString() === item1?.resellerId?.toString() || item2.metaId.toString() === item1?.dealerId?.toString());
+            (item2) => item2.metaId?.toString() === item1?.resellerId?.toString() || item2.metaId.toString() === item1?.dealerId?.toString());
         if (matchingItem) {
             return {
                 ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
