@@ -1,22 +1,23 @@
 require('dotenv').config()
-const USER = require('../../User/model/users')
+const USER = require('../../models/User/users')
+const LOG = require('../../models/User/logs')
+const role = require("../../models/User/role");
+const dealer = require("../../models/Dealer/dealer");
+const dealerRelation = require("../../models/Provider/dealerServicer")
+const dealerService = require("../../services/Dealer/dealerService");
+const orderService = require("../../services/Order/orderService");
+const contractService = require("../../services/Contract/contractService");
+const resellerService = require("../../services/Dealer/resellerService");
+let claimService = require('../../services/Claim/claimService')
+const dealerRelationService = require("../../services/Dealer/dealerRelationService");
+const customerService = require("../../services/Customer/customerService");
+const dealerPriceService = require("../../services/Dealer/dealerPriceService");
+const priceBookService = require("../../services/PriceBook/priceBookService");
+const providerService = require("../../services/Provider/providerService")
+const userService = require("../../services/User/userService");
+const reportingController = require("../../controllers/User/reportingController");
 const dealerResourceResponse = require("../utils/constant");
-const dealerService = require("../services/dealerService");
-const orderService = require("../../Order/services/orderService");
-const contractService = require("../../Contract/services/contractService");
-const resellerService = require("../services/resellerService");
-let claimService = require('../../Claim/services/claimService')
-const LOG = require('../../User/model/logs')
 const supportingFunction = require('../../config/supportingFunction')
-const dealerRelationService = require("../services/dealerRelationService");
-const customerService = require("../../Customer/services/customerService");
-const dealerPriceService = require("../services/dealerPriceService");
-const priceBookService = require("../../PriceBook/services/priceBookService");
-const dealerRelation = require("../../Provider/model/dealerServicer")
-const providerService = require("../../Provider/services/providerService")
-const userService = require("../../User/services/userService");
-const role = require("../../User/model/role");
-const dealer = require("../model/dealer");
 const constant = require('../../config/constant')
 const bcrypt = require("bcrypt");
 const XLSX = require("xlsx");
@@ -25,10 +26,9 @@ const emailConstant = require('../../config/emailConstant');
 const mongoose = require('mongoose');
 const fs = require('fs');
 const json2csv = require('json-2-csv').json2csv;
-const connection = require('../../db')
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.sendgrid_key);
-const reportingController = require("../../User/controller/reportingController");
+
 
 
 //Get dashboard graph data

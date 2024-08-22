@@ -1,21 +1,19 @@
-const { Customer } = require("../model/customer");
-const customerResourceResponse = require("../utils/constant");
-const customerService = require("../services/customerService");
-let dealerService = require('../../Dealer/services/dealerService')
-let resellerService = require('../../Dealer/services/resellerService')
-let contractService = require('../../Contract/services/contractService')
-let claimService = require('../../Claim/services/claimService')
-let userService = require('../../User/services/userService')
-let servicerService = require('../../Provider/services/providerService')
-let orderService = require('../../Order/services/orderService')
+
+const LOG = require('../../models/User/logs')
+const customerService = require("../../services/Customer/customerService");
+let dealerService = require('../../services/Dealer/dealerService')
+let resellerService = require('../../services/Dealer/resellerService')
+let contractService = require('../../services/Contract/contractService')
+let claimService = require('../../services/Claim/claimService')
+let userService = require('../../services/User/userService')
+let servicerService = require('../../services/Provider/providerService')
+let orderService = require('../../services/Order/orderService')
 const constant = require("../../config/constant");
-const { default: mongoose } = require("mongoose");
-const serviceProvider = require("../../Provider/model/serviceProvider");
 const emailConstant = require('../../config/emailConstant');
+const supportingFunction = require('../../config/supportingFunction')
+const { default: mongoose } = require("mongoose");
 const randtoken = require('rand-token').generator()
 const sgMail = require('@sendgrid/mail');
-const LOG = require('../../User/model/logs')
-const supportingFunction = require('../../config/supportingFunction')
 
 sgMail.setApiKey(process.env.sendgrid_key);
 

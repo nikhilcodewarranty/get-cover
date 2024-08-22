@@ -1,31 +1,30 @@
 require('dotenv').config()
-const USER = require('../../User/model/users')
-const dealerService = require("../services/dealerService");
-const orderService = require("../../Order/services/orderService")
-const servicerService = require("../../Provider/services/providerService")
-const claimService = require("../../Claim/services/claimService")
-const moment = require("moment");
-const contractService = require("../../Contract/services/contractService")
-const dealerRelationService = require("../services/dealerRelationService");
-const customerService = require("../../Customer/services/customerService");
-const dealerPriceService = require("../services/dealerPriceService");
-const priceBookService = require("../../PriceBook/services/priceBookService");
-const dealerRelation = require("../../Provider/model/dealerServicer")
-const userService = require("../../User/services/userService");
-const role = require("../../User/model/role");
-const dealer = require("../model/dealer");
+const USER = require('../../models/User/users')
+const dealerService = require("../../services/Dealer/dealerService");
+const orderService = require("../../services/Order/orderService")
+const servicerService = require("../../services/Provider/providerService")
+const claimService = require("../../services/Claim/claimService")
+const contractService = require("../../services/Contract/contractService")
+const dealerRelationService = require("../../services/Dealer/dealerRelationService");
+const customerService = require("../../services/Customer/customerService");
+const dealerPriceService = require("../../services/Dealer/dealerPriceService");
+const priceBookService = require("../../services/PriceBook/priceBookService");
+const dealerRelation = require("../../models/Provider/dealerServicer")
+const userService = require("../../services/User/userService");
+const role = require("../../models/User/role");
+const dealer = require("../../models/Dealer/dealer");
 const constant = require('../../config/constant')
+const providerService = require('../../services/Provider/providerService');
+const { getServicer } = require('../../controllers/Provider/serviceAdminController');
+const resellerService = require('../../services/Dealer/resellerService');
+const moment = require("moment");
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const mongoose = require('mongoose');
 const json2csv = require('json-2-csv').json2csv;
 const multer = require('multer');
 const csvParser = require('csv-parser');
-const { id } = require('../validators/register_dealer');
 const { isBoolean } = require('util');
 const { string } = require('joi');
-const providerService = require('../../Provider/services/providerService');
-const { getServicer } = require('../../Provider/controller/serviceAdminController');
-const resellerService = require('../services/resellerService');
 
 //Get dashboard graph
 exports.getDashboardGraph = async (req, res) => {

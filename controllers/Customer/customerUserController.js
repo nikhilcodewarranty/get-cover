@@ -1,22 +1,21 @@
-const { Customer } = require("../model/customer");
-const customerResourceResponse = require("../utils/constant");
-const customerService = require("../services/customerService");
-let dealerService = require('../../Dealer/services/dealerService')
-let resellerService = require('../../Dealer/services/resellerService')
-const dealerRelationService = require("../../Dealer/services/dealerRelationService");
-let contractService = require('../../Contract/services/contractService')
-let claimService = require('../../Claim/services/claimService')
-const priceBookService = require("../../PriceBook/services/priceBookService");
-const dealerPriceService = require("../../Dealer/services/dealerPriceService");
-let userService = require('../../User/services/userService')
-let servicerService = require('../../Provider/services/providerService')
-let orderService = require('../../Order/services/orderService')
+const { Customer } = require("../../models/Customer/customer");
+const serviceProvider = require("../../models//Provider/serviceProvider");
+const LOG = require('../../models/User/logs')
+const customerService = require("../../services/Customer/customerService");
+let dealerService = require('../../services/Dealer/dealerService')
+let resellerService = require('../../services/Dealer/resellerService')
+const dealerRelationService = require("../../services/Dealer/dealerRelationService");
+let contractService = require('../../services/Contract/contractService')
+let claimService = require('../../services/Claim/claimService')
+const priceBookService = require("../../services/PriceBook/priceBookService");
+const dealerPriceService = require("../../services/Dealer/dealerPriceService");
+let userService = require('../../services/User/userService')
+let servicerService = require('../../services/Provider/providerService')
+let orderService = require('../../services/Order/orderService')
 const constant = require("../../config/constant");
 const { default: mongoose } = require("mongoose");
-const serviceProvider = require("../../Provider/model/serviceProvider");
-const reportingController = require('../../User/controller/reportingController')
+const reportingController = require('../../controllers/User/reportingController')
 
-const LOG = require('../../User/model/logs')
 
 // orders API's
 exports.customerOrders = async (req, res) => {

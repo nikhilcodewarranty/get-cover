@@ -1,16 +1,15 @@
-const { Contracts } = require("../model/contract");
-const contractResourceResponse = require("../utils/constant");
-const contractService = require("../services/contractService");
-const priceBookService = require("../../PriceBook/services/priceBookService");
-const claimService = require("../../Claim/services/claimService");
+const contract = require("../../models/Contract/contract");
+const contractService = require("../../services/Contract/contractService");
+const priceBookService = require("../../services/PriceBook/priceBookService");
+const claimService = require("../../services/Claim/claimService");
+const providerService = require("../../services/Provider/providerService");
+const dealerService = require("../../services/Dealer/dealerService");
+const customerService = require("../../services/Customer/customerService");
+const resellerService = require("../../services/Dealer/resellerService");
+const orderService = require("../../services/Order/orderService");
 const constant = require("../../config/constant");
 const { default: mongoose } = require("mongoose");
-const contract = require("../model/contract");
-const providerService = require("../../Provider/services/providerService");
-const dealerService = require("../../Dealer/services/dealerService");
-const customerService = require("../../Customer/services/customerService");
-const resellerService = require("../../Dealer/services/resellerService");
-const orderService = require("../../Order/services/orderService");
+
 
 //Get all contracts new api
 exports.getContracts = async (req, res) => {

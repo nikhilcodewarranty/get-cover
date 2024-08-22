@@ -1,35 +1,26 @@
 require('dotenv').config()
-const USER = require('../../User/model/users')
-const dealerResourceResponse = require("../utils/constant");
-const dealerService = require("../services/dealerService");
-const orderService = require("../../Order/services/orderService");
-const contractService = require("../../Contract/services/contractService");
-const resellerService = require("../services/resellerService");
-let claimService = require('../../Claim/services/claimService')
-const randtoken = require('rand-token').generator()
-const LOG = require('../../User/model/logs')
-
-const dealerRelationService = require("../services/dealerRelationService");
-const customerService = require("../../Customer/services/customerService");
-const dealerPriceService = require("../services/dealerPriceService");
-const priceBookService = require("../../PriceBook/services/priceBookService");
-const dealerRelation = require("../../Provider/model/dealerServicer")
-const providerService = require("../../Provider/services/providerService")
-const userService = require("../../User/services/userService");
-const role = require("../../User/model/role");
-const dealer = require("../model/dealer");
+const dealerService = require("../../services/Dealer/dealerService");
+const orderService = require("../../services/Order/orderService");
+const contractService = require("../../services/Contract/contractService");
+const resellerService = require("../../services/Dealer/resellerService")
+let claimService = require('../../services/Claim/claimService')
+const LOG = require('../../models/User/logs')
+const dealerRelationService = require("../../services/Dealer/dealerRelationService");
+const customerService = require("../../services/Customer/customerService");
+const dealerPriceService = require("../../services/Dealer/dealerPriceService");
+const priceBookService = require("../../services/PriceBook/priceBookService");
+const providerService = require("../../services/Provider/providerService")
+const userService = require("../../services/User/userService");
 const constant = require('../../config/constant')
-const bcrypt = require("bcrypt");
-const XLSX = require("xlsx");
-const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const emailConstant = require('../../config/emailConstant');
+const supportingFunction = require('../../config/supportingFunction')
+const randtoken = require('rand-token').generator()
+const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const mongoose = require('mongoose');
 const fs = require('fs');
 const json2csv = require('json-2-csv').json2csv;
-const connection = require('../../db')
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.sendgrid_key);
-const supportingFunction = require('../../config/supportingFunction')
 
 
 //Create reseller
