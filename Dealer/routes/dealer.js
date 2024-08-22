@@ -2,12 +2,12 @@ const express = require("express");
 const router = express.Router();
 const multer = require('multer');
 const validator = require('../config/validation');
-const supportingFunction = require('../../config/supportingFunction');
 const dealerController = require("../controller/dealerController"); // dealer controller 
 const dealerSupportingController = require("../controller/dealerSupporting"); // dealer get functions controller 
 const { verifyToken } = require('../../middleware/auth'); // authentication with jwt as middleware 
 const upload = multer({ dest: 'uploads/' });
 const uploadMiddleware = require('../middleware/uploadMiddleware');
+const supportingFunction = require('../../config/supportingFunction');
 
 router.post("/register", validator('register_dealer'), dealerController.registerDealer); // register dealer route
 router.post("/addDealerUser", [verifyToken], dealerController.addDealerUser); // add dealer user route
