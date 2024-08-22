@@ -241,6 +241,154 @@ exports.checkFileValidation = async (req, res) => {
 }
 
 
+//check file validation for orders
+exports.checkFileValidation = async (req, res) => {
+    try {
+        uploadP(req, res, async (err) => {
+            let data = req.body;
+            let file = req.file;
+            let csvName = file.key;
+            let originalName = file.originalname;
+            let size = file.size;
+            let totalDataComing1 = [];
+            let ws;
+            //S3 Bucket Read Code
+            var params = { Bucket: process.env.bucket_name, Key: file.key };
+            S3Bucket.getObject(params, function (err, data) {
+                if (err) {
+                    console.log(err);
+                } else {
+                    // Parse the buffer as an Excel file
+                    const wb = XLSX.read(data.Body, { type: 'buffer' });
+                    // Extract the data from the first sheet
+                    const sheetName = wb.SheetNames[0];
+                    ws = wb.Sheets[sheetName];
+                    totalDataComing1 = XLSX.utils.sheet_to_json(ws);
+                    const headers = [];
+                    for (let cell in ws) {
+                        // Check if the cell is in the first row and has a non-empty value
+                        if (
+                            /^[A-Z]1$/.test(cell) &&
+                            ws[cell].v !== undefined &&
+                            ws[cell].v !== null &&
+                            ws[cell].v.trim() !== ""
+                        ) {
+                            headers.push(ws[cell].v);
+                        }
+                    }
+
+                    if (headers.length !== 8) {
+                        // fs.unlink('../../uploads/orderFile/' + req.file.filename)
+                        res.send({
+                            code: constant.successCode,
+                            message:
+                                "Invalid file format detected. The sheet should contain exactly eight columns.",
+                            orderFile: {
+                                fileName: csvName,
+                                name: originalName,
+                                size: file.size,
+                            },
+                        });
+                        return;
+                    }
+
+                    const isValidLength = totalDataComing1.every(
+                        (obj) => Object.keys(obj).length === 5
+                    );
+                    if (!isValidLength) {
+                        res.send({
+                            code: constant.successCode,
+                            message: "Invalid fields value",
+                            orderFile: {
+                                fileName: csvName,
+                                name: originalName,
+                                size: size,
+                            },
+                        });
+                        return;
+                    }
+                    const totalDataComing = totalDataComing1.map((item) => {
+                        const keys = Object.keys(item);
+                        return {
+                            retailValue: item[keys[4]],
+                        };
+                    });
+
+                    const serialNumberArray = totalDataComing1.map((item) => {
+                        const keys = Object.keys(item);
+                        return {
+                            serial: item[keys[2]].toString().toLowerCase(),
+                        };
+                    });
+
+                    const serialNumbers = serialNumberArray.map(number => number.serial);
+                    const duplicateSerials = serialNumbers.filter((serial, index) => serialNumbers.indexOf(serial) !== index);
+
+                    if (duplicateSerials.length > 0) {
+                        res.send({
+                            code: constant.successCode,
+                            message: "Serial numbers are not unique for this product",
+                            orderFile: {
+                                fileName: csvName,
+                                name: originalName,
+                                size: size,
+                            },
+                        })
+                        return
+                    }
+
+                    // Check retail price is in between rangeStart and rangeEnd
+                    const isValidRetailPrice = totalDataComing.map((obj) => {
+                        // Check if 'noOfProducts' matches the length of 'data'
+                        if (
+                            obj.retailValue < Number(data.rangeStart) ||
+                            obj.retailValue > Number(data.rangeEnd)
+                        ) {
+                            message.push({
+                                code: constant.successCode,
+                                retailPrice: obj.retailValue,
+                                message: "Invalid Retail Price!",
+                                fileName: csvName,
+                                name: originalName,
+                                orderFile: {
+                                    fileName: csvName,
+                                    name: originalName,
+                                    size: size,
+                                },
+                            });
+                        }
+                    });
+
+                    if (message.length > 0) {
+                        res.send({
+                            data: message,
+
+                        });
+                        return;
+                    }
+
+                    res.send({
+                        code: constant.successCode,
+                        message: "Verified",
+                        orderFile: {
+                            fileName: csvName,
+                            name: originalName,
+                            size: size,
+                        },
+                    });
+                }
+            })
+
+        });
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message,
+        });
+    }
+};
+
+
 //checking uploaded file is valid
 exports.checkMultipleFileValidation = async (req, res) => {
     try {
@@ -276,26 +424,28 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 const headers = [];
                 //Collect all header length for all csv
                 for (let j = 0; j < productsWithFiles.length; j++) {
-                    const bucketReadUrl = productsWithFiles[j].products.file
-                    // Await the getObjectFromS3 function to complete
-                    const result = await getObjectFromS3(bucketReadUrl);
+                    if (productsWithFiles[j].products.file != undefined) {
+                        const bucketReadUrl = productsWithFiles[j].products.file
+                        // Await the getObjectFromS3 function to complete
+                        const result = await getObjectFromS3(bucketReadUrl);
 
-                    allDataComing.push({
-                        key: productsWithFiles[j].products.key,
-                        checkNumberProducts: productsWithFiles[j].products.checkNumberProducts,
-                        noOfProducts: productsWithFiles[j].products.noOfProducts,
-                        priceType: productsWithFiles[j].products.priceType,
-                        rangeStart: productsWithFiles[j].products.rangeStart,
-                        rangeEnd: productsWithFiles[j].products.rangeEnd,
-                        data: result.data,
-                    });
+                        allDataComing.push({
+                            key: productsWithFiles[j].products.key,
+                            checkNumberProducts: productsWithFiles[j].products.checkNumberProducts,
+                            noOfProducts: productsWithFiles[j].products.noOfProducts,
+                            priceType: productsWithFiles[j].products.priceType,
+                            rangeStart: productsWithFiles[j].products.rangeStart,
+                            rangeEnd: productsWithFiles[j].products.rangeEnd,
+                            data: result.data,
+                        });
 
-                    allHeaders.push({
-                        key: productsWithFiles[j].products.key,
-                        headers: result.headers,
-                    });
+                        allHeaders.push({
+                            key: productsWithFiles[j].products.key,
+                            headers: result.headers,
+                        });
+
+                    }
                 }
-
                 const errorMessages = allHeaders
                     .filter((headerObj) => headerObj.headers.length !== 8)
                     .map((headerObj) => ({
@@ -316,7 +466,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         if (!obj.data || typeof obj.data !== "object") {
                             return false; // 'data' should be an object
                         }
-
                         const orderFileData = obj.data.map(item => {
                             const keys = Object.keys(item);
                             return {
@@ -330,6 +479,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 purchaseDate: item[keys[7]],
                             };
                         });
+
                         orderFileData.forEach((fileData) => {
                             let brand = fileData.brand.toString().replace(/\s+/g, ' ').trim()
                             let serial = fileData.serial.toString().replace(/\s+/g, ' ').trim()
@@ -446,6 +596,15 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         });
                         if (priceObj.length > 0) {
                             priceObj.map((obj, index) => {
+                                //check Purchase date is valid or not
+                                if (!isValidDate(obj.purchaseDate)) {
+                                    message.push({
+                                        code: constant.errorCode,
+                                        key: obj.key,
+                                        message: `Purchase date should be in the format MM/DD/YYYY `
+                                    });
+                                    return;
+                                }
                                 if (isNaN(obj.retailValue) || obj.retailValue < 0) {
                                     {
                                         message.push({
@@ -530,9 +689,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     }
                 }
             }
-
-
-
             res.send({
                 code: constant.successCode,
                 message: "SuccessfileName!",
@@ -546,6 +702,26 @@ exports.checkMultipleFileValidation = async (req, res) => {
     }
 };
 
+//Check date is valid or not
+function isValidDate(dateString) {
+    // Check the format with a regular expression
+    const regex = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/;
+
+    if (!regex.test(dateString)) {
+        return false;
+    }
+
+    // Parse the date parts to integers
+    const [month, day, year] = dateString.split("/").map(Number);
+
+    // Check if the date is valid using the Date object
+    const date = new Date(year, month - 1, day);
+
+    // Check if the date parts match the parsed date
+    return date.getFullYear() === year &&
+        date.getMonth() === month - 1 &&
+        date.getDate() === day;
+}
 
 //Generate T and C
 async function generateTC(orderData) {
@@ -630,7 +806,8 @@ async function generateTC(orderData) {
             }
         }
         let mergeFileName = checkOrder.unique_key + '.pdf'
-        const orderFile = 'pdfs/' + mergeFileName;
+        //  const orderFile = 'pdfs/' + mergeFileName;
+        const orderFile = `/tmp/${mergeFileName}`; // Temporary local storage
         const html = `<head>
         <link rel="stylesheet" href="https://gistcdn.githack.com/mfd/09b70eb47474836f25a21660282ce0fd/raw/e06a670afcb2b861ed2ac4a1ef752d062ef6b46b/Gilroy.css"></link>
         </head>
@@ -683,71 +860,59 @@ async function generateTC(orderData) {
 
         pdf.create(html, options).toFile(orderFile, async (err, result) => {
             if (err) return console.log(err);
-            // -------------------merging pdfs 
             const { PDFDocument, rgb } = require('pdf-lib');
             const fs = require('fs').promises;
+            const fileContent = await fs.readFile(orderFile);
+            const bucketName = process.env.bucket_name
+            const s3Key = `pdfs/${mergeFileName}`;
+            //Upload to S3 bucket
+            await uploadToS3(orderFile, bucketName, s3Key);
+            const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : "file-1723185474819.pdf"
+            const termPath = termConditionFile
+            //Download from S3 bucket 
+            const termPathBucket = await downloadFromS3(bucketName, termPath);
+            const orderPathBucket = await downloadFromS3(bucketName, s3Key);
+            async function mergePDFs(pdfBytes1, pdfBytes2, outputPath) {
+                const pdfDoc1 = await PDFDocument.load(pdfBytes1);
+                const pdfDoc2 = await PDFDocument.load(pdfBytes2);
 
-            async function mergePDFs(pdfPath1, pdfPath2, outputPath) {
-                // Load the PDFs
-                const pdfDoc1Bytes = await fs.readFile(pdfPath1);
-                const pdfDoc2Bytes = await fs.readFile(pdfPath2);
-
-                const pdfDoc1 = await PDFDocument.load(pdfDoc1Bytes);
-                const pdfDoc2 = await PDFDocument.load(pdfDoc2Bytes);
-
-                // Create a new PDF Document
                 const mergedPdf = await PDFDocument.create();
 
-                // Add the pages of the first PDF
                 const pdfDoc1Pages = await mergedPdf.copyPages(pdfDoc1, pdfDoc1.getPageIndices());
                 pdfDoc1Pages.forEach((page) => mergedPdf.addPage(page));
 
-                // Add the pages of the second PDF
                 const pdfDoc2Pages = await mergedPdf.copyPages(pdfDoc2, pdfDoc2.getPageIndices());
                 pdfDoc2Pages.forEach((page) => mergedPdf.addPage(page));
 
-                // Serialize the PDF
                 const mergedPdfBytes = await mergedPdf.save();
 
-                // Write the merged PDF to a file
                 await fs.writeFile(outputPath, mergedPdfBytes);
+                return mergedPdfBytes;
             }
+            // Merge PDFs
+            const mergedPdf = await mergePDFs(termPathBucket, orderPathBucket, `/tmp/merged_${mergeFileName}`);
+            // Upload merged PDF to S3
+            const mergedKey = `mergedFile/${mergeFileName}`;
+            await uploadToS3(`/tmp/merged_${mergeFileName}`, bucketName, mergedKey);
+            const params = {
+                Bucket: bucketName,
+                Key: `mergedFile/${mergeFileName}`
+            };
+            //Read from the s3 bucket
+            const data = await S3.getObject(params).promise();
+            let attachment = data.Body.toString('base64');
 
-            const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : checkOrder.termCondition.filename
-            // Usage
-            const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
-            const pdfPath1 = process.env.MAIN_FILE_PATH + "uploads/" + termConditionFile;
-            const outputPath = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName;
-            link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
-            let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
-            const pathToAttachment = process.env.MAIN_FILE_PATH + "/uploads/mergedFile/" + mergeFileName
-            fs.readFile(pathToAttachment)
-                .then(async (fileData) => {
-                    const attachment = fileData.toString('base64');
-                    try {
-                        //sendTermAndCondition
-                        // Send Email code here
-                        let notificationEmails = await supportingFunction.getUserEmails();
-                        notificationEmails.push(DealerUser.email)
-                        notificationEmails.push(resellerUser?.email)
-                        let emailData = {
-                            senderName: customerUser.firstName,
-                            content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
-                            subject: 'Order Term and Condition-' + checkOrder.unique_key,
-                        }
-                        let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
-
-                    } catch (error) {
-                        console.error('Error sending email:', error);
-                        if (error.response) {
-                            console.error('Error response:', error.response.body);
-                        }
-                    }
-                })
-                .catch(err => {
-                    console.error("Error reading the file:", err);
-                });
-
+            //sendTermAndCondition
+            // Send Email code here
+            let notificationEmails = await supportingFunction.getUserEmails();
+            notificationEmails.push(DealerUser.email)
+            notificationEmails.push(resellerUser?.email)
+            let emailData = {
+                senderName: customerUser.firstName,
+                content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
+                subject: 'Order Term and Condition-' + checkOrder.unique_key,
+            }
+            let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
 
         })
         return 1
@@ -762,13 +927,15 @@ async function generateTC(orderData) {
     }
 }
 
+//Get File data from S3 bucket
+
 const getObjectFromS3 = (bucketReadUrl) => {
     return new Promise((resolve, reject) => {
         S3Bucket.getObject(bucketReadUrl, (err, data) => {
             if (err) {
                 reject(err);
             } else {
-                const wb = XLSX.read(data.Body, { type: 'buffer' });
+                const wb = XLSX.read(data.Body);
                 const sheetName = wb.SheetNames[0];
                 const sheet = wb.Sheets[sheetName];
                 let headers = [];
@@ -786,7 +953,13 @@ const getObjectFromS3 = (bucketReadUrl) => {
 
                 const result = {
                     headers: headers,
-                    data: XLSX.utils.sheet_to_json(sheet),
+                    data: XLSX.utils.sheet_to_json(sheet,{
+                        raw: false, // this ensures all cell values are parsed as text
+                        dateNF: 'mm/dd/yyyy', // optional: specifies the date format if Excel stores dates as numbers
+                        defval: '', // fills in empty cells with an empty string
+                        cellDates: true, // ensures dates are parsed as JavaScript Date objects
+                        cellText: false, // don't convert dates to text
+                    }),
                 };
 
                 resolve(result);
@@ -794,6 +967,29 @@ const getObjectFromS3 = (bucketReadUrl) => {
         });
     });
 };
+
+function isValidDate(dateString) {
+    // Check the format with a regular expression
+    const regex = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/;
+
+    if (!regex.test(dateString)) {
+        return false;
+    }
+
+    // Parse the date parts to integers
+    const [month, day, year] = dateString.split("/").map(Number);
+
+    // Check if the date is valid using the Date object
+    const date = new Date(year, month - 1, day);
+
+    // Check if the date parts match the parsed date
+    return date.getFullYear() === year &&
+        date.getMonth() === month - 1 &&
+        date.getDate() === day;
+}
+
+
+
 
 // Create Order
 exports.createOrder1 = async (req, res) => {
@@ -896,7 +1092,7 @@ exports.createOrder1 = async (req, res) => {
         }
 
         if (data.billTo == "Dealer") {
-            let getUser = await userService.getSingleUserByEmail({ accountId: checkDealer._id, isPrimary: true })
+            let getUser = await userService.getSingleUserByEmail({ metaId: checkDealer._id, isPrimary: true })
             data.billDetail = {
                 billTo: "Dealer",
                 detail: {
@@ -910,7 +1106,7 @@ exports.createOrder1 = async (req, res) => {
         }
         if (data.billTo == "Reseller") {
             let getReseller = await resellerService.getReseller({ _id: data.resellerId })
-            let getUser = await userService.getSingleUserByEmail({ accountId: getReseller._id, isPrimary: true })
+            let getUser = await userService.getSingleUserByEmail({ metaId: getReseller._id, isPrimary: true })
             data.billDetail = {
                 billTo: "Reseller",
                 detail: {
@@ -995,7 +1191,7 @@ exports.createOrder1 = async (req, res) => {
         returnField.push(obj);
         //send notification to admin and dealer 
         let IDs = await supportingFunction.getUserIds()
-        let getPrimary = await supportingFunction.getPrimaryUser({ accountId: data.dealerId, isPrimary: true })
+        let getPrimary = await supportingFunction.getPrimaryUser({ metaId: data.dealerId, isPrimary: true })
         IDs.push(getPrimary._id)
 
         let notificationData = {
@@ -1021,8 +1217,6 @@ exports.createOrder1 = async (req, res) => {
 
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
-
-            console.log("sdfsdfsdfsdfdddsdf",)
             let paidDate = {
                 name: "processOrder",
                 date: new Date()
@@ -1038,6 +1232,7 @@ exports.createOrder1 = async (req, res) => {
             var pricebookDetail = []
             let checkLength = savedResponse.productsArray.length - 1
             let mapOnProducts = savedResponse.productsArray.map(async (product, index) => {
+                let headerLength;
                 if (data.adh && isNaN(data.adh)) {
 
                     res.send({
@@ -1075,9 +1270,17 @@ exports.createOrder1 = async (req, res) => {
                     dateNF: '"m"/"d"/"yyyy"' // <--- need dateNF in sheet_to_json options (note the escape chars)
                 }
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
-                const bucketReadUrl = { Bucket: process.env.bucket_name, Key: product.orderFile.fileName };             
+                const bucketReadUrl = { Bucket: process.env.bucket_name, Key: product.orderFile.fileName };
                 // Await the getObjectFromS3 function to complete
                 const result = await getObjectFromS3(bucketReadUrl);
+                headerLength = result.headers
+                if (headerLength.length !== 8) {
+                    res.send({
+                        code: constant.errorCode,
+                        message: "Invalid file format detected. The sheet should contain exactly four columns."
+                    })
+                    return
+                }
                 let priceBookId = product.priceBookId;
                 let coverageStartDate = product.coverageStartDate;
                 let coverageEndDate = product.coverageEndDate;
@@ -1088,8 +1291,9 @@ exports.createOrder1 = async (req, res) => {
                     query,
                     projection
                 );
-           
+
                 const totalDataComing1 = result.data
+                console.log("checking file data+++++++++++++++++++++++++++++++++", totalDataComing1)
                 const totalDataComing = totalDataComing1.map((item) => {
                     const keys = Object.keys(item);
                     return {
@@ -1109,7 +1313,6 @@ exports.createOrder1 = async (req, res) => {
 
                 let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, priceBook: priceBookId })
 
-
                 totalDataComing.forEach((data, index1) => {
                     let unique_key_number1 = increamentNumber
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
@@ -1125,6 +1328,15 @@ exports.createOrder1 = async (req, res) => {
                     let labourWarrantyMonth = Number(data.labourWarranty ? data.labourWarranty : 0)
 
                     dateCheck = new Date(dateCheck.setDate(dateCheck.getDate() + Number(adhDays)))
+                    if (!isValidDate(data.purchaseDate)) {
+                        res.send({
+                            code: constant.successCode,
+                            message: `All date should be in the format MM/DD/YYYY , order has been created please update the file in edit order to create the contracts `
+                        })
+                        return
+                    }
+
+
                     let p_date = new Date(data.purchaseDate)
                     let p_date1 = new Date(data.purchaseDate)
                     let l_date = new Date(data.purchaseDate)
@@ -1242,9 +1454,9 @@ exports.createOrder1 = async (req, res) => {
                     }
                     //send notification to admin and dealer 
                     let IDs = await supportingFunction.getUserIds()
-                    let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: data.dealerId, isPrimary: true })
-                    let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: data.customerId, isPrimary: true })
-                    let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: data.resellerId, isPrimary: true })
+                    let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: data.dealerId, isPrimary: true })
+                    let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: data.customerId, isPrimary: true })
+                    let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: data.resellerId, isPrimary: true })
                     if (resellerPrimary) {
                         IDs.push(resellerPrimary._id)
                     }
@@ -1364,7 +1576,7 @@ exports.editFileCase = async (req, res) => {
                     };
 
                     var jsonOpts = {
-                        //header: 1, 
+                        //header: 1,
                         defval: '',
                         // blankrows: true,
                         raw: false,
@@ -1389,13 +1601,12 @@ exports.editFileCase = async (req, res) => {
             let message = [];
             let finalRetailValue = [];
             if (productsWithFiles.length > 0) {
-                console.log("productsWithFiles-----------------------------",productsWithFiles);
                 for (let j = 0; j < productsWithFiles.length; j++) {
                     if (productsWithFiles[j].file != undefined) {
                         const bucketReadUrl = productsWithFiles[j].file
                         // Await the getObjectFromS3 function to complete
                         const result = await getObjectFromS3(bucketReadUrl);
-                   
+
                         allDataComing.push({
                             key: productsWithFiles[j].key,
                             checkNumberProducts: productsWithFiles[j].checkNumberProducts,
@@ -1404,12 +1615,12 @@ exports.editFileCase = async (req, res) => {
                             rangeStart: productsWithFiles[j].rangeStart,
                             rangeEnd: productsWithFiles[j].rangeEnd,
                             data: result.data,
-                          });
-                    
-                          allHeaders.push({
+                        });
+
+                        allHeaders.push({
                             key: productsWithFiles[j].key,
                             headers: result.headers,
-                          });
+                        });
                     }
                 }
 
@@ -1563,6 +1774,15 @@ exports.editFileCase = async (req, res) => {
                         });
                         if (priceObj.length > 0) {
                             priceObj.map((obj, index) => {
+                                //check Purchase date is valid or not
+                                if (!isValidDate(obj.purchaseDate)) {
+                                    message.push({
+                                        code: constant.errorCode,
+                                        key: obj.key,
+                                        message: `Purchase date should be in the format MM/DD/YYYY `
+                                    });
+                                    return;
+                                }
                                 if (isNaN(obj.retailValue) || obj.retailValue < 0) {
                                     {
                                         message.push({
@@ -1746,7 +1966,7 @@ exports.editOrderDetail = async (req, res) => {
             let checkDealer1 = await dealerService.getDealerById(
                 data.dealerId
             );
-            let getUser = await userService.getSingleUserByEmail({ accountId: checkDealer1._id, isPrimary: true })
+            let getUser = await userService.getSingleUserByEmail({ metaId: checkDealer1._id, isPrimary: true })
             data.billDetail = {
                 billTo: "Dealer",
                 detail: {
@@ -1759,7 +1979,7 @@ exports.editOrderDetail = async (req, res) => {
         }
         if (data.billTo == "Reseller") {
             let getReseller = await resellerService.getReseller({ _id: data.resellerId })
-            let getUser = await userService.getSingleUserByEmail({ accountId: getReseller._id, isPrimary: true })
+            let getUser = await userService.getSingleUserByEmail({ metaId: getReseller._id, isPrimary: true })
             data.billDetail = {
                 billTo: "Reseller",
                 detail: {
@@ -1891,7 +2111,7 @@ exports.editOrderDetail = async (req, res) => {
         returnField.push(obj);
         //send notification to dealer,reseller,admin,customer
         let IDs = await supportingFunction.getUserIds()
-        let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
+        let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.dealerId, isPrimary: true })
         IDs.push(dealerPrimary._id)
         let notificationData = {
             title: "Order update",
@@ -1922,6 +2142,7 @@ exports.editOrderDetail = async (req, res) => {
                 { status: "Active" },
                 { new: true }
             );
+
             let checkDealer1 = await dealerService.getDealerById(
                 savedResponse.dealerId
             );
@@ -1940,6 +2161,7 @@ exports.editOrderDetail = async (req, res) => {
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             let checkLength = savedResponse.productsArray.length - 1
             let save = savedResponse.productsArray.map(async (product, index) => {
+                let headerLength;
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 const readOpts = { // <--- need these settings in readFile options
                     cellDates: true
@@ -1949,9 +2171,17 @@ exports.editOrderDetail = async (req, res) => {
                     raw: false,
                     dateNF: 'm"/"d"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
                 }
-                const bucketReadUrl = { Bucket: process.env.bucket_name, Key: product.orderFile.fileName };             
+                const bucketReadUrl = { Bucket: process.env.bucket_name, Key: product.orderFile.fileName };
                 // Await the getObjectFromS3 function to complete
                 const result = await getObjectFromS3(bucketReadUrl);
+                headerLength = result.headers
+                if (headerLength.length !== 8) {
+                    res.send({
+                        code: constant.errorCode,
+                        message: "Invalid file format detected. The sheet should contain exactly four columns."
+                    })
+                    return
+                }
                 let priceBookId = product.priceBookId;
                 let orderProductId = product._id;
                 let coverageStartDate = product.coverageStartDate;
@@ -1982,7 +2212,7 @@ exports.editOrderDetail = async (req, res) => {
                 pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
                 pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
                 pricebookDetail.push(pricebookDetailObject)
-                dealerBookDetail.push(dealerPriceBookObject)                
+                dealerBookDetail.push(dealerPriceBookObject)
                 const totalDataComing1 = result.data;
                 const totalDataComing = totalDataComing1.map((item) => {
                     const keys = Object.keys(item);
@@ -2124,9 +2354,9 @@ exports.editOrderDetail = async (req, res) => {
                     }
                     // send notification to dealer,admin, customer
                     let IDs = await supportingFunction.getUserIds()
-                    let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
-                    let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.customerId, isPrimary: true })
-                    let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.resellerId, isPrimary: true })
+                    let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.dealerId, isPrimary: true })
+                    let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.customerId, isPrimary: true })
+                    let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.resellerId, isPrimary: true })
                     if (resellerPrimary) {
                         IDs.push(resellerPrimary._id)
                     }
@@ -2217,6 +2447,28 @@ exports.editOrderDetail = async (req, res) => {
             message: err.message,
         });
     }
+};
+
+//Upload to S3
+const uploadToS3 = async (filePath, bucketName, key) => {
+    const fs = require('fs').promises;
+    const fileContent = await fs.readFile(filePath);
+    const params = {
+        Bucket: bucketName,
+        Key: key,
+        Body: fileContent,
+    };
+    return S3.upload(params).promise();
+};
+
+//Download to S3
+const downloadFromS3 = async (bucketName, key) => {
+    const params = {
+        Bucket: bucketName,
+        Key: key,
+    };
+    const data = await S3.getObject(params).promise();
+    return data.Body;
 };
 
 //Get Order Contract

@@ -23,7 +23,7 @@ exports.customerOrders = async (req, res) => {
     let data = req.body
     let checkCustomer = await customerService.getCustomerById({ _id: req.userId }, {})
     if (!checkCustomer) {
-       res.send({
+      res.send({
         code: constant.errorCode,
         message: "Invalid customer ID"
       })
@@ -97,7 +97,7 @@ exports.customerOrders = async (req, res) => {
     let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
     let userResellerIds = ordersResult
       .filter(result => result.resellerId !== null)
-      .map(result => result.resellerId.toString());
+      .map(result => result.resellerId);
 
     let mergedArray = userDealerIds.concat(userResellerIds);
 
@@ -125,12 +125,12 @@ exports.customerOrders = async (req, res) => {
 
     let userCustomerIds = ordersResult
       .filter(result => result.customerId !== null)
-      .map(result => result.customerId.toString());
+      .map(result => result.customerId);
 
     const allUserIds = mergedArray.concat(userCustomerIds);
 
 
-    const queryUser = { accountId: { $in: allUserIds }, isPrimary: true };
+    const queryUser = { metaId: { $in: allUserIds }, isPrimary: true };
 
     let getPrimaryUser = await userService.findUserforCustomer(queryUser)
 
@@ -238,13 +238,13 @@ exports.customerOrders = async (req, res) => {
         item.flag = true
       }
       if (item.dealerName) {
-        username = getPrimaryUser.find(user => user.accountId.toString() === item.dealerName._id.toString());
+        username = getPrimaryUser.find(user => user.metaId.toString() === item.dealerName._id.toString());
       }
       if (item.resellerName) {
-        resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.accountId.toString() === item.resellerName._id.toString()) : {};
+        resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.metaId?.toString() === item.resellerName._id.toString()) : {};
       }
       if (item.customerName) {
-        customerUserData = item.customerName._id != null ? getPrimaryUser.find(user => user.accountId.toString() === item.customerName._id.toString()) : {};
+        customerUserData = item.customerName._id != null ? getPrimaryUser.find(user => user.metaId?.toString() === item.customerName._id.toString()) : {};
       }
       return {
         ...item,
@@ -283,7 +283,7 @@ exports.customerOrders = async (req, res) => {
     })
   }
   catch (err) {
-     res.send({
+    res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -297,7 +297,7 @@ exports.getSingleOrder = async (req, res) => {
     let query = { _id: req.params.orderId };
     let checkOrder = await orderService.getOrder(query, projection);
     if (!checkOrder) {
-       res.send({
+      res.send({
         code: constant.errorCode,
         message: "Order not found!",
       });
@@ -337,9 +337,9 @@ exports.getSingleOrder = async (req, res) => {
       ],
     };
     let checkServicer = await servicerService.getServiceProviderById(query1);
-    let singleDealerUser = await userService.getUserById1({ accountId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false });
-    let singleResellerUser = await userService.getUserById1({ accountId: checkOrder.resellerId, isPrimary: true }, { isDeleted: false });
-    let singleCustomerUser = await userService.getUserById1({ accountId: checkOrder.customerId, isPrimary: true }, { isDeleted: false });
+    let singleDealerUser = await userService.getUserById1({ metaId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false });
+    let singleResellerUser = await userService.getUserById1({ metaId: checkOrder.resellerId, isPrimary: true }, { isDeleted: false });
+    let singleCustomerUser = await userService.getUserById1({ metaId: checkOrder.customerId, isPrimary: true }, { isDeleted: false });
     // ------------------------------------Get Dealer Servicer -----------------------------
     let getServicersIds = await dealerRelationService.getDealerRelations({
       dealerId: checkOrder.dealerId,
@@ -362,12 +362,12 @@ exports.getSingleOrder = async (req, res) => {
       servicer.unshift(dealer);
     }
     const servicerIds = servicer.map((obj) => obj._id);
-    const servicerQuery = { accountId: { $in: servicerIds }, isPrimary: true };
+    const servicerQuery = { metaId: { $in: servicerIds }, isPrimary: true };
 
     let servicerUser = await userService.getMembers(servicerQuery, {});
     const result_Array = servicer.map((item1) => {
       const matchingItem = servicerUser.find(
-        (item2) => item2.accountId.toString() === item1._id.toString()
+        (item2) => item2.metaId?.toString() === item1._id.toString()
       );
 
       if (matchingItem) {
@@ -397,7 +397,7 @@ exports.getSingleOrder = async (req, res) => {
       servicers: result_Array
     });
   } catch (err) {
-     res.send({
+    res.send({
       code: constant.errorCode,
       message: err.message,
     });
@@ -410,7 +410,7 @@ exports.editCustomer = async (req, res) => {
     let data = req.body
     let checkDealer = await customerService.getCustomerById({ _id: req.userId }, {})
     if (!checkDealer) {
-       res.send({
+      res.send({
         code: constant.errorCode,
         message: "Invalid ID"
       })
@@ -421,7 +421,7 @@ exports.editCustomer = async (req, res) => {
     let option = { new: true }
     let updateCustomer = await customerService.updateCustomer(criteria1, data, option)
     if (!updateCustomer) {
-       res.send({
+      res.send({
         code: constant.errorCode,
         message: "Unable to update the customer detail"
       })
@@ -429,9 +429,9 @@ exports.editCustomer = async (req, res) => {
     }
 
     if (data.isAccountCreate) {
-      let updatePrimaryUser = await userService.updateSingleUser({ accountId: checkDealer._id, isPrimaryUser: true }, { stauts: true }, { new: true })
+      let updatePrimaryUser = await userService.updateSingleUser({ metaId: checkDealer._id, isPrimaryUser: true }, { stauts: true }, { new: true })
     } else {
-      let updatePrimaryUser = await userService.updateUser({ accountId: checkDealer._id }, { stauts: false }, { new: true })
+      let updatePrimaryUser = await userService.updateUser({ metaId: checkDealer._id }, { stauts: false }, { new: true })
 
     }
 
@@ -440,7 +440,7 @@ exports.editCustomer = async (req, res) => {
       message: "Updated successfully"
     })
   } catch (err) {
-     res.send({
+    res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -670,7 +670,7 @@ exports.getCustomerContract = async (req, res) => {
     })
 
   } catch (err) {
-     res.send({
+    res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -683,7 +683,7 @@ exports.addCustomerUser = async (req, res) => {
     let data = req.body
     let checkCustomer = await customerService.getCustomerByName({ _id: req.userId })
     if (!checkCustomer) {
-       res.send({
+      res.send({
         code: constant.errorCode,
         message: "Invalid customer"
       })
@@ -691,7 +691,7 @@ exports.addCustomerUser = async (req, res) => {
     }
     let checkEmail = await userService.findOneUser({ email: data.email })
     if (checkEmail) {
-       res.send({
+      res.send({
         code: constant.errorCode,
         message: "User already added with this email"
       })
@@ -716,7 +716,7 @@ exports.addCustomerUser = async (req, res) => {
 
       await LOG(logData).save()
 
-       res.send({
+      res.send({
         code: constant.errorCode,
         message: "Unable to add the user"
       })
@@ -755,7 +755,7 @@ exports.addCustomerUser = async (req, res) => {
     }
 
     await LOG(logData).save()
-     res.send({
+    res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -766,9 +766,9 @@ exports.addCustomerUser = async (req, res) => {
 exports.getCustomerUsers = async (req, res) => {
   try {
     let data = req.body
-    let getCustomerUsers = await userService.findUser({ accountId: req.userId, isDeleted: false }, { isPrimary: -1 })
+    let getCustomerUsers = await userService.findUser({ metaId: req.userId, isDeleted: false }, { isPrimary: -1 })
     if (!getCustomerUsers) {
-       res.send({
+      res.send({
         code: constant.errorCode,
         message: "Unable to fetch the customers"
       })
@@ -800,7 +800,7 @@ exports.getCustomerUsers = async (req, res) => {
 
     let checkCustomer = await customerService.getCustomerByName({ _id: req.userId }, { status: 1 })
     if (!checkCustomer) {
-       res.send({
+      res.send({
         code: constant.errorCode,
         message: "Invalid customer ID"
       })
@@ -816,7 +816,7 @@ exports.getCustomerUsers = async (req, res) => {
       isAccountCreate: checkCustomer.isAccountCreate
     })
   } catch (err) {
-     res.send({
+    res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -829,13 +829,13 @@ exports.changePrimaryUser = async (req, res) => {
     let data = req.body
     let checkUser = await userService.findOneUser({ _id: req.params.userId }, {})
     if (!checkUser) {
-       res.send({
+      res.send({
         code: constant.errorCode,
         message: "Unable to find the user"
       })
       return;
     };
-    let updateLastPrimary = await userService.updateSingleUser({ accountId: checkUser.accountId, isPrimary: true }, { isPrimary: false }, { new: true })
+    let updateLastPrimary = await userService.updateSingleUser({ metaId: checkUser.metaId, isPrimary: true }, { isPrimary: false }, { new: true })
     if (!updateLastPrimary) {
       //Save Logs changePrimaryUser
       let logData = {
@@ -849,7 +849,7 @@ exports.changePrimaryUser = async (req, res) => {
       }
       await LOG(logData).save()
 
-       res.send({
+      res.send({
         code: constant.errorCode,
         message: "Unable to change tha primary"
       })
@@ -870,7 +870,7 @@ exports.changePrimaryUser = async (req, res) => {
       }
       await LOG(logData).save()
 
-       res.send({
+      res.send({
         code: constant.errorCode,
         message: "Something went wrong"
       })
@@ -908,7 +908,7 @@ exports.changePrimaryUser = async (req, res) => {
     }
     await LOG(logData).save()
 
-     res.send({
+    res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -921,12 +921,12 @@ exports.getCustomerById = async (req, res) => {
     let data = req.body
     let checkCustomer = await customerService.getCustomerById({ _id: req.userId }, {})
     if (!checkCustomer) {
-       res.send({
+      res.send({
         code: constant.errorCode,
         message: "Invalid customer ID"
       })
     } else {
-      let getPrimaryUser = await userService.findOneUser({ accountId: checkCustomer._id.toString(), isPrimary: true }, {})
+      let getPrimaryUser = await userService.findOneUser({ metaId: checkCustomer._id, isPrimary: true }, {})
       let checkReseller = await resellerService.getReseller({ _id: checkCustomer.resellerId }, { isDeleted: 0 });
       let project = {
         productsArray: 1,
@@ -960,7 +960,7 @@ exports.getCustomerById = async (req, res) => {
 
     }
   } catch (err) {
-     res.send({
+    res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1025,9 +1025,9 @@ exports.getOrderContract = async (req, res) => {
 
     let reseller = await resellerService.getReseller({ _id: checkOrder[0].order[0].resellerId }, { isDeleted: 0 })
 
-    const queryDealerUser = { accountId: { $in: [checkOrder[0].order[0].dealerId != null ? checkOrder[0].order[0].dealerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
+    const queryDealerUser = { metaId: { $in: [checkOrder[0].order[0].dealerId != null ? checkOrder[0].order[0].dealerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
 
-    const queryResselerUser = { accountId: { $in: [checkOrder[0].order[0].resellerId != null ? checkOrder[0].order[0].resellerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
+    const queryResselerUser = { metaId: { $in: [checkOrder[0].order[0].resellerId != null ? checkOrder[0].order[0].resellerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
 
     let dealerUser = await userService.findUserforCustomer(queryDealerUser)
 
@@ -1061,7 +1061,7 @@ exports.getOrderContract = async (req, res) => {
     });
 
   } catch (err) {
-     res.send({
+    res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1212,7 +1212,7 @@ exports.getContractById = async (req, res) => {
 
     })
     if (!getData) {
-       res.send({
+      res.send({
         code: constant.errorCode,
         message: "Unable to get contract"
       })
@@ -1224,89 +1224,14 @@ exports.getContractById = async (req, res) => {
       result: getData[0]
     })
   } catch (err) {
-     res.send({
+    res.send({
       code: constant.errorCode,
       message: err.message
     })
   }
 }
 
-exports.getDashboardInfo = async (req, res) => {
-
-  let orderQuery = [
-    {
-      $match: { status: "Active", customerId: new mongoose.Types.ObjectId(req.userId) },
-
-    },
-    {
-      "$addFields": {
-        "noOfProducts": {
-          "$sum": "$productsArray.checkNumberProducts"
-        },
-        totalOrderAmount: { $sum: "$orderAmount" },
-
-      }
-    },
-    { $sort: { unique_key_number: -1 } },
-    {
-      $limit: 5
-    },
-  ]
-  const lastFiveOrder = await orderService.getOrderWithContract1(orderQuery, 1, 5)
-  const claimQuery = [
-    {
-      $match: {
-        $and: [
-          {
-            customerId: new mongoose.Types.ObjectId(req.userId)
-          },
-          {
-            claimFile: "Completed"
-          }
-        ]
-      }
-    },
-    {
-      $sort: {
-        unique_key_number: -1
-      }
-    },
-    {
-      $limit: 5
-    },
-    {
-      $lookup: {
-        from: "contracts",
-        localField: "contractId",
-        foreignField: "_id",
-        as: "contract"
-      }
-    },
-    {
-      $unwind: "$contract"
-    },
-    {
-      $project: {
-        unique_key: 1,
-        "contract.unique_key": 1,
-        unique_key_number: 1,
-        totalAmount: 1
-      }
-    },
-  ]
-  const getLastNumberOfClaims = await claimService.getClaimWithAggregate(claimQuery, {})
-
-  const result = {
-    lastFiveOrder: lastFiveOrder,
-    lastFiveClaims: getLastNumberOfClaims,
-
-  }
-  res.send({
-    code: constant.successCode,
-    result: result
-  })
-}
-
+// get dashboard data 
 exports.getDashboardData = async (req, res) => {
   try {
     let data = req.body;
@@ -1422,7 +1347,7 @@ exports.getDashboardData = async (req, res) => {
       valueClaim: valueClaim.length > 0 ? valueClaim[0]?.totalAmount : 0
     }
     if (!checkOrders_[0] && numberOfClaims.length == 0 && valueClaim.length == 0) {
-       res.send({
+      res.send({
         code: constant.errorCode,
         message: "Unable to fetch order data",
         result: {
@@ -1445,7 +1370,7 @@ exports.getDashboardData = async (req, res) => {
       }
     })
   } catch (err) {
-     res.send({
+    res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1488,7 +1413,7 @@ exports.getCustomerDetails = async (req, res) => {
     ]
     let getCustomer = await customerService.getCustomerByAggregate(query)
     if (!getCustomer[0]) {
-       res.send({
+      res.send({
         code: constant.errorCode,
         message: "Unable to fetch the details"
       })
@@ -1501,7 +1426,7 @@ exports.getCustomerDetails = async (req, res) => {
       loginMember: getUser
     })
   } catch (err) {
-     res.send({
+    res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1561,7 +1486,7 @@ exports.saleReporting = async (req, res) => {
     }
 
   } catch (err) {
-     res.send({
+    res.send({
       code: constant.errorCode,
       message: err.message,
     })
@@ -1591,7 +1516,6 @@ exports.claimReporting = async (req, res) => {
 
 
     if (data.flag == "daily") {
-      data.dealerId = req.userId
       let claim = await reportingController.claimDailyReporting(data)
       res.send({
         code: constant.successCode,
@@ -1599,7 +1523,6 @@ exports.claimReporting = async (req, res) => {
         result: claim
       })
     } else if (data.flag == "weekly") {
-      data.dealerId = req.userId
       let claim = await reportingController.claimWeeklyReporting(data)
       res.send({
         code: constant.successCode,
@@ -1607,7 +1530,6 @@ exports.claimReporting = async (req, res) => {
         result: claim
       })
     } else if (data.flag == "day") {
-      data.dealerId = req.userId
       let claim = await reportingController.claimDayReporting(data)
       res.send({
         code: constant.successCode,
@@ -1616,7 +1538,7 @@ exports.claimReporting = async (req, res) => {
       })
     }
   } catch (err) {
-     res.send({
+    res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1727,7 +1649,7 @@ exports.getDashboardGraph = async (req, res) => {
       order_result: result1,
     })
   } catch (err) {
-     res.send({
+    res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1810,4 +1732,42 @@ exports.getDashboardInfo = async (req, res) => {
   })
 }
 
+const checkCustomerEmail = async (data) => {
+  try {
+    let data = req.body
+    let teamMembers = data.members
+    for (let m = 0; m < teamMembers.length; m++) {
+      let emailToCheck = teamMembers[m].email
+      let checkEmail = await userService.getUserById1({ email: emailToCheck, roleId: process.env.customer })
+      if (checkEmail) {
+        if (data.resellerId != "") {
+          let resellerIds = checkEmail.customerData.map(ID => ID.resellerId.toString())
+          let dealerIds = checkEmail.customerData.map(ID => ID.dealerId.toString())
+
+          const includesAny = (arr, values) => values.some(v => arr.includes(v));
+
+
+          if (includesAny(resellerIds, [data.resellerId]) && includesAny(dealerIds, [data.dealerId])) {
+            return {
+              code: constant.errorCode, message: "Email alrady exist with same dealer and reseller"
+            }
+          }
+        } else {
+          let dealerIds = checkEmail.customerData.map(ID => ID.dealerId.toString())
+
+          const includesAny = (arr, values) => values.some(v => arr.includes(v));
+
+          if (includesAny(dealerIds, [data.dealerId])) {
+            return {
+              code: constant.errorCode, message: "Email alrady exist with same dealer"
+            }
+          }
+
+        }
+      }
+    }
+  } catch (err) {
+    return { code: constant.errorCode, message: err.message }
+  }
+}
 

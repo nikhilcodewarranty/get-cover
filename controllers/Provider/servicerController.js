@@ -30,7 +30,7 @@ exports.getServicerDetail = async (req, res) => {
             })
             return;
         };
-        const singleServiceProvider = await providerService.getServiceProviderById({ _id: getMetaData.accountId });
+        const singleServiceProvider = await providerService.getServiceProviderById({ _id: getMetaData.metaId });
         if (!singleServiceProvider) {
             res.send({
                 code: constant.errorCode,
@@ -56,7 +56,7 @@ exports.getServicerDetail = async (req, res) => {
 exports.getServicerUsers = async (req, res) => {
     try {
         let data = req.body
-        let getUsers = await userService.findUser({ accountId: req.userId }, { isPrimary: -1 })
+        let getUsers = await userService.findUser({ metaId: req.userId }, { isPrimary: -1 })
         if (!getUsers) {
             res.send({
                 code: constant.errorCode,
@@ -101,7 +101,7 @@ exports.changePrimaryUser = async (req, res) => {
             })
             return;
         };
-        let updateLastPrimary = await userService.updateSingleUser({ accountId: checkUser.accountId, isPrimary: true }, { isPrimary: false }, { new: true })
+        let updateLastPrimary = await userService.updateSingleUser({ metaId: checkUser.metaId, isPrimary: true }, { isPrimary: false }, { new: true })
 
         if (!updateLastPrimary) {
             res.send({
@@ -138,7 +138,6 @@ exports.changePrimaryUser = async (req, res) => {
 exports.addServicerUser = async (req, res) => {
     try {
         let data = req.body
-
         let checkServicer = await providerService.getServicerByName({ _id: req.userId })
         if (!checkServicer) {
             res.send({
@@ -159,7 +158,7 @@ exports.addServicerUser = async (req, res) => {
         };
 
         data.isPrimary = false
-        data.accountId = checkServicer._id
+        data.metaId = checkServicer._id
         let statusCheck;
         if (!checkServicer.accountStatus) {
             statusCheck = false
@@ -1088,6 +1087,28 @@ exports.getDashboardInfo = async (req, res) => {
             }
         },
         {
+            $lookup: {
+                from: "claims",
+                localField: "_id",
+                foreignField: "dealerId",
+                as: "claim",
+                pipeline: [
+                    {
+                        $match: { status: "Active" }
+                    },
+                    {
+                        "$group": {
+                            _id: "$order.dealerId",
+                            "totalClaim": { "$sum": 1 },
+                            "claimAmount": {
+                                "$sum": "$totalAmount"
+                            }
+                        }
+                    },
+                ]
+            }
+        },
+        {
             $project: {
                 name: 1,
                 totalAmount: {
@@ -1101,6 +1122,20 @@ exports.getDashboardInfo = async (req, res) => {
                     $cond: {
                         if: { $gt: [{ $arrayElemAt: ["$order.totalOrder", 0] }, 0] },
                         then: { $arrayElemAt: ["$order.totalOrder", 0] },
+                        else: 0
+                    }
+                },
+                claimAmount: {
+                    $cond: {
+                        if: { $gte: [{ $arrayElemAt: ["$claims.claimAmount", 0] }, 0] },
+                        then: { $arrayElemAt: ["$claims.claimAmount", 0] },
+                        else: 0
+                    }
+                },
+                totalClaim: {
+                    $cond: {
+                        if: { $gt: [{ $arrayElemAt: ["$claims.totalClaim", 0] }, 0] },
+                        then: { $arrayElemAt: ["$claims.totalClaim", 0] },
                         else: 0
                     }
                 },

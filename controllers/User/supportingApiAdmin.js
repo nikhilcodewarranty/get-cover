@@ -65,7 +65,6 @@ exports.createDealer = async (req, res) => {
             const data = req.body;
             data.name = data.name.trim().replace(/\s+/g, ' ');
             const loginUser = await userService.getUserById1({ metaId: req.userId, isPrimary: true }, {});
-
             let priceFile
             let termFile;
             let isAccountCreate = req.body.isAccountCreate
@@ -80,7 +79,7 @@ exports.createDealer = async (req, res) => {
             }
 
             let termData = {
-                fileName: termFile ? termFile.filename : '',
+                fileName: termFile ? termFile.key : '',
                 name: termFile ? termFile.originalname : '',
                 size: termFile ? termFile.size : '',
             }
@@ -141,7 +140,7 @@ exports.createDealer = async (req, res) => {
                     }
                 }
 
-                const singleDealerUser = await userService.findOneUser({ accountId: data.dealerId }, {});
+                const singleDealerUser = await userService.findOneUser({ metaId: data.dealerId }, {});
                 const singleDealer = await dealerService.getDealerById({ _id: data.dealerId });
                 if (!singleDealer) {
                     res.send({
@@ -219,7 +218,7 @@ exports.createDealer = async (req, res) => {
                         'unique_key': Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + index + 1,
                     }));
                     //Primary information edit
-                    let userQuery = { accountId: { $in: [data.dealerId] }, isPrimary: true }
+                    let userQuery = { metaId: { $in: [data.dealerId] }, isPrimary: true }
                     let newValues1 = {
                         $set: {
                             email: allUserData[0].email,
@@ -270,7 +269,6 @@ exports.createDealer = async (req, res) => {
                     let allUsersData = allUserData.map((obj, index) => ({
                         ...obj,
                         roleId: '656f08041eb1acda244af8c6',
-                        accountId: data.dealerId,
                         metaId: data.dealerId,
                         isPrimary: index === 0 ? true : false,
                         status: !req.body.isAccountCreate || req.body.isAccountCreate == 'false' ? false : obj.status
@@ -313,7 +311,7 @@ exports.createDealer = async (req, res) => {
                     }
 
 
-                    let statusUpdateCreateria = { accountId: { $in: [data.dealerId] } }
+                    let statusUpdateCreateria = { metaId: { $in: [data.dealerId] } }
                     let updateData = {
                         $set: {
                             approvedStatus: 'Approved'
@@ -415,27 +413,12 @@ exports.createDealer = async (req, res) => {
                             return
                         }
                     }
+                    //Get from S3 Bucket
+                    const bucketReadUrl = { Bucket: process.env.bucket_name, Key: priceFile.key };
+                    // Await the getObjectFromS3 function to complete
+                    const result = await getObjectFromS3(bucketReadUrl);
 
-                    let csvName = priceFile.filename
-                    const csvWriter = createCsvWriter({
-                        path: './uploads/resultFile/' + csvName,
-                        header: [
-                            { id: 'priceBook', title: 'Price Book' },
-                            { id: 'status', title: 'Status' },
-                            { id: 'reason', title: 'Reason' },
-                            // Add more headers as needed
-                        ],
-                    });
-                    const wb = XLSX.readFile(priceFile.path);
-                    const sheets = wb.SheetNames;
-                    const ws = wb.Sheets[sheets[0]];
-                    const headers = [];
-                    for (let cell in ws) {
-                        // Check if the cell is in the first row and has a non-empty value
-                        if (/^[A-Z]1$/.test(cell) && ws[cell].v !== undefined && ws[cell].v !== null && ws[cell].v.trim() !== '') {
-                            headers.push(ws[cell].v);
-                        }
-                    }
+                    const headers = result.headers
 
                     if (headers.length !== 2) {
                         res.send({
@@ -444,7 +427,7 @@ exports.createDealer = async (req, res) => {
                         })
                         return
                     }
-                    let totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
+                    let totalDataComing1 = result.data;
                     totalDataComing1 = totalDataComing1.map(item => {
                         if (!item['Product SKU']) {
                             return { priceBook: '', 'RetailPrice': item['retailPrice'] };
@@ -617,7 +600,7 @@ exports.createDealer = async (req, res) => {
                         const htmlTableString = convertArrayToHTMLTable(csvArray);
                         const mailing = sgMail.send(emailConstant.sendCsvFile(notificationEmail, ['noreply@getcover.com'], htmlTableString));
                     }
-                    let userQuery = { accountId: { $in: [req.body.dealerId] }, isPrimary: true }
+                    let userQuery = { metaId: { $in: [req.body.dealerId] }, isPrimary: true }
                     let newValues1 = {
                         $set: {
                             email: allUserData[0].email,
@@ -634,7 +617,6 @@ exports.createDealer = async (req, res) => {
                     let allUsersData = allUserData.map((obj, index) => ({
                         ...obj,
                         roleId: '656f08041eb1acda244af8c6',
-                        accountId: req.body.dealerId,
                         metaId: req.body.dealerId,
                         isPrimary: index === 0 ? true : false,
                         status: !req.body.isAccountCreate || req.body.isAccountCreate == 'false' ? false : obj.status
@@ -710,7 +692,7 @@ exports.createDealer = async (req, res) => {
                         notificationFor: IDs
                     };
                     let createNotification = await userService.createNotification(notificationData);
-                    let statusUpdateCreateria = { accountId: { $in: [req.body.dealerId] } }
+                    let statusUpdateCreateria = { metaId: { $in: [req.body.dealerId] } }
                     let updateData = {
                         $set: {
                             approvedStatus: 'Approved'
@@ -909,7 +891,6 @@ exports.createDealer = async (req, res) => {
                     let allUsersData = allUserData.map((obj, index) => ({
                         ...obj,
                         roleId: '656f08041eb1acda244af8c6',
-                        accountId: createMetaData._id,
                         metaId: createMetaData._id,
                         position: obj.position || '', // Using the shorthand for conditional (obj.position ? obj.position : '')
                         isPrimary: index === 0 ? true : false,
@@ -990,29 +971,13 @@ exports.createDealer = async (req, res) => {
 
                 else if (savePriceBookType == 'no') {
 
-                    let csvName = priceFile.filename
-                    const csvWriter = createCsvWriter({
-                        path: './uploads/resultFile/' + csvName,
-                        header: [
-                            { id: 'priceBook', title: 'Price Book' },
-                            { id: 'status', title: 'Status' },
-                            { id: 'reason', title: 'Reason' },
-                            // Add more headers as needed
-                        ],
-                    });
-
                     const count = await dealerService.getDealerCount();
-                    const results = [];
-                    const wb = XLSX.readFile(priceFile.path);
-                    const sheets = wb.SheetNames;
-                    const ws = wb.Sheets[sheets[0]];
-                    const headers = [];
-                    for (let cell in ws) {
-                        // Check if the cell is in the first row and has a non-empty value
-                        if (/^[A-Z]1$/.test(cell) && ws[cell].v !== undefined && ws[cell].v !== null && ws[cell].v.trim() !== '') {
-                            headers.push(ws[cell].v);
-                        }
-                    }
+                    //Get from S3 Bucket
+                    const bucketReadUrl = { Bucket: process.env.bucket_name, Key: priceFile.key };
+                    // Await the getObjectFromS3 function to complete
+                    const result = await getObjectFromS3(bucketReadUrl);
+
+                    const headers = result.headers
 
                     if (headers.length !== 2) {
                         res.send({
@@ -1022,7 +987,7 @@ exports.createDealer = async (req, res) => {
                         return
                     }
 
-                    let totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
+                    let totalDataComing1 = result.data
                     totalDataComing1 = totalDataComing1.map(item => {
                         if (!item['Product SKU']) {
                             return { priceBook: '', 'RetailPrice': item['retailPrice'] };
@@ -1258,7 +1223,6 @@ exports.createDealer = async (req, res) => {
                     let allUsersData = allUserData.map((obj, index) => ({
                         ...obj,
                         roleId: '656f08041eb1acda244af8c6',
-                        accountId: createMetaData._id,
                         metaId: createMetaData._id,
                         position: obj.position || '', // Using the shorthand for conditional (obj.position ? obj.position : '')
                         isPrimary: index === 0 ? true : false,
@@ -1289,7 +1253,7 @@ exports.createDealer = async (req, res) => {
                         return;
                     }
 
-                    let statusUpdateCreateria = { accountId: { $in: [createMetaData._id] } }
+                    let statusUpdateCreateria = { metaId: { $in: [createMetaData._id] } }
                     let updateData = {
                         $set: {
                             approvedStatus: 'Approved'
@@ -1347,6 +1311,40 @@ exports.createDealer = async (req, res) => {
     }
 };
 
+//Get File data from S3 bucket
+const getObjectFromS3 = (bucketReadUrl) => {
+    return new Promise((resolve, reject) => {
+        S3Bucket.getObject(bucketReadUrl, (err, data) => {
+            if (err) {
+                reject(err);
+            } else {
+                const wb = XLSX.read(data.Body, { type: 'buffer' });
+                const sheetName = wb.SheetNames[0];
+                const sheet = wb.Sheets[sheetName];
+                let headers = [];
+
+                for (let cell in sheet) {
+                    if (
+                        /^[A-Z]1$/.test(cell) &&
+                        sheet[cell].v !== undefined &&
+                        sheet[cell].v !== null &&
+                        sheet[cell].v.trim() !== ""
+                    ) {
+                        headers.push(sheet[cell].v);
+                    }
+                }
+
+                const result = {
+                    headers: headers,
+                    data: XLSX.utils.sheet_to_json(sheet),
+                };
+
+                resolve(result);
+            }
+        });
+    });
+};
+
 //Create new service provider By SA
 exports.createServiceProvider = async (req, res) => {
     try {
@@ -1402,11 +1400,11 @@ exports.createServiceProvider = async (req, res) => {
         const resultProviderData = accountCreationFlag
             ? await Promise.all(resultProvider.map(async (obj) => {
                 const hashedPassword = await bcrypt.hash(obj.password, 10);
-                return { ...obj, roleId: checkRole._id, accountId: createMetaData._id, metaId: createMetaData._id, status: true, password: hashedPassword };
+                return { ...obj, roleId: checkRole._id, metaId: createMetaData._id, status: true, password: hashedPassword };
             }))
             : await Promise.all(resultProvider.map(async (obj) => {
                 const hashedPassword = await bcrypt.hash(obj.password, 10);
-                return { ...obj, roleId: checkRole._id, accountId: createMetaData._id, metaId: createMetaData._id, password: hashedPassword };
+                return { ...obj, roleId: checkRole._id,  metaId: createMetaData._id, password: hashedPassword };
             }));
 
         // Map provider data

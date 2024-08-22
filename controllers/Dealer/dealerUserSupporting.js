@@ -310,7 +310,7 @@ exports.getDealerUsers = async (req, res) => {
             });
             return;
         };
-        const users = await dealerService.getUserByDealerId({ accountId: req.userId, isDeleted: false });
+        const users = await dealerService.getUserByDealerId({ metaId: req.userId, isDeleted: false });
 
         let name = data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : ""
         let nameArray = name.trim().split(" ");
@@ -574,9 +574,9 @@ exports.getResellerCustomers = async (req, res) => {
             });
             return;
         };
-        const customersId = customers.map(obj => obj._id.toString());
+        const customersId = customers.map(obj => obj._id);
         const orderCustomerIds = customers.map(obj => obj._id);
-        const queryUser = { accountId: { $in: customersId }, isPrimary: true };
+        const queryUser = { metaId: { $in: customersId }, isPrimary: true };
         let getPrimaryUser = await userService.findUserforCustomer(queryUser)
         let project = {
             productsArray: 1,
@@ -602,8 +602,8 @@ exports.getResellerCustomers = async (req, res) => {
         let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project, '$customerId');
 
         let result_Array = getPrimaryUser.map(item1 => {
-            const matchingItem = customers.find(item2 => item2._id.toString() === item1.accountId.toString());
-            const order = ordersResult.find(order => order._id.toString() === item1.accountId)
+            const matchingItem = customers.find(item2 => item2._id.toString() === item1.metaId.toString());
+            const order = ordersResult.find(order => order._id.toString() === item1.metaId)
             if (matchingItem || order) {
                 return {
                     ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
@@ -817,7 +817,7 @@ exports.getResellerUsers = async (req, res) => {
         });
         return;
     }
-    const queryUser = { accountId: { $in: checkReseller._id } }
+    const queryUser = { metaId: { $in: checkReseller._id } }
     let users = await userService.getMembers(queryUser, { isDeleted: 0 });
     res.send({
         code: constant.successCode,
@@ -879,7 +879,7 @@ exports.getResellerServicers = async (req, res) => {
         }
 
         const servicerIds = servicer.map(obj => obj._id);
-        const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+        const query1 = { metaId: { $in: servicerIds }, isPrimary: true };
         let servicerUser = await userService.getMembers(query1, {})
 
         if (!servicerUser) {
@@ -891,7 +891,7 @@ exports.getResellerServicers = async (req, res) => {
         };
 
         result_Array = servicer.map(servicer => {
-            const matchingItem = servicerUser.find(user => user.accountId.toString() === servicer._id.toString())
+            const matchingItem = servicerUser.find(user => user.metaId.toString() === servicer._id.toString())
             if (matchingItem) {
                 return {
                     ...matchingItem.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
@@ -974,7 +974,7 @@ exports.getDealerServicers = async (req, res) => {
         }
 
         const servicerIds = servicer.map(obj => obj._id);
-        const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+        const query1 = { metaId: { $in: servicerIds }, isPrimary: true };
         let servicerUser = await userService.getMembers(query1, {});
 
         if (!servicerUser) {
@@ -1018,7 +1018,7 @@ exports.getDealerServicers = async (req, res) => {
         let numberOfClaims = await claimService.getClaimWithAggregate(claimAggregateQuery)
 
         const result_Array = servicer.map(item1 => {
-            const matchingItem = servicerUser.find(item2 => item2.accountId?.toString() === item1?._id.toString() || item2.accountId?.toString() === item1?.dealerId?.toString() || item2.accountId?.toString() === item1?.resellerId?.toString());
+            const matchingItem = servicerUser.find(item2 => item2.metaId?.toString() === item1?._id.toString() || item2.metaId?.toString() === item1?.dealerId?.toString() || item2.metaId?.toString() === item1?.resellerId?.toString());
             const claimValue = valueClaim.find(claim => claim._id?.toString() === item1._id?.toString())
             const claimNumber = numberOfClaims.find(claim => claim._id?.toString() === item1._id?.toString())
             if (matchingItem) {
@@ -1133,10 +1133,10 @@ exports.getDealerCustomers = async (req, res) => {
             });
             return;
         };
-        const customersId = customers.map(obj => obj._id.toString());
+        const customersId = customers.map(obj => obj._id);
         const customersOrderId = customers.map(obj => obj._id);
         const customersResellerId = customers.map(obj => obj.resellerId);
-        const queryUser = { accountId: { $in: customersId }, isPrimary: true };
+        const queryUser = { metaId: { $in: customersId }, isPrimary: true };
         //Get Customer Resellers
         let resellerData = await resellerService.getResellers({ _id: { $in: customersResellerId } }, {})
         let getPrimaryUser = await userService.findUserforCustomer(queryUser)
@@ -1156,8 +1156,8 @@ exports.getDealerCustomers = async (req, res) => {
         let orderQuery = { customerId: { $in: customersOrderId }, status: "Active" };
         let ordersData = await orderService.getAllOrderInCustomers(orderQuery, project, "$customerId")
         let result_Array = getPrimaryUser.map(item1 => {
-            const matchingItem = customers.find(item2 => item2._id?.toString() === item1.accountId?.toString());
-            const order = ordersData.find(order => order._id?.toString() === item1.accountId?.toString())
+            const matchingItem = customers.find(item2 => item2._id?.toString() === item1.metaId?.toString());
+            const order = ordersData.find(order => order._id?.toString() === item1.metaId?.toString())
             if (matchingItem || order) {
                 return {
                     ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
@@ -1236,12 +1236,12 @@ exports.getCustomerInOrder = async (req, res) => {
             return;
         }
 
-        const customerIds = getCustomers.map(customer => customer?._id.toString());
-        let query1 = { accountId: { $in: customerIds }, isPrimary: true };
+        const customerIds = getCustomers.map(customer => customer?._id);
+        let query1 = { metaId: { $in: customerIds }, isPrimary: true };
         let projection = { __v: 0, isDeleted: 0 }
         let customerUser = await userService.getMembers(query1, projection)
         const result_Array = customerUser.map(item1 => {
-            const matchingItem = getCustomers.find(item2 => item2._id?.toString() === item1.accountId?.toString());
+            const matchingItem = getCustomers.find(item2 => item2._id?.toString() === item1.metaId?.toString());
             if (matchingItem) {
                 return {
                     ...matchingItem.toObject(),
@@ -1325,9 +1325,9 @@ exports.getServicerInOrders = async (req, res) => {
         $and: [
             {
                 $or: [
-                    { accountId: { $in: servicerIds } },
-                    { accountId: { $in: resellerIdss } },
-                    { accountId: { $in: dealerIdss } },
+                    { metaId: { $in: servicerIds } },
+                    { metaId: { $in: resellerIdss } },
+                    { metaId: { $in: dealerIdss } },
                 ]
             },
             { isPrimary: true }
@@ -1345,9 +1345,9 @@ exports.getServicerInOrders = async (req, res) => {
 
     const result_Array = servicer.map((item1) => {
         const matchingItem = servicerUser.find(
-            (item2) => item2.accountId.toString() === item1?._id.toString());
+            (item2) => item2.metaId.toString() === item1?._id.toString());
         let matchingItem2 = servicerUser.find(
-            (item2) => item2.accountId.toString() === item1?.resellerId?.toString() || item2.accountId.toString() === item1?.dealerId?.toString());
+            (item2) => item2.metaId.toString() === item1?.resellerId?.toString() || item2.metaId.toString() === item1?.dealerId?.toString());
         if (matchingItem) {
             return {
                 ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
@@ -1446,10 +1446,10 @@ exports.getResellerOrders = async (req, res) => {
         ]
         let ordersResult = await orderService.getOrderWithContract(lookupQuery);
         let dealerIdsArray = ordersResult.map((result) => result.dealerId);
-        let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
+        let userDealerIds = ordersResult.map((result) => result.dealerId);
         let userResellerIds = ordersResult
             .filter(result => result.resellerId !== null)
-            .map(result => result.resellerId?.toString());
+            .map(result => result.resellerId);
 
         let mergedArray = userDealerIds.concat(userResellerIds);
         const dealerCreateria = { _id: { $in: dealerIdsArray } };
@@ -1488,10 +1488,10 @@ exports.getResellerOrders = async (req, res) => {
 
         let userCustomerIds = ordersResult
             .filter(result => result.customerId !== null)
-            .map(result => result.customerId?.toString());
+            .map(result => result.customerId);
         const customerCreteria = { _id: { $in: customerIdsArray } };
         const allUserIds = mergedArray.concat(userCustomerIds);
-        const queryUser = { accountId: { $in: allUserIds }, isPrimary: true };
+        const queryUser = { metaId: { $in: allUserIds }, isPrimary: true };
         let getPrimaryUser = await userService.findUserforCustomer(queryUser)
         //Get Respective Customer
         let respectiveCustomer = await customerService.getAllCustomers(
@@ -1589,13 +1589,13 @@ exports.getResellerOrders = async (req, res) => {
         const updatedArray = filteredData.map(item => {
             let username = null; // Initialize username as null
             if (item.dealerName) {
-                username = getPrimaryUser.find(user => user.accountId?.toString() === item.dealerName._id?.toString());
+                username = getPrimaryUser.find(user => user.metaId?.toString() === item.dealerName._id?.toString());
             }
             if (item.resellerName) {
-                resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.accountId?.toString() === item.resellerName._id?.toString()) : {};
+                resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.metaId?.toString() === item.resellerName._id?.toString()) : {};
             }
             if (item.customerName) {
-                customerUserData = item.customerName._id != null ? getPrimaryUser.find(user => user.accountId?.toString() === item.customerName._id?.toString()) : {};
+                customerUserData = item.customerName._id != null ? getPrimaryUser.find(user => user.metaId?.toString() === item.customerName._id?.toString()) : {};
             }
             return {
                 ...item,
@@ -1664,9 +1664,9 @@ exports.getDealerResellers = async (req, res) => {
             });
             return;
         };
-        const resellerId = resellers.map(obj => obj._id.toString());
+        const resellerId = resellers.map(obj => obj._id);
         const resellerOrderIds = resellers.map(obj => obj._id);
-        const queryUser = { accountId: { $in: resellerId }, isPrimary: true };
+        const queryUser = { metaId: { $in: resellerId }, isPrimary: true };
         let getPrimaryUser = await userService.findUserforCustomer(queryUser)
         //Get Reseller Orders
         let project = {
@@ -1685,8 +1685,8 @@ exports.getDealerResellers = async (req, res) => {
         let ordersData = await orderService.getAllOrderInCustomers(orderQuery, project, "$resellerId")
 
         const result_Array = getPrimaryUser.map(item1 => {
-            const matchingItem = resellers.find(item2 => item2._id.toString() === item1.accountId.toString());
-            const orders = ordersData.find(order => order._id.toString() === item1.accountId.toString())
+            const matchingItem = resellers.find(item2 => item2._id.toString() === item1.metaId.toString());
+            const orders = ordersData.find(order => order._id.toString() === item1.metaId.toString())
             if (matchingItem || orders) {
                 return {
                     ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
@@ -1749,9 +1749,9 @@ exports.getDealerResellersInOrder = async (req, res) => {
             });
             return;
         };
-        const resellerId = resellers.map(obj => obj._id.toString());
+        const resellerId = resellers.map(obj => obj._id);
         const resellerOrderIds = resellers.map(obj => obj._id);
-        const queryUser = { accountId: { $in: resellerId }, isPrimary: true };
+        const queryUser = { metaId: { $in: resellerId }, isPrimary: true };
         let getPrimaryUser = await userService.findUserforCustomer(queryUser)
         //Get Reseller Orders
         let project = {
@@ -1769,8 +1769,8 @@ exports.getDealerResellersInOrder = async (req, res) => {
         let orderQuery = { resellerId: { $in: resellerOrderIds }, status: "Active" };
         let ordersData = await orderService.getAllOrderInCustomers(orderQuery, project, "$resellerId")
         const result_Array = getPrimaryUser.map(item1 => {
-            const matchingItem = resellers.find(item2 => item2._id.toString() === item1.accountId.toString());
-            const orders = ordersData.find(order => order._id.toString() === item1.accountId.toString())
+            const matchingItem = resellers.find(item2 => item2._id.toString() === item1.metaId.toString());
+            const orders = ordersData.find(order => order._id.toString() === item1.metaId.toString())
             if (matchingItem || orders) {
                 return {
                     ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
@@ -1862,10 +1862,10 @@ exports.getDealerOrders = async (req, res) => {
             let limitData = Number(pageLimit)
             let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, 100000);
             let dealerIdsArray = ordersResult.map((result) => result.dealerId);
-            let userDealerIds = ordersResult.map((result) => result.dealerId?.toString());
+            let userDealerIds = ordersResult.map((result) => result.dealerId);
             let userResellerIds = ordersResult
                 .filter(result => result.resellerId !== null)
-                .map(result => result.resellerId?.toString());
+                .map(result => result.resellerId);
 
             let mergedArray = userDealerIds.concat(userResellerIds);
             const dealerCreateria = { _id: { $in: dealerIdsArray } };
@@ -1908,11 +1908,11 @@ exports.getDealerOrders = async (req, res) => {
 
             let userCustomerIds = ordersResult
                 .filter(result => result.customerId !== null)
-                .map(result => result.customerId.toString());
+                .map(result => result.customerId);
             const customerCreteria = { _id: { $in: customerIdsArray } };
 
             const allUserIds = mergedArray.concat(userCustomerIds);
-            const queryUser = { accountId: { $in: allUserIds }, isPrimary: true };
+            const queryUser = { metaId: { $in: allUserIds }, isPrimary: true };
             let getPrimaryUser = await userService.findUserforCustomer(queryUser)
             //Get Respective Customer
             let respectiveCustomer = await customerService.getAllCustomers(
@@ -2026,13 +2026,13 @@ exports.getDealerOrders = async (req, res) => {
                 let resellerUsername = null; // Initialize username as null
                 let customerUserData = null; // Initialize username as null
                 if (item.dealerName._id) {
-                    username = getPrimaryUser.find(user => user.accountId.toString() === item.dealerName._id.toString());
+                    username = getPrimaryUser.find(user => user.metaId.toString() === item.dealerName._id.toString());
                 }
                 if (item.resellerName._id) {
-                    resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.accountId.toString() === item.resellerName._id.toString()) : {};
+                    resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.metaId.toString() === item.resellerName._id.toString()) : {};
                 }
                 if (item.customerName._id) {
-                    customerUserData = item.customerName._id != null ? getPrimaryUser.find(user => user.accountId.toString() === item.customerName._id.toString()) : {};
+                    customerUserData = item.customerName._id != null ? getPrimaryUser.find(user => user.metaId.toString() === item.customerName._id.toString()) : {};
                 }
                 return {
                     ...item,
@@ -2112,10 +2112,10 @@ exports.getDealerArchievedOrders = async (req, res) => {
             let limitData = Number(pageLimit)
             let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, limitData);
             let dealerIdsArray = ordersResult.map((result) => result.dealerId);
-            let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
+            let userDealerIds = ordersResult.map((result) => result.dealerId);
             let userResellerIds = ordersResult
                 .filter(result => result.resellerId !== null)
-                .map(result => result.resellerId.toString());
+                .map(result => result.resellerId);
 
             let mergedArray = userDealerIds.concat(userResellerIds);
             const dealerCreateria = { _id: { $in: dealerIdsArray } };
@@ -2153,11 +2153,11 @@ exports.getDealerArchievedOrders = async (req, res) => {
 
             let userCustomerIds = ordersResult
                 .filter(result => result.customerId !== null)
-                .map(result => result.customerId.toString());
+                .map(result => result.customerId);
             const customerCreteria = { _id: { $in: customerIdsArray } };
 
             const allUserIds = mergedArray.concat(userCustomerIds);
-            const queryUser = { accountId: { $in: allUserIds }, isPrimary: true };
+            const queryUser = { metaId: { $in: allUserIds }, isPrimary: true };
             let getPrimaryUser = await userService.findUserforCustomer(queryUser)
             //Get Respective Customer
             let respectiveCustomer = await customerService.getAllCustomers(
@@ -2271,15 +2271,15 @@ exports.getDealerArchievedOrders = async (req, res) => {
                 let customerUserData = null; // Initialize username as null
 
                 if (item.dealerName._id) {
-                    username = getPrimaryUser.find(user => user.accountId.toString() === item.dealerName._id.toString());
+                    username = getPrimaryUser.find(user => user.metaId.toString() === item.dealerName._id.toString());
                 }
 
                 if (item.resellerName._id) {
-                    resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.accountId.toString() === item.resellerName._id.toString()) : {};
+                    resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.metaId.toString() === item.resellerName._id.toString()) : {};
                 }
 
                 if (item.customerName._id) {
-                    customerUserData = item.customerName._id != null ? getPrimaryUser.find(user => user.accountId.toString() === item.customerName._id.toString()) : {};
+                    customerUserData = item.customerName._id != null ? getPrimaryUser.find(user => user.metaId.toString() === item.customerName._id.toString()) : {};
                 }
 
                 return {
