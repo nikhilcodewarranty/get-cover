@@ -28,7 +28,14 @@ const PDFDocument = require('pdfkit');
 const { S3Client } = require('@aws-sdk/client-s3');
 const { Upload } = require('@aws-sdk/lib-storage');
 const multerS3 = require('multer-s3');
+const aws = require('aws-sdk');
 
+aws.config.update({
+    accessKeyId: process.env.aws_access_key_id,
+    secretAccessKey: process.env.aws_secret_access_key,
+});
+const S3 = new aws.S3();
+const S3Bucket = new aws.S3();
 // s3 bucket connections
 const s3 = new S3Client({
     region: process.env.region,
@@ -1435,7 +1442,7 @@ exports.markAsPaid = async (req, res) => {
                 let labourWarrantyMonth = Number(data.labourWarranty ? data.labourWarranty : 0)
 
                 dateCheck = new Date(dateCheck.setDate(dateCheck.getDate() + adhDays))
-                
+
                 let p_date = new Date(data.purchaseDate)
                 let p_date1 = new Date(data.purchaseDate)
                 let l_date = new Date(data.purchaseDate)
@@ -2086,7 +2093,7 @@ async function generateTC(orderData) {
                 return mergedPdfBytes;
             }
             // Merge PDFs
-            
+
             const mergedPdf = await mergePDFs(termPathBucket, orderPathBucket, `/tmp/merged_${mergeFileName}`);
             // Upload merged PDF to S3
             const mergedKey = `mergedFile/${mergeFileName}`;
