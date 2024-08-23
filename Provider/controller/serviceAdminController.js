@@ -90,7 +90,7 @@ exports.createServiceProvider = async (req, res, next) => {
       let saveMembers = await userService.insertManyUser(teamMembers)
       // Primary User Welcoime email
       let notificationEmails = await supportingFunction.getUserEmails();
-      
+
       let emailData = {
         senderName: admin.firstName,
         content: "We are delighted to inform you that the servicer account for " + createServiceProvider.name + " has been created.",
@@ -454,7 +454,7 @@ exports.getServicer = async (req, res) => {
       } else {
         return servicerData.toObject();
       }
-    }); 
+    });
 
     const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
     const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
@@ -1099,7 +1099,7 @@ exports.registerServiceProvider = async (req, res) => {
       content: "A new servicer " + ServicerMeta.name + " has been registered",
       subject: 'New Servicer Registration'
     }
-    mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmail, [], emailData))
+    mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmail, ["noreply@getcover.com"], emailData))
     let logData = {
       userId: req.teammateId,
       endpoint: "servicer/register",

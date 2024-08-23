@@ -293,7 +293,7 @@ exports.registerDealer = async (req, res) => {
       subject: "Notification of New Dealer Registration",
       content: "A new dealer " + createdDealer.name + " has been registered"
     }
-    mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmail, [], emailData))
+    mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmail, ["noreply@getcover.com"], emailData))
     let logData = {
       endpoint: "register dealer",
       body: data,

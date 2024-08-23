@@ -1368,7 +1368,7 @@ exports.checkIdAndToken = async (req, res) => {
 
 
 //get s3 bucket file
-
+ 
 AWS.config.update({
   accessKeyId: process.env.aws_access_key_id,
   secretAccessKey: process.env.aws_secret_access_key,

@@ -242,7 +242,7 @@ exports.createPriceBook = async (req, res, next) => {
       let notificationData = {
         title: "Price Book Created",
         description: "The priceBook " + data.name + " created successfully.",
-        userId: req.userId,
+        userId: req.teammateId,
         contentId: savePriceBook._id,
         flag: 'priceBook',
         notificationFor: IDs
@@ -501,7 +501,7 @@ exports.updatePriceBookById = async (req, res, next) => {
     let notificationData = {
       title: "Price Book Updated",
       description: existingPriceBook[0]?.name + " " + "has been successfully updated",
-      userId: req.userId,
+      userId: req.teammateId,
       flag: 'priceBook',
       notificationFor: IDs
     };
@@ -651,7 +651,7 @@ exports.createPriceBookCat = async (req, res) => {
     let notificationData = {
       title: "New Category Created",
       description: req.body.name + " " + "has been successfully created",
-      userId: req.userId,
+      userId: req.teammateId,
       flag: 'category',
       notificationFor: IDs
     };
@@ -913,7 +913,7 @@ exports.updatePriceBookCat = async (req, res) => {
     let notificationData = {
       title: "Category Updated",
       description: "The category " + data.name + " updated successfully!",
-      userId: req.userId,
+      userId: req.teammateId,
       contentId: req.params.catId,
       flag: 'category',
       notificationFor: IDs

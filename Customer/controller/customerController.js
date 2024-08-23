@@ -639,6 +639,7 @@ exports.changePrimaryUser = async (req, res) => {
       //Send notification for dealer change primary user
       let IDs = await supportingFunction.getUserIds()
       let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkUser.metaId, isPrimary: true })
+      
       let notificationData = {
         title: updateLastPrimary?.role + " primary user change",
         description: "The primary user has been changed!",
