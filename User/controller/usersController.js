@@ -1380,7 +1380,7 @@ const S3FILE = new AWS.S3();
 exports.downloadFile = async (req, res) => {
   try {
     const bucketName = process.env.bucket_name
-    const key = "orderFile/file-1723638930538.xlsx"
+    const key = data.key
     const params = {
       Bucket: bucketName,
       Key: key

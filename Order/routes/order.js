@@ -5,6 +5,7 @@ const orderCreateController = require("../controller/orderCreateController"); //
 const supportingController = require("../controller/supportingController"); // supporting function for order section
 const { verifyToken } = require('../../middleware/auth'); // authentication with jwt as middleware
 const supportingFunction =  require("../../config/supportingFunction");
+
 router.post('/createOrder', [verifyToken], orderCreateController.createOrder1); // create order
 router.post('/editOrderDetail/:orderId', [verifyToken], orderCreateController.editOrderDetail); // edit order detail
 router.post('/checkFileValidation', [verifyToken], orderCreateController.checkFileValidation); // check file validation
