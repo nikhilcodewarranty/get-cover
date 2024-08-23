@@ -1098,7 +1098,7 @@ exports.registerServiceProvider = async (req, res) => {
       content: "A new servicer " + ServicerMeta.name + " has been registered",
       subject: 'New Servicer Registration'
     }
-    mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmail, [], emailData))
+    mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmail, ["noreply@getcover.com"], emailData))
     let logData = {
       userId: req.teammateId,
       endpoint: "servicer/register",
