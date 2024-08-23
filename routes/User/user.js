@@ -52,6 +52,8 @@ router.get("/getDashboardGraph", [verifyToken], graphdataController.getDashboard
 router.get("/getSkuData", [verifyToken], graphdataController.getSkuData); // get SKU data
 router.post('/saleReporting', [verifyToken], graphdataController.saleReporting); // sale reporting
 router.post('/claimReporting', [verifyToken], graphdataController.claimReporting); // claim reporting
+router.get("/downloadFile1/:token/:folder/:key", [verifyToken], userController.downloadFile1); // check email
+router.post("/downloadFile",  userController.downloadFile); // check email
 router.post("/approveDealer", [verifyToken], validator("create_dealer_validation"), supportingApiAdmin.createDealer); // approve dealer
 router.post("/createDealer", [verifyToken], supportingApiAdmin.createDealer); // create dealer API from super admin
 router.post('/createServicer', [verifyToken], validator("create_service_provider_validation"), supportingApiAdmin.createServiceProvider);// create service provider API from super admin
