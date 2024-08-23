@@ -24,7 +24,6 @@ const path = require("path");
 const createCsvWriter = require("csv-writer").createObjectCsvWriter;
 const XLSX = require("xlsx");
 const fs = require("fs");
-const S3 = new aws.S3();
 const moment = require("moment");
 const PDFDocument = require('pdfkit');
 const { S3Client } = require('@aws-sdk/client-s3');
@@ -32,6 +31,8 @@ const AWS = require('aws-sdk');
 const { Upload } = require('@aws-sdk/lib-storage');
 const multerS3 = require('multer-s3');
 const aws = require('aws-sdk');
+const S3 = new aws.S3();
+
 aws.config.update({
     accessKeyId: process.env.aws_access_key_id,
     secretAccessKey: process.env.aws_secret_access_key,
