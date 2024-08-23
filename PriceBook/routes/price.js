@@ -4,6 +4,7 @@ const validator = require('../config/validation') // validation handler as a mid
 const priceController = require("../controller/priceController"); // price controller 
 const { verifyToken } = require('../../middleware/auth') // authentication with jwt as middleware
 const supportingFunction = require("../../config/supportingFunction")
+
 // price book api's
 router.post("/createPriceBook", [verifyToken], validator('create_price_validation'), priceController.createPriceBook); // create price book with defined price category ID
 router.get("/getPriceBookById/:priceBookId", [verifyToken], supportingFunction.checkObjectId, priceController.getPriceBookById); //get price book detail with ID

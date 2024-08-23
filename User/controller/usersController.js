@@ -101,7 +101,7 @@ exports.validateData = async (req, res) => {
     });
     return
   }
- 
+
   // Check if the specified role exists
   const checkRole = await role.findOne({ role: { '$regex': data.role, '$options': 'i' } });
   if (!checkRole) {
@@ -1379,8 +1379,9 @@ const S3FILE = new AWS.S3();
 
 exports.downloadFile = async (req, res) => {
   try {
+    let data = req.body
     const bucketName = process.env.bucket_name
-    const key = "orderFile/file-1723638930538.xlsx"
+    const key = req.body.key
     const params = {
       Bucket: bucketName,
       Key: key
@@ -1394,7 +1395,33 @@ exports.downloadFile = async (req, res) => {
     // Send the file data to the client
     res.send(s3Object.Body);
 
-  } catch (err) { 
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.downloadFile1 = async (req, res) => {
+  try {
+    let data = req.body
+    const bucketName = process.env.bucket_name
+    const key = req.param.folder + '/' + req.params.key
+    const params = {
+      Bucket: bucketName,
+      Key: key
+    };
+    const s3Object = await S3FILE.getObject(params).promise();
+
+    // Set the headers to trigger a download in the browser
+    res.setHeader('Content-Disposition', `attachment; filename="${key.split('/').pop()}"`);
+    res.setHeader('Content-Type', s3Object.ContentType);
+
+    // Send the file data to the client
+    res.send(s3Object.Body);
+
+  } catch (err) {
     res.send({
       code: constant.errorCode,
       message: err.message
