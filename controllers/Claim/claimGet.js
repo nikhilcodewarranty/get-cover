@@ -1,3 +1,4 @@
+require("dotenv").config();
 const path = require("path");
 const { claim } = require("../../models/Claim/claim");
 const { comments } = require("../../models/Claim/comment");

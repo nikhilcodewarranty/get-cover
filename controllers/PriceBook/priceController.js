@@ -1,3 +1,4 @@
+require("dotenv").config();
 const { PriceBook } = require("../../models/PriceBook/priceBook");
 const priceBookService = require("../../services/PriceBook/priceBookService");
 const dealerService = require("../../services/Dealer/dealerService");

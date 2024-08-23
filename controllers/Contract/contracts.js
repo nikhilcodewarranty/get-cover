@@ -1,3 +1,4 @@
+require("dotenv").config();
 const contract = require("../../models/Contract/contract");
 const contractService = require("../../services/Contract/contractService");
 const priceBookService = require("../../services/PriceBook/priceBookService");

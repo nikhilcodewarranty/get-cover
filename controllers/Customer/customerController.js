@@ -1,3 +1,4 @@
+require("dotenv").config();
 
 const LOG = require('../../models/User/logs')
 const customerService = require("../../services/Customer/customerService");

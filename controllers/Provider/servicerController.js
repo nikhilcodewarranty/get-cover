@@ -1,3 +1,4 @@
+require("dotenv").config()
 const { serviceProvider } = require("../../models/Provider/serviceProvider");
 const role = require("../../models/User/role");
 const constant = require('../../config/constant')
@@ -16,7 +17,6 @@ const sgMail = require('@sendgrid/mail')
 sgMail.setApiKey(process.env.sendgrid_key);
 const bcrypt = require("bcrypt");
 const mongoose = require('mongoose');
-require("dotenv").config();
 
 
 //get servicer detail
