@@ -24,6 +24,7 @@ const path = require("path");
 const createCsvWriter = require("csv-writer").createObjectCsvWriter;
 const XLSX = require("xlsx");
 const fs = require("fs");
+const S3 = new aws.S3();
 const moment = require("moment");
 const PDFDocument = require('pdfkit');
 const { S3Client } = require('@aws-sdk/client-s3');
