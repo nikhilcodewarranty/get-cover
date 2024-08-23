@@ -1381,7 +1381,7 @@ exports.downloadFile = async (req, res) => {
   try {
     let data = req.body
     const bucketName = process.env.bucket_name
-    const key = data.key
+    const key = req.params.key
     const params = {
       Bucket: bucketName,
       Key: key
