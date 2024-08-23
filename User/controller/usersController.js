@@ -1379,6 +1379,7 @@ const S3FILE = new AWS.S3();
 
 exports.downloadFile = async (req, res) => {
   try {
+    let data = req.body
     const bucketName = process.env.bucket_name
     const key = data.key
     const params = {
