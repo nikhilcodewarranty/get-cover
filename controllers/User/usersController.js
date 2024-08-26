@@ -8,7 +8,7 @@ const priceBookService = require('../../services/PriceBook/priceBookService')
 const providerService = require('../../services/Provider/providerService')
 const users = require("../../models/User/users");
 const role = require("../../models/User/role");
-const logs = require('../../models/User/logs');
+const logs = require('../../models/User/logs'); 
 const setting = require("../../models/User/setting");
 const constant = require('../../config/constant');
 const supportingFunction = require('../../config/supportingFunction')
@@ -57,6 +57,29 @@ var upload = multer({
   { name: "file" },
   { name: "termCondition" },
 ])
+
+
+const folderName = 'logo'; // Replace with your specific folder name
+
+const StorageP = multerS3({
+  s3: s3,
+  bucket: process.env.bucket_name,
+  metadata: (req, file, cb) => {
+    cb(null, { fieldName: file.fieldname });
+  },
+  key: (req, file, cb) => {
+    const fileName = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
+    const fullPath = `${folderName}/${fileName}`;
+    cb(null, fullPath);
+  }
+});
+
+var imageUpload = multer({
+  storage: StorageP,
+  limits: {
+    fileSize: 500 * 1024 * 1024, // 500 MB limit
+  },
+}).single("file");
 
 // add new terms /// only for backend use
 exports.createTerms = async (req, res) => {
@@ -1465,13 +1488,13 @@ exports.getSetting = async (req, res) => {
 
 exports.uploadLogo = async (req, res) => {
   try {
-    logoImageUpload(req, res, async (err) => {
+    imageUpload(req, res, async (err) => {
       let file = req.file;
       res.send({
         code: constant.successCode,
         message: 'Success!',
         result: {
-          fileName: file.filename,
+          fileName: file.key,
           name: file.originalname,
           size: file.size
         }
