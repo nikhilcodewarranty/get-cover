@@ -38,20 +38,6 @@ const fs = require('fs');
 const { verifyToken } = require('./middleware/auth') // authentication with jwt as middleware
 var app = express();
 
-const allowedIP = '15.207.221.207';
-// Middleware to check IP address
-app.use((req, res, next) => {
-  const requestIP = req.ip;
-  console.log("system ip--------------",requestIP)
-  console.log("system ip--------------",req.socket.localAddress)
-  if (requestIP === allowedIP) {
-    console.log("asdasdsad ip--------------",requestIP)
-    next(); // Allow the request to proceed
-  } else {
-    console.log("ferwerwer ip--------------",requestIP)
-    res.send('Access denied. Your IP is not allowed.');
-  }
-});
 
 app.use("/api-v1/api-docs", swaggerUi.serve, (...args) => swaggerUi.setup(swaggerDocument)(...args));
 app.use("/api-v1/priceApi", swaggerUi.serve, (...args) => swaggerUi.setup(swaggerDocumentDealer)(...args));
