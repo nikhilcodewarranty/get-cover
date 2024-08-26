@@ -43,6 +43,7 @@ const allowedIP = '15.207.221.207';
 app.use((req, res, next) => {
   const requestIP = req.ip;
   console.log("system ip--------------",requestIP)
+  console.log("system ip--------------",req.socket.localAddress)
   if (requestIP === allowedIP) {
     console.log("asdasdsad ip--------------",requestIP)
     next(); // Allow the request to proceed
