@@ -1403,6 +1403,88 @@ exports.checkIdAndToken = async (req, res) => {
   }
 }
 
+// Setting Function
+exports.accountSetting = async (req, res) => {
+  try {
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action!"
+      });
+      return
+    }
+    const data = req.body;
+    let response;
+    const getData = await userService.getSetting({});
+    if (getData.length > 0) {
+      response = await userService.updateSetting({ _id: getData[0]?._id }, data, { new: true })
+
+    }
+    else {
+      response = await userService.saveSetting(data)
+    }
+
+    res.send({
+      code: constant.successCode,
+      message: "Success!",
+      result: response
+    })
+
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.getSetting = async (req, res) => {
+  try {
+    // if (req.role != "Super Admin") {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Only super admin allow to do this action!"
+    //   });
+    //   return
+    // }
+    const setting = await userService.getSetting({});
+    res.send({
+      code: constant.successCode,
+      message: "Success!",
+      result: setting
+    });
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.uploadLogo = async (req, res) => {
+  try {
+    logoImageUpload(req, res, async (err) => {
+      let file = req.file;
+      res.send({
+        code: constant.successCode,
+        message: 'Success!',
+        result: {
+          fileName: file.filename,
+          name: file.originalname,
+          size: file.size
+        }
+      })
+    })
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
 
 //get s3 bucket file
 

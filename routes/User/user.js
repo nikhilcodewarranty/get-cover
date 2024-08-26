@@ -25,6 +25,12 @@ router.get("/readAllNotification", [verifyToken], userController.readAllNotifica
 router.get("/readNotification/:notificationId", [verifyToken], supportingFunction.checkObjectId, userController.readNotification); // read notification by ID
 router.get("/getCountNotification", [verifyToken], userController.getCountNotification); // get notification count
 
+// Setting Routes
+
+router.post('/setting', [verifyToken], userController.accountSetting);
+router.post('/setting/uploadLogo', userController.uploadLogo);
+router.get('/setting/getSetting', userController.getSetting);
+
 router.post("/createSuperAdmin", userController.createSuperAdmin); // create super admin credentials
 router.post("/addMember", [verifyToken], userController.addMembers); // add member
 router.post("/getMembers", [verifyToken], userController.getMembers); // get members
