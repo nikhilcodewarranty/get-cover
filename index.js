@@ -42,10 +42,11 @@ const allowedIP = '15.207.221.207';
 // Middleware to check IP address
 app.use((req, res, next) => {
   const requestIP = req.ip;
+  console.log("system ip--------------",requestIP)
   if (requestIP === allowedIP) {
     next(); // Allow the request to proceed
   } else {
-    res.status(403).send('Access denied. Your IP is not allowed.');
+    res.send('Access denied. Your IP is not allowed.');
   }
 });
 
