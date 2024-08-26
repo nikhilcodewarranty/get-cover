@@ -62,7 +62,7 @@ exports.createCustomer = async (req, res, next) => {
       })
       return;
     }
-
+    let settingData = await userService.getSetting({});
     let customerObject = {
       username: data.accountName,
       street: data.street,
@@ -128,6 +128,10 @@ exports.createCustomer = async (req, res, next) => {
     notificationEmails.push(resellerPrimary?.email)
     //SEND EMAIL
     let emailData = {
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
+      websiteSetting: settingData[0],
       senderName: getPrimary.firstName,
       content: "We are delighted to inform you that the customer account for " + createdCustomer.username + " has been created.",
       subject: "Customer Account Created - " + createdCustomer.username
@@ -145,7 +149,14 @@ exports.createCustomer = async (req, res, next) => {
             let resetPasswordCode = randtoken.generate(4, '123456789')
             let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
             let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-            const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { flag: "created", link: resetLink, subject: "Set Password", role: "Customer", servicerName: saveMembers[i].firstName }))
+            const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, {
+              flag: "created", title: settingData[0]?.title,
+              darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+              lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+               link: resetLink, subject: "Set Password", role: "Customer",
+                servicerName: saveMembers[i].firstName,
+               address: settingData[0]?.address,
+            }))
 
           }
 
@@ -475,6 +486,8 @@ exports.editCustomer = async (req, res) => {
   try {
     let data = req.body
     data.username = data.username.trim().replace(/\s+/g, ' ');
+    let settingData = await userService.getSetting({});
+
     let checkDealer = await customerService.getCustomerById({ _id: req.params.customerId }, {})
     if (!checkDealer) {
       res.send({
@@ -538,6 +551,10 @@ exports.editCustomer = async (req, res) => {
     notificationEmails.push(resellerPrimary?.email);
     notificationEmails.push(dealerPrimary.email);
     let emailData = {
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
+      websiteSetting: settingData[0],
       senderName: checkDealer.username,
       content: "The customer " + checkDealer.username + "" + " " + "has been updated successfully.",
       subject: "Customer Update"
@@ -584,6 +601,7 @@ exports.changePrimaryUser = async (req, res) => {
   try {
     let data = req.body
     let checkUser = await userService.findOneUser({ _id: req.params.userId }, {})
+    let settingData = await userService.getSetting({});
     if (!checkUser) {
       res.send({
         code: constant.errorCode,
@@ -652,6 +670,10 @@ exports.changePrimaryUser = async (req, res) => {
       notificationEmails.push(updateLastPrimary.email);
       notificationEmails.push(updatePrimary.email);
       let emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
         senderName: checkUser.firstName,
         content: "The primary user for your account has been changed from " + updateLastPrimary.firstName + " to " + updatePrimary.firstName + ".",
         subject: "Primary User change"

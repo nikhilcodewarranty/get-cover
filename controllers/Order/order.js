@@ -1132,13 +1132,22 @@ exports.archiveOrder = async (req, res) => {
         await LOG(logData).save()
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
+        let settingData = await userService.getSetting({});
         let emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
             senderName: dealerPrimary.firstName,
             content: "The order " + checkOrder.unique_key + " has been archeived!.",
             subject: "Archeive Order"
         }
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
         emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
             senderName: resellerPrimary?.firstName,
             content: "The order " + checkOrder.unique_key + " has been archeived!.",
             subject: "Archeive Order"
@@ -1263,9 +1272,18 @@ exports.getSingleOrder = async (req, res) => {
                 return {};
             }
         });
+        //Get setting of website
+        let settingData = await userService.getSetting({});
         let userData = {
             dealerData: dealer ? dealer : {},
             customerData: customer ? customer : {},
+            websiteSetting: {
+                darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                address: settingData[0]?.address,
+                paymentDetail: settingData[0]?.paymentDetail,
+                title: settingData[0]?.title,
+            },
             resellerData: reseller ? reseller : {},
             username: singleDealerUser ? singleDealerUser : {},
             resellerUsername: singleResellerUser ? singleResellerUser : {},
@@ -1574,7 +1592,13 @@ exports.markAsPaid = async (req, res) => {
                 // Send Email code here
                 let notificationEmails = await supportingFunction.getUserEmails();
                 //Email to Dealer
+                let settingData = await userService.getSetting({});
+                //Email to Dealer
                 let emailData = {
+                    darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                    lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                    address: settingData[0]?.address,
+                    websiteSetting: settingData[0],
                     senderName: dealerPrimary.firstName,
                     content: "The  order " + savedResponse.unique_key + " has been paid",
                     subject: "Mark as paid"
@@ -1583,6 +1607,10 @@ exports.markAsPaid = async (req, res) => {
                 let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
                 //Email to Reseller 
                 emailData = {
+                    darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                    lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                    address: settingData[0]?.address,
+                    websiteSetting: settingData[0],
                     senderName: resellerPrimary?.firstName,
                     content: "The  order " + savedResponse.unique_key + " has been paid",
                     subject: "Mark As paid"

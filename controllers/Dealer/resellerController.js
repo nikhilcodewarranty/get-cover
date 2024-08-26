@@ -103,7 +103,12 @@ exports.createReseller = async (req, res) => {
         };
 
         let createNotification = await userService.createNotification(notificationData);
+        let settingData = await userService.getSetting({});
         let emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
             senderName: getPrimary.firstName,
             content: "We are delighted to inform you that the reseller account for " + createdReseler.name + " has been created.",
             subject: "Reseller Account Created - " + createdReseler.name
@@ -120,7 +125,18 @@ exports.createReseller = async (req, res) => {
                     let resetPasswordCode = randtoken.generate(4, '123456789')
                     let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
                     let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-                    const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { flag: "created", link: resetLink, subject: "Set Password", role: "Reseller", servicerName: saveMembers[i].firstName }))
+                    const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email,
+                        {
+                            flag: "created",
+                            link: resetLink,
+                            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                            subject: "Set Password",
+                            title: settingData[0]?.title,
+                            address: settingData[0]?.address,
+                            role: "Reseller",
+                            servicerName: saveMembers[i].firstName
+                        }))
                 }
 
             }
@@ -769,9 +785,14 @@ exports.editResellers = async (req, res) => {
         let createNotification = await userService.createNotification(notificationData);
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
+        let settingData = await userService.getSetting({});
         //notificationEmails.push(resellerPrimary.email);
         notificationEmails.push(dealerPrimary.email);
         let emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
             senderName: checkReseller.name,
             content: "The information has been updated successfully! effective immediately.",
             subject: "Update Info"
@@ -1700,9 +1721,14 @@ exports.changeResellerStatus = async (req, res) => {
 
             // Send Email code here
             let notificationEmails = await supportingFunction.getUserEmails();
+            let settingData = await userService.getSetting({});
             notificationEmails.push(dealerPrimary.email);
             const status_content = req.body.status ? 'Active' : 'Inactive';
             let emailData = {
+                darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                address: settingData[0]?.address,
+                websiteSetting: settingData[0],
                 senderName: singleReseller.name,
                 content: "Status has been changed to " + status_content + " " + ", effective immediately.",
                 subject: "Update Status"

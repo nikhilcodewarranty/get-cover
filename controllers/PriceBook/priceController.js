@@ -251,8 +251,14 @@ exports.createPriceBook = async (req, res, next) => {
 
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
+      //Get Website Setting
+      const settingData = await userService.getSetting({});
       const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
       let emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
         senderName: admin.firstName,
         content: "The priceBook " + data.name + " created successfully! effective immediately.",
         subject: "Create Price Book"
@@ -511,9 +517,15 @@ exports.updatePriceBookById = async (req, res, next) => {
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
     const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
+    //Get Website Setting
+    const settingData = await userService.getSetting({});
     let emailData;
     if (req.body.priceType) {
       emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
         senderName: admin.firstName,
         content: "The priceBook " + existingPriceBook[0]?.name + " updated successfully! effective immediately.",
         subject: "Update Price Book"
@@ -521,6 +533,10 @@ exports.updatePriceBookById = async (req, res, next) => {
     }
     else {
       emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
         senderName: admin.firstName,
         content: "The priceBook " + existingPriceBook[0]?.name + " has been changed to " + body.status ? 'Active' : "Inactive" + "! effective immediately.",
         subject: "Update Status"
@@ -659,8 +675,13 @@ exports.createPriceBookCat = async (req, res) => {
 
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
+    const settingData = await userService.getSetting({});
     const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
     let emailData = {
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
+      websiteSetting: settingData[0],
       senderName: admin.firstName,
       content: "The category " + data.name + " created successfully! effective immediately.",
       subject: "New Category Added"
@@ -921,8 +942,13 @@ exports.updatePriceBookCat = async (req, res) => {
     let createNotification = await userService.createNotification(notificationData);
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
+    const settingData = await userService.getSetting({});
     const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
     let emailData = {
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
+      websiteSetting: settingData[0],
       senderName: admin.firstName,
       content: "The category " + data.name + " updated successfully! effective immediately.",
       subject: "Update Category"

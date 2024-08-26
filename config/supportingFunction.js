@@ -8,6 +8,10 @@ exports.getUserIds = async () => {
     return getSuperId.map(ID => ID._id);
 }
 
+exports.websiteSetting = async () => {
+    let settingData = await userService.getSetting({});
+    return settingData;
+}
 
 exports.getUserEmails = async () => {
     const getSuperEmails = await userService.findUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true }, { notificationTo: 1 });

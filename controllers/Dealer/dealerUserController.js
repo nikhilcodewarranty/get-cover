@@ -559,16 +559,21 @@ exports.createCustomer = async (req, res, next) => {
             })
             return;
         };
-        teamMembers = teamMembers.map(member => ({ ...member,  status: !data.status ? false : member.status, metaId: createdCustomer._id, roleId: process.env.customer }));
+        teamMembers = teamMembers.map(member => ({ ...member, status: !data.status ? false : member.status, metaId: createdCustomer._id, roleId: process.env.customer }));
         // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
         // Primary User Welcoime email
         let notificationEmails = await supportingFunction.getUserEmails();
+        let settingData = await userService.getSetting({});
         let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
         let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkReseller?._id, isPrimary: true })
         notificationEmails.push(getPrimary.email)
         notificationEmails.push(resellerPrimary?.email)
         let emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
             senderName: getPrimary.firstName,
             content: "We are delighted to inform you that the customer account for " + createdCustomer.username + " has been created.",
             subject: "Customer Account Created - " + createdCustomer.username
@@ -586,7 +591,17 @@ exports.createCustomer = async (req, res, next) => {
                         let resetPasswordCode = randtoken.generate(4, '123456789')
                         let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
                         let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-                        const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { flag: "created", link: resetLink, subject: "Set Password", role: "Customer", servicerName: saveMembers[i].firstName }))
+                        const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email,
+                            {
+                                flag: "created",
+                                title: settingData[0]?.title,
+                                darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                                lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                                address: settingData[0]?.address,
+                                link: resetLink,
+                                subject: "Set Password", role: "Customer",
+                                servicerName: saveMembers[i].firstName
+                            }))
                     }
 
                 }
@@ -709,7 +724,7 @@ exports.createReseller = async (req, res) => {
             })
             return;
         };
-        teamMembers = teamMembers.map(member => ({ ...member,  metaId: createdReseler._id, roleId: '65bb94b4b68e5a4a62a0b563' }));
+        teamMembers = teamMembers.map(member => ({ ...member, metaId: createdReseler._id, roleId: '65bb94b4b68e5a4a62a0b563' }));
         // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
 
@@ -732,9 +747,15 @@ exports.createReseller = async (req, res) => {
         }
         // Primary User Welcoime email
         let notificationEmails = await supportingFunction.getUserEmails();
+        let settingData = await userService.getSetting({});
         let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
         notificationEmails.push(getPrimary.email)
         let emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            title: settingData[0]?.title,
+            websiteSetting: settingData[0],
             senderName: getPrimary.firstName,
             content: "We are delighted to inform you that the reseller account for " + createdReseler.name + " has been created.",
             subject: "Reseller Account Created - " + createdReseler.name
@@ -751,7 +772,17 @@ exports.createReseller = async (req, res) => {
                     let resetPasswordCode = randtoken.generate(4, '123456789')
                     let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
                     let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-                    const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { flag: "created", link: resetLink, subject: "Set Password", role: "Reseller", servicerName: saveMembers[i].firstName }))
+                    const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email,
+                        {
+                            flag: "created",
+                            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                            link: resetLink, subject: "Set Password",
+                            role: "Reseller",
+                            title: settingData[0]?.title,
+                            address: settingData[0]?.address,
+                            servicerName: saveMembers[i].firstName
+                        }))
                 }
             }
         }
@@ -980,6 +1011,7 @@ exports.createOrder = async (req, res) => {
         //send notification to admin and dealer 
         let IDs = await supportingFunction.getUserIds()
         let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.userId, isPrimary: true })
+        let settingData = await userService.getSetting({});
         IDs.push(getPrimary._id)
         let notificationData = {
             title: "New order created",
@@ -994,6 +1026,10 @@ exports.createOrder = async (req, res) => {
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
         let emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
             senderName: getPrimary.firstName,
             content: "The new order " + savedResponse.unique_key + "  has been created for " + getPrimary.firstName + "",
             subject: "New Order"
@@ -1284,8 +1320,13 @@ exports.editOrderDetail = async (req, res) => {
 
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
+        let settingData = await userService.getSetting({});
 
         let emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
             senderName: dealerPrimary.firstName,
             content: "The  order " + checkOrder.unique_key + " has been updated",
             subject: "Order Updated"
@@ -1343,15 +1384,15 @@ exports.editOrderDetail = async (req, res) => {
 
                 headerLength = result.headers
                 if (headerLength.length !== 8) {
-                  res.send({
-                    code: constant.errorCode,
-                    message: "Invalid file format detected. The sheet should contain exactly four columns."
-                  })
-                  return
+                    res.send({
+                        code: constant.errorCode,
+                        message: "Invalid file format detected. The sheet should contain exactly four columns."
+                    })
+                    return
                 }
 
                 const totalDataComing1 = result.data
-                
+
                 const totalDataComing = totalDataComing1.map((item) => {
                     const keys = Object.keys(item);
                     return {
@@ -1501,6 +1542,10 @@ exports.editOrderDetail = async (req, res) => {
                     // Send Email code here
                     let notificationEmails = await supportingFunction.getUserEmails();
                     let emailData = {
+                        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                        address: settingData[0]?.address,
+                        websiteSetting: settingData[0],
                         senderName: dealerPrimary.firstName,
                         content: "The  order " + savedResponse.unique_key + " has been updated and processed",
                         subject: "Process Order"
@@ -1508,6 +1553,10 @@ exports.editOrderDetail = async (req, res) => {
                     let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
                     //Email to Reseller
                     emailData = {
+                        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                        address: settingData[0]?.address,
+                        websiteSetting: settingData[0],
                         senderName: resellerPrimary?.firstName,
                         content: "The  order " + savedResponse.unique_key + " has been updated and processed",
                         subject: "Process Order"
@@ -1737,19 +1786,24 @@ async function generateTC(orderData) {
             //Read from the s3 bucket
             const data = await S3.getObject(params).promise();
             let attachment = data.Body.toString('base64');
-           
+
             //sendTermAndCondition
             // Send Email code here
             let notificationEmails = await supportingFunction.getUserEmails();
+            let settingData = await userService.getSetting({});
             notificationEmails.push(DealerUser.email)
             notificationEmails.push(resellerUser?.email)
             let emailData = {
+                darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                address: settingData[0]?.address,
+                websiteSetting: settingData[0],
                 senderName: customerUser.firstName,
                 content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
                 subject: 'Order Term and Condition-' + checkOrder.unique_key,
             }
             let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
-          
+
         })
         return 1
 

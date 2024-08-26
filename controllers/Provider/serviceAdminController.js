@@ -240,7 +240,18 @@ exports.createServiceProvider = async (req, res, next) => {
       let primaryCode = randtoken.generate(4, '123456789')
       let updatePrimaryCode = await userService.updateSingleUser({ email: primaryEmail }, { resetPasswordCode: primaryCode, status: data.status ? true : false }, { new: true });
       let updatePrimaryLInk = `${process.env.SITE_URL}newPassword/${updatePrimaryCode._id}/${primaryCode}`
-      mailing = sgMail.send(emailConstant.servicerApproval(updatePrimaryCode.email, { flag: "Approved", subject: "Set Password", link: updatePrimaryLInk, role: "Servicer", servicerName: updatePrimaryCode?.firstName }))
+      mailing = sgMail.send(emailConstant.servicerApproval(updatePrimaryCode.email,
+        {
+          darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+          lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+          flag: "Approved",
+          subject: "Set Password",
+          address: settingData[0]?.address,
+          title: settingData[0]?.title,
+          websiteSetting: settingData[0],
+          link: updatePrimaryLInk, role: "Servicer",
+          servicerName: updatePrimaryCode?.firstName
+        }))
       teamMembers = teamMembers.slice(1).map(member => ({ ...member, metaId: updateServicer._id, approvedStatus: "Approved", status: true }));
 
       if (teamMembers.length > 0) {
@@ -253,7 +264,17 @@ exports.createServiceProvider = async (req, res, next) => {
               let resetPasswordCode = randtoken.generate(4, '123456789')
               let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
               let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-              const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { subject: "Set Password", link: resetLink, role: 'Servicer', servicerName: saveMembers[i].firstName }))
+              const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email,
+                {
+                  darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                  lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                  address: settingData[0]?.address,
+                  title: settingData[0]?.title,
+                  websiteSetting: settingData[0],
+                  subject: "Set Password",
+                  link: resetLink, role: 'Servicer',
+                  servicerName: saveMembers[i].firstName
+                }))
 
             }
 
@@ -560,6 +581,7 @@ exports.rejectServicer = async (req, res) => {
     let getServicer = await providerService.getServiceProviderById({ _id: req.params.servicerId });
     let checkServicer = await providerService.deleteServicer({ _id: req.params.servicerId })
     let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.servicerId, isPrimary: true })
+    
     IDs.push(getPrimary._id)
 
     if (!checkServicer) {
@@ -582,7 +604,12 @@ exports.rejectServicer = async (req, res) => {
     let createNotification = await userService.createNotification(notificationData);
     // Primary User Welcoime email
     let notificationEmails = await supportingFunction.getUserEmails();
+    let settingData = await userService.getSetting({});
     let emailData = {
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
+      websiteSetting: settingData[0],
       senderName: getServicer.name,
       content: "Dear " + getServicer.name + ",\n\nWe regret to inform you that your registration as an authorized dealer has been rejected by our admin team. If you have any questions or require further assistance, please feel free to contact us.\n\nBest regards,\nAdmin Team",
       subject: "Rejection Account"
@@ -621,7 +648,7 @@ exports.editServicerDetail = async (req, res) => {
     data.name = data.name.trim().replace(/\s+/g, ' ');
     data.oldName = data.oldName.trim().replace(/\s+/g, ' ');
     let checkServicer = await providerService.getServiceProviderById({ _id: req.params.servicerId })
-
+    let settingData = await userService.getSetting({});
     if (!checkServicer) {
       res.send({
         code: constant.errorCode,
@@ -699,6 +726,10 @@ exports.editServicerDetail = async (req, res) => {
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
     let emailData = {
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
+      websiteSetting: settingData[0],
       senderName: checkServicer.name,
       content: "Information has been updated successfully! effective immediately.",
       subject: "Update Info"
@@ -873,9 +904,15 @@ exports.updateStatus = async (req, res) => {
 
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
+    let settingData = await userService.getSetting({});
+
     const status_content = req.body.status || req.body.status == "true" ? 'Active' : 'Inactive';
 
     let emailData = {
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
+      websiteSetting: settingData[0],
       senderName: checkServicer.name,
       content: "Status has been changed to " + status_content + " " + ", effective immediately.",
       subject: "Update Status"
@@ -1100,8 +1137,12 @@ exports.registerServiceProvider = async (req, res) => {
 
     // Create the user
     const createNotification = await userService.createNotification(notificationData);
+    let settingData = await userService.getSetting({});
     let emailData = {
       dealerName: ServicerMeta.name,
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
       c1: "Thank you for",
       c2: "Registering as a",
       c3: "Your account is currently pending approval from our admin.",
@@ -1116,6 +1157,10 @@ exports.registerServiceProvider = async (req, res) => {
     const admin = await supportingFunction.getPrimaryUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true })
     const notificationEmail = await supportingFunction.getUserEmails();
     emailData = {
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
+      websiteSetting: settingData[0],
       senderName: admin.firstName,
       content: "A new servicer " + ServicerMeta.name + " has been registered",
       subject: 'New Servicer Registration'

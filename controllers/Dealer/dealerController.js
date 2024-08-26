@@ -263,7 +263,7 @@ exports.registerDealer = async (req, res) => {
     //Send Notification to dealer 
 
     let IDs = await supportingFunction.getUserIds()
-
+    let settingData = await userService.getSetting({});
     let notificationData = {
       title: "New Dealer Registration",
       description: data.name + " " + "has finished registering as a new dealer. For the onboarding process to proceed more quickly, kindly review and give your approval.",
@@ -276,6 +276,9 @@ exports.registerDealer = async (req, res) => {
     let createNotification = await userService.createNotification(notificationData);
     let emailData = {
       dealerName: createdDealer.name,
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
       subject: "New Dealer Registration Request Received",
       c1: "Thank you for",
       c2: "Registering! as a",
@@ -288,6 +291,10 @@ exports.registerDealer = async (req, res) => {
     const admin = await supportingFunction.getPrimaryUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true })
     const notificationEmail = await supportingFunction.getUserEmails();
     emailData = {
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
+      websiteSetting: settingData[0],
       senderName: admin.firstName,
       subject: "Notification of New Dealer Registration",
       content: "A new dealer " + createdDealer.name + " has been registered"
@@ -387,6 +394,8 @@ exports.statusUpdate = async (req, res) => {
     }
 
     let IDs = await supportingFunction.getUserIds()
+    let settingData = await userService.getSetting({});
+
     let getPrimary = await supportingFunction.getPrimaryUser({ metaId: existingDealerPriceBook.dealerId, isPrimary: true })
     IDs.push(getPrimary._id)
     let getDealerDetail = await dealerService.getDealerByName({ _id: existingDealerPriceBook.dealerId })
@@ -404,6 +413,10 @@ exports.statusUpdate = async (req, res) => {
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
     let emailData = {
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
+      websiteSetting: settingData[0],
       senderName: getPrimary.firstName,
       content: "The price book " + priceBookData[0]?.pName + " has been updated",
       subject: "Update Price Book"
@@ -530,8 +543,13 @@ exports.changeDealerStatus = async (req, res) => {
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
       const status_content = req.body.status ? 'Active' : 'Inactive';
+      let settingData = await userService.getSetting({});
       let emailData = {
         senderName: singleDealer.name,
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
         content: "Status has been changed to " + status_content + " " + ", effective immediately.",
         subject: "Update Status"
       }
@@ -638,6 +656,7 @@ exports.createDealerPriceBook = async (req, res) => {
     } else {
       let IDs = await supportingFunction.getUserIds()
       let getPrimary = await supportingFunction.getPrimaryUser({ metaId: data.dealerId, isPrimary: true })
+      let settingData = await userService.getSetting({});
       IDs.push(getPrimary._id)
       let notificationData = {
         title: "New dealer price book created",
@@ -654,6 +673,10 @@ exports.createDealerPriceBook = async (req, res) => {
       let notificationEmails = await supportingFunction.getUserEmails();
       let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
       let emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
         senderName: checkDealer.name,
         content: "The price book name" + " " + checkPriceBookMain[0]?.pName + " has been created successfully! effective immediately.",
         subject: "New Price Book"
@@ -748,7 +771,7 @@ exports.rejectDealer = async (req, res) => {
       return;
     }
     const singleDealer = await dealerService.getDealerById({ _id: req.params.dealerId });
-
+    let settingData = await userService.getSetting({});
     if (!singleDealer) {
       res.send({
         code: constant.errorCode,
@@ -792,6 +815,10 @@ exports.rejectDealer = async (req, res) => {
       // Primary User Welcoime email
       let notificationEmails = await supportingFunction.getUserEmails();
       let emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
         senderName: singleDealer.name,
         content: "Dear " + singleDealer.name + ",\n\nWe regret to inform you that your registration as a dealer has been rejected by our admin team. If you have any questions or require further assistance, please feel free to contact us.\n\nBest regards,\nAdmin Team",
         subject: "Rejection Account"
@@ -908,6 +935,7 @@ exports.updateDealerMeta = async (req, res) => {
     }
     let IDs = await supportingFunction.getUserIds()
     let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
+    let settingData = await userService.getSetting({});
     IDs.push(getPrimary._id)
     let notificationData = {
       title: "Dealer updated",
@@ -922,6 +950,10 @@ exports.updateDealerMeta = async (req, res) => {
     // Send Email code here 
     let notificationEmails = await supportingFunction.getUserEmails();
     let emailData = {
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
+      websiteSetting: settingData[0],
       senderName: checkDealer.name,
       content: "The information has been updated successfully! effective immediately.",
       subject: "Update Info"
