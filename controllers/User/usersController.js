@@ -23,7 +23,7 @@ sgMail.setApiKey(process.env.sendgrid_key);
 const XLSX = require("xlsx");
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const multer = require('multer');
-const path = require('path'); 
+const path = require('path');
 // Promisify fs.createReadStream for asynchronous file reading
 const { S3Client } = require('@aws-sdk/client-s3');
 const { Upload } = require('@aws-sdk/lib-storage');
@@ -104,7 +104,7 @@ exports.validateData = async (req, res) => {
     });
     return
   }
- 
+
   // Check if the specified role exists
   const checkRole = await role.findOne({ role: { '$regex': data.role, '$options': 'i' } });
   if (!checkRole) {
@@ -488,7 +488,7 @@ exports.updateUserData = async (req, res) => {
     let criteria = { _id: req.params.userId ? req.params.userId : req.teammateId };
     let option = { new: true };
     const updateUser = await userService.updateSingleUser(criteria, data, option);
-
+    const settingData = await userService.getSetting({});
     if (!updateUser) {
       //Save Logs updateUserData
       let logData = {
@@ -533,6 +533,10 @@ exports.updateUserData = async (req, res) => {
 
     if (data.firstName) {
       emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
         senderName: updateUser.firstName,
         content: "The user information has been updated successfully!.",
         subject: "Update User Info"
@@ -542,6 +546,10 @@ exports.updateUserData = async (req, res) => {
     else {
       const status_content = req.body.status ? 'Active' : 'Inactive';
       emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
         senderName: updateUser.firstName,
         content: "Status has been changed to " + status_content + " " + ", effective immediately.",
         subject: "Update Status"
@@ -672,9 +680,17 @@ exports.sendLinkToEmail = async (req, res) => {
       }
       let resetLink = `${process.env.SITE_URL}newPassword/${checkEmail._id}/${resetPasswordCode}`
 
+      let settingData = await userService.getSetting({});
+
       let data = {
         link: resetLink,
-        name: checkEmail.firstName
+        name: checkEmail.firstName,
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        title: settingData[0]?.title,
+        websiteSetting: settingData[0],
+        subject: "Set Password"
       }
       const mailing = sgMail.send(emailConstant.resetpassword(checkEmail._id, resetPasswordCode, checkEmail.email, data))
 
@@ -754,6 +770,7 @@ exports.deleteUser = async (req, res) => {
     const checkUser = await userService.getUserById1({ _id: req.params.userId }, {});
     const deleteUser = await userService.deleteUser(criteria, newValue, option);
 
+    let settingData = await userService.getSetting({});
     if (!deleteUser) {
       //Save Logs delete user
       let logData = {
@@ -794,6 +811,10 @@ exports.deleteUser = async (req, res) => {
     notificationEmails.push(checkUser.email);
 
     let emailData = {
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
+      websiteSetting: settingData[0],
       senderName: checkUser.firstName,
       content: "Your account has been deleted by Get-Cover team.",
       subject: "Delete User"
@@ -1181,6 +1202,8 @@ exports.addMembers = async (req, res) => {
 
     let notificationEmails = await supportingFunction.getUserEmails();
 
+    let settingData = await userService.getSetting({});
+
     let IDs = await supportingFunction.getUserIds()
 
     let notificationData = {
@@ -1197,7 +1220,18 @@ exports.addMembers = async (req, res) => {
     let resetPasswordCode = randtoken.generate(4, '123456789')
     let checkPrimaryEmail2 = await userService.updateSingleUser({ email: data.email }, { resetPasswordCode: resetPasswordCode }, { new: true });
     let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-    const resetPassword = sgMail.send(emailConstant.servicerApproval(data.email, { flag: "created", subject: "Set Password", link: resetLink, role: req.role == 'Super Admin' ? 'Admin' : req.role, servicerName: data.firstName }))
+    const resetPassword = sgMail.send(emailConstant.servicerApproval(data.email, {
+      flag: "created",
+      link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address, role: req.role == 'Super Admin' ? 'Admin' : req.role,
+      subject: "Set Password",
+      link: resetLink,
+      title: settingData[0]?.title,
+      servicerName: data.firstName,
+      role: req.role == 'Super Admin' ? 'Admin' : req.role,
+      servicerName: data.firstName
+    }))
     // // Create the user
     res.send({
       code: constant.successCode,

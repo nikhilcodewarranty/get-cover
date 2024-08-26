@@ -133,7 +133,8 @@ exports.searchClaim = async (req, res, next) => {
         { 'serial': { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { 'unique_key_search': { '$regex': data.contractId ? data.contractId : '', '$options': 'i' } },
         { status: 'Active' },
-        { eligibilty: true }
+        { eligibilty: true },
+        { claimFile: "Completed" }
       ]
     } else {
       contractFilter = [
@@ -142,6 +143,7 @@ exports.searchClaim = async (req, res, next) => {
         { 'serial': { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { 'unique_key_search': { '$regex': data.contractId ? data.contractId : '', '$options': 'i' } },
         { status: 'Active' },
+        { claimFile: "Completed" },
         { eligibilty: true }
       ]
     }
@@ -231,7 +233,7 @@ const getObjectFromS3 = (bucketReadUrl) => {
       if (err) {
         reject(err);
       } else {
-        const wb = XLSX.read(data.Body,{
+        const wb = XLSX.read(data.Body, {
           type: 'buffer',
           cellDates: true,
           cellNF: false,
@@ -254,7 +256,7 @@ const getObjectFromS3 = (bucketReadUrl) => {
 
         const result = {
           headers: headers,
-          data: XLSX.utils.sheet_to_json(sheet,{ defval: "" }),
+          data: XLSX.utils.sheet_to_json(sheet, { defval: "" }),
         };
 
         resolve(result);
@@ -1297,7 +1299,7 @@ exports.saveBulkClaim = async (req, res) => {
         defval: '',
         blankrows: true,
         raw: false,
-        dateNF: 'm"/"d"/"yyyy' 
+        dateNF: 'm"/"d"/"yyyy'
         // <--- need dateNF in sheet_to_json options (note the escape chars)
       }
       headerLength = result.headers

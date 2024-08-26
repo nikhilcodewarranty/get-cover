@@ -88,8 +88,13 @@ exports.createServiceProvider = async (req, res, next) => {
       let saveMembers = await userService.insertManyUser(teamMembers)
       // Primary User Welcoime email
       let notificationEmails = await supportingFunction.getUserEmails();
-
+      let settingData = await userService.getSetting({});
       let emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
+        title: settingData[0]?.title,
         senderName: admin.firstName,
         content: "We are delighted to inform you that the servicer account for " + createServiceProvider.name + " has been created.",
         subject: "Servicer Account Created - " + createServiceProvider.name
@@ -105,7 +110,18 @@ exports.createServiceProvider = async (req, res, next) => {
             let resetPasswordCode = randtoken.generate(4, '123456789')
             let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
             let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-            const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { flag: "Approved", link: resetLink, subject: "Set Password", role: "Servicer", servicerName: saveMembers[i].firstName }))
+            const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email,
+              {
+                flag: "Approved",
+                link: resetLink,
+                darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                title: settingData[0]?.title,
+                subject: "Set Password",
+                role: "Servicer",
+                address: settingData[0]?.address,
+                servicerName: saveMembers[i].firstName
+              }))
           }
 
         }
@@ -148,7 +164,6 @@ exports.createServiceProvider = async (req, res, next) => {
 
     if (data.flag == "approve") {
       let checkDetail = await providerService.getServicerByName({ _id: data.providerId })
-
       if (!checkDetail) {
         res.send({
           code: constant.errorCode,
@@ -179,6 +194,8 @@ exports.createServiceProvider = async (req, res, next) => {
         }
       }
 
+      let settingData = await userService.getSetting({});
+
       data.isAccountCreate = data.status
       let teamMembers = data.members
       const updateServicer = await providerService.updateServiceProvider({ _id: checkDetail._id }, servicerObject);
@@ -208,6 +225,11 @@ exports.createServiceProvider = async (req, res, next) => {
 
       let emailData = {
         senderName: admin.firstName,
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        title: settingData[0]?.title,
+        websiteSetting: settingData[0],
         content: "We are delighted to inform you that the servicer account for " + checkDetail.name + " has been created.",
         subject: "Servicer Account Approved - " + checkDetail.name
       }

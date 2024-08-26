@@ -340,4 +340,36 @@ module.exports = class userService {
     }
   }
 
+  static async getSetting(query) {
+    try {
+      const settingData = await setting.find(query);
+      return settingData;
+    }
+    catch (error) {
+      return `Could not fetch setting: ${err}`;
+    }
+  }
+
+  //save setting information
+  static async saveSetting(data) {
+    try {
+      const saveSetting = await new setting(data).save();
+      return saveSetting;
+    }
+    catch (error) {
+      console.log(`Could not save setting ${error}`);
+    }
+  }
+
+  //update setting information
+  static async updateSetting(creteria, data, option) {
+    try {
+      const saveSetting = await setting.findOneAndUpdate(creteria, data, option);
+      return saveSetting;
+    }
+    catch (error) {
+      console.log(`Could not update setting ${error}`);
+    }
+  }
+
 };

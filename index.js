@@ -38,6 +38,17 @@ const fs = require('fs');
 const { verifyToken } = require('./middleware/auth') // authentication with jwt as middleware
 var app = express();
 
+const allowedIP = '15.207.221.207';
+// Middleware to check IP address
+app.use((req, res, next) => {
+  const requestIP = req.ip;
+  if (requestIP === allowedIP) {
+    next(); // Allow the request to proceed
+  } else {
+    res.status(403).send('Access denied. Your IP is not allowed.');
+  }
+});
+
 app.use("/api-v1/api-docs", swaggerUi.serve, (...args) => swaggerUi.setup(swaggerDocument)(...args));
 app.use("/api-v1/priceApi", swaggerUi.serve, (...args) => swaggerUi.setup(swaggerDocumentDealer)(...args));
 
@@ -124,6 +135,9 @@ app.use((req, res, next) => {
 
 })
 const PORT = 3002
+
+
+
 httpServer.listen(PORT, () => console.log(`app listening at http://localhost:${PORT}`))
 
 module.exports = app;

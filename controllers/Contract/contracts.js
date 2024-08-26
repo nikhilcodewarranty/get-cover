@@ -552,12 +552,8 @@ exports.cronJobEligible = async (req, res) => {
         let product = result[i];
         let contractId = product._id;
         let check = new Date() >= new Date(product.minDate) && new Date() <= new Date(product.coverageEndDate) ? true : false
-        // console.log("++++++++++++++++++++++++++++",product)
-        // console.log("++++++++++++++++++++check++++++++",check)
         if (new Date() >= new Date(product.minDate) && new Date() <= new Date(product.coverageEndDate)) {
           contractIds.push(product._id);
-        // console.log("unique_number---------------------",product.unique_key)
-         //console.log("check---------------------",check)
           updateDoc = {
             'updateMany': {
               'filter': { '_id': contractId },
