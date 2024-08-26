@@ -44,8 +44,10 @@ app.use((req, res, next) => {
   const requestIP = req.ip;
   console.log("system ip--------------",requestIP)
   if (requestIP === allowedIP) {
+    console.log("asdasdsad ip--------------",requestIP)
     next(); // Allow the request to proceed
   } else {
+    console.log("ferwerwer ip--------------",requestIP)
     res.send('Access denied. Your IP is not allowed.');
   }
 });
