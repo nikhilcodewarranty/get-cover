@@ -909,7 +909,12 @@ async function generateTC(orderData) {
             let notificationEmails = await supportingFunction.getUserEmails();
             notificationEmails.push(DealerUser.email)
             notificationEmails.push(resellerUser?.email)
+            let settingData = await userService.getSetting({});
             let emailData = {
+                darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                address: settingData[0]?.address,
+                websiteSetting: settingData[0],
                 senderName: customerUser.firstName,
                 content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
                 subject: 'Order Term and Condition-' + checkOrder.unique_key,
@@ -2141,8 +2146,13 @@ exports.editOrderDetail = async (req, res) => {
 
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
+        let settingData = await userService.getSetting({});
         //Email to Dealer
         let emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
             senderName: dealerPrimary.firstName,
             content: "The  order " + savedResponse.unique_key + " has been updated",
             subject: "Order Update"
@@ -2390,6 +2400,10 @@ exports.editOrderDetail = async (req, res) => {
                     let notificationEmails = await supportingFunction.getUserEmails();
                     //Email to Dealer
                     let emailData = {
+                        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                        address: settingData[0]?.address,
+                        websiteSetting: settingData[0],
                         senderName: dealerPrimary.firstName,
                         content: "The  order " + savedResponse.unique_key + " updated and processed",
                         subject: "Process Order"
@@ -2398,6 +2412,10 @@ exports.editOrderDetail = async (req, res) => {
                     let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
                     //Email to Reseller
                     emailData = {
+                        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                        address: settingData[0]?.address,
+                        websiteSetting: settingData[0],
                         senderName: resellerPrimary?.firstName,
                         content: "The  order " + savedResponse.unique_key + " has been paid",
                         subject: "Process Order"
