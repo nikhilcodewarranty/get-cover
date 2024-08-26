@@ -3,22 +3,22 @@ const Schema = mongoose.Schema
 const connection = require('../../db')
 
 const contactUs = new Schema({
-    userId:{
-        type:mongoose.Schema.Types.ObjectId,
-        default:"aaaaaaa833011167aaaaaaaa"
+    firstName: {
+        type: String,
+        default: ""
     },
-    endpoint:{
-        type:String,
-        default:''
+    lastName: {
+        type: String,
+        default: ""
     },
-    body:{
-        type:{},
-        default:{}
+    email: {
+        type: String,
+        default: ""
     },
-    response:{
-        type:{},
-        default:{}
+    description: {
+        type: String,
+        default: ""
     }
-},{timestamps:true})
+}, { timestamps: true })
 
-module.exports = connection.userConnection.model('contact',contactUs)
+module.exports = connection.userConnection.model('contact', contactUs)
