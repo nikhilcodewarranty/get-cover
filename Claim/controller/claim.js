@@ -324,7 +324,7 @@ exports.addClaim = async (req, res, next) => {
   try {
     let data = req.body;
 
-    console.log("data body:::::::::::::",data)
+    console.log("data body:::::::::::::",req)
 
     let checkContract = await contractService.getContractById({ _id: data.contractId })
     if (!checkContract) {
