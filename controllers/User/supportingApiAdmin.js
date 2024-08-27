@@ -26,8 +26,13 @@ const csvParser = require('csv-parser');
 const { S3Client } = require('@aws-sdk/client-s3');
 const { Upload } = require('@aws-sdk/lib-storage');
 const multerS3 = require('multer-s3');
+const aws = require('aws-sdk');
 
-
+aws.config.update({
+  accessKeyId: process.env.aws_access_key_id,
+  secretAccessKey: process.env.aws_secret_access_key,
+});
+const S3Bucket = new aws.S3();
 // s3 bucket connections
 const s3 = new S3Client({
     region: process.env.region,
