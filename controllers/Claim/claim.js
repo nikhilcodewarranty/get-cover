@@ -1345,13 +1345,6 @@ exports.saveBulkClaim = async (req, res) => {
       // Parse the email field
       const emailArray = JSON.parse(emailField);
 
-      let existDealerId = {
-        data: {}
-      };
-      let existResellerId = {
-        data: {}
-      }
-
       let match = {}
       if (req.role == 'Dealer') {
         match = { "order.dealer._id": new mongoose.Types.ObjectId(req.userId) }
@@ -1364,15 +1357,9 @@ exports.saveBulkClaim = async (req, res) => {
       }
 
       const fileUrl = req.files[0].path
-      const jsonOpts = {
-        header: 1,
-        defval: '',
-        blankrows: true,
-        raw: false,
-        dateNF: 'm"/"d"/"yyyy'
-        // <--- need dateNF in sheet_to_json options (note the escape chars)
-      }
+
       headerLength = result.headers
+      
       if (headerLength.length !== 4) {
         res.send({
           code: constant.errorCode,
@@ -1462,7 +1449,10 @@ exports.saveBulkClaim = async (req, res) => {
       //Check contract is exist or not using contract id
       const contractArrayPromise = totalDataComing.map(item => {
         if (!item.exit) return contractService.getContractById({
-          unique_key: item.contractId.toUpperCase()
+          $or: [
+            { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
+            { 'serial': { '$regex': item.contractId ? item.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } }
+          ]
         });
         else {
           return null;
@@ -1493,7 +1483,12 @@ exports.saveBulkClaim = async (req, res) => {
         if (!item.exit) {
           let query = [
             {
-              $match: { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
+              $match: {
+                $or: [
+                  { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
+                  { 'serial': { '$regex': item.contractId ? item.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } }
+                ]
+              },
             },
             {
               $lookup: {
@@ -1991,6 +1986,7 @@ exports.saveBulkClaim = async (req, res) => {
       //send Email to admin 
 
       let mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
+
       if (saveBulkClaim.length > 0) {
         let notificationData1 = {
           title: "Bulk Report",

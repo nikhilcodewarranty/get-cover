@@ -1658,7 +1658,8 @@ exports.contactUs = async (req, res) => {
       subject: 'New Contact Form Submission'
 
     }
-
+    //Send email to admin
+     mailing = sgMail.send(emailConstant.sendEmailTemplate(adminCC, ["noreply@getcover.com"], emailData))
     res.send({
       code: constant.successCode,
       message: "Record save successfully!"
