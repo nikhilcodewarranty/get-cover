@@ -39,6 +39,24 @@ const s3 = new S3Client({
   }
 });
 
+
+var storageLogo = multer.diskStorage({
+  destination: function (req, files, cb) {
+    cb(null, path.join(__dirname, '../../uploads/logo'));
+  },
+  filename: function (req, files, cb) {
+    // console.log('file++++++++++', files)
+    cb(null, files.fieldname + '-' + Date.now() + path.extname(files.originalname))
+  }
+})
+
+var logoUpload = multer({
+  storage: storageLogo,
+}).any([
+  { name: "file" },
+  { name: "termCondition" },
+])
+
 const Storage = multerS3({
   s3: s3,
   bucket: process.env.bucket_name, // Ensure this environment variable is set
@@ -1488,7 +1506,7 @@ exports.getSetting = async (req, res) => {
 
 exports.uploadLogo = async (req, res) => {
   try {
-    imageUpload(req, res, async (err) => {
+    logoUpload(req, res, async (err) => {
       let file = req.file;
       res.send({
         code: constant.successCode,
