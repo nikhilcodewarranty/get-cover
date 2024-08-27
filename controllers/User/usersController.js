@@ -1617,6 +1617,48 @@ exports.contactUs = async (req, res) => {
       return
     }
 
+    let adminCC = await supportingFunction.getUserEmails();
+
+    let settingData = await userService.getSetting({});
+
+    let emailData = {
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
+      websiteSetting: settingData[0],
+      senderName: data.firstName,
+      content: "Thank you for reaching out to us. We have received your message and our team will get back to you as soon as possible. We value your feedback and inquiries, and we are committed to providing you with the best support.",
+      subject: 'Request Form Submision'
+    }
+    //Send email to user
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(data.email, adminCC, emailData))
+
+    //Send to admin
+    const admin = await supportingFunction.getPrimaryUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true });
+
+    emailData = {
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
+      websiteSetting: settingData[0],
+      senderName: admin.firstName,
+      content: `
+    <p>Hello ${admin.firstName},</p>
+    <p>A new user has submitted a request via the contact form.</p>
+    <p>Please review the submission details and take the necessary actions.</p>
+    <p><strong>User Information:</strong></p>
+    <ul>
+      <li><strong>Name:</strong> ${data.firstName} ${data.lastName}</li>
+      <li><strong>Email:</strong> ${data.email}</li>
+      <li><strong>Message:</strong> ${data.description}</li>
+    </ul>
+    <p>Thank you,</p>
+    <p>The ${settingData[0]?.title} Team</p>
+  `,
+      subject: 'New Contact Form Submission'
+
+    }
+
     res.send({
       code: constant.successCode,
       message: "Record save successfully!"
