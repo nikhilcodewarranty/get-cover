@@ -1414,6 +1414,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       totalDataComing = totalDataComing.map((item, i) => {
         if (item.hasOwnProperty("servicerName")) {
+          console.log("asdsadasdasasd");
           return {
             contractId: item.contractId?.toString().replace(/\s+/g, ' ').trim(),
             servicerName: item.servicerName?.toString().replace(/\s+/g, ' ').trim(),
@@ -1424,6 +1425,8 @@ exports.saveBulkClaim = async (req, res) => {
           };
         }
         else {
+          console.log("rwrwrwe");
+
           return {
             contractId: item.contractId?.toString().replace(/\s+/g, ' ').trim(),
             lossDate: item.lossDate?.toString().replace(/\s+/g, ' ').trim(),
@@ -1434,6 +1437,9 @@ exports.saveBulkClaim = async (req, res) => {
         }
 
       });
+      console.log("totalDataComing----------------------",totalDataComing);
+
+      return;
 
       totalDataComing.forEach(data => {
         if (!data.contractId || data.contractId == "") {
