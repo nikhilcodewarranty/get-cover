@@ -1501,6 +1501,8 @@ exports.saveBulkClaim = async (req, res) => {
         }
       })
 
+      console.log("servicerArrayPromise--------------",servicerArrayPromise)
+
       const servicerArray = await Promise.all(servicerArrayPromise);
 
       const claimArray = await claimService.getClaims({

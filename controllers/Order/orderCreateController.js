@@ -100,7 +100,6 @@ exports.checkFileValidation = async (req, res) => {
         uploadP(req, res, async (err) => {
             let data = req.body;
             let file = req.file;
-            console.log("sigle--------------------", file)
             let csvName = file.key;
             let originalName = file.originalname;
             let size = file.size;
@@ -422,7 +421,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 let allHeaders = [];
                 let allDataComing = [];
                 let message = [];
-                let finalRetailValue = [];
                 const headers = [];
                 //Collect all header length for all csv
                 for (let j = 0; j < productsWithFiles.length; j++) {
