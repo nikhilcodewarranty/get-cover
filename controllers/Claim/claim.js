@@ -1747,6 +1747,7 @@ exports.saveBulkClaim = async (req, res) => {
           toMail = userData.email;
           if (req.userId.toString() === item.orderData?.order?.dealerId?.toString()) {
             // For servicer
+
             if (!existArray.data[servicerId] && servicerId != undefined) {
               emailServicerId.push(servicerId);
               existArray.data[servicerId] = [];
@@ -2016,6 +2017,13 @@ exports.saveBulkClaim = async (req, res) => {
 
       const htmlTableString = convertArrayToHTMLTable(csvArray);
       //send Email to admin 
+
+
+      console.log("toMail--",toMail)
+      console.log("ccMail--",ccMail)
+      console.log("htmlTableString--",htmlTableString);
+
+      return
 
       let mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
 
