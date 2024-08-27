@@ -1605,14 +1605,11 @@ exports.saveBulkClaim = async (req, res) => {
       })
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
 
-      console.log("servicerArray-----------------",servicerArray);
-      return
-
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {
         if (!item.exit) {
           const contractData = contractArray[i];
-          const servicerData = servicerArray[i]
+          const servicerData = servicerArray == undefined ? {} : servicerArray[i]
           const allDataArray = contractAllDataArray[i];
           const claimData = claimArray;
           let flag;

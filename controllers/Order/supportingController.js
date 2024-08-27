@@ -29,7 +29,7 @@ const PDFDocument = require('pdfkit');
 const { S3Client } = require('@aws-sdk/client-s3');
 const { Upload } = require('@aws-sdk/lib-storage');
 const multerS3 = require('multer-s3');
-
+const S3 = new aws.S3();
 // s3 bucket connections
 const s3 = new S3Client({
     region: process.env.region,
