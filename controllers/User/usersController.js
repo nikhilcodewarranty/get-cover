@@ -52,10 +52,7 @@ var storageLogo = multer.diskStorage({
 
 var logoUpload = multer({
   storage: storageLogo,
-}).any([
-  { name: "file" },
-  { name: "termCondition" },
-])
+}).single("file");
 
 const Storage = multerS3({
   s3: s3,
