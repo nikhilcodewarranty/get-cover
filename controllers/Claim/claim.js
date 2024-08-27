@@ -1650,7 +1650,7 @@ exports.saveBulkClaim = async (req, res) => {
               flag = true
             }
           }
-          if ((item.servicerName != '' && !servicerData)) {
+          if ((item.servicerName != '' && !servicerData && item.hasOwnProperty("servicerName"))) {
             flag = false
           }
 
