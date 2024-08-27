@@ -1490,6 +1490,8 @@ exports.saveBulkClaim = async (req, res) => {
 
       //Check servicer is exist or not using contract id
 
+      console.log("totalDataComing--------------",totalDataComing)
+
       const servicerArrayPromise = totalDataComing.map(item => {
         if (!item.exit && item.servicerName != '') return servicerService.getServiceProviderById({
           name: { '$regex': item.servicerName ? item.servicerName : '', '$options': 'i' }
