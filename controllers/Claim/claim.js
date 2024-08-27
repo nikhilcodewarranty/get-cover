@@ -1779,9 +1779,7 @@ exports.saveBulkClaim = async (req, res) => {
               //send email to servicer      
               for (const item of flatArray) {
                 if (item.email != '') {
-                  console.log("item----------------",item.email)
-                  console.log("adminEmail----------------",adminEmail)
-                  const htmlTableString = convertArrayToHTMLTable(item.response);
+                   const htmlTableString = convertArrayToHTMLTable(item.response);
                   let mailing_servicer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
                 }
 
@@ -2016,10 +2014,6 @@ exports.saveBulkClaim = async (req, res) => {
 
       const htmlTableString = convertArrayToHTMLTable(csvArray);
       //send Email to admin 
-
-      console.log("toMail-------------",toMail)
-      console.log("ccMail-------------",ccMail)
-      console.log("htmlTableString-------------",htmlTableString)
       let mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
 
       if (saveBulkClaim.length > 0) {
