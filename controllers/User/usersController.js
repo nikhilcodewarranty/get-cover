@@ -1486,7 +1486,22 @@ exports.getSetting = async (req, res) => {
     //   });
     //   return
     // }
-    const setting = await userService.getSetting({});
+    let setting = await userService.getSetting({});
+    const baseUrl = process.env.API_ENDPOINT;
+    if (setting.length > 0) {
+      setting[0].base_url = baseUrl;
+    
+      // Assuming setting[0].logoDark and setting[0].logoLight contain relative paths
+      if (setting[0].logoDark && setting[0].logoDark.fileName) {
+        setting[0].logoDark.fullUrl = baseUrl + "uploads/logo/" + setting[0].logoDark.fileName;
+      }
+    
+      if (setting[0].logoLight && setting[0].logoLight.fileName) {
+        setting[0].logoLight.fullUrl = baseUrl + "uploads/logo/" + setting[0].logoLight.fileName;
+      }
+      
+      // Repeat for any other properties that need the base_url prepended
+    }
     res.send({
       code: constant.successCode,
       message: "Success!",
