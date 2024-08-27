@@ -1336,7 +1336,6 @@ exports.saveBulkClaim = async (req, res) => {
       let message = [];
       let checkDuplicate = [];
       let headerLength;
-      console.log("req.files[0]-------------------",req.files)
       const bucketReadUrl = { Bucket: process.env.bucket_name, Key: req.files[0].key };
       // Await the getObjectFromS3 function to complete
       const result = await getObjectFromS3(bucketReadUrl);
@@ -1362,9 +1361,6 @@ exports.saveBulkClaim = async (req, res) => {
       }
 
       headerLength = result.headers
-
-      console.log("headerLength.length------------------",headerLength.length)
-      console.log("length------------------",length)
 
       if (headerLength.length !== length) {
         res.send({
@@ -1414,7 +1410,6 @@ exports.saveBulkClaim = async (req, res) => {
 
       totalDataComing = totalDataComing.map((item, i) => {
         if (item.hasOwnProperty("servicerName")) {
-          console.log("asdsadasdasasd");
           return {
             contractId: item.contractId?.toString().replace(/\s+/g, ' ').trim(),
             servicerName: item.servicerName?.toString().replace(/\s+/g, ' ').trim(),
@@ -1425,8 +1420,6 @@ exports.saveBulkClaim = async (req, res) => {
           };
         }
         else {
-          console.log("rwrwrwe");
-
           return {
             contractId: item.contractId?.toString().replace(/\s+/g, ' ').trim(),
             lossDate: item.lossDate?.toString().replace(/\s+/g, ' ').trim(),
@@ -1437,9 +1430,7 @@ exports.saveBulkClaim = async (req, res) => {
         }
 
       });
-      console.log("totalDataComing----------------------",totalDataComing);
-
-      return;
+  
 
       totalDataComing.forEach(data => {
         if (!data.contractId || data.contractId == "") {
@@ -1499,9 +1490,6 @@ exports.saveBulkClaim = async (req, res) => {
 
       //Check servicer is exist or not using contract id
 
-      console.log("totalDataComing----------------------",totalDataComing);
-
-      return;
       const servicerArrayPromise = totalDataComing.map(item => {
         if (!item.exit && item.servicerName != '') return servicerService.getServiceProviderById({
           name: { '$regex': item.servicerName ? item.servicerName : '', '$options': 'i' }
@@ -1517,6 +1505,9 @@ exports.saveBulkClaim = async (req, res) => {
         claimFile: 'Open'
       });
 
+      console.log("servicerArray====================",servicerArray);
+
+      return;
       // Get Contract with dealer, customer, reseller
       const contractAllDataPromise = totalDataComing.map(item => {
         if (!item.exit) {
