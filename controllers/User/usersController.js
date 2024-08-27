@@ -1508,6 +1508,7 @@ exports.uploadLogo = async (req, res) => {
   try {
     logoUpload(req, res, async (err) => {
       let file = req.file;
+      console.log("file----------------",file)
       res.send({
         code: constant.successCode,
         message: 'Success!',
