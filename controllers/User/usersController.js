@@ -1652,7 +1652,7 @@ exports.contactUs = async (req, res) => {
       code: constant.successCode,
       message: "Record save successfully!"
     })
-
+ 
   }
   catch (err) {
     res.send({
