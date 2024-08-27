@@ -1430,7 +1430,7 @@ exports.saveBulkClaim = async (req, res) => {
         }
 
       });
-  
+
 
       totalDataComing.forEach(data => {
         if (!data.contractId || data.contractId == "") {
@@ -1490,18 +1490,22 @@ exports.saveBulkClaim = async (req, res) => {
 
       //Check servicer is exist or not using contract id
 
-      console.log("totalDataComing--------------",totalDataComing)
+      console.log("totalDataComing--------------", totalDataComing)
 
       const servicerArrayPromise = totalDataComing.map(item => {
-        if (!item.exit && item.servicerName != '') return servicerService.getServiceProviderById({
-          name: { '$regex': item.servicerName ? item.servicerName : '', '$options': 'i' }
-        });
+        if (!item.exit && item.servicerName != '') {
+          console.log("sdfsdfsd");
+          return servicerService.getServiceProviderById({
+            name: { '$regex': item.servicerName ? item.servicerName : '', '$options': 'i' }
+          });
+        }
         else {
+          console.log("wrwewe");
           return null;
         }
       })
 
-      console.log("servicerArrayPromise--------------",servicerArrayPromise)
+      console.log("servicerArrayPromise--------------", servicerArrayPromise)
 
       const servicerArray = await Promise.all(servicerArrayPromise);
 
@@ -1509,7 +1513,7 @@ exports.saveBulkClaim = async (req, res) => {
         claimFile: 'Open'
       });
 
-      console.log("servicerArray====================",servicerArray);
+      console.log("servicerArray====================", servicerArray);
 
       return;
       // Get Contract with dealer, customer, reseller
