@@ -1512,7 +1512,7 @@ exports.uploadLogo = async (req, res) => {
         code: constant.successCode,
         message: 'Success!',
         result: {
-          fileName: file.key,
+          fileName: file.fileName,
           name: file.originalname,
           size: file.size
         }
