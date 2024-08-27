@@ -1501,7 +1501,7 @@ exports.getSetting = async (req, res) => {
       }
       
       if (setting[0].favIcon && setting[0].favIcon.fileName) {
-        setting[0].logoLight.fullUrl = baseUrl ;
+        setting[0].favIcon.fullUrl = baseUrl ;
       }
       // Repeat for any other properties that need the base_url prepended
     }
@@ -1601,6 +1601,19 @@ exports.downloadFile1 = async (req, res) => {
     res.send({
       code: constant.errorCode,
       message: err.message
+    })
+  }
+}
+
+exports.contactUs = async(req,res)=>{
+  try{
+    let data =  req.body;
+    
+  }
+  catch(err){
+    res.send({
+      code:constant.errorCode,
+      message:err.message
     })
   }
 }
