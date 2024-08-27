@@ -25,7 +25,7 @@ const email_validation = require('./User/email_validation')
 const send_email_link_validation = require('./User/send_email_link')
 const approve_reject_dealer_validation = require('./User/approve_reject_dealer')
 const filter_dealer = require('./User/filter_dealer')
-const contact_us = require('./User/contact_us')
+const filer_contact_us = require('./User/contact_us')
 
 
 module.exports = {
@@ -37,7 +37,7 @@ module.exports = {
     filter_dealer_price,
     create_reseller,
     create_customer,
-    contact_us,
+    filer_contact_us,
     createCustomerValidation,
     create_price_cat_validation,
     update_price_cat_validation,

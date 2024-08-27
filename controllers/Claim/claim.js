@@ -134,7 +134,7 @@ exports.searchClaim = async (req, res, next) => {
         { 'unique_key_search': { '$regex': data.contractId ? data.contractId : '', '$options': 'i' } },
         { status: 'Active' },
         { eligibilty: true },
-        { claimFile: "Completed" }
+        // { claimFile: "Completed" }
       ]
     } else {
       contractFilter = [
@@ -143,7 +143,7 @@ exports.searchClaim = async (req, res, next) => {
         { 'serial': { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { 'unique_key_search': { '$regex': data.contractId ? data.contractId : '', '$options': 'i' } },
         { status: 'Active' },
-        { claimFile: "Completed" },
+   
         { eligibilty: true }
       ]
     }

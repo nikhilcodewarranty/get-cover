@@ -1,4 +1,5 @@
 const user = require("../../models/User/users");
+const contact = require("../../models/User/contact");
 const role = require("../../models/User/role");
 const setting = require("../../models/User/setting");
 const notification = require("../../models/User/notification");
@@ -369,6 +370,15 @@ module.exports = class userService {
     }
     catch (error) {
       console.log(`Could not update setting ${error}`);
+    }
+  }
+
+  static async contactUs(data) {
+    try {
+      const response = await new contact(data).save();
+      return response;
+    } catch (error) {
+      return `Could not save contact us: ${error}`;
     }
   }
 

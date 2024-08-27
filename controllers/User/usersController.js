@@ -8,7 +8,7 @@ const priceBookService = require('../../services/PriceBook/priceBookService')
 const providerService = require('../../services/Provider/providerService')
 const users = require("../../models/User/users");
 const role = require("../../models/User/role");
-const logs = require('../../models/User/logs'); 
+const logs = require('../../models/User/logs');
 const setting = require("../../models/User/setting");
 const constant = require('../../config/constant');
 const supportingFunction = require('../../config/supportingFunction')
@@ -560,7 +560,7 @@ exports.updateUserData = async (req, res) => {
       userId: req.teammateId,
       flag: checkRole.role,
       notificationFor: [getPrimary._id]
-    }; 
+    };
 
     let createNotification = await userService.createNotification(notificationData);
     // Send Email code here
@@ -1488,20 +1488,20 @@ exports.getSetting = async (req, res) => {
     // }
     let setting = await userService.getSetting({});
     const baseUrl = process.env.API_ENDPOINT;
-    if (setting.length > 0) { 
+    if (setting.length > 0) {
       setting[0].base_url = baseUrl;
-    
+
       // Assuming setting[0].logoDark and setting[0].logoLight contain relative paths
       if (setting[0].logoDark && setting[0].logoDark.fileName) {
         setting[0].logoDark.fullUrl = baseUrl;
       }
-    
+
       if (setting[0].logoLight && setting[0].logoLight.fileName) {
         setting[0].logoLight.fullUrl = baseUrl;
       }
-      
+
       if (setting[0].favIcon && setting[0].favIcon.fileName) {
-        setting[0].favIcon.fullUrl = baseUrl ;
+        setting[0].favIcon.fullUrl = baseUrl;
       }
       // Repeat for any other properties that need the base_url prepended
     }
@@ -1523,7 +1523,7 @@ exports.uploadLogo = async (req, res) => {
   try {
     logoUpload(req, res, async (err) => {
       let file = req.file;
-      console.log("file----------------",file)
+      console.log("file----------------", file)
       res.send({
         code: constant.successCode,
         message: 'Success!',
@@ -1605,15 +1605,28 @@ exports.downloadFile1 = async (req, res) => {
   }
 }
 
-exports.contactUs = async(req,res)=>{
-  try{
-    let data =  req.body;
-    
-  }
-  catch(err){
+exports.contactUs = async (req, res) => {
+  try {
+    let data = req.body;
+    const contactUs = await userService.contactUs(data);
+    if (!contactUs) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to save contact for data!"
+      });
+      return
+    }
+
     res.send({
-      code:constant.errorCode,
-      message:err.message
+      code: constant.successCode,
+      message: "Record save successfully!"
+    })
+
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
     })
   }
 }

@@ -31,6 +31,9 @@ router.post('/setting', [verifyToken], userController.accountSetting);
 router.post('/setting/uploadLogo', userController.uploadLogo);
 router.get('/setting/getSetting', userController.getSetting);
 
+//Save Contact form 
+router.post('/contact-us', userController.contactUs);
+
 router.post("/createSuperAdmin", userController.createSuperAdmin); // create super admin credentials
 router.post("/addMember", [verifyToken], userController.addMembers); // add member
 router.post("/getMembers", [verifyToken], userController.getMembers); // get members
@@ -47,7 +50,7 @@ router.put("/rejectDealer/:dealerId", [verifyToken], validator("approve_reject_d
 router.put("/updateUserData/:userId", [verifyToken], userController.updateUserData); // update user data
 router.put("/updateUser/:userId", [verifyToken], userController.updateUser); // update user
 router.post("/checkEmail", [verifyToken], validator("email_validation"), userController.checkEmail); // check email
-router.get("/downloadFile",  userController.downloadFile); // check email
+router.get("/downloadFile", userController.downloadFile); // check email
 router.post("/validateData", [verifyToken], userController.validateData); // validate data
 router.get("/checkToken", [verifyToken], userController.checkToken); // check token
 router.get("/getAccountInfo", [verifyToken], userController.getAccountInfo); // get account info
@@ -59,7 +62,7 @@ router.get("/getSkuData", [verifyToken], graphdataController.getSkuData); // get
 router.post('/saleReporting', [verifyToken], graphdataController.saleReporting); // sale reporting
 router.post('/claimReporting', [verifyToken], graphdataController.claimReporting); // claim reporting
 router.get("/downloadFile1/:token/:folder/:key", [verifyToken], userController.downloadFile1); // check email
-router.post("/downloadFile",  userController.downloadFile); // check email
+router.post("/downloadFile", userController.downloadFile); // check email
 router.post("/approveDealer", [verifyToken], validator("create_dealer_validation"), supportingApiAdmin.createDealer); // approve dealer
 router.post("/createDealer", [verifyToken], supportingApiAdmin.createDealer); // create dealer API from super admin
 router.post('/createServicer', [verifyToken], validator("create_service_provider_validation"), supportingApiAdmin.createServiceProvider);// create service provider API from super admin
