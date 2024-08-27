@@ -1376,7 +1376,7 @@ exports.saveBulkClaim = async (req, res) => {
         const keys = Object.keys(item);        
         // Check if the "servicerName" header exists
 
-        console.log(keys);
+        console.log(keys.length);
 
        
         // If "servicerName" exists, map the values as expected
