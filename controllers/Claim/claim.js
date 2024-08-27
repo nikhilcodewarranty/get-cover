@@ -1363,6 +1363,9 @@ exports.saveBulkClaim = async (req, res) => {
 
       headerLength = result.headers
 
+      console.log("headerLength.length------------------",headerLength.length)
+      console.log("length------------------",length)
+
       if (headerLength.length !== length) {
         res.send({
           code: constant.errorCode,
@@ -1375,21 +1378,24 @@ exports.saveBulkClaim = async (req, res) => {
 
       let totalDataComing = totalDataComing1.map((item, i) => {
         const keys = Object.keys(item);
+        let dateLoss = item[keys[2]]
         // Check if the "servicerName" header exists     
         if (keys.length > 3) {
+          let dateLoss = item[keys[2]]
           return {
             contractId: item[keys[0]],
             servicerName: item[keys[1]],
-            lossDate: item[keys[2]].toString(),
+            lossDate: dateLoss.toString(),
             diagnosis: item[keys[3]],
             duplicate: false,
             exit: false
           };
         } else {
+          let dateLoss = item[keys[1]]
           // If "servicerName" does not exist, shift the second item to "lossDate"
           return {
             contractId: item[keys[0]],
-            lossDate: item[keys[1]].toString(),
+            lossDate: dateLoss.toString(),
             diagnosis: item[keys[2]],  // Assuming diagnosis is now at index 2
             duplicate: false,
             exit: false
@@ -1438,11 +1444,6 @@ exports.saveBulkClaim = async (req, res) => {
           data.status = "Loss date cannot be empty"
           data.exit = true
         }
-        const formats = [
-          'MM/DD/YYYY',
-          'MM-DD-YYYY'
-        ]
-        let formatDate = formats.some(format => moment(data.lossDate, format, true).isValid())
 
         if (!moment(data.lossDate).isValid()) {
           data.status = "Date is not valid format"
