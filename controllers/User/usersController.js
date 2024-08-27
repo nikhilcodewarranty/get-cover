@@ -545,7 +545,7 @@ exports.updateUserData = async (req, res) => {
       userId: req.teammateId,
       flag: checkRole.role,
       notificationFor: [getPrimary._id]
-    };
+    }; 
 
     let createNotification = await userService.createNotification(notificationData);
     // Send Email code here
