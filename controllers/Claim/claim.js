@@ -1788,7 +1788,6 @@ exports.saveBulkClaim = async (req, res) => {
           }
           return {
             contractId: item.contractId || "",
-            servicerName: item.servicerName || "",
             lossDate: item.lossDate || '',
             diagnosis: item.diagnosis || '',
             status: item.status || '',
@@ -1851,7 +1850,6 @@ exports.saveBulkClaim = async (req, res) => {
           }
           return {
             contractId: item.contractId || "",
-            servicerName: item.servicerName || "",
             lossDate: item.lossDate || '',
             diagnosis: item.diagnosis || '',
             status: item.status || '',
@@ -1922,7 +1920,6 @@ exports.saveBulkClaim = async (req, res) => {
           }
           return {
             contractId: item.contractId || "",
-            servicerName: item.servicerName || "",
             lossDate: item.lossDate || '',
             diagnosis: item.diagnosis || '',
             status: item.status || '',
@@ -2017,13 +2014,6 @@ exports.saveBulkClaim = async (req, res) => {
 
       const htmlTableString = convertArrayToHTMLTable(csvArray);
       //send Email to admin 
-
-
-      console.log("toMail--",toMail)
-      console.log("ccMail--",ccMail)
-      console.log("htmlTableString--",htmlTableString);
-
-      return
 
       let mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
 
