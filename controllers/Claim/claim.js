@@ -1345,42 +1345,66 @@ exports.saveBulkClaim = async (req, res) => {
       // Parse the email field
       const emailArray = JSON.parse(emailField);
 
+      let length = 4;
       let match = {}
       if (req.role == 'Dealer') {
+        length = 3;
         match = { "order.dealer._id": new mongoose.Types.ObjectId(req.userId) }
       }
       if (req.role == 'Reseller') {
+        length = 3;
         match = { "order.reseller._id": new mongoose.Types.ObjectId(req.userId) }
       }
       if (req.role == 'Customer') {
+        length = 3;
         match = { "order.customers._id": new mongoose.Types.ObjectId(req.userId) }
       }
 
-      const fileUrl = req.files[0].path
-
       headerLength = result.headers
-      
-      if (headerLength.length !== 4) {
+
+      if (headerLength.length !== length) {
         res.send({
           code: constant.errorCode,
-          message: "Invalid file format detected. The sheet should contain exactly four columns."
+          message: "Invalid file format detected. Please check file format!"
         })
         return
       }
 
       const totalDataComing1 = result.data;
+
       let totalDataComing = totalDataComing1.map((item, i) => {
-        const keys = Object.keys(item);
-        let dateLoss = item[keys[2]]
-        return {
-          contractId: item[keys[0]],
-          servicerName: item[keys[1]],
-          lossDate: dateLoss.toString(),
-          diagnosis: item[keys[3]],
-          duplicate: false,
-          exit: false
-        };
+        const keys = Object.keys(item);        
+        // Check if the "servicerName" header exists
+
+        console.log(keys);
+
+       
+        // If "servicerName" exists, map the values as expected
+        if (keys.length > 2) {
+          return {
+            contractId: item[keys[0]],
+            servicerName: item[keys[1]],
+            lossDate: item[keys[2]].toString(),
+            diagnosis: item[keys[3]],
+            duplicate: false,
+            exit: false
+          };
+        } else {
+          // If "servicerName" does not exist, shift the second item to "lossDate"
+          return {
+            contractId: item[keys[0]],
+            lossDate: item[keys[1]].toString(),
+            diagnosis: item[keys[2]],  // Assuming diagnosis is now at index 2
+            duplicate: false,
+            exit: false
+          };
+        }
       });
+      
+
+      console.log("totalDataComing----------------------",totalDataComing);
+      return
+     
 
       if (totalDataComing.length === 0) {
         res.send({
