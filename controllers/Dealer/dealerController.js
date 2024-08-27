@@ -1128,15 +1128,24 @@ exports.uploadDealerPriceBook = async (req, res) => {
       //Get from S3 Bucket
       const bucketReadUrl = { Bucket: process.env.bucket_name, Key: file.key };
       // Await the getObjectFromS3 function to complete
-      const result = await getObjectFromS3(bucketReadUrl);  
-      let totalDataComing1 = result.data;
-      totalDataComing1 = totalDataComing1.map(item => {
-        if (!item['Product SKU']) {
+      const result = await getObjectFromS3(bucketReadUrl);
+
+      let responseData = result.data;
+
+      let dataComing = responseData.map((item, i) => {
+        const keys = Object.keys(item);
+        return {
+          priceBook: item[keys[0]],
+          retailPrice: item[keys[1]],
+        };
+      });
+      let totalDataComing1 = dataComing.map(item => {
+        if (!item['priceBook']) {
           return { priceBook: '', 'RetailPrice': item['retailPrice'] };
         }
         return item;
       });
-      const headers = result.headers    
+      const headers = result.headers
 
       if (headers.length !== 2) {
         res.send({
