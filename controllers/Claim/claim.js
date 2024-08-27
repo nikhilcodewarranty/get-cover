@@ -1488,34 +1488,28 @@ exports.saveBulkClaim = async (req, res) => {
       // get contract with dealer,reseller, servicer 
       const contractArray = await Promise.all(contractArrayPromise);
 
+      let servicerArray;
+
       //Check servicer is exist or not using contract id
+      if (req.role == "Super Admin") {
+        const servicerArrayPromise = totalDataComing.map(item => {
+          if (!item.exit && item.servicerName != '') {
 
-      console.log("totalDataComing--------------", totalDataComing)
-
-      const servicerArrayPromise = totalDataComing.map(item => {
-        if (!item.exit && item.servicerName != '') {
-          console.log("sdfsdfsd");
-          return servicerService.getServiceProviderById({
-            name: { '$regex': item.servicerName ? item.servicerName : '', '$options': 'i' }
-          });
-        }
-        else {
-          console.log("wrwewe");
-          return null;
-        }
-      })
-
-      console.log("servicerArrayPromise--------------", servicerArrayPromise)
-
-      const servicerArray = await Promise.all(servicerArrayPromise);
+            return servicerService.getServiceProviderById({
+              name: { '$regex': item.servicerName ? item.servicerName : '', '$options': 'i' }
+            });
+          }
+          else {
+            return null;
+          }
+        })
+        servicerArray = await Promise.all(servicerArrayPromise);
+      }
 
       const claimArray = await claimService.getClaims({
         claimFile: 'Open'
       });
 
-      console.log("servicerArray====================", servicerArray);
-
-      return;
       // Get Contract with dealer, customer, reseller
       const contractAllDataPromise = totalDataComing.map(item => {
         if (!item.exit) {
@@ -1610,6 +1604,9 @@ exports.saveBulkClaim = async (req, res) => {
         }
       })
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
+
+      console.log("servicerArray-----------------",servicerArray);
+      return
 
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {
