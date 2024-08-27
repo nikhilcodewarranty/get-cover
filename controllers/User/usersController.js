@@ -1642,19 +1642,7 @@ exports.contactUs = async (req, res) => {
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
       senderName: admin.firstName,
-      content: `
-    <p>Hello ${admin.firstName},</p>
-    <p>A new user has submitted a request via the contact form.</p>
-    <p>Please review the submission details and take the necessary actions.</p>
-    <p><strong>User Information:</strong></p>
-    <ul>
-      <li><strong>Name:</strong> ${data.firstName} ${data.lastName}</li>
-      <li><strong>Email:</strong> ${data.email}</li>
-      <li><strong>Message:</strong> ${data.description}</li>
-    </ul>
-    <p>Thank you,</p>
-    <p>The ${settingData[0]?.title} Team</p>
-  `,
+      content: `A new user has submitted a request via the contact form`,
       subject: 'New Contact Form Submission'
 
     }

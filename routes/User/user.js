@@ -32,7 +32,7 @@ router.post('/setting/uploadLogo', userController.uploadLogo);
 router.get('/setting/getSetting', userController.getSetting);
 
 //Save Contact form 
-router.post('/contact-us', userController.contactUs);
+router.post('/contact-us', validator("filer_contact_us"), userController.contactUs);
 
 router.post("/createSuperAdmin", userController.createSuperAdmin); // create super admin credentials
 router.post("/addMember", [verifyToken], userController.addMembers); // add member
