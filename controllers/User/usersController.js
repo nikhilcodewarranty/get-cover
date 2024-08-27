@@ -1488,7 +1488,7 @@ exports.getSetting = async (req, res) => {
     // }
     let setting = await userService.getSetting({});
     const baseUrl = process.env.API_ENDPOINT;
-    if (setting.length > 0) {
+    if (setting.length > 0) { 
       setting[0].base_url = baseUrl;
     
       // Assuming setting[0].logoDark and setting[0].logoLight contain relative paths
@@ -1500,6 +1500,9 @@ exports.getSetting = async (req, res) => {
         setting[0].logoLight.fullUrl = baseUrl + "uploads/logo/" + setting[0].logoLight.fileName;
       }
       
+      if (setting[0].favIcon && setting[0].favIcon.fileName) {
+        setting[0].logoLight.fullUrl = baseUrl + "uploads/logo/" + setting[0].favIcon.fileName;
+      }
       // Repeat for any other properties that need the base_url prepended
     }
     res.send({
