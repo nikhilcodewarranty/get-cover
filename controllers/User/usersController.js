@@ -1493,15 +1493,15 @@ exports.getSetting = async (req, res) => {
     
       // Assuming setting[0].logoDark and setting[0].logoLight contain relative paths
       if (setting[0].logoDark && setting[0].logoDark.fileName) {
-        setting[0].logoDark.fullUrl = baseUrl + "uploads/logo/" + setting[0].logoDark.fileName;
+        setting[0].logoDark.fullUrl = baseUrl;
       }
     
       if (setting[0].logoLight && setting[0].logoLight.fileName) {
-        setting[0].logoLight.fullUrl = baseUrl + "uploads/logo/" + setting[0].logoLight.fileName;
+        setting[0].logoLight.fullUrl = baseUrl;
       }
       
       if (setting[0].favIcon && setting[0].favIcon.fileName) {
-        setting[0].logoLight.fullUrl = baseUrl + "uploads/logo/" + setting[0].favIcon.fileName;
+        setting[0].logoLight.fullUrl = baseUrl ;
       }
       // Repeat for any other properties that need the base_url prepended
     }
