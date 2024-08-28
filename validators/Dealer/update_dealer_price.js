@@ -9,6 +9,8 @@ const update_dealer_price_validation = Joi.object({
     wholesalePrice:Joi.number().optional(),
     term:Joi.number().optional(),
     description:Joi.string().allow('').optional(),
+    coverageType:Joi.string().allow('').optional(),
+    dealerSku:Joi.string().allow('').optional(),
     categoryId:Joi.string().optional()
 })
 

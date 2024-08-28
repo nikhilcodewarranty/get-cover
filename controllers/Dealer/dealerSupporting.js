@@ -1221,6 +1221,7 @@ exports.getDealerPriceBookById = async (req, res) => {
         let projection = {
             _id: 1,
             name: 1,
+            dealerSku: 1,
             wholesalePrice: {
                 $sum: [
                     "$priceBooks.reserveFutureFee",
