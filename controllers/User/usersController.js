@@ -1546,7 +1546,7 @@ exports.resetSetting = async (req, res) => {
     let response;
     const getData = await userService.getSetting({});
     data.colorScheme = defaultResetColor;
-     response = await userService.updateSetting({ _id: getData[0]?._id }, data, { new: true })
+    response = await userService.updateSetting({ _id: getData[0]?._id }, { colorScheme: defaultResetColor }, { new: true })
     res.send({
       code: constant.successCode,
       message: "Success!",
