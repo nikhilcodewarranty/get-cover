@@ -60,8 +60,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // app.use('/uploads/logo/:filename', express.static('./uploads/'))
 
-app.get('/uploads/:logo/:filename', (req, res) => {
-  const folder = req.params.folder;
+app.get('/uploads/logo/:filename', (req, res) => {
+  const folder = 'logo';
   const filename = req.params.filename;
   const filePath = path.join(__dirname, 'uploads', folder, filename);
 
