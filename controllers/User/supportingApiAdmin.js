@@ -216,6 +216,7 @@ exports.createDealer = async (req, res) => {
                     const resultPriceData = dealerPriceArray.map((obj, index) => ({
                         'priceBook': obj.priceBookId,
                         'dealerId': data.dealerId,
+                        'dealerSku': obj.dealerSku,
                         'brokerFee': Number(obj.retailPrice) - Number(obj.wholesalePrice),
                         'retailPrice': obj.retailPrice,
                         "status": obj.status,
@@ -912,8 +913,10 @@ exports.createDealer = async (req, res) => {
                     }
                     //save Price Books for this dealer
                     count = await dealerPriceService.getDealerPriceCount();
+
                     const resultPriceData = dealerPriceArray.map((obj, index) => ({
                         'priceBook': obj.priceBookId,
+                        'dealerSku': obj.dealerSku,
                         'dealerId': createMetaData._id,
                         'brokerFee': Number(obj.retailPrice) - Number(obj.wholesalePrice),
                         'retailPrice': obj.retailPrice,
