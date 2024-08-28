@@ -9,12 +9,16 @@ const dealerBookSchema = new mongoose.Schema({
   dealerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "dealers",
-    index:true
+    index: true
+  },
+  dealerSku: {
+    type: String,
+    default: ''
   },
   status: {
     type: Boolean,
     default: false,
-    index:true
+    index: true
   },
   retailPrice: {
     type: Number,
@@ -24,22 +28,22 @@ const dealerBookSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  isDeleted:{
-    type:Boolean,
-    default:false
+  isDeleted: {
+    type: Boolean,
+    default: false
   },
   brokerFee: {
     type: Number,
-    default:0
+    default: 0
   },
   unique_key: {
     type: Number,
   },
-  wholesalePrice:{
+  wholesalePrice: {
     type: Number,
     default: 0
   }
-},{timestamps:true});
+}, { timestamps: true });
 module.exports = connection.userConnection.model("dealerPriceBook", dealerBookSchema);
 
 

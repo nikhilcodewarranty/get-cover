@@ -1542,6 +1542,7 @@ exports.resetSetting = async (req, res) => {
         colorType: "modelColor"
       }
     ];
+    
     let data = req.body;
     let response;
     const getData = await userService.getSetting({});

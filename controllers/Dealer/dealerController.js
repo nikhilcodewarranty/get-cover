@@ -636,6 +636,16 @@ exports.createDealerPriceBook = async (req, res) => {
       return;
     }
 
+    let checkDealerSku = await dealerPriceService.getDealerPriceById({ dealerSku: data.dealerSku, dealerId: data.dealerId }, {})
+
+    if (checkDealerSku) {
+      res.send({
+        code: constant.errorCode,
+        message: "Dealer price book already created with this dealer sku"
+      })
+      return;
+    }
+
     let createDealerPrice = await dealerPriceService.createDealerPrice(data)
 
     if (!createDealerPrice) {

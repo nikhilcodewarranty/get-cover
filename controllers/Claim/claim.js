@@ -1431,10 +1431,9 @@ exports.saveBulkClaim = async (req, res) => {
 
       });
 
-
       totalDataComing.forEach(data => {
         if (!data.contractId || data.contractId == "") {
-          data.status = "ContractId cannot be empty"
+          data.status = "Serial number/Asset ID/ Contract number cannot be empty"
           data.exit = true
         }
         if (!data.lossDate || data.lossDate == "") {

@@ -58,7 +58,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/uploads', express.static('./uploads/'))
+app.use('/uploads/logo/:filename', express.static('./uploads/'))
 
 app.get('/download/:filename', (req, res) => {
   const filePath = __dirname + '/uploads/' + process.env.DUMMY_CSV_FILE;
