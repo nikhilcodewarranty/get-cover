@@ -26,7 +26,7 @@ router.get("/readNotification/:notificationId", [verifyToken], supportingFunctio
 router.get("/getCountNotification", [verifyToken], userController.getCountNotification); // get notification count
 
 // Setting Routes
-
+ 
 router.post('/setting', [verifyToken], userController.accountSetting);
 router.post('/resetSetting', [verifyToken], userController.resetSetting)
 router.post('/setting/uploadLogo',[verifyToken], userController.uploadLogo);
