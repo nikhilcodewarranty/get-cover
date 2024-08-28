@@ -1444,13 +1444,13 @@ exports.checkIdAndToken = async (req, res) => {
 // Setting Function
 exports.accountSetting = async (req, res) => {
   try {
-    if (req.role != "Super Admin") {
-      res.send({
-        code: constant.errorCode,
-        message: "Only super admin allow to do this action!"
-      });
-      return
-    }
+    // if (req.role != "Super Admin") {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Only super admin allow to do this action!"
+    //   });
+    //   return
+    // }
     const data = req.body;
     let response;
     const getData = await userService.getSetting({});
@@ -1480,13 +1480,13 @@ exports.accountSetting = async (req, res) => {
 //Reset Setting 
 exports.resetSetting = async (req, res) => {
   try {
-    if (req.role != "Super Admin") {
-      res.send({
-        code: constant.errorCode,
-        message: "Only super admin allow to do this action!"
-      });
-      return
-    }
+    // if (req.role != "Super Admin") {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Only super admin allow to do this action!"
+    //   });
+    //   return
+    // }
     // Define the default resetColor array
     const defaultResetColor = [
       {
@@ -1564,13 +1564,13 @@ exports.resetSetting = async (req, res) => {
 
 exports.getSetting = async (req, res) => {
   try {
-    if (req.role != "Super Admin") {
-      res.send({
-        code: constant.errorCode,
-        message: "Only super admin allow to do this action!"
-      });
-      return
-    }
+    // if (req.role != "Super Admin") {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Only super admin allow to do this action!"
+    //   });
+    //   return
+    // }
     let setting = await userService.getSetting({});
     const baseUrl = process.env.API_ENDPOINT;
     if (setting.length > 0) {

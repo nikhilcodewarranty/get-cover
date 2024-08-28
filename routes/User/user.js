@@ -27,10 +27,10 @@ router.get("/getCountNotification", [verifyToken], userController.getCountNotifi
 
 // Setting Routes
  
-router.post('/setting', [verifyToken], userController.accountSetting);
+router.post('/setting', userController.accountSetting);
 router.post('/resetSetting', userController.resetSetting)
-router.post('/setting/uploadLogo',[verifyToken], userController.uploadLogo);
-router.get('/setting/getSetting', [verifyToken], userController.getSetting);
+router.post('/setting/uploadLogo', userController.uploadLogo);
+router.get('/setting/getSetting', userController.getSetting);
 
 //Save Contact form 
 router.post('/contact-us', validator("filer_contact_us"), userController.contactUs);
