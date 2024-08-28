@@ -28,7 +28,7 @@ router.get("/getCountNotification", [verifyToken], userController.getCountNotifi
 // Setting Routes
  
 router.post('/setting', [verifyToken], userController.accountSetting);
-router.post('/resetSetting', [verifyToken], userController.resetSetting)
+router.post('/resetSetting', userController.resetSetting)
 router.post('/setting/uploadLogo',[verifyToken], userController.uploadLogo);
 router.get('/setting/getSetting', [verifyToken], userController.getSetting);
 

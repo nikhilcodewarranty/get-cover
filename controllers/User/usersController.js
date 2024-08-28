@@ -1564,13 +1564,13 @@ exports.resetSetting = async (req, res) => {
 
 exports.getSetting = async (req, res) => {
   try {
-    // if (req.role != "Super Admin") {
-    //   res.send({
-    //     code: constant.errorCode,
-    //     message: "Only super admin allow to do this action!"
-    //   });
-    //   return
-    // }
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action!"
+      });
+      return
+    }
     let setting = await userService.getSetting({});
     const baseUrl = process.env.API_ENDPOINT;
     if (setting.length > 0) {
