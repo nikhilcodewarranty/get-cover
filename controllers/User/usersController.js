@@ -1477,6 +1477,91 @@ exports.accountSetting = async (req, res) => {
   }
 }
 
+//Reset Setting 
+exports.resetSetting = async (req, res) => {
+  try {
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action!"
+      });
+      return
+    }
+    // Define the default resetColor array
+    const defaultResetColor = [
+      {
+        colorCode: "#303030",
+        colorType: "sideBarColor"
+      },
+      {
+        colorCode: "#fafafa",
+        colorType: "sideBarTextColor"
+      },
+      {
+        colorCode: "#f2f2f2",
+        colorType: "sideBarButtonColor"
+      },
+      {
+        colorCode: "#201d1d",
+        colorType: "sideBarButtonTextColor"
+      },
+      {
+        colorCode: "#343232",
+        colorType: "buttonColor"
+      },
+      {
+        colorCode: "#fffafa",
+        colorType: "buttonTextColor"
+      },
+      {
+        colorCode: "#f2f2f2",
+        colorType: "backGroundColor"
+      },
+      {
+        colorCode: "",
+        colorType: "textColor"
+      },
+      {
+        colorCode: "#242424",
+        colorType: "titleColor"
+      },
+      {
+        colorCode: "#1a1a1a",
+        colorType: "cardColor"
+      },
+      {
+        colorCode: "#fcfcfc",
+        colorType: "cardBackGroundColor"
+      },
+      {
+        colorCode: "#fcfcfc",
+        colorType: "modelBackgroundColor"
+      },
+      {
+        colorCode: "#2b2727",
+        colorType: "modelColor"
+      }
+    ];
+    let data = req.body;
+    let response;
+    const getData = await userService.getSetting({});
+    data.colorScheme = defaultResetColor;
+    let response = await userService.updateSetting({ _id: getData[0]?._id }, data, { new: true })
+    res.send({
+      code: constant.successCode,
+      message: "Success!",
+      result: response
+    })
+
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
 exports.getSetting = async (req, res) => {
   try {
     // if (req.role != "Super Admin") {
@@ -1523,7 +1608,6 @@ exports.uploadLogo = async (req, res) => {
   try {
     logoUpload(req, res, async (err) => {
       let file = req.file;
-      console.log("file----------------", file)
       res.send({
         code: constant.successCode,
         message: 'Success!',
@@ -1647,12 +1731,12 @@ exports.contactUs = async (req, res) => {
 
     }
     //Send email to admin
-     mailing = sgMail.send(emailConstant.sendEmailTemplate(adminCC, ["noreply@getcover.com"], emailData))
+    mailing = sgMail.send(emailConstant.sendEmailTemplate(adminCC, ["noreply@getcover.com"], emailData))
     res.send({
       code: constant.successCode,
       message: "Record save successfully!"
     })
- 
+
   }
   catch (err) {
     res.send({
