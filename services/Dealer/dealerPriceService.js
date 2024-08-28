@@ -251,6 +251,7 @@ module.exports = class dealerPriceService {
               ],
             },
             "priceBook": 1,
+            "dealerSku": 1,
             "dealerId": 1,
             "status": 1,
             "retailPrice": 1,
