@@ -372,6 +372,7 @@ exports.statusUpdate = async (req, res) => {
       $set: {
         brokerFee: req.body.brokerFee || existingDealerPriceBook.brokerFee,
         status: req.body.status,
+        dealerSku: req.body.dealerSku,
         retailPrice: req.body.retailPrice || existingDealerPriceBook.retailPrice,
         priceBook: req.body.priceBook || existingDealerPriceBook.priceBook,
       }
