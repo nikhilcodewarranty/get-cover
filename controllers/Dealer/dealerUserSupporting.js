@@ -366,6 +366,7 @@ exports.getDealerPriceBookById = async (req, res) => {
         let projection = {
             _id: 1,
             name: 1,
+            dealerSku: 1,
             "priceBook": 1,
             "dealerId": 1,
             "status": 1,
