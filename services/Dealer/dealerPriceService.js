@@ -82,13 +82,13 @@ module.exports = class dealerPriceService {
     }
   }
 
-    // Find all dealer prices based on a query
+  // Find all dealer prices based on a query
   static async findAllDealerPrice(query) {
     try {
       const AllDealerPrice = await dealerPrice.find(query)
       return AllDealerPrice;
     } catch (error) {
-     return `Could not fetch dealer price ${error}`;
+      return `Could not fetch dealer price ${error}`;
     }
   }
   // Aggregate dealer prices based on a query
@@ -318,7 +318,7 @@ module.exports = class dealerPriceService {
       return `Dealer price not found: ${error}`;
     }
   }
- // Update dealer prices based on criteria
+  // Update dealer prices based on criteria
   static async updateDealerPrice(criteria, newValue, option) {
     try {
       const updatedResponse = await dealerPrice.updateMany(criteria, newValue, option);
@@ -369,6 +369,16 @@ module.exports = class dealerPriceService {
       return response;
     } catch (error) {
       return `Could not find dealer prices by IDs: ${error}`;
+    }
+  }
+
+  //Script old dealer sku update
+  static async allUpdate(query) {
+    try {
+      const getResponse = await dealerPrice.bulkWrite(query);
+      return getResponse;
+    } catch (error) {
+      return `Could not update sku: ${error}`;
     }
   }
 };

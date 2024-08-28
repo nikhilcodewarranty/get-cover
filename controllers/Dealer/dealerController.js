@@ -727,6 +727,34 @@ exports.createDealerPriceBook = async (req, res) => {
   }
 }
 
+exports.saveOldDealerSku = async (req, res) => {
+  try {
+    const dealerPriceBooks = await dealerPriceService.getAllDealerPrice();
+    let bulk = [];
+    for (let i = 0; i < dealerPriceBooks.length; i++) {
+      const dealerId = dealerPriceBooks[i]._id
+      const name = dealerPriceBooks[i].priceBooks.name
+      const newValue = { dealerSku: name};
+      const option = { new: true };
+      const updatedPriceBook = await dealerPriceService.updateDealerPrice({ _id: dealerId }, newValue, { new: true });
+
+    }
+
+    res.send({
+      code: constant.successCode,
+      message: "Success!",
+      result: updatedPriceBook
+    })
+    //res.send(bulk)
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: "Unable to save dealer sku"
+    })
+  }
+}
+
 //Check dealer price book 
 exports.checkDealerPriceBook = async (req, res) => {
   try {

@@ -16,6 +16,8 @@ router.post("/uploadDealerPriceBook", [verifyToken], dealerController.uploadDeal
 router.post("/createRelationWithServicer/:dealerId", [verifyToken], supportingFunction.checkObjectId, dealerController.createDeleteRelation); // create relation with servicer
 router.post("/unAssignServicer", [verifyToken], dealerController.unAssignServicer); // unassign servicer
 
+router.get("/saveOldDealerSku", dealerController.saveOldDealerSku); // unassign servicer
+
 router.put("/updateDealerPriceBook/:dealerPriceBookId", [verifyToken], validator('update_dealer_price_validation'), supportingFunction.checkObjectId, dealerController.statusUpdate); // update price book detail with ID
 router.put("/updateDealerMeta", [verifyToken], dealerController.updateDealerMeta); // update dealer meta
 router.put("/changeDealerStatus/:dealerId", [verifyToken], validator('change_status_dealer'), supportingFunction.checkObjectId, dealerController.changeDealerStatus); // change dealer status

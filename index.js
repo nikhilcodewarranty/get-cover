@@ -60,11 +60,20 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/uploads/logo/:filename', express.static('./uploads/'))
 
-app.get('/download/:filename', (req, res) => {
-  const filePath = __dirname + '/uploads/' + process.env.DUMMY_CSV_FILE;
+app.get('/uploads/:logo/:filename', (req, res) => {
+  const folder = req.params.folder;
+  const filename = req.params.filename;
+  const filePath = path.join(__dirname, 'uploads', folder, filename);
 
-  res.setHeader('Content-Disposition', 'attachment; filename=' + process.env.DUMMY_CSV_FILE);
-  res.download(filePath, process.env.DUMMY_CSV_FILE);
+  // Check if the file exists
+  fs.access(filePath, fs.constants.F_OK, (err) => {
+      if (err) {
+          return res.status(404).send('File not found');
+      }
+
+      // Send the file if it exists
+      res.sendFile(filePath);
+  });
 });
 
 
