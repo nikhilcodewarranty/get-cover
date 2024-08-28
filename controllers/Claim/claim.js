@@ -1494,10 +1494,9 @@ exports.saveBulkClaim = async (req, res) => {
       if (req.role == "Super Admin") {
         const servicerArrayPromise = totalDataComing.map(item => {
           if (!item.exit && item.servicerName != '') {
-
-            return servicerService.getServiceProviderById({
-              name: { '$regex': item.servicerName ? item.servicerName : '', '$options': 'i' }
-            });
+            const thename = item.thename;
+            return servicerService.getServiceProviderById({"name":
+            { $regex: new RegExp("^" + thename.toLowerCase(), "i") } });
           }
           else {
             return null;
