@@ -1650,11 +1650,11 @@ exports.saveBulkClaim = async (req, res) => {
               flag = true
             }
           }
-          if ((item.servicerName != '' && !servicerData && item.hasOwnProperty("servicerName"))) {
+          if ((item.servicerName != '' && !servicerData)) {
             flag = false
           }
 
-          if ((!flag && flag != undefined)) {
+          if ((!flag && flag != undefined && item.hasOwnProperty("servicerName"))) {
             item.status = "Servicer not found"
             item.exit = true;
           }
