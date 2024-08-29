@@ -56,7 +56,7 @@ app.use((req, res, next) => {
 });
 
 // List of allowed IPs
-const allowedIps = ['54.176.118.28','::ffff:127.0.0.1'];
+const allowedIps = ['54.176.118.28','::ffff:127.0.0.1','3.111.162.237','3.215.120.141'];
 console.log("sdfsdfsdfsdsdf")
 // CORS options
 // const corsOptions = {
