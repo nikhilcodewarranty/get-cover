@@ -728,17 +728,18 @@ exports.createDealerPriceBook = async (req, res) => {
   }
 }
 
+//Only for backend use 
 exports.saveOldDealerSku = async (req, res) => {
   try {
     const dealerPriceBooks = await dealerPriceService.getAllDealerPrice();
+    let updatedPriceBook;
     let bulk = [];
     for (let i = 0; i < dealerPriceBooks.length; i++) {
       const dealerId = dealerPriceBooks[i]._id
       const name = dealerPriceBooks[i].priceBooks.name
-      const newValue = { dealerSku: name};
+      const newValue = { dealerSku: name };
       const option = { new: true };
-      const updatedPriceBook = await dealerPriceService.updateDealerPrice({ _id: dealerId }, newValue, { new: true });
-
+      updatedPriceBook = await dealerPriceService.updateDealerPrice({ _id: dealerId }, newValue, option);
     }
 
     res.send({

@@ -18,6 +18,10 @@ const contactUs = new Schema({
     description: {
         type: String,
         default: ""
+    },
+    phoneNumber: {
+        type: String,
+        default: ""
     }
 }, { timestamps: true })
 
