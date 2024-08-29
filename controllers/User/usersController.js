@@ -1542,7 +1542,7 @@ exports.resetSetting = async (req, res) => {
         colorType: "modelColor"
       }
     ];
-    
+
     let data = req.body;
     let response;
     const getData = await userService.getSetting({});
@@ -1707,16 +1707,11 @@ exports.contactUs = async (req, res) => {
     let settingData = await userService.getSetting({});
 
     let emailData = {
-      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-      address: settingData[0]?.address,
-      websiteSetting: settingData[0],
-      senderName: data.firstName,
-      content: "Thank you for reaching out to us. We have received your message and our team will get back to you as soon as possible. We value your feedback and inquiries, and we are committed to providing you with the best support.",
+      firstName: data.firstName,
       subject: 'Request Form Submision'
     }
     //Send email to user
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(data.email, adminCC, emailData))
+    let mailing = sgMail.send(emailConstant.sendContactUsTemplate(data.email, adminCC, emailData))
 
     //Send to admin
     const admin = await supportingFunction.getPrimaryUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true });

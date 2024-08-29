@@ -28,6 +28,16 @@ module.exports = {
         dynamic_template_data: data,
       };
     },
+
+    sendContactUsTemplate: (toEmail, ccEmail, data) => {
+      return {
+        to: toEmail,
+        cc: ccEmail,
+        from: process.env.from_email,
+        templateId: process.env.contact_us,
+        dynamic_template_data: data,
+      };
+    },
   
     sendTermAndCondition: (toEmail, ccEmail, data, attachment) => {
       return {
