@@ -536,6 +536,8 @@ exports.getResellerPriceBook = async (req, res) => {
     }
 
     let checkReseller = await resellerService.getReseller({ _id: req.params.resellerId }, { isDeleted: 0 })
+    let dealerSku = req.body.dealerSku ? req.body.dealerSku.replace(/\s+/g, ' ').trim() : ''
+
     if (!checkReseller) {
         res.send({
             code: constant.errorCode,
@@ -574,6 +576,7 @@ exports.getResellerPriceBook = async (req, res) => {
                     { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
                     { 'priceBooks.category._id': { $in: catIdsArray } },
                     { 'status': true },
+                    { 'dealerSku': { '$regex': dealerSku, '$options': 'i' } },
                     {
                         dealerId: new mongoose.Types.ObjectId(checkDealer._id)
                     },
@@ -588,6 +591,7 @@ exports.getResellerPriceBook = async (req, res) => {
                     { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
                     { 'priceBooks.category._id': { $in: catIdsArray } },
                     { 'status': true },
+                    { 'dealerSku': { '$regex': dealerSku, '$options': 'i' } },
                     { 'priceBooks.coverageType': data.coverageType },
 
                     {
@@ -606,6 +610,7 @@ exports.getResellerPriceBook = async (req, res) => {
                     { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
                     { 'priceBooks.category._id': { $in: catIdsArray } },
                     { 'priceBooks.coverageType': checkDealer.coverageType },
+                    { 'dealerSku': { '$regex': dealerSku, '$options': 'i' } },
                     { 'status': true },
                     {
                         dealerId: new mongoose.Types.ObjectId(checkDealer._id)
@@ -621,6 +626,7 @@ exports.getResellerPriceBook = async (req, res) => {
                     { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
                     { 'priceBooks.coverageType': data.coverageType },
                     { 'priceBooks.category._id': { $in: catIdsArray } },
+                    { 'dealerSku': { '$regex': dealerSku, '$options': 'i' } },
                     { 'status': true },
                     {
                         dealerId: new mongoose.Types.ObjectId(checkDealer._id)
