@@ -1933,7 +1933,7 @@ exports.saveBulkClaim = async (req, res) => {
           };
         } else {
           toMail = new_admin_array;
-          ccMail = '';
+          ccMail = ["noreply@getcover.com"];
           // For servicer
           if (!existArray.data[servicerId] && servicerId != undefined) {
             emailServicerId.push(servicerId);
