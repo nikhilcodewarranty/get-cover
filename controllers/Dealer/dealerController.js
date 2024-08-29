@@ -1172,7 +1172,6 @@ exports.uploadDealerPriceBook = async (req, res) => {
 
       let responseData = result.data;
 
-      console.log("responseData-------------",responseData)
 
       let dataComing = responseData.map((item, i) => {
         const keys = Object.keys(item);
@@ -1182,7 +1181,6 @@ exports.uploadDealerPriceBook = async (req, res) => {
           retailPrice:  item[keys[2]],
         };
       });
-      console.log("dataComing-------------",dataComing) 
 
       let totalDataComing1 = dataComing.map(item => {
         if (!item['priceBook']) {
@@ -1190,7 +1188,6 @@ exports.uploadDealerPriceBook = async (req, res) => {
         }
         return item;
       });
-      console.log("totalDataComing1-------------",totalDataComing1)
 
       const headers = result.headers
 
