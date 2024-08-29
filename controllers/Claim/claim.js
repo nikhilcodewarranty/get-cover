@@ -1333,8 +1333,6 @@ exports.saveBulkClaim = async (req, res) => {
   uploadP(req, res, async (err) => {
     try {
       let data = req.body
-      let message = [];
-      let checkDuplicate = [];
       let headerLength;
       const bucketReadUrl = { Bucket: process.env.bucket_name, Key: req.files[0].key };
       // Await the getObjectFromS3 function to complete
@@ -1480,7 +1478,7 @@ exports.saveBulkClaim = async (req, res) => {
           ]
         });
         else {
-          return null;
+          return null; 
         }
       })
 
