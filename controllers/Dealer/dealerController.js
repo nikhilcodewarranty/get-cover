@@ -1172,8 +1172,6 @@ exports.uploadDealerPriceBook = async (req, res) => {
 
       let responseData = result.data;
 
-      console.log("responseData------------------",responseData)
-
       let dataComing = responseData.map((item, i) => {
         const keys = Object.keys(item);
         return {
@@ -1182,14 +1180,12 @@ exports.uploadDealerPriceBook = async (req, res) => {
           retailPrice:  item[keys[2]]==""?item[keys[2]]:item[keys[1]],
         };
       });
-      console.log("dataComing------------------",dataComing)
       let totalDataComing1 = dataComing.map(item => {
         if (!item['priceBook']) {
           return { priceBook: '',dealerSku:item['dealerSku'], 'RetailPrice': item['retailPrice'] };
         }
         return item;
       });
-      console.log("totalDataComing1------------------",totalDataComing1)
       const headers = result.headers
 
       if (headers.length !== 3) {
@@ -1281,6 +1277,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
           if (totalDataComing[i].priceBookDetail) {
             if (dealerArray[i]) {
               dealerArray[i].retailPrice = totalDataComing[i].retailPrice != undefined ? totalDataComing[i].retailPrice : dealerArray[i].retailPrice;
+              dealerArray[i].dealerSku = totalDataComing[i].dealerSku != undefined ? totalDataComing[i].dealerSku : dealerArray[i].dealerSku;
               dealerArray[i].brokerFee = dealerArray[i].retailPrice - dealerArray[i].wholesalePrice
               await dealerArray[i].save();
 
