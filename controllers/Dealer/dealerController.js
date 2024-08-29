@@ -1176,12 +1176,13 @@ exports.uploadDealerPriceBook = async (req, res) => {
         const keys = Object.keys(item);
         return {
           priceBook: item[keys[0]],
-          retailPrice: item[keys[1]],
+          dealerSku: item[keys[1]]?item[keys[1]]:'',
+          retailPrice: item[keys[2]],
         };
       });
       let totalDataComing1 = dataComing.map(item => {
         if (!item['priceBook']) {
-          return { priceBook: '', 'RetailPrice': item['retailPrice'] };
+          return { priceBook: '',dealerSku:item['dealerSku'], 'RetailPrice': item['retailPrice'] };
         }
         return item;
       });
@@ -1199,7 +1200,8 @@ exports.uploadDealerPriceBook = async (req, res) => {
         const keys = Object.keys(item);
         return {
           priceBook: item[keys[0]],
-          retailPrice: item[keys[1]],
+          dealerSku: item[keys[1]],
+          retailPrice: item[keys[2]],
           duplicates: [],
           exit: false
         };
@@ -1293,6 +1295,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
                 unique_key: unique_key,
                 status: true,
                 retailPrice: totalDataComing[i].retailPrice != "" ? totalDataComing[i].retailPrice : 0,
+                dealerSku: totalDataComing[i].dealerSku != "" ? totalDataComing[i].dealerSku : 0,
                 brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
                 wholesalePrice
               })
