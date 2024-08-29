@@ -1471,17 +1471,11 @@ exports.saveBulkClaim = async (req, res) => {
 
       //Check contract is exist or not using contract id
       const contractArrayPromise = totalDataComing.map(item => {
-        if (!item.exit) return contractService.getContractById({
-          $and: [
-            {
+        if (!item.exit) return contractService.getContractById({       
               $or: [
                 { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
                 { 'serial': { '$regex': item.contractId ? item.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-              ],
-
-            },
-            { eligibilty: true }
-          ],
+              ],        
         });
         else {
           return null;
@@ -1491,8 +1485,6 @@ exports.saveBulkClaim = async (req, res) => {
 
       // get contract with dealer,reseller, servicer 
       const contractArray = await Promise.all(contractArrayPromise);
-
-      console.log("contractArray--------------", contractArray);      
 
       let servicerArray;
 
@@ -1620,10 +1612,6 @@ exports.saveBulkClaim = async (req, res) => {
 
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
 
-      console.log("contractAllDataArray--------------", contractAllDataArray);
-
-      return;
-
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {
         if (!item.exit) {
@@ -1643,8 +1631,8 @@ exports.saveBulkClaim = async (req, res) => {
             item.status = "Loss date should be in between coverage start date and present date!"
             item.exit = true;
           }
-          if (item.contractData && claimData != null && claimData.length > 0) {
-            const filter = claimData.filter(claim => claim.contractId?.toString() === item.contractData?._id.toString())
+          if (allDataArray.length == 0 && item.contractId != '') {
+            const filter = claimData.filter(claim => claim.contractId?.toString() === item.contractData._id?.toString())
             if (filter.length > 0) {
               item.status = "Claim is already open of this contract"
               item.exit = true;
