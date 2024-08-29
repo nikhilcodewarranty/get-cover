@@ -1515,15 +1515,10 @@ exports.saveBulkClaim = async (req, res) => {
           let query = [
             {
               $match: {
-                $and: [
-                  {
-                    $or: [
-                      { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
-                      { 'serial': { '$regex': item.contractId ? item.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                    ],
+                $or: [
+                  { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
+                  { 'serial': { '$regex': item.contractId ? item.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
 
-                  },
-                  { eligibilty: true }
                 ],
               },
             },
@@ -1610,11 +1605,6 @@ exports.saveBulkClaim = async (req, res) => {
       })
 
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
-
-      console.log(contractAllDataArray);
-
-      return;
-
 
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {
