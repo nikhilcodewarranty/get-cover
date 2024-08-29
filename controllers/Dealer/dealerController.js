@@ -1188,7 +1188,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
       });
       const headers = result.headers
 
-      if (headers.length !== 2) {
+      if (headers.length !== 3) {
         res.send({
           code: constant.errorCode,
           message: "Invalid file format detected. The sheet should contain exactly two columns."
