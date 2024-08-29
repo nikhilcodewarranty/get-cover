@@ -1474,11 +1474,12 @@ exports.saveBulkClaim = async (req, res) => {
         if (!item.exit) return contractService.getContractById({
           $or: [
             { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
-            { 'serial': { '$regex': item.contractId ? item.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } }
+            { 'serial': { '$regex': item.contractId ? item.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { eligibilty: true }
           ]
         });
         else {
-          return null; 
+          return null;
         }
       })
 
@@ -1492,8 +1493,10 @@ exports.saveBulkClaim = async (req, res) => {
         const servicerArrayPromise = totalDataComing.map(item => {
           if (!item.exit && item.servicerName != '') {
             const thename = item.servicerName;
-            return servicerService.getServiceProviderById({"name":
-            { $regex: new RegExp("^" + thename.toLowerCase(), "i") } });
+            return servicerService.getServiceProviderById({
+              "name":
+                { $regex: new RegExp("^" + thename.toLowerCase(), "i") }
+            });
           }
           else {
             return null;
@@ -1512,10 +1515,16 @@ exports.saveBulkClaim = async (req, res) => {
           let query = [
             {
               $match: {
-                $or: [
-                  { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
-                  { 'serial': { '$regex': item.contractId ? item.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } }
-                ]
+                $and: [
+                  {
+                    $or: [
+                      { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
+                      { 'serial': { '$regex': item.contractId ? item.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                    ],
+
+                  },
+                  { eligibilty: true }
+                ],
               },
             },
             {
@@ -1768,7 +1777,7 @@ exports.saveBulkClaim = async (req, res) => {
             const emailServicer = await userService.getMembers({ metaId: { $in: emailServicerId }, isPrimary: true }, {})
             // If you need to convert existArray.data to a flat array format
             if (emailServicer.length > 0) {
-              IDs = IDs.concat( )
+              IDs = IDs.concat()
               let flatArray = [];
               for (let servicerId in existArray.data) {
                 let matchData = emailServicer.find(matchServicer => matchServicer.metaId.toString() === servicerId.toString());
@@ -1781,7 +1790,7 @@ exports.saveBulkClaim = async (req, res) => {
               //send email to servicer      
               for (const item of flatArray) {
                 if (item.email != '') {
-                   const htmlTableString = convertArrayToHTMLTable(item.response);
+                  const htmlTableString = convertArrayToHTMLTable(item.response);
                   let mailing_servicer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
                 }
 
@@ -2016,9 +2025,9 @@ exports.saveBulkClaim = async (req, res) => {
 
       const htmlTableString = convertArrayToHTMLTable(csvArray);
       //send Email to admin 
-      console.log("toMail------------",toMail)
-      console.log("ccMail------------",ccMail)
-      console.log("htmlTableString------------",htmlTableString)
+      console.log("toMail------------", toMail)
+      console.log("ccMail------------", ccMail)
+      console.log("htmlTableString------------", htmlTableString)
       let mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
 
       if (saveBulkClaim.length > 0) {
