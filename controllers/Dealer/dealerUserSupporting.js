@@ -658,6 +658,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
         let getCatIds = await priceBookService.getAllPriceCat(queryCategories, {})
         let catIdsArray = getCatIds.map(category => category._id)
         let searchName = req.body.name ? req.body.name.replace(/\s+/g, ' ').trim() : ''
+        let dealerSku = req.body.dealerSku ? req.body.dealerSku.replace(/\s+/g, ' ').trim() : ''
         let searchPName = req.body.pName ? req.body.pName.replace(/\s+/g, ' ').trim() : ''
         let priceType = req.body.priceType ? req.body.priceType.replace(/\s+/g, ' ').trim() : ''
         let query
@@ -671,6 +672,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
                         { 'priceBooks.priceType': { '$regex': priceType, '$options': 'i' } },
                         { 'priceBooks.category._id': { $in: catIdsArray } },
                         { 'status': true },
+                        { 'dealerSku': { '$regex': dealerSku, '$options': 'i' } },
                         { dealerId: new mongoose.Types.ObjectId(req.userId) }
                     ]
                 }
@@ -683,6 +685,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
                         { 'priceBooks.coverageType': checkDealer.coverageType },
                         { 'priceBooks.category._id': { $in: catIdsArray } },
                         { 'status': true },
+                        { 'dealerSku': { '$regex': dealerSku, '$options': 'i' } },
                         { dealerId: new mongoose.Types.ObjectId(req.userId) }
                     ]
                 }
@@ -697,6 +700,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
                     { 'priceBooks.category._id': { $in: catIdsArray } },
                     { 'priceBooks.coverageType': data.coverageType },
                     { 'status': true },
+                    { 'dealerSku': { '$regex': dealerSku, '$options': 'i' } },
                     { dealerId: new mongoose.Types.ObjectId(req.userId) }
                 ]
             };

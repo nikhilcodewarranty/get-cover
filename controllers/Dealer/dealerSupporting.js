@@ -1300,6 +1300,7 @@ exports.getDealerPriceBookByDealerId = async (req, res) => {
                 ],
             },
             "priceBook": 1,
+            "dealerSku": 1,
             "dealerId": 1,
             "status": 1,
             "retailPrice": 1,
@@ -1504,6 +1505,10 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
 
         if (data.pName) {
             matchConditions.push({ 'priceBooks.pName': { '$regex': req.body.pName ? req.body.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } });
+        }
+
+        if (data.dealerSku) {
+            matchConditions.push({ 'dealerSku': { '$regex': req.body.dealerSku ? req.body.dealerSku.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } });
         }
 
         if (data.dealerName) {
