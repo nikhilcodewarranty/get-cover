@@ -1488,8 +1488,11 @@ exports.saveBulkClaim = async (req, res) => {
         }
       })
 
+
       // get contract with dealer,reseller, servicer 
       const contractArray = await Promise.all(contractArrayPromise);
+
+      console.log("contractArray--------------", contractArray);      
 
       let servicerArray;
 
@@ -1606,7 +1609,7 @@ exports.saveBulkClaim = async (req, res) => {
             { $unwind: { path: "$order.reseller", preserveNullAndEmptyArrays: true } },
             { $unwind: { path: "$order.customers", preserveNullAndEmptyArrays: true } },
             { $unwind: { path: "$order.servicer", preserveNullAndEmptyArrays: true } },
-            { $limit: 1 } 
+            { $limit: 1 }
           ]
           return contractService.getAllContracts2(query)
         }
@@ -1617,7 +1620,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
 
-      console.log("contractAllDataArray--------------",contractAllDataArray);
+      console.log("contractAllDataArray--------------", contractAllDataArray);
 
       return;
 
