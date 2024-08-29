@@ -1028,6 +1028,7 @@ exports.createDealer = async (req, res) => {
                         return
                     }
 
+                    console.log("totalDataComing1-------",totalDataComing1);
                     const totalDataComing = totalDataComing1.map(item => {
                         const keys = Object.keys(item);
                         return {
