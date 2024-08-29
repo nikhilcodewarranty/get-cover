@@ -1515,10 +1515,15 @@ exports.saveBulkClaim = async (req, res) => {
           let query = [
             {
               $match: {
-                $or: [
-                  { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
-                  { 'serial': { '$regex': item.contractId ? item.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                $and: [
+                  {
+                    $or: [
+                      { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
+                      { 'serial': { '$regex': item.contractId ? item.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                    ],
 
+                  },
+                  { eligibilty: true }
                 ],
               },
             },

@@ -777,6 +777,7 @@ exports.getResellerPriceBook = async (req, res) => {
             { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
             { 'priceBooks.category._id': { $in: catIdsArray } },
             { 'status': true },
+            
             {
                 dealerId: new mongoose.Types.ObjectId(checkDealer._id)
             },
