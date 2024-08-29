@@ -29,8 +29,8 @@ const multerS3 = require('multer-s3');
 const aws = require('aws-sdk');
 
 aws.config.update({
-  accessKeyId: process.env.aws_access_key_id,
-  secretAccessKey: process.env.aws_secret_access_key,
+    accessKeyId: process.env.aws_access_key_id,
+    secretAccessKey: process.env.aws_secret_access_key,
 });
 const S3Bucket = new aws.S3();
 // s3 bucket connections
@@ -424,29 +424,40 @@ exports.createDealer = async (req, res) => {
                     // Await the getObjectFromS3 function to complete
                     const result = await getObjectFromS3(bucketReadUrl);
 
-                    const headers = result.headers
+                    let responseData = result.data;
 
-                    if (headers.length !== 2) {
-                        res.send({
-                            code: constant.errorCode,
-                            message: "Invalid file format detected. The sheet should contain exactly two columns."
-                        })
-                        return
-                    }
-                    let totalDataComing1 = result.data;
-                    totalDataComing1 = totalDataComing1.map(item => {
-                        if (!item['Product SKU']) {
-                            return { priceBook: '', 'RetailPrice': item['retailPrice'] };
+                    let dataComing = responseData.map((item, i) => {
+                        const keys = Object.keys(item);
+                        return {
+                            priceBook: item[keys[0]],
+                            dealerSku: item[keys[1]] != "" ? item[keys[1]] : item[keys[0]],
+                            retailPrice: item[keys[2]],
+                        };
+                    });
+
+                    let totalDataComing1 = dataComing.map(item => {
+                        if (!item['priceBook']) {
+                            return { priceBook: '', dealerSku: item['dealerSku'], 'RetailPrice': item['retailPrice'] };
                         }
                         return item;
                     });
+
+                    const headers = result.headers
+
+                    if (headers.length !== 3) {
+                        res.send({
+                            code: constant.errorCode,
+                            message: "Invalid file format detected. The sheet should contain exactly three columns."
+                        })
+                        return
+                    }
+
                     const totalDataComing = totalDataComing1.map(item => {
-
                         const keys = Object.keys(item);
-
                         return {
                             priceBook: item[keys[0]],
-                            retailPrice: item[keys[1]],
+                            dealerSku: item[keys[1]],
+                            retailPrice: item[keys[2]],
                             duplicates: [],
                             exit: false
                         };
@@ -521,6 +532,8 @@ exports.createDealer = async (req, res) => {
                                 if (dealerArray[i]) {
                                     dealerArray[i].retailPrice = totalDataComing[i].retailPrice != undefined ? totalDataComing[i].retailPrice : dealerArray[i].retailPrice;
                                     dealerArray[i].brokerFee = dealerArray[i].retailPrice - dealerArray[i].wholesalePrice
+                                    dealerArray[i].dealerSku = totalDataComing[i].dealerSku != undefined ? totalDataComing[i].dealerSku : dealerArray[i].dealerSku;
+
                                     await dealerArray[i].save();
 
                                     totalDataComing[i].status = "Dealer catalog updated successully-";
@@ -537,6 +550,7 @@ exports.createDealer = async (req, res) => {
                                         priceBook: totalDataComing[i].priceBookDetail._id,
                                         unique_key: unique_key,
                                         status: true,
+                                        dealerSku: totalDataComing[i].dealerSku != "" ? totalDataComing[i].dealerSku : 0,
                                         retailPrice: totalDataComing[i].retailPrice != "" ? totalDataComing[i].retailPrice : 0,
                                         brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
                                         wholesalePrice
@@ -985,29 +999,41 @@ exports.createDealer = async (req, res) => {
                     // Await the getObjectFromS3 function to complete
                     const result = await getObjectFromS3(bucketReadUrl);
 
-                    const headers = result.headers
+                    let responseData = result.data;
 
-                    if (headers.length !== 2) {
-                        res.send({
-                            code: constant.errorCode,
-                            message: "Invalid file format detected. The sheet should contain exactly two columns."
-                        })
-                        return
-                    }
 
-                    let totalDataComing1 = result.data
-                    totalDataComing1 = totalDataComing1.map(item => {
-                        if (!item['Product SKU']) {
-                            return { priceBook: '', 'RetailPrice': item['retailPrice'] };
+                    let dataComing = responseData.map((item, i) => {
+                        const keys = Object.keys(item);
+                        return {
+                            priceBook: item[keys[0]],
+                            dealerSku: item[keys[1]] != "" ? item[keys[1]] : item[keys[0]],
+                            retailPrice: item[keys[2]],
+                        };
+                    });
+
+                    let totalDataComing1 = dataComing.map(item => {
+                        if (!item['priceBook']) {
+                            return { priceBook: '', dealerSku: item['dealerSku'], 'RetailPrice': item['retailPrice'] };
                         }
                         return item;
                     });
+
+                    const headers = result.headers
+
+                    if (headers.length !== 3) {
+                        res.send({
+                            code: constant.errorCode,
+                            message: "Invalid file format detected. The sheet should contain exactly three columns."
+                        })
+                        return
+                    }
 
                     const totalDataComing = totalDataComing1.map(item => {
                         const keys = Object.keys(item);
                         return {
                             priceBook: item[keys[0]],
-                            retailPrice: item[keys[1]],
+                            dealerSku: item[keys[1]],
+                            retailPrice: item[keys[2]],
                             duplicates: [],
                             exit: false
                         };
@@ -1141,6 +1167,8 @@ exports.createDealer = async (req, res) => {
                                 if (dealerArray[i]) {
                                     dealerArray[i].retailPrice = totalDataComing[i].retailPrice != undefined ? totalDataComing[i].retailPrice : dealerArray[i].retailPrice;
                                     dealerArray[i].brokerFee = dealerArray[i].retailPrice - dealerArray[i].wholesalePrice
+                                    dealerArray[i].dealerSku = totalDataComing[i].dealerSku != undefined ? totalDataComing[i].dealerSku : dealerArray[i].dealerSku;
+
                                     await dealerArray[i].save();
 
                                     totalDataComing[i].status = "Dealer catalog updated successully-";
@@ -1158,6 +1186,7 @@ exports.createDealer = async (req, res) => {
                                         priceBook: totalDataComing[i].priceBookDetail._id,
                                         unique_key: unique_key,
                                         status: true,
+                                        dealerSku: totalDataComing[i].dealerSku != "" ? totalDataComing[i].dealerSku : 0,
                                         retailPrice: totalDataComing[i].retailPrice != "" ? totalDataComing[i].retailPrice : 0,
                                         brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
                                         wholesalePrice
@@ -1412,7 +1441,7 @@ exports.createServiceProvider = async (req, res) => {
             }))
             : await Promise.all(resultProvider.map(async (obj) => {
                 const hashedPassword = await bcrypt.hash(obj.password, 10);
-                return { ...obj, roleId: checkRole._id,  metaId: createMetaData._id, password: hashedPassword };
+                return { ...obj, roleId: checkRole._id, metaId: createMetaData._id, password: hashedPassword };
             }));
 
         // Map provider data
