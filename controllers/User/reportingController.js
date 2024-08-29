@@ -53,7 +53,7 @@ exports.weeklySales = async (data, req, res) => {
                 $addFields: {
                     weekStart: {
                         $dateTrunc: {
-                            date: "$createdAt",
+                            date: "$updatedAt",
                             unit: "week",
                             binSize: 1,
                             timezone: "UTC",
@@ -85,7 +85,7 @@ exports.weeklySales = async (data, req, res) => {
                 $addFields: {
                     weekStart: {
                         $dateTrunc: {
-                            date: "$createdAt",
+                            date: "$updatedAt",
                             unit: "week",
                             binSize: 1,
                             timezone: "UTC",
@@ -256,7 +256,7 @@ exports.daySale = async (data) => {
             },
             {
                 $group: {
-                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
                     total_order_amount: { $sum: "$orderAmount" },
                     total_orders: { $sum: 1 }
                 }
@@ -276,7 +276,7 @@ exports.daySale = async (data) => {
             },
             {
                 $group: {
-                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
                     total_broker_fee: { $sum: "$products.brokerFee" },
                     total_admin_fee: { $sum: "$products.adminFee" },
                     total_fronting_fee: { $sum: "$products.frontingFee" },
@@ -950,7 +950,7 @@ exports.claimWeeklyReporting = async (data) => {
                 $addFields: {
                     weekStart: {
                         $dateTrunc: {
-                            date: "$createdAt",
+                            date: "$updatedAt",
                             unit: "week",
                             binSize: 1,
                             timezone: "UTC",
@@ -984,7 +984,7 @@ exports.claimWeeklyReporting = async (data) => {
                 $addFields: {
                     weekStart: {
                         $dateTrunc: {
-                            date: "$createdAt",
+                            date: "$updatedAt",
                             unit: "week",
                             binSize: 1,
                             timezone: "UTC",
@@ -1018,7 +1018,7 @@ exports.claimWeeklyReporting = async (data) => {
                 $addFields: {
                     weekStart: {
                         $dateTrunc: {
-                            date: "$createdAt",
+                            date: "$updatedAt",
                             unit: "week",
                             binSize: 1,
                             timezone: "UTC",
@@ -1051,7 +1051,7 @@ exports.claimWeeklyReporting = async (data) => {
                 $addFields: {
                     weekStart: {
                         $dateTrunc: {
-                            date: "$createdAt",
+                            date: "$updatedAt",
                             unit: "week",
                             binSize: 1,
                             timezone: "UTC",
@@ -1288,7 +1288,7 @@ exports.claimDayReporting = async (data) => {
             },
             {
                 $group: {
-                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
                     total_amount: { $sum: "$totalAmount" },
                     total_claim: { $sum: 1 }
                 }
