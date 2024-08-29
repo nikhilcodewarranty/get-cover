@@ -71,7 +71,7 @@ console.log("sdfsdfsdfsdsdf")
 
 app.use(cors())
 app.set('trust proxy', true);
-app.use(IpFilter(allowedIps, { mode: 'allow' }));
+// app.use(IpFilter(allowedIps, { mode: 'allow' }));
 const httpServer = http.createServer(app)
 
 // view engine setup  
