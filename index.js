@@ -32,6 +32,7 @@ const priceRoutes = require("./routes/PriceBook/price");
 const customerRoutes = require("./routes/Customer/customer");
 const customerUserRoutes = require("./routes/Customer/customerUser");
 const { createProxyMiddleware } = require('http-proxy-middleware');
+const { IpFilter, IpDeniedError } = require('express-ipfilter');
 const axios = require('axios');
 const mongoose = require('mongoose')
 const fs = require('fs');
@@ -46,7 +47,31 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// const allowedOrigins = ['http://example.com', 'http://anotherdomain.com'];
+
+app.use((req, res, next) => {
+  const ip = req.ip;
+  console.log('Request IP++++++++++++++++++++++++:', ip);
+  next();
+});
+
+// List of allowed IPs
+const allowedIps = ['54.176.118.28','::ffff:127.0.0.1'];
+console.log("sdfsdfsdfsdsdf")
+// CORS options
+// const corsOptions = {
+//   origin: function (origin, callback) {
+//     if (allowedOrigins.includes(origin)) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error('Not allowed by CORS'));
+//     }
+//   },
+// };
+
 app.use(cors())
+app.set('trust proxy', true);
+app.use(IpFilter(allowedIps, { mode: 'allow' }));
 const httpServer = http.createServer(app)
 
 // view engine setup  
