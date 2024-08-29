@@ -1472,11 +1472,16 @@ exports.saveBulkClaim = async (req, res) => {
       //Check contract is exist or not using contract id
       const contractArrayPromise = totalDataComing.map(item => {
         if (!item.exit) return contractService.getContractById({
-          $or: [
-            { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
-            { 'serial': { '$regex': item.contractId ? item.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+          $and: [
+            {
+              $or: [
+                { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
+                { 'serial': { '$regex': item.contractId ? item.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+              ],
+
+            },
             { eligibilty: true }
-          ]
+          ],
         });
         else {
           return null;
@@ -1601,6 +1606,7 @@ exports.saveBulkClaim = async (req, res) => {
             { $unwind: { path: "$order.reseller", preserveNullAndEmptyArrays: true } },
             { $unwind: { path: "$order.customers", preserveNullAndEmptyArrays: true } },
             { $unwind: { path: "$order.servicer", preserveNullAndEmptyArrays: true } },
+            { $limit: 1 } 
           ]
           return contractService.getAllContracts2(query)
         }
@@ -1610,6 +1616,10 @@ exports.saveBulkClaim = async (req, res) => {
       })
 
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
+
+      console.log("contractAllDataArray--------------",contractAllDataArray);
+
+      return;
 
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {
