@@ -1423,7 +1423,7 @@ const getObjectFromS3 = (bucketReadUrl) => {
 
         const result = {
           headers: headers,
-          data: XLSX.utils.sheet_to_json(sheet),
+          data: XLSX.utils.sheet_to_json(sheet,{ defval: "" }),
         };
 
         resolve(result);
