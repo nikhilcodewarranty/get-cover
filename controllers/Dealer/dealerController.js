@@ -1178,8 +1178,8 @@ exports.uploadDealerPriceBook = async (req, res) => {
         const keys = Object.keys(item);
         return {
           priceBook: item[keys[0]],
-          dealerSku: item[keys[2]]!=""?item[keys[1]]:'',
-          retailPrice:  item[keys[2]]==""?item[keys[2]]:item[keys[1]],
+          dealerSku: item[keys[1]]!=""?item[keys[1]]:'',
+          retailPrice:  item[keys[2]],
         };
       });
       console.log("dataComing-------------",dataComing) 
