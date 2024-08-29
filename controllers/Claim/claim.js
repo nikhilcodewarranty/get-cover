@@ -2021,9 +2021,6 @@ exports.saveBulkClaim = async (req, res) => {
 
       const htmlTableString = convertArrayToHTMLTable(csvArray);
       //send Email to admin 
-      console.log("toMail------------", toMail)
-      console.log("ccMail------------", ccMail)
-      console.log("htmlTableString------------", htmlTableString)
       let mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
 
       if (saveBulkClaim.length > 0) {
