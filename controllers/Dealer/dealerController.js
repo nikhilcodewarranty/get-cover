@@ -1182,7 +1182,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
           retailPrice:  item[keys[2]]==""?item[keys[2]]:item[keys[1]],
         };
       });
-      console.log("dataComing-------------",dataComing)
+      console.log("dataComing-------------",dataComing) 
 
       let totalDataComing1 = dataComing.map(item => {
         if (!item['priceBook']) {
