@@ -419,6 +419,7 @@ exports.getPriceBooks = async (req, res) => {
             _id: 1,
             name: 1,
             "priceBook": 1,
+            "dealerSku": 1,
             "dealerId": 1,
             "status": 1,
             "retailPrice": 1,
