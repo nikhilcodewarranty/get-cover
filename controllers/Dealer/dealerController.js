@@ -1179,7 +1179,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
         return {
           priceBook: item[keys[0]],
           dealerSku: item[keys[2]]!=undefined?item[keys[1]]:'',
-          retailPrice: item[keys[2]],
+          retailPrice:  item[keys[2]]==undefined?item[keys[2]]:item[keys[1]],
         };
       });
       console.log("dataComing------------------",dataComing)
