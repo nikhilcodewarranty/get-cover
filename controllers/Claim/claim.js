@@ -1349,10 +1349,12 @@ exports.saveBulkClaim = async (req, res) => {
         length = 3;
         match = { "order.dealer._id": new mongoose.Types.ObjectId(req.userId) }
       }
+
       if (req.role == 'Reseller') {
         length = 3;
         match = { "order.reseller._id": new mongoose.Types.ObjectId(req.userId) }
       }
+
       if (req.role == 'Customer') {
         length = 3;
         match = { "order.customers._id": new mongoose.Types.ObjectId(req.userId) }
@@ -1366,7 +1368,7 @@ exports.saveBulkClaim = async (req, res) => {
           message: "Invalid file format detected. Please check file format!"
         })
         return
-      }
+      }      
 
       const totalDataComing1 = result.data;
 

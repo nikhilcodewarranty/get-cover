@@ -10,7 +10,7 @@ module.exports = class contractService {
       return `Could not fetch contracts ${error}`
     }
   }
-
+ 
   // Fetch all contracts based on a query without pagination
   static async getAllContracts2(query, pageLimit, page) {
     try {
