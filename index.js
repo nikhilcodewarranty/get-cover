@@ -59,7 +59,7 @@ app.use((req, res, next) => {
 const allowedIps = ['54.176.118.28', '::ffff:127.0.0.1', '3.111.162.237', '3.215.120.141'];
 console.log("sdfsdfsdfsdsdf")
 function isHostAllowed(req) {
-  const allowedHosts = ['app.getcover.com', 'www.getcover.com', '54.176.118.28']; // Add your allowed hosts here
+  const allowedHosts = ['app.getcover.com', 'www.getcover.com', '54.176.118.28:3002']; // Add your allowed hosts here
 
   const host = req.headers.host;
   console.log("checking the data+++++++++++++++++",host)
