@@ -47,29 +47,41 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// const allowedOrigins = ['http://example.com', 'http://anotherdomain.com'];
-
+const allowedOrigins = ['http://54.176.118.28', 'http://anotherdomain.com'];
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+};
+let checkHost;
 app.use((req, res, next) => {
   const ip = req.ip;
-  console.log('Request IP++++++++++++++++++++++++:', req.headers);
+  checkHost = req.headers.host
+  console.log('Request IP++++++++++++++++++++++++:',checkHost, req.headers);
+  if(checkHost == "localhost:3002"){
+    console.log("-------------------------------------------------------",checkHost)
+    
+      app.use(cors())
+    }else{
+      app.use(cors(corsOptions))
+    }
   next();
 });
+console.log("-------------------------------------------------------",checkHost)
 
 // List of allowed IPs
 const allowedIps = ['54.176.118.28','::ffff:127.0.0.1','3.111.162.237','3.215.120.141'];
-console.log("sdfsdfsdfsdsdf")
+console.log("sdfsdfsdfsdsdf",checkHost)
 // CORS options
-// const corsOptions = {
-//   origin: function (origin, callback) {
-//     if (allowedOrigins.includes(origin)) {
-//       callback(null, true);
-//     } else {
-//       callback(new Error('Not allowed by CORS'));
-//     }
-//   },
-// };
 
-app.use(cors())
+
+
+
+
 app.set('trust proxy', true);
 // app.use(IpFilter(allowedIps, { mode: 'allow' }));
 const httpServer = http.createServer(app)
