@@ -62,7 +62,7 @@ function isHostAllowed(req) {
   const allowedHosts = ['app.getcover.com', 'www.getcover.com', '54.176.118.28']; // Add your allowed hosts here
 
   const host = req.headers.host;
-
+  console.log("checking the data+++++++++++++++++",host)
   return allowedHosts.includes(host);
 }
 
