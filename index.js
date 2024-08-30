@@ -19,7 +19,7 @@ swaggerDocument = require('./swagger.json');
 swaggerDocumentDealer = require('./dealer.json');
 const userRoutes = require('./routes/User/user');
 const reportingRoutes = require("./routes/User/reporting");
-const dealerRoutes =  require('./routes/Dealer/dealer');
+const dealerRoutes = require('./routes/Dealer/dealer');
 const dealerUserRoutes = require("./routes/Dealer/dealerUser");
 const resellerRoutes = require("./routes/Dealer/reseller");
 const resellerUserRoutes = require("./routes/Dealer/resellerUser");
@@ -47,41 +47,35 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-const allowedOrigins = ['http://54.176.118.28', 'http://anotherdomain.com'];
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-};
-let checkHost;
+// const allowedOrigins = ['http://example.com', 'http://anotherdomain.com'];
+
 app.use((req, res, next) => {
   const ip = req.ip;
-  checkHost = req.headers.host
-  console.log('Request IP++++++++++++++++++++++++:',checkHost, req.headers);
-  if(checkHost == "localhost:3002"){
-    console.log("-------------------------------------------------------",checkHost)
-    
-      app.use(cors())
-    }else{
-      app.use(cors(corsOptions))
-    }
+  console.log('Request IP++++++++++++++++++++++++:', ip);
   next();
 });
-console.log("-------------------------------------------------------",checkHost)
 
 // List of allowed IPs
-const allowedIps = ['54.176.118.28','::ffff:127.0.0.1','3.111.162.237','3.215.120.141'];
-console.log("sdfsdfsdfsdsdf",checkHost)
-// CORS options
+const allowedIps = ['54.176.118.28', '::ffff:127.0.0.1', '3.111.162.237', '3.215.120.141'];
+console.log("sdfsdfsdfsdsdf")
+function isHostAllowed(req) {
+  const allowedHosts = ['app.getcover.com', 'www.getcover.com', '54.176.118.28']; // Add your allowed hosts here
+
+  const host = req.headers.host;
+
+  return allowedHosts.includes(host);
+}
+
+app.use((req, res, next) => {
+  if (isHostAllowed(req)) {
+    next(); // Proceed if the host is allowed
+  } else {
+    res.status(403).send('Access denied: Host not allowed');
+  }
+});
 
 
-
-
-
+app.use(cors())
 app.set('trust proxy', true);
 // app.use(IpFilter(allowedIps, { mode: 'allow' }));
 const httpServer = http.createServer(app)
@@ -104,12 +98,12 @@ app.get('/uploads/logo/:filename', (req, res) => {
 
   // Check if the file exists
   fs.access(filePath, fs.constants.F_OK, (err) => {
-      if (err) {
-          return res.status(404).send('File not found');
-      }
+    if (err) {
+      return res.status(404).send('File not found');
+    }
 
-      // Send the file if it exists
-      res.sendFile(filePath);
+    // Send the file if it exists
+    res.sendFile(filePath);
   });
 });
 
