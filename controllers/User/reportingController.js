@@ -1106,18 +1106,44 @@ exports.claimWeeklyReporting = async (data) => {
         let getData2 = await claimService.getClaimWithAggregate(dailyQuery2)
         let getData3 = await claimService.getClaimWithAggregate(dailyQuery3)
 
+
+        function getMonday(date) {
+            // Create a new date object to avoid mutating the original date
+            const currentDate = new Date(date);
+            
+            // Get the current day of the week (0 is Sunday, 1 is Monday, ..., 6 is Saturday)
+            const day = currentDate.getDay();
+            
+            // Calculate the difference to get the previous Monday (if today is Monday, the difference will be 0)
+            const difference = day === 0 ? -6 : 1 - day;
+        
+            // Adjust the current date to the most recent Monday
+            currentDate.setDate(currentDate.getDate() + difference);
+        
+            // Return the date of the most recent Monday
+            return currentDate;
+        }
+        
+        // Example usage:
+        const givenDate = new Date(); // Replace with any date
+        const mondayDate = getMonday( getData[0]._id);
+
+        console.log(mondayDate);
+
         if (getData[0]) {
-            getData[0]._id = datesArray[0]
+            getData[0]._id = mondayDate
         }
         if (getData1[0]) {
-            getData1[0]._id = datesArray[0]
+            getData1[0]._id = mondayDate
         }
         if (getData2[0]) {
-            getData2[0]._id = datesArray[0]
+            getData2[0]._id = mondayDate
         }
         if (getData3[0]) {
-            getData3[0]._id = datesArray[0]
+            getData3[0]._id = mondayDate
         }
+
+        // return {getData,datesArray}
 
         const result = datesArray.map(date => {
             const dateString = date.format('YYYY-MM-DD');

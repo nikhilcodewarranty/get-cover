@@ -1574,6 +1574,7 @@ exports.getSetting = async (req, res) => {
     // }
     let setting = await userService.getSetting({});
     const baseUrl = process.env.API_ENDPOINT;
+    console.log("process env+++++++++++++++",process.env)
     if (setting.length > 0) {
       setting[0].base_url = baseUrl;
 
