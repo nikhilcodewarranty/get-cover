@@ -47,30 +47,28 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// const allowedOrigins = ['http://example.com', 'http://anotherdomain.com'];
-
 app.use((req, res, next) => {
   const ip = req.ip;
-  console.log('Request IP++++++++++++++++++++++++:', ip);
   next();
 });
 
 // List of allowed IPs
-const allowedIps = ['54.176.118.28', '::ffff:127.0.0.1', '3.111.162.237', '3.215.120.141'];
 console.log("sdfsdfsdfsdsdf")
 function isHostAllowed(req) {
-  const allowedHosts = ['https://app.getcover.com', 'http://54.176.118.28']; // Add your allowed origin here
-
+  const allowedHosts = [process.env.firstOrigin, process.env.secondOrigin, process.env.thirdOrigin]; // Add your allowed origin here
   const host = req.headers.origin;
-  console.log("checking the data+++++++++++++++++", host)
   return allowedHosts.includes(host);
 }
 
 app.use((req, res, next) => {
-  if (isHostAllowed(req)) {
+  if (req.headers.host == "localhost:3002") {
     next(); // Proceed if the host is allowed
   } else {
-    res.status(403).send('Access denied: Host not allowed');
+    if (isHostAllowed(req)) {
+      next(); // Proceed if the host is allowed
+    } else {
+      res.status(403).send('Access denied: Host not allowed');
+    }
   }
 });
 
