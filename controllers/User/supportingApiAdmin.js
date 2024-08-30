@@ -4,7 +4,6 @@ const dealerService = require('../../services/Dealer/dealerService')
 const dealerPriceService = require('../../services/Dealer/dealerPriceService')
 const priceBookService = require('../../services/PriceBook/priceBookService')
 const providerService = require('../../services/Provider/providerService')
-const userMetaService = require("../../services/User/userMetaService");
 const users = require("../../models/User/users");
 const role = require("../../models/User/role");
 const logs = require('../../models/User/logs');
@@ -1424,7 +1423,6 @@ exports.createServiceProvider = async (req, res) => {
         // Create the service provider
         const createMetaData = await providerService.createServiceProvider(providerMeta);
         providerMeta.role = "Servicer"
-        const createMetaData1 = await userMetaService.createMeta(providerMeta);
         if (!createMetaData) {
             return res.send({
                 code: constant.errorCode,
