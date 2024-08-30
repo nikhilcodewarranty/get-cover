@@ -51,7 +51,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use((req, res, next) => {
   const ip = req.ip;
-  console.log('Request IP++++++++++++++++++++++++:', req);
+  console.log('Request IP++++++++++++++++++++++++:', req.headers);
   next();
 });
 
