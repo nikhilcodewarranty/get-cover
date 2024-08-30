@@ -176,6 +176,7 @@ exports.getDashboardGraph = async (req, res) => {
 
 
         let getPriceBooks = await priceBookService.getAllActivePriceBook(priceQuery)
+        
         let getPriceBooks1 = await priceBookService.getAllActivePriceBook(priceQuery1)
 
         const result = datesArray.map(date => {
@@ -196,8 +197,6 @@ exports.getDashboardGraph = async (req, res) => {
                 weekStart: dateString,
                 order_amount: order ? order.order_amount : 0,
                 total_order: order ? order.total_order : 0,
-
-
             };
         });
 

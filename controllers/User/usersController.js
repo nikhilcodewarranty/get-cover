@@ -8,7 +8,7 @@ const priceBookService = require('../../services/PriceBook/priceBookService')
 const providerService = require('../../services/Provider/providerService')
 const users = require("../../models/User/users");
 const role = require("../../models/User/role");
-const logs = require('../../models/User/logs');
+const options = require('../../models/User/options');
 const setting = require("../../models/User/setting");
 const constant = require('../../config/constant');
 const supportingFunction = require('../../config/supportingFunction')
@@ -1574,7 +1574,7 @@ exports.getSetting = async (req, res) => {
     // }
     let setting = await userService.getSetting({});
     const baseUrl = process.env.API_ENDPOINT;
-    console.log("process env+++++++++++++++",process.env)
+    console.log("process env+++++++++++++++", process.env)
     if (setting.length > 0) {
       setting[0].base_url = baseUrl;
 
@@ -1691,6 +1691,7 @@ exports.downloadFile1 = async (req, res) => {
   }
 }
 
+//Save contact Form Data
 exports.contactUs = async (req, res) => {
   try {
     let data = req.body;
@@ -1742,3 +1743,32 @@ exports.contactUs = async (req, res) => {
     })
   }
 }
+
+//Save Options dropdown backend use
+exports.saveOptions = async (req, res) => {
+  try {
+    let data = req.body;
+    const saveOptions = await userService.saveOptions(data);
+    if (!saveOptions) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to save contact for data!"
+      });
+      return
+    }
+    res.send({
+      code: constant.successCode,
+      message: "Record save successfully!",
+      result: saveOptions
+    })
+
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+

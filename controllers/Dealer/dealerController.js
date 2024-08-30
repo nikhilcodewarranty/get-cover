@@ -348,6 +348,7 @@ exports.statusUpdate = async (req, res) => {
     }
     // Fetch existing dealer price book data
     const criteria = { _id: req.params.dealerPriceBookId };
+    let data = req.body
     const projection = { isDeleted: 0, __v: 0 };
     const existingDealerPriceBook = await dealerPriceService.getDealerPriceById(criteria, projection);
     if (!existingDealerPriceBook) {
@@ -355,6 +356,14 @@ exports.statusUpdate = async (req, res) => {
         code: constant.errorCode,
         message: "Dealer Price Book not found"
       });
+      return;
+    }
+
+    if (existingDealerPriceBook.dealerSku.toLowerCase() === data.dealerSku) {
+      res.send({
+        code: constant.errorCode,
+        message: "Dealer price book already created with this dealer sku"
+      })
       return;
     }
     // Check if the priceBook is a valid ObjectId
@@ -1177,14 +1186,14 @@ exports.uploadDealerPriceBook = async (req, res) => {
         const keys = Object.keys(item);
         return {
           priceBook: item[keys[0]],
-          dealerSku: item[keys[1]]!=""?item[keys[1]]:item[keys[0]],
-          retailPrice:  item[keys[2]],
+          dealerSku: item[keys[1]] != "" ? item[keys[1]] : item[keys[0]],
+          retailPrice: item[keys[2]],
         };
       });
 
       let totalDataComing1 = dataComing.map(item => {
         if (!item['priceBook']) {
-          return { priceBook: '',dealerSku:item['dealerSku'], 'RetailPrice': item['retailPrice'] };
+          return { priceBook: '', dealerSku: item['dealerSku'], 'RetailPrice': item['retailPrice'] };
         }
         return item;
       });
@@ -1423,7 +1432,7 @@ const getObjectFromS3 = (bucketReadUrl) => {
 
         const result = {
           headers: headers,
-          data: XLSX.utils.sheet_to_json(sheet,{ defval: "" }),
+          data: XLSX.utils.sheet_to_json(sheet, { defval: "" }),
         };
 
         resolve(result);

@@ -1,5 +1,6 @@
 const user = require("../../models/User/users");
 const contact = require("../../models/User/contact");
+const options = require("../../models/User/options");
 const role = require("../../models/User/role");
 const setting = require("../../models/User/setting");
 const notification = require("../../models/User/notification");
@@ -382,4 +383,12 @@ module.exports = class userService {
     }
   }
 
+  static async saveOptions(data) {
+    try {
+      const response = await new options(data).save();
+      return response;
+    } catch (error) {
+      return `Could not save options: ${error}`;
+    }
+  }
 };
