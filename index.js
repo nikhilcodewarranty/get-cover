@@ -19,7 +19,7 @@ swaggerDocument = require('./swagger.json');
 swaggerDocumentDealer = require('./dealer.json');
 const userRoutes = require('./routes/User/user');
 const reportingRoutes = require("./routes/User/reporting");
-const dealerRoutes =  require('./routes/Dealer/dealer');
+const dealerRoutes = require('./routes/Dealer/dealer');
 const dealerUserRoutes = require("./routes/Dealer/dealerUser");
 const resellerRoutes = require("./routes/Dealer/reseller");
 const resellerUserRoutes = require("./routes/Dealer/resellerUser");
@@ -47,27 +47,31 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// const allowedOrigins = ['http://example.com', 'http://anotherdomain.com'];
-
 app.use((req, res, next) => {
   const ip = req.ip;
-  console.log('Request IP++++++++++++++++++++++++:', ip);
   next();
 });
 
 // List of allowed IPs
-const allowedIps = ['54.176.118.28','::ffff:127.0.0.1','3.111.162.237','3.215.120.141'];
 console.log("sdfsdfsdfsdsdf")
-// CORS options
-// const corsOptions = {
-//   origin: function (origin, callback) {
-//     if (allowedOrigins.includes(origin)) {
-//       callback(null, true);
-//     } else {
-//       callback(new Error('Not allowed by CORS'));
-//     }
-//   },
-// };
+function isHostAllowed(req) {
+  const allowedHosts = [process.env.firstOrigin, process.env.secondOrigin, process.env.thirdOrigin]; // Add your allowed origin here
+  const host = req.headers.origin;
+  return allowedHosts.includes(host);
+}
+
+app.use((req, res, next) => {
+  if (req.headers.host == "localhost:3002") {
+    next(); // Proceed if the host is allowed
+  } else {
+    if (isHostAllowed(req)) {
+      next(); // Proceed if the host is allowed
+    } else {
+      res.status(403).send('Access denied: Host not allowed');
+    }
+  }
+});
+
 
 app.use(cors())
 app.set('trust proxy', true);
@@ -92,12 +96,12 @@ app.get('/uploads/logo/:filename', (req, res) => {
 
   // Check if the file exists
   fs.access(filePath, fs.constants.F_OK, (err) => {
-      if (err) {
-          return res.status(404).send('File not found');
-      }
+    if (err) {
+      return res.status(404).send('File not found');
+    }
 
-      // Send the file if it exists
-      res.sendFile(filePath);
+    // Send the file if it exists
+    res.sendFile(filePath);
   });
 });
 
