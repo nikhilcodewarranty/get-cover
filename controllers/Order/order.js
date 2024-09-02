@@ -929,6 +929,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
                 return item;
             });
 
+      
         let result = {
             priceCategories: getCategories1,
             dealerPriceBook: getDealerPriceBook,
