@@ -854,6 +854,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             _id: "",
             priceBook: "",
             dealerId: "",
+            dealerSku: "",
             status: "",
             retailPrice: "",
             description: "",
