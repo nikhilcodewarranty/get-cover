@@ -766,6 +766,9 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             });
             return;
         }
+        if (data.dealerSku != "") {
+            getDealerPriceBook = getDealerPriceBook.filter(item => item.dealerSku == data.dealerSku)
+        }
         if (!data.coverageType) {
             res.send({
                 code: constant.errorCode,
@@ -808,6 +811,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         let getPriceBooks = await priceBookService.getAllPriceIds(query, {});
         if (data.priceBookId || data.priceBookId != "") {
             getPriceBooks = await priceBookService.getAllPriceIds({ _id: data.priceBookId }, {});
+            getDealerPriceBook = getDealerPriceBook.filter(item => item.priceBook == data.priceBookId)
             data.term = getPriceBooks[0]?.term ? getPriceBooks[0].term : ""
             data.pName = getPriceBooks[0]?.pName ? getPriceBooks[0].pName : ""
         }
@@ -905,6 +909,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
 
         let result = {
             priceCategories: getCategories1,
+            dealerPriceBook:getDealerPriceBook,
             priceBooks: data.priceCatId == "" ? [] : mergedPriceBooks,
             productName: data.priceCatId == "" ? [] : uniqueProductName,
             terms: data.priceCatId == "" ? [] : uniqueTerms,
