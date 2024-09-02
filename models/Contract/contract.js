@@ -6,6 +6,10 @@ const contractSchema = new mongoose.Schema({
     ref: "order",
     index: true,
   },
+  dealerSku: {
+    type: String,
+    default: ''
+  },
   orderUniqueKey: {
     type: String
   },

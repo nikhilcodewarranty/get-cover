@@ -13,6 +13,10 @@ const claimSchema = new mongoose.Schema({
     default: '',
     index: true
   },
+  dealerSku: {
+    type: String,
+    default: ''
+  },
   venderOrder: {
     type: String,
     default: ''
