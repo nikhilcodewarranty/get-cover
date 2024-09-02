@@ -917,7 +917,17 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             priceBookDetail = {}
         }
         mergedPriceBooks = mergedPriceBooks
-                .filter((item) => item._id.toString() === dealerPriceBookDetail.priceBook.toString())
+            .map((item) => {
+                if (item._id.toString() === dealerPriceBookDetail.priceBook.toString()) {
+                    // If there's a match, add the dealerSku key
+                    return {
+                        ...item,
+                        dealerSku: dealerPriceBookDetail.dealerSku // Assuming dealerSku is available in dealerPriceBookDetail
+                    };
+                }
+                // If no match, return the item unchanged
+                return item;
+            });
 
         let result = {
             priceCategories: getCategories1,
