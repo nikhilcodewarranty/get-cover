@@ -760,6 +760,13 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             status: true,
         });
         //get dealer Sku
+        if(data.dealerSku != ""){
+            getDealerPriceBook = await dealerPriceService.findAllDealerPrice({
+                dealerId: req.params.dealerId,
+                dealerSku:data.dealerSku,
+                status: true,
+            });
+        }
         const dealerSku = getDealerPriceBook.map((sku) => sku.dealerSku);
         if (!getDealerPriceBook) {
             res.send({
