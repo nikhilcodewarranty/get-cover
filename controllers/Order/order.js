@@ -887,8 +887,18 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             mergedPriceBooks = mergedPriceBooks.filter(
                 (item) => item.category.toString() === data.priceCatId
             );
+
+            let dealerSkuPrice = mergedPriceBooks.map((item) => item._id);
+
             checkSelectedCategory = await priceBookService.getPriceCatByName({
                 _id: filteredPiceBook,
+            });
+
+            let priceBookId = { priceBook: { $in: dealerSkuPrice } }
+
+            dealerPriceBookDetail = await dealerPriceService.findAllDealerPrice({
+                dealerId: req.params.dealerId,
+                priceBook: priceBookId,
             });
         }
 
@@ -906,11 +916,13 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         } else {
             priceBookDetail = {}
         }
+        mergedPriceBooks = mergedPriceBooks
+                .filter((item) => item._id.toString() === dealerPriceBookDetail.priceBook.toString())
 
       
         let result = {
             priceCategories: getCategories1,
-            dealerPriceBook:getDealerPriceBook,
+            dealerPriceBook: getDealerPriceBook,
             priceBooks: data.priceCatId == "" ? [] : mergedPriceBooks,
             productName: data.priceCatId == "" ? [] : uniqueProductName,
             terms: data.priceCatId == "" ? [] : uniqueTerms,
