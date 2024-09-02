@@ -407,6 +407,7 @@ exports.addClaim = async (req, res, next) => {
     data.orderId = checkOrder.unique_key
     data.venderOrder = checkOrder.venderOrder
     data.serial = checkContract.serial
+    data.dealerSku = checkContract.dealerSku
     data.productName = checkContract.productName
     data.pName = checkContract?.pName
     data.dealerId = checkOrder.dealerId
@@ -1711,6 +1712,7 @@ exports.saveBulkClaim = async (req, res) => {
             orderId: data.orderData?.order?.unique_key,
             dealerId: data.orderData?.order?.dealerId,
             resellerId: data.orderData?.order?.resellerId,
+            dealerSku : data.contractData?.dealerSku,
             customerId: data.orderData?.order?.customerId,
             venderOrder: data.contractData.venderOrder,
             serial: data.contractData.serial,
