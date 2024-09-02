@@ -777,9 +777,10 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         let dealerPriceIds = getDealerPriceBook.map((item) => item.priceBook);
         let newQuery = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true, };
         let getPriceBooksForAllCat = await priceBookService.getAllPriceIds(newQuery, {});
+        let uniqueCategory1 = {};
         let uniqueCategories1 = getPriceBooksForAllCat.filter((item) => {
-            if (!uniqueCategory[item.category.toString()]) {
-                uniqueCategory[item.category.toString()] = true;
+            if (!uniqueCategory1[item.category.toString()]) {
+                uniqueCategory1[item.category.toString()] = true;
                 return true;
             }
             return false;
