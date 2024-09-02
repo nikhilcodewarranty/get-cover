@@ -67,7 +67,7 @@ app.use((req, res, next) => {
     if (isHostAllowed(req)) {
       next(); // Proceed if the host is allowed
     } else {
-      console.log("checking the origin ++++++++++++++++++++++++++++++++++++++++++",req.headers)
+      console.log("checking the origin ++++++++++++++++++++++++++++++++++++++++++",allowedHosts,req.headers)
       res.status(403).send('Access denied: Host not allowed');
     }
   }
