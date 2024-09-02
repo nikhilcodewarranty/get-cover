@@ -55,7 +55,7 @@ app.use((req, res, next) => {
 // List of allowed IPs
 console.log("sdfsdfsdfsdsdf")
 function isHostAllowed(req) {
-  const allowedHosts = [process.env.firstOrigin, process.env.secondOrigin, process.env.thirdOrigin]; // Add your allowed origin here
+  const allowedHosts = [process.env.firstOrigin, process.env.secondOrigin, process.env.thirdOrigin, process.env.localOrigin]; // Add your allowed origin here
   const host = req.headers.origin;
   return allowedHosts.includes(host);
 }
