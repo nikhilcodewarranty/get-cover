@@ -418,6 +418,21 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         }
 
         let dealerPriceIds = getDealerPriceBook.map((item) => item.priceBook);
+        let newQuery = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true, };
+        let getPriceBooksForAllCat = await priceBookService.getAllPriceIds(newQuery, {});
+        let uniqueCategories1 = getPriceBooksForAllCat.filter((item) => {
+            if (!uniqueCategory[item.category.toString()]) {
+                uniqueCategory[item.category.toString()] = true;
+                return true;
+            }
+            return false;
+        });
+        uniqueCategories1 = uniqueCategories1.map((item) => item.category);
+        let getCategories1 = await priceBookService.getAllPriceCat(
+            { _id: { $in: uniqueCategories1 } },
+            {}
+        );
+
         let query;
         if (data.term != "" && data.pName == "") {
             query = { _id: { $in: dealerPriceIds }, status: true, term: data.term, coverageType: data.coverageType };
@@ -529,7 +544,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         }
 
         let result = {
-            priceCategories: getCategories,
+            priceCategories: getCategories1,
             priceBooks: data.priceCatId == "" ? [] : mergedPriceBooks,
             productName: data.priceCatId == "" ? [] : uniqueProductName,
             terms: data.priceCatId == "" ? [] : uniqueTerms,
