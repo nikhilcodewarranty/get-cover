@@ -176,7 +176,7 @@ exports.getDashboardGraph = async (req, res) => {
 
 
         let getPriceBooks = await priceBookService.getAllActivePriceBook(priceQuery)
-        
+
         let getPriceBooks1 = await priceBookService.getAllActivePriceBook(priceQuery1)
 
         const result = datesArray.map(date => {
@@ -778,7 +778,7 @@ exports.getResellerPriceBook = async (req, res) => {
             { 'priceBooks.category._id': { $in: catIdsArray } },
             { 'status': true },
             { 'dealerSku': { '$regex': dealerSku, '$options': 'i' } },
-            
+
             {
                 dealerId: new mongoose.Types.ObjectId(checkDealer._id)
             },
@@ -2621,6 +2621,21 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         }
         // price book ids array from dealer price book
         let dealerPriceIds = getDealerPriceBook.map((item) => item.priceBook);
+        let newQuery = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true, };
+        let getPriceBooksForAllCat = await priceBookService.getAllPriceIds(newQuery, {});
+        let uniqueCategories1 = getPriceBooksForAllCat.filter((item) => {
+            if (!uniqueCategory[item.category.toString()]) {
+                uniqueCategory[item.category.toString()] = true;
+                return true;
+            }
+            return false;
+        });
+        uniqueCategories1 = uniqueCategories1.map((item) => item.category);
+        let getCategories1 = await priceBookService.getAllPriceCat(
+            { _id: { $in: uniqueCategories1 } },
+            {}
+        );
+
         let query;
 
         if (data.term != "" && data.pName == "") {
@@ -2733,7 +2748,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             priceBookDetail = {}
         }
         let result = {
-            priceCategories: getCategories,
+            priceCategories: getCategories1,
             priceBooks: data.priceCatId == "" ? [] : mergedPriceBooks,
             productName: data.priceCatId == "" ? [] : uniqueProductName,
             terms: data.priceCatId == "" ? [] : uniqueTerms,
