@@ -2605,12 +2605,16 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             dealerId: req.userId,
             status: true,
         });
+
         if (!getDealerPriceBook) {
             res.send({
                 code: constant.errorCode,
                 message: "Unable to fetch the data",
             });
             return;
+        }
+        if (data.dealerSku != "") {
+            getDealerPriceBook = getDealerPriceBook.filter(item => item.dealerSku == data.dealerSku)
         }
         if (!data.coverageType) {
             res.send({
@@ -2749,6 +2753,23 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         } else {
             priceBookDetail = {}
         }
+        mergedPriceBooks = mergedPriceBooks.map((item) => {
+            // Find the matching dealerPriceBookDetail object
+            const matchingDetail = getDealerPriceBook.find(detail =>
+                item._id.toString() === detail.priceBook.toString()
+            );
+
+            // If a match is found, add the dealerSku key
+            if (matchingDetail) {
+                return {
+                    ...item,
+                    dealerSku: matchingDetail.dealerSku
+                };
+            }
+
+            // If no match, return the item unchanged
+            return item;
+        });
         let result = {
             priceCategories: getCategories1,
             priceBooks: data.priceCatId == "" ? [] : mergedPriceBooks,
