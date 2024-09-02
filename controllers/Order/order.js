@@ -916,18 +916,24 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         } else {
             priceBookDetail = {}
         }
-        mergedPriceBooks = mergedPriceBooks
-            .map((item) => {
-                if (item._id.toString() === dealerPriceBookDetail.priceBook.toString()) {
-                    // If there's a match, add the dealerSku key
-                    return {
-                        ...item,
-                        dealerSku: dealerPriceBookDetail.dealerSku // Assuming dealerSku is available in dealerPriceBookDetail
-                    };
-                }
-                // If no match, return the item unchanged
-                return item;
-            });
+        mergedPriceBooks = mergedPriceBooks.map((item) => {
+            // Find the matching dealerPriceBookDetail object
+            const matchingDetail = getDealerPriceBook.find(detail => 
+                item._id.toString() === detail.priceBook.toString()
+            );
+        
+            // If a match is found, add the dealerSku key
+            if (matchingDetail) {
+                return {
+                    ...item,
+                    dealerSku: matchingDetail.dealerSku
+                };
+            }
+        
+            // If no match, return the item unchanged
+            return item;
+        });
+        
 
       
         let result = {
