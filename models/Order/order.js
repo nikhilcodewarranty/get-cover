@@ -66,6 +66,10 @@ const orderSchema = new mongoose.Schema({
         unitPrice: {
           type: Number,
         },
+        dealerSku: {
+          type: String,
+          default:''
+        },
         noOfProducts: {
           type: Number,
         },
