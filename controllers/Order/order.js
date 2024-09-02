@@ -907,6 +907,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             priceBookDetail = {}
         }
 
+      
         let result = {
             priceCategories: getCategories1,
             dealerPriceBook:getDealerPriceBook,
