@@ -890,12 +890,10 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
 
             if (mergedPriceBooks.length > 0) {
                 let dealerSkuPrice = mergedPriceBooks.map((item) => item._id);
-                console.log("dealerSkuPrice---------------",dealerSkuPrice);
-                let priceBookId = { priceBook: { $in: dealerSkuPrice } }
-                dealerPriceBookDetail = await dealerPriceService.findAllDealerPrice({
-                    dealerId: req.params.dealerId,
-                    priceBook: priceBookId,
-                });
+
+                let condition = { priceBook: { $in: dealerSkuPrice }, dealerId: req.params.dealerId };
+
+                dealerPriceBookDetail = await dealerPriceService.findAllDealerPrice(condition);
 
             }
 
@@ -903,7 +901,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
                 _id: filteredPiceBook,
             });
 
-     
+
 
 
         }
