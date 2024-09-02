@@ -916,6 +916,8 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         } else {
             priceBookDetail = {}
         }
+        mergedPriceBooks = mergedPriceBooks
+                .filter((item) => item._id.toString() === dealerPriceBookDetail.priceBook.toString())
 
         let result = {
             priceCategories: getCategories1,
