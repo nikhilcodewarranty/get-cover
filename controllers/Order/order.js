@@ -888,18 +888,23 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
                 (item) => item.category.toString() === data.priceCatId
             );
 
-            let dealerSkuPrice = mergedPriceBooks.map((item) => item._id);
+            if (mergedPriceBooks.length > 0) {
+                let dealerSkuPrice = mergedPriceBooks.map((item) => item._id);
+                let priceBookId = { priceBook: { $in: dealerSkuPrice } }
+                dealerPriceBookDetail = await dealerPriceService.findAllDealerPrice({
+                    dealerId: req.params.dealerId,
+                    priceBook: priceBookId,
+                });
+
+            }
 
             checkSelectedCategory = await priceBookService.getPriceCatByName({
                 _id: filteredPiceBook,
             });
 
-            let priceBookId = { priceBook: { $in: dealerSkuPrice } }
+     
 
-            dealerPriceBookDetail = await dealerPriceService.findAllDealerPrice({
-                dealerId: req.params.dealerId,
-                priceBook: priceBookId,
-            });
+
         }
 
         const uniqueTerms = [...new Set(mergedPriceBooks.map(item => item.term))].map(term => ({
@@ -918,10 +923,10 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         }
         mergedPriceBooks = mergedPriceBooks.map((item) => {
             // Find the matching dealerPriceBookDetail object
-            const matchingDetail = getDealerPriceBook.find(detail => 
+            const matchingDetail = getDealerPriceBook.find(detail =>
                 item._id.toString() === detail.priceBook.toString()
             );
-        
+
             // If a match is found, add the dealerSku key
             if (matchingDetail) {
                 return {
@@ -929,13 +934,13 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
                     dealerSku: matchingDetail.dealerSku
                 };
             }
-        
+
             // If no match, return the item unchanged
             return item;
         });
-        
 
-      
+
+
         let result = {
             priceCategories: getCategories1,
             dealerPriceBook: getDealerPriceBook,
