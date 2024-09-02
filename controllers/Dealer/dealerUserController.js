@@ -1362,6 +1362,14 @@ exports.editOrderDetail = async (req, res) => {
                     query,
                     projection
                 );
+                //dealer Price Book
+                let dealerQuery = { priceBook: new mongoose.Types.ObjectId(priceBookId), dealerId: savedResponse.dealerId };
+
+                let dealerPriceBook = await dealerPriceService.getDealerPriceById(
+                    dealerQuery,
+                    projection
+                );
+                
                 let pricebookDetailObject = {}
                 let dealerPriceBookObject = {}
 
@@ -1477,6 +1485,7 @@ exports.editOrderDetail = async (req, res) => {
                         serviceCoverageType: serviceCoverage,
                         coverageType: req.body.coverageType,
                         serial: data.serial,
+                        dealerSku: dealerPriceBook.dealerSku,
                         purchaseDate: new Date(data.purchaseDate),
                         orderUniqueKey: savedResponse.unique_key,
                         venderOrder: savedResponse.venderOrder,

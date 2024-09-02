@@ -958,7 +958,7 @@ const getObjectFromS3 = (bucketReadUrl) => {
 
                 const result = {
                     headers: headers,
-                    data: XLSX.utils.sheet_to_json(sheet,{
+                    data: XLSX.utils.sheet_to_json(sheet, {
                         raw: false, // this ensures all cell values are parsed as text
                         dateNF: 'mm/dd/yyyy', // optional: specifies the date format if Excel stores dates as numbers
                         defval: '', // fills in empty cells with an empty string
@@ -1284,6 +1284,7 @@ exports.createOrder1 = async (req, res) => {
                 const bucketReadUrl = { Bucket: process.env.bucket_name, Key: product.orderFile.fileName };
                 // Await the getObjectFromS3 function to complete
                 const result = await getObjectFromS3(bucketReadUrl);
+
                 headerLength = result.headers
                 if (headerLength.length !== 8) {
                     res.send({
@@ -1297,10 +1298,17 @@ exports.createOrder1 = async (req, res) => {
                 let coverageEndDate = product.coverageEndDate;
                 let orderProductId = product._id;
                 let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
+
                 let projection = { isDeleted: 0 };
+
                 let priceBook = await priceBookService.getPriceBookById(
                     query,
                     projection
+                );
+                let dealerQuery = { priceBook: new mongoose.Types.ObjectId(priceBookId), dealerId: savedResponse.dealerId };
+                let dealerPriceBook = await dealerPriceService.getDealerPriceById(
+                    dealerQuery,
+                    {}
                 );
 
                 const totalDataComing1 = result.data
@@ -1345,8 +1353,6 @@ exports.createOrder1 = async (req, res) => {
                         })
                         return
                     }
-
-
                     let p_date = new Date(data.purchaseDate)
                     let p_date1 = new Date(data.purchaseDate)
                     let l_date = new Date(data.purchaseDate)
@@ -1403,6 +1409,7 @@ exports.createOrder1 = async (req, res) => {
                         venderOrder: savedResponse.venderOrder,
                         orderProductId: orderProductId,
                         coverageStartDate: coverageStartDate,
+                        dealerSku: dealerPriceBook.dealerSku,
                         coverageEndDate: coverageEndDate,
                         productName: priceBook[0]?.name,
                         pName: priceBook[0]?.pName,
@@ -2210,9 +2217,17 @@ exports.editOrderDetail = async (req, res) => {
                 let coverageStartDate = product.coverageStartDate;
                 let coverageEndDate = product.coverageEndDate;
                 let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
-                let projection = { isDeleted: 0 };
+                let projection = { isDeleted: 0 };   
+
                 let priceBook = await priceBookService.getPriceBookById(
                     query,
+                    projection
+                );
+                //dealer Price Book
+                let dealerQuery = { priceBook: new mongoose.Types.ObjectId(priceBookId), dealerId: savedResponse.dealerId };
+
+                let dealerPriceBook = await dealerPriceService.getDealerPriceById(
+                    dealerQuery,
                     projection
                 );
                 // reporting codes
@@ -2328,6 +2343,7 @@ exports.editOrderDetail = async (req, res) => {
                         minDate: minDate,
                         coverageStartDate: coverageStartDate,
                         coverageEndDate: coverageEndDate,
+                        dealerSku:dealerPriceBook.dealerSku,
                         serviceCoverageType: serviceCoverage,
                         coverageType: checkOrder.coverageType,
                         productName: priceBook[0]?.name,

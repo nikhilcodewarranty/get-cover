@@ -1385,6 +1385,7 @@ exports.markAsPaid = async (req, res) => {
             response: {}
         };
         const checkOrder = await orderService.getOrder({ _id: req.params.orderId }, { isDeleted: false })
+
         if (checkOrder.status == 'Archieved') {
             res.send({
                 code: constant.errorCode,
@@ -1446,6 +1447,13 @@ exports.markAsPaid = async (req, res) => {
             let projection = { isDeleted: 0 };
             let priceBook = await priceBookService.getPriceBookById(
                 query,
+                projection
+            );
+            //dealer Price Book
+            let dealerQuery = { priceBook: new mongoose.Types.ObjectId(priceBookId), dealerId: savedResponse.dealerId };
+
+            let dealerPriceBook = await dealerPriceService.getDealerPriceById(
+                dealerQuery,
                 projection
             );
             var pricebookDetail = []
@@ -1568,13 +1576,14 @@ exports.markAsPaid = async (req, res) => {
                 if (checkOrder.serviceCoverageType == "Parts & Labour") {
                     serviceCoverage = "Parts & Labor"
                 }
-
+                
                 let contractObject = {
                     orderId: savedResponse._id,
                     orderUniqueKey: savedResponse.unique_key,
                     venderOrder: savedResponse.venderOrder,
                     orderProductId: orderProductId,
                     minDate: minDate,
+                    dealerSku:dealerPriceBook.dealerSku,
                     coverageStartDate: coverageStartDate,
                     coverageEndDate: coverageEndDate,
                     serviceCoverageType: serviceCoverage,
