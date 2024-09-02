@@ -359,7 +359,10 @@ exports.statusUpdate = async (req, res) => {
       return;
     }
 
-    if (existingDealerPriceBook.dealerSku.toLowerCase() === data.dealerSku.toLowerCase()) {
+    const dealerSkuCheck = await dealerPriceService.getDealerPriceById({ dealerId: existingDealerPriceBook.dealerId, dealerSku: data.dealerSku }, projection);
+
+
+    if (dealerSkuCheck) {
       res.send({
         code: constant.errorCode,
         message: "Dealer price book already created with this dealer sku"

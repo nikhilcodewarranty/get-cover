@@ -759,6 +759,8 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             dealerId: req.params.dealerId,
             status: true,
         });
+        //get dealer Sku
+        const dealerSku = getDealerPriceBook.map((sku) => sku.dealerSku);
         if (!getDealerPriceBook) {
             res.send({
                 code: constant.errorCode,
@@ -778,6 +780,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         let newQuery = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true, };
         let getPriceBooksForAllCat = await priceBookService.getAllPriceIds(newQuery, {});
         let uniqueCategory1 = {};
+
         let uniqueCategories1 = getPriceBooksForAllCat.filter((item) => {
             if (!uniqueCategory1[item.category.toString()]) {
                 uniqueCategory1[item.category.toString()] = true;
@@ -785,6 +788,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             }
             return false;
         });
+
         uniqueCategories1 = uniqueCategories1.map((item) => item.category);
         let getCategories1 = await priceBookService.getAllPriceCat(
             { _id: { $in: uniqueCategories1 } },
@@ -911,7 +915,8 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             terms: data.priceCatId == "" ? [] : uniqueTerms,
             selectedCategory: checkSelectedCategory ? checkSelectedCategory : "",
             dealerPriceBookDetail: dealerPriceBookDetail,
-            priceBookDetail
+            priceBookDetail,
+            dealerSku
         };
 
         res.send({
