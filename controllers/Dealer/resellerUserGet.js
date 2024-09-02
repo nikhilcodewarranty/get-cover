@@ -409,6 +409,9 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             });
             return;
         }
+        if (data.dealerSku != "") {
+            getDealerPriceBook = getDealerPriceBook.filter(item => item.dealerSku == data.dealerSku)
+        }
         if (!data.coverageType) {
             res.send({
                 code: constant.errorCode,
@@ -543,6 +546,24 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         } else {
             priceBookDetail = {}
         }
+
+        mergedPriceBooks = mergedPriceBooks.map((item) => {
+            // Find the matching dealerPriceBookDetail object
+            const matchingDetail = getDealerPriceBook.find(detail =>
+                item._id.toString() === detail.priceBook.toString()
+            );
+
+            // If a match is found, add the dealerSku key
+            if (matchingDetail) {
+                return {
+                    ...item,
+                    dealerSku: matchingDetail.dealerSku
+                };
+            }
+
+            // If no match, return the item unchanged
+            return item;
+        });
 
         let result = {
             priceCategories: getCategories1,
@@ -2191,6 +2212,7 @@ exports.getResellerClaims = async (req, res) => {
                             "receiptImage": 1,
                             reason: 1,
                             "unique_key": 1,
+                            dealerSku: 1,
                             note: 1,
                             claimType: 1,
                             totalAmount: 1,

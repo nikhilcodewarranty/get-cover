@@ -127,6 +127,7 @@ exports.getAllClaims = async (req, res, next) => {
               note: 1,
               totalAmount: 1,
               servicerId: 1,
+              dealerSku:1,
               customerStatus: 1,
               trackingNumber: 1,
               trackingType: 1,

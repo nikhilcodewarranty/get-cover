@@ -850,6 +850,7 @@ exports.getDealerClaims = async (req, res) => {
                             "unique_key": 1,
                             note: 1,
                             claimType: 1,
+                            dealerSku:1,
                             totalAmount: 1,
                             servicerId: 1,
                             customerStatus: 1,

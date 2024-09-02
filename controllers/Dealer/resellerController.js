@@ -1865,6 +1865,7 @@ exports.getResellerClaims = async (req, res) => {
                             note: 1,
                             pName: 1,
                             totalAmount: 1,
+                            dealerSku:1,
                             servicerId: 1,
                             claimType: 1,
                             customerStatus: 1,

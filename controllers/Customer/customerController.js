@@ -1595,6 +1595,7 @@ exports.customerClaims = async (req, res) => {
               reason: 1,
               "unique_key": 1,
               note: 1,
+              dealerSku:1,
               totalAmount: 1,
               servicerId: 1,
               customerStatus: 1,

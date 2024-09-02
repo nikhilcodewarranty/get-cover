@@ -3010,6 +3010,7 @@ exports.getAllClaims = async (req, res, next) => {
                             claimType: 1,
                             customerStatus: 1,
                             trackingNumber: 1,
+                            dealerSku:1,
                             trackingType: 1,
                             repairParts: 1,
                             diagnosis: 1,
