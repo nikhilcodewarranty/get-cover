@@ -1207,10 +1207,12 @@ exports.getSingleOrder = async (req, res) => {
         checkOrder = checkOrder.toObject();
         checkOrder.productsArray = await Promise.all(checkOrder.productsArray.map(async (product) => {
             const pricebook = await priceBookService.findByName1({ _id: product.priceBookId });
+            const dealerPriceBook = await dealerPriceService.getDealerPriceById({ priceBook: product.priceBookId, dealerId: checkOrder.dealerId }, { isDeleted: false });
             const pricebookCat = await priceBookService.getPriceCatByName({ _id: product.categoryId });
             if (pricebook) {
                 product.name = pricebook.name;
                 product.pName = pricebook.pName;
+                product.dealerSku = dealerPriceBook.dealerSku
                 product.term = pricebook.term;
             }
             if (pricebookCat) {
