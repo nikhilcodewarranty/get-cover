@@ -61,7 +61,7 @@ function isHostAllowed(req) {
 }
 
 app.use((req, res, next) => {
-  if (req.headers.host == "localhost:3002") {
+  if (req.headers.host == "localhost:3002" || req.headers.host=="http://54.176.118.28:3002") {
     next(); // Proceed if the host is allowed
   } else {
     if (isHostAllowed(req)) {
