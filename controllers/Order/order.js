@@ -760,7 +760,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             status: true,
         });
         //get dealer Sku
-        if(data.dealerSku != ""){
+        if(data.dealerSku != "" && data.hasOwnProperty('dealerSku')){
             getDealerPriceBook = await dealerPriceService.findAllDealerPrice({
                 dealerId: req.params.dealerId,
                 dealerSku:data.dealerSku,
