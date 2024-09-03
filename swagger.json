@@ -1,0 +1,2319 @@
+{
+    "swagger": "2.0",
+    "info": {
+      "version": "1.0.0",
+      "license": {
+        "name": "GetCover"
+      }
+    },
+    "host": "localhost:3002",
+    "basePath": "/api-v1",
+    "schemes": [  
+      "http",
+      "https"
+    ],
+    "consumes": [
+      "application/json"
+    ],
+    "produces": [
+      "application/json"
+    ], 
+    "securityDefinitions": {
+      "Bearer": {
+          "type": "apiKey",
+          "name": "x-access-token",
+          "in": "header"
+      }
+  },
+    "paths": {
+      "/user/users/{role}": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Users"],
+          "summary": "Get all users",
+          "parameters": [
+            {
+              "name": "role",
+              "in": "path",
+              "required": true,
+              "type": "string",
+              "default": "role",  
+              "description": "Role of the User"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      "/user/getAllTerms": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Users"],
+          "summary": "Get all terms",
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+
+      "/user/getUserById/{userId}": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Users"],
+          "summary": "Get Single User",
+          "parameters": [
+            {
+              "name": "userId",
+              "in": "path",
+              "required": true,
+              "type": "string",
+              "default": "exampleId",  
+              "description": "ID of the User"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      "/dealer/getDealerById/{dealerId}": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Get Single dealer",
+          "parameters": [
+            {
+              "name": "dealerId",
+              "in": "path",
+              "required": true,
+              "type": "string",
+              "default": "exampleId",  
+              "description": "ID of the User"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      "/dealer/getDealerPriceBookById/{dealerPriceBookId}": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Get Dealer Price Book",
+          "parameters": [
+            {
+              "name": "dealerPriceBookId",
+              "in": "path",
+              "required": true,
+              "type": "string",
+              "default": "exampleId",  
+              "description": "ID of the dealer price book"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+
+      "/dealer/getDealerPriceBookByDealerId/{dealerId}": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Get Dealer Price Book",
+          "parameters": [
+            {
+              "name": "dealerId",
+              "in": "path",
+              "required": true,
+              "type": "string",
+              "default": "exampleId",  
+              "description": "ID of the dealer price book"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      
+      
+      "/dealer/getUserByDealerId/{dealerId}": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Get User",
+          "parameters": [
+            {
+              "name": "dealerId",
+              "in": "path",
+              "required": true,
+              "type": "string",
+              "default": "exampleId",  
+              "description": "ID of the dealer"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      
+      "/user/resetPassword/{userId}/{code}": {
+        "post": {
+          "tags": ["Users"],
+          "summary": "Reset Password",
+          "parameters": [
+            {
+              "name": "userId",
+              "in": "path",
+              "required": true,
+              "type": "string",
+              "default": "exampleId",  
+              "description": "ID of the User"
+            },
+            {
+              "name": "code",
+              "in": "path",
+              "required": true,
+              "type": "string",
+              "default": "exampleId",  
+              "description": "code"
+            },
+            {
+              "name": "Password",
+              "in": "body",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "type": "string"
+                  }
+                }              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      "/user/sendLinkToEmail": {
+        "post": {
+          "tags": ["Users"],
+          "summary": "Send link to email",
+          "parameters": [
+            {
+              "name": "email",
+              "in": "body",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },  
+      "/user/checkEmail": {
+        "post": {
+          "tags": ["Users"],
+          "summary": "Send link to email",
+          "parameters": [
+            {
+              "name": "email",
+              "in": "body",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },  
+    
+      "/user/roles": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Roles"],
+          "summary": "Get all user Roles",
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        
+        }        
+      },
+      "/user/getAllNotifications": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "All Notifications",
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        
+        }        
+      },
+      
+      "/user/addRole":{
+        "post":{
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Roles"],
+           "summary": "Add Role",
+           "parameters": [
+            {
+              "in": "body",
+              "required": true,
+               "name":"Add Role",
+              "schema": {
+                "$ref": "#/definitions/Roles"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "User created successfully"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+     
+      "/admin/createSuperAdmin":{
+        "post":{
+          "tags": ["Super Admin"],
+         
+           "summary": "Super Admin",
+           "parameters": [
+            {
+              "in": "body",
+              "required": true,
+              "name":"Add Super Admin",
+              "schema": {
+                "$ref": "#/definitions/Users"
+              }
+            }
+          ],
+
+          "responses": {
+            "200": {
+              "description": "User created successfully"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      "/admin/createDealer":{
+        "post":{
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+           "summary": "Create Dealer",
+        
+           "parameters": [
+            {
+              "required": true,
+              "name": "Create Dealer",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/dealerBody"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "User created successfully"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      "/admin/createServicer":{
+        "post":{
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+           "summary": "Create Servicer",
+        
+           "parameters": [
+            {
+              "required": true,
+              "name": "Create Servicer",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/servicerBody"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "User created successfully"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      "/admin/approveDealers": {
+        "post": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Get Approved Dealers",
+          "parameters": [     
+            {
+              "name": "body",
+              "in": "body",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {              
+                  "name": {
+                    "type": "string"
+                  },         
+                  "email": {
+                    "type": "string"
+                  },
+                  "phoneNumber": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      "/admin/pendingDealers": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Get all Pending Dealers",
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      "/admin/pendingServicer": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Get all Pending Servicer",
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      "/admin/approveServicer": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Get all Approved Servicer",
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      
+      "/admin/servicer": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Get all Servicer",
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      "/admin/rejectDealer/{dealerId}":{
+        "put":{
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+           "summary": "Status Update",        
+           "parameters": [
+            {
+              "name": "dealerId",
+              "in": "path",
+              "required": true,
+              "type": "string",
+              "default": "exampleId",  
+              "description": "ID of the Dealer"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string"
+                  }         
+                  
+                }
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Update successfully"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      "/admin/approveDealer/":{
+        "post":{
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+           "summary": "Approve Dealer",
+        
+           "parameters": [
+            {
+              "required": true,
+              "name": "Create Dealer",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/approveDealerBody"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "User created successfully"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      
+      "/admin/dealerStatusUpdate":{
+        "post":{
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+           "summary": "Status Update",
+        
+           "parameters": [
+            {
+              "name": "body",
+              "in": "body",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "boolean"
+                  }         
+                  
+                }
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Update successfully"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      "/admin/servicerStatusUpdate":{
+        "post":{
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+           "summary": "Status Update",
+        
+           "parameters": [
+            {
+              "required": true,
+              "name": "Status Update",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/updateServicerBody"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Update successfully"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      "/price/getAllActivePriceBook": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Get all active price books",
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        
+        }
+        
+      },
+      
+      "/price/priceBooks": {
+        "post": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Get All Price Book",
+          "parameters": [
+            {
+              "name": "category",
+              "in": "body",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "category": {
+                    "type": "string"
+                  },
+                  "page": {
+                    "type": "string"
+                  },
+                  "limit": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }        
+      },
+      
+      "/dealer/dealerPriceBooks": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Get All Dealer Price Book",
+          "responses": {
+            "200": {
+              "description": "ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }        
+      },
+      "/price/getPriceBookById/{priceBookId}": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Get Single Price Book",
+          "parameters": [
+            {
+              "name": "priceBookId",
+              "in": "path",
+              "required": true,
+              "type": "string",
+              "default": "exampleId",  
+              "description": "ID of the Price Book"
+            }
+          ],  
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      }, 
+      "/price/getPriceBookByCategory/{categoryName}": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Get Single Price Book",
+          "parameters": [
+            {
+              "name": "categoryName",
+              "in": "path",
+              "required": true,
+              "type": "string",
+              "default": "exampleName",  
+              "description": "Name of the category"
+            }
+          ],  
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      }, 
+
+      "/price/getCategoryByPriceBook/{name}": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Get Single Price Book",
+          "parameters": [
+            {
+              "name": "name",
+              "in": "path",
+              "required": true,
+              "type": "string",
+              "default": "exampleName",  
+              "description": "Name of the price book"
+            }
+          ],  
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      }, 
+      
+     
+      "/price/createPriceBook":{
+        "post":{
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+           "summary": "Create Price Book",
+           "parameters": [
+            {
+              "required": true,
+              "name": "Create Price Book",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/PriceBook"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Price Book created successfully"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      }, 
+      "/price/createPriceBookCategory":{
+        "post":{
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+           "summary": "Create Price Book Category",
+           "parameters": [
+            {
+              "required": true,
+              "name": "Create Price Book Category",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/PriceBookCategory"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Price Category Book created successfully"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      "/price/getPriceBookCategories": {
+        "post": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Get All Price Categories",
+          "parameters": [
+            {
+              "name": "name",
+              "in": "body",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      "/order/getAllOrders": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Get All Orders",
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      "/price/updatePriceBookCategory/{catId}": {
+        "put": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Update Price Book",
+          "parameters": [
+            {
+              "name": "catId",
+              "in": "path",
+              "required": true,
+              "type": "string",
+              "default": "exampleId",  
+              "description": "ID of the Category"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "boolean"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  }
+                }              
+              }
+            }
+          ],
+     
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+          
+        }
+      },
+      "dealerPriceBooks": {
+        "security": [ { "Bearer": [] } ],
+        "tags": ["Super Admin"],
+        "summary": "Get All Price Book",
+        "responses": {
+          "200": {
+            "description": "ok"
+          },
+          "401": {
+            "description": "Error"
+          },
+          "404": {
+            "description": "No found"
+          },
+          "406": {
+            "description": "Validation Error"
+          }
+        }
+      },
+      "/dealer/updateDealerPriceBook/{dealerPriceBookId}": {
+        "put": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Update Dealer Price Book",
+          "parameters": [
+            {
+              "name": "dealerPriceBookId",
+              "in": "path",
+              "required": true,
+              "type": "string",
+              "default": "exampleId",  
+              "description": "ID of the Dealer Price Book"
+            },
+            {
+              "name": "status",
+              "in": "body",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "brokerFee": {
+                    "type": "number"
+                  },
+                  "priceBook": {
+                    "type": "string"
+                  },
+                  "retailPrice": {
+                    "type": "number"
+                  },
+                  "status": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      "/dealer/changeDealerStatus/{dealerId}": {
+        "put": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Change Status",
+          "parameters": [
+            {
+              "name": "dealerId",
+              "in": "path",
+              "required": true,
+              "type": "string",
+              "default": "exampleId",  
+              "description": "ID of the Dealer"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {                             
+                  "status": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },        
+      
+      "/dealer/createDealerPriceBook": {
+        "post": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Create Dealer Price Book",
+          "parameters": [
+            {
+              "name": "Create Dealer Price Book",
+              "in": "body",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "dealerId": {
+                    "type": "string"
+                  },
+                  "priceBook": {
+                    "type": "string"
+                  },
+                  "retailPrice": {
+                    "type": "number"
+                  },
+                  "status": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      
+      "/dealer/uploadDealerPriceBook": {
+        "post": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Upload",
+          "consumes": ["multipart/form-data"],
+            "produces": ["application/json"],
+            "parameters": [
+              {
+                "name": "dealerId",
+                "in": "formData",
+                "description": "Id of the Dealer",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "name": "file",
+                "in": "formData",
+                "description": "The file to upload",
+                "required": true,
+                "type": "file"
+              }
+             
+            ],
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      "/price/updatePriceBook/{priceBookId}": {
+        "put": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Update Price Book",
+          "parameters": [
+            {
+              "name": "priceBookId",
+              "in": "path",
+              "required": true,
+              "type": "string",
+              "default": "exampleId",  
+              "description": "ID of the Price Book"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "boolean"
+                  },
+                  "category": {
+                    "type": "string"
+                  },
+                  "reinsuranceFee": {
+                    "type": "number"
+                  },
+                  "adminFee": {
+                    "type": "number"
+                  },
+                  "reserveFutureFee": {
+                    "type": "number"
+                  },
+                  "frontingFee": {
+                    "type": "number"
+                  },
+                  "description": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      "/price/getPriceBookCategoryById/{catId}": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Get Single Price Book Category",
+          "parameters": [
+            {
+              "name": "catId",
+              "in": "path",
+              "required": true,
+              "type": "string",
+              "default": "exampleId",  
+              "description": "ID of the Price Book"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+
+
+      
+      
+      "/dealer/register":{
+        "post":{
+          "tags": ["Dealer"],
+           "summary": "Register Dealer",        
+           "parameters": [
+            {
+              "required": true,
+              "name": "Register Dealer",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/DealerRegister"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "User created successfully"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },     
+         
+      "/servicer/register":{
+        "post":{
+          "tags": ["Servicer"],
+           "summary": "Register Servicer",        
+           "parameters": [
+            {
+              "required": true,
+              "name": "Register Servicer",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/servicerRegister"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "User created successfully"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },     
+      "/user/login":{
+        "post":{
+          "tags": ["Login User"],
+           "summary": "Create Login", 
+           "parameters": [
+            {
+              "name": "loginBody",
+              "description": "username to get userType",
+              "required": true,
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/loginBody"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "LoggedIn successfully"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      }
+    },
+     "definitions": {
+      "loginBody":{
+        "properties": {        
+          "email": {
+            "type": "string"
+          },"password": {
+            "type": "string"
+          }
+         
+        }
+      },
+      "updateBody":{
+        "properties": {
+        
+          "dealerId": {
+            "type": "string"
+          },"status": {
+            "type": "string"
+          }
+         
+        }
+      },
+      "updateServicerBody":{
+        "properties": {
+        
+          "servicerId": {
+            "type": "string"
+          },"status": {
+            "type": "string"
+          }
+         
+        }
+      },
+      "catStatusUpdate":{
+        "properties": {        
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"          
+          }
+         
+        }
+      },
+      "bookStatusUpdate":{
+        "properties": {        
+          "status": {
+            "type": "string"          
+          }
+         
+        }
+      },
+            
+      "DealerRegister":{
+        "properties": {        
+          "name": {
+            "type": "string"
+          },
+          "street": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "zip": {
+            "type": "number"
+          },
+          "state": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },       
+          "email": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "phoneNumber": {
+            "type": "number"
+          },
+          "role":{
+            "type": "string"
+          } 
+         
+        }
+      },
+      "dealerBody":{
+        "properties": {        
+          "name": {
+            "type": "string"
+          },
+          "street": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "zip": {
+            "type": "number"
+          },
+          "state": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "createdBy": {
+            "type": "string"
+          },       
+          "role": {
+            "type": "string"
+          },
+          "isAccountCreate":{
+            "type": "boolean"
+          },
+          "customerAccountCreated":{
+            "type": "boolean"
+          },
+          "dealers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "firstName": {
+                  "type": "string"
+                },
+                "lastName": {
+                  "type": "string"
+                },
+                "phoneNumber": {
+                  "type": "number"
+                },
+                "isPrimary": {
+                  "type": "boolean"
+                },
+                "position": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "boolean"
+                }
+              },
+              "required": ["email", "password", "firstName", "lastName"]
+            }
+          },
+          "savePriceBookType":{
+            "type": "string"
+          },
+          "priceBook": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "priceBook": {
+                  "type": "string"
+                },
+                "retailPrice": {
+                  "type": "number"
+                },
+                "wholePrice": {
+                  "type": "number"
+                }
+                
+              },
+
+              "required": ["email", "password", "firstName", "lastName"]
+            }
+          }
+               
+         
+        }
+      },
+      "approveDealerBody":{
+        "properties": {        
+          "dealerId": {
+            "type": "string"
+          },
+          "flag": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },    
+          "createdBy": {
+            "type": "string"
+          },      
+          "isAccountCreate":{
+            "type": "boolean"
+          },
+          "customerAccountCreated":{
+            "type": "boolean"
+          },
+
+          "dealers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "firstName": {
+                  "type": "string"
+                },
+                "lastName": {
+                  "type": "string"
+                },
+                "phoneNumber": {
+                  "type": "number"
+                },
+                "isPrimary": {
+                  "type": "boolean"
+                },
+                "position": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "boolean"
+                }
+              },
+              "required": ["email", "password", "firstName", "lastName"]
+            }
+          },
+          "savePriceBookType":{
+            "type": "string"
+          },
+          "priceBook": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "priceBook": {
+                  "type": "string"
+                },
+                "retailPrice": {
+                  "type": "number"
+                },
+                "wholePrice": {
+                  "type": "number"
+                }
+                
+              },
+
+              "required": ["email", "password", "firstName", "lastName"]
+            }
+          }
+               
+         
+        }
+      },
+      
+      "servicerBody":{
+        "properties": {        
+          "name": {
+            "type": "string"
+          },
+          "street": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "zip": {
+            "type": "number"
+          },
+          "state": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "createdBy": {
+            "type": "string"
+          },       
+          "role": {
+            "type": "string"
+          },
+          "isAccountCreate":{
+            "type": "boolean"
+          },
+          "customerAccountCreated":{
+            "type": "boolean"
+          },
+          "providers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "password": {
+                  "type": "string"
+                },
+                "firstName": {
+                  "type": "string"
+                },
+                "lastName": {
+                  "type": "string"
+                },
+                "phoneNumber": {
+                  "type": "number"
+                },
+                "isPrimary": {
+                  "type": "boolean"
+                }
+              },
+              "required": ["email", "password", "firstName", "lastName"]
+            }
+          }            
+         
+        }
+      },
+      "Claims": {
+        "properties": {
+          "contractId": {
+            "type": "string"
+          },
+          "claimStatus": {
+            "type": "string"
+          },
+          "bdAdh": {
+            "type": "string"
+          },
+          "diagnosis": {
+            "type": "string"
+          },
+          "receiptImage": {
+            "type": "string"
+          },
+          "shippingCarrier": {
+            "type": "string"
+          },
+          "shippingLabel": {
+            "type": "string"
+          },
+          "claimDate": {
+            "type": "Date"
+          },  
+        "claimType": {
+            "type": "string"
+          },
+          "servicePaymentStatus": {
+            "type": "string"
+          },
+          "shippingAmount": {
+            "type": "number"
+          },
+          "totalAmount": {
+            "type": "number"
+          }
+        }
+      },
+      "ClaimPart": {
+      
+        "properties": {      
+          "claimId": {
+            "type": "string"
+          },
+          "serviceProId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "serial": {
+            "type": "string"
+          },
+          "manufacture": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          }
+        }
+      },
+      "ClaimStatus": {
+        "properties": {      
+          "claimId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "updateDate": {
+            "type": "Date"
+          }
+        }
+      },
+      "Dealer": {      
+        "properties": {        
+          "name": {
+            "type": "string"
+          },
+          "street": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "zip": {
+            "type": "number"
+          },
+          "state": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "createdBy": {
+            "type": "string"
+          }
+        }
+      },
+      "servicerRegister":{
+        "properties": {        
+          "name": {
+            "type": "string"
+          },
+          "street": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "zip": {
+            "type": "number"
+          },
+          "state": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },       
+          "email": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "phoneNumber": {
+            "type": "number"
+          },
+          "role":{
+            "type": "string"
+          } 
+         
+        }
+      },      
+      "Servicer": {
+        "properties": {        
+          "name": {
+            "type": "string"
+          },
+          "street": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "zip": {
+            "type": "number"
+          },
+          "state": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          }
+        }
+      },
+      "Users": {
+        "properties": {
+          
+          "firstName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "accountId": {
+            "type": "string"
+          },
+          "phoneNumber": {
+            "type": "number"
+          },
+          "roleId": {
+            "type": "string"
+          },
+          "isPrimary": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "boolean"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "approvedStatus": {
+            "type": "string",
+            "enum": ["Pending", "Approved", "Rejected"]
+          }
+        }
+      },
+     
+      "Customer": {
+        "properties": {
+          "username": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "street": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "zip": {
+            "type": "number"
+          },
+          "dealerId": {
+            "type": "string"
+          },
+          "serviceProviderId": {
+            "type": "string"
+          }
+        }
+      },
+      "Contract": {
+        "properties": {
+          "covEndDate": {
+            "type": "Date"
+          },       
+          "lastName": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "regDate": {
+            "type": "Date"
+          },
+          "claimAmount": {
+            "type": "number"
+          },
+          "productName": {
+            "type": "string"
+          },
+          "serial": {
+            "type": "string"
+          },
+          "productValue": {
+            "type": "number"
+          },
+          "manufacture": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "orderId": {
+            "type": "string"
+          },
+          "dealerPriceBookId": {
+            "type": "string"
+          },
+          "productCondition": {
+            "type": "string"
+          }          
+        }
+      },
+      "Orders": {
+        "properties": {
+          "dealerId": {
+            "type": "string"
+          },
+          "serviceProvId": {
+            "type": "string"
+          },
+          "deductible": {
+            "type": "number"
+          },
+          "customerId": {
+            "type": "string"
+          },
+          "orderAmount": {
+            "type": "number"
+          },
+          "paymentMethod": {
+            "type": "string"
+          },
+          "paymentStatus": {
+            "type": "number"
+          },
+          "paidAmount": {
+            "type": "string"
+          },
+          "dueAmount": {
+            "type": "number"
+          },
+          "orderDate": {
+            "type": "Date"
+          },
+          "createdBy": {
+            "type": "Date"
+          },
+          "venderOrder": {
+            "type": "string"
+          },
+          "coverageStartDate": {
+            "type": "Date"
+          },
+          "waitPeriodBd": {
+            "type": "number"
+          },
+          "waitPeriodAdh": {
+            "type": "number"
+          },
+          "serviceCoverageType": {
+            "type": "string"
+          },
+          "coverageType": {
+              "type": "string"
+          },
+          "additionalNotes": {
+            "type": "string"
+         },
+         "sendNotification": {
+          "type": "boolean"
+        },
+         "productsArray":{
+            "type":"Array"
+          },
+         "status":{
+            "type":"boolean"
+          },
+          "claimStatus":{
+            "type":"string"
+          }
+        }
+      },
+    
+      "Roles": {
+        "properties": {
+          "role": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "PriceBook": {
+        
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "term": {
+            "type": "number"
+          },
+          "frontingFee": {
+            "type": "number"
+          },
+          "reinsuranceFee": {
+            "type": "number"
+          },
+          "reserveFutureFee": {
+            "type": "number"
+          },
+          "adminFee": {
+            "type": "number"
+          },
+          "priceCatId": {
+            "type": "string"
+          },
+          "status":{
+            "type": "boolean"
+          }
+        }
+      },      
+      "DealerPriceBook": {      
+        "properties": {
+          "priceBookId": {
+            "type": "string"
+          },
+          "dealerId": {
+            "type": "string"
+          },
+          "retailPrice": {
+            "type": "number"
+          },          
+          "brokerFee": {
+            "type": "number"
+          },
+          "status":{
+            "type": "boolean"
+          }
+       
+        }
+      },   
+      "PriceBookCategory": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "boolean"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
