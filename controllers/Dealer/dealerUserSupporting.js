@@ -2441,7 +2441,7 @@ exports.getAllContracts = async (req, res) => {
             contractFilterWithEligibilty.push({ orderId: { $in: orderIds } })
         }
         let mainQuery = []
-        if (data.contractId === "" && data.productName === "" && data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
+        if (data.contractId === "" && data.productName === "" && data.dealerSku === "" &&  data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
             mainQuery = [
                 {
                     $facet: {
@@ -2605,12 +2605,16 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             dealerId: req.userId,
             status: true,
         });
+
         if (!getDealerPriceBook) {
             res.send({
                 code: constant.errorCode,
                 message: "Unable to fetch the data",
             });
             return;
+        }
+        if (data.dealerSku != "") {
+            getDealerPriceBook = getDealerPriceBook.filter(item => item.dealerSku == data.dealerSku)
         }
         if (!data.coverageType) {
             res.send({
@@ -2749,6 +2753,23 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         } else {
             priceBookDetail = {}
         }
+        mergedPriceBooks = mergedPriceBooks.map((item) => {
+            // Find the matching dealerPriceBookDetail object
+            const matchingDetail = getDealerPriceBook.find(detail =>
+                item._id.toString() === detail.priceBook.toString()
+            );
+
+            // If a match is found, add the dealerSku key
+            if (matchingDetail) {
+                return {
+                    ...item,
+                    dealerSku: matchingDetail.dealerSku
+                };
+            }
+
+            // If no match, return the item unchanged
+            return item;
+        });
         let result = {
             priceCategories: getCategories1,
             priceBooks: data.priceCatId == "" ? [] : mergedPriceBooks,
@@ -2989,6 +3010,7 @@ exports.getAllClaims = async (req, res, next) => {
                             claimType: 1,
                             customerStatus: 1,
                             trackingNumber: 1,
+                            dealerSku:1,
                             trackingType: 1,
                             repairParts: 1,
                             diagnosis: 1,

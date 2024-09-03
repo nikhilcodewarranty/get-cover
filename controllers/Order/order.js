@@ -888,18 +888,22 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
                 (item) => item.category.toString() === data.priceCatId
             );
 
-            let dealerSkuPrice = mergedPriceBooks.map((item) => item._id);
+            if (mergedPriceBooks.length > 0) {
+                let dealerSkuPrice = mergedPriceBooks.map((item) => item._id);
+
+                let condition = { priceBook: { $in: dealerSkuPrice }, dealerId: req.params.dealerId };
+
+                dealerPriceBookDetail = await dealerPriceService.findAllDealerPrice(condition);
+
+            }
 
             checkSelectedCategory = await priceBookService.getPriceCatByName({
                 _id: filteredPiceBook,
             });
 
-            let priceBookId = { priceBook: { $in: dealerSkuPrice } }
 
-            dealerPriceBookDetail = await dealerPriceService.findAllDealerPrice({
-                dealerId: req.params.dealerId,
-                priceBook: priceBookId,
-            });
+
+
         }
 
         const uniqueTerms = [...new Set(mergedPriceBooks.map(item => item.term))].map(term => ({
@@ -916,20 +920,26 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         } else {
             priceBookDetail = {}
         }
-        mergedPriceBooks = mergedPriceBooks
-            .map((item) => {
-                if (item._id.toString() === dealerPriceBookDetail.priceBook.toString()) {
-                    // If there's a match, add the dealerSku key
-                    return {
-                        ...item,
-                        dealerSku: dealerPriceBookDetail.dealerSku // Assuming dealerSku is available in dealerPriceBookDetail
-                    };
-                }
-                // If no match, return the item unchanged
-                return item;
-            });
+        mergedPriceBooks = mergedPriceBooks.map((item) => {
+            // Find the matching dealerPriceBookDetail object
+            const matchingDetail = getDealerPriceBook.find(detail =>
+                item._id.toString() === detail.priceBook.toString()
+            );
 
-      
+            // If a match is found, add the dealerSku key
+            if (matchingDetail) {
+                return {
+                    ...item,
+                    dealerSku: matchingDetail.dealerSku
+                };
+            }
+
+            // If no match, return the item unchanged
+            return item;
+        });
+
+
+
         let result = {
             priceCategories: getCategories1,
             dealerPriceBook: getDealerPriceBook,
@@ -1375,6 +1385,7 @@ exports.markAsPaid = async (req, res) => {
             response: {}
         };
         const checkOrder = await orderService.getOrder({ _id: req.params.orderId }, { isDeleted: false })
+
         if (checkOrder.status == 'Archieved') {
             res.send({
                 code: constant.errorCode,
@@ -1436,6 +1447,13 @@ exports.markAsPaid = async (req, res) => {
             let projection = { isDeleted: 0 };
             let priceBook = await priceBookService.getPriceBookById(
                 query,
+                projection
+            );
+            //dealer Price Book
+            let dealerQuery = { priceBook: new mongoose.Types.ObjectId(priceBookId), dealerId: savedResponse.dealerId };
+
+            let dealerPriceBook = await dealerPriceService.getDealerPriceById(
+                dealerQuery,
                 projection
             );
             var pricebookDetail = []
@@ -1565,6 +1583,7 @@ exports.markAsPaid = async (req, res) => {
                     venderOrder: savedResponse.venderOrder,
                     orderProductId: orderProductId,
                     minDate: minDate,
+                    dealerSku:dealerPriceBook.dealerSku,
                     coverageStartDate: coverageStartDate,
                     coverageEndDate: coverageEndDate,
                     serviceCoverageType: serviceCoverage,
@@ -2031,12 +2050,12 @@ async function generateTC(orderData) {
         })
         const contractArray = await Promise.all(contractArrayPromise);
 
-        for (let i = 0; i < checkOrder?.productsArray.length; i++) {
+         for (let i = 0; i < checkOrder?.productsArray.length; i++) {
             if (checkOrder?.productsArray[i].priceType == 'Quantity Pricing') {
                 for (let j = 0; j < checkOrder?.productsArray[i].QuantityPricing.length; j++) {
                     let quanitityProduct = checkOrder?.productsArray[i].QuantityPricing[j];
                     let obj = {
-                        productName: quanitityProduct.name,
+                        productName: checkOrder?.productsArray[i]?.dealerSku,
                         noOfProducts: quanitityProduct.enterQuantity
                     }
                     productCoveredArray.push(obj)
@@ -2047,7 +2066,7 @@ async function generateTC(orderData) {
                 let findContract = contractArray.find(contract => contract.orderProductId.toString() === checkOrder?.productsArray[i]._id.toString())
 
                 let obj = {
-                    productName: findContract.productName,
+                    productName: findContract?.dealerSku,
                     noOfProducts: checkOrder?.productsArray[i].noOfProducts
                 }
                 productCoveredArray.push(obj)

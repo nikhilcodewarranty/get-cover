@@ -761,7 +761,7 @@ async function generateTC(orderData) {
                 for (let j = 0; j < checkOrder?.productsArray[i].QuantityPricing.length; j++) {
                     let quanitityProduct = checkOrder?.productsArray[i].QuantityPricing[j];
                     let obj = {
-                        productName: quanitityProduct.name,
+                        productName: checkOrder?.productsArray[i]?.dealerSku,
                         noOfProducts: quanitityProduct.enterQuantity
                     }
                     productCoveredArray.push(obj)
@@ -772,7 +772,7 @@ async function generateTC(orderData) {
                 let findContract = contractArray.find(contract => contract.orderProductId.toString() === checkOrder?.productsArray[i]._id.toString())
 
                 let obj = {
-                    productName: findContract.productName,
+                    productName: findContract?.dealerSku,
                     noOfProducts: checkOrder?.productsArray[i].noOfProducts
                 }
                 productCoveredArray.push(obj)
@@ -958,7 +958,7 @@ const getObjectFromS3 = (bucketReadUrl) => {
 
                 const result = {
                     headers: headers,
-                    data: XLSX.utils.sheet_to_json(sheet,{
+                    data: XLSX.utils.sheet_to_json(sheet, {
                         raw: false, // this ensures all cell values are parsed as text
                         dateNF: 'mm/dd/yyyy', // optional: specifies the date format if Excel stores dates as numbers
                         defval: '', // fills in empty cells with an empty string
@@ -1284,6 +1284,7 @@ exports.createOrder1 = async (req, res) => {
                 const bucketReadUrl = { Bucket: process.env.bucket_name, Key: product.orderFile.fileName };
                 // Await the getObjectFromS3 function to complete
                 const result = await getObjectFromS3(bucketReadUrl);
+
                 headerLength = result.headers
                 if (headerLength.length !== 8) {
                     res.send({
@@ -1297,10 +1298,17 @@ exports.createOrder1 = async (req, res) => {
                 let coverageEndDate = product.coverageEndDate;
                 let orderProductId = product._id;
                 let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
+
                 let projection = { isDeleted: 0 };
+
                 let priceBook = await priceBookService.getPriceBookById(
                     query,
                     projection
+                );
+                let dealerQuery = { priceBook: new mongoose.Types.ObjectId(priceBookId), dealerId: savedResponse.dealerId };
+                let dealerPriceBook = await dealerPriceService.getDealerPriceById(
+                    dealerQuery,
+                    {}
                 );
 
                 const totalDataComing1 = result.data
@@ -1345,8 +1353,6 @@ exports.createOrder1 = async (req, res) => {
                         })
                         return
                     }
-
-
                     let p_date = new Date(data.purchaseDate)
                     let p_date1 = new Date(data.purchaseDate)
                     let l_date = new Date(data.purchaseDate)
@@ -1403,6 +1409,7 @@ exports.createOrder1 = async (req, res) => {
                         venderOrder: savedResponse.venderOrder,
                         orderProductId: orderProductId,
                         coverageStartDate: coverageStartDate,
+                        dealerSku: dealerPriceBook.dealerSku,
                         coverageEndDate: coverageEndDate,
                         productName: priceBook[0]?.name,
                         pName: priceBook[0]?.pName,
@@ -2210,9 +2217,17 @@ exports.editOrderDetail = async (req, res) => {
                 let coverageStartDate = product.coverageStartDate;
                 let coverageEndDate = product.coverageEndDate;
                 let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
-                let projection = { isDeleted: 0 };
+                let projection = { isDeleted: 0 };   
+
                 let priceBook = await priceBookService.getPriceBookById(
                     query,
+                    projection
+                );
+                //dealer Price Book
+                let dealerQuery = { priceBook: new mongoose.Types.ObjectId(priceBookId), dealerId: savedResponse.dealerId };
+
+                let dealerPriceBook = await dealerPriceService.getDealerPriceById(
+                    dealerQuery,
                     projection
                 );
                 // reporting codes
@@ -2328,6 +2343,7 @@ exports.editOrderDetail = async (req, res) => {
                         minDate: minDate,
                         coverageStartDate: coverageStartDate,
                         coverageEndDate: coverageEndDate,
+                        dealerSku:dealerPriceBook.dealerSku,
                         serviceCoverageType: serviceCoverage,
                         coverageType: checkOrder.coverageType,
                         productName: priceBook[0]?.name,
@@ -2576,6 +2592,7 @@ exports.getOrderContract = async (req, res) => {
             contractFilterWithEligibilty = [
                 { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { dealerSku: { '$regex': data.dealerSku ? data.dealerSku.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -2590,6 +2607,7 @@ exports.getOrderContract = async (req, res) => {
                 { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { dealerSku: { '$regex': data.dealerSku ? data.dealerSku.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -2603,7 +2621,7 @@ exports.getOrderContract = async (req, res) => {
             contractFilterWithEligibilty.push({ orderId: { $in: orderIds } })
         }
         let mainQuery = []
-        if (data.contractId === "" && data.productName === "" && data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
+        if (data.contractId === "" && data.productName === "" && data.dealerSku === "" &&  data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
             mainQuery = [
                 { $sort: { unique_key_number: -1 } },
 
@@ -2627,6 +2645,7 @@ exports.getOrderContract = async (req, res) => {
                                     model: 1,
                                     serial: 1,
                                     unique_key: 1,
+                                    dealerSku: 1,
                                     status: 1,
                                     minDate: 1,
                                     productValue: 1,
@@ -2673,6 +2692,7 @@ exports.getOrderContract = async (req, res) => {
                                 productName: 1,
                                 model: 1,
                                 serial: 1,
+                                dealerSku: 1,
                                 unique_key: 1,
                                 status: 1,
                                 minDate: 1,

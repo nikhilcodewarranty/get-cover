@@ -107,6 +107,7 @@ exports.getContracts = async (req, res) => {
       contractFilterWithEligibilty = [
         { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { dealerSku: { '$regex': data.dealerSku ? data.dealerSku.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -118,6 +119,7 @@ exports.getContracts = async (req, res) => {
       contractFilterWithEligibilty = [
         { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { dealerSku: { '$regex': data.dealerSku ? data.dealerSku.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -133,7 +135,7 @@ exports.getContracts = async (req, res) => {
     }
 
     let mainQuery = []
-    if (data.contractId === "" && data.productName === "" && data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
+    if (data.contractId === "" && data.productName === "" &&  data.dealerSku === "" && data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
       mainQuery = [
         { $sort: { unique_key_number: -1 } },
         {
@@ -156,6 +158,7 @@ exports.getContracts = async (req, res) => {
                   pName: 1,
                   model: 1,
                   serial: 1,
+                  dealerSku:1,
                   unique_key: 1,
                   minDate: 1,
                   status: 1,
@@ -204,6 +207,7 @@ exports.getContracts = async (req, res) => {
                 serial: 1,
                 minDate: 1,
                 unique_key: 1,
+                dealerSku:1,
                 status: 1,
                 manufacture: 1,
                 productValue: 1,

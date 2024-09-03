@@ -404,7 +404,7 @@ async function generateTC(orderData) {
                 for (let j = 0; j < checkOrder?.productsArray[i].QuantityPricing.length; j++) {
                     let quanitityProduct = checkOrder?.productsArray[i].QuantityPricing[j];
                     let obj = {
-                        productName: quanitityProduct.name,
+                        productName: checkOrder?.productsArray[i]?.dealerSku,
                         noOfProducts: quanitityProduct.enterQuantity
                     }
                     productCoveredArray.push(obj)
@@ -415,7 +415,7 @@ async function generateTC(orderData) {
                 let findContract = contractArray.find(contract => contract.orderProductId.toString() === checkOrder?.productsArray[i]._id.toString())
 
                 let obj = {
-                    productName: findContract.productName,
+                    productName: findContract?.dealerSku,
                     noOfProducts: checkOrder?.productsArray[i].noOfProducts
                 }
                 productCoveredArray.push(obj)
@@ -1049,7 +1049,7 @@ exports.getServicerInOrders = async (req, res) => {
         return;
     }
 
-    console.log("servicer user ++++++++++++++++++++++++++",servicer,servicerUser)
+    console.log("servicer user ++++++++++++++++++++++++++", servicer, servicerUser)
 
     const result_Array = servicer.map((item1) => {
         const matchingItem = servicerUser.find(
