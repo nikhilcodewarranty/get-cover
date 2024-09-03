@@ -177,6 +177,16 @@ exports.createDealer = async (req, res) => {
                         return;
                     }
 
+                    // check uniqueness of dealer sku
+                    const checkUnique = new Set(dealerPriceArray.map((item) => item.dealerSku));
+                    if (dealerPriceArray.length !== checkUnique.size) {
+                        res.send({
+                            code: constant.errorCode,
+                            message: 'Multiple products cannot have same dealer sku',
+                        });
+                        return
+                    }
+
                     const cleanStr1 = singleDealer.name.replace(/\s/g, '').toLowerCase();
                     const cleanStr2 = data.name.replace(/\s/g, '').toLowerCase();
 
@@ -1372,7 +1382,7 @@ const getObjectFromS3 = (bucketReadUrl) => {
 
                 const result = {
                     headers: headers,
-                    data: XLSX.utils.sheet_to_json(sheet,{ defval: "" }),
+                    data: XLSX.utils.sheet_to_json(sheet, { defval: "" }),
                 };
 
                 resolve(result);
