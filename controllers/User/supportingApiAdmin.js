@@ -178,7 +178,7 @@ exports.createDealer = async (req, res) => {
                     }
 
                     // check uniqueness of dealer sku
-                    const checkUnique = new Set(dealerPriceArray.map((item) => item.dealerSku.replace(/\s+/g, ' ').trim()));
+                    const checkUnique = new Set(dealerPriceArray.map((item) => item.dealerSku.toLowerCase().replace(/\s+/g, ' ').trim()));
 
 
                     if (dealerPriceArray.length !== checkUnique.size) {
@@ -834,7 +834,7 @@ exports.createDealer = async (req, res) => {
                     }
 
                     // check uniqueness of dealer sku
-                    const checkUnique = new Set(dealerPriceArray.map((item) => item.dealerSku.replace(/\s+/g, ' ').trim()));
+                    const checkUnique = new Set(dealerPriceArray.map((item) => item.dealerSku.toLowerCase().replace(/\s+/g, ' ').trim()));
 
 
                     if (dealerPriceArray.length !== checkUnique.size) {
