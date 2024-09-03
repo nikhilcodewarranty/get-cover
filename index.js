@@ -48,6 +48,13 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+app.use('/uploads', express.static('./uploads/'))
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Something went wrong!');
+});
+
+
 app.use((req, res, next) => {
   const ip = req.ip;
   next();
@@ -89,7 +96,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/uploads', express.static('./uploads/'))
 
 // app.get('/uploads/logo/:filename', (req, res) => {
 //   const folder = 'logo';
