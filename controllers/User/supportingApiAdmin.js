@@ -182,7 +182,7 @@ exports.createDealer = async (req, res) => {
 
 
                     if (dealerPriceArray.length !== checkUnique.size) {
-                        res.send({
+                        res.send({ 
                             code: constant.errorCode,
                             message: 'Multiple products cannot have same dealer sku',
                         });
