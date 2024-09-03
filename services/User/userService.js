@@ -374,6 +374,7 @@ module.exports = class userService {
     }
   }
 
+  //Save Contact Form Data
   static async contactUs(data) {
     try {
       const response = await new contact(data).save();
@@ -383,6 +384,7 @@ module.exports = class userService {
     }
   }
 
+  //Save Option dynamically backend use
   static async saveOptions(data) {
     try {
       const response = await new options(data).save();
@@ -391,4 +393,14 @@ module.exports = class userService {
       return `Could not save options: ${error}`;
     }
   }
+
+  static async getOptions(query) {
+    try {
+      const response = await options.findOne(query);
+      return response;
+    } catch (error) {
+      return `Could not find options: ${error}`;
+    }
+  }
+
 };

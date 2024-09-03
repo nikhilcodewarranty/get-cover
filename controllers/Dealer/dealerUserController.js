@@ -1363,7 +1363,7 @@ exports.editOrderDetail = async (req, res) => {
                     projection
                 );
                 //dealer Price Book
-                let dealerQuery = { priceBook: new mongoose.Types.ObjectId(priceBookId), dealerId: savedResponse.dealerId };
+                let dealerQuery = { priceBook: new mongoose.Types.ObjectId(priceBookId), dealerId: req.userId };
 
                 let dealerPriceBook = await dealerPriceService.getDealerPriceById(
                     dealerQuery,
