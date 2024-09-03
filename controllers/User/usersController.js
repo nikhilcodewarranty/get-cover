@@ -1781,7 +1781,7 @@ exports.getOptions = async (req, res) => {
     if (!getOptions) {
       res.send({
         code: constant.errorCode,
-        message: "Unable to save contact for data!"
+        message: "Unable to fetch data!"
       });
       return
     }
