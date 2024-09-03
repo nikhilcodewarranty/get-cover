@@ -29,7 +29,7 @@ const path = require('path');
 const randtoken = require('rand-token').generator()
 const { S3Client } = require('@aws-sdk/client-s3');
 const { Upload } = require('@aws-sdk/lib-storage');
-const multerS3 = require('multer-s3');
+const multerS3 = require('multer-s3'); 
 const aws = require('aws-sdk');
 aws.config.update({
     accessKeyId: process.env.aws_access_key_id,
