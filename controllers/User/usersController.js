@@ -1771,4 +1771,32 @@ exports.saveOptions = async (req, res) => {
   }
 }
 
+//Get option from database
+
+exports.getOptions = async (req, res) => {
+  try {
+    let filterOption = req.params.name;
+    const query = { name: filterOption }
+    const getOptions = await userService.getOptions(query);
+    if (!getOptions) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to save contact for data!"
+      });
+      return
+    }
+    res.send({
+      code: constant.successCode,
+      result: getOptions
+    })
+
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
 

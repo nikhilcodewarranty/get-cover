@@ -26,7 +26,7 @@ router.get("/readNotification/:notificationId", [verifyToken], supportingFunctio
 router.get("/getCountNotification", [verifyToken], userController.getCountNotification); // get notification count
 
 // Setting Routes
- 
+
 router.post('/setting', userController.accountSetting);
 router.post('/resetSetting', userController.resetSetting)
 router.post('/setting/uploadLogo', userController.uploadLogo);
@@ -34,7 +34,11 @@ router.get('/setting/getSetting', userController.getSetting);
 
 //Save Contact form 
 router.post('/contact-us', validator("filer_contact_us"), userController.contactUs);
-router.post('/saveOptions', userController.saveOptions);
+
+//Option Dropdown 
+router.post('/saveOptions', [verifyToken], userController.saveOptions);
+
+router.get('/getOptions/:name', [verifyToken], userController.getOptions)
 
 router.post("/createSuperAdmin", userController.createSuperAdmin); // create super admin credentials
 router.post("/addMember", [verifyToken], userController.addMembers); // add member
