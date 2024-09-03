@@ -42,7 +42,7 @@ var app = express();
 
 app.use("/api-v1/api-docs", swaggerUi.serve, (...args) => swaggerUi.setup(swaggerDocument)(...args));
 app.use("/api-v1/priceApi", swaggerUi.serve, (...args) => swaggerUi.setup(swaggerDocumentDealer)(...args));
-app.set('view engine', 'ejs');
+app.set('view engine', 'pug');
 
 app.set('views', path.join(__dirname, 'views'));
 app.use(bodyParser.json());
