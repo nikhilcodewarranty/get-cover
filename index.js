@@ -42,6 +42,7 @@ var app = express();
 
 app.use("/api-v1/api-docs", swaggerUi.serve, (...args) => swaggerUi.setup(swaggerDocument)(...args));
 app.use("/api-v1/priceApi", swaggerUi.serve, (...args) => swaggerUi.setup(swaggerDocumentDealer)(...args));
+app.set('view engine', 'pug');
 
 app.set('views', path.join(__dirname, 'views'));
 app.use(bodyParser.json());
@@ -88,23 +89,23 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// app.use('/uploads/logo/:filename', express.static('./uploads/'))
+app.use('/uploads', express.static('./uploads/'))
 
-app.get('/uploads/logo/:filename', (req, res) => {
-  const folder = 'logo';
-  const filename = req.params.filename;
-  const filePath = path.join(__dirname, 'uploads', folder, filename);
+// app.get('/uploads/logo/:filename', (req, res) => {
+//   const folder = 'logo';
+//   const filename = req.params.filename;
+//   const filePath = path.join(__dirname, 'uploads', folder, filename);
 
-  // Check if the file exists
-  fs.access(filePath, fs.constants.F_OK, (err) => {
-    if (err) {
-      return res.status(404).send('File not found');
-    }
+//   // Check if the file exists
+//   fs.access(filePath, fs.constants.F_OK, (err) => {
+//     if (err) {
+//       return res.status(404).send('File not found');
+//     }
 
-    // Send the file if it exists
-    res.sendFile(filePath);
-  });
-});
+//     // Send the file if it exists
+//     res.sendFile(filePath);
+//   });
+// });
 
 
 var cron = require('node-cron');
