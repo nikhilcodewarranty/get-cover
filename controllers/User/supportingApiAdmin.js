@@ -179,6 +179,8 @@ exports.createDealer = async (req, res) => {
 
                     // check uniqueness of dealer sku
                     const checkUnique = new Set(dealerPriceArray.map((item) => item.dealerSku));
+
+
                     if (dealerPriceArray.length !== checkUnique.size) {
                         res.send({
                             code: constant.errorCode,
@@ -187,6 +189,9 @@ exports.createDealer = async (req, res) => {
                         return
                     }
 
+                    console.log("dealerPriceArray-,,,,,,,,,,,,,,,,,,,",dealerPriceArray)
+                    console.log("dealerPriceArray-,,,,,,,,,,,,,,,,,,,",checkUnique)
+                    return
                     const cleanStr1 = singleDealer.name.replace(/\s/g, '').toLowerCase();
                     const cleanStr2 = data.name.replace(/\s/g, '').toLowerCase();
 
