@@ -8,7 +8,6 @@ const create_price_validation = Joi.object({
     reinsuranceFee:Joi.number().required(),
     adminFee:Joi.number().required(),
     coverageType:Joi.array().items(Joi.string()).required(),
-
     reserveFutureFee:Joi.number().required(),
     priceCatId:Joi.string().trim().required(),
     status: Joi.boolean().optional(),

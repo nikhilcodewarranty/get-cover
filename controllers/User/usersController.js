@@ -1574,21 +1574,20 @@ exports.getSetting = async (req, res) => {
     // }
     let setting = await userService.getSetting({});
     const baseUrl = process.env.API_ENDPOINT;
-    console.log("process env+++++++++++++++", process.env)
     if (setting.length > 0) {
       setting[0].base_url = baseUrl;
 
       // Assuming setting[0].logoDark and setting[0].logoLight contain relative paths
       if (setting[0].logoDark && setting[0].logoDark.fileName) {
-        setting[0].logoDark.fullUrl = baseUrl;
+        setting[0].logoDark.baseUrl = baseUrl;
       }
 
       if (setting[0].logoLight && setting[0].logoLight.fileName) {
-        setting[0].logoLight.fullUrl = baseUrl;
+        setting[0].logoLight.baseUrl = baseUrl;
       }
 
       if (setting[0].favIcon && setting[0].favIcon.fileName) {
-        setting[0].favIcon.fullUrl = baseUrl;
+        setting[0].favIcon.baseUrl = baseUrl;
       }
       // Repeat for any other properties that need the base_url prepended
     }
