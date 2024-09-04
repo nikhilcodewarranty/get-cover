@@ -303,6 +303,7 @@ exports.createPriceBook = async (req, res, next) => {
 exports.getPriceBookById = async (req, res, next) => {
   try {
     let query = { _id: new mongoose.Types.ObjectId(req.params.priceBookId) }
+    console.log("dfsdfsdfs");//
     let projection = { isDeleted: 0, __v: 0 }
     const singlePriceBook = await priceBookService.getPriceBookById(
       query, projection

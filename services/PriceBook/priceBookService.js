@@ -104,7 +104,7 @@ module.exports = class priceBookService {
         },
         {
           $unwind: '$category'
-        }
+        },
 
       ]).sort({ 'createdAt': -1 });
       return singlePriceBookResponse;
