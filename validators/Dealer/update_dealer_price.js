@@ -5,7 +5,7 @@ const update_dealer_price_validation = Joi.object({
     priceBook:Joi.string().trim().hex().length(24),
     retailPrice:Joi.number().optional(),
     status:Joi.boolean().optional(),
-    brokerFee:Joi.number().optional(),
+    brokerFee:Joi.number().optional(), 
     wholesalePrice:Joi.number().optional(),
     term:Joi.number().optional(),
     description:Joi.string().allow('').optional(),
