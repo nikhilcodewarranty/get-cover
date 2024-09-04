@@ -11,8 +11,8 @@ const create_dealer_price_book_validation = Joi.object({
     categoryId:Joi.string().optional(),
     priceType:Joi.string().allow('').optional(),
     dealerSku:Joi.string().allow('').optional(),
-    coverageType:Joi.string().allow('').optional(),
-    //coverageType:Joi.array().items(Joi.string()).optional(),
+    //coverageType:Joi.string().allow('').optional(),
+    coverageType:Joi.array().items(Joi.string()).optional(),
     brokerFee:Joi.number().required(),
     description:Joi.string().allow('').optional(),
     
