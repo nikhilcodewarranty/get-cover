@@ -11,7 +11,7 @@ const create_price_validation = Joi.object({
     coverageType: Joi.array().items().required(Joi.object().keys({
         label: Joi.string().allow('').optional(),
         value: Joi.string().allow('').optional(),
-    })).required(),
+    })).required(), 
     reserveFutureFee: Joi.number().required(),
     priceCatId: Joi.string().trim().required(),
     status: Joi.boolean().optional(),
