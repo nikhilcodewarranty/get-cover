@@ -105,19 +105,6 @@ module.exports = class priceBookService {
         {
           $unwind: '$category'
         },
-        {
-          $lookup: {
-            from: "options",
-            localField: "coverageType.value",
-            foreignField: "value.value",
-            as: "options",
-            pipeline:[
-             { $match:{
-                value:{$elemMatch:{value:"breakdown"}}
-              }}
-            ]
-          }
-        },
 
       ]).sort({ 'createdAt': -1 });
       return singlePriceBookResponse;
