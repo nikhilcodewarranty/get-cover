@@ -18,7 +18,7 @@ verifyToken = async (req, res, next) => {
         })
         return
       }
-
+      console.log(decoded)
       let checkUser = await users.findOne({ _id: decoded.teammateId })
       if (!checkUser) {
         res.send({
