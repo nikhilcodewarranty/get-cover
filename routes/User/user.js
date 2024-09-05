@@ -41,6 +41,8 @@ router.post('/saveOptions', [verifyToken], userController.saveOptions);
 
 router.get('/getOptions/:name', [verifyToken], userController.getOptions)
 
+router.get('/getOptions', [verifyToken], userController.getOptions1)
+
 router.post("/createSuperAdmin", userController.createSuperAdmin); // create super admin credentials
 router.post("/addMember", [verifyToken], userController.addMembers); // add member
 router.post("/getMembers", [verifyToken], userController.getMembers); // get members
