@@ -1453,6 +1453,7 @@ exports.accountSetting = async (req, res) => {
     // }
     let data = req.body;
     data.setDefault = 0;
+    console.log("data-------------------------",data)
     let response;
     const getData = await userService.getSetting({});
     if (getData.length > 0) {
