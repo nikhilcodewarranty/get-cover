@@ -1456,7 +1456,7 @@ exports.accountSetting = async (req, res) => {
     let response;
     const getData = await userService.getSetting({});
     if (getData.length > 0) {
-      response = await userService.updateSetting({ _id: getData[0]?._id }, data, { new: true })
+      response = await userService.updateSetting({ _id: getData[0]?._id }, {$set:data}, { new: true })
 
     }
     else {
