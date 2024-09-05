@@ -24,8 +24,8 @@ router.post("/getAllNotifications", [verifyToken], userController.getAllNotifica
 router.get("/readAllNotification", [verifyToken], userController.readAllNotification); // read all notifications
 router.get("/readNotification/:notificationId", [verifyToken], supportingFunction.checkObjectId, userController.readNotification); // read notification by ID
 router.get("/getCountNotification", [verifyToken], userController.getCountNotification); // get notification count
-
-// Setting Routes
+  
+// Setting Routes 
 
 router.post('/setting', userController.accountSetting);
 router.post('/resetSetting', userController.resetSetting)
