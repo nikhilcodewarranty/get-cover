@@ -24,13 +24,14 @@ router.post("/getAllNotifications", [verifyToken], userController.getAllNotifica
 router.get("/readAllNotification", [verifyToken], userController.readAllNotification); // read all notifications
 router.get("/readNotification/:notificationId", [verifyToken], supportingFunction.checkObjectId, userController.readNotification); // read notification by ID
 router.get("/getCountNotification", [verifyToken], userController.getCountNotification); // get notification count
-  
-// Setting Routes 
+
+// Setting Routes
 
 router.post('/setting', userController.accountSetting);
 router.post('/resetSetting', userController.resetSetting)
 router.post('/setting/uploadLogo', userController.uploadLogo);
 router.get('/setting/getSetting', userController.getSetting);
+router.get('/setting/setDefault', userController.setD);
 
 //Save Contact form 
 router.post('/contact-us', validator("filer_contact_us"), userController.contactUs);
