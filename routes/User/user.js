@@ -31,7 +31,7 @@ router.post('/setting', userController.accountSetting);
 router.post('/resetSetting', userController.resetSetting)
 router.post('/setting/uploadLogo', userController.uploadLogo);
 router.get('/setting/getSetting', userController.getSetting);
-router.get('/setting/setDefault', userController.setD);
+router.get('/setting/setDefault', userController.setDefault);
 
 //Save Contact form 
 router.post('/contact-us', validator("filer_contact_us"), userController.contactUs);

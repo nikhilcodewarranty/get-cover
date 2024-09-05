@@ -1451,7 +1451,8 @@ exports.accountSetting = async (req, res) => {
     //   });
     //   return
     // }
-    const data = req.body;
+    let data = req.body;
+    data.setDefault = 0;
     let response;
     const getData = await userService.getSetting({});
     if (getData.length > 0) {
@@ -1488,70 +1489,74 @@ exports.resetSetting = async (req, res) => {
     //   return
     // }
     // Define the default resetColor array
-    const defaultResetColor = [
-      {
-        colorCode: "#303030",
-        colorType: "sideBarColor"
-      },
-      {
-        colorCode: "#fafafa",
-        colorType: "sideBarTextColor"
-      },
-      {
-        colorCode: "#f2f2f2",
-        colorType: "sideBarButtonColor"
-      },
-      {
-        colorCode: "#201d1d",
-        colorType: "sideBarButtonTextColor"
-      },
-      {
-        colorCode: "#343232",
-        colorType: "buttonColor"
-      },
-      {
-        colorCode: "#fffafa",
-        colorType: "buttonTextColor"
-      },
-      {
-        colorCode: "#f2f2f2",
-        colorType: "backGroundColor"
-      },
-      {
-        colorCode: "",
-        colorType: "textColor"
-      },
-      {
-        colorCode: "#242424",
-        colorType: "titleColor"
-      },
-      {
-        colorCode: "#1a1a1a",
-        colorType: "cardColor"
-      },
-      {
-        colorCode: "#fcfcfc",
-        colorType: "cardBackGroundColor"
-      },
-      {
-        colorCode: "#fcfcfc",
-        colorType: "modelBackgroundColor"
-      },
-      {
-        colorCode: "#2b2727",
-        colorType: "modelColor"
-      }
-    ];
 
     let data = req.body;
     let response;
     const getData = await userService.getSetting({});
-    data.colorScheme = defaultResetColor;
+    let defaultResetColor = [];
+    if (getData[0]?.setDefault == 1) {
+      defaultResetColor = getData[0]?.defaultColor
+    }
+    else {
+      defaultResetColor = [
+        {
+          colorCode: "#303030",
+          colorType: "sideBarColor"
+        },
+        {
+          colorCode: "#fafafa",
+          colorType: "sideBarTextColor"
+        },
+        {
+          colorCode: "#f2f2f2",
+          colorType: "sideBarButtonColor"
+        },
+        {
+          colorCode: "#201d1d",
+          colorType: "sideBarButtonTextColor"
+        },
+        {
+          colorCode: "#343232",
+          colorType: "buttonColor"
+        },
+        {
+          colorCode: "#fffafa",
+          colorType: "buttonTextColor"
+        },
+        {
+          colorCode: "#f2f2f2",
+          colorType: "backGroundColor"
+        },
+        {
+          colorCode: "#333333",
+          colorType: "textColor"
+        },
+        {
+          colorCode: "#242424",
+          colorType: "titleColor"
+        },
+        {
+          colorCode: "#1a1a1a",
+          colorType: "cardColor"
+        },
+        {
+          colorCode: "#fcfcfc",
+          colorType: "cardBackGroundColor"
+        },
+        {
+          colorCode: "#fcfcfc",
+          colorType: "modelBackgroundColor"
+        },
+        {
+          colorCode: "#2b2727",
+          colorType: "modelColor"
+        }
+      ];
+    }
     response = await userService.updateSetting({ _id: getData[0]?._id }, { colorScheme: defaultResetColor }, { new: true })
     res.send({
       code: constant.successCode,
-      message: "Success!",
-      result: response
+      message: "Reset Successfully!!",
     })
 
   }
@@ -1563,7 +1568,9 @@ exports.resetSetting = async (req, res) => {
   }
 }
 
-exports.getSetting = async (req, res) => {
+//Set As default setting
+
+exports.setDefault = async (req, res) => {
   try {
     // if (req.role != "Super Admin") {
     //   res.send({
@@ -1572,30 +1579,17 @@ exports.getSetting = async (req, res) => {
     //   });
     //   return
     // }
-    let setting = await userService.getSetting({});
-    const baseUrl = process.env.API_ENDPOINT;
-    if (setting.length > 0) {
-      setting[0].base_url = baseUrl;
+    // Define the default resetColor array
+    let response;
+    const getData = await userService.getSetting({});
 
-      // Assuming setting[0].logoDark and setting[0].logoLight contain relative paths
-      if (setting[0].logoDark && setting[0].logoDark.fileName) {
-        setting[0].logoDark.baseUrl = baseUrl;
-      }
+    response = await userService.updateSetting({ _id: getData[0]?._id }, { defaultColor: getData[0].colorScheme, setDefault: 1 }, { new: true })
 
-      if (setting[0].logoLight && setting[0].logoLight.fileName) {
-        setting[0].logoLight.baseUrl = baseUrl;
-      }
-
-      if (setting[0].favIcon && setting[0].favIcon.fileName) {
-        setting[0].favIcon.baseUrl = baseUrl;
-      }
-      // Repeat for any other properties that need the base_url prepended
-    }
     res.send({
       code: constant.successCode,
-      message: "Success!",
-      result: setting
-    });
+      message: "Set as default successfully!",
+    })
+
   }
   catch (err) {
     res.send({
