@@ -39,7 +39,7 @@ router.post('/contact-us', validator("filer_contact_us"), userController.contact
 //Option Dropdown 
 router.post('/saveOptions', [verifyToken], userController.saveOptions);
 
-router.get('/getOptions/:name', [verifyToken], userController.getOptions)
+//router.get('/getOptions/:name', [verifyToken], userController.getOptions)
 
 router.get('/getOptions', [verifyToken], userController.getOptions1)
 

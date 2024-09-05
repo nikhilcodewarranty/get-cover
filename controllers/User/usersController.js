@@ -1810,9 +1810,35 @@ exports.saveOptions = async (req, res) => {
 
 exports.getOptions = async (req, res) => {
   try {
-    let filterOption = req.params.name;
+    let filterOption = req.params.name
     const query = { name: filterOption }
-    const getOptions = await userService.getOptions(query);
+    const getOptions = await userService.getOptions(query, { "value._id": 0, _id: 0 });
+    if (!getOptions) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch data!"
+      });
+      return
+    }
+    res.send({
+      code: constant.successCode,
+      result: getOptions
+    })
+
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.getOptions1 = async (req, res) => {
+  try {
+    let filterOption = req.query.key
+    const query = { name: { $in: filterOption } }
+    const getOptions = await userService.getMultipleOptions(query, { "value._id": 0, _id: 0 });
     if (!getOptions) {
       res.send({
         code: constant.errorCode,
