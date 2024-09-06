@@ -1451,11 +1451,13 @@ exports.accountSetting = async (req, res) => {
     //   });
     //   return
     // }
-    const data = req.body;
+    let data = req.body;
+    data.setDefault = 0;
+    console.log("data-------------------------",data)
     let response;
     const getData = await userService.getSetting({});
     if (getData.length > 0) {
-      response = await userService.updateSetting({ _id: getData[0]?._id }, data, { new: true })
+      response = await userService.updateSetting({ _id: getData[0]?._id }, {$set:data}, { new: true })
 
     }
     else {
@@ -1488,70 +1490,105 @@ exports.resetSetting = async (req, res) => {
     //   return
     // }
     // Define the default resetColor array
-    const defaultResetColor = [
-      {
-        colorCode: "#303030",
-        colorType: "sideBarColor"
-      },
-      {
-        colorCode: "#fafafa",
-        colorType: "sideBarTextColor"
-      },
-      {
-        colorCode: "#f2f2f2",
-        colorType: "sideBarButtonColor"
-      },
-      {
-        colorCode: "#201d1d",
-        colorType: "sideBarButtonTextColor"
-      },
-      {
-        colorCode: "#343232",
-        colorType: "buttonColor"
-      },
-      {
-        colorCode: "#fffafa",
-        colorType: "buttonTextColor"
-      },
-      {
-        colorCode: "#f2f2f2",
-        colorType: "backGroundColor"
-      },
-      {
-        colorCode: "",
-        colorType: "textColor"
-      },
-      {
-        colorCode: "#242424",
-        colorType: "titleColor"
-      },
-      {
-        colorCode: "#1a1a1a",
-        colorType: "cardColor"
-      },
-      {
-        colorCode: "#fcfcfc",
-        colorType: "cardBackGroundColor"
-      },
-      {
-        colorCode: "#fcfcfc",
-        colorType: "modelBackgroundColor"
-      },
-      {
-        colorCode: "#2b2727",
-        colorType: "modelColor"
-      }
-    ];
 
     let data = req.body;
     let response;
     const getData = await userService.getSetting({});
-    data.colorScheme = defaultResetColor;
+    let defaultResetColor = [];
+    if (getData[0]?.setDefault == 1) {
+      defaultResetColor = getData[0]?.defaultColor
+    }
+    else {
+      defaultResetColor = [
+        {
+          colorCode: "#303030",
+          colorType: "sideBarColor"
+        },
+        {
+          colorCode: "#fafafa",
+          colorType: "sideBarTextColor"
+        },
+        {
+          colorCode: "#f2f2f2",
+          colorType: "sideBarButtonColor"
+        },
+        {
+          colorCode: "#201d1d",
+          colorType: "sideBarButtonTextColor"
+        },
+        {
+          colorCode: "#343232",
+          colorType: "buttonColor"
+        },
+        {
+          colorCode: "#fffafa",
+          colorType: "buttonTextColor"
+        },
+        {
+          colorCode: "#f2f2f2",
+          colorType: "backGroundColor"
+        },
+        {
+          colorCode: "#333333",
+          colorType: "textColor"
+        },
+        {
+          colorCode: "#242424",
+          colorType: "titleColor"
+        },
+        {
+          colorCode: "#1a1a1a",
+          colorType: "cardColor"
+        },
+        {
+          colorCode: "#fcfcfc",
+          colorType: "cardBackGroundColor"
+        },
+        {
+          colorCode: "#fcfcfc",
+          colorType: "modelBackgroundColor"
+        },
+        {
+          colorCode: "#2b2727",
+          colorType: "modelColor"
+        }
+      ];
+    }
     response = await userService.updateSetting({ _id: getData[0]?._id }, { colorScheme: defaultResetColor }, { new: true })
     res.send({
       code: constant.successCode,
-      message: "Success!",
-      result: response
+      message: "Reset Successfully!!",
+    })
+
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+//Set As default setting
+
+exports.setDefault = async (req, res) => {
+  try {
+    // if (req.role != "Super Admin") {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Only super admin allow to do this action!"
+    //   });
+    //   return
+    // }
+    // Define the default resetColor array
+    let response;
+    const getData = await userService.getSetting({});
+
+    response = await userService.updateSetting({ _id: getData[0]?._id }, { defaultColor: getData[0].colorScheme, setDefault: 1 }, { new: true })
+
+    res.send({
+      code: constant.successCode,
+      message: "Set as default successfully!",
     })
 
   }
@@ -1774,9 +1811,35 @@ exports.saveOptions = async (req, res) => {
 
 exports.getOptions = async (req, res) => {
   try {
-    let filterOption = req.params.name;
+    let filterOption = req.params.name
     const query = { name: filterOption }
-    const getOptions = await userService.getOptions(query);
+    const getOptions = await userService.getOptions(query, { "value._id": 0, _id: 0 });
+    if (!getOptions) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch data!"
+      });
+      return
+    }
+    res.send({
+      code: constant.successCode,
+      result: getOptions
+    })
+
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.getOptions1 = async (req, res) => {
+  try {
+    let filterOption = req.query.key
+    const query = { name: { $in: filterOption } }
+    const getOptions = await userService.getMultipleOptions(query, { "value._id": 0, _id: 0 });
     if (!getOptions) {
       res.send({
         code: constant.errorCode,

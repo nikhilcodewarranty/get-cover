@@ -403,4 +403,14 @@ module.exports = class userService {
     }
   }
 
+  //Get Option
+  static async getMultipleOptions(query, projection) {
+    try {
+      const response = await options.find(query, projection);
+      return response;
+    } catch (error) {
+      return `Could not find options: ${error}`;
+    }
+  }
+
 };
