@@ -1452,12 +1452,10 @@ exports.accountSetting = async (req, res) => {
     //   return
     // }
     let data = req.body;
-    data.setDefault = 0;
-    console.log("data-------------------------",data)
     let response;
     const getData = await userService.getSetting({});
     if (getData.length > 0) {
-      response = await userService.updateSetting({ _id: getData[0]?._id }, {$set:data}, { new: true })
+      response = await userService.updateSetting({ _id: getData[0]?._id }, { $set: data }, { new: true })
 
     }
     else {
@@ -1495,7 +1493,7 @@ exports.resetSetting = async (req, res) => {
     let response;
     const getData = await userService.getSetting({});
     let defaultResetColor = [];
-    if (getData[0]?.setDefault == 1) {
+    if (getData[0]?.defaultResetColor > 1) {
       defaultResetColor = getData[0]?.defaultColor
     }
     else {
