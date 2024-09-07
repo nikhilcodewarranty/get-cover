@@ -778,8 +778,12 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         }
         // price book ids array from dealer price book
         let dealerPriceIds = getDealerPriceBook.map((item) => item.priceBook);
-        let newQuery = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true, };
+        let newQuery = {
+            _id: { $in: dealerPriceIds }, "coverageType.value": { "$all": data.coverageType },
+            "coverageType": { "$size": data.coverageType.length }, status: true,
+        };
         let getPriceBooksForAllCat = await priceBookService.getAllPriceIds(newQuery, {});
+        console.log("check ++++++++++++++++++++++++", getPriceBooksForAllCat)
         let uniqueCategory1 = {};
         let uniqueCategories1 = getPriceBooksForAllCat.filter((item) => {
             if (!uniqueCategory1[item.category.toString()]) {
@@ -795,15 +799,27 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         );
         let query;
         if (data.term != "" && data.pName == "") {
-            query = { _id: { $in: dealerPriceIds }, status: true, term: data.term, coverageType: data.coverageType };
+            query = {
+                _id: { $in: dealerPriceIds }, status: true, term: data.term, "coverageType.value": { "$all": data.coverageType },
+                "coverageType": { "$size": data.coverageType.length }
+            };
         }
         else if (data.pName != "" && data.term == "") {
-            query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName, coverageType: data.coverageType };
+            query = {
+                _id: { $in: dealerPriceIds }, status: true, pName: data.pName, "coverageType.value": { "$all": data.coverageType },
+                "coverageType": { "$size": data.coverageType.length }
+            };
 
         } else if (data.term != "" && data.pName != "") {
-            query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName, term: data.term, coverageType: data.coverageType };
+            query = {
+                _id: { $in: dealerPriceIds }, status: true, pName: data.pName, term: data.term, "coverageType.value": { "$all": data.coverageType },
+                "coverageType": { "$size": data.coverageType.length }
+            };
         } else {
-            query = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true, };
+            query = {
+                _id: { $in: dealerPriceIds }, "coverageType.value": { "$all": data.coverageType },
+                "coverageType": { "$size": data.coverageType.length }, status: true,
+            };
         }
 
         // }
@@ -920,6 +936,15 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         } else {
             priceBookDetail = {}
         }
+        if (mergedPriceBooks.lenght > 0) {
+            let priceIds = mergedPriceBooks.map(ID => ID._id)
+
+            getDealerPriceBook = await dealerPriceService.findAllDealerPrice({
+                dealerId: req.params.dealerId,
+                status: true,
+                priceBook: { $in: priceIds }
+            });
+        }
         mergedPriceBooks = mergedPriceBooks.map((item) => {
             // Find the matching dealerPriceBookDetail object
             const matchingDetail = getDealerPriceBook.find(detail =>
@@ -963,6 +988,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         });
     }
 };
+
 
 //Get Price Book in Order
 exports.getPriceBooksInOrder = async (req, res) => {
@@ -1583,7 +1609,7 @@ exports.markAsPaid = async (req, res) => {
                     venderOrder: savedResponse.venderOrder,
                     orderProductId: orderProductId,
                     minDate: minDate,
-                    dealerSku:dealerPriceBook.dealerSku,
+                    dealerSku: dealerPriceBook.dealerSku,
                     coverageStartDate: coverageStartDate,
                     coverageEndDate: coverageEndDate,
                     serviceCoverageType: serviceCoverage,
@@ -2050,7 +2076,7 @@ async function generateTC(orderData) {
         })
         const contractArray = await Promise.all(contractArrayPromise);
 
-         for (let i = 0; i < checkOrder?.productsArray.length; i++) {
+        for (let i = 0; i < checkOrder?.productsArray.length; i++) {
             if (checkOrder?.productsArray[i].priceType == 'Quantity Pricing') {
                 for (let j = 0; j < checkOrder?.productsArray[i].QuantityPricing.length; j++) {
                     let quanitityProduct = checkOrder?.productsArray[i].QuantityPricing[j];
