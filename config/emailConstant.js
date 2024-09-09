@@ -89,7 +89,7 @@ module.exports = {
       return {
         to: toEmail,
         from: process.env.from_email,
-        templateId: 'd-a5d4a679ef5e459aaffcf27b5876e782',
+        templateId: process.env.servicer_approval,
         dynamic_template_data: data
       };
     },
