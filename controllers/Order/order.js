@@ -920,6 +920,15 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         } else {
             priceBookDetail = {}
         }
+        if (mergedPriceBooks.length > 0) {
+            let priceIds = mergedPriceBooks.map(ID => ID._id)
+            getDealerPriceBook = await dealerPriceService.findAllDealerPrice({
+                dealerId: req.params.dealerId,
+                status: true,
+                priceBook: { $in: priceIds }
+            });
+        }
+
         mergedPriceBooks = mergedPriceBooks.map((item) => {
             // Find the matching dealerPriceBookDetail object
             const matchingDetail = getDealerPriceBook.find(detail =>
@@ -1583,7 +1592,7 @@ exports.markAsPaid = async (req, res) => {
                     venderOrder: savedResponse.venderOrder,
                     orderProductId: orderProductId,
                     minDate: minDate,
-                    dealerSku:dealerPriceBook.dealerSku,
+                    dealerSku: dealerPriceBook.dealerSku,
                     coverageStartDate: coverageStartDate,
                     coverageEndDate: coverageEndDate,
                     serviceCoverageType: serviceCoverage,
@@ -2050,7 +2059,7 @@ async function generateTC(orderData) {
         })
         const contractArray = await Promise.all(contractArrayPromise);
 
-         for (let i = 0; i < checkOrder?.productsArray.length; i++) {
+        for (let i = 0; i < checkOrder?.productsArray.length; i++) {
             if (checkOrder?.productsArray[i].priceType == 'Quantity Pricing') {
                 for (let j = 0; j < checkOrder?.productsArray[i].QuantityPricing.length; j++) {
                     let quanitityProduct = checkOrder?.productsArray[i].QuantityPricing[j];

@@ -22,8 +22,8 @@ const priceSchema = new mongoose.Schema({
     default:0
   },
   coverageType: {
-    type: [],
-    default: []
+    type: String,
+    default: ""
   },
   unique_key: {
     type: Number,
