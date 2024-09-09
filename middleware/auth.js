@@ -1,6 +1,6 @@
 const { verify } = require('crypto');
 const jwt = require('jsonwebtoken');
-const users = require("../User/model/users")
+const users = require("../models/User/users")
 verifyToken = async (req, res, next) => {
   let token = req.headers["x-access-token"];
   if (!token) {

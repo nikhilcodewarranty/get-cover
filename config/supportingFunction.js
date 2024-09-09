@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-const userService = require('../User/services/userService')
-const REPORTING = require('../Order/model/reporting')
+const userService = require('../services/User/userService')
+const REPORTING = require('../models/Order/reporting')
 
 
 exports.getUserIds = async () => {
@@ -8,6 +8,10 @@ exports.getUserIds = async () => {
     return getSuperId.map(ID => ID._id);
 }
 
+exports.websiteSetting = async () => {
+    let settingData = await userService.getSetting({});
+    return settingData;
+}
 
 exports.getUserEmails = async () => {
     const getSuperEmails = await userService.findUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true }, { notificationTo: 1 });
@@ -59,6 +63,35 @@ exports.checkReporting = async (data) => {
         return { code: 401, message: err.message }
     }
 }
+
+exports.checkObjectId = async (req, res, next) => {
+    try {
+        function isValidObjectId(id) {
+            return mongoose.Types.ObjectId.isValid(id);
+        }
+
+        const keys = Object.keys(req.params);
+
+        for (const key of keys) {
+            const paramValue = req.params[key];
+            if (!isValidObjectId(paramValue)) {
+                res.send({
+                    code: 401,
+                    message: "Invalid ID"
+                });
+                return
+            }
+        }
+
+        next();
+    } catch (err) {
+        return res.status(401).send({
+            code: 401,
+            message: err.message
+        });
+    }
+}
+
 
 
 // module.exports = getUserIds;

@@ -17,43 +17,74 @@ swaggerUi1 = require('swagger-ui-express');
 // required files 
 swaggerDocument = require('./swagger.json');
 swaggerDocumentDealer = require('./dealer.json');
-const user = require('./User/userServer')
-const service = require('./Provider/serviceServer')
-const customer = require('./Customer/customerServer')
-const claimServer = require('./Claim/claimServer')
-const dealer = require('./Dealer/dealerServer')
-const contract = require('./Contract/contractServer')
-const order = require('./Order/orderServer')
-const price = require('./PriceBook/priceServer')
-const userRoutes = require("./User/routes/user");
-const reportingRoutes = require("./User/routes/reporting");
-const dealerRoutes = require("./Dealer/routes/dealer");
-const dealerUserRoutes = require("./Dealer/routes/dealerUser");
-const resellerRoutes = require("./Dealer/routes/reseller");
-const resellerUserRoutes = require("./Dealer/routes/resellerUser");
-const claimRoutes = require("./Claim/routes/claim");
-const contractRoutes = require("./Contract/routes/contract");
-const serviceRoutes = require("./Provider/routes/service");
-const servicePortal = require("./Provider/routes/servicerUserRoute");
-const orderRoutes = require("./Order/routes/order");
-const priceRoutes = require("./PriceBook/routes/price");
-const customerRoutes = require("./Customer/routes/customer");
-const customerUserRoutes = require("./Customer/routes/customerUser");
+const userRoutes = require('./routes/User/user');
+const reportingRoutes = require("./routes/User/reporting");
+const dealerRoutes = require('./routes/Dealer/dealer');
+const dealerUserRoutes = require("./routes/Dealer/dealerUser");
+const resellerRoutes = require("./routes/Dealer/reseller");
+const resellerUserRoutes = require("./routes/Dealer/resellerUser");
+const claimRoutes = require("./routes/Claim/claim");
+const contractRoutes = require("./routes/Contracts/contract");
+const serviceRoutes = require("./routes/Provider/service");
+const servicePortal = require("./routes/Provider/servicerUserRoute");
+const orderRoutes = require("./routes/Order/order");
+const priceRoutes = require("./routes/PriceBook/price");
+const customerRoutes = require("./routes/Customer/customer");
+const customerUserRoutes = require("./routes/Customer/customerUser");
 const { createProxyMiddleware } = require('http-proxy-middleware');
+const { IpFilter, IpDeniedError } = require('express-ipfilter');
 const axios = require('axios');
 const mongoose = require('mongoose')
 const fs = require('fs');
 const { verifyToken } = require('./middleware/auth') // authentication with jwt as middleware
 var app = express();
 
+
 app.use("/api-v1/api-docs", swaggerUi.serve, (...args) => swaggerUi.setup(swaggerDocument)(...args));
 app.use("/api-v1/priceApi", swaggerUi.serve, (...args) => swaggerUi.setup(swaggerDocumentDealer)(...args));
+app.set('view engine', 'pug');
 
 app.set('views', path.join(__dirname, 'views'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+app.use('/uploads', express.static('./uploads/'))
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Something went wrong!');
+});
+
+
+app.use((req, res, next) => {
+  const ip = req.ip;
+  next();
+});
+
+// List of allowed IPs
+console.log("sdfsdfsdfsdsdf")
+function isHostAllowed(req) {
+  const allowedHosts = [process.env.firstOrigin, process.env.secondOrigin, process.env.thirdOrigin, process.env.localOrigin, process.env.imageOrigin]; // Add your allowed origin here
+  const host = req.headers.origin;
+  return allowedHosts.includes(host);
+}
+
+app.use((req, res, next) => {
+  if (req.headers.host == "localhost:3002" || req.headers.host=="http://54.176.118.28:3002") {
+    next(); // Proceed if the host is allowed
+  } else {
+    if (isHostAllowed(req)) {
+      next(); // Proceed if the host is allowed
+    } else {
+      console.log("checking the origin ++++++++++++++++++++++++++++++++++++++++++",allowedHosts,req.headers)
+      res.status(403).send('Access denied: Host not allowed');
+    }
+  }
+});
+
+
 app.use(cors())
+app.set('trust proxy', true);
+// app.use(IpFilter(allowedIps, { mode: 'allow' }));
 const httpServer = http.createServer(app)
 
 // view engine setup  
@@ -65,14 +96,22 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/uploads', express.static('./uploads/'))
 
-app.get('/download/:filename', (req, res) => {
-  const filePath = __dirname + '/uploads/' + process.env.DUMMY_CSV_FILE;
+// app.get('/uploads/logo/:filename', (req, res) => {
+//   const folder = 'logo';
+//   const filename = req.params.filename;
+//   const filePath = path.join(__dirname, 'uploads', folder, filename);
 
-  res.setHeader('Content-Disposition', 'attachment; filename=' + process.env.DUMMY_CSV_FILE);
-  res.download(filePath, process.env.DUMMY_CSV_FILE);
-});
+//   // Check if the file exists
+//   fs.access(filePath, fs.constants.F_OK, (err) => {
+//     if (err) {
+//       return res.status(404).send('File not found');
+//     }
+
+//     // Send the file if it exists
+//     res.sendFile(filePath);
+//   });
+// });
 
 
 var cron = require('node-cron');
@@ -132,6 +171,9 @@ app.use((req, res, next) => {
 
 })
 const PORT = 3002
+
+
+
 httpServer.listen(PORT, () => console.log(`app listening at http://localhost:${PORT}`))
 
 module.exports = app;
