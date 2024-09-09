@@ -19,6 +19,10 @@ const contactUs = new Schema({
         type: String,
         default: ""
     },
+    category: {
+        type: String,
+        default: ""
+    },
     phoneNumber: {
         type: String,
         default: ""
