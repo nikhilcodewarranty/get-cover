@@ -834,7 +834,11 @@ exports.createDealer = async (req, res) => {
                     }
 
                     // check uniqueness of dealer sku
+<<<<<<< HEAD
                     const checkUnique = new Set(dealerPriceArray.map((item) => item.dealerSku.toLowerCase().replace(/\s+/g, ' ').trim()));
+=======
+                    const checkUnique = new Set(dealerPriceArray.map((item) => item.dealerSku));
+>>>>>>> 3d11d5a4c18424a7397dd28f1b7f5954531560b9
 
 
                     if (dealerPriceArray.length !== checkUnique.size) {
