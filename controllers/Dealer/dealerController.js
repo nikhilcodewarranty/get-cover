@@ -1410,6 +1410,114 @@ exports.uploadDealerPriceBook = async (req, res) => {
   }
 }
 
+exports.uploadDealerPriceBookNew = async (req, res) => {
+  try {
+    let data = req.body
+    uploadP(req, res, async (err) => {
+      let file = req.file
+      let data = req.body
+      let checkDealer = await dealerService.getSingleDealerById({ _id: new mongoose.Types.ObjectId(req.body.dealerId) }, { isDeleted: false })
+      // Your array of objects
+      if (checkDealer.length == 0) {
+        res.send({
+          code: constant.errorCode,
+          message: "Dealer Not found"
+        })
+        return;
+      }
+      if (!req.file) {
+        res.send({
+          code: constant.errorCode,
+          message: "No file uploaded"
+        })
+        return;
+      }
+      //Get from S3 Bucket
+      const bucketReadUrl = { Bucket: process.env.bucket_name, Key: file.key };
+      // Await the getObjectFromS3 function to complete
+      const result = await getObjectFromS3(bucketReadUrl);
+
+      let responseData = result.data;
+      const headers = result.headers
+
+      if (headers.length !== 3) {
+        res.send({
+          code: constant.errorCode,
+          message: "Invalid file format detected. The sheet should contain exactly three columns."
+        })
+        return
+      }
+
+      let totalDataComing = responseData.map(item => {
+        let keys = Object.keys(item);
+
+        return {
+          productSku: item[keys[0]],  // First key's value
+          dealerSku: item[keys[1]],   // Second key's value
+          retailPrice: item[keys[2]]  // Third key's value
+        };
+      });
+
+      let lastOccurrenceMap = {};
+
+      totalDataComing.forEach((item, index) => {
+        lastOccurrenceMap[item.productSku] = index;
+      });
+
+      // Add the isExist key
+      totalDataComing = totalDataComing.map(async (item, index) => {
+        if (item.dealerSku == "") {
+          item.dealerSku = item.productSku
+        }
+        return {
+          ...item,
+          isExist: index === lastOccurrenceMap[item.productSku]
+        }
+      });
+      console.log("responseData+++++++++00000000000++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++", totalDataComing)
+
+      function checkForDuplicateDealerSku(data) {
+        let dealerSkuMap = {};
+
+        for (let item of totalDataComing) {
+          // If dealerSku is already mapped and the productSku is different, return an error
+          if (dealerSkuMap[item.dealerSku] && dealerSkuMap[item.dealerSku] !== item.productSku) {
+            res.send({
+              code: constant.errorCode,
+              message: "Duplicate dealerSku found for different productSkus"
+            })
+            return
+            // { error: `Duplicate dealerSku found for different productSkus: ${item.dealerSku}` };
+          }
+
+          // Otherwise, add the dealerSku to the map
+          dealerSkuMap[item.dealerSku] = item.productSku;
+        }
+
+        // If no duplicates are found, return success or the original data
+        return { success: true, totalDataComing };
+      }
+
+      let result1 = checkForDuplicateDealerSku(totalDataComing);
+
+      console.log(result1);
+
+
+      console.log("responseData+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++", totalDataComing)
+
+
+
+
+    })
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+
 //Get File data from S3 bucket
 const getObjectFromS3 = (bucketReadUrl) => {
   return new Promise((resolve, reject) => {
