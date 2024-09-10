@@ -7,6 +7,7 @@ const dealerPriceService = require('../../services/Dealer/dealerPriceService')
 const priceBookService = require('../../services/PriceBook/priceBookService')
 const providerService = require('../../services/Provider/providerService')
 const users = require("../../models/User/users");
+const logs = require("../../models/User/logs")
 const role = require("../../models/User/role");
 const options = require('../../models/User/options');
 const setting = require("../../models/User/setting");
