@@ -64,7 +64,7 @@ router.post("/validateData", [verifyToken], userController.validateData); // val
 router.get("/checkToken", [verifyToken], userController.checkToken); // check token
 router.get("/getAccountInfo", [verifyToken], userController.getAccountInfo); // get account info
 router.delete('/deleteUser/:userId', [verifyToken], userController.deleteUser); // delete user
-router.get('/checkIdAndToken/:userId/:code', supportingFunction.checkObjectId, userController.checkIdAndToken); // check ID and token
+router.get('/checkIdAndToken/:userId/:code', userController.checkIdAndToken); // check ID and token
 router.get("/getDashboardInfo", [verifyToken], graphdataController.getDashboardInfo); // get dashboard info
 router.get("/getDashboardGraph", [verifyToken], graphdataController.getDashboardGraph); // get dashboard graph
 router.get("/getSkuData", [verifyToken], graphdataController.getSkuData); // get SKU data
