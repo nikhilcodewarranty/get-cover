@@ -359,15 +359,16 @@ exports.statusUpdate = async (req, res) => {
       return;
     }
 
-    const dealerSkuCheck = await dealerPriceService.getDealerPriceById({ dealerId: existingDealerPriceBook.dealerId, dealerSku: data.dealerSku }, projection);
+    if (existingDealerPriceBook.dealerSku.toLowerCase() != data.dealerSku.toLowerCase()) {
+      const dealerSkuCheck = await dealerPriceService.getDealerPriceById({ dealerId: existingDealerPriceBook.dealerId, dealerSku: data.dealerSku }, projection);
+      if (dealerSkuCheck) {
+        res.send({
+          code: constant.errorCode,
+          message: "Dealer price book already created with this dealer sku"
+        })
+        return;
+      }
 
-
-    if (dealerSkuCheck) {
-      res.send({
-        code: constant.errorCode,
-        message: "Dealer price book already created with this dealer sku"
-      })
-      return;
     }
     // Check if the priceBook is a valid ObjectId
     const isPriceBookValid = await checkObjectId(req.body.priceBook);
