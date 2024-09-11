@@ -146,7 +146,7 @@ exports.checkFileValidation = async (req, res) => {
                     }
 
                     const isValidLength = totalDataComing1.every(
-                        (obj) => Object.keys(obj).length === 5
+                        (obj) => Object.keys(obj).length === 8
                     );
                     if (!isValidLength) {
                         res.send({
