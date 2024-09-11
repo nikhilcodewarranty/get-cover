@@ -62,6 +62,7 @@ app.use((req, res, next) => {
 
 // List of allowed IPs
 console.log("sdfsdfsdfsdsdf")
+
 // function isHostAllowed(req) {
 //   const allowedHosts = [process.env.firstOrigin, process.env.secondOrigin, process.env.thirdOrigin, process.env.localOrigin, process.env.imageOrigin]; // Add your allowed origin here
 //   const host = req.headers.origin;
@@ -96,22 +97,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-
-// app.get('/uploads/logo/:filename', (req, res) => {
-//   const folder = 'logo';
-//   const filename = req.params.filename;
-//   const filePath = path.join(__dirname, 'uploads', folder, filename);
-
-//   // Check if the file exists
-//   fs.access(filePath, fs.constants.F_OK, (err) => {
-//     if (err) {
-//       return res.status(404).send('File not found');
-//     }
-
-//     // Send the file if it exists
-//     res.sendFile(filePath);
-//   });
-// });
 
 
 var cron = require('node-cron');
