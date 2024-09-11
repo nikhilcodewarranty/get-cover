@@ -62,24 +62,24 @@ app.use((req, res, next) => {
 
 // List of allowed IPs
 console.log("sdfsdfsdfsdsdf")
-function isHostAllowed(req) {
-  const allowedHosts = [process.env.firstOrigin, process.env.secondOrigin, process.env.thirdOrigin, process.env.localOrigin, process.env.imageOrigin]; // Add your allowed origin here
-  const host = req.headers.origin;
-  return allowedHosts.includes(host);
-}
+// function isHostAllowed(req) {
+//   const allowedHosts = [process.env.firstOrigin, process.env.secondOrigin, process.env.thirdOrigin, process.env.localOrigin, process.env.imageOrigin]; // Add your allowed origin here
+//   const host = req.headers.origin;
+//   return allowedHosts.includes(host);
+// }
 
-app.use((req, res, next) => {
-  if (req.headers.host == "localhost:3002" || req.headers.host=="http://54.176.118.28:3002") {
-    next(); // Proceed if the host is allowed
-  } else {
-    if (isHostAllowed(req)) {
-      next(); // Proceed if the host is allowed
-    } else {
-      console.log("checking the origin ++++++++++++++++++++++++++++++++++++++++++",allowedHosts,req.headers)
-      res.status(403).send('Access denied: Host not allowed');
-    }
-  }
-});
+// app.use((req, res, next) => {
+//   if (req.headers.host == "localhost:3002" || req.headers.host=="http://54.176.118.28:3002") {
+//     next(); // Proceed if the host is allowed
+//   } else {
+//     if (isHostAllowed(req)) {
+//       next(); // Proceed if the host is allowed
+//     } else {
+//       console.log("checking the origin ++++++++++++++++++++++++++++++++++++++++++",allowedHosts,req.headers)
+//       res.status(403).send('Access denied: Host not allowed');
+//     }
+//   }
+// });
 
 
 app.use(cors())
