@@ -99,13 +99,13 @@ exports.weeklySales = async (data, req, res) => {
             },
             {
                 $group: {
-                    _id: "$weekStart",
-                    total_broker_fee: { $sum: "$products.brokerFee" },
-                    total_admin_fee: { $sum: "$products.adminFee" },
-                    total_fronting_fee: { $sum: "$products.frontingFee" },
-                    total_reserve_future_fee: { $sum: "$products.reserveFutureFee" },
-                    total_reinsurance_fee: { $sum: "$products.reinsuranceFee" },
-                    total_retail_price: { $sum: "$products.retailPrice" },
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+                    total_broker_fee: { $sum: { $multiply: ["$products.brokerFee", "$products.noOfProducts"] } },
+                    total_admin_fee: { $sum: { $multiply: ["$products.adminFee", "$products.noOfProducts"] } },
+                    total_fronting_fee: { $sum: { $multiply: ["$products.frontingFee", "$products.noOfProducts"] } },
+                    total_reserve_future_fee: { $sum: { $multiply: ["$products.reserveFutureFee", "$products.noOfProducts"] } },
+                    total_reinsurance_fee: { $sum: { $multiply: ["$products.reinsuranceFee", "$products.noOfProducts"] } },
+                    total_retail_price: { $sum: { $multiply: ["$products.retailPrice", "$products.noOfProducts"] } },
                     total_contracts: { $sum: "$products.noOfProducts" },
                 }
             },
@@ -277,13 +277,13 @@ exports.daySale = async (data) => {
             {
                 $group: {
                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
-                    total_broker_fee: { $sum: "$products.brokerFee" },
-                    total_admin_fee: { $sum: "$products.adminFee" },
-                    total_fronting_fee: { $sum: "$products.frontingFee" },
-                    total_reserve_future_fee: { $sum: "$products.reserveFutureFee" },
-                    total_reinsurance_fee: { $sum: "$products.reinsuranceFee" },
+                    total_broker_fee: { $sum: { $multiply: ["$products.brokerFee", "$products.noOfProducts"] } },
+                    total_admin_fee: { $sum: { $multiply: ["$products.adminFee", "$products.noOfProducts"] } },
+                    total_fronting_fee: { $sum: { $multiply: ["$products.frontingFee", "$products.noOfProducts"] } },
+                    total_reserve_future_fee: { $sum: { $multiply: ["$products.reserveFutureFee", "$products.noOfProducts"] } },
+                    total_reinsurance_fee: { $sum: { $multiply: ["$products.reinsuranceFee", "$products.noOfProducts"] } },
+                    total_retail_price: { $sum: { $multiply: ["$products.retailPrice", "$products.noOfProducts"] } },
                     total_contracts: { $sum: "$products.noOfProducts" },
-                    total_retail_price: { $sum: "$products.retailPrice" },
                 }
             },
             {
@@ -1110,23 +1110,23 @@ exports.claimWeeklyReporting = async (data) => {
         function getMonday(date) {
             // Create a new date object to avoid mutating the original date
             const currentDate = new Date(date);
-            
+
             // Get the current day of the week (0 is Sunday, 1 is Monday, ..., 6 is Saturday)
             const day = currentDate.getDay();
-            
+
             // Calculate the difference to get the previous Monday (if today is Monday, the difference will be 0)
             const difference = day === 0 ? -6 : 1 - day;
-        
+
             // Adjust the current date to the most recent Monday
             currentDate.setDate(currentDate.getDate() + difference);
-        
+
             // Return the date of the most recent Monday
             return currentDate;
         }
-        
+
         // Example usage:
         const givenDate = new Date(); // Replace with any date
-        const mondayDate = getMonday( getData[0]._id);
+        const mondayDate = getMonday(getData[0]._id);
 
         console.log(mondayDate);
 
