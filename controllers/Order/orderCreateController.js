@@ -1267,7 +1267,7 @@ exports.createOrder1 = async (req, res) => {
                 pricebookDetailObject.noOfProducts = product.checkNumberProducts
 
                 pricebookDetailObject.retailPrice = product.unitPrice
-                pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
+                pricebookDetailObject.brokerFee = product.dealerPriceBookDetails[0]?.brokerFee
                 pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
                 pricebookDetail.push(pricebookDetailObject)
 
@@ -2247,7 +2247,7 @@ exports.editOrderDetail = async (req, res) => {
                 pricebookDetailObject.noOfProducts = product.checkNumberProducts
 
                 pricebookDetailObject.retailPrice = product.unitPrice
-                pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
+                pricebookDetailObject.brokerFee = product.dealerPriceBookDetails[0]?.brokerFee
                 pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
                 pricebookDetail.push(pricebookDetailObject)
                 dealerBookDetail.push(dealerPriceBookObject)

@@ -467,12 +467,12 @@ exports.dailySales1 = async (data, req, res) => {
             {
                 $group: {
                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
-                    total_broker_fee: { $sum: "$products.brokerFee" },
-                    total_admin_fee: { $sum: "$products.adminFee" },
-                    total_fronting_fee: { $sum: "$products.frontingFee" },
-                    total_reserve_future_fee: { $sum: "$products.reserveFutureFee" },
-                    total_reinsurance_fee: { $sum: "$products.reinsuranceFee" },
-                    total_retail_price: { $sum: "$products.retailPrice" },
+                    total_broker_fee: { $sum: { $multiply: ["$products.brokerFee", "$products.noOfProducts"] } },
+                    total_admin_fee: { $sum: { $multiply: ["$products.adminFee", "$products.noOfProducts"] } },
+                    total_fronting_fee: { $sum: { $multiply: ["$products.frontingFee", "$products.noOfProducts"] } },
+                    total_reserve_future_fee: { $sum: { $multiply: ["$products.reserveFutureFee", "$products.noOfProducts"] } },
+                    total_reinsurance_fee: { $sum: { $multiply: ["$products.reinsuranceFee", "$products.noOfProducts"] } },
+                    total_retail_price: { $sum: { $multiply: ["$products.retailPrice", "$products.noOfProducts"] } },
                     total_contracts: { $sum: "$products.noOfProducts" },
                 }
             },
@@ -612,7 +612,7 @@ exports.dailySales1 = async (data, req, res) => {
     } catch (err) {
         return { code: constant.errorCode, message: err.message }
     }
-};
+}
 
 //Get claim reporting
 exports.claimDailyReporting = async (data) => {
