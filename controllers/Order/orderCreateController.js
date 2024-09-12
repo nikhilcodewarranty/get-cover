@@ -869,7 +869,6 @@ async function generateTC(orderData) {
             const s3Key = `pdfs/${mergeFileName}`;
             //Upload to S3 bucket
             await uploadToS3(orderFile, bucketName, s3Key);
-            console.log("mergeFileName------------------------", mergeFileName);
             const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : "file-1723185474819.pdf"
             const termPath = termConditionFile
             //Download from S3 bucket 
@@ -889,9 +888,6 @@ async function generateTC(orderData) {
 
                 const mergedPdfBytes = await mergedPdf.save();
 
-                console.log("outputPath------------------------", outputPath);
-
-
                 await fs.writeFile(outputPath, mergedPdfBytes);
                 return mergedPdfBytes;
             }
@@ -899,8 +895,6 @@ async function generateTC(orderData) {
             const mergedPdf = await mergePDFs(termPathBucket, orderPathBucket, `/tmp/merged_${mergeFileName}`);
             // Upload merged PDF to S3
             const mergedKey = `mergedFile/${mergeFileName}`;
-            console.log("mergedKey---------------------", mergedKey)
-            console.log("bucketName---------------------", bucketName)
             await uploadToS3(`/tmp/merged_${mergeFileName}`, bucketName, mergedKey);
             const params = {
                 Bucket: bucketName,
