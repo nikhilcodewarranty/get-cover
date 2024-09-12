@@ -875,7 +875,7 @@ async function generateTC(orderData) {
             const termPathBucket = await downloadFromS3(bucketName, termPath);
             const orderPathBucket = await downloadFromS3(bucketName, s3Key);
             async function mergePDFs(pdfBytes1, pdfBytes2, outputPath) {
-                const pdfDoc1 = await PDFDocument.load(pdfBytes1);
+                const pdfDoc1 = await PDFDocument.load(pdfBytes1); 
                 const pdfDoc2 = await PDFDocument.load(pdfBytes2);
 
                 const mergedPdf = await PDFDocument.create();
