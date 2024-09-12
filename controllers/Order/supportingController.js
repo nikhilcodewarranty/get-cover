@@ -448,9 +448,9 @@ async function generateTC(orderData) {
                 },
             }
         }
-       // let mergeFileName = checkOrder.unique_key + '.pdf'
+        // let mergeFileName = checkOrder.unique_key + '.pdf'
         // let mergeFileName = Date.now() + "_" + checkOrder.unique_key + '.pdf'
-         let mergeFileName =  checkOrder.unique_key + '_' + Date.now() + '.pdf'
+        let mergeFileName = checkOrder.unique_key + '_' + Date.now() + '.pdf'
         //  const orderFile = 'pdfs/' + mergeFileName;
         const orderFile = `/tmp/${mergeFileName}`; // Temporary local storage
         const html = `<head>
@@ -652,6 +652,8 @@ exports.generateHtmltopdf = async (req, res) => {
         }
         // let mergeFileName = checkOrder.unique_key + '.pdf'
         //  const orderFile = 'pdfs/' + mergeFileName;
+        let mergeFileName = checkOrder.unique_key + '_' + Date.now() + '.pdf'
+
         const orderFile = `/tmp/${mergeFileName}`; // Temporary local storage
         const html = `<head>
         <link rel="stylesheet" href="https://gistcdn.githack.com/mfd/09b70eb47474836f25a21660282ce0fd/raw/e06a670afcb2b861ed2ac4a1ef752d062ef6b46b/Gilroy.css"></link>
