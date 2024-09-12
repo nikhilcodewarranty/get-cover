@@ -895,6 +895,8 @@ async function generateTC(orderData) {
             const mergedPdf = await mergePDFs(termPathBucket, orderPathBucket, `/tmp/merged_${mergeFileName}`);
             // Upload merged PDF to S3
             const mergedKey = `mergedFile/${mergeFileName}`;
+            console.log("mergedKey---------------------",mergedKey)
+            console.log("bucketName---------------------",bucketName)
             await uploadToS3(`/tmp/merged_${mergeFileName}`, bucketName, mergedKey);
             const params = {
                 Bucket: bucketName,
@@ -919,7 +921,7 @@ async function generateTC(orderData) {
                 content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
                 subject: 'Order Term and Condition-' + checkOrder.unique_key,
             }
-            let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
+            let mailing = await sgMail.send(emailConstant.sendTermAndCondition("amit@codenomad.net", notificationEmails, emailData, attachment))
 
         })
         return 1
