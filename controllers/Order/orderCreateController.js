@@ -807,7 +807,7 @@ async function generateTC(orderData) {
         }
         //let mergeFileName = checkOrder.unique_key + '.pdf'
         // let mergeFileName = Date.now() + "_" + checkOrder.unique_key + '.pdf'
-         let mergeFileName =  checkOrder.unique_key + '_' + Date.now() + '.pdf'
+        let mergeFileName = checkOrder.unique_key + '_' + Date.now() + '.pdf'
         //  const orderFile = 'pdfs/' + mergeFileName;
         const orderFile = `/tmp/${mergeFileName}`; // Temporary local storage
         const html = `<head>
@@ -869,13 +869,14 @@ async function generateTC(orderData) {
             const s3Key = `pdfs/${mergeFileName}`;
             //Upload to S3 bucket
             await uploadToS3(orderFile, bucketName, s3Key);
+            console.log("mergeFileName------------------------", mergeFileName);
             const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : "file-1723185474819.pdf"
             const termPath = termConditionFile
             //Download from S3 bucket 
             const termPathBucket = await downloadFromS3(bucketName, termPath);
             const orderPathBucket = await downloadFromS3(bucketName, s3Key);
             async function mergePDFs(pdfBytes1, pdfBytes2, outputPath) {
-                const pdfDoc1 = await PDFDocument.load(pdfBytes1); 
+                const pdfDoc1 = await PDFDocument.load(pdfBytes1);
                 const pdfDoc2 = await PDFDocument.load(pdfBytes2);
 
                 const mergedPdf = await PDFDocument.create();
@@ -888,6 +889,9 @@ async function generateTC(orderData) {
 
                 const mergedPdfBytes = await mergedPdf.save();
 
+                console.log("outputPath------------------------", outputPath);
+
+
                 await fs.writeFile(outputPath, mergedPdfBytes);
                 return mergedPdfBytes;
             }
@@ -895,8 +899,8 @@ async function generateTC(orderData) {
             const mergedPdf = await mergePDFs(termPathBucket, orderPathBucket, `/tmp/merged_${mergeFileName}`);
             // Upload merged PDF to S3
             const mergedKey = `mergedFile/${mergeFileName}`;
-            console.log("mergedKey---------------------",mergedKey)
-            console.log("bucketName---------------------",bucketName)
+            console.log("mergedKey---------------------", mergedKey)
+            console.log("bucketName---------------------", bucketName)
             await uploadToS3(`/tmp/merged_${mergeFileName}`, bucketName, mergedKey);
             const params = {
                 Bucket: bucketName,
@@ -2221,7 +2225,7 @@ exports.editOrderDetail = async (req, res) => {
                 let coverageStartDate = product.coverageStartDate;
                 let coverageEndDate = product.coverageEndDate;
                 let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
-                let projection = { isDeleted: 0 };   
+                let projection = { isDeleted: 0 };
 
                 let priceBook = await priceBookService.getPriceBookById(
                     query,
@@ -2347,7 +2351,7 @@ exports.editOrderDetail = async (req, res) => {
                         minDate: minDate,
                         coverageStartDate: coverageStartDate,
                         coverageEndDate: coverageEndDate,
-                        dealerSku:dealerPriceBook.dealerSku,
+                        dealerSku: dealerPriceBook.dealerSku,
                         serviceCoverageType: serviceCoverage,
                         coverageType: checkOrder.coverageType,
                         productName: priceBook[0]?.name,
@@ -2625,7 +2629,7 @@ exports.getOrderContract = async (req, res) => {
             contractFilterWithEligibilty.push({ orderId: { $in: orderIds } })
         }
         let mainQuery = []
-        if (data.contractId === "" && data.productName === "" && data.dealerSku === "" &&  data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
+        if (data.contractId === "" && data.productName === "" && data.dealerSku === "" && data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
             mainQuery = [
                 { $sort: { unique_key_number: -1 } },
 
