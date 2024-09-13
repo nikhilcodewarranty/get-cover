@@ -1706,6 +1706,7 @@ exports.saveBulkClaim = async (req, res) => {
         }
         // emailDealerId.push(data.orderData?.order?.dealerId);
         if (!data.exit) {
+          console.log("data.orderData?.order-------------------",data.orderData?.order)
           let obj = {
             contractId: data.contractData._id,
             servicerId: servicerId,
