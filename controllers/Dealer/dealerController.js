@@ -128,8 +128,14 @@ exports.uploadTermAndCondition = async (req, res, next) => {
         });
         return;
       }
+
       let file = req.file;
+      console.log("=======================",file)
+
       file.fileName = file.key
+
+      console.log("===========file============",file)
+
       // Log or process the content as needed
 
       res.send({
