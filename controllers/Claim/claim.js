@@ -1624,8 +1624,12 @@ exports.saveBulkClaim = async (req, res) => {
           const claimData = claimArray;
           let flag;
           item.contractData = contractData;
+          console.log("contractdata-----------------------",contractData)
           item.servicerData = servicerData;
           item.orderData = allDataArray[0]
+
+          console.log("orderData-----------------------",item.orderData)
+
           if (!contractData || allDataArray.length == 0) {
             item.status = "Contract not found"
             item.exit = true;
@@ -1706,7 +1710,7 @@ exports.saveBulkClaim = async (req, res) => {
         }
         // emailDealerId.push(data.orderData?.order?.dealerId);
         if (!data.exit) {
-          console.log("data.orderData?.order-------------------",data.orderData?.order)
+          console.log("data.orderData?.order-------------------",data.orderData)
           let obj = {
             contractId: data.contractData._id,
             servicerId: servicerId,
