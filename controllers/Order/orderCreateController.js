@@ -102,6 +102,7 @@ exports.checkFileValidation = async (req, res) => {
             let file = req.file;
             let csvName = file.key;
             let originalName = file.originalname;
+            let message = [];
             let size = file.size;
             let totalDataComing1 = [];
             let ws;
