@@ -133,10 +133,7 @@ exports.uploadTermAndCondition = async (req, res, next) => {
 
       file.fileName = file.key
       file.filename = file.key
-
-
       // Log or process the content as needed
-
       res.send({
         code: constant.successCode,
         message: 'Success!',
