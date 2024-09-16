@@ -1604,7 +1604,7 @@ exports.saveBulkClaim = async (req, res) => {
             { $unwind: { path: "$order.reseller", preserveNullAndEmptyArrays: true } },
             { $unwind: { path: "$order.customers", preserveNullAndEmptyArrays: true } },
             { $unwind: { path: "$order.servicer", preserveNullAndEmptyArrays: true } },
-            { $limit: 1 }
+            // { $limit: 1 }
           ]
           return contractService.getAllContracts2(query)
         }
@@ -1616,6 +1616,7 @@ exports.saveBulkClaim = async (req, res) => {
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
 
       console.log("asdasdasdasdas",contractAllDataArray);
+    return;
 
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {
