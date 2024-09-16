@@ -665,7 +665,7 @@ exports.getAllTerms = async (req, res) => {
 };
 
 // add new roles // backend use
-exports.addRole = async (req, res) => {
+exports.addRole = async (req, res) => { 
   try {
     let checkRole = await userService.getRoleById({ role: { '$regex': new RegExp(`^${req.body.role}$`, 'i') } })
     if (checkRole) {
