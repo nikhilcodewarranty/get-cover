@@ -1369,7 +1369,7 @@ exports.saveBulkClaim = async (req, res) => {
           message: "Invalid file format detected. Please check file format!"
         })
         return
-      }      
+      }
 
       const totalDataComing1 = result.data;
 
@@ -1474,11 +1474,18 @@ exports.saveBulkClaim = async (req, res) => {
 
       //Check contract is exist or not using contract id
       const contractArrayPromise = totalDataComing.map(item => {
-        if (!item.exit) return contractService.getContractById({       
+        if (!item.exit) return contractService.getContractById({
+          $and: [
+            {
               $or: [
                 { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
                 { 'serial': { '$regex': item.contractId ? item.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-              ],        
+              ],
+
+            },
+            { eligibilty: true }
+          ],
+
         });
         else {
           return null;
@@ -1488,6 +1495,10 @@ exports.saveBulkClaim = async (req, res) => {
 
       // get contract with dealer,reseller, servicer 
       const contractArray = await Promise.all(contractArrayPromise);
+
+
+      console.log("contractArray", contractArray);
+      ;
 
       let servicerArray;
 
@@ -1585,26 +1596,27 @@ exports.saveBulkClaim = async (req, res) => {
             {
               $match: match
             },
-            // {
-            //   $project: {
-            //     orderId: 1,
-            //     "order.dealerId": 1,
-            //     "order.customerId": 1,
-            //     "order._id": 1,
-            //     "order.unique_key": 1,
-            //     "order.servicerId": 1,
-            //     "order.resellerId": 1,
-            //     "order.dealer": 1,
-            //     "order.reseller": 1,
-            //     "order.servicer": 1
-            //   }
-            // },
+            {
+              $project: {
+                orderId: 1,
+                _id: 1,
+                "order.dealerId": 1,
+                "order.customerId": 1,
+                "order._id": 1,
+                "order.unique_key": 1,
+                "order.servicerId": 1,
+                "order.resellerId": 1,
+                "order.dealer": 1,
+                "order.reseller": 1,
+                "order.servicer": 1
+              }
+            },
             { $unwind: { path: "$order", preserveNullAndEmptyArrays: true } },
             { $unwind: { path: "$order.dealer", preserveNullAndEmptyArrays: true } },
             { $unwind: { path: "$order.reseller", preserveNullAndEmptyArrays: true } },
             { $unwind: { path: "$order.customers", preserveNullAndEmptyArrays: true } },
             { $unwind: { path: "$order.servicer", preserveNullAndEmptyArrays: true } },
-            // { $limit: 1 }
+            { $limit: 1 }
           ]
           return contractService.getAllContracts2(query)
         }
@@ -1615,8 +1627,8 @@ exports.saveBulkClaim = async (req, res) => {
 
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
 
-      console.log("asdasdasdasdas",contractAllDataArray);
-    return;
+      console.log("asdasdasdasdas", contractAllDataArray);
+      return;
 
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {
@@ -1711,12 +1723,12 @@ exports.saveBulkClaim = async (req, res) => {
         // emailDealerId.push(data.orderData?.order?.dealerId);
         if (!data.exit) {
           let obj = {
-            contractId: data.contractData._id,
+            contractId: data.orderData._id,
             servicerId: servicerId,
             orderId: data.orderData?.order?.unique_key,
             dealerId: data.orderData?.order?.dealerId,
             resellerId: data.orderData?.order?.resellerId,
-            dealerSku : data.contractData?.dealerSku,
+            dealerSku: data.contractData?.dealerSku,
             customerId: data.orderData?.order?.customerId,
             venderOrder: data.contractData.venderOrder,
             serial: data.contractData.serial,
@@ -2391,7 +2403,7 @@ exports.getAllClaims = async (req, res, next) => {
               customerStatus: 1,
               trackingNumber: 1,
               trackingType: 1,
-              dealerSku:1,
+              dealerSku: 1,
               claimType: 1,
               repairParts: 1,
               diagnosis: 1,
