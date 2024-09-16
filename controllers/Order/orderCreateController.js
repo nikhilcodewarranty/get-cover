@@ -145,6 +145,7 @@ exports.checkFileValidation = async (req, res) => {
                         return;
                     }
 
+                    console.log("totalDataComing1---------------------",totalDataComing1);
                     const isValidLength = totalDataComing1.every(
                         (obj) => Object.keys(obj).length === 8
                     );
@@ -243,151 +244,151 @@ exports.checkFileValidation = async (req, res) => {
 
 
 //check file validation for orders
-exports.checkFileValidation = async (req, res) => {
-    try {
-        uploadP(req, res, async (err) => {
-            let data = req.body;
-            let file = req.file;
-            let csvName = file.key;
-            let originalName = file.originalname;
-            let size = file.size;
-            let totalDataComing1 = [];
-            let ws;
-            //S3 Bucket Read Code
-            var params = { Bucket: process.env.bucket_name, Key: file.key };
-            S3Bucket.getObject(params, function (err, data) {
-                if (err) {
-                    console.log(err);
-                } else {
-                    // Parse the buffer as an Excel file
-                    const wb = XLSX.read(data.Body, { type: 'buffer' });
-                    // Extract the data from the first sheet
-                    const sheetName = wb.SheetNames[0];
-                    ws = wb.Sheets[sheetName];
-                    totalDataComing1 = XLSX.utils.sheet_to_json(ws);
-                    const headers = [];
-                    for (let cell in ws) {
-                        // Check if the cell is in the first row and has a non-empty value
-                        if (
-                            /^[A-Z]1$/.test(cell) &&
-                            ws[cell].v !== undefined &&
-                            ws[cell].v !== null &&
-                            ws[cell].v.trim() !== ""
-                        ) {
-                            headers.push(ws[cell].v);
-                        }
-                    }
+// exports.checkFileValidation = async (req, res) => {
+//     try {
+//         uploadP(req, res, async (err) => {
+//             let data = req.body;
+//             let file = req.file;
+//             let csvName = file.key;
+//             let originalName = file.originalname;
+//             let size = file.size;
+//             let totalDataComing1 = [];
+//             let ws;
+//             //S3 Bucket Read Code
+//             var params = { Bucket: process.env.bucket_name, Key: file.key };
+//             S3Bucket.getObject(params, function (err, data) {
+//                 if (err) {
+//                     console.log(err);
+//                 } else {
+//                     // Parse the buffer as an Excel file
+//                     const wb = XLSX.read(data.Body, { type: 'buffer' });
+//                     // Extract the data from the first sheet
+//                     const sheetName = wb.SheetNames[0];
+//                     ws = wb.Sheets[sheetName];
+//                     totalDataComing1 = XLSX.utils.sheet_to_json(ws);
+//                     const headers = [];
+//                     for (let cell in ws) {
+//                         // Check if the cell is in the first row and has a non-empty value
+//                         if (
+//                             /^[A-Z]1$/.test(cell) &&
+//                             ws[cell].v !== undefined &&
+//                             ws[cell].v !== null &&
+//                             ws[cell].v.trim() !== ""
+//                         ) {
+//                             headers.push(ws[cell].v);
+//                         }
+//                     }
 
-                    if (headers.length !== 8) {
-                        // fs.unlink('../../uploads/orderFile/' + req.file.filename)
-                        res.send({
-                            code: constant.successCode,
-                            message:
-                                "Invalid file format detected. The sheet should contain exactly eight columns.",
-                            orderFile: {
-                                fileName: csvName,
-                                name: originalName,
-                                size: file.size,
-                            },
-                        });
-                        return;
-                    }
+//                     if (headers.length !== 8) {
+//                         // fs.unlink('../../uploads/orderFile/' + req.file.filename)
+//                         res.send({
+//                             code: constant.successCode,
+//                             message:
+//                                 "Invalid file format detected. The sheet should contain exactly eight columns.",
+//                             orderFile: {
+//                                 fileName: csvName,
+//                                 name: originalName,
+//                                 size: file.size,
+//                             },
+//                         });
+//                         return;
+//                     }
 
-                    const isValidLength = totalDataComing1.every(
-                        (obj) => Object.keys(obj).length === 5
-                    );
-                    if (!isValidLength) {
-                        res.send({
-                            code: constant.successCode,
-                            message: "Invalid fields value",
-                            orderFile: {
-                                fileName: csvName,
-                                name: originalName,
-                                size: size,
-                            },
-                        });
-                        return;
-                    }
-                    const totalDataComing = totalDataComing1.map((item) => {
-                        const keys = Object.keys(item);
-                        return {
-                            retailValue: item[keys[4]],
-                        };
-                    });
+//                     const isValidLength = totalDataComing1.every(
+//                         (obj) => Object.keys(obj).length === 5
+//                     );
+//                     if (!isValidLength) {
+//                         res.send({
+//                             code: constant.successCode,
+//                             message: "Invalid fields value",
+//                             orderFile: {
+//                                 fileName: csvName,
+//                                 name: originalName,
+//                                 size: size,
+//                             },
+//                         });
+//                         return;
+//                     }
+//                     const totalDataComing = totalDataComing1.map((item) => {
+//                         const keys = Object.keys(item);
+//                         return {
+//                             retailValue: item[keys[4]],
+//                         };
+//                     });
 
-                    const serialNumberArray = totalDataComing1.map((item) => {
-                        const keys = Object.keys(item);
-                        return {
-                            serial: item[keys[2]].toString().toLowerCase(),
-                        };
-                    });
+//                     const serialNumberArray = totalDataComing1.map((item) => {
+//                         const keys = Object.keys(item);
+//                         return {
+//                             serial: item[keys[2]].toString().toLowerCase(),
+//                         };
+//                     });
 
-                    const serialNumbers = serialNumberArray.map(number => number.serial);
-                    const duplicateSerials = serialNumbers.filter((serial, index) => serialNumbers.indexOf(serial) !== index);
+//                     const serialNumbers = serialNumberArray.map(number => number.serial);
+//                     const duplicateSerials = serialNumbers.filter((serial, index) => serialNumbers.indexOf(serial) !== index);
 
-                    if (duplicateSerials.length > 0) {
-                        res.send({
-                            code: constant.successCode,
-                            message: "Serial numbers are not unique for this product",
-                            orderFile: {
-                                fileName: csvName,
-                                name: originalName,
-                                size: size,
-                            },
-                        })
-                        return
-                    }
+//                     if (duplicateSerials.length > 0) {
+//                         res.send({
+//                             code: constant.successCode,
+//                             message: "Serial numbers are not unique for this product",
+//                             orderFile: {
+//                                 fileName: csvName,
+//                                 name: originalName,
+//                                 size: size,
+//                             },
+//                         })
+//                         return
+//                     }
 
-                    // Check retail price is in between rangeStart and rangeEnd
-                    const isValidRetailPrice = totalDataComing.map((obj) => {
-                        // Check if 'noOfProducts' matches the length of 'data'
-                        if (
-                            obj.retailValue < Number(data.rangeStart) ||
-                            obj.retailValue > Number(data.rangeEnd)
-                        ) {
-                            message.push({
-                                code: constant.successCode,
-                                retailPrice: obj.retailValue,
-                                message: "Invalid Retail Price!",
-                                fileName: csvName,
-                                name: originalName,
-                                orderFile: {
-                                    fileName: csvName,
-                                    name: originalName,
-                                    size: size,
-                                },
-                            });
-                        }
-                    });
+//                     // Check retail price is in between rangeStart and rangeEnd
+//                     const isValidRetailPrice = totalDataComing.map((obj) => {
+//                         // Check if 'noOfProducts' matches the length of 'data'
+//                         if (
+//                             obj.retailValue < Number(data.rangeStart) ||
+//                             obj.retailValue > Number(data.rangeEnd)
+//                         ) {
+//                             message.push({
+//                                 code: constant.successCode,
+//                                 retailPrice: obj.retailValue,
+//                                 message: "Invalid Retail Price!",
+//                                 fileName: csvName,
+//                                 name: originalName,
+//                                 orderFile: {
+//                                     fileName: csvName,
+//                                     name: originalName,
+//                                     size: size,
+//                                 },
+//                             });
+//                         }
+//                     });
 
-                    if (message.length > 0) {
-                        res.send({
-                            data: message,
+//                     if (message.length > 0) {
+//                         res.send({
+//                             data: message,
 
-                        });
-                        return;
-                    }
+//                         });
+//                         return;
+//                     }
 
-                    res.send({
-                        code: constant.successCode,
-                        message: "Verified",
-                        orderFile: {
-                            fileName: csvName,
-                            name: originalName,
-                            size: size,
-                        },
-                    });
-                }
-            })
+//                     res.send({
+//                         code: constant.successCode,
+//                         message: "Verified",
+//                         orderFile: {
+//                             fileName: csvName,
+//                             name: originalName,
+//                             size: size,
+//                         },
+//                     });
+//                 }
+//             })
 
-        });
-    } catch (err) {
-        res.send({
-            code: constant.errorCode,
-            message: err.message,
-        });
-    }
-};
+//         });
+//     } catch (err) {
+//         res.send({
+//             code: constant.errorCode,
+//             message: err.message,
+//         });
+//     }
+// };
 
 
 //checking uploaded file is valid
@@ -489,6 +490,8 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             let labourWarranty = fileData.labourWarranty.toString().replace(/\s+/g, ' ').trim()
                             let purchaseDate = fileData.purchaseDate.toString().replace(/\s+/g, ' ').trim()
                             let model = fileData.model.toString().replace(/\s+/g, ' ').trim()
+
+                    
 
                             if (brand == '' || serial == '' || condition == '' || retailValue == '' || model == '' || partsWarranty == '' || labourWarranty == '' || purchaseDate == "") {
                                 message.push({
@@ -807,7 +810,7 @@ async function generateTC(orderData) {
         }
         //let mergeFileName = checkOrder.unique_key + '.pdf'
         // let mergeFileName = Date.now() + "_" + checkOrder.unique_key + '.pdf'
-         let mergeFileName =  checkOrder.unique_key + '_' + Date.now() + '.pdf'
+        let mergeFileName = checkOrder.unique_key + '_' + Date.now() + '.pdf'
         //  const orderFile = 'pdfs/' + mergeFileName;
         const orderFile = `/tmp/${mergeFileName}`; // Temporary local storage
         const html = `<head>
@@ -919,7 +922,7 @@ async function generateTC(orderData) {
                 content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
                 subject: 'Order Term and Condition-' + checkOrder.unique_key,
             }
-            let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
+            let mailing = await sgMail.send(emailConstant.sendTermAndCondition("amit@codenomad.net", notificationEmails, emailData, attachment))
 
         })
         return 1
@@ -2219,7 +2222,7 @@ exports.editOrderDetail = async (req, res) => {
                 let coverageStartDate = product.coverageStartDate;
                 let coverageEndDate = product.coverageEndDate;
                 let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
-                let projection = { isDeleted: 0 };   
+                let projection = { isDeleted: 0 };
 
                 let priceBook = await priceBookService.getPriceBookById(
                     query,
@@ -2345,7 +2348,7 @@ exports.editOrderDetail = async (req, res) => {
                         minDate: minDate,
                         coverageStartDate: coverageStartDate,
                         coverageEndDate: coverageEndDate,
-                        dealerSku:dealerPriceBook.dealerSku,
+                        dealerSku: dealerPriceBook.dealerSku,
                         serviceCoverageType: serviceCoverage,
                         coverageType: checkOrder.coverageType,
                         productName: priceBook[0]?.name,
@@ -2623,7 +2626,7 @@ exports.getOrderContract = async (req, res) => {
             contractFilterWithEligibilty.push({ orderId: { $in: orderIds } })
         }
         let mainQuery = []
-        if (data.contractId === "" && data.productName === "" && data.dealerSku === "" &&  data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
+        if (data.contractId === "" && data.productName === "" && data.dealerSku === "" && data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
             mainQuery = [
                 { $sort: { unique_key_number: -1 } },
 

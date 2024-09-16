@@ -1705,7 +1705,9 @@ async function generateTC(orderData) {
                 },
             }
         }
-        let mergeFileName = Date.now() + "_" + checkOrder.unique_key + '.pdf'
+       // let mergeFileName = Date.now() + "_" + checkOrder.unique_key + '.pdf'
+        let mergeFileName =  checkOrder.unique_key + '_' + Date.now() + '.pdf'
+
         //  const orderFile = 'pdfs/' + mergeFileName;
         const orderFile = `/tmp/${mergeFileName}`; // Temporary local storage
         const html = `<head>
