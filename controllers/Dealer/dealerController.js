@@ -132,6 +132,7 @@ exports.uploadTermAndCondition = async (req, res, next) => {
       let file = req.file;
 
       file.fileName = file.key
+      file.filename = file.key
 
 
       // Log or process the content as needed
