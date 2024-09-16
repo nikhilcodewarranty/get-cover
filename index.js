@@ -1,11 +1,9 @@
 require("dotenv").config()
 var express = require('express');
 const pdf = require('pdf-creator-node');
-
 var path = require('path');
 var logger = require('morgan');
 const { trim_all } = require('request_trimmer');
-
 var cookieParser = require('cookie-parser');
 const cors = require('cors')
 var bodyParser = require("body-parser");
@@ -39,7 +37,6 @@ const fs = require('fs');
 const { verifyToken } = require('./middleware/auth') // authentication with jwt as middleware
 var app = express();
 
-
 app.use("/api-v1/api-docs", swaggerUi.serve, (...args) => swaggerUi.setup(swaggerDocument)(...args));
 app.use("/api-v1/priceApi", swaggerUi.serve, (...args) => swaggerUi.setup(swaggerDocumentDealer)(...args));
 app.set('view engine', 'pug');
@@ -54,7 +51,6 @@ app.use((err, req, res, next) => {
   res.status(500).send('Something went wrong!');
 });
 
-
 app.use((req, res, next) => {
   const ip = req.ip;
   next();
@@ -62,26 +58,6 @@ app.use((req, res, next) => {
 
 // List of allowed IPs
 console.log("sdfsdfsdfsdsdf")
-
-// function isHostAllowed(req) {
-//   const allowedHosts = [process.env.firstOrigin, process.env.secondOrigin, process.env.thirdOrigin, process.env.localOrigin, process.env.imageOrigin]; // Add your allowed origin here
-//   const host = req.headers.origin;
-//   return allowedHosts.includes(host);
-// }
-
-// app.use((req, res, next) => {
-//   if (req.headers.host == "localhost:3002" || req.headers.host=="http://54.176.118.28:3002") {
-//     next(); // Proceed if the host is allowed
-//   } else {
-//     if (isHostAllowed(req)) {
-//       next(); // Proceed if the host is allowed
-//     } else {
-//       console.log("checking the origin ++++++++++++++++++++++++++++++++++++++++++",allowedHosts,req.headers)
-//       res.status(403).send('Access denied: Host not allowed');
-//     }
-//   }
-// });
-
 
 app.use(cors())
 app.set('trust proxy', true);
@@ -96,8 +72,6 @@ app.use(trim_all);
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
-
 
 var cron = require('node-cron');
 var cronOptions = {
@@ -152,8 +126,6 @@ app.use(function (err, req, res, next) {
 //* Catch HTTP 404 
 app.use((req, res, next) => {
   res.redirect(process.env.SITE_URL)
-
-
 })
 const PORT = 3002
 

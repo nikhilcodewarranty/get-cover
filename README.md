@@ -70,20 +70,13 @@ Ensure you have Node.js version 20.12.1 and MongoDB version 6.3 installed.
         ->Install Project Dependencies:
             Ensure you are in the project directory where the package.json file is located.
             Run the following command to install the project dependencies:
-            "npm run allInstall"
+            "npm run install"
         ->Run the Application:
             -Open a terminal or command prompt.
             -Navigate to your project directory if you're not already there.
             -Run the following command to start the application "node index.js" (do not forget to include the .env file in the root)
             -output shoult be like this:-
-                        users Server is running on port {portNumber}
-                        Service server is running on port {portNumber}
-                        customer Server is running on port {portNumber}
-                        Contract server is running on port {portNumber}
-                        Dealer server is running on port {portNumber}
-                        Contract server is running on port {portNumber}
-                        Service server is running on port {portNumber}
-                        Price server is running on port {portNumber}
+                        
                         app listening at http://localhost:{portNumber}
                         MongoDB :: connected {db_name}
                         MongoDB :: connected {db_name}
