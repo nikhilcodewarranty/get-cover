@@ -1585,20 +1585,20 @@ exports.saveBulkClaim = async (req, res) => {
             {
               $match: match
             },
-            {
-              $project: {
-                orderId: 1,
-                "order.dealerId": 1,
-                "order.customerId": 1,
-                "order._id": 1,
-                "order.unique_key": 1,
-                "order.servicerId": 1,
-                "order.resellerId": 1,
-                "order.dealer": 1,
-                "order.reseller": 1,
-                "order.servicer": 1
-              }
-            },
+            // {
+            //   $project: {
+            //     orderId: 1,
+            //     "order.dealerId": 1,
+            //     "order.customerId": 1,
+            //     "order._id": 1,
+            //     "order.unique_key": 1,
+            //     "order.servicerId": 1,
+            //     "order.resellerId": 1,
+            //     "order.dealer": 1,
+            //     "order.reseller": 1,
+            //     "order.servicer": 1
+            //   }
+            // },
             { $unwind: { path: "$order", preserveNullAndEmptyArrays: true } },
             { $unwind: { path: "$order.dealer", preserveNullAndEmptyArrays: true } },
             { $unwind: { path: "$order.reseller", preserveNullAndEmptyArrays: true } },
@@ -1614,6 +1614,8 @@ exports.saveBulkClaim = async (req, res) => {
       })
 
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
+
+      console.log("asdasdasdasdas",contractAllDataArray);
 
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {

@@ -547,6 +547,7 @@ exports.createOrder = async (req, res) => {
                         }
                     }
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
+
                     let contractObject = {
                         orderId: savedResponse._id,
                         orderProductId: orderProductId,
@@ -573,6 +574,7 @@ exports.createOrder = async (req, res) => {
                         unique_key_search: unique_key_search1,
                         unique_key_number: unique_key_number1,
                     };
+                    
                     increamentNumber++
                     contractArray.push(contractObject);
                 });
