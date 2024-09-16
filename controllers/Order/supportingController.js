@@ -1176,3 +1176,36 @@ exports.getDealerResellers = async (req, res) => {
         })
     }
 };
+
+
+// const constant = { errorCode: 500 }; // Assuming you have some constants defined
+
+exports.convertImageIntobase = async (req, res) => {
+    try {
+        // Define the path to the image
+        const imagePath = path.join(__dirname, '../../uploads/logo/' + req.params.filename);
+
+        // Read the image file asynchronously
+        fs.readFile(imagePath, (err, data) => {
+            if (err) {
+                throw new Error('Error reading the image file');
+            }
+
+            // Convert image buffer data to Base64 string
+            const base64Image = data.toString('base64');
+            console.log("check++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++", base64Image)
+            // Send the base64 string as response
+            res.send({
+                code: 200,
+                message: 'Image converted to Base64 successfully',
+                base64Image: base64Image
+            });
+        });
+
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        });
+    }
+};

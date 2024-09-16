@@ -38,6 +38,7 @@ router.get('/cronJobStatus', supportingController.cronJobStatus); // cron job st
 router.get('/generateHtmltopdf/:orderId', [verifyToken], supportingController.generateHtmltopdf); // generate HTML to PDF by order ID
 router.get('/reportingDataCreation',  supportingController.reportingDataCreation); // reporting data creation
 router.get('/reportingDataReCreation', [verifyToken], supportingController.reportingDataReCreation); // reporting data re-creation
+router.get('/convertImageIntobase/;filename',  supportingController.convertImageIntobase); // reporting data re-creation
 
 
 
