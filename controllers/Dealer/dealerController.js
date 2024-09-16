@@ -140,7 +140,7 @@ exports.uploadTermAndCondition = async (req, res, next) => {
       res.send({
         code: constant.successCode,
         message: 'Success!',
-        file
+        file 
 
       })
     })
