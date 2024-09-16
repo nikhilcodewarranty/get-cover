@@ -1496,10 +1496,6 @@ exports.saveBulkClaim = async (req, res) => {
       // get contract with dealer,reseller, servicer 
       const contractArray = await Promise.all(contractArrayPromise);
 
-
-      console.log("contractArray", contractArray);
-      ;
-
       let servicerArray;
 
       //Check servicer is exist or not using contract id
@@ -1627,8 +1623,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
 
-      console.log("asdasdasdasdas", contractAllDataArray);
-      return;
+
 
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {
@@ -1650,13 +1645,13 @@ exports.saveBulkClaim = async (req, res) => {
             item.status = "Loss date should be in between coverage start date and present date!"
             item.exit = true;
           }
-          if (allDataArray.length == 0 && item.contractId != '') {
-            const filter = claimData.filter(claim => claim.contractId?.toString() === item.contractData._id?.toString())
-            if (filter.length > 0) {
-              item.status = "Claim is already open of this contract"
-              item.exit = true;
-            }
-          }
+          // if (allDataArray.length == 0 && item.contractId != '') {
+          //   const filter = claimData.filter(claim => claim.contractId?.toString() === item.contractData._id?.toString())
+          //   if (filter.length > 0) {
+          //     item.status = "Claim is already open of this contract"
+          //     item.exit = true;
+          //   }
+          // }
 
           if (allDataArray.length > 0 && servicerData) {
             flag = false;
@@ -1723,7 +1718,7 @@ exports.saveBulkClaim = async (req, res) => {
         // emailDealerId.push(data.orderData?.order?.dealerId);
         if (!data.exit) {
           let obj = {
-            contractId: data.orderData._id,
+            contractId: data.contractData._id,
             servicerId: servicerId,
             orderId: data.orderData?.order?.unique_key,
             dealerId: data.orderData?.order?.dealerId,
