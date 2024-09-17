@@ -10,10 +10,10 @@ const supportingFunction = require('../../config/supportingFunction');
 router.post("/register", validator('register_dealer'), dealerController.registerDealer); // register dealer route
 router.post("/addDealerUser", [verifyToken], dealerController.addDealerUser); // add dealer user route
 router.post("/uploadTermAndCondition", [verifyToken], dealerController.uploadTermAndCondition); // upload terms and conditions
-router.post("/createDealerPriceBook", [verifyToken], validator('create_dealer_price_book_validation'), dealerController.createDealerPriceBook); // create dealer price book
+router.post("/createDealerPriceBook", [verifyToken], dealerController.createDealerPriceBook); // create dealer price book
 router.post("/checkDealerPriceBook", [verifyToken], dealerController.checkDealerPriceBook); // check dealer price book
 router.post("/uploadDealerPriceBook", [verifyToken], dealerController.uploadDealerPriceBook); // upload dealer price book
-router.post("/uploadDealerPriceBookNew",  dealerController.uploadDealerPriceBookNew); // upload dealer price book
+router.post("/uploadDealerPriceBookNew", dealerController.uploadDealerPriceBookNew); // upload dealer price book
 router.post("/createRelationWithServicer/:dealerId", [verifyToken], supportingFunction.checkObjectId, dealerController.createDeleteRelation); // create relation with servicer
 router.post("/unAssignServicer", [verifyToken], dealerController.unAssignServicer); // unassign servicer
 
@@ -39,6 +39,6 @@ router.get("/dealerPriceBooks", [verifyToken], dealerSupportingController.getAll
 router.get("/getDealerPriceBookById/:dealerPriceBookId", [verifyToken], supportingFunction.checkObjectId, dealerSupportingController.getDealerPriceBookById); // get dealer price book by ID
 router.get("/getDealerPriceBookByDealerId/:dealerId", [verifyToken], supportingFunction.checkObjectId, dealerSupportingController.getDealerPriceBookByDealerId); // get dealer price book by dealer ID
 router.get("/getServicersList/:dealerId", [verifyToken], supportingFunction.checkObjectId, dealerSupportingController.getServicersList); // get servicers list
- 
+
 
 module.exports = router;
