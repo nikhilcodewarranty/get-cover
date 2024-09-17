@@ -68,7 +68,6 @@ const Storage = multerS3({
     key: (req, file, cb) => {
         const fileName = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
         const fullPath = `${folderName}/${fileName}`;
-        console.log("fullPath----------------", fullPath)
         cb(null, fullPath);
     }
 });
@@ -996,8 +995,6 @@ function isValidDate(dateString) {
         date.getMonth() === month - 1 &&
         date.getDate() === day;
 }
-
-
 
 
 // Create Order

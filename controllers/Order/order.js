@@ -1790,6 +1790,7 @@ exports.getOrderPdf = async (req, res) => {
             },
         ]
         let checkOrder = await contractService.getContractForPDF(query)
+        
         if (!checkOrder[0]) {
             res.send({
                 code: constant.successCode,
