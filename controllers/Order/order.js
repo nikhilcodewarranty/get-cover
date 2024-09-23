@@ -900,10 +900,6 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             checkSelectedCategory = await priceBookService.getPriceCatByName({
                 _id: filteredPiceBook,
             });
-
-
-
-
         }
 
         const uniqueTerms = [...new Set(mergedPriceBooks.map(item => item.term))].map(term => ({
