@@ -1071,8 +1071,13 @@ exports.getResellerPriceBook = async (req, res) => {
     let data = req.body
     let dealerSku = req.body.dealerSku ? req.body.dealerSku.replace(/\s+/g, ' ').trim() : ''
     const coverageType = data.coverageType
+
+
     if (data.coverageType == "") {
+
+        console.log("sdfsdffffffffffff-------------------if")
         query = {
+
             $and: [
                 { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
                 { 'priceBooks.category._id': { $in: catIdsArray } },
@@ -1090,6 +1095,8 @@ exports.getResellerPriceBook = async (req, res) => {
     }
 
     else {
+        console.log("sdfsdffffffffffff-------------------else")
+
         query = {
             $and: [
                 { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
@@ -1193,6 +1200,9 @@ exports.getResellerPriceBook = async (req, res) => {
 
         }
     }
+
+    console.log("sdfsdffffffffffff-------------------dfdsfsfdsfsdfsd")
+
     let getResellerPriceBook = await dealerPriceService.getAllPriceBooksByFilter(query, projection)
     if (!getResellerPriceBook) {
         res.send({
