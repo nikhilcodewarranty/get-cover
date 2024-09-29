@@ -1713,16 +1713,16 @@ async function generateTC(orderData) {
 
 `).join('');
 
-        const coverageStartDates = otherInfo.map((product, index) => `
-<p style="font-size:13px;">Product #${index + 1}: ${moment(product.coverageStartDate).format("MM/DD/YYYY")}</p>
+const coverageStartDates = otherInfo.map((product, index) => `
+    <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageStartDate).format("MM/DD/YYYY")}</p>
 `).join('');
 
-        const coverageEndDates = otherInfo.map((product, index) => `
-    <p style="font-size:13px;">Product #${index + 1}:${moment(product.coverageEndDate).format("MM/DD/YYYY")}</p>
+const coverageEndDates = otherInfo.map((product, index) => `
+    <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageEndDate).format("MM/DD/YYYY")}</p>
 `).join('');
 
-        const term = otherInfo.map((product, index) => `
-<p style="font-size:13px;">Product #${index + 1}: ${product.term / 12} ${product.term / 12 === 1 ? 'Year' : 'Years'}</p>
+const term = otherInfo.map((product, index) => `
+    <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${product.term / 12} ${product.term / 12 === 1 ? 'Year' : 'Years'}</p>
 `).join('');
 
         const checkServicer = await servicerService.getServiceProviderById({
