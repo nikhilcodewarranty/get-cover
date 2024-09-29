@@ -741,10 +741,10 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
                 { 'name': { '$regex': req.body.category ? req.body.category : '', '$options': 'i' } }
             ]
         };
-        if(!Array.isArray(data.coverageType ) && data.coverageType!=''){
+        if (!Array.isArray(data.coverageType) && data.coverageType != '') {
             res.send({
-                code:constant.errorCode,
-                message:"Coverage type should be an array!"
+                code: constant.errorCode,
+                message: "Coverage type should be an array!"
             });
             return;
         }
@@ -755,7 +755,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
         let searchPName = req.body.pName ? req.body.pName.replace(/\s+/g, ' ').trim() : ''
         let priceType = req.body.priceType ? req.body.priceType.replace(/\s+/g, ' ').trim() : ''
         let query
-        
+
 
         if (data.coverageType == "") {
             query = {
@@ -764,7 +764,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
                     { 'priceBooks.pName': { '$regex': searchPName, '$options': 'i' } },
                     { 'priceBooks.priceType': { '$regex': priceType, '$options': 'i' } },
                     { 'priceBooks.coverageType': { $elemMatch: { value: { $in: checkDealer.coverageType } } } },
-                    
+
                     { 'priceBooks.category._id': { $in: catIdsArray } },
                     { 'status': true },
                     { 'dealerSku': { '$regex': dealerSku, '$options': 'i' } },
@@ -2888,27 +2888,41 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         });
 
         //Get Coverage type according to dealer price books
-        let adhDays = getDealerPriceBook[0].adhDays
+        let mergedData;
 
-        const adhType = adhDays.map(item => item.value)
-        const optionQuery = {
-            value: {
-                $elemMatch: {
-                    value: { $in: adhType }
+        if (mergedPriceBooks.length == 1) {
+            let getDealerPriceBookData = getDealerPriceBook.filter(dealerPrice => {
+                return dealerPrice.dealerSku == mergedPriceBooks[0].dealerSku
+            })
+
+            let adhDays = getDealerPriceBookData[0].adhDays
+
+            const adhType = adhDays.map(item => item.value)
+            const optionQuery = {
+                value: {
+                    $elemMatch: {
+                        value: { $in: adhType }
+                    }
                 }
             }
+            const dynamicOption = await userService.getOptions(optionQuery)
+            const filteredOptions = dynamicOption.value.filter(item => coverageType.includes(item.value));
+
+            mergedData = adhDays.map(adh => {
+                const match = filteredOptions.find(opt => opt.value === adh.value);
+                if (match) {
+                    return { label: match.label, value: match.value, waitingDays: adh.waitingDays, deductible: adh.deductible, amountType: adh.amountType }
+
+                }
+
+                return adh;
+            });
         }
-        const dynamicOption = await userService.getOptions(optionQuery)
-        const filteredOptions = dynamicOption.value.filter(item => coverageType.includes(item.value));
-        const mergedData = adhDays.map(adh => {
-            const match = filteredOptions.find(opt => opt.value === adh.value);
-            if (match) {
-                return { label: match.label, value: match.value, waitingDays: adh.waitingDays, deductible: adh.deductible, amountType: adh.amountType }
 
-            }
+        else {
+            mergedData = []
+        }
 
-            return adh;
-        });
         let result = {
             priceCategories: getCategories1,
             priceBooks: data.priceCatId == "" ? [] : mergedPriceBooks,

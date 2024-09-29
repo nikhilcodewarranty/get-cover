@@ -984,75 +984,41 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         });
 
         //Get Coverage type according to dealer price books
+        let mergedData;
 
-        let adhDays = getDealerPriceBook[0].adhDays
-        const adhType = adhDays.map(item => item.value)
-        const optionQuery = {
-            value: {
-                $elemMatch: {
-                    value: { $in: adhType }
+        if (mergedPriceBooks.length == 1) {
+            let getDealerPriceBookData = getDealerPriceBook.filter(dealerPrice => {
+                return dealerPrice.dealerSku == mergedPriceBooks[0].dealerSku
+            })
+
+            let adhDays = getDealerPriceBookData[0].adhDays
+
+            const adhType = adhDays.map(item => item.value)
+            const optionQuery = {
+                value: {
+                    $elemMatch: {
+                        value: { $in: adhType }
+                    }
                 }
             }
+            const dynamicOption = await userService.getOptions(optionQuery)
+            const filteredOptions = dynamicOption.value.filter(item => coverageType.includes(item.value));
+
+            mergedData = adhDays.map(adh => {
+                const match = filteredOptions.find(opt => opt.value === adh.value);
+                if (match) {
+                    return { label: match.label, value: match.value, waitingDays: adh.waitingDays, deductible: adh.deductible, amountType: adh.amountType }
+
+                }
+
+                return adh;
+            });
         }
-        const dynamicOption = await userService.getOptions(optionQuery)
-        const filteredOptions = dynamicOption.value.filter(item => coverageType.includes(item.value));
-        const mergedData = adhDays.map(adh => {
-            const match = filteredOptions.find(opt => opt.value === adh.value);
-            if (match) {
-                return { label: match.label, value: match.value, waitingDays: adh.waitingDays, deductible: adh.deductible, amountType: adh.amountType }
 
-            }
+        else {
+            mergedData = []
+        }
 
-            return adh;
-        });
-        // *** Add mergedData to getDealerPriceBook ***
-        // We will loop through `getDealerPriceBook` and assign `mergedData` to a new key `mergedData`
-        // getDealerPriceBook = getDealerPriceBook.map(item => {
-        //     const {
-        //         isMaxClaimAmount,
-        //         _id,
-        //         priceBook,
-        //         dealerId,
-        //         dealerSku,
-        //         status,
-        //         retailPrice,
-        //         description,
-        //         isDeleted,
-        //         brokerFee,
-        //         adhDays,
-        //         unique_key,
-        //         wholesalePrice,
-        //         noOfClaimPerPeriod,
-        //         noOfClaim,
-        //         isManufacturerWarranty,
-        //         createdAt,
-        //         updatedAt,
-        //         __v
-        //       } = item._doc;
-
-        //       return {
-        //         isMaxClaimAmount,
-        //         _id,
-        //         priceBook,
-        //         dealerId,
-        //         dealerSku,
-        //         status,
-        //         retailPrice,
-        //         description,
-        //         isDeleted,
-        //         brokerFee,
-        //         adhDays,
-        //         unique_key,
-        //         wholesalePrice,
-        //         noOfClaimPerPeriod,
-        //         noOfClaim,
-        //         isManufacturerWarranty,
-        //         createdAt,
-        //         updatedAt,
-        //         __v,
-        //         mergedData
-        //       };
-        // });
         let result = {
             priceCategories: getCategories1,
             dealerPriceBook: getDealerPriceBook,
