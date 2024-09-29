@@ -366,11 +366,11 @@ exports.getAllClaims = async (req, res, next) => {
     const result_Array = resultFiter.map((item1) => {
       servicer = []
       let mergedData = []
-      console.log(" item1.contracts?.coverageType-------------------", item1.contracts?.coverageType)
-      console.log(" dynamicOption-------------------",dynamicOption)
-      const matchedData = dynamicOption.value.filter(contract =>
-        item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
-      );
+      if(Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType){
+        mergedData = dynamicOption.value.filter(contract =>
+          item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
+        );
+    }
 
       let servicerName = ''
       let selfServicer = false;
@@ -408,7 +408,7 @@ exports.getAllClaims = async (req, res, next) => {
         contracts: {
           ...item1.contracts,
           allServicer: servicer,
-          mergedData: matchedData
+          mergedData: mergedData
         }
       }
     })
