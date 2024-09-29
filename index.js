@@ -69,18 +69,18 @@ function isHostAllowed(req) {
   return allowedHosts.includes(host);
 }
 
-app.use((req, res, next) => {
-  if (req.headers.host == "localhost:3002" || req.headers.host == "http://54.176.118.28:3002") {
-    next(); // Proceed if the host is allowed
-  } else {
-    if (isHostAllowed(req)) {
-      next(); // Proceed if the host is allowed
-    } else {
-      console.log("checking the origin ++++++++++++++++++++++++++++++++++++++++++", allowedHosts, req.headers)
-      res.status(403).send('Access denied: Host not allowed');
-    }
-  }
-});
+// app.use((req, res, next) => {
+//   if (req.headers.host == "localhost:3002" || req.headers.host == "http://54.176.118.28:3002") {
+//     next(); // Proceed if the host is allowed
+//   } else {
+//     if (isHostAllowed(req)) {
+//       next(); // Proceed if the host is allowed
+//     } else {
+//       console.log("checking the origin ++++++++++++++++++++++++++++++++++++++++++", allowedHosts, req.headers)
+//       res.status(403).send('Access denied: Host not allowed');
+//     }
+//   }
+// });
 
 
 app.use(cors())
