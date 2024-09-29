@@ -366,9 +366,10 @@ exports.getAllClaims = async (req, res, next) => {
     const result_Array = resultFiter.map((item1) => {
       servicer = []
       let mergedData = []
-      const matchedData = dynamicOption.value.filter(contract =>
-        item1.contracts?.coverageType.find(opt => opt.value === contract.value)
-      );
+      console.log(" item1.contracts?.coverageType-------------------", item1.contracts?.coverageType)
+      // const matchedData = dynamicOption.value.filter(contract =>
+      //   item1.contracts?.coverageType.find(opt => opt.value === contract.value)
+      // );
 
       let servicerName = ''
       let selfServicer = false;
