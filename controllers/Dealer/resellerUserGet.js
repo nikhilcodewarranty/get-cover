@@ -1034,6 +1034,8 @@ exports.getResellerCustomers = async (req, res) => {
 //Get Reseller Price Books
 exports.getResellerPriceBook = async (req, res) => {
     let checkReseller = await resellerService.getReseller({ _id: req.userId }, { isDeleted: 0 })
+    let data = req.body
+
     if (!checkReseller) {
         res.send({
             code: constant.errorCode,
@@ -1068,7 +1070,6 @@ exports.getResellerPriceBook = async (req, res) => {
     let searchName = req.body.name ? req.body.name : ''
     let projection = { isDeleted: 0, __v: 0 }
     let query
-    let data = req.body
     let dealerSku = req.body.dealerSku ? req.body.dealerSku.replace(/\s+/g, ' ').trim() : ''
     const coverageType = data.coverageType
 
