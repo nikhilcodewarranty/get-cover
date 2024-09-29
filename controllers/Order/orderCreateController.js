@@ -800,17 +800,18 @@ async function generateTC(orderData) {
 `).join('');
 
 
-        const coverageStartDates = otherInfo.map((product, index) => `
-<p style="font-size:13px;">Product #${index + 1}: ${moment(product.coverageStartDate).format("MM/DD/YYYY")}</p>
+const coverageStartDates = otherInfo.map((product, index) => `
+    <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageStartDate).format("MM/DD/YYYY")}</p>
 `).join('');
 
-        const coverageEndDates = otherInfo.map((product, index) => `
-    <p style="font-size:13px;">Product #${index + 1}:${moment(product.coverageEndDate).format("MM/DD/YYYY")}</p>
+const coverageEndDates = otherInfo.map((product, index) => `
+    <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageEndDate).format("MM/DD/YYYY")}</p>
 `).join('');
 
-        const term = otherInfo.map((product, index) => `
-<p style="font-size:13px;">Product #${index + 1}: ${product.term / 12} ${product.term / 12 === 1 ? 'Year' : 'Years'}</p>
+const term = otherInfo.map((product, index) => `
+    <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${product.term / 12} ${product.term / 12 === 1 ? 'Year' : 'Years'}</p>
 `).join('');
+
 
 
         const checkServicer = await servicerService.getServiceProviderById({
@@ -864,7 +865,7 @@ async function generateTC(orderData) {
                         <td style="font-size:13px;padding:15px;">Address of GET COVER service contract holder:</td>
                         <td style="font-size:13px;">${checkCustomer ? checkCustomer?.street : ''}, ${checkCustomer ? checkCustomer?.city : ''}, ${checkCustomer ? checkCustomer?.state : ''}, ${checkCustomer ? checkCustomer?.country : ''}</td>
                    </tr>
-                        <tr>
+                 <tr>
                     <td style="font-size:13px;padding:15px;">Coverage Start Date:</td>
                     <td style="font-size:13px;"> ${coverageStartDates}</td>
                 </tr>

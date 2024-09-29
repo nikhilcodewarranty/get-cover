@@ -388,6 +388,7 @@ async function generateTC(orderData) {
         const resellerUser = await userService.getUserById1({ metaId: checkOrder.resellerId, isPrimary: true }, { isDeleted: false })
         //Get contract info of the order
         let productCoveredArray = []
+        let otherInfo = []
         //Check contract is exist or not using contract id
         const contractArrayPromise = checkOrder?.productsArray.map(item => {
             if (!item.exit) return contractService.getContractById({
@@ -400,6 +401,12 @@ async function generateTC(orderData) {
         const contractArray = await Promise.all(contractArrayPromise);
 
         for (let i = 0; i < checkOrder?.productsArray.length; i++) {
+            let anotherObj = {
+                coverageStartDate: checkOrder?.productsArray[i]?.coverageStartDate,
+                coverageEndDate: checkOrder?.productsArray[i]?.coverageEndDate,
+                term: checkOrder?.productsArray[i]?.term
+            }
+            otherInfo.push(anotherObj)
             if (checkOrder?.productsArray[i].priceType == 'Quantity Pricing') {
                 for (let j = 0; j < checkOrder?.productsArray[i].QuantityPricing.length; j++) {
                     let quanitityProduct = checkOrder?.productsArray[i].QuantityPricing[j];
@@ -427,6 +434,19 @@ async function generateTC(orderData) {
         <p style="font-size:13px;">${product.productName} : ${product.noOfProducts}</p>
 
 `).join('');
+
+        const coverageStartDates = otherInfo.map((product, index) => `
+<p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageStartDate).format("MM/DD/YYYY")}</p>
+`).join('');
+
+        const coverageEndDates = otherInfo.map((product, index) => `
+<p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageEndDate).format("MM/DD/YYYY")}</p>
+`).join('');
+
+        const term = otherInfo.map((product, index) => `
+<p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${product.term / 12} ${product.term / 12 === 1 ? 'Year' : 'Years'}</p>
+`).join('');
+
 
         const checkServicer = await servicerService.getServiceProviderById({
             $or: [
@@ -479,21 +499,23 @@ async function generateTC(orderData) {
                         <td style="font-size:13px;padding:15px;">Address of GET COVER service contract holder:</td>
                         <td style="font-size:13px;">${checkCustomer ? checkCustomer?.street : ''}, ${checkCustomer ? checkCustomer?.city : ''}, ${checkCustomer ? checkCustomer?.state : ''}, ${checkCustomer ? checkCustomer?.country : ''}</td>
                    </tr>
-                <tr>
+         
+                  <tr>
                     <td style="font-size:13px;padding:15px;">Coverage Start Date:</td>
-                    <td style="font-size:13px;"> ${moment(coverageStartDate).format("MM/DD/YYYY")}</td>
-                </tr>
+                    <td style="font-size:13px;"> ${coverageStartDates}</td>
+                  </tr>
             <tr>
                 <td style="font-size:13px;padding:15px;">GET COVER service contract period:</td>
                 <td style="font-size:13px;">
-                ${checkOrder.productsArray[0]?.term / 12} 
-                ${checkOrder.productsArray[0]?.term / 12 === 1 ? 'Year' : 'Years'}
-                </td>
+                ${term} 
+            </td>
             </tr>
+
             <tr>
-            <td style="font-size:13px;padding:15px;">Coverage End Date:</td>
-            <td style="font-size:13px;">${moment(coverageEndDate).format("MM/DD/YYYY")}</td>
-          </tr>
+                <td style="font-size:13px;padding:15px;">Coverage End Date:</td>
+                <td style="font-size:13px;">${coverageEndDates}</td >
+           </tr >
+
             <tr>
                 <td style="font-size:13px;padding:15px;">Number of covered components:</td>
                <td> ${tableRows}   </td>                 
