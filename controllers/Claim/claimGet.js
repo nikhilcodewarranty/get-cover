@@ -909,7 +909,7 @@ exports.checkClaimAmount = async (req, res) => {
     let data = req.body
     let getClaim = await claimService.getClaimById({ _id: req.params.claimId })
     let getContractDetail = await contractService.getContractById({ _id: getClaim.contractId })
-    if (getClaim.claimType != ""||getClaim.claimType != "New") {
+    if (getClaim.claimType != ""&&getClaim.claimType != "New") {
 
       let coverageTypeDays = getContractDetail.adhDays
       let getDeductible = coverageTypeDays.filter(coverageType => {
@@ -1035,6 +1035,17 @@ exports.checkClaimAmount = async (req, res) => {
 
 
     } else {
+      let values = {
+        $set: {
+          customerClaimAmount:  0,
+          getCoverClaimAmount:  0,
+          customerOverAmount:  0,
+          getcoverOverAmount:  0
+
+        }
+      }
+      let updateTheClaim = await claimService.updateClaim({ _id: getClaim._id }, values, { new: true })
+
       res.send({
         code: constant.successCode,
         message: "Updated"
