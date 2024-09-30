@@ -909,13 +909,16 @@ exports.checkClaimAmount = async (req, res) => {
     let data = req.body
     let getClaim = await claimService.getClaimById({ _id: req.params.claimId })
     let getContractDetail = await contractService.getContractById({ _id: getClaim.contractId })
-    if (getClaim.claimType != ""||getClaim.claimType != "New") {
+    if (getClaim.claimType != ""&&getClaim.claimType != "New") {
 
       let coverageTypeDays = getContractDetail.adhDays
       let getDeductible = coverageTypeDays.filter(coverageType => {
         console.log("Checking value: ", coverageTypeDays, coverageType.value, getClaim.claimType);
         return coverageType.value === getClaim.claimType;
       });
+      if(getClaim.claimType != "" || getClaim.claimType != "New"){
+        
+      }
       if (!getDeductible[0]) {
         res.send({
           code: constant.errorCode,
