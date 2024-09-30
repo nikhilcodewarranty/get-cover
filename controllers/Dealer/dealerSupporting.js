@@ -1038,6 +1038,12 @@ exports.getDealerClaims = async (req, res) => {
         );
         const result_Array = resultFiter.map((item1) => {
             servicer = []
+            let mergedData = []
+      if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
+        mergedData = dynamicOption.value.filter(contract =>
+          item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
+        );
+      }
             let servicerName = '';
             let selfServicer = false;
             let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
@@ -1064,7 +1070,8 @@ exports.getDealerClaims = async (req, res) => {
                 selfServicer: selfServicer,
                 contracts: {
                     ...item1.contracts,
-                    allServicer: servicer
+                    allServicer: servicer,
+                    mergedData:mergedData
                 }
             }
         })
