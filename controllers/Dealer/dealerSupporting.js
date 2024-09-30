@@ -1029,6 +1029,7 @@ exports.getDealerClaims = async (req, res) => {
                 allServicerIds.push(dealer.servicerId);
             });
         });
+        const dynamicOption = await userService.getOptions({ name: 'coverage_type' })
 
         //Get Dealer and Reseller Servicers
         let servicer;
