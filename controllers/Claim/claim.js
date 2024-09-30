@@ -599,6 +599,17 @@ exports.editClaim = async (req, res) => {
             result: updateData
           }
         }
+
+        if(updateData.claimType!=""&&updateData.claimType!="New"){
+          console.log("checking ak ++++++++++++++++++++++++++",req.header)
+         let udpateclaimAmount =  await axios.get(process.env.API_ENDPOINT+"api-v1/claim/checkClaimAmount/"+updateData._id, {
+            headers: {
+                "x-access-token":req.header["x-access-token"],  // Include the token in the Authorization header
+            }
+        });
+        console.log("updated data +++++++++++++++++++++++++++++++++++",udpateclaimAmount)
+        }
+
         await LOG(logData).save()
         res.send({
           code: constant.errorCode,
