@@ -742,7 +742,7 @@ exports.editClaimType = async (req, res) => {
         }
       }
       await LOG(logData).save()
-      if(updateData.claimType!=""&&updateData.claimType!="New"){
+      if(updateData.claimType!=""||updateData.claimType!="New"){
         console.log("checking ak ++++++++++++++++++++++++++",req.header)
        let udpateclaimAmount =  await axios.get(process.env.API_ENDPOINT+"api-v1/claim/checkClaimAmount/"+updateData._id, {
           headers: {
