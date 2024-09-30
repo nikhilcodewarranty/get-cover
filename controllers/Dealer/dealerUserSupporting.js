@@ -416,6 +416,14 @@ exports.getDealerPriceBookById = async (req, res) => {
                 }
             });
         });
+        let firstArray = getDealerPrice[0].adhDays
+        let secondArray = getDealerPrice[0].adhDays1
+
+        const valuesToMatch = new Set(firstArray.map(item => item.value));
+
+        // Filter the second array
+        const filteredAdhDays1 = secondArray.filter(item => valuesToMatch.has(item.value));
+        getDealerPrice[0].adhDays1 = filteredAdhDays1
 
         if (!getDealerPrice) {
             res.send({

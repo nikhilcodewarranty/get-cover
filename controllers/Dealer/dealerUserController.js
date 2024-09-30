@@ -1943,13 +1943,13 @@ exports.addClaim = async (req, res, next) => {
 
         ]
         let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
-        if (checkContract.productValue < claimTotal[0]?.amount) {
-            res.send({
-                code: consta.errorCode,
-                message: 'Claim Amount Exceeds Contract Retail Price'
-            });
-            return;
-        }
+        // if (checkContract.productValue < claimTotal[0]?.amount) {
+        //     res.send({
+        //         code: consta.errorCode,
+        //         message: 'Claim Amount Exceeds Contract Retail Price'
+        //     });
+        //     return;
+        // }
         data.receiptImage = data.file
         data.servicerId = data.servicerId ? data.servicerId : null
         let count = await claimService.getClaimCount();

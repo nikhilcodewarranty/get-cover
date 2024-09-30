@@ -27,6 +27,6 @@ router.get("/getContractById/:contractId", [verifyToken], supportingFunction.che
 router.get("/getMaxClaimAmount/:contractId", [verifyToken], claimGetController.getMaxClaimAmount); // get max claim amount by contract ID
 router.get("/getMessages/:claimId", [verifyToken], claimGetController.getMessages); // get messages for a claim
 router.post("/checkCoverageTypeDate", [verifyToken], claimGetController.checkCoverageTypeDate); // get messages for a claim
-router.get("/checkClaimAmount/:claimId", [verifyToken], claimGetController.checkClaimAmount); // get messages for a claim
+router.get("/checkClaimAmount/:claimId", claimGetController.checkClaimAmount); // get messages for a claim
 
 module.exports = router;

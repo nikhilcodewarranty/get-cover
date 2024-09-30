@@ -867,7 +867,8 @@ exports.getDealerClaims = async (req, res) => {
                             claimStatus: 1,
                             repairStatus: 1,
                             "contracts.unique_key": 1,
-                            "contracts.productName": 1,
+              "contracts.coverageType": 1,
+              "contracts.productName": 1,
                             "contracts.pName": 1,
                             "contracts.model": 1,
                             "contracts.manufacture": 1,
@@ -1028,6 +1029,7 @@ exports.getDealerClaims = async (req, res) => {
                 allServicerIds.push(dealer.servicerId);
             });
         });
+        const dynamicOption = await userService.getOptions({ name: 'coverage_type' })
 
         //Get Dealer and Reseller Servicers
         let servicer;
@@ -1038,6 +1040,12 @@ exports.getDealerClaims = async (req, res) => {
         );
         const result_Array = resultFiter.map((item1) => {
             servicer = []
+            let mergedData = []
+      if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
+        mergedData = dynamicOption.value.filter(contract =>
+          item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
+        );
+      }
             let servicerName = '';
             let selfServicer = false;
             let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
@@ -1064,7 +1072,8 @@ exports.getDealerClaims = async (req, res) => {
                 selfServicer: selfServicer,
                 contracts: {
                     ...item1.contracts,
-                    allServicer: servicer
+                    allServicer: servicer,
+                    mergedData:mergedData
                 }
             }
         })

@@ -28,6 +28,7 @@ const { S3Client } = require('@aws-sdk/client-s3');
 const { Upload } = require('@aws-sdk/lib-storage');
 const multerS3 = require('multer-s3');
 const aws = require('aws-sdk');
+const { default: axios } = require("axios");
 
 aws.config.update({
   accessKeyId: process.env.aws_access_key_id,
@@ -271,13 +272,7 @@ const getObjectFromS3 = (bucketReadUrl) => {
 exports.uploadReceipt = async (req, res, next) => {
   try {
     uploadP(req, res, async (err) => {
-      if (req.role != 'Super Admin') {
-        res.send({
-          code: constant.errorCode,
-          message: 'Only suoer admin allow to do this action!'
-        });
-        return;
-      }
+  
       let file = req.files;
       res.send({
         code: constant.successCode,
@@ -391,13 +386,13 @@ exports.addClaim = async (req, res, next) => {
 
     let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
     let remainingPrice = checkContract.productValue - claimTotal[0]?.amount
-    if (checkContract.productValue <= claimTotal[0]?.amount) {
-      res.send({
-        code: constant.errorCode,
-        message: 'Claim Amount Exceeds Contract Retail Price'
-      });
-      return;
-    }
+    // if (checkContract.productValue <= claimTotal[0]?.amount) {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: 'Claim Amount Exceeds Contract Retail Price'
+    //   });
+    //   return;
+    // }
 
     data.receiptImage = data.file
     data.servicerId = data.servicerId ? data.servicerId : null
@@ -569,13 +564,13 @@ exports.editClaim = async (req, res) => {
       let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
       if (claimTotal.length > 0) {
         const remainingValue = contract.productValue - claimTotal[0]?.amount
-        if (remainingValue.toFixed(2) < data.totalAmount) {
-          res.send({
-            code: constant.errorCode,
-            message: 'Claim Amount Exceeds Contract Retail Price'
-          });
-          return;
-        }
+        // if (remainingValue.toFixed(2) < data.totalAmount) {
+        //   res.send({
+        //     code: constant.errorCode,
+        //     message: 'Claim Amount Exceeds Contract Retail Price'
+        //   });
+        //   return;
+        // }
       }
       // if (contract.productValue < data.totalAmount) {
       //   res.send({
@@ -598,6 +593,16 @@ exports.editClaim = async (req, res) => {
             result: updateData
           }
         }
+
+          console.log("checking ak ++++++++++++++++++++++++++",req.header)
+         let udpateclaimAmount =  await axios.get(process.env.API_ENDPOINT+"api-v1/claim/checkClaimAmount/"+updateData._id, {
+            headers: {
+                "x-access-token":req.header["x-access-token"],  // Include the token in the Authorization header
+            }
+        });
+        console.log("updated data +++++++++++++++++++++++++++++++++++",udpateclaimAmount)
+        
+
         await LOG(logData).save()
         res.send({
           code: constant.errorCode,
@@ -736,10 +741,20 @@ exports.editClaimType = async (req, res) => {
         }
       }
       await LOG(logData).save()
-
+      if(updateData.claimType!=""||updateData.claimType!="New"){
+        console.log("checking ak ++++++++++++++++++++++++++",req.header)
+       let udpateclaimAmount =  await axios.get(process.env.API_ENDPOINT+"api-v1/claim/checkClaimAmount/"+updateData._id, {
+          headers: {
+              "x-access-token":req.header["x-access-token"],  // Include the token in the Authorization header
+          }
+      });
+      console.log("updated data +++++++++++++++++++++++++++++++++++",udpateclaimAmount)
+      }
+    let checkUpdatedClaim = await claimService.getClaimById(criteria)
+     
       res.send({
         code: constant.successCode,
-        result: updateData,
+        result: checkUpdatedClaim,
         message: "Updated successfully",
       })
       return;

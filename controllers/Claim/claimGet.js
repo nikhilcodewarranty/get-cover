@@ -909,13 +909,16 @@ exports.checkClaimAmount = async (req, res) => {
     let data = req.body
     let getClaim = await claimService.getClaimById({ _id: req.params.claimId })
     let getContractDetail = await contractService.getContractById({ _id: getClaim.contractId })
-    if (getClaim.claimType != "") {
+    if (getClaim.claimType != ""&&getClaim.claimType != "New") {
 
       let coverageTypeDays = getContractDetail.adhDays
       let getDeductible = coverageTypeDays.filter(coverageType => {
         console.log("Checking value: ", coverageTypeDays, coverageType.value, getClaim.claimType);
         return coverageType.value === getClaim.claimType;
       });
+      if(getClaim.claimType != "" || getClaim.claimType != "New"){
+        
+      }
       if (!getDeductible[0]) {
         res.send({
           code: constant.errorCode,
@@ -1001,7 +1004,7 @@ exports.checkClaimAmount = async (req, res) => {
         let totalClaimAmount = getClaim.totalAmount
         let customerClaimAmount
         if (totalClaimAmount < deductableAmount) {
-          customerClaimAmount = deductableAmount
+          customerClaimAmount = totalClaimAmount
           getCoverClaimAmount = 0
 
         } else {
@@ -1035,6 +1038,17 @@ exports.checkClaimAmount = async (req, res) => {
 
 
     } else {
+      let values = {
+        $set: {
+          customerClaimAmount:  0,
+          getCoverClaimAmount:  0,
+          customerOverAmount:  0,
+          getcoverOverAmount:  0
+
+        }
+      }
+      let updateTheClaim = await claimService.updateClaim({ _id: getClaim._id }, values, { new: true })
+
       res.send({
         code: constant.successCode,
         message: "Updated"

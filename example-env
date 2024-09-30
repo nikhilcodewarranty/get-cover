@@ -15,6 +15,7 @@ main_template = ""
 approval_mail = ""
 MAIN_FILE_PATH=''
 SITE_URL = ''
+API_URL = ''
 DUMMY_PASSWORD = ""
 dbName = '' 
 reportingDbName = ''
