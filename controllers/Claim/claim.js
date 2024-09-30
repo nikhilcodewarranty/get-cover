@@ -386,13 +386,13 @@ exports.addClaim = async (req, res, next) => {
 
     let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
     let remainingPrice = checkContract.productValue - claimTotal[0]?.amount
-    if (checkContract.productValue <= claimTotal[0]?.amount) {
-      res.send({
-        code: constant.errorCode,
-        message: 'Claim Amount Exceeds Contract Retail Price'
-      });
-      return;
-    }
+    // if (checkContract.productValue <= claimTotal[0]?.amount) {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: 'Claim Amount Exceeds Contract Retail Price'
+    //   });
+    //   return;
+    // }
 
     data.receiptImage = data.file
     data.servicerId = data.servicerId ? data.servicerId : null
@@ -564,14 +564,14 @@ exports.editClaim = async (req, res) => {
       let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
       if (claimTotal.length > 0) {
         const remainingValue = contract.productValue - claimTotal[0]?.amount
-        if (remainingValue.toFixed(2) < data.totalAmount) {
-          res.send({
-            code: constant.errorCode,
-            message: 'Claim Amount Exceeds Contract Retail Price'
-          });
-          return;
-        }
-      }
+      //   if (remainingValue.toFixed(2) < data.totalAmount) {
+      //     res.send({
+      //       code: constant.errorCode,
+      //       message: 'Claim Amount Exceeds Contract Retail Price'
+      //     });
+      //     return;
+      //   }
+      // }
       // if (contract.productValue < data.totalAmount) {
       //   res.send({
       //     code: constant.errorCode,
