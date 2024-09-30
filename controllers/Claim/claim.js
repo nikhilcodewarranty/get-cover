@@ -594,13 +594,6 @@ exports.editClaim = async (req, res) => {
           }
         }
 
-          console.log("checking ak ++++++++++++++++++++++++++",req.header)
-         let udpateclaimAmount =  await axios.get(process.env.API_ENDPOINT+"api-v1/claim/checkClaimAmount/"+updateData._id, {
-            headers: {
-                "x-access-token":req.header["x-access-token"],  // Include the token in the Authorization header
-            }
-        });
-        console.log("updated data +++++++++++++++++++++++++++++++++++",udpateclaimAmount)
         
 
         await LOG(logData).save()
@@ -610,6 +603,14 @@ exports.editClaim = async (req, res) => {
         })
         return;
       }
+      console.log("checking ak ++++++++++++++++++++++++++",req.header)
+      let udpateclaimAmount =  await axios.get(process.env.API_ENDPOINT+"api-v1/claim/checkClaimAmount/"+updateData._id, {
+         headers: {
+             "x-access-token":req.header["x-access-token"],  // Include the token in the Authorization header
+         }
+     });
+     console.log("updated data +++++++++++++++++++++++++++++++++++",udpateclaimAmount)
+     
       //Send notification to all
       let IDs = await supportingFunction.getUserIds()
       let servicerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkClaim?.servicerId, isPrimary: true })
