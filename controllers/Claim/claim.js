@@ -28,6 +28,7 @@ const { S3Client } = require('@aws-sdk/client-s3');
 const { Upload } = require('@aws-sdk/lib-storage');
 const multerS3 = require('multer-s3');
 const aws = require('aws-sdk');
+const { default: axios } = require("axios");
 
 aws.config.update({
   accessKeyId: process.env.aws_access_key_id,
@@ -736,7 +737,14 @@ exports.editClaimType = async (req, res) => {
         }
       }
       await LOG(logData).save()
-
+      if(updateData.claimType!=""&&updateData.claimType!="New"){
+        await axios.get(process.env.SITE_URL/+updateData._id, {
+          headers: {
+              "x-access-token":req.header["x-access-token"],  // Include the token in the Authorization header
+          }
+      });
+      }
+     
       res.send({
         code: constant.successCode,
         result: updateData,
