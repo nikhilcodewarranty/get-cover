@@ -1001,7 +1001,7 @@ exports.checkClaimAmount = async (req, res) => {
         let totalClaimAmount = getClaim.totalAmount
         let customerClaimAmount
         if (totalClaimAmount < deductableAmount) {
-          customerClaimAmount = deductableAmount
+          customerClaimAmount = totalClaimAmount
           getCoverClaimAmount = 0
 
         } else {
