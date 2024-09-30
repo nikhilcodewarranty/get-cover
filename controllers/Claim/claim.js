@@ -746,10 +746,11 @@ exports.editClaimType = async (req, res) => {
       });
       console.log("updated data +++++++++++++++++++++++++++++++++++",udpateclaimAmount)
       }
+    let checkUpdatedClaim = await claimService.getClaimById(criteria)
      
       res.send({
         code: constant.successCode,
-        result: updateData,
+        result: checkUpdatedClaim,
         message: "Updated successfully",
       })
       return;
