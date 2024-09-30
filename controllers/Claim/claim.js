@@ -272,13 +272,7 @@ const getObjectFromS3 = (bucketReadUrl) => {
 exports.uploadReceipt = async (req, res, next) => {
   try {
     uploadP(req, res, async (err) => {
-      if (req.role != 'Super Admin') {
-        res.send({
-          code: constant.errorCode,
-          message: 'Only suoer admin allow to do this action!'
-        });
-        return;
-      }
+  
       let file = req.files;
       res.send({
         code: constant.successCode,
