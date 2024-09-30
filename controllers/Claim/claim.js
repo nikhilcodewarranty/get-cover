@@ -564,14 +564,14 @@ exports.editClaim = async (req, res) => {
       let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
       if (claimTotal.length > 0) {
         const remainingValue = contract.productValue - claimTotal[0]?.amount
-      //   if (remainingValue.toFixed(2) < data.totalAmount) {
-      //     res.send({
-      //       code: constant.errorCode,
-      //       message: 'Claim Amount Exceeds Contract Retail Price'
-      //     });
-      //     return;
-      //   }
-      // }
+        // if (remainingValue.toFixed(2) < data.totalAmount) {
+        //   res.send({
+        //     code: constant.errorCode,
+        //     message: 'Claim Amount Exceeds Contract Retail Price'
+        //   });
+        //   return;
+        // }
+      }
       // if (contract.productValue < data.totalAmount) {
       //   res.send({
       //     code: constant.errorCode,
