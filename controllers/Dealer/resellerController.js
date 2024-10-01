@@ -1925,6 +1925,7 @@ exports.getResellerClaims = async (req, res) => {
                             "contracts.model": 1,
                             "contracts.manufacture": 1,
                             "contracts.serial": 1,
+                            "contracts.coverageType": 1,
                             "contracts.orders.dealerId": 1,
                             "contracts.orders._id": 1,
                             "contracts.orders.servicerId": 1,
@@ -1995,6 +1996,8 @@ exports.getResellerClaims = async (req, res) => {
             }
         }
         let claimPaidStatus = {}
+        const dynamicOption = await userService.getOptions({ name: 'coverage_type' })
+
         if (data.claimPaidStatus != '' && data.claimPaidStatus != undefined) {
             claimPaidStatus = { "claimPaymentStatus": data.claimPaidStatus }
         }
@@ -2124,6 +2127,12 @@ exports.getResellerClaims = async (req, res) => {
         );
         const result_Array = resultFiter.map((item1) => {
             servicer = []
+            let mergedData = []
+            if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
+              mergedData = dynamicOption.value.filter(contract =>
+                item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
+              );
+            }
             let servicerName = '';
             let selfServicer = false;
             let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
@@ -2155,7 +2164,9 @@ exports.getResellerClaims = async (req, res) => {
                 selfServicer: selfServicer,
                 contracts: {
                     ...item1.contracts,
-                    allServicer: servicer
+                    allServicer: servicer,
+                    mergedData:mergedData
+
                 }
             }
         })

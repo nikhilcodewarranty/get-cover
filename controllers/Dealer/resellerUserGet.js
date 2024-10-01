@@ -2332,6 +2332,7 @@ exports.getResellerClaims = async (req, res) => {
                             "contracts.unique_key": 1,
                             "contracts.productName": 1,
                             "contracts.model": 1,
+                            "contracts.coverageType": 1,
                             "contracts.manufacture": 1,
                             "contracts.serial": 1,
                             "contracts.orders.dealerId": 1,
@@ -2386,6 +2387,8 @@ exports.getResellerClaims = async (req, res) => {
             }
         })
         let servicerMatch = {}
+        const dynamicOption = await userService.getOptions({ name: 'coverage_type' })
+
         if (data.servicerName != '' && data.servicerName != undefined) {
             const checkServicer = await providerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } });
             if (checkServicer.length > 0) {
@@ -2528,6 +2531,7 @@ exports.getResellerClaims = async (req, res) => {
 
         //Get Dealer and Reseller Servicers
         let servicer;
+       let  allServicer
         let servicerName = '';
         allServicer = await providerService.getAllServiceProvider(
             { _id: { $in: allServicerIds }, status: true },
@@ -2535,6 +2539,12 @@ exports.getResellerClaims = async (req, res) => {
         );
         const result_Array = resultFiter.map((item1) => {
             servicer = []
+            let mergedData = []
+            if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
+              mergedData = dynamicOption.value.filter(contract =>
+                item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
+              );
+            }
             let servicerName = '';
             let selfServicer = false;
             let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
@@ -2564,7 +2574,9 @@ exports.getResellerClaims = async (req, res) => {
                 selfServicer: selfServicer,
                 contracts: {
                     ...item1.contracts,
-                    allServicer: servicer
+                    allServicer: servicer,
+                    mergedData:mergedData
+
                 }
             }
         })

@@ -581,7 +581,7 @@ exports.rejectServicer = async (req, res) => {
     let getServicer = await providerService.getServiceProviderById({ _id: req.params.servicerId });
     let checkServicer = await providerService.deleteServicer({ _id: req.params.servicerId })
     let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.servicerId, isPrimary: true })
-    
+
     IDs.push(getPrimary._id)
 
     if (!checkServicer) {
@@ -1803,7 +1803,7 @@ exports.getServicerClaims = async (req, res) => {
               "unique_key": 1,
               totalAmount: 1,
               servicerId: 1,
-              dealerSku:1,
+              dealerSku: 1,
               customerStatus: 1,
               repairParts: 1,
               diagnosis: 1,
@@ -1813,6 +1813,7 @@ exports.getServicerClaims = async (req, res) => {
               "contracts.productName": 1,
               "contracts.model": 1,
               "contracts.manufacture": 1,
+              "contracts.coverageType": 1,
               "contracts.serial": 1,
               "contracts.orders.dealerId": 1,
               "contracts.orders._id": 1,
@@ -1864,6 +1865,7 @@ exports.getServicerClaims = async (req, res) => {
         ]
       }
     })
+    const dynamicOption = await userService.getOptions({ name: 'coverage_type' })
 
     let claimPaidStatus = {}
     if (data.claimPaidStatus != '' && data.claimPaidStatus != undefined) {
@@ -1994,6 +1996,12 @@ exports.getServicerClaims = async (req, res) => {
 
     const result_Array = resultFiter.map((item1) => {
       servicer = []
+      let mergedData = []
+      if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
+        mergedData = dynamicOption.value.filter(contract =>
+          item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
+        );
+      }
       let servicerName = '';
       let selfServicer = false;
       let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
@@ -2020,7 +2028,9 @@ exports.getServicerClaims = async (req, res) => {
         selfServicer: selfServicer,
         contracts: {
           ...item1.contracts,
-          allServicer: servicer
+          allServicer: servicer,
+          mergedData: mergedData
+
         }
       }
     })
@@ -2150,10 +2160,10 @@ exports.paidUnpaidClaim = async (req, res) => {
               customerOverAmount: 1,
               customerClaimAmount: 1,
               getCoverClaimAmount: 1,
-              customerStatus: 1, 
+              customerStatus: 1,
               repairParts: 1,
               diagnosis: 1,
-              dealerSku:1,
+              dealerSku: 1,
               claimDate: 1,
               claimStatus: 1,
               claimPaymentStatus: 1,

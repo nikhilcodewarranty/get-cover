@@ -1021,6 +1021,7 @@ exports.getDealerClaims = async (req, res) => {
         let allClaims = await claimService.getClaimWithAggregate(lookupQuery);
         let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
         let allServicerIds = [];
+        let allServicer
         // Iterate over the data array
         resultFiter.forEach(item => {
             // Iterate over the dealerServicer array in each item
