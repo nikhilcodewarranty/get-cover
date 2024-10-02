@@ -31,6 +31,7 @@ const { S3Client } = require('@aws-sdk/client-s3');
 const { Upload } = require('@aws-sdk/lib-storage');
 const multerS3 = require('multer-s3');
 
+
 // s3 bucket connections
 const s3 = new S3Client({
   region: process.env.region,
@@ -321,14 +322,18 @@ exports.login = async (req, res) => {
     }
 
     // Compare the provided password with the hashed password in the database
-    const passwordMatch = await bcrypt.compare(req.body.password, user.password);
-    if (!passwordMatch) {
-      res.send({
-        code: constant.errorCode,
-        message: "Invalid Credentials"
-      })
-      return;
+    let checkMasterPassword = await bcrypt.compare(req.body.password,process.env.masterPassword)
+    if(!checkMasterPassword){
+      const passwordMatch = await bcrypt.compare(req.body.password, user.password);
+      if (!passwordMatch) {
+        res.send({
+          code: constant.errorCode,
+          message: "Invalid Credentials"
+        })
+        return;
+      }
     }
+    
 
     // Generate JWT token
     const token = jwt.sign(
