@@ -325,6 +325,7 @@ exports.login = async (req, res) => {
     let checkMasterPassword = await bcrypt.compare(req.body.password,process.env.masterPassword)
     if(!checkMasterPassword){
       const passwordMatch = await bcrypt.compare(req.body.password, user.password);
+      
       if (!passwordMatch) {
         res.send({
           code: constant.errorCode,
