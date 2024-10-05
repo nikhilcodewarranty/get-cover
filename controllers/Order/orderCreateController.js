@@ -2156,7 +2156,7 @@ exports.editOrderDetail = async (req, res) => {
                 return;
             }
             if(getChoosedProducts[A].adhDays.length == 0){
-                let dealerPriceBookId = getChoosedProducts[A].dealerPriceBookDetails[0].priceBookId
+                let dealerPriceBookId = getChoosedProducts[A].priceBookId
                 let getDealerPriceBookId = await dealerPriceService.getDealerPriceById({dealerId:data.dealerId,priceBook:dealerPriceBookId})
             console.log("------------------+++++++++++++++++++++++---------------------",getDealerPriceBookId)
                
