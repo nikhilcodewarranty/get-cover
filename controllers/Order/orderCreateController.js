@@ -1172,6 +1172,23 @@ exports.createOrder1 = async (req, res) => {
         }
 
         data.serviceCoverageType = serviceCoverage != '' ? serviceCoverage : req.body.serviceCoverageType
+
+        let getChoosedProducts = data.productsArray
+        for(let A=0;A<getChoosedProducts.length;A++){
+            if(!getChoosedProducts[A].adhDays){
+                res.send({
+                    code:constant.errorCode,
+                    message:"Coverage type data for waiting days and deductible is not provided"
+                })
+                return;
+            }
+            if(getChoosedProducts[A].adhDays.length == 0){
+                let dealerPriceBookId = getChoosedProducts[A].dealerPriceBookDetails[0].priceBookId
+                let getDealerPriceBookId = await dealerPriceService.getDealerPriceById({dealerId:data.dealerId,priceBook:dealerPriceBookId})
+                getChoosedProducts[A].adhDays = getDealerPriceBookId.adhDays
+            }
+        }
+
         let savedResponse = await orderService.addOrder(data);
         var orderServiceCoverageType = savedResponse.serviceCoverageType
 
@@ -2127,6 +2144,23 @@ exports.editOrderDetail = async (req, res) => {
             const finalOutput = [...filteredProducts2, ...productsWithOrderFiles];
             data.productsArray = finalOutput;
         }
+
+        let getChoosedProducts = checkOrder.productsArray
+        for(let A=0;A<getChoosedProducts.length;A++){
+            if(!getChoosedProducts[A].adhDays){
+                res.send({
+                    code:constant.errorCode,
+                    message:"Coverage type data for waiting days and deductible is not provided"
+                })
+                return;
+            }
+            if(getChoosedProducts[A].adhDays.length == 0){
+                let dealerPriceBookId = getChoosedProducts[A].dealerPriceBookDetails[0].priceBookId
+                let getDealerPriceBookId = await dealerPriceService.getDealerPriceById({dealerId:data.dealerId,priceBook:dealerPriceBookId})
+                data.productsArray[A].adhDays = getDealerPriceBookId.adhDays
+            }
+        }
+
 
         let savedResponse = await orderService.updateOrder(
             { _id: req.params.orderId },
