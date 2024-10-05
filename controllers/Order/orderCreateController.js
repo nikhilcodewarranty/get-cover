@@ -769,7 +769,7 @@ async function generateTC(orderData) {
                     let obj = {
                         productName: checkOrder?.productsArray[i]?.dealerSku,
                         noOfProducts: quanitityProduct.enterQuantity,
-              
+
                     }
                     productCoveredArray.push(obj)
 
@@ -783,7 +783,7 @@ async function generateTC(orderData) {
                 let obj = {
                     productName: findContract?.dealerSku,
                     noOfProducts: checkOrder?.productsArray[i].noOfProducts,
-                 
+
                 }
                 productCoveredArray.push(obj)
             }
@@ -800,15 +800,15 @@ async function generateTC(orderData) {
 `).join('');
 
 
-const coverageStartDates = otherInfo.map((product, index) => `
+        const coverageStartDates = otherInfo.map((product, index) => `
     <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageStartDate).add(1, 'days').format("MM/DD/YYYY")}</p>
 `).join('');
 
-const coverageEndDates = otherInfo.map((product, index) => `
+        const coverageEndDates = otherInfo.map((product, index) => `
     <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageEndDate).add(1, 'days').format("MM/DD/YYYY")}</p>
 `).join('');
 
-const term = otherInfo.map((product, index) => `
+        const term = otherInfo.map((product, index) => `
     <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${product.term / 12} ${product.term / 12 === 1 ? 'Year' : 'Years'}</p>
 `).join('');
 
@@ -1103,7 +1103,7 @@ exports.createOrder1 = async (req, res) => {
         data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
         data.unique_key_search = "GC" + "2024" + data.unique_key_number
         data.unique_key = "GC-" + "2024-" + data.unique_key_number
-        
+
         let checkVenderOrder = await orderService.getOrder(
             { venderOrder: data.dealerPurchaseOrder, dealerId: data.dealerId },
             {}
@@ -1174,18 +1174,18 @@ exports.createOrder1 = async (req, res) => {
         data.serviceCoverageType = serviceCoverage != '' ? serviceCoverage : req.body.serviceCoverageType
 
         let getChoosedProducts = data.productsArray
-        for(let A=0;A<getChoosedProducts.length;A++){
-            if(!getChoosedProducts[A].adhDays){
+        for (let A = 0; A < getChoosedProducts.length; A++) {
+            if (!getChoosedProducts[A].adhDays) {
                 res.send({
-                    code:constant.errorCode,
-                    message:"Coverage type data for waiting days and deductible is not provided"
+                    code: constant.errorCode,
+                    message: "Coverage type data for waiting days and deductible is not provided"
                 })
                 return;
             }
-            if(getChoosedProducts[A].adhDays.length == 0){
-                let dealerPriceBookId = getChoosedProducts[A].dealerPriceBookDetails[0].priceBookId
-                let getDealerPriceBookId = await dealerPriceService.getDealerPriceById({dealerId:data.dealerId,priceBook:dealerPriceBookId})
-                getChoosedProducts[A].adhDays = getDealerPriceBookId.adhDays
+            if (getChoosedProducts[A].adhDays.length == 0) {
+                let dealerPriceBookId = getChoosedProducts[A].priceBookId
+                let getDealerPriceBookId = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, priceBook: dealerPriceBookId })
+                data.productsArray[A].adhDays = getDealerPriceBookId.adhDays
             }
         }
 
@@ -2146,20 +2146,17 @@ exports.editOrderDetail = async (req, res) => {
         }
 
         let getChoosedProducts = data.productsArray
-        for(let A=0;A<getChoosedProducts.length;A++){
-            console.log("---------------------------------------",getChoosedProducts[A])
-            if(!getChoosedProducts[A].adhDays){
+        for (let A = 0; A < getChoosedProducts.length; A++) {
+            if (!getChoosedProducts[A].adhDays) {
                 res.send({
-                    code:constant.errorCode,
-                    message:"Coverage type data for waiting days and deductible is not provided"
+                    code: constant.errorCode,
+                    message: "Coverage type data for waiting days and deductible is not provided"
                 })
                 return;
             }
-            if(getChoosedProducts[A].adhDays.length == 0){
+            if (getChoosedProducts[A].adhDays.length == 0) {
                 let dealerPriceBookId = getChoosedProducts[A].priceBookId
-                let getDealerPriceBookId = await dealerPriceService.getDealerPriceById({dealerId:data.dealerId,priceBook:dealerPriceBookId})
-            console.log("------------------+++++++++++++++++++++++---------------------",getDealerPriceBookId)
-               
+                let getDealerPriceBookId = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, priceBook: dealerPriceBookId })
                 data.productsArray[A].adhDays = getDealerPriceBookId.adhDays
             }
         }
@@ -2846,7 +2843,7 @@ exports.getOrderContract = async (req, res) => {
                                     if: { $eq: ["$claimFile", "open"] }, // Assuming "claimFile" field is correct
                                     then: 1,
                                     else: 0
-                                } 
+                                }
                             }
                         }
                     }

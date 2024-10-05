@@ -971,6 +971,23 @@ exports.createOrder = async (req, res) => {
             }
         }
 
+        let getChoosedProducts = data.productsArray
+        for (let A = 0; A < getChoosedProducts.length; A++) {
+            if (!getChoosedProducts[A].adhDays) {
+                res.send({
+                    code: constant.errorCode,
+                    message: "Coverage type data for waiting days and deductible is not provided"
+                })
+                return;
+            }
+            if (getChoosedProducts[A].adhDays.length == 0) {
+                let dealerPriceBookId = getChoosedProducts[A].priceBookId
+                let getDealerPriceBookId = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, priceBook: dealerPriceBookId })
+                data.productsArray[A].adhDays = getDealerPriceBookId.adhDays
+            }
+        }
+
+
         let serviceCoverage = '';
         if (req.body.serviceCoverageType == "Labour") {
             serviceCoverage = "Labor"
