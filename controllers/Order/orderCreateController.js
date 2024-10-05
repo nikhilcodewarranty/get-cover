@@ -2145,7 +2145,7 @@ exports.editOrderDetail = async (req, res) => {
             data.productsArray = finalOutput;
         }
 
-        let getChoosedProducts = checkOrder.productsArray
+        let getChoosedProducts = data.productsArray
         for(let A=0;A<getChoosedProducts.length;A++){
             if(!getChoosedProducts[A].adhDays){
                 res.send({
