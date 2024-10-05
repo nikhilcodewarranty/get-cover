@@ -2147,6 +2147,7 @@ exports.editOrderDetail = async (req, res) => {
 
         let getChoosedProducts = data.productsArray
         for(let A=0;A<getChoosedProducts.length;A++){
+            console.log("---------------------------------------",getChoosedProducts[A])
             if(!getChoosedProducts[A].adhDays){
                 res.send({
                     code:constant.errorCode,
@@ -2157,6 +2158,8 @@ exports.editOrderDetail = async (req, res) => {
             if(getChoosedProducts[A].adhDays.length == 0){
                 let dealerPriceBookId = getChoosedProducts[A].dealerPriceBookDetails[0].priceBookId
                 let getDealerPriceBookId = await dealerPriceService.getDealerPriceById({dealerId:data.dealerId,priceBook:dealerPriceBookId})
+            console.log("------------------+++++++++++++++++++++++---------------------",getDealerPriceBookId)
+               
                 data.productsArray[A].adhDays = getDealerPriceBookId.adhDays
             }
         }
