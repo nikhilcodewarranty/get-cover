@@ -1044,7 +1044,6 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
     }
 };
 
-
 //Get Price Book in Order
 exports.getPriceBooksInOrder = async (req, res) => {
     try {
@@ -1668,32 +1667,29 @@ exports.markAsPaid = async (req, res) => {
                 console.log("_-------------------------------------1`11111", product.isManufacturerWarranty)
 
                 if (!product.isManufacturerWarranty) {
-                    console.log("_-------------------------------------1`11111", savedResponse.serviceCoverageType)
-                    let minDate2
-                    if (orderServiceCoverageType = "Parts") {
-                        console.log("_-------------------------------------22222222222222", orderServiceCoverageType)
-
-                        minDate2 = partsWarrantyDate1
-                    } else if (orderServiceCoverageType = "Labour") {
-                        console.log("_-------------------------------------333333333", orderServiceCoverageType)
-
-                        minDate2 = labourWarrantyDate1
-                    } else {
-                        console.log("_-------------------------------------444444444444", savedResponse.serviceCoverageType)
-
-                        if (partsWarrantyDate1 > labourWarrantyDate1) {
+                    const hasBreakdown = adhDaysArray.some(item => item.value === 'breakdown');
+                    if (hasBreakdown) {
+                        let minDate2
+                        if (orderServiceCoverageType == "Parts") {
+                            minDate2 = partsWarrantyDate1
+                        } else if (orderServiceCoverageType == "Labour" || orderServiceCoverageType == "Labor") {
                             minDate2 = labourWarrantyDate1
                         } else {
-                            minDate2 = partsWarrantyDate1
+                            if (partsWarrantyDate1 > labourWarrantyDate1) {
+                                minDate2 = labourWarrantyDate1
+                            } else {
+                                minDate2 = partsWarrantyDate1
+                            }
                         }
-                    }
-                    if (minDate1 > minDate2) {
+                        if (minDate1 > minDate2) {
+                            minDate = minDate1
+                        }
+                        if (minDate1 < minDate2) {
+                            minDate = minDate2
+                        }
+                    } else {
                         minDate = minDate1
                     }
-                    if (minDate1 < minDate2) {
-                        minDate = minDate2
-                    }
-
                 } else {
                     minDate = minDate1
                 }
@@ -1865,6 +1861,7 @@ exports.markAsPaid = async (req, res) => {
         })
     }
 };
+
 //Get File data from S3 bucket
 const getObjectFromS3 = (bucketReadUrl) => {
     return new Promise((resolve, reject) => {
@@ -1904,6 +1901,7 @@ const getObjectFromS3 = (bucketReadUrl) => {
         });
     });
 };
+
 // get the pdf file with order ID
 exports.getOrderPdf = async (req, res) => {
     try {
@@ -2183,7 +2181,7 @@ async function generateTC(orderData) {
         //Get contract info of the order
         let productCoveredArray = []
         let otherInfo = []
-        
+
         //Check contract is exist or not using contract id
         const contractArrayPromise = checkOrder?.productsArray.map(item => {
             if (!item.exit) return contractService.getContractById({
@@ -2209,7 +2207,7 @@ async function generateTC(orderData) {
                     let obj = {
                         productName: checkOrder?.productsArray[i]?.dealerSku,
                         noOfProducts: quanitityProduct.enterQuantity,
-                      
+
                     }
                     productCoveredArray.push(obj)
 
@@ -2223,7 +2221,7 @@ async function generateTC(orderData) {
                 let obj = {
                     productName: findContract?.dealerSku,
                     noOfProducts: checkOrder?.productsArray[i].noOfProducts,
-                  
+
                 }
                 productCoveredArray.push(obj)
             }
@@ -2236,15 +2234,15 @@ async function generateTC(orderData) {
 `).join('');
 
 
-const coverageStartDates = otherInfo.map((product, index) => `
+        const coverageStartDates = otherInfo.map((product, index) => `
     <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageStartDate).add(1, 'days').format("MM/DD/YYYY")}</p>
 `).join('');
 
-const coverageEndDates = otherInfo.map((product, index) => `
+        const coverageEndDates = otherInfo.map((product, index) => `
     <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageEndDate).add(1, 'days').format("MM/DD/YYYY")}</p>
 `).join('');
 
-const term = otherInfo.map((product, index) => `
+        const term = otherInfo.map((product, index) => `
     <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${product.term / 12} ${product.term / 12 === 1 ? 'Year' : 'Years'}</p>
 `).join('');
 
@@ -2397,7 +2395,6 @@ const term = otherInfo.map((product, index) => `
         }
     }
 }
-
 
 //Upload to S3
 const uploadToS3 = async (filePath, bucketName, key) => {

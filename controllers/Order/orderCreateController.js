@@ -1427,25 +1427,29 @@ exports.createOrder1 = async (req, res) => {
                     const futureDate = new Date(product.coverageStartDate);
                     let minDate1 = futureDate.setDate(futureDate.getDate() + adhDaysArray[0].waitingDays);
                     if (!product.isManufacturerWarranty) {
-                        let minDate2
-                        if (orderServiceCoverageType == "Parts") {
-                            minDate2 = partsWarrantyDate1
-                        } else if (orderServiceCoverageType == "Labour" || orderServiceCoverageType == "Labor") {
-                            minDate2 = labourWarrantyDate1
-                        } else {
-                            if (partsWarrantyDate1 > labourWarrantyDate1) {
+                        const hasBreakdown = adhDaysArray.some(item => item.value === 'breakdown');
+                        if (hasBreakdown) {
+                            let minDate2
+                            if (orderServiceCoverageType == "Parts") {
+                                minDate2 = partsWarrantyDate1
+                            } else if (orderServiceCoverageType == "Labour" || orderServiceCoverageType == "Labor") {
                                 minDate2 = labourWarrantyDate1
                             } else {
-                                minDate2 = partsWarrantyDate1
+                                if (partsWarrantyDate1 > labourWarrantyDate1) {
+                                    minDate2 = labourWarrantyDate1
+                                } else {
+                                    minDate2 = partsWarrantyDate1
+                                }
                             }
-                        }
-                        if (minDate1 > minDate2) {
+                            if (minDate1 > minDate2) {
+                                minDate = minDate1
+                            }
+                            if (minDate1 < minDate2) {
+                                minDate = minDate2
+                            }
+                        } else {
                             minDate = minDate1
                         }
-                        if (minDate1 < minDate2) {
-                            minDate = minDate2
-                        }
-
                     } else {
                         minDate = minDate1
 
@@ -2393,29 +2397,31 @@ exports.editOrderDetail = async (req, res) => {
 
                     let minDate1 = futureDate.setDate(futureDate.getDate() + adhDaysArray[0].waitingDays);
                     if (!product.isManufacturerWarranty) {
-                        let minDate2
-                        console.log("savedresponse+++++++++++++++++++++++++++++++++++++++++++++00000000000++++++++++++++", orderServiceCoverageType, savedResponse.serviceCoverageType)
-                        if (orderServiceCoverageType.serviceCoverageType == "Parts") {
-                            minDate2 = partsWarrantyDate1
-                        } else if (orderServiceCoverageType.serviceCoverageType == "Labor" || orderServiceCoverageType.serviceCoverageType == "Labour") {
-                            minDate2 = labourWarrantyDate1
-                        } else {
-                            if (partsWarrantyDate1 > labourWarrantyDate1) {
+                        const hasBreakdown = adhDaysArray.some(item => item.value === 'breakdown');
+                        if (hasBreakdown) {
+                            let minDate2
+                            if (orderServiceCoverageType == "Parts") {
+                                minDate2 = partsWarrantyDate1
+                            } else if (orderServiceCoverageType == "Labour" || orderServiceCoverageType == "Labor") {
                                 minDate2 = labourWarrantyDate1
                             } else {
-                                minDate2 = partsWarrantyDate1
+                                if (partsWarrantyDate1 > labourWarrantyDate1) {
+                                    minDate2 = labourWarrantyDate1
+                                } else {
+                                    minDate2 = partsWarrantyDate1
+                                }
                             }
-                        }
-                        if (minDate1 > minDate2) {
+                            if (minDate1 > minDate2) {
+                                minDate = minDate1
+                            }
+                            if (minDate1 < minDate2) {
+                                minDate = minDate2
+                            }
+                        } else {
                             minDate = minDate1
                         }
-                        if (minDate1 < minDate2) {
-                            minDate = minDate2
-                        }
-
                     } else {
                         minDate = minDate1
-
                     }
 
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
