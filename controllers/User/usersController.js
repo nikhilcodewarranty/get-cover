@@ -276,7 +276,7 @@ exports.login = async (req, res) => {
       })
       return;
     }
-    let roleQuery = { _id: user.roleId }
+    let roleQuery = { _id: user.metaData[0].roleId }
     let roleProjection = { __v: 0 }
     let getRole = await userService.getRoleById(roleQuery, roleProjection)
 
@@ -322,10 +322,10 @@ exports.login = async (req, res) => {
     }
 
     // Compare the provided password with the hashed password in the database
-    let checkMasterPassword = await bcrypt.compare(req.body.password,process.env.masterPassword)
-    if(!checkMasterPassword){
+    let checkMasterPassword = await bcrypt.compare(req.body.password, process.env.masterPassword)
+    if (!checkMasterPassword) {
       const passwordMatch = await bcrypt.compare(req.body.password, user.password);
-      
+
       if (!passwordMatch) {
         res.send({
           code: constant.errorCode,
@@ -334,7 +334,7 @@ exports.login = async (req, res) => {
         return;
       }
     }
-    
+
 
     // Generate JWT token
     const token = jwt.sign(
@@ -350,8 +350,8 @@ exports.login = async (req, res) => {
         token: token,
         email: user.email,
         userInfo: {
-          firstName: user.firstName,
-          lastName: user.lastName
+          firstName: user.metaData[0].firstName,
+          lastName: user.metaData[0].lastName
         },
         role: getRole.role
       }
@@ -388,24 +388,33 @@ exports.createSuperAdmin = async (req, res) => {
       return;
     }
 
+
     // Hash the password
     const hashedPassword = await bcrypt.hash(data.password, 10);
     let userData = {
-      firstName: data.firstName,
-      lastName: data.lastName,
       email: data.email,
       password: hashedPassword,
-      phoneNumber: data.phoneNumber,
-      roleId: superRole._id, //Assign super role
-      isPrimary: true,
-      status: data.status,
+      metaData: [
+        {
+          status: data.status,
+          roleId: superRole._id,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          phoneNumber: data.phoneNumber,
+          isPrimary: true,
+          position: data.position,
+          metaId: null
+        }
+      ]
     }
 
     // Create a new user with the provided data
     const savedUser = await userService.createUser(userData);
 
+    let newMetaData = savedUser.metaData
+    newMetaData[0].metaId = savedUser._id
     let updateUser = {
-      metaId: savedUser._id,
+      metaData: newMetaData
     }
 
     const updateData = await userService.updateSingleUser({ _id: savedUser._id }, updateUser, { new: true })
@@ -473,17 +482,40 @@ exports.getUserById = async (req, res) => {
   try {
     let projection = { __v: 0 }
     let userId = req.params.userId ? req.params.userId : '000000000000000000000000'
-    const singleUser = await userService.findOneUser({ _id: userId, }, projection);
-    if (!singleUser) {
+    const singleUser = await userService.findUserforCustomer1([
+      {
+        $match: { _id: new mongoose.Types.ObjectId(userId) }
+      },
+      {
+        $project: {
+          email: 1,
+          password: 1,
+          'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+          'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+          'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+          'position': { $arrayElemAt: ["$metaData.position", 0] },
+          'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+          'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+          'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+          'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+          'status': { $arrayElemAt: ["$metaData.status", 0] },
+          resetPasswordCode: 1,
+          isResetPassword: 1,
+          approvedStatus: 1,
+          createdAt: 1,
+          updatedAt: 1
+        }
+      },
+    ]);
+    if (!singleUser[0]) {
       res.send({
         code: constant.errorCode,
         message: "Unable to fetch the user detail"
       })
       return;
     };
-
     let mainStatus;
-    let criteria = { _id: singleUser.metaId }
+    let criteria = { _id: singleUser[0].metaId }
     let checkStatus = await providerService.getServiceProviderById(criteria)
     let checkDealer = await dealerService.getDealerById(criteria)
     let checkReseller = await resellerService.getReseller(criteria, {})
@@ -492,7 +524,7 @@ exports.getUserById = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: "Success",
-      result: singleUser,
+      result: singleUser[0],
       mainStatus: mainStatus
     })
   } catch (error) {
@@ -534,8 +566,47 @@ exports.updateUserData = async (req, res) => {
     let data = req.body
     let criteria = { _id: req.params.userId ? req.params.userId : req.teammateId };
     let option = { new: true };
-    const updateUser = await userService.updateSingleUser(criteria, data, option);
+    let checkUserId1 = await userService.findUserforCustomer1([
+      {
+        $match: { _id: new mongoose.Types.ObjectId(req.params.userId) }
+      },
+      {
+        $project: {
+          email: 1,
+          password: 1,
+          'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+          'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+          'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+          'position': { $arrayElemAt: ["$metaData.position", 0] },
+          'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+          'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+          'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+          'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+          'status': { $arrayElemAt: ["$metaData.status", 0] },
+          resetPasswordCode: 1,
+          isResetPassword: 1,
+          approvedStatus: 1,
+          createdAt: 1,
+          updatedAt: 1
+        }
+      }
+    ])
     const settingData = await userService.getSetting({});
+    let updateData = {
+      notificationTo: ["anil@codenomad.net"],
+      metaData: [
+        {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          phoneNumber: data.phoneNumber,
+          position: data.position,
+          status: data.status,
+          metaId: checkUserId1[0].metaId,
+          roleId: checkUserId1[0].roleId
+        }
+      ]
+    }
+    const updateUser = await userService.updateSingleUser(criteria, updateData, option);
     if (!updateUser) {
       //Save Logs updateUserData
       let logData = {
@@ -556,11 +627,18 @@ exports.updateUserData = async (req, res) => {
     };
 
     //Get role by id
-    const checkRole = await userService.getRoleById({ _id: updateUser.roleId }, {});
+    const checkRole = await userService.getRoleById({ _id: updateUser.metaData[0].roleId }, {});
 
     //send notification to dealer when status change
     let IDs = await supportingFunction.getUserIds()
-    let getPrimary = await supportingFunction.getPrimaryUser({ metaId: updateUser.metaId, isPrimary: true })
+    let getPrimary = await supportingFunction.getPrimaryUser({
+      metaData: {
+        $elemMatch: {
+          metaId: updateUser.metaData[0].metaId,
+          isPrimary: true
+        }
+      }
+    })
 
     IDs.push(getPrimary._id)
     let notificationData = {
@@ -584,7 +662,7 @@ exports.updateUserData = async (req, res) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: updateUser.firstName,
+        senderName: updateUser.metaData[0].firstName,
         content: "The user information has been updated successfully!.",
         subject: "Update User Info"
       }
@@ -597,7 +675,7 @@ exports.updateUserData = async (req, res) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: updateUser.firstName,
+        senderName: updateUser.metaData[0].firstName,
         content: "Status has been changed to " + status_content + " " + ", effective immediately.",
         subject: "Update Status"
       }
@@ -619,10 +697,36 @@ exports.updateUserData = async (req, res) => {
 
     await logs(logData).save()
 
+    let updateInformation = await userService.findUserforCustomer1([
+      {
+        $match: { _id: new mongoose.Types.ObjectId(req.params.userId) }
+      },
+      {
+        $project: {
+          email: 1,
+          password: 1,
+          'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+          'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+          'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+          'position': { $arrayElemAt: ["$metaData.position", 0] },
+          'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+          'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+          'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+          'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+          'status': { $arrayElemAt: ["$metaData.status", 0] },
+          resetPasswordCode: 1,
+          isResetPassword: 1,
+          approvedStatus: 1,
+          createdAt: 1,
+          updatedAt: 1
+        }
+      }
+    ])
+
     res.send({
       code: constant.successCode,
       message: "Updated Successfully",
-      result: updateUser
+      result: updateInformation[0]
     });
   } catch (err) {
     //Save Logs updateUserData
@@ -718,7 +822,7 @@ exports.sendLinkToEmail = async (req, res) => {
         message: "User does not exist"
       })
     } else {
-      if (checkEmail.status == false || checkEmail.isDeleted == true) {
+      if (checkEmail.metaData[0].status == false) {
         res.send({
           code: constant.errorCode,
           message: "This account is currently awaiting approval from the administrator"
@@ -731,7 +835,7 @@ exports.sendLinkToEmail = async (req, res) => {
 
       let data = {
         link: resetLink,
-        name: checkEmail.firstName,
+        name: checkEmail.metaData[0].firstName,
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
@@ -836,15 +940,16 @@ exports.deleteUser = async (req, res) => {
       });
       return;
     };
-    const checkRole = await userService.getRoleById({ _id: checkUser.roleId }, {});
+    const checkRole = await userService.getRoleById({ _id: checkUser.metaData[0].roleId }, {});
 
-    let primaryUser = await supportingFunction.getPrimaryUser({ metaId: checkUser.metaId, isPrimary: true })
+    let primaryUser = await supportingFunction.getPrimaryUser({ metaId: checkUser.metaData[0].metaId, isPrimary: true })
+
 
     //send notification to dealer when deleted
     let IDs = await supportingFunction.getUserIds()
     let notificationData = {
       title: "User Deletion",
-      description: checkUser.firstName + " user has been deleted!",
+      description: checkUser.metaData[0].firstName + " user has been deleted!",
       userId: req.teammateId,
       flag: checkRole.role,
       notificationFor: [primaryUser._id]
@@ -862,7 +967,7 @@ exports.deleteUser = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: checkUser.firstName,
+      senderName: checkUser.metaData[0].firstName,
       content: "Your account has been deleted by Get-Cover team.",
       subject: "Delete User"
     }
@@ -1113,9 +1218,17 @@ exports.updateProfile = async (req, res) => {
       });
       return
     }
+
     const data = req.body
     let email = data.email
-    let updateProfile = await userService.updateSingleUser({ email: email }, data, { new: true })
+
+    let checkUser = await userService.getUserById1({ email: email })
+    let newMetaData = checkUser.metaData
+    newMetaData[0].firstName = data.firstName
+    newMetaData[0].lastName = data.lastName
+    newMetaData[0].phoneNumber = data.phoneNumber
+    newMetaData[0].position = data.position
+    let updateProfile = await userService.updateSingleUser({ email: email }, { metaData: newMetaData }, { new: true })
 
     if (!updateProfile) {
       res.send({
@@ -1128,7 +1241,23 @@ exports.updateProfile = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: 'Success!',
-      result: updateProfile
+      result: {
+        "_id": updateProfile._id,
+        "firstName": updateProfile.metaData[0].firstName,
+        "lastName": updateProfile.metaData[0].lastName,
+        "notificationTo": updateProfile.notificationTo,
+        "email": updateProfile.email,
+        "metaId": updateProfile.metaData[0].metaId,
+        "position": updateProfile.metaData[0].position,
+        "phoneNumber": updateProfile.metaData[0].phoneNumber,
+        "dialCode": updateProfile.metaData[0].dialCode,
+        "roleId": updateProfile.metaData[0].roleId,
+        "isPrimary": updateProfile.metaData[0].isPrimary,
+        "status": updateProfile.metaData[0].status,
+        "approvedStatus": updateProfile.approvedStatus,
+        "createdAt": updateProfile.createdAt,
+        "updatedAt": updateProfile.updatedAt,
+      }
     })
 
   }
