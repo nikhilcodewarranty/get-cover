@@ -188,13 +188,13 @@ const claimSchema = new mongoose.Schema({
         },
         date: {
           type: Date,
-          default: Date.now()
+          default: new Date()
         }
       },
     ],
     default: [{
       status: 'request_submitted',
-      date: Date.now()
+      date: new Date()
     }]
   },
   trackStatus: {
