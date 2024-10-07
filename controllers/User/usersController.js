@@ -386,7 +386,7 @@ exports.createSuperAdmin = async (req, res) => {
         message: "Role not found"
       })
       return;
-    }
+    } 
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(data.password, 10);
