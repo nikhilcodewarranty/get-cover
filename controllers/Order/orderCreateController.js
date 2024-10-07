@@ -1428,7 +1428,6 @@ exports.createOrder1 = async (req, res) => {
                     let minDate1 = futureDate.setDate(futureDate.getDate() + adhDaysArray[0].waitingDays);
                     if (!product.isManufacturerWarranty) {
                         let minDate2
-                        console.log("service coverage type check +++++++++++++++++++++++++++++++++++++++++++++++", orderServiceCoverageType)
                         if (orderServiceCoverageType == "Parts") {
                             minDate2 = partsWarrantyDate1
                         } else if (orderServiceCoverageType == "Labour" || orderServiceCoverageType == "Labor") {

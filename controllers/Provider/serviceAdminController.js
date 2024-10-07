@@ -2376,10 +2376,18 @@ exports.paidUnpaidClaim = async (req, res) => {
       {}
     );
 
+    const dynamicOption = await userService.getOptions({ name: 'coverage_type' })
+
     const result_Array = resultFiter.map((item1) => {
       servicer = []
       let servicerName = '';
       let selfServicer = false;
+      let mergedData = []
+      if(Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType){
+        mergedData = dynamicOption.value.filter(contract =>
+          item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
+        );
+    }
       let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
         const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId.toString());
         servicer.push(dealerOfServicer)
@@ -2404,7 +2412,8 @@ exports.paidUnpaidClaim = async (req, res) => {
         selfServicer: selfServicer,
         contracts: {
           ...item1.contracts,
-          allServicer: servicer
+          allServicer: servicer,
+          mergedData:mergedData
         }
       }
     })
