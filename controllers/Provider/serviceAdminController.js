@@ -1274,7 +1274,45 @@ exports.statusUpdate = async (req, res) => {
 exports.getSerivicerUsers = async (req, res) => {
   try {
     let data = req.body
-    let getUsers = await userService.findUser({ metaId: req.params.servicerId }, { isPrimary: -1 })
+    //let getUsers = await userService.findUser({ metaId: req.params.servicerId }, { isPrimary: -1 })
+    const getUsers = await userService.findUserforCustomer1([
+      {
+        $match: {
+          $and: [
+            { metaData: { $elemMatch: { firstName: { '$regex': data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+            { metaData: { $elemMatch: { lastName: { '$regex': data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+            { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+            { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            {
+              $or: [
+                { metaData: { $elemMatch: { metaId: new mongoose.Types.ObjectId(req.params.servicerId) } } },
+              ]
+            },
+
+          ]
+        }
+      },
+      {
+        $project: {
+          email: 1,
+          password: 1,
+          'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+          'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+          'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+          'position': { $arrayElemAt: ["$metaData.position", 0] },
+          'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+          'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+          'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+          'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+          'status': { $arrayElemAt: ["$metaData.status", 0] },
+          resetPasswordCode: 1,
+          isResetPassword: 1,
+          approvedStatus: 1,
+          createdAt: 1,
+          updatedAt: 1
+        }
+      }
+    ]);
     if (!getUsers) {
       res.send({
         code: constant.errorCode,
@@ -2383,11 +2421,11 @@ exports.paidUnpaidClaim = async (req, res) => {
       let servicerName = '';
       let selfServicer = false;
       let mergedData = []
-      if(Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType){
+      if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
         mergedData = dynamicOption.value.filter(contract =>
           item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
         );
-    }
+      }
       let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
         const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId.toString());
         servicer.push(dealerOfServicer)
@@ -2413,7 +2451,7 @@ exports.paidUnpaidClaim = async (req, res) => {
         contracts: {
           ...item1.contracts,
           allServicer: servicer,
-          mergedData:mergedData
+          mergedData: mergedData
         }
       }
     })
