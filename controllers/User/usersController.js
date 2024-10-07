@@ -1330,7 +1330,7 @@ exports.getUserByToken = async (req, res) => {
     };
 
     let mainStatus;
-    let criteria = { _id: singleUser.metaId }
+    let criteria = { _id: singleUser.metaData[0].metaId }
     let checkStatus = await providerService.getServiceProviderById(criteria)
     let checkDealer = await dealerService.getDealerById(criteria)
     let checkReseller = await resellerService.getReseller(criteria, {})
@@ -1339,7 +1339,23 @@ exports.getUserByToken = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: "Success",
-      result: singleUser,
+      result: {
+        "_id": singleUser._id,
+        "firstName": singleUser.metaData[0].firstName,
+        "lastName": singleUser.metaData[0].lastName,
+        "notificationTo": singleUser.notificationTo,
+        "email": singleUser.email,
+        "metaId": singleUser.metaData[0].metaId,
+        "position": singleUser.metaData[0].position,
+        "phoneNumber": singleUser.metaData[0].phoneNumber,
+        "dialCode": singleUser.metaData[0].dialCode,
+        "roleId": singleUser.metaData[0].roleId,
+        "isPrimary": singleUser.metaData[0].isPrimary,
+        "status": singleUser.metaData[0].status,
+        "approvedStatus": singleUser.approvedStatus,
+        "createdAt": singleUser.createdAt,
+        "updatedAt": singleUser.updatedAt,
+      },
       mainStatus: mainStatus
     })
   } catch (error) {
@@ -1366,8 +1382,23 @@ exports.addMembers = async (req, res) => {
     let getRole = await userService.getRoleById({ role: req.role })
     data.metaId = req.userId
     data.roleId = getRole._id
-    let saveData = await userService.createUser(data)
+    let userData = {
+      email: data.email,
+      metaData: [
+        {
+          status: data.status,
+          roleId: getRole._id,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          phoneNumber: data.phoneNumber,
+          isPrimary: false,
+          position: data.position,
+          metaId: req.userId
+        }
+      ]
+    }
 
+    let saveData = await userService.createUser(userData)
     if (!saveData) {
       res.send({
         code: constant.errorCode,
@@ -1428,24 +1459,71 @@ exports.getMembers = async (req, res) => {
   try {
     let data = req.body
     data.isPrimary = false;
-    let userMembers = await userService.getMembers({
-      $and: [
-        { firstName: { '$regex': data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        { lastName: { '$regex': data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        {
-          $or: [
-            { metaId: req.userId },
-            { _id: req.userId },
+    let userMembers = await userService.getMembers([
+      {
+        $match: {
+          $and: [
+            { metaData: { $elemMatch: { firstName: { '$regex': data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+            { metaData: { $elemMatch: { lastName: { '$regex': data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+            { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+            { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            {
+              $or: [
+                { metaData: { $elemMatch: { metaId: new mongoose.Types.ObjectId(req.userId) } } },
+                { _id: new mongoose.Types.ObjectId(req.userId) },
+              ]
+            },
+
           ]
-        },
+        }
+      },
+      {
+        $project: {
+          email: 1,
+          password: 1,
+          'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+          'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+          'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+          'position': { $arrayElemAt: ["$metaData.position", 0] },
+          'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+          'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+          'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+          'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+          'status': { $arrayElemAt: ["$metaData.status", 0] },
+          resetPasswordCode: 1,
+          isResetPassword: 1,
+          approvedStatus: 1,
+          createdAt: 1,
+          updatedAt: 1
+        }
+      }
+    ])
 
-      ]
-    }, { isDeleted: false })
-
-    let userMember = await userService.getUserById1({ _id: req.teammateId }, { isDeleted: false })
-
+    let userMember = await userService.getMembers([
+      {
+        $match: { _id: new mongoose.Types.ObjectId(req.teammateId) }
+      },
+      {
+        $project: {
+          email: 1,
+          password: 1,
+          'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+          'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+          'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+          'position': { $arrayElemAt: ["$metaData.position", 0] },
+          'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+          'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+          'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+          'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+          'status': { $arrayElemAt: ["$metaData.status", 0] },
+          resetPasswordCode: 1,
+          isResetPassword: 1,
+          approvedStatus: 1,
+          createdAt: 1,
+          updatedAt: 1
+        }
+      }
+    ])
     res.send({
       code: constant.successCode,
       message: "Success!",
