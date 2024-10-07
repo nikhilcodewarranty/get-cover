@@ -1667,29 +1667,35 @@ exports.markAsPaid = async (req, res) => {
                 console.log("_-------------------------------------1`11111", product.isManufacturerWarranty)
 
                 if (!product.isManufacturerWarranty) {
-                    const hasBreakdown = adhDaysArray.some(item => item.value === 'breakdown');
-                    if (hasBreakdown) {
-                        let minDate2
-                        if (orderServiceCoverageType == "Parts") {
-                            minDate2 = partsWarrantyDate1
-                        } else if (orderServiceCoverageType == "Labour" || orderServiceCoverageType == "Labor") {
-                            minDate2 = labourWarrantyDate1
-                        } else {
-                            if (partsWarrantyDate1 > labourWarrantyDate1) {
+                    if (adhDaysArray.length == 1) {
+                        const hasBreakdown = adhDaysArray.some(item => item.value === 'breakdown');
+                        if (hasBreakdown) {
+                            let minDate2
+                            if (orderServiceCoverageType == "Parts") {
+                                minDate2 = partsWarrantyDate1
+                            } else if (orderServiceCoverageType == "Labour" || orderServiceCoverageType == "Labor") {
                                 minDate2 = labourWarrantyDate1
                             } else {
-                                minDate2 = partsWarrantyDate1
+                                if (partsWarrantyDate1 > labourWarrantyDate1) {
+                                    minDate2 = labourWarrantyDate1
+                                } else {
+                                    minDate2 = partsWarrantyDate1
+                                }
                             }
-                        }
-                        if (minDate1 > minDate2) {
+                            if (minDate1 > minDate2) {
+                                minDate = minDate1
+                            }
+                            if (minDate1 < minDate2) {
+                                minDate = minDate2
+                            }
+                        } else {
                             minDate = minDate1
                         }
-                        if (minDate1 < minDate2) {
-                            minDate = minDate2
-                        }
-                    } else {
+                    }
+                    else {
                         minDate = minDate1
                     }
+
                 } else {
                     minDate = minDate1
                 }
