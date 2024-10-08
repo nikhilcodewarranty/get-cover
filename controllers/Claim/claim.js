@@ -272,7 +272,7 @@ const getObjectFromS3 = (bucketReadUrl) => {
 exports.uploadReceipt = async (req, res, next) => {
   try {
     uploadP(req, res, async (err) => {
-  
+
       let file = req.files;
       res.send({
         code: constant.successCode,
@@ -594,7 +594,7 @@ exports.editClaim = async (req, res) => {
           }
         }
 
-        
+
 
         await LOG(logData).save()
         res.send({
@@ -603,14 +603,14 @@ exports.editClaim = async (req, res) => {
         })
         return;
       }
-      console.log("checking ak ++++++++++++++++++++++++++",req.header)
-      let udpateclaimAmount =  await axios.get(process.env.API_ENDPOINT+"api-v1/claim/checkClaimAmount/"+updateData._id, {
-         headers: {
-             "x-access-token":req.header["x-access-token"],  // Include the token in the Authorization header
-         }
-     });
-     console.log("updated data +++++++++++++++++++++++++++++++++++",udpateclaimAmount)
-     
+      console.log("checking ak ++++++++++++++++++++++++++", req.header)
+      let udpateclaimAmount = await axios.get(process.env.API_ENDPOINT + "api-v1/claim/checkClaimAmount/" + updateData._id, {
+        headers: {
+          "x-access-token": req.header["x-access-token"],  // Include the token in the Authorization header
+        }
+      });
+      console.log("updated data +++++++++++++++++++++++++++++++++++", udpateclaimAmount)
+
       //Send notification to all
       let IDs = await supportingFunction.getUserIds()
       let servicerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkClaim?.servicerId, isPrimary: true })
@@ -742,17 +742,17 @@ exports.editClaimType = async (req, res) => {
         }
       }
       await LOG(logData).save()
-      if(updateData.claimType!=""||updateData.claimType!="New"){
-        console.log("checking ak ++++++++++++++++++++++++++",req.header)
-       let udpateclaimAmount =  await axios.get(process.env.API_ENDPOINT+"api-v1/claim/checkClaimAmount/"+updateData._id, {
+      if (updateData.claimType != "" || updateData.claimType != "New") {
+        console.log("checking ak ++++++++++++++++++++++++++", req.header)
+        let udpateclaimAmount = await axios.get(process.env.API_ENDPOINT + "api-v1/claim/checkClaimAmount/" + updateData._id, {
           headers: {
-              "x-access-token":req.header["x-access-token"],  // Include the token in the Authorization header
+            "x-access-token": req.header["x-access-token"],  // Include the token in the Authorization header
           }
-      });
-      console.log("updated data +++++++++++++++++++++++++++++++++++",udpateclaimAmount)
+        });
+        console.log("updated data +++++++++++++++++++++++++++++++++++", udpateclaimAmount)
       }
-    let checkUpdatedClaim = await claimService.getClaimById(criteria)
-     
+      let checkUpdatedClaim = await claimService.getClaimById(criteria)
+
       res.send({
         code: constant.successCode,
         result: checkUpdatedClaim,
@@ -1164,12 +1164,17 @@ exports.editClaimStatus = async (req, res) => {
 
     //Eligibility true when claim is completed and rejected
     if (updateBodyStatus.claimFile == 'completed' || updateBodyStatus.claimFile == 'rejected') {
-      if (checkContract.productValue > claimTotal[0]?.amount) {
+      if (checkContract.isMaxClaimAmount) {
+        if (checkContract.productValue > claimTotal[0]?.amount) {
+          const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
+        }
+        else if (checkContract.productValue < claimTotal[0]?.amount) {
+          const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: false }, { new: true })
+        }
+      } else {
         const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
       }
-      else if (checkContract.productValue < claimTotal[0]?.amount) {
-        const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: false }, { new: true })
-      }
+
     }
 
     //Amount reset of the claim in rejected claim
