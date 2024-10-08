@@ -1175,7 +1175,7 @@ exports.createOrder1 = async (req, res) => {
 
         let getChoosedProducts = data.productsArray
         for (let A = 0; A < getChoosedProducts.length; A++) {
-            let addOneDay = new Date(productsArray[A].coverageStartDate)
+            let addOneDay = new Date(getChoosedProducts[A].coverageStartDate)
             data.productsArray[A].coverageStartDate = addOneDay.setDate(addOneDay.getDate() + 1);
             if (!getChoosedProducts[A].adhDays) {
                 res.send({
