@@ -98,7 +98,7 @@ exports.getDashboardInfo = async (req, res) => {
       }
     },
 
-    { $sort: { unique_key_number: -1 } },
+    { $sort: { updatedAt: -1 } },
     {
       $limit: 5
     },
@@ -114,7 +114,7 @@ exports.getDashboardInfo = async (req, res) => {
     },
     {
       $sort: {
-        unique_key_number: -1
+        updatedAt: -1
       }
     },
     {
