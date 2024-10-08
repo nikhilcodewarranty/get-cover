@@ -1691,7 +1691,9 @@ exports.getDashboardInfo = async (req, res) => {
 
       }
     },
-    { $sort: { updatedAt: -1 } },
+    { 
+      $sort: { updatedAt: -1 } 
+    },  
     {
       $limit: 5
     },
