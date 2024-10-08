@@ -2160,9 +2160,10 @@ exports.editOrderDetail = async (req, res) => {
         for (let A = 0; A < getChoosedProducts.length; A++) {
             console.log("check befor addding +++++++++++++++++++++++++++++++++",getChoosedProducts[A].coverageStartDate)
             let addOneDay = new Date(getChoosedProducts[A].coverageStartDate)
-            console.log("check befor addding +++++++++++++++++++++++++++++++++",new Date(addOneDay))
 
             data.productsArray[A].coverageStartDate = addOneDay.setDate(addOneDay.getDate() + 1);
+            console.log("check befor addding +++++++++++++++++++++++++++++++++",new Date(addOneDay))
+
             if (!getChoosedProducts[A].adhDays) {
                 res.send({
                     code: constant.errorCode,
