@@ -951,7 +951,7 @@ exports.checkClaimAmount = async (req, res) => {
         })
         return
       }
-      console.log("----------------------------------- ",getClaim.totalAmount,getMaxClaimAmount.result)
+      console.log("----------------------------------- ",getClaim.totalAmount,getMaxClaimAmount,getMaxClaimAmount.result)
 
       if (getClaim.totalAmount >= Number(getMaxClaimAmount.result)) {
         console.log("over amount conditions ak ")
