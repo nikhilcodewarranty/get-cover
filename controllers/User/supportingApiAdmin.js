@@ -575,7 +575,7 @@ const getObjectFromS3 = (bucketReadUrl) => {
 };
 
 //Create new service provider By SA
-exports.createServiceProvider = async (req, res) => {
+exports.createServiceProvider = async (req, res) => { 
     try {
         const data = req.body;
         const providerUserArray = data.providers;
