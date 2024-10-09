@@ -898,11 +898,13 @@ exports.updateStatus = async (req, res) => {
 
     if (data.status == "false" || !data.status) {
       let criteria1 = { metaData: { $elemMatch: { metaId: checkServicer._id } } }
+      
       let updateMetaData = await userService.updateUser(criteria1, {
         $set: {
           'metaData.$.status': data.status,
         }
       }, { new: true })
+
       if (!updateMetaData) {
         //Save Logs
         let logData = {

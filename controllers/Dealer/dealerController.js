@@ -418,7 +418,7 @@ exports.statusUpdate = async (req, res) => {
     let IDs = await supportingFunction.getUserIds()
     let settingData = await userService.getSetting({});
 
-    let getPrimary = await supportingFunction.getPrimaryUser({ metaId: existingDealerPriceBook.dealerId, isPrimary: true })
+    let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: existingDealerPriceBook.dealerId, isPrimary: true } } })
     IDs.push(getPrimary._id)
     let getDealerDetail = await dealerService.getDealerByName({ _id: existingDealerPriceBook.dealerId })
     let notificationData = {
@@ -506,14 +506,15 @@ exports.changeDealerStatus = async (req, res) => {
     }
     //Update Dealer User Status if inactive
     if (!req.body.status) {
-      let dealerUserCreateria = { metaId: req.params.dealerId };
-      let newValue = {
+
+      let dealerUserCreateria = { metaData: { $elemMatch: { metaId: req.params.dealerId } } }
+
+      let changeDealerUser = await userService.updateUser(dealerUserCreateria, {
         $set: {
-          status: req.body.status
+          'metaData.$.status': req.body.status,
         }
-      };
-      let option = { new: true };
-      const changeDealerUser = await userService.updateUser(dealerUserCreateria, newValue, option);
+      }, { new: true })
+
       //Archeive All orders when dealer inactive
       let orderCreteria = { dealerId: req.params.dealerId, status: 'Pending' };
       let updateStatus = await orderService.updateManyOrder(orderCreteria, { status: 'Archieved' }, { new: true })
@@ -524,14 +525,15 @@ exports.changeDealerStatus = async (req, res) => {
 
     else {
       if (singleDealer.isAccountCreate) {
-        let dealerUserCreateria = { metaId: req.params.dealerId, isPrimary: true };
-        let newValue = {
+
+        let dealerUserCreateria = { metaData: { $elemMatch: { metaId: req.params.dealerId, isPrimary: true } } }
+
+        let changeDealerUser = await userService.updateUser(dealerUserCreateria, {
           $set: {
-            status: req.body.status
+            'metaData.$.status': req.body.status,
           }
-        };
-        let option = { new: true };
-        const changeDealerUser = await userService.updateUser(dealerUserCreateria, newValue, option);
+        }, { new: true })
+
       }
     }
     option = { new: true };
@@ -687,7 +689,7 @@ exports.createDealerPriceBook = async (req, res) => {
       })
     } else {
       let IDs = await supportingFunction.getUserIds()
-      let getPrimary = await supportingFunction.getPrimaryUser({ metaId: data.dealerId, isPrimary: true })
+      let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data.dealerId, isPrimary: true } } })
       let settingData = await userService.getSetting({});
       IDs.push(getPrimary._id)
       let notificationData = {
@@ -703,7 +705,7 @@ exports.createDealerPriceBook = async (req, res) => {
       let createNotification = await userService.createNotification(notificationData);
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
-      let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
+      let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
       let emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -905,7 +907,7 @@ exports.rejectDealer = async (req, res) => {
       let IDs = await supportingFunction.getUserIds()
       let getPrimary = await supportingFunction.getPrimaryUser({ metaId: singleDealer._id, isPrimary: true })
       IDs.push(getPrimary._id)
-      const deleteUser = await userService.deleteUser({ metaId: req.params.dealerId })
+      const deleteUser = await userService.deleteUser({ metaData: { $elemMatch: { metaId: req.params.dealerId } } })
       if (!deleteUser) {
         res.send({
           code: constant.errorCode,
