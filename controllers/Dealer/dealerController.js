@@ -521,6 +521,8 @@ exports.changeDealerStatus = async (req, res) => {
 
       const updateDealerServicer = await providerService.updateServiceProvider({ dealerId: req.params.dealerId }, { status: false })
 
+      console.log("----------------------------------------------1")
+
     }
 
     else {
@@ -533,6 +535,9 @@ exports.changeDealerStatus = async (req, res) => {
             'metaData.$.status': req.body.status,
           }
         }, { new: true })
+
+        console.log("----------------------------------------------2", changeDealerUser)
+
 
       }
     }
@@ -551,7 +556,7 @@ exports.changeDealerStatus = async (req, res) => {
     const changedDealerStatus = await dealerService.updateDealerStatus({ _id: req.params.dealerId }, newValue, option);
     if (changedDealerStatus) {
       let IDs = await supportingFunction.getUserIds()
-      let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.dealerId, isPrimary: true })
+      let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.params.dealerId, isPrimary: true } } })
 
       IDs.push(getPrimary._id)
       let notificationData = {
