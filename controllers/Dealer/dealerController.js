@@ -521,7 +521,6 @@ exports.changeDealerStatus = async (req, res) => {
 
       const updateDealerServicer = await providerService.updateServiceProvider({ dealerId: req.params.dealerId }, { status: false })
 
-      console.log("----------------------------------------------1")
 
     }
 
@@ -536,7 +535,6 @@ exports.changeDealerStatus = async (req, res) => {
           }
         }, { new: true })
 
-        console.log("----------------------------------------------2", changeDealerUser)
 
 
       }
