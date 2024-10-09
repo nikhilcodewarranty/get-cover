@@ -973,8 +973,6 @@ exports.updateDealerMeta = async (req, res) => {
 
     let coverageType = data.coverageType
 
-
-
     // data.coverageType = coverageType.map(types => types.value);
 
     if (!checkDealer) {
@@ -1058,10 +1056,24 @@ exports.updateDealerMeta = async (req, res) => {
     }
     //update primary user to true by default
     if (data.isAccountCreate && checkDealer.accountStatus) {
-      await userService.updateSingleUser({ metaId: checkDealer._id, isPrimary: true }, { status: true }, { new: true })
+      let criteria1 = { metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } }
+
+      let updateMetaData = await userService.updateSingleUser(criteria1, {
+        $set: {
+          'metaData.$.status': true,
+        }
+      }, { new: true })
+
     }
     if (!data.isAccountCreate) {
-      await userService.updateUser({ metaId: checkDealer._id }, { status: false }, { new: true })
+      let criteria1 = { metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } }
+
+      let updateMetaData = await userService.updateUser(criteria1, {
+        $set: {
+          'metaData.$.status': false,
+        }
+      }, { new: true })
+
     }
     let IDs = await supportingFunction.getUserIds()
     let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
@@ -1198,9 +1210,6 @@ exports.addDealerUser = async (req, res) => {
       })
       return;
     }
-
-    data.metaId = checkDealer._id
-    data.roleId = '656f08041eb1acda244af8c6'
     let statusCheck;
 
     if (!checkDealer.accountStatus) {
@@ -1209,9 +1218,25 @@ exports.addDealerUser = async (req, res) => {
       statusCheck = data.status
     }
 
-    data.status = statusCheck
-    let saveData = await userService.createUser(data)
+    let metaData = {
+      email: data.email,
+      metaData: [
+        {
+          metaId: checkDealer._id,
+          status: statusCheck,
+          roleId: "656f08041eb1acda244af8c6",
+          firstName: data.firstName,
+          lastName: data.lastName,
+          phoneNumber: data.phoneNumber,
+          position: data.position,
+          isPrimary: false,
+          dialCode: data.dialCode ? data.dialCode : "+1"
 
+        }
+      ]
+
+    }
+    let saveData = await userService.createUser(metaData)
     if (!saveData) {
       //Save Logs create Customer
       let logData = {
@@ -1231,7 +1256,7 @@ exports.addDealerUser = async (req, res) => {
       })
     } else {
       let IDs = await supportingFunction.getUserIds()
-      let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
+      let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
       IDs.push(getPrimary._id)
 
       let notificationData = {
