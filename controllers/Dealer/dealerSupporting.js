@@ -340,8 +340,37 @@ exports.getDealerOrders = async (req, res) => {
                 .filter(result => result.customerId !== null)
                 .map(result => result.customerId);
             const allUserIds = mergedArray.concat(userCustomerIds);
-            const queryUser = { metaId: { $in: allUserIds }, isPrimary: true };
-            let getPrimaryUser = await userService.findUserforCustomer(queryUser)
+
+            const getPrimaryUser = await userService.findUserforCustomer1([
+                {
+                  $match: {
+                    $and: [
+                      { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+                      { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                      { metaData: { $elemMatch: { metaId: { $in: allUserIds }, isPrimary: true } } }
+                    ]
+                  }
+                },
+                {
+                  $project: {
+                    email: 1,
+                    'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+                    'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+                    'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+                    'position': { $arrayElemAt: ["$metaData.position", 0] },
+                    'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                    'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+                    'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+                    'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                    'status': { $arrayElemAt: ["$metaData.status", 0] },
+                    resetPasswordCode: 1,
+                    isResetPassword: 1,
+                    approvedStatus: 1,
+                    createdAt: 1,
+                    updatedAt: 1
+                  }
+                }
+              ]);
             //Get Respective Customer
             let respectiveCustomer = await customerService.getAllCustomers(
                 customerCreteria,
