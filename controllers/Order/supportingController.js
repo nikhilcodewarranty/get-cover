@@ -379,13 +379,13 @@ async function generateTC(orderData) {
         //Get customer
         const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId }, { isDeleted: false })
         //Get customer primary info
-        const customerUser = await userService.getUserById1({ metaId: checkOrder.customerId, isPrimary: true }, { isDeleted: false })
+        const customerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } }, { isDeleted: false })
 
-        const DealerUser = await userService.getUserById1({ metaId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false })
+        const DealerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } }, { isDeleted: false })
 
         const checkReseller = await resellerService.getReseller({ _id: checkOrder.resellerId }, { isDeleted: false })
         //Get reseller primary info
-        const resellerUser = await userService.getUserById1({ metaId: checkOrder.resellerId, isPrimary: true }, { isDeleted: false })
+        const resellerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } }, { isDeleted: false })
         //Get contract info of the order
         let productCoveredArray = []
         let otherInfo = []
@@ -435,15 +435,15 @@ async function generateTC(orderData) {
 
 `).join('');
 
-const coverageStartDates = otherInfo.map((product, index) => `
+        const coverageStartDates = otherInfo.map((product, index) => `
 <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageStartDate).add(1, 'days').format("MM/DD/YYYY")}</p>
 `).join('');
 
-const coverageEndDates = otherInfo.map((product, index) => `
+        const coverageEndDates = otherInfo.map((product, index) => `
 <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageEndDate).add(1, 'days').format("MM/DD/YYYY")}</p>
 `).join('');
 
-const term = otherInfo.map((product, index) => `
+        const term = otherInfo.map((product, index) => `
 <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${product.term / 12} ${product.term / 12 === 1 ? 'Year' : 'Years'}</p>
 `).join('');
 
@@ -456,7 +456,7 @@ const term = otherInfo.map((product, index) => `
             ]
         }, { isDeleted: false })
 
-        const servicerUser = await userService.getUserById1({ metaId: checkOrder.servicerId, isPrimary: true }, { isDeleted: false })
+        const servicerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.servicerId, isPrimary: true } } }, { isDeleted: false })
         //res.json(checkDealer);return
         const options = {
             format: 'A4',
@@ -597,18 +597,20 @@ exports.generateHtmltopdf = async (req, res) => {
         const checkOrder = await orderService.getOrder({ _id: req.params.orderId }, { isDeleted: false })
         let coverageStartDate = checkOrder.productsArray[0]?.coverageStartDate;
         let coverageEndDate = checkOrder.productsArray[0]?.coverageEndDate;
+
         //Get Dealer
         const checkDealer = await dealerService.getDealerById(checkOrder.dealerId, { isDeleted: false })
         //Get customer
         const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId }, { isDeleted: false })
         //Get customer primary info
-        const customerUser = await userService.getUserById1({ metaId: checkOrder.customerId, isPrimary: true }, { isDeleted: false })
+        const customerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } }, { isDeleted: false })
 
-        const DealerUser = await userService.getUserById1({ metaId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false })
+        const DealerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } }, { isDeleted: false })
 
         const checkReseller = await resellerService.getReseller({ _id: checkOrder.resellerId }, { isDeleted: false })
         //Get reseller primary info
-        const resellerUser = await userService.getUserById1({ metaId: checkOrder.resellerId, isPrimary: true }, { isDeleted: false })
+        const resellerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } }, { isDeleted: false })
+
         //Get contract info of the order
         let productCoveredArray = []
         //Check contract is exist or not using contract id
@@ -659,7 +661,7 @@ exports.generateHtmltopdf = async (req, res) => {
             ]
         }, { isDeleted: false })
 
-        const servicerUser = await userService.getUserById1({ metaId: checkOrder.servicerId, isPrimary: true }, { isDeleted: false })
+        const servicerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.servicerId, isPrimary: true } } }, { isDeleted: false })
         const options = {
             format: 'A4',
             orientation: 'portrait',
@@ -1053,9 +1055,9 @@ exports.getServicerInOrders = async (req, res) => {
         $and: [
             {
                 $or: [
-                    { metaId: { $in: servicerIds } },
-                    { metaId: { $in: resellerIdss } },
-                    { metaId: { $in: dealerIdss } },
+                    { metaData: { $elemMatch: { metaId: { $in: servicerIds } } } },
+                    { metaData: { $elemMatch: { metaId: { $in: resellerIdss } } } },
+                    { metaData: { $elemMatch: { metaId: { $in: dealerIdss } } } },
                 ]
             },
             { isPrimary: true }
@@ -1070,8 +1072,6 @@ exports.getServicerInOrders = async (req, res) => {
         });
         return;
     }
-
-    console.log("servicer user ++++++++++++++++++++++++++", servicer, servicerUser)
 
     const result_Array = servicer.map((item1) => {
         const matchingItem = servicerUser.find(
@@ -1127,9 +1127,38 @@ exports.getDealerResellers = async (req, res) => {
         const resellerId = resellers.map(obj => obj._id);
 
         const orderResellerId = resellers.map(obj => obj._id);
-        const queryUser = { metaId: { $in: resellerId }, isPrimary: true };
+       // const queryUser = { metaId: { $in: resellerId }, isPrimary: true };
 
-        let getPrimaryUser = await userService.findUserforCustomer(queryUser)
+        const getPrimaryUser = await userService.findUserforCustomer1([
+            {
+              $match: {
+                $and: [
+                  { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+                  { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                  { metaData: { $elemMatch: { metaId: { $in: resellerId }, isPrimary: true } } }
+                ]
+              }
+            },
+            {
+              $project: {
+                email: 1,
+                'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+                'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+                'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+                'position': { $arrayElemAt: ["$metaData.position", 0] },
+                'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+                'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+                'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                'status': { $arrayElemAt: ["$metaData.status", 0] },
+                resetPasswordCode: 1,
+                isResetPassword: 1,
+                approvedStatus: 1,
+                createdAt: 1,
+                updatedAt: 1
+              }
+            }
+          ]);
 
         //Get Dealer Customer Orders
 
@@ -1168,9 +1197,7 @@ exports.getDealerResellers = async (req, res) => {
             }
         });
 
-        const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
         const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
-        const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
         const dealerRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
 
         const filteredData = result_Array.filter(entry => {

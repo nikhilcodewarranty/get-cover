@@ -1672,13 +1672,13 @@ async function generateTC(orderData) {
         //Get customer
         const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId }, { isDeleted: false })
         //Get customer primary info
-        const customerUser = await userService.getUserById1({ metaId: checkOrder.customerId, isPrimary: true }, { isDeleted: false })
+        const customerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } }, { isDeleted: false })
 
-        const DealerUser = await userService.getUserById1({ metaId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false })
+        const DealerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } }, { isDeleted: false })
 
         const checkReseller = await resellerService.getReseller({ _id: checkOrder.resellerId }, { isDeleted: false })
         //Get reseller primary info
-        const resellerUser = await userService.getUserById1({ metaId: checkOrder.resellerId, isPrimary: true }, { isDeleted: false })
+        const resellerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } }, { isDeleted: false })
         //Get contract info of the order
         let productCoveredArray = []
         let otherInfo = []
@@ -1731,15 +1731,15 @@ async function generateTC(orderData) {
 `).join('');
 
 
-const coverageStartDates = otherInfo.map((product, index) => `
+        const coverageStartDates = otherInfo.map((product, index) => `
     <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageStartDate).add(1, 'days').format("MM/DD/YYYY")}</p>
 `).join('');
 
-const coverageEndDates = otherInfo.map((product, index) => `
+        const coverageEndDates = otherInfo.map((product, index) => `
     <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageEndDate).add(1, 'days').format("MM/DD/YYYY")}</p>
 `).join('');
 
-const term = otherInfo.map((product, index) => `
+        const term = otherInfo.map((product, index) => `
     <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${product.term / 12} ${product.term / 12 === 1 ? 'Year' : 'Years'}</p>
 `).join('');
 
@@ -1751,7 +1751,7 @@ const term = otherInfo.map((product, index) => `
             ]
         }, { isDeleted: false })
 
-        const servicerUser = await userService.getUserById1({ metaId: checkOrder.servicerId, isPrimary: true }, { isDeleted: false })
+        const servicerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.servicerId, isPrimary: true } } }, { isDeleted: false })
         //res.json(checkDealer);return
         const options = {
             format: 'A4',

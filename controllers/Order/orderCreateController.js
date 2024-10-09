@@ -730,18 +730,18 @@ async function generateTC(orderData) {
         const checkOrder = await orderService.getOrder({ _id: orderData._id }, { isDeleted: false })
         let coverageStartDate = checkOrder.productsArray[0]?.coverageStartDate;
         let coverageEndDate = checkOrder.productsArray[0]?.coverageEndDate;
-        //Get Dealer
-        const checkDealer = await dealerService.getDealerById(checkOrder.dealerId, { isDeleted: false })
-        //Get customer
-        const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId }, { isDeleted: false })
-        //Get customer primary info
-        const customerUser = await userService.getUserById1({ metaId: checkOrder.customerId, isPrimary: true }, { isDeleted: false })
-
-        const DealerUser = await userService.getUserById1({ metaId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false })
-
-        const checkReseller = await resellerService.getReseller({ _id: checkOrder.resellerId }, { isDeleted: false })
-        //Get reseller primary info
-        const resellerUser = await userService.getUserById1({ metaId: checkOrder.resellerId, isPrimary: true }, { isDeleted: false })
+          //Get Dealer
+          const checkDealer = await dealerService.getDealerById(checkOrder.dealerId, { isDeleted: false })
+          //Get customer
+          const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId }, { isDeleted: false })
+          //Get customer primary info
+          const customerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } }, { isDeleted: false })
+  
+          const DealerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } }, { isDeleted: false })
+  
+          const checkReseller = await resellerService.getReseller({ _id: checkOrder.resellerId }, { isDeleted: false })
+          //Get reseller primary info
+          const resellerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } }, { isDeleted: false })
         //Get contract info of the order
         let productCoveredArray = []
         let otherInfo = []
@@ -822,7 +822,7 @@ async function generateTC(orderData) {
             ]
         }, { isDeleted: false })
 
-        const servicerUser = await userService.getUserById1({ metaId: checkOrder.servicerId, isPrimary: true }, { isDeleted: false })
+           const servicerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.servicerId, isPrimary: true } } }, { isDeleted: false })
         //res.json(checkDealer);return
         const options = {
             format: 'A4',

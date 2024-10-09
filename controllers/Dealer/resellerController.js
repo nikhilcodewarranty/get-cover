@@ -85,13 +85,32 @@ exports.createReseller = async (req, res) => {
         let IDs = await supportingFunction.getUserIds()
 
         // Create the user
-        teamMembers = teamMembers.map(member => ({ ...member, metaId: createdReseler._id, roleId: '65bb94b4b68e5a4a62a0b563' }));
+
+        teamMembers = teamMembers.map(member => ({
+            ...member,
+            metaData:
+                [
+                    {
+                        firstName: member.firstName,
+                        lastName: member.lastName,
+                        metaId: createdReseler._id,
+                        roleId: "65bb94b4b68e5a4a62a0b563",
+                        position: member.position,
+                        dialCode: member.dialCode,
+                        status: member.status,
+                        isPrimary: member.isPrimary
+                    }
+                ],
+            approvedStatus: "Approved",
+
+        })
+        );
 
         // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
         // Primary User Welcoime email
         let notificationEmails = await supportingFunction.getUserEmails();
-        let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
+        let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
         notificationEmails.push(getPrimary.email)
         IDs.push(getPrimary._id)
         let notificationData = {
@@ -2129,9 +2148,9 @@ exports.getResellerClaims = async (req, res) => {
             servicer = []
             let mergedData = []
             if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
-              mergedData = dynamicOption.value.filter(contract =>
-                item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
-              );
+                mergedData = dynamicOption.value.filter(contract =>
+                    item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
+                );
             }
             let servicerName = '';
             let selfServicer = false;
@@ -2165,7 +2184,7 @@ exports.getResellerClaims = async (req, res) => {
                 contracts: {
                     ...item1.contracts,
                     allServicer: servicer,
-                    mergedData:mergedData
+                    mergedData: mergedData
 
                 }
             }

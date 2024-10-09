@@ -35,13 +35,13 @@ exports.getAllPriceBooks = async (req, res, next) => {
     data.status = typeof (filterStatus) == "string" ? "all" : filterStatus
     let query;
 
-    if(!Array.isArray(data.coverageType ) && data.coverageType!=''){
+    if (!Array.isArray(data.coverageType) && data.coverageType != '') {
       res.send({
-          code:constant.errorCode,
-          message:"Coverage type should be an array!"
+        code: constant.errorCode,
+        message: "Coverage type should be an array!"
       });
       return;
-  }
+    }
 
     if (data.status != "all") {
       if (data.coverageType != "") {
@@ -263,7 +263,7 @@ exports.createPriceBook = async (req, res, next) => {
       let notificationEmails = await supportingFunction.getUserEmails();
       //Get Website Setting
       const settingData = await userService.getSetting({});
-      const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
+      const admin = await userService.getSingleUserByEmail({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), status: true } } }, {})
       let emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -540,7 +540,8 @@ exports.updatePriceBookById = async (req, res, next) => {
 
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
-    const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
+    const admin = await userService.getSingleUserByEmail({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), status: true } } }, {})
+
     //Get Website Setting
     const settingData = await userService.getSetting({});
     let emailData;
@@ -700,7 +701,7 @@ exports.createPriceBookCat = async (req, res) => {
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
     const settingData = await userService.getSetting({});
-    const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
+    const admin = await userService.getSingleUserByEmail({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true } } }, {})
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -994,7 +995,7 @@ exports.updatePriceBookCat = async (req, res) => {
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
     const settingData = await userService.getSetting({});
-    const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
+    const admin = await userService.getSingleUserByEmail({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true } } }, {})
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
