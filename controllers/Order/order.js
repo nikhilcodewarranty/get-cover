@@ -1288,7 +1288,7 @@ exports.archiveOrder = async (req, res) => {
         if (checkOrder.status == "Active") {
             res.send({
                 code: constant.errorCode,
-                message: "Order is already active",
+                message: "Order is already active, please refresh the page",
             });
 
             return;
