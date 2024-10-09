@@ -867,8 +867,8 @@ exports.getDealerClaims = async (req, res) => {
                             claimStatus: 1,
                             repairStatus: 1,
                             "contracts.unique_key": 1,
-              "contracts.coverageType": 1,
-              "contracts.productName": 1,
+                            "contracts.coverageType": 1,
+                            "contracts.productName": 1,
                             "contracts.pName": 1,
                             "contracts.model": 1,
                             "contracts.manufacture": 1,
@@ -1042,11 +1042,11 @@ exports.getDealerClaims = async (req, res) => {
         const result_Array = resultFiter.map((item1) => {
             servicer = []
             let mergedData = []
-      if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
-        mergedData = dynamicOption.value.filter(contract =>
-          item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
-        );
-      }
+            if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
+                mergedData = dynamicOption.value.filter(contract =>
+                    item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
+                );
+            }
             let servicerName = '';
             let selfServicer = false;
             let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
@@ -1056,7 +1056,7 @@ exports.getDealerClaims = async (req, res) => {
             if (item1.contracts.orders.servicers[0]?.length > 0) {
                 servicer.unshift(item1.contracts.orders.servicers[0])
             }
-            if (item1.contracts.orders.resellers[0]?.isServicer) { 
+            if (item1.contracts.orders.resellers[0]?.isServicer) {
                 servicer.unshift(item1.contracts.orders.resellers[0])
             }
             if (item1.contracts.orders.dealers.isServicer) {
@@ -1074,7 +1074,7 @@ exports.getDealerClaims = async (req, res) => {
                 contracts: {
                     ...item1.contracts,
                     allServicer: servicer,
-                    mergedData:mergedData
+                    mergedData: mergedData
                 }
             }
         })
@@ -1391,10 +1391,10 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
                 { 'name': { '$regex': req.body.category ? req.body.category : '', '$options': 'i' } }
             ]
         };
-        if(!Array.isArray(data.coverageType ) && data.coverageType!=''){
+        if (!Array.isArray(data.coverageType) && data.coverageType != '') {
             res.send({
-                code:constant.errorCode,
-                message:"Coverage type should be an array!"
+                code: constant.errorCode,
+                message: "Coverage type should be an array!"
             });
             return;
         }
@@ -1519,10 +1519,10 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
             })
             return;
         }
-        if(!Array.isArray(data.coverageType ) && data.coverageType!=''){
+        if (!Array.isArray(data.coverageType) && data.coverageType != '') {
             res.send({
-                code:constant.errorCode,
-                message:"Coverage type should be an array!"
+                code: constant.errorCode,
+                message: "Coverage type should be an array!"
             });
             return;
         }
@@ -1632,11 +1632,39 @@ exports.getAllDealers = async (req, res) => {
         let projection = { __v: 0, isDeleted: 0 }
         let dealers = await dealerService.getAllDealers(dealerFilter, projection);
         const dealerIds = dealers.map(obj => obj._id);
-        let query1 = { metaId: { $in: dealerIds }, isPrimary: true };
 
         //-------------Get All Dealers Id's------------------------
+        const dealarUser = await userService.findUserforCustomer1([
+            {
+                $match: {
+                    $and: [
+                        { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+                        { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { metaData: { $elemMatch: { metaId: { $in: dealerIds }, isPrimary: true } } }
+                    ]
+                }
+            },
+            {
+                $project: {
+                    email: 1,
+                    'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+                    'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+                    'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+                    'position': { $arrayElemAt: ["$metaData.position", 0] },
+                    'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                    'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+                    'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+                    'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                    'status': { $arrayElemAt: ["$metaData.status", 0] },
+                    resetPasswordCode: 1,
+                    isResetPassword: 1,
+                    approvedStatus: 1,
+                    createdAt: 1,
+                    updatedAt: 1
+                }
+            }
+        ]);
 
-        let dealarUser = await userService.getMembers(query1, projection)
 
         //Get Dealer Order Data     
         let orderQuery = { dealerId: { $in: dealerIds }, status: "Active" };
@@ -1667,7 +1695,7 @@ exports.getAllDealers = async (req, res) => {
             const orders = orderData.find(order => order._id.toString() === item1.metaId.toString())
             if (matchingItem || orders) {
                 return {
-                    ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+                    ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
                     dealerData: matchingItem.toObject(),
                     ordersData: orders ? orders : {}
                 };
@@ -1676,20 +1704,9 @@ exports.getAllDealers = async (req, res) => {
             }
         });
 
-        const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
-        const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
-        const phoneRegex = new RegExp(data.phoneNumber ? data.phoneNumber : '', 'i')
-        const filteredData = result_Array.filter(entry => {
-            return (
-                nameRegex.test(entry.dealerData.name) &&
-                emailRegex.test(entry.email) &&
-                phoneRegex.test(entry.phoneNumber)
-            );
-        });
-
         res.send({
             code: constant.successCode,
-            data: filteredData
+            data: result_Array
         });
     } catch (err) {
         res.send({
@@ -1726,8 +1743,36 @@ exports.getPendingDealers = async (req, res) => {
 
         const dealerIds = dealers.map(obj => obj._id);
 
-        let query1 = { metaId: { $in: dealerIds }, isPrimary: true };
-        let dealarUser = await userService.getMembers(query1, projection)
+        const dealarUser = await userService.findUserforCustomer1([
+            {
+                $match: {
+                    $and: [
+                        { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+                        { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { metaData: { $elemMatch: { metaId: { $in: dealerIds }, isPrimary: true } } }
+                    ]
+                }
+            },
+            {
+                $project: {
+                    email: 1,
+                    'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+                    'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+                    'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+                    'position': { $arrayElemAt: ["$metaData.position", 0] },
+                    'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                    'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+                    'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+                    'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                    'status': { $arrayElemAt: ["$metaData.status", 0] },
+                    resetPasswordCode: 1,
+                    isResetPassword: 1,
+                    approvedStatus: 1,
+                    createdAt: 1,
+                    updatedAt: 1
+                }
+            }
+        ]);
 
         if (!dealers) {
             res.send({
@@ -1742,7 +1787,7 @@ exports.getPendingDealers = async (req, res) => {
 
             if (matchingItem) {
                 return {
-                    ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+                    ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
                     dealerData: matchingItem.toObject()
                 };
             } else {
@@ -1750,21 +1795,11 @@ exports.getPendingDealers = async (req, res) => {
             }
         });
 
-        const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
-        const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
-        const phoneRegex = new RegExp(data.phoneNumber ? data.phoneNumber.replace(/\s+/g, ' ').trim() : '', 'i')
 
-        const filteredData = result_Array.filter(entry => {
-            return (
-                nameRegex.test(entry.dealerData.name) &&
-                emailRegex.test(entry.email) &&
-                phoneRegex.test(entry.phoneNumber)
-            );
-        });
 
         res.send({
             code: constant.successCode,
-            data: filteredData
+            data: result_Array
         });
     } catch (err) {
         res.send({
@@ -1992,7 +2027,7 @@ exports.getDealerSettings = async (req, res) => {
             const checkReseller = await resellerService.getReseller({ _id: req.userId }, {})
             dealerId = checkReseller.dealerId
         }
- 
+
         let query = [
             {
                 $match: {
