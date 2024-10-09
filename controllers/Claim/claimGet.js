@@ -914,7 +914,7 @@ exports.checkClaimAmount = async (req, res) => {
 
     let getMaxClaimAmount = await axios.get(process.env.API_ENDPOINT + "api-v1/claim/getMaxClaimAmount/" + getClaim.contractId, {
       headers: {
-        "x-access-token": req.header["x-access-token"],  // Include the token in the Authorization header
+        "x-access-token": req.headers["x-access-token"],  // Include the token in the Authorization header
       }
     });
 
@@ -922,7 +922,7 @@ exports.checkClaimAmount = async (req, res) => {
 
       let coverageTypeDays = getContractDetail.adhDays
       let getDeductible = coverageTypeDays.filter(coverageType => {
-        console.log("Checking value: ", coverageTypeDays, coverageType.value, getClaim.claimType);
+        console.log("Checking value: ", req.headers);
         return coverageType.value === getClaim.claimType;
       });
       if (getClaim.claimType != "" || getClaim.claimType != "New") {
@@ -951,13 +951,13 @@ exports.checkClaimAmount = async (req, res) => {
         })
         return
       }
-      console.log("----------------------------------- ",getClaim.totalAmount,getMaxClaimAmount,getMaxClaimAmount.result)
+      console.log("----------------------------------- ",getClaim.totalAmount,getMaxClaimAmount.data.result)
 
-      if (getClaim.totalAmount >= Number(getMaxClaimAmount.result)) {
+      if (getClaim.totalAmount >= Number(getMaxClaimAmount.data.result)) {
         console.log("over amount conditions ak ")
         let serviceCoverageType = getContractDetail.serviceCoverageType
         if (getDeductible[0].amountType == "percentage") {
-          deductableAmount = (getDeductible[0].deductible / 100) * getContractDetail.productValue
+          deductableAmount = (getDeductible[0].deductible / 100) * getMaxClaimAmount.data.result
         } else {
           deductableAmount = getDeductible[0].deductible
         }
@@ -965,20 +965,20 @@ exports.checkClaimAmount = async (req, res) => {
 
 
         let customerClaimAmount = deductableAmount
-        let getCoverClaimAmount = getContractDetail.productValue - customerClaimAmount
+        let getCoverClaimAmount = getMaxClaimAmount.data.result - customerClaimAmount
         let customerOverAmount
         let getcoverOverAmount
 
 
-        if (getClaim.totalAmount > Number(getMaxClaimAmount.result)) {
+        if (getClaim.totalAmount > Number(getMaxClaimAmount.data.result)) {
           if (getContractDetail.isMaxClaimAmount) {
             console.log("1st condition +++++++++++++++++++++=", getContractDetail.isMaxClaimAmount)
-            customerOverAmount = getClaim.totalAmount - Number(getContractDetail.productValue)
+            customerOverAmount = getClaim.totalAmount - Number(customerClaimAmount)
             getcoverOverAmount = 0
           } else {
             console.log("2nd t condition +++++++++++++++++++++=", getContractDetail.isMaxClaimAmount)
-
-            getcoverOverAmount = getClaim.totalAmount - Number(getContractDetail.productValue)
+            getcoverOverAmount = Math.abs(getMaxClaimAmount.data.result)
+            getCoverClaimAmount = getClaim.totalAmount - (customerClaimAmount + getcoverOverAmount)
             customerOverAmount = 0
           }
           let updateContract = await contractService.updateContract({ _id: getContractDetail._id }, { eligibilty: false })
@@ -994,7 +994,7 @@ exports.checkClaimAmount = async (req, res) => {
         }
 
         let updateTheClaim = await claimService.updateClaim({ _id: getClaim._id }, values, { new: true })
-        console.log("updatetheclaim+++++++++++++++++++++++")
+        console.log("updatetheclaim+++++++++++++++++++++++",values)
         if (!updateTheClaim) {
           res.send({
             code: constant.errorCode,

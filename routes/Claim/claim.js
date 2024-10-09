@@ -24,7 +24,7 @@ router.put("/editServicer/:claimId", [verifyToken], claimController.editServicer
 //GET Routes
 router.get("/statusClaim", claimController.statusClaim); // get claim status
 router.get("/getContractById/:contractId", [verifyToken], supportingFunction.checkObjectId, claimGetController.getContractById); // get contract by ID
-router.get("/getMaxClaimAmount/:contractId", [verifyToken], claimGetController.getMaxClaimAmount); // get max claim amount by contract ID
+router.get("/getMaxClaimAmount/:contractId",  claimGetController.getMaxClaimAmount); // get max claim amount by contract ID
 router.get("/getMessages/:claimId", [verifyToken], claimGetController.getMessages); // get messages for a claim
 router.post("/checkCoverageTypeDate", [verifyToken], claimGetController.checkCoverageTypeDate); // get messages for a claim
 router.get("/checkClaimAmount/:claimId", claimGetController.checkClaimAmount); // get messages for a claim
