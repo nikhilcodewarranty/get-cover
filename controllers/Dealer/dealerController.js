@@ -184,7 +184,7 @@ exports.registerDealer = async (req, res) => {
     // Check if the email already exists
     const pendingUser = await userService.findOneUser({ email: req.body.email });
     if (pendingUser) {
-      let checkDealer = await dealerService.getDealerByName({ _id: pendingUser.metaId })
+      let checkDealer = await dealerService.getDealerByName({ _id: pendingUser.metaData[0]?.metaId })
       if (checkDealer) {
         if (checkDealer.status == "Pending") {
           res.send({
@@ -240,11 +240,16 @@ exports.registerDealer = async (req, res) => {
     // Create user metadata
     const userMetaData = {
       email: data.email,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      phoneNumber: data.phoneNumber,
-      roleId: checkRole._id,
-      metaId: createdDealer._id,
+      metaData: [
+        {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          phoneNumber: data.phoneNumber,
+          roleId: checkRole._id,
+          metaId: createdDealer._id,
+        }
+      ]
+
     };
 
     // Create the user
@@ -285,7 +290,7 @@ exports.registerDealer = async (req, res) => {
       role: "Dealer"
     }
     let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
-    const admin = await supportingFunction.getPrimaryUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true })
+    const admin = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true } } })
     const notificationEmail = await supportingFunction.getUserEmails();
     emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -1123,7 +1128,7 @@ exports.updateDealerSetting = async (req, res) => {
   try {
     let data = req.body
 
-     let checkDealerId = await dealerService.getDealerByName({ _id: req.params.dealerId })
+    let checkDealerId = await dealerService.getDealerByName({ _id: req.params.dealerId })
     if (!checkDealerId) {
       res.send({
         code: constant.errorCode,
@@ -1131,7 +1136,7 @@ exports.updateDealerSetting = async (req, res) => {
       })
       return;
     }
-    
+
     let updateData = await dealerService.updateDealer({ _id: req.params.dealerId }, data, { new: true })
     if (!updateData) {
       res.send({
