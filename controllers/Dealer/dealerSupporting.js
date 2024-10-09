@@ -1838,6 +1838,7 @@ exports.getDealerById = async (req, res) => {
         const dynamicOption = await userService.getOptions(optionQuery)
         const filteredOptions = dynamicOption.value.filter(item => coverageType.includes(item.value));
 
+        console.log("------------------------------------",adhDays)
 
         // Loop through adhDays and find matching coverageType
         adhDays.forEach(adhItem => {
@@ -1848,6 +1849,7 @@ exports.getDealerById = async (req, res) => {
             }
         });
 
+        console.log("------------------------------------")
         // Assign adhDays1 to the dealer object
 
 
@@ -1859,8 +1861,34 @@ exports.getDealerById = async (req, res) => {
             return
         }
 
-        const query1 = { metaId: { $in: [dealers[0]._id] }, isPrimary: true };
-        let dealarUser = await userService.getMembers(query1, { isDeleted: false })
+        const dealarUser = await userService.findUserforCustomer1([
+            {
+              $match: {
+                $and: [
+                  { metaData: { $elemMatch: { metaId: { $in: [dealers[0]._id] }, isPrimary: true } } }
+                ]
+              }
+            },
+            {
+              $project: {
+                email: 1,
+                'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+                'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+                'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+                'position': { $arrayElemAt: ["$metaData.position", 0] },
+                'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+                'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+                'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                'status': { $arrayElemAt: ["$metaData.status", 0] },
+                resetPasswordCode: 1,
+                isResetPassword: 1,
+                approvedStatus: 1,
+                createdAt: 1,
+                updatedAt: 1
+              }
+            }
+          ]);
 
         if (!dealarUser) {
             res.send({
@@ -1987,7 +2015,7 @@ exports.getDealerById = async (req, res) => {
             const matchingItem = dealers.find(item2 => item2._id.toString() === item1.metaId.toString());
             if (matchingItem) {
                 return {
-                    ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+                    ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
                     dealerData: matchingItem.toObject(),
                     ordersResult: ordersResult,
                     claimData: claimData

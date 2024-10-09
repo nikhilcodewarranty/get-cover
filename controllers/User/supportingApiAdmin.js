@@ -467,6 +467,7 @@ exports.createDealer = async (req, res) => {
                             {
                                 firstName: obj.firstName,
                                 lastName: obj.lastName,
+                                phoneNumber: obj.phoneNumber,
                                 metaId: createMetaData._id,
                                 roleId: "656f08041eb1acda244af8c6",
                                 position: obj.position,
