@@ -912,11 +912,26 @@ exports.checkClaimAmount = async (req, res) => {
     let getContractDetail = await contractService.getContractById({ _id: getClaim.contractId })
     // /api-v1/claim/getMaxClaimAmount/
 
-    let getMaxClaimAmount = await axios.get(process.env.API_ENDPOINT + "api-v1/claim/getMaxClaimAmount/" + getClaim.contractId, {
-      headers: {
-        "x-access-token": req.headers["x-access-token"],  // Include the token in the Authorization header
-      }
-    });
+
+    const query = { contractId: new mongoose.Types.ObjectId(getClaim.contractId), claimFile: "completed" }
+    let claimTotalQuery = [
+      { $match: query },
+      { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
+
+    ]
+    let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
+    const contract = await contractService.getContractById({ _id: getClaim.contractId }, { productValue: 1 })
+    const claimAmount = claimTotal[0]?.amount ? claimTotal[0]?.amount : 0
+    const product = contract ? contract.productValue : 0
+    
+
+
+
+    // let getMaxClaimAmount = await axios.get(process.env.API_ENDPOINT + "api-v1/claim/getMaxClaimAmount/" + getClaim.contractId, {
+    //   headers: {
+    //     "x-access-token": req.headers["x-access-token"],  // Include the token in the Authorization header
+    //   }
+    // });
 
     if (getClaim.claimType != "" && getClaim.claimType != "New") {
 
@@ -951,13 +966,18 @@ exports.checkClaimAmount = async (req, res) => {
         })
         return
       }
-      console.log("----------------------------------- ",getClaim.totalAmount,getMaxClaimAmount.data.result)
 
-      if (getClaim.totalAmount >= Number(getMaxClaimAmount.data.result)) {
+      let checkClaimNumber = await claimService.getClaims({ contractId: getClaim.contractId })
+
+
+      let justToCheck = checkClaimNumber.length > 1 ? product - claimAmount : getContractDetail.productValue
+      console.log("----------------------------------- ", getClaim.totalAmount,justToCheck,product)
+
+      if (getClaim.totalAmount >= Number(justToCheck)) {
         console.log("over amount conditions ak ")
         let serviceCoverageType = getContractDetail.serviceCoverageType
         if (getDeductible[0].amountType == "percentage") {
-          deductableAmount = (getDeductible[0].deductible / 100) * getMaxClaimAmount.data.result
+          deductableAmount = (getDeductible[0].deductible / 100) * justToCheck
         } else {
           deductableAmount = getDeductible[0].deductible
         }
@@ -965,19 +985,19 @@ exports.checkClaimAmount = async (req, res) => {
 
 
         let customerClaimAmount = deductableAmount
-        let getCoverClaimAmount = getMaxClaimAmount.data.result - customerClaimAmount
+        let getCoverClaimAmount = justToCheck - customerClaimAmount
         let customerOverAmount
         let getcoverOverAmount
 
 
-        if (getClaim.totalAmount > Number(getMaxClaimAmount.data.result)) {
+        if (getClaim.totalAmount > Number(justToCheck)) {
           if (getContractDetail.isMaxClaimAmount) {
             console.log("1st condition +++++++++++++++++++++=", getContractDetail.isMaxClaimAmount)
-            customerOverAmount = getClaim.totalAmount - Number(customerClaimAmount)
+            customerOverAmount = getClaim.totalAmount - Number(getCoverClaimAmount) - customerClaimAmount
             getcoverOverAmount = 0
           } else {
             console.log("2nd t condition +++++++++++++++++++++=", getContractDetail.isMaxClaimAmount)
-            getcoverOverAmount = Math.abs(getMaxClaimAmount.data.result)
+            getcoverOverAmount = Math.abs(justToCheck)
             getCoverClaimAmount = getClaim.totalAmount - (customerClaimAmount + getcoverOverAmount)
             customerOverAmount = 0
           }
@@ -994,7 +1014,7 @@ exports.checkClaimAmount = async (req, res) => {
         }
 
         let updateTheClaim = await claimService.updateClaim({ _id: getClaim._id }, values, { new: true })
-        console.log("updatetheclaim+++++++++++++++++++++++",values)
+        console.log("updatetheclaim+++++++++++++++++++++++", values)
         if (!updateTheClaim) {
           res.send({
             code: constant.errorCode,
