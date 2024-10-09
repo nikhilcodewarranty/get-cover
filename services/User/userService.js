@@ -273,7 +273,7 @@ module.exports = class userService {
   // find customer members new
   static async findUserforCustomer1(query) {
     try {
-      const fetchUser = await user.aggregate(query).sort({ createdAt: -1 });
+      const fetchUser = await user.aggregate(query).sort({ isPrimary: -1, createdAt: -1 });
       return fetchUser;
     } catch (error) {
       return `Could not get user: ${error}`;
@@ -414,7 +414,7 @@ module.exports = class userService {
     }
   }
 
-  static async updateData(criteria, newValue,option) {
+  static async updateData(criteria, newValue, option) {
     try {
       const updatedResponse = await options.findOneAndUpdate(criteria, newValue, option);
       return updatedResponse;
