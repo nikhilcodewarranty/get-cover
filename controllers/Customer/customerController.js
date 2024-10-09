@@ -153,9 +153,9 @@ exports.createCustomer = async (req, res, next) => {
               flag: "created", title: settingData[0]?.title,
               darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
               lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-               link: resetLink, subject: "Set Password", role: "Customer",
-                servicerName: saveMembers[i].firstName,
-               address: settingData[0]?.address,
+              link: resetLink, subject: "Set Password", role: "Customer",
+              servicerName: saveMembers[i].firstName,
+              address: settingData[0]?.address,
             }))
 
           }
@@ -609,7 +609,24 @@ exports.changePrimaryUser = async (req, res) => {
       })
       return;
     };
-    let updateLastPrimary = await userService.updateSingleUser({ metaId: checkUser.metaId, isPrimary: true }, { isPrimary: false }, { new: true })
+    // let updateLastPrimary = await userService.updateSingleUser({ metadata: checkUser.metaData[0]?.metaId, isPrimary: true }, { isPrimary: false }, { new: true })
+
+    let updateLastPrimary = await userService.updateSingleUser(
+      { 
+        'metaData.metaId': checkUser.metaData[0]?.metaId, 
+        'metaData.isPrimary': true 
+      },
+      {
+        $set: {
+          'metaData.$.isPrimary': false,
+        }
+      },
+      {
+        new: true      // Return the updated document
+      }
+    );
+
+
     if (!updateLastPrimary) {
       //Save Logs changePrimaryUser
       let logData = {
@@ -629,9 +646,25 @@ exports.changePrimaryUser = async (req, res) => {
       })
       return;
     };
-    let updatePrimary = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true })
+
+    let updatePrimary = await userService.updateSingleUser(
+      { _id: checkUser._id, 'metaData.metaId': checkUser.metaData[0]?.metaId },
+      {
+        $set: {
+          'metaData.$.isPrimary': true,
+        }
+      },
+      {
+        new: true      // Return the updated document
+      }
+    );
+
+
+    // return;
+
+    // let updatePrimary = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true })
     //Get role by id
-    const checkRole = await userService.getRoleById({ _id: checkUser.roleId }, {});
+    const checkRole = await userService.getRoleById({ _id: checkUser.metaData[0]?.roleId }, {});
 
     if (!updatePrimary) {
       //Save Logs changePrimaryUser
@@ -654,28 +687,30 @@ exports.changePrimaryUser = async (req, res) => {
     } else {
       //Send notification for dealer change primary user
       let IDs = await supportingFunction.getUserIds()
-      let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkUser.metaId, isPrimary: true })
+      let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkUser.metaData[0]?.metaId }, isPrimary: true } })
       let notificationData = {
-        title: updateLastPrimary?.role + " primary user change",
+        title: checkRole?.role + " primary user change",
         description: "The primary user has been changed!",
         userId: req.teammateId,
-        flag: updateLastPrimary?.role,
-        redirectionId: checkUser.metaId,
+        flag: checkRole?.role,
+        redirectionId: checkUser.metaData[0]?.metaId,
         notificationFor: [getPrimary._id]
       };
       let createNotification = await userService.createNotification(notificationData);
+
 
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
       notificationEmails.push(updateLastPrimary.email);
       notificationEmails.push(updatePrimary.email);
+
       let emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: checkUser.firstName,
-        content: "The primary user for your account has been changed from " + updateLastPrimary.firstName + " to " + updatePrimary.firstName + ".",
+        senderName: checkUser.metaData[0]?.firstName,
+        content: "The primary user for your account has been changed from " + updateLastPrimary.metaData[0]?.firstName + " to " + updatePrimary.metaData[0]?.firstName + ".",
         subject: "Primary User change"
       };
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(updatePrimary.email, updateLastPrimary.email, emailData))
@@ -1347,7 +1382,7 @@ exports.getCustomerContract = async (req, res) => {
       contractFilterWithEligibilty.push({ orderId: { $in: orderIds } })
     }
     let mainQuery = []
-    if (data.contractId === "" && data.productName === "" && data.dealerSku === "" &&  data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
+    if (data.contractId === "" && data.productName === "" && data.dealerSku === "" && data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
       mainQuery = [
         { $sort: { unique_key_number: -1 } },
         {
@@ -1595,7 +1630,7 @@ exports.customerClaims = async (req, res) => {
               reason: 1,
               "unique_key": 1,
               note: 1,
-              dealerSku:1,
+              dealerSku: 1,
               totalAmount: 1,
               servicerId: 1,
               customerStatus: 1,

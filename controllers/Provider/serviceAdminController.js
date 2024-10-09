@@ -25,7 +25,9 @@ exports.createServiceProvider = async (req, res, next) => {
     let data = req.body
     data.accountName = data.accountName.trim().replace(/\s+/g, ' ');
     const count = await providerService.getServicerCount();
-    const admin = await userService.getUserById1({ metaId: req.userId, isPrimary: true }, {})
+    const admin = await userService.getUserById1({ metaData: { $elemMatch: { metaId: new mongoose.Types.ObjectId(req.userId), isPrimary: true } } }, {})
+
+
     let servicerObject = {
       name: data.accountName,
       street: data.street,
@@ -84,7 +86,28 @@ exports.createServiceProvider = async (req, res, next) => {
         })
         return;
       };
-      teamMembers = teamMembers.map(member => ({ ...member, metaId: createServiceProvider._id, approvedStatus: "Approved", roleId: "65719c8368a8a86ef8e1ae4d" }));
+
+      teamMembers = teamMembers.map(member => ({
+        ...member,
+        metaId: createServiceProvider._id,
+        metaData:
+          [
+            {
+              firstName: member.firstName,
+              lastName: member.lastName,
+              metaId: createServiceProvider._id,
+              roleId: "65719c8368a8a86ef8e1ae4d",
+              position: member.position,
+              dialCode: member.dialCode,
+              status: member.status,
+              isPrimary: member.isPrimary
+            }
+          ],
+        approvedStatus: "Approved",
+
+      })
+      );
+
       let saveMembers = await userService.insertManyUser(teamMembers)
       // Primary User Welcoime email
       let notificationEmails = await supportingFunction.getUserEmails();
@@ -238,7 +261,12 @@ exports.createServiceProvider = async (req, res, next) => {
 
       let primaryEmail = teamMembers[0].email
       let primaryCode = randtoken.generate(4, '123456789')
-      let updatePrimaryCode = await userService.updateSingleUser({ email: primaryEmail }, { resetPasswordCode: primaryCode, status: data.status ? true : false }, { new: true });
+      let updatePrimaryCode = await userService.updateSingleUser({ email: primaryEmail }, {
+        $set: {
+          resetPasswordCode: primaryCode,
+          'metaData.$.status': data.status ? true : false,
+        }
+      }, { new: true });
       let updatePrimaryLInk = `${process.env.SITE_URL}newPassword/${updatePrimaryCode._id}/${primaryCode}`
       mailing = sgMail.send(emailConstant.servicerApproval(updatePrimaryCode.email,
         {
@@ -252,7 +280,26 @@ exports.createServiceProvider = async (req, res, next) => {
           link: updatePrimaryLInk, role: "Servicer",
           servicerName: updatePrimaryCode?.firstName
         }))
-      teamMembers = teamMembers.slice(1).map(member => ({ ...member, metaId: updateServicer._id, approvedStatus: "Approved", status: true }));
+
+      teamMembers = teamMembers.slice(1).map(member => ({
+        ...member,
+        metaData:
+          [
+            {
+              firstName: member.firstName,
+              lastName: member.lastName,
+              metaId: updateServicer._id,
+              roleId: "65719c8368a8a86ef8e1ae4d",
+              position: member.position,
+              dialCode: member.dialCode,
+              status: true,
+              isPrimary: member.isPrimary
+            }
+          ],
+        approvedStatus: "Approved",
+
+      })
+      );
 
       if (teamMembers.length > 0) {
         let saveMembers = await userService.insertManyUser(teamMembers)
@@ -433,10 +480,41 @@ exports.getServicer = async (req, res) => {
     //-------------Get All servicer Id's------------------------
 
     const servicerIds = servicer.map(obj => obj._id);
-    // Get Dealer Primary Users from colection
-    const query1 = { metaId: { $in: servicerIds }, isPrimary: true };
 
-    let servicerUser = await userService.getMembers(query1, projection)
+    // Get Dealer Primary Users from colection  
+
+
+    const servicerUser = await userService.findUserforCustomer1([
+      {
+        $match: {
+          $and: [
+            { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+            { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { metaData: { $elemMatch: { metaId: { $in: servicerIds }, isPrimary: true } } }
+          ]
+        }
+      },
+      {
+        $project: {
+          email: 1,
+          'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+          'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+          'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+          'position': { $arrayElemAt: ["$metaData.position", 0] },
+          'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+          'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+          'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+          'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+          'status': { $arrayElemAt: ["$metaData.status", 0] },
+          resetPasswordCode: 1,
+          isResetPassword: 1,
+          approvedStatus: 1,
+          createdAt: 1,
+          updatedAt: 1
+        }
+      }
+    ]);
+
 
     if (!servicerUser) {
       res.send({
@@ -487,7 +565,7 @@ exports.getServicer = async (req, res) => {
       const claimNumber = numberOfClaims.find(claim => claim._id.toString() === item1.metaId.toString())
       if (matchingItem) {
         return {
-          ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+          ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
           servicerData: matchingItem.toObject(),
           claimValue: claimValue ? claimValue : 0,
           claimNumber: claimNumber ? claimNumber : 0
@@ -498,14 +576,12 @@ exports.getServicer = async (req, res) => {
     });
 
     const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
-    const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
-    const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
+    // const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
+    //const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
 
     const filteredData = result_Array.filter(entry => {
       return (
-        nameRegex.test(entry.servicerData.name) &&
-        emailRegex.test(entry.email) &&
-        phoneRegex.test(entry.phoneNumber)
+        nameRegex.test(entry.servicerData.name)
       );
     });
 
@@ -580,7 +656,7 @@ exports.rejectServicer = async (req, res) => {
     let IDs = await supportingFunction.getUserIds()
     let getServicer = await providerService.getServiceProviderById({ _id: req.params.servicerId });
     let checkServicer = await providerService.deleteServicer({ _id: req.params.servicerId })
-    let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.servicerId, isPrimary: true })
+    let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.params.servicerId, isPrimary: true } } })
 
     IDs.push(getPrimary._id)
 
@@ -592,7 +668,7 @@ exports.rejectServicer = async (req, res) => {
       return;
     };
 
-    let deleteUser = await userService.deleteUser({ metaId: getServicer._id })
+    let deleteUser = await userService.deleteUser({ metaData: { $elemMatch: { metaId: getServicer._id } } })
     let notificationData = {
       title: "Rejection Servicer Account",
       description: "The " + getServicer.name + " account has been rejected",
@@ -648,6 +724,7 @@ exports.editServicerDetail = async (req, res) => {
     data.name = data.name.trim().replace(/\s+/g, ' ');
     data.oldName = data.oldName.trim().replace(/\s+/g, ' ');
     let checkServicer = await providerService.getServiceProviderById({ _id: req.params.servicerId })
+
     let settingData = await userService.getSetting({});
     if (!checkServicer) {
       res.send({
@@ -671,10 +748,15 @@ exports.editServicerDetail = async (req, res) => {
 
     let criteria = { _id: checkServicer._id }
     let updateData = await providerService.updateServiceProvider(criteria, data)
-    let servicerUserCreateria = { metaId: req.params.servicerId };
+
+    //let servicerUserCreateria = { metaId: req.params.servicerId };
+    let servicerUserCreateria = {
+      'metaData.metaId': req.params.servicerId
+    }
+
     let newValue = {
       $set: {
-        status: false
+        'metaData.$.status': false,
       }
     };
 
@@ -682,7 +764,7 @@ exports.editServicerDetail = async (req, res) => {
       servicerUserCreateria = { metaId: req.params.servicerId, isPrimary: true };
       newValue = {
         $set: {
-          status: true
+          'metaData.$.status': true,
         }
       };
     }
@@ -712,7 +794,7 @@ exports.editServicerDetail = async (req, res) => {
 
     //send notification to admin and servicer
     let IDs = await supportingFunction.getUserIds()
-    let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.servicerId, isPrimary: true })
+    let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.params.servicerId, isPrimary: true } } })
     IDs.push(getPrimary._id)
     let notificationData = {
       title: "Servicer Detail Update",
@@ -788,7 +870,7 @@ exports.updateStatus = async (req, res) => {
       })
       return;
     }
-    let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.servicerId, isPrimary: true })
+    let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.params.servicerId, isPrimary: true } } })
     let criteria = { _id: checkServicer._id }
     let updateData = await providerService.updateServiceProvider(criteria, data)
 
@@ -815,8 +897,12 @@ exports.updateStatus = async (req, res) => {
     }
 
     if (data.status == "false" || !data.status) {
-      let criteria1 = { metaId: checkServicer._id }
-      let updateMetaData = await userService.updateUser(criteria1, { status: data.status }, { new: true })
+      let criteria1 = { metaData: { $elemMatch: { metaId: checkServicer._id } } }
+      let updateMetaData = await userService.updateUser(criteria1, {
+        $set: {
+          'metaData.$.status': data.status,
+        }
+      }, { new: true })
       if (!updateMetaData) {
         //Save Logs
         let logData = {
@@ -839,7 +925,7 @@ exports.updateStatus = async (req, res) => {
       } else {
         //Send notification to servicer and admin
         let IDs = await supportingFunction.getUserIds()
-        let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.servicerId, isPrimary: true })
+        let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.params.servicerId, isPrimary: true } } })
         IDs.push(getPrimary._id)
         let notificationData = {
           title: "Servicer status update",
@@ -884,8 +970,14 @@ exports.updateStatus = async (req, res) => {
 
       let createNotification = await userService.createNotification(notificationData);
       if (checkServicer.isAccountCreate) {
-        let criteria1 = { metaId: checkServicer._id, isPrimary: true }
-        let updateMetaData = await userService.updateSingleUser(criteria1, { status: data.status }, { new: true })
+        let criteria1 = { metaData: { $elemMatch: { metaId: checkServicer._id, isPrimary: true } } }
+        let updateMetaData = await userService.updateUser(criteria1, {
+          $set: {
+            'metaData.$.status': data.status,
+          }
+        }, { new: true })
+
+
         if (!updateMetaData) {
           res.send({
             code: constant.errorCode,
@@ -1043,6 +1135,7 @@ exports.registerServiceProvider = async (req, res) => {
     const data = req.body;
     // Check if the dealer already exists
     const existingServicer = await providerService.getServicerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') }, accountStatus: "Pending" }, { isDeleted: 0, __v: 0 });
+
     if (existingServicer) {
       res.send({
         code: constant.errorCode,
@@ -1052,6 +1145,7 @@ exports.registerServiceProvider = async (req, res) => {
     }
 
     const existingServicer2 = await providerService.getServicerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') } }, { isDeleted: 0, __v: 0 });
+
     if (existingServicer2) {
       res.send({
         code: constant.errorCode,
@@ -1062,6 +1156,7 @@ exports.registerServiceProvider = async (req, res) => {
 
     // Check if the email already exists
     const existingUser = await userService.findOneUser({ email: req.body.email });
+
     if (existingUser) {
       const existingServicer3 = await providerService.getServicerByName({ _id: existingUser.metaId }, { isDeleted: 0, __v: 0 });
       if (existingServicer3) {
@@ -1102,15 +1197,19 @@ exports.registerServiceProvider = async (req, res) => {
 
       return;
     }
-
     // Create user metadata
     const userMetaData = {
       email: data.email,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      phoneNumber: data.phoneNumber,
-      roleId: "65719c8368a8a86ef8e1ae4d",
-      metaId: createMetaData._id,
+      metaData: [
+        {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          phoneNumber: data.phoneNumber,
+          roleId: "65719c8368a8a86ef8e1ae4d",
+          metaId: createMetaData._id,
+        }
+      ]
+
     };
 
     // Create the user
@@ -1126,7 +1225,6 @@ exports.registerServiceProvider = async (req, res) => {
 
     let IDs = await supportingFunction.getUserIds()
 
-
     const notificationData = {
       title: "New Servicer Registration",
       description: data.name + " " + "has finished registering as a new servicer. For the onboarding process to proceed more quickly, kindly review and give your approval.",
@@ -1137,7 +1235,9 @@ exports.registerServiceProvider = async (req, res) => {
 
     // Create the user
     const createNotification = await userService.createNotification(notificationData);
+
     let settingData = await userService.getSetting({});
+
     let emailData = {
       dealerName: ServicerMeta.name,
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -1154,8 +1254,10 @@ exports.registerServiceProvider = async (req, res) => {
 
     // Send Email code here
     let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
-    const admin = await supportingFunction.getPrimaryUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true })
+    const admin = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true } } })
+
     const notificationEmail = await supportingFunction.getUserEmails();
+
     emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -1275,7 +1377,7 @@ exports.getSerivicerUsers = async (req, res) => {
   try {
     let data = req.body
     //let getUsers = await userService.findUser({ metaId: req.params.servicerId }, { isPrimary: -1 })
-    const getUsers = await userService.findUserforCustomer1([
+    const filteredData = await userService.findUserforCustomer1([
       {
         $match: {
           $and: [
@@ -1295,7 +1397,6 @@ exports.getSerivicerUsers = async (req, res) => {
       {
         $project: {
           email: 1,
-          password: 1,
           'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
           'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
           'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
@@ -1313,24 +1414,12 @@ exports.getSerivicerUsers = async (req, res) => {
         }
       }
     ]);
-    if (!getUsers) {
+    if (!filteredData) {
       res.send({
         code: constant.errorCode,
         message: "No Users Found!"
       })
     } else {
-      const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
-      const firstNameRegex = new RegExp(data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', 'i')
-      const lastNameRegex = new RegExp(data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', 'i')
-      const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
-      const filteredData = getUsers.filter(entry => {
-        return (
-          firstNameRegex.test(entry.firstName) &&
-          lastNameRegex.test(entry.lastName) &&
-          emailRegex.test(entry.email) &&
-          phoneRegex.test(entry.phoneNumber)
-        );
-      });
       let getServicerStatus = await providerService.getServiceProviderById({ _id: req.params.servicerId }, { status: 1 })
       if (!getServicerStatus) {
         res.send({
@@ -1369,27 +1458,39 @@ exports.addServicerUser = async (req, res) => {
       return
     }
     let checkEmail = await userService.findOneUser({ email: data.email })
-    let checkUser = await userService.getUserById1({ metaId: req.params.servicerId, isPrimary: true }, { isDeleted: false })
-    data.status = checkUser.status ? true : false;
+    let checkUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: req.params.servicerId, isPrimary: true } } }, { isDeleted: false })
     if (checkEmail) {
       res.send({
         code: constant.errorCode,
         message: "user already exist with this email"
       })
     } else {
-      data.isPrimary = false
-      data.metaId = checkServicer._id
       let statusCheck;
-
       if (!checkServicer.accountStatus) {
         statusCheck = false
       } else {
         statusCheck = data.status
+      }
+
+      let metaData = {
+        email: data.email,
+        metaData: [
+          {
+            metaId: checkServicer._id,
+            status: statusCheck,
+            roleId: "65719c8368a8a86ef8e1ae4d",
+            firstName: data.firstName,
+            lastName: data.lastName,
+            phoneNumber: data.phoneNumber,
+            position: data.position,
+            isPrimary: false,
+            dialCode: data.dialCode ? data.dialCode : "+1"
+
+          }
+        ]
 
       }
-      data.status = statusCheck
-      data.roleId = '65719c8368a8a86ef8e1ae4d'
-      let saveData = await userService.createUser(data)
+      let saveData = await userService.createUser(metaData)
 
       if (!saveData) {
         //Save Logs
@@ -1675,9 +1776,9 @@ exports.getServicerDealers1 = async (req, res) => {
                 pipeline: [
                   {
                     $match: {
-                      isPrimary: true,
+                      metaData: { $elemMatch: { isPrimary: true } },
                       "email": { '$regex': data.email ? data.email : '', '$options': 'i' },
-                      "phoneNumber": { '$regex': data.phone ? data.phone : '', '$options': 'i' },
+                      metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } }
                     }
                   }
                 ]
