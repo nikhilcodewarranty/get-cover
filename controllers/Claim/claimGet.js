@@ -951,6 +951,7 @@ exports.checkClaimAmount = async (req, res) => {
         })
         return
       }
+      console.log("----------------------------------- ",getClaim.totalAmount,getMaxClaimAmount.result)
 
       if (getClaim.totalAmount >= Number(getMaxClaimAmount.result)) {
         console.log("over amount conditions ak ")
@@ -993,7 +994,7 @@ exports.checkClaimAmount = async (req, res) => {
         }
 
         let updateTheClaim = await claimService.updateClaim({ _id: getClaim._id }, values, { new: true })
-        console.log("updatetheclaim+++++++++++++++++++++++", values, updateTheClaim)
+        console.log("updatetheclaim+++++++++++++++++++++++")
         if (!updateTheClaim) {
           res.send({
             code: constant.errorCode,
