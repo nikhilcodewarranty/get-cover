@@ -943,7 +943,7 @@ exports.checkClaimAmount = async (req, res) => {
         return
       }
 
-      if (getClaim.totalAmount > Number(getContractDetail.productValue)) {
+      if (getClaim.totalAmount >= Number(getContractDetail.productValue)) {
         console.log("over amount conditions ak ")
         let serviceCoverageType = getContractDetail.serviceCoverageType
         if (getDeductible[0].amountType == "percentage") {
