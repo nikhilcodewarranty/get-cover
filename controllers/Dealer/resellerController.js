@@ -93,6 +93,7 @@ exports.createReseller = async (req, res) => {
                     {
                         firstName: member.firstName,
                         lastName: member.lastName,
+                        phoneNumber: member.phoneNumber,
                         metaId: createdReseler._id,
                         roleId: "65bb94b4b68e5a4a62a0b563",
                         position: member.position,
