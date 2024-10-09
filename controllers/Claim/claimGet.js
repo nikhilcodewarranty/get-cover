@@ -26,6 +26,7 @@ const fs = require("fs");
 const { S3Client } = require('@aws-sdk/client-s3');
 const { Upload } = require('@aws-sdk/lib-storage');
 const multerS3 = require('multer-s3');
+const { default: axios } = require("axios");
 
 // s3 bucket connections
 const s3 = new S3Client({
@@ -366,11 +367,11 @@ exports.getAllClaims = async (req, res, next) => {
     const result_Array = resultFiter.map((item1) => {
       servicer = []
       let mergedData = []
-      if(Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType){
+      if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
         mergedData = dynamicOption.value.filter(contract =>
           item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
         );
-    }
+      }
 
       let servicerName = ''
       let selfServicer = false;
@@ -909,15 +910,23 @@ exports.checkClaimAmount = async (req, res) => {
     let data = req.body
     let getClaim = await claimService.getClaimById({ _id: req.params.claimId })
     let getContractDetail = await contractService.getContractById({ _id: getClaim.contractId })
-    if (getClaim.claimType != ""&&getClaim.claimType != "New") {
+    // /api-v1/claim/getMaxClaimAmount/
+
+    let getMaxClaimAmount = await axios.get(process.env.API_ENDPOINT + "api-v1/claim/getMaxClaimAmount/" + getClaim.contractId, {
+      headers: {
+        "x-access-token": req.header["x-access-token"],  // Include the token in the Authorization header
+      }
+    });
+
+    if (getClaim.claimType != "" && getClaim.claimType != "New") {
 
       let coverageTypeDays = getContractDetail.adhDays
       let getDeductible = coverageTypeDays.filter(coverageType => {
         console.log("Checking value: ", coverageTypeDays, coverageType.value, getClaim.claimType);
         return coverageType.value === getClaim.claimType;
       });
-      if(getClaim.claimType != "" || getClaim.claimType != "New"){
-        
+      if (getClaim.claimType != "" || getClaim.claimType != "New") {
+
       }
       if (!getDeductible[0]) {
         res.send({
@@ -943,7 +952,7 @@ exports.checkClaimAmount = async (req, res) => {
         return
       }
 
-      if (getClaim.totalAmount >= Number(getContractDetail.productValue)) {
+      if (getClaim.totalAmount >= Number(getMaxClaimAmount.result)) {
         console.log("over amount conditions ak ")
         let serviceCoverageType = getContractDetail.serviceCoverageType
         if (getDeductible[0].amountType == "percentage") {
@@ -960,7 +969,7 @@ exports.checkClaimAmount = async (req, res) => {
         let getcoverOverAmount
 
 
-        if (getClaim.totalAmount > Number(getContractDetail.productValue)) {
+        if (getClaim.totalAmount > Number(getMaxClaimAmount.result)) {
           if (getContractDetail.isMaxClaimAmount) {
             console.log("1st condition +++++++++++++++++++++=", getContractDetail.isMaxClaimAmount)
             customerOverAmount = getClaim.totalAmount - Number(getContractDetail.productValue)
@@ -1040,10 +1049,10 @@ exports.checkClaimAmount = async (req, res) => {
     } else {
       let values = {
         $set: {
-          customerClaimAmount:  0,
-          getCoverClaimAmount:  0,
-          customerOverAmount:  0,
-          getcoverOverAmount:  0
+          customerClaimAmount: 0,
+          getCoverClaimAmount: 0,
+          customerOverAmount: 0,
+          getcoverOverAmount: 0
 
         }
       }
