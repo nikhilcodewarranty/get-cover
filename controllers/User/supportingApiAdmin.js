@@ -67,7 +67,7 @@ exports.createDealer = async (req, res) => {
     try {
         upload(req, res, async () => {
             const data = req.body;
-            const loginUser = await userService.getUserById1({ metaId: req.userId, isPrimary: true }, {});
+            const loginUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: req.userId, isPrimary: true } } }, {});
             //get coverage type based on dealer coverageType
             const coverageType = data.coverageType
 
@@ -89,8 +89,6 @@ exports.createDealer = async (req, res) => {
                 size: termFile ? termFile.size : '',
             }
 
-
-            
 
             // Check if the specified role exists
             const checkRole = await role.findOne({ role: { '$regex': data.role, '$options': 'i' } });
@@ -141,7 +139,7 @@ exports.createDealer = async (req, res) => {
                     }
                 }
 
-                const singleDealerUser = await userService.findOneUser({ metaId: data.dealerId }, {});
+                const singleDealerUser = await userService.findOneUser({ metaData: { $elemMatch: { metaId: data.dealerId } } }, {});
                 const singleDealer = await dealerService.getDealerById({ _id: data.dealerId });
                 if (!singleDealer) {
                     res.send({
@@ -168,16 +166,23 @@ exports.createDealer = async (req, res) => {
                 }
 
                 //Primary information edit
-                let userQuery = { metaId: { $in: [data.dealerId] }, isPrimary: true }
+                let userQuery = { metaData: { $elemMatch: { metaId: { $in: [data.dealerId] }, isPrimary: true } } }
+
+
                 let newValues1 = {
                     $set: {
                         email: allUserData[0].email,
-                        firstName: allUserData[0].firstName,
-                        lastName: allUserData[0].lastName,
-                        phoneNumber: allUserData[0].phoneNumber,
-                        position: allUserData[0].position,
-                        roleId: '656f08041eb1acda244af8c6',
-                        status: allUserData[0].status ? true : false,
+                        metaData: [
+                            {
+                                firstName: allUserData[0].firstName,
+                                lastName: allUserData[0].lastName,
+                                phoneNumber: allUserData[0].phoneNumber,
+                                position: allUserData[0].position,
+                                roleId: '656f08041eb1acda244af8c6',
+                                status: allUserData[0].status ? true : false,
+                            }
+                        ]
+
                     }
                 }
 
@@ -185,11 +190,22 @@ exports.createDealer = async (req, res) => {
 
                 let allUsersData = allUserData.map((obj, index) => ({
                     ...obj,
-                    roleId: '656f08041eb1acda244af8c6',
-                    metaId: data.dealerId,
-                    isPrimary: index === 0 ? true : false,
-                    status: !req.body.isAccountCreate || req.body.isAccountCreate == 'false' ? false : obj.status
-                }));
+                    metaData:
+                        [
+                            {
+                                firstName: obj.firstName,
+                                lastName: obj.lastName,
+                                metaId: data.dealerId,
+                                roleId: "656f08041eb1acda244af8c6",
+                                position: obj.position,
+                                dialCode: obj.dialCode,
+                                status: !req.body.isAccountCreate || req.body.isAccountCreate == 'false' ? false : obj.status,
+                                isPrimary: index === 0 ? true : false,
+                            }
+                        ],
+                })
+                );
+
 
                 if (allUsersData.length > 1) {
                     allUsersData = [...allUsersData.slice(0, 0), ...allUsersData.slice(1)];
@@ -242,7 +258,7 @@ exports.createDealer = async (req, res) => {
                     })
                     return
                 }
-                let statusUpdateCreateria = { metaId: { $in: [data.dealerId] } }
+                let statusUpdateCreateria = { metaData: { $elemMatch: { metaId: { $in: [data.dealerId] } } } }
                 let updateData = {
                     $set: {
                         approvedStatus: 'Approved'
@@ -401,7 +417,6 @@ exports.createDealer = async (req, res) => {
                     });
                     return;
                 }
-                console.log("k=================================================================", data.noOfClaim, createEligibility, data)
                 //Save Logs
                 let logData = {
                     userId: req.teammateId,
@@ -443,16 +458,25 @@ exports.createDealer = async (req, res) => {
 
                     let createData = await providerService.createServiceProvider(servicerObject)
                 }
-
+        
                 let allUsersData = allUserData.map((obj, index) => ({
                     ...obj,
-                    roleId: '656f08041eb1acda244af8c6',
-                    metaId: createMetaData._id,
-                    position: obj.position || '', // Using the shorthand for conditional (obj.position ? obj.position : '')
-                    isPrimary: index === 0 ? true : false,
-                    status: !req.body.isAccountCreate || req.body.isAccountCreate == 'false' ? false : obj.status,
-                    approvedStatus: 'Approved'
-                }));
+                    approvedStatus: 'Approved',
+                    metaData:
+                        [
+                            {
+                                firstName: obj.firstName,
+                                lastName: obj.lastName,
+                                metaId: createMetaData._id,
+                                roleId: "656f08041eb1acda244af8c6",
+                                position: obj.position,
+                                dialCode: obj.dialCode,
+                                status: !req.body.isAccountCreate || req.body.isAccountCreate == 'false' ? false : obj.status,
+                                isPrimary: index === 0 ? true : false,
+                            }
+                        ],
+                })
+                );
                 const createUsers = await userService.insertManyUser(allUsersData);
 
                 if (!createUsers) {
@@ -545,7 +569,7 @@ const getObjectFromS3 = (bucketReadUrl) => {
                 };
 
                 resolve(result);
-            }
+            } 
         });
     });
 };
