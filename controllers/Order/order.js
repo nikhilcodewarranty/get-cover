@@ -566,11 +566,90 @@ exports.getCustomerInOrder = async (req, res) => {
         let data = req.body;
         let query;
         if (data.resellerId != "" && data.resellerId != undefined) {
-            query = { dealerId: data.dealerId, resellerId: data.resellerId };
+            // query = { dealerId: data.dealerId, resellerId: data.resellerId };
+            query = [
+                {
+                    $match: {
+                        $and: [
+                            {
+                                dealerId: new mongoose.Types.ObjectId(data.dealerId)
+                            },
+                            {
+                                resellerId1: new mongoose.Types.ObjectId(data.resellerId)
+                            }
+                        ]
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "resellers",
+                        localField: 'resellerId1',
+                        foreignField: '_id',
+                        as: "resellerData"
+                    }
+                },
+                {
+                    $project: {
+                        _id: 1,
+                        username: 1,
+                        street: 1,
+                        city: 1,
+                        zip: 1,
+                        unique_key: 1,
+                        state: 1,
+                        country: 1,
+                        dealerId: 1,
+                        isAccountCreate: 1,
+                        resellerId: 1,
+                        resellerId1: 1,
+                        dealerName: 1,
+                        status: 1,
+                        accountStatus: 1,
+                        isDeleted: 1,
+                        'resellerStatus': { $arrayElemAt: ["$resellerData.status", 0] },
+
+                    }
+                }
+            ]
         } else {
-            query = { dealerId: data.dealerId };
+            // query = { dealerId: data.dealerId };
+            query = [
+                {
+                    $match: { dealerId: new mongoose.Types.ObjectId(data.dealerId) }
+                },
+                {
+                    $lookup: {
+                        from: "resellers",
+                        localField: 'resellerId1',
+                        foreignField: '_id',
+                        as: "resellerData"
+                    }
+                },
+                {
+                    $project: {
+                        _id: 1,
+                        username: 1,
+                        street: 1,
+                        city: 1,
+                        zip: 1,
+                        unique_key: 1,
+                        state: 1,
+                        country: 1,
+                        dealerId: 1,
+                        isAccountCreate: 1,
+                        resellerId: 1,
+                        resellerId1: 1,
+                        dealerName: 1,
+                        status: 1,
+                        accountStatus: 1,
+                        isDeleted: 1,
+                        'resellerStatus': { $arrayElemAt: ["$resellerData.status", 0] },
+
+                    }
+                }
+            ]
         }
-        let getCustomers = await customerService.getAllCustomers(query, {});
+        let getCustomers = await customerService.getCustomerByAggregate(query, {});
 
         if (!getCustomers) {
             res.send({
@@ -581,6 +660,7 @@ exports.getCustomerInOrder = async (req, res) => {
         }
         const customerIds = getCustomers.map(customer => customer._id);
         let query1 = { metaId: { $in: customerIds }, isPrimary: true };
+
         let projection = { __v: 0, isDeleted: 0 }
 
         let customerUser = await userService.getMembers(query1, projection)
@@ -589,7 +669,7 @@ exports.getCustomerInOrder = async (req, res) => {
             const matchingItem = getCustomers.find(item2 => item2._id.toString() === item1.metaId.toString());
             if (matchingItem) {
                 return {
-                    ...matchingItem.toObject(),
+                    ...matchingItem,
                     email: item1.email  // Use toObject() to convert Mongoose document to plain JavaScript object
                 };
             } else {

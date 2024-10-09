@@ -821,6 +821,7 @@ const downloadFromS3 = async (bucketName, key) => {
     const data = await S3.getObject(params).promise();
     return data.Body;
 };
+
 // reporting data creating script for all orders 
 exports.reportingDataCreation = async (req, res) => {
     try {

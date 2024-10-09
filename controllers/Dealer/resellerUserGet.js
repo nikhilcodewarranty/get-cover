@@ -1434,7 +1434,54 @@ exports.getCustomerInOrder = async (req, res) => {
             });
             return;
         }
-        let query = { dealerId: checkReseller.dealerId, resellerId: checkReseller._id };
+        // let query = { dealerId: checkReseller.dealerId, resellerId: checkReseller._id };
+
+            // query = { dealerId: data.dealerId, resellerId: data.resellerId };
+          let  query = [
+                {
+                    $match: {
+                        $and: [
+                            {
+                                dealerId: new mongoose.Types.ObjectId(checkReseller.dealerId)
+                            },
+                            {
+                                resellerId1: new mongoose.Types.ObjectId(checkReseller.resellerId)
+                            }
+                        ]
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "resellers",
+                        localField: 'resellerId1',
+                        foreignField: '_id',
+                        as: "resellerData"
+                    }
+                },
+                {
+                    $project: {
+                        _id: 1,
+                        username: 1,
+                        street: 1,
+                        city: 1,
+                        zip: 1,
+                        unique_key: 1,
+                        state: 1,
+                        country: 1,
+                        dealerId: 1,
+                        isAccountCreate: 1,
+                        resellerId: 1,
+                        resellerId1: 1,
+                        dealerName: 1,
+                        status: 1,
+                        accountStatus: 1,
+                        isDeleted: 1,
+                        'resellerStatus': { $arrayElemAt: ["$resellerData.status", 0] },
+
+                    }
+                }
+            ]
+        
 
         let getCustomers = await customerService.getAllCustomers(query, {});
 

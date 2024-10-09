@@ -2083,6 +2083,7 @@ exports.editServicer = async (req, res) => {
 
 
 //Save bulk claim
+
 exports.saveBulkClaim = async (req, res) => {
   uploadP(req, res, async (err) => {
     try {
@@ -2819,8 +2820,6 @@ exports.saveBulkClaim = async (req, res) => {
 
 }
 
-
-
 //Send message Done
 exports.sendMessages = async (req, res) => {
   try {
@@ -3024,12 +3023,17 @@ exports.statusClaim = async (req, res) => {
         let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
 
         // Update Eligibilty true and false
-        if (checkContract.productValue > claimTotal[0]?.amount) {
-          const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: true }, { new: true })
+        if (checkContract.isMaxClaimAmount) {
+          if (checkContract.productValue > claimTotal[0]?.amount) {
+            const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: true }, { new: true })
+          }
+          else if (checkContract.productValue < claimTotal[0]?.amount) {
+            const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: false }, { new: true })
+          }
+        } else {
+          const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
         }
-        else if (checkContract.productValue < claimTotal[0]?.amount) {
-          const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: false }, { new: true })
-        }
+
       }
     }
 
@@ -3894,3 +3898,5 @@ exports.getCoverageType = async (req, res) => {
     })
   }
 }
+
+

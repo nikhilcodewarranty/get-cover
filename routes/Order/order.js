@@ -22,7 +22,7 @@ router.post('/getOrderPdf/:orderId', [verifyToken], orderController.getOrderPdf)
 router.post('/getServicerByOrderId/:orderId', [verifyToken], orderController.getServicerByOrderId); // get servicer by order ID
 router.post('/checkPurchaseOrder', [verifyToken], orderController.checkPurchaseOrder); // check purchase order
 router.post('/getResellerByDealerAndCustomer', [verifyToken], orderController.getResellerByDealerAndCustomer); // get reseller by dealer and customer
-router.post('/getCustomerInOrder', [verifyToken], orderController.getCustomerInOrder); // get customer in order
+router.post('/getCustomerInOrder',orderController.getCustomerInOrder); // get customer in order
 router.post('/getCategoryAndPriceBooks/:dealerId', [verifyToken], orderController.getCategoryAndPriceBooks); // get category and price books by dealer ID
 router.post('/getPriceBooksInOrder/:dealerId', [verifyToken], orderController.getPriceBooksInOrder); // get price books in order by dealer ID
 router.put('/updateServicerByOrder/:orderId', [verifyToken], orderController.updateServicerByOrder); // update servicer by order ID
