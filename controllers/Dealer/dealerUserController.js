@@ -1256,7 +1256,7 @@ exports.editOrderDetail = async (req, res) => {
             let checkDealer = await dealerService.getDealerById(
                 req.userId
             );
-            let getUser = await userService.getSingleUserByEmail({ metaId: checkDealer._id, isPrimary: true })
+            let getUser = await userService.getSingleUserByEmail({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
             data.billDetail = {
                 billTo: "Dealer",
                 detail: {
@@ -1270,7 +1270,8 @@ exports.editOrderDetail = async (req, res) => {
         }
         if (data.billTo == "Reseller") {
             let getReseller = await resellerService.getReseller({ _id: data.resellerId })
-            let getUser = await userService.getSingleUserByEmail({ metaId: getReseller._id, isPrimary: true })
+            let getUser = await userService.getSingleUserByEmail({ metaData: { $elemMatch: { metaId: getReseller._id, isPrimary: true } } })
+
             data.billDetail = {
                 billTo: "Reseller",
                 detail: {
@@ -1355,7 +1356,7 @@ exports.editOrderDetail = async (req, res) => {
 
         //send notification to dealer,reseller,admin,customer
         let IDs = await supportingFunction.getUserIds()
-        let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.dealerId, isPrimary: true })
+        let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } })
         IDs.push(dealerPrimary._id)
         let notificationData = {
             title: "Order update",
@@ -1507,7 +1508,6 @@ exports.editOrderDetail = async (req, res) => {
                     let minDate1 = futureDate.setDate(futureDate.getDate() + adhDaysArray[0].waitingDays);
                     if (!product.isManufacturerWarranty) {
                         let minDate2
-                        console.log("savedresponse+++++++++++++++++++++++++++++++++++++++++++++00000000000++++++++++++++", orderServiceCoverageType, savedResponse.serviceCoverageType)
                         if (orderServiceCoverageType.serviceCoverageType == "Parts") {
                             minDate2 = partsWarrantyDate1
                         } else if (orderServiceCoverageType.serviceCoverageType == "Labor" || orderServiceCoverageType.serviceCoverageType == "Labour") {
@@ -1596,9 +1596,9 @@ exports.editOrderDetail = async (req, res) => {
                     await LOG(logData).save();
                     //send notification to dealer,reseller,admin,customer
                     let IDs = await supportingFunction.getUserIds()
-                    let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: savedResponse.dealerId, isPrimary: true })
-                    let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: savedResponse.customerId, isPrimary: true })
-                    let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: savedResponse.resellerId, isPrimary: true })
+                    let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: savedResponse.dealerId, isPrimary: true } } })
+                    let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: savedResponse.customerId, isPrimary: true } } })
+                    let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: savedResponse.resellerId, isPrimary: true } } })
                     if (resellerPrimary) {
                         IDs.push(resellerPrimary._id)
                     }
