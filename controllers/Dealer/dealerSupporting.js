@@ -1162,7 +1162,9 @@ exports.getDealerServicers = async (req, res) => {
             servicer.unshift(checkDealer);
         };
         const servicerIds = servicer.map(obj => obj._id);
-        const servicerUser = await userService.findUserforCustomer1([
+        const query1 = { metaId: { $in: servicerIds }, isPrimary: true };
+
+        let servicerUser = await userService.findUserforCustomer1([
             {
               $match: {
                 $and: [
@@ -1192,6 +1194,7 @@ exports.getDealerServicers = async (req, res) => {
               }
             }
           ]);
+        
         if (!servicerUser) {
             res.send({
                 code: constant.errorCode,
@@ -1199,6 +1202,7 @@ exports.getDealerServicers = async (req, res) => {
             });
             return;
         };
+
         // Get servicer with claim
         const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "completed" };
 
@@ -1241,8 +1245,8 @@ exports.getDealerServicers = async (req, res) => {
 
             if (matchingItem) {
                 return {
-                    ...matchingItem.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-                    servicerData: item1.toObject(),
+                    ...matchingItem, // Use toObject() to convert Mongoose document to plain JavaScript object
+                    servicerData: item1,
                     claimNumber: claimNumber ? claimNumber : 0,
                     claimValue: claimValue ? claimValue : 0
                 };
@@ -1255,19 +1259,15 @@ exports.getDealerServicers = async (req, res) => {
         });
 
         const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
-        const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
-        const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
         const filteredData = result_Array.filter(entry => {
             return (
-                nameRegex.test(entry.servicerData?.name) &&
-                emailRegex.test(entry?.email) &&
-                phoneRegex.test(entry?.phoneNumber)
+                nameRegex.test(entry.servicerData?.name) 
             );
         });
         res.send({
             code: constant.successCode,
             message: "Success",
-            data: filteredData
+            data: result_Array
         });
 
     } catch (err) {
