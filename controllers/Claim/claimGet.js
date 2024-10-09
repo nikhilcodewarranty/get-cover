@@ -984,7 +984,7 @@ exports.checkClaimAmount = async (req, res) => {
 
 
 
-        let customerClaimAmount = deductableAmount
+        let customerClaimAmount = deductableAmount < justToCheck ? deductableAmount : justToCheck
         let getCoverClaimAmount = justToCheck - customerClaimAmount
         let customerOverAmount
         let getcoverOverAmount
