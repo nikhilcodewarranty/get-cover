@@ -26,7 +26,8 @@ router.get("/statusClaim", claimController.statusClaim); // get claim status
 router.get("/getContractById/:contractId", [verifyToken], supportingFunction.checkObjectId, claimGetController.getContractById); // get contract by ID
 router.get("/getMaxClaimAmount/:contractId",  claimGetController.getMaxClaimAmount); // get max claim amount by contract ID
 router.get("/getMessages/:claimId", [verifyToken], claimGetController.getMessages); // get messages for a claim
-router.post("/checkCoverageTypeDate", [verifyToken], claimGetController.checkCoverageTypeDate); // get messages for a claim
-router.get("/checkClaimAmount/:claimId", claimGetController.checkClaimAmount); // get messages for a claim
+router.post("/checkCoverageTypeDate", [verifyToken], claimGetController.checkCoverageTypeDate); // check coverage type date  in edit claim
+router.post("/checkCoverageTypeDateInContract", [verifyToken], claimGetController.checkCoverageTypeDateInContract); // check coverage type date  in add claim option 
+router.get("/checkClaimAmount/:claimId", claimGetController.checkClaimAmount); // check claim amount in edit claim and change coverage type
 
 module.exports = router;

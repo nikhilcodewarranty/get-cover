@@ -1480,7 +1480,7 @@ exports.getCustomerInOrder = async (req, res) => {
             }
         ]
 
-        let getCustomers = await customerService.getAllCustomers(query, {});
+        let getCustomers = await customerService.getCustomerByAggregate(query, {});
 
         if (!getCustomers) {
             res.send({

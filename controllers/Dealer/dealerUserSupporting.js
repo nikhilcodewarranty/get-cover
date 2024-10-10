@@ -1328,14 +1328,14 @@ exports.getCustomerInOrder = async (req, res) => {
     try {
         let data = req.body;
         let query;
-        if (data.resellerId != "") {
-            query = { dealerId: req.userId, resellerId: data.resellerId };
-        }
-        else {
-            query = { dealerId: req.userId };
-        }
+        // if (data.resellerId != "") {
+        //     query = { dealerId: req.userId, resellerId: data.resellerId };
+        // }
+        // else {
+        //     query = { dealerId: req.userId };
+        // }
 
-        if (data.resellerId != "" && data.resellerId != undefined) {
+        if (data.resellerId != "") {
             // query = { dealerId: data.dealerId, resellerId: data.resellerId };
             query = [
                 {
@@ -1420,7 +1420,7 @@ exports.getCustomerInOrder = async (req, res) => {
             ]
         }
 
-        let getCustomers = await customerService.getAllCustomers(query, {});
+        let getCustomers = await customerService.getCustomerByAggregate(query, {});
 
         if (!getCustomers) {
             res.send({

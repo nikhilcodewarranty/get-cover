@@ -977,7 +977,7 @@ exports.checkClaimAmount = async (req, res) => {
         console.log("over amount conditions ak ")
         let serviceCoverageType = getContractDetail.serviceCoverageType
         if (getDeductible[0].amountType == "percentage") {
-          deductableAmount = (getDeductible[0].deductible / 100) * justToCheck
+          deductableAmount = (getDeductible[0].deductible / 100) * getClaim.totalAmount
         } else {
           deductableAmount = getDeductible[0].deductible
         }
@@ -997,7 +997,7 @@ exports.checkClaimAmount = async (req, res) => {
             getcoverOverAmount = 0
           } else {
             console.log("2nd t condition +++++++++++++++++++++=", getContractDetail.isMaxClaimAmount)
-            getcoverOverAmount = Math.abs(justToCheck)
+            getcoverOverAmount = getClaim.totalAmount - Math.abs(justToCheck)
             getCoverClaimAmount = getClaim.totalAmount - (customerClaimAmount + getcoverOverAmount)
             customerOverAmount = 0
           }
@@ -1135,6 +1135,43 @@ exports.checkCoverageTypeDate = async (req, res) => {
       let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0].waitingDays))
 
       if (checkCoverageTypeDate > getClaim.lossDate) {
+        // claim not allowed for that coverageType
+        res.send({
+          code: constant.errorCode,
+          message: `Claim not allowed for that coverage type till date ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}`
+        })
+        return
+
+      }
+    }
+    res.send({
+      code: 200,
+      message: "Allowed"
+    })
+
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.checkCoverageTypeDateInContract = async (req, res) => {
+  try {
+    let data = req.body
+   
+    let getContractDetail = await contractService.getContractById({ _id: data.contractId })
+    let startDateToCheck = new Date(getContractDetail.coverageStartDate)
+    let coverageTypeDays = getContractDetail.adhDays
+    let serviceCoverageType = getContractDetail.serviceCoverageType
+    let claimAmountTaken = getClaim.totalAmount
+    if (data.coverageType) {
+      let getDeductible = coverageTypeDays.filter(coverageType => coverageType.value == data.coverageType)
+
+      let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0].waitingDays))
+
+      if (checkCoverageTypeDate > data.lossDate) {
         // claim not allowed for that coverageType
         res.send({
           code: constant.errorCode,
