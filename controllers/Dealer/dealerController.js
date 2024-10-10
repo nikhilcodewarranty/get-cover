@@ -687,7 +687,7 @@ exports.createDealerPriceBook = async (req, res) => {
       IDs.push(getPrimary._id)
       let notificationData = {
         title: "New dealer price book created",
-        description: data.priceBook + " , " + "new price book has been created",
+        description: "The price book " + data.dealerSku + " has been created! ",
         userId: req.teammateId,
         flag: 'Dealer Price Book',
         contentId: createDealerPrice._id,
@@ -1123,7 +1123,7 @@ exports.updateDealerSetting = async (req, res) => {
   try {
     let data = req.body
 
-     let checkDealerId = await dealerService.getDealerByName({ _id: req.params.dealerId })
+    let checkDealerId = await dealerService.getDealerByName({ _id: req.params.dealerId })
     if (!checkDealerId) {
       res.send({
         code: constant.errorCode,
@@ -1131,7 +1131,7 @@ exports.updateDealerSetting = async (req, res) => {
       })
       return;
     }
-    
+
     let updateData = await dealerService.updateDealer({ _id: req.params.dealerId }, data, { new: true })
     if (!updateData) {
       res.send({
