@@ -687,7 +687,7 @@ exports.createDealerPriceBook = async (req, res) => {
       IDs.push(getPrimary._id)
       let notificationData = {
         title: "New dealer price book created",
-        description: data.priceBook + " , " + "new price book has been created",
+        description: checkPriceBookMain.pName + " , " + "new price book has been created",
         userId: req.teammateId,
         flag: 'Dealer Price Book',
         contentId: createDealerPrice._id,

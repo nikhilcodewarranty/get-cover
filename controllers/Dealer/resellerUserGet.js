@@ -236,7 +236,7 @@ exports.getDashboardInfo = async (req, res) => {
 
                 }
             },
-            { $sort: { updatedAt: -1 } },
+            { $sort: { unique_key_number: -1 } },
             {
                 $limit: 5
             },
@@ -256,7 +256,7 @@ exports.getDashboardInfo = async (req, res) => {
             },
             {
                 $sort: {
-                    updatedAt: -1
+                    unique_key_number: -1
                 }
             },
             {
@@ -1043,10 +1043,10 @@ exports.getResellerPriceBook = async (req, res) => {
         });
         return;
     }
-    if (!Array.isArray(data.coverageType) && data.coverageType != '') {
+    if(!Array.isArray(data.coverageType ) && data.coverageType!=''){
         res.send({
-            code: constant.errorCode,
-            message: "Coverage type should be an array!"
+            code:constant.errorCode,
+            message:"Coverage type should be an array!"
         });
         return;
     }
@@ -1434,53 +1434,9 @@ exports.getCustomerInOrder = async (req, res) => {
             });
             return;
         }
+        let query = { dealerId: checkReseller.dealerId, resellerId: checkReseller._id };
 
-        let query = [
-            {
-                $match: {
-                    $and: [
-                        {
-                            dealerId: new mongoose.Types.ObjectId(checkReseller.dealerId)
-                        },
-                        {
-                            resellerId1: new mongoose.Types.ObjectId(checkReseller._id)
-                        }
-                    ]
-                }
-            },
-            {
-                $lookup: {
-                    from: "resellers",
-                    localField: 'resellerId1',
-                    foreignField: '_id',
-                    as: "resellerData"
-                }
-            },
-            {
-                $project: {
-                    _id: 1,
-                    username: 1,
-                    street: 1,
-                    city: 1,
-                    zip: 1,
-                    unique_key: 1,
-                    state: 1,
-                    country: 1,
-                    dealerId: 1,
-                    isAccountCreate: 1,
-                    resellerId: 1,
-                    resellerId1: 1,
-                    dealerName: 1,
-                    status: 1,
-                    accountStatus: 1,
-                    isDeleted: 1,
-                    'resellerStatus': { $arrayElemAt: ["$resellerData.status", 0] },
-
-                }
-            }
-        ]
-
-        let getCustomers = await customerService.getCustomerByAggregate(query, {});
+        let getCustomers = await customerService.getAllCustomers(query, {});
 
         if (!getCustomers) {
             res.send({
@@ -1500,7 +1456,7 @@ exports.getCustomerInOrder = async (req, res) => {
             const matchingItem = getCustomers.find(item2 => item2._id.toString() === item1.metaId.toString());
             if (matchingItem) {
                 return {
-                    ...matchingItem
+                    ...matchingItem.toObject(),
                     email: item1.email  // Use toObject() to convert Mongoose document to plain JavaScript object
                 };
             } else {
@@ -2575,7 +2531,7 @@ exports.getResellerClaims = async (req, res) => {
 
         //Get Dealer and Reseller Servicers
         let servicer;
-        let allServicer
+       let  allServicer
         let servicerName = '';
         allServicer = await providerService.getAllServiceProvider(
             { _id: { $in: allServicerIds }, status: true },
@@ -2585,9 +2541,9 @@ exports.getResellerClaims = async (req, res) => {
             servicer = []
             let mergedData = []
             if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
-                mergedData = dynamicOption.value.filter(contract =>
-                    item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
-                );
+              mergedData = dynamicOption.value.filter(contract =>
+                item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
+              );
             }
             let servicerName = '';
             let selfServicer = false;
@@ -2619,7 +2575,7 @@ exports.getResellerClaims = async (req, res) => {
                 contracts: {
                     ...item1.contracts,
                     allServicer: servicer,
-                    mergedData: mergedData
+                    mergedData:mergedData
 
                 }
             }
