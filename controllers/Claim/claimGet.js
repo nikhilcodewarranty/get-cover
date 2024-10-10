@@ -909,9 +909,14 @@ exports.checkClaimAmount = async (req, res) => {
   try {
     let data = req.body
     let getClaim = await claimService.getClaimById({ _id: req.params.claimId })
+    if (!getClaim) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid claim ID"
+      })
+      return
+    }
     let getContractDetail = await contractService.getContractById({ _id: getClaim.contractId })
-    // /api-v1/claim/getMaxClaimAmount/
-
 
     const query = { contractId: new mongoose.Types.ObjectId(getClaim.contractId), claimFile: "completed" }
     let claimTotalQuery = [
@@ -921,28 +926,16 @@ exports.checkClaimAmount = async (req, res) => {
     ]
     let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
     const contract = await contractService.getContractById({ _id: getClaim.contractId }, { productValue: 1 })
-    const claimAmount = claimTotal[0]?.amount ? claimTotal[0]?.amount : 0
+    const claimAmount = claimTotal[0] ? claimTotal[0]?.amount : 0
     const product = contract ? contract.productValue : 0
-    
+    let claimAmountTaken = getClaim.totalAmount
 
-
-
-    // let getMaxClaimAmount = await axios.get(process.env.API_ENDPOINT + "api-v1/claim/getMaxClaimAmount/" + getClaim.contractId, {
-    //   headers: {
-    //     "x-access-token": req.headers["x-access-token"],  // Include the token in the Authorization header
-    //   }
-    // });
 
     if (getClaim.claimType != "" && getClaim.claimType != "New") {
-
       let coverageTypeDays = getContractDetail.adhDays
       let getDeductible = coverageTypeDays.filter(coverageType => {
-        console.log("Checking value: ", req.headers);
         return coverageType.value === getClaim.claimType;
       });
-      if (getClaim.claimType != "" || getClaim.claimType != "New") {
-
-      }
       if (!getDeductible[0]) {
         res.send({
           code: constant.errorCode,
@@ -951,43 +944,28 @@ exports.checkClaimAmount = async (req, res) => {
         return
       }
       let deductableAmount;
-      let claimAmountTaken = getClaim.totalAmount
 
       if (getDeductible[0].amountType == "percentage") {
-        deductableAmount = (getDeductible[0].deductible / 100) * claimAmountTaken
+        deductableAmount = (getDeductible[0].deductible / 100) * getClaim.totalAmount
       } else {
         deductableAmount = getDeductible[0].deductible
       }
 
-      if (!getClaim) {
-        res.send({
-          code: constant.errorCode,
-          message: "Invalid claim ID"
-        })
-        return
-      }
+
 
       let checkClaimNumber = await claimService.getClaims({ contractId: getClaim.contractId })
 
-
-      let justToCheck = checkClaimNumber.length > 1 ? product - claimAmount : getContractDetail.productValue
-      console.log("----------------------------------- ", getClaim.totalAmount,justToCheck,product)
+      let justToCheck = product - claimAmount
 
       if (getClaim.totalAmount >= Number(justToCheck)) {
         console.log("over amount conditions ak ")
         let serviceCoverageType = getContractDetail.serviceCoverageType
-        if (getDeductible[0].amountType == "percentage") {
-          deductableAmount = (getDeductible[0].deductible / 100) * getClaim.totalAmount
-        } else {
-          deductableAmount = getDeductible[0].deductible
-        }
-
-
-
-        let customerClaimAmount = deductableAmount < justToCheck ? deductableAmount : justToCheck
-        let getCoverClaimAmount = justToCheck - customerClaimAmount
+        // let customerClaimAmount = deductableAmount < justToCheck ? deductableAmount : justToCheck
+        // let getCoverClaimAmount = justToCheck - customerClaimAmount
+        let customerClaimAmount
         let customerOverAmount
         let getcoverOverAmount
+        let getCoverClaimAmount
 
 
         if (getClaim.totalAmount > Number(justToCheck)) {
@@ -997,12 +975,14 @@ exports.checkClaimAmount = async (req, res) => {
             getcoverOverAmount = 0
           } else {
             console.log("2nd t condition +++++++++++++++++++++=", getContractDetail.isMaxClaimAmount)
-            getcoverOverAmount = getClaim.totalAmount - Math.abs(justToCheck)
-            getCoverClaimAmount = getClaim.totalAmount - (customerClaimAmount + getcoverOverAmount)
+            customerClaimAmount = deductableAmount > getClaim.totalAmount ? getClaim.totalAmount : deductableAmount
             customerOverAmount = 0
+            getCoverClaimAmount = justToCheck > 0 ? getClaim.totalAmount >= justToCheck ? justToCheck : getClaim.totalAmount : 0
+            getcoverOverAmount = getClaim.totalAmount - getCoverClaimAmount
           }
           let updateContract = await contractService.updateContract({ _id: getContractDetail._id }, { eligibilty: false })
         }
+        console.log("updatetheclaim+++++++++++++++++++++++", { customerClaimAmount, getCoverClaimAmount, customerOverAmount, getcoverOverAmount })
         let values = {
           $set: {
             customerClaimAmount: customerClaimAmount > 0 ? customerClaimAmount : 0,
@@ -1012,9 +992,9 @@ exports.checkClaimAmount = async (req, res) => {
 
           }
         }
+        console.log("updatetheclaim+++++++++++++++++++++++", values)
 
         let updateTheClaim = await claimService.updateClaim({ _id: getClaim._id }, values, { new: true })
-        console.log("updatetheclaim+++++++++++++++++++++++", values)
         if (!updateTheClaim) {
           res.send({
             code: constant.errorCode,
@@ -1085,26 +1065,6 @@ exports.checkClaimAmount = async (req, res) => {
       })
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   } catch (err) {
     res.send({
       code: constant.errorCode,
@@ -1160,7 +1120,7 @@ exports.checkCoverageTypeDate = async (req, res) => {
 exports.checkCoverageTypeDateInContract = async (req, res) => {
   try {
     let data = req.body
-   
+
     let getContractDetail = await contractService.getContractById({ _id: data.contractId })
     let startDateToCheck = new Date(getContractDetail.coverageStartDate)
     let coverageTypeDays = getContractDetail.adhDays

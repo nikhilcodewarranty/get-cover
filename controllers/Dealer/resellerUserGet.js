@@ -1443,7 +1443,7 @@ exports.getCustomerInOrder = async (req, res) => {
                             dealerId: new mongoose.Types.ObjectId(checkReseller.dealerId)
                         },
                         {
-                            resellerId1: new mongoose.Types.ObjectId(checkReseller.resellerId)
+                            resellerId1: new mongoose.Types.ObjectId(checkReseller._id)
                         }
                     ]
                 }
