@@ -129,7 +129,7 @@ exports.createReseller = async (req, res) => {
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
-            senderName: getPrimary.firstName,
+            senderName: getPrimary.metaData[0]?.firstName,
             content: "We are delighted to inform you that the reseller account for " + createdReseler.name + " has been created.",
             subject: "Reseller Account Created - " + createdReseler.name
         }
@@ -857,7 +857,7 @@ exports.editResellers = async (req, res) => {
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
-            senderName: checkReseller.name,
+            senderName: checkReseller.metaData[0]?.name,
             content: "The information has been updated successfully! effective immediately.",
             subject: "Update Info"
         }
@@ -1795,7 +1795,7 @@ exports.changeResellerStatus = async (req, res) => {
                 lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
                 address: settingData[0]?.address,
                 websiteSetting: settingData[0],
-                senderName: singleReseller.name,
+                senderName: singleReseller.metaData[0]?.name,
                 content: "Status has been changed to " + status_content + " " + ", effective immediately.",
                 subject: "Update Status"
             }

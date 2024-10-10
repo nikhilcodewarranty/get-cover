@@ -269,7 +269,7 @@ exports.createPriceBook = async (req, res, next) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: admin.firstName,
+        senderName: admin.metaData[0]?.firstName,
         content: "The priceBook " + data.name + " created successfully! effective immediately.",
         subject: "Create Price Book"
       }
@@ -551,7 +551,7 @@ exports.updatePriceBookById = async (req, res, next) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: admin.firstName,
+        senderName: admin.metaData[0]?.firstName,
         content: "The priceBook " + existingPriceBook[0]?.name + " updated successfully! effective immediately.",
         subject: "Update Price Book"
       }
@@ -562,7 +562,7 @@ exports.updatePriceBookById = async (req, res, next) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: admin.firstName,
+        senderName: admin.metaData[0]?.firstName,
         content: "The priceBook " + existingPriceBook[0]?.name + " has been changed to " + body.status ? 'Active' : "Inactive" + "! effective immediately.",
         subject: "Update Status"
       }
@@ -707,7 +707,7 @@ exports.createPriceBookCat = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: admin.firstName,
+      senderName: admin.metaData[0]?.firstName,
       content: "The category " + data.name + " created successfully! effective immediately.",
       subject: "New Category Added"
     }
@@ -1001,7 +1001,7 @@ exports.updatePriceBookCat = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: admin.firstName,
+      senderName: admin.metaData[0]?.firstName,
       content: "The category " + data.name + " updated successfully! effective immediately.",
       subject: "Update Category"
     }

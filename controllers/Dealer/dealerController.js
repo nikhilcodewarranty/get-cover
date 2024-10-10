@@ -297,7 +297,7 @@ exports.registerDealer = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: admin.firstName,
+      senderName: admin.metaData[0]?.firstName,
       subject: "Notification of New Dealer Registration",
       content: "A new dealer " + createdDealer.name + " has been registered"
     }
@@ -439,7 +439,7 @@ exports.statusUpdate = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: getPrimary.firstName,
+      senderName: getPrimary.metaData[0]?.firstName,
       content: "The price book " + priceBookData[0]?.pName + " has been updated",
       subject: "Update Price Book"
     }
@@ -572,7 +572,7 @@ exports.changeDealerStatus = async (req, res) => {
       const status_content = req.body.status ? 'Active' : 'Inactive';
       let settingData = await userService.getSetting({});
       let emailData = {
-        senderName: singleDealer.name,
+        senderName: singleDealer.metaData[0]?.name,
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
@@ -714,7 +714,7 @@ exports.createDealerPriceBook = async (req, res) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: checkDealer.name,
+        senderName: checkDealer.metaData[0]?.name,
         content: "The price book name" + " " + checkPriceBookMain[0]?.pName + " has been created successfully! effective immediately.",
         subject: "New Price Book"
       }
@@ -944,7 +944,7 @@ exports.rejectDealer = async (req, res) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: singleDealer.name,
+        senderName: singleDealer.metaData[0]?.name,
         content: "Dear " + singleDealer.name + ",\n\nWe regret to inform you that your registration as a dealer has been rejected by our admin team. If you have any questions or require further assistance, please feel free to contact us.\n\nBest regards,\nAdmin Team",
         subject: "Rejection Account"
       }
@@ -1099,7 +1099,7 @@ exports.updateDealerMeta = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: checkDealer.name,
+      senderName: checkDealer.metaData[0]?.name,
       content: "The information has been updated successfully! effective immediately.",
       subject: "Update Info"
     }
@@ -1568,10 +1568,8 @@ exports.uploadDealerPriceBook = async (req, res) => {
 exports.uploadDealerPriceBookNew = async (req, res) => {
   try {
     let data = req.body
-    console.log("check++++++++++++++++++++++11111111111111111111111111111111111")
 
     uploadP(req, res, async (err) => {
-      console.log("check++++++++++++++++++++++11111111111111111111111111111111111")
 
       let file = req.file
       let data = req.body
@@ -1635,7 +1633,6 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
       //   }
       // });
 
-      console.log("check++++++++++++++++++++++11111111111111111111111111111111111")
       let lastOccurrenceMap = {};
 
       // Track the first occurrence of each productSku
@@ -1699,15 +1696,9 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
           currentData.message = "Product sku does not exist"
 
         }
-
-
         newArray.push(currentData)
 
       }
-
-
-
-      console.log("responseData+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++", totalDataComing, newArray)
       function convertArrayToHTMLTable(array) {
         const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');
         const rows = array.map(obj => {
@@ -1749,7 +1740,8 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
       //Send notification to admin,dealer,reseller
 
       let IDs = await supportingFunction.getUserIds()
-      let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: req.body.dealerId, isPrimary: true })
+
+      let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.body.dealerId, isPrimary: true } } })
       IDs.push(dealerPrimary?._id)
 
       let notificationData = {

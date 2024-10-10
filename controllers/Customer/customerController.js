@@ -132,7 +132,7 @@ exports.createCustomer = async (req, res, next) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: getPrimary.firstName,
+      senderName: getPrimary.metaData[0]?.firstName,
       content: "We are delighted to inform you that the customer account for " + createdCustomer.username + " has been created.",
       subject: "Customer Account Created - " + createdCustomer.username
     }
@@ -555,7 +555,7 @@ exports.editCustomer = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: checkDealer.username,
+      senderName: checkDealer.metaData[0]?.username,
       content: "The customer " + checkDealer.username + "" + " " + "has been updated successfully.",
       subject: "Customer Update"
     }
@@ -2018,7 +2018,7 @@ exports.createCustomerNew = async (req, res, next) => {
     notificationEmails.push(resellerPrimary?.email)
     //SEND EMAIL
     let emailData = {
-      senderName: getPrimary.firstName,
+      senderName: getPrimary.metaData[0]?.firstName,
       content: "We are delighted to inform you that the customer account for " + createdCustomer.username + " has been created.",
       subject: "Customer Account Created - " + createdCustomer.username
     }

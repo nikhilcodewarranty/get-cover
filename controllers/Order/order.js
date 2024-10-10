@@ -217,6 +217,7 @@ exports.getAllOrders = async (req, res) => {
             }
         );
         let customerIdsArray = ordersResult.map((result) => result.customerId);
+        
         let userCustomerIds = ordersResult
             .filter(result => result.customerId !== null)
             .map(result => result.customerId);

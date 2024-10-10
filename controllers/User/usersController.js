@@ -1983,7 +1983,7 @@ exports.contactUs = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: admin.firstName,
+      senderName: admin.metaData[0]?.firstName,
       content: `A new user has submitted a request via the contact form`,
       subject: 'New Contact Form Submission'
 

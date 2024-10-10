@@ -280,7 +280,7 @@ exports.createDealer = async (req, res) => {
                 // Primary User Welcoime email
                 let notificationEmails = await supportingFunction.getUserEmails();
                 let emailData = {
-                    senderName: loginUser.firstName,
+                    senderName: loginUser.metaData[0]?.firstName,
                     content: "We are delighted to inform you that the dealer account for " + singleDealer.name + " has been approved.",
                     subject: "Dealer Account Approved - " + singleDealer.name
                 }
@@ -492,7 +492,7 @@ exports.createDealer = async (req, res) => {
                 let notificationEmails = await supportingFunction.getUserEmails();
 
                 let emailData = {
-                    senderName: loginUser.firstName,
+                    senderName: loginUser.metaData[0]?.firstName,
                     content: "We are delighted to inform you that the dealer account for " + createMetaData.name + " has been created.",
                     subject: "Dealer Account Created - " + createMetaData.name
                 }

@@ -272,7 +272,7 @@ const getObjectFromS3 = (bucketReadUrl) => {
 exports.uploadReceipt = async (req, res, next) => {
   try {
     uploadP(req, res, async (err) => {
-  
+
       let file = req.files;
       res.send({
         code: constant.successCode,
@@ -454,10 +454,10 @@ exports.addClaim = async (req, res, next) => {
 
     //Send notification to all
     let IDs = await supportingFunction.getUserIds()
-    let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.dealerId, isPrimary: true })
-    let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.customerId, isPrimary: true })
-    let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder?.resellerId, isPrimary: true })
-    let servicerPrimary = await supportingFunction.getPrimaryUser({ metaId: data?.servicerId, isPrimary: true })
+    let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } })
+    let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } })
+    let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } })
+    let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data?.servicerId, isPrimary: true } } })
 
     if (resellerPrimary) {
       IDs.push(resellerPrimary._id)
@@ -491,7 +491,7 @@ exports.addClaim = async (req, res, next) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: customerPrimary.firstName,
+      senderName: customerPrimary.metaData[0]?.firstName,
       content: "The claim " + claimResponse.unique_key + " has been filed for the " + checkContract.unique_key + " contract!.",
       subject: 'Add Claim'
     }
@@ -505,7 +505,7 @@ exports.addClaim = async (req, res, next) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: servicerPrimary?.firstName,
+        senderName: servicerPrimary?.metaData[0]?.firstName,
         content: "The claim " + claimResponse.unique_key + " has been filed for the " + checkContract.unique_key + " contract!.",
         subject: 'Add Claim'
       }
@@ -594,7 +594,7 @@ exports.editClaim = async (req, res) => {
           }
         }
 
-        
+
 
         await LOG(logData).save()
         res.send({
@@ -603,17 +603,14 @@ exports.editClaim = async (req, res) => {
         })
         return;
       }
-      console.log("checking ak ++++++++++++++++++++++++++",req.header)
-      let udpateclaimAmount =  await axios.get(process.env.API_ENDPOINT+"api-v1/claim/checkClaimAmount/"+updateData._id, {
-         headers: {
-             "x-access-token":req.header["x-access-token"],  // Include the token in the Authorization header
-         }
-     });
-     console.log("updated data +++++++++++++++++++++++++++++++++++",udpateclaimAmount)
-     
+      let udpateclaimAmount = await axios.get(process.env.API_ENDPOINT + "api-v1/claim/checkClaimAmount/" + updateData._id, {
+        headers: {
+          "x-access-token": req.header["x-access-token"],  // Include the token in the Authorization header
+        }
+      });
       //Send notification to all
       let IDs = await supportingFunction.getUserIds()
-      let servicerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkClaim?.servicerId, isPrimary: true })
+      let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkClaim?.servicerId, isPrimary: true } } })
 
       if (servicerPrimary) {
         IDs.push(servicerPrimary._id)
@@ -651,7 +648,7 @@ exports.editClaim = async (req, res) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: servicerPrimary ? servicerPrimary.firstName : '',
+        senderName: servicerPrimary ? servicerPrimary.metaData[0]?.firstName : '',
         content: "The  repair part update for " + checkClaim.unique_key + " claim",
         subject: "Repair Part Update"
       }
@@ -742,17 +739,17 @@ exports.editClaimType = async (req, res) => {
         }
       }
       await LOG(logData).save()
-      if(updateData.claimType!=""||updateData.claimType!="New"){
-        console.log("checking ak ++++++++++++++++++++++++++",req.header)
-       let udpateclaimAmount =  await axios.get(process.env.API_ENDPOINT+"api-v1/claim/checkClaimAmount/"+updateData._id, {
+      if (updateData.claimType != "" || updateData.claimType != "New") {
+        console.log("checking ak ++++++++++++++++++++++++++", req.header)
+        let udpateclaimAmount = await axios.get(process.env.API_ENDPOINT + "api-v1/claim/checkClaimAmount/" + updateData._id, {
           headers: {
-              "x-access-token":req.header["x-access-token"],  // Include the token in the Authorization header
+            "x-access-token": req.header["x-access-token"],  // Include the token in the Authorization header
           }
-      });
-      console.log("updated data +++++++++++++++++++++++++++++++++++",udpateclaimAmount)
+        });
+        console.log("updated data +++++++++++++++++++++++++++++++++++", udpateclaimAmount)
       }
-    let checkUpdatedClaim = await claimService.getClaimById(criteria)
-     
+      let checkUpdatedClaim = await claimService.getClaimById(criteria)
+
       res.send({
         code: constant.successCode,
         result: checkUpdatedClaim,
@@ -849,10 +846,11 @@ exports.editClaimStatus = async (req, res) => {
 
       //Send notification to all
       let IDs = await supportingFunction.getUserIds()
-      let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.dealerId, isPrimary: true })
-      let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.customerId, isPrimary: true })
-      let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder?.resellerId, isPrimary: true })
-      let servicerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkClaim?.servicerId, isPrimary: true })
+
+      let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } })
+      let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } })
+      let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } })
+      let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkClaim?.servicerId, isPrimary: true } } })
 
       if (resellerPrimary) {
         IDs.push(resellerPrimary._id)
@@ -882,7 +880,7 @@ exports.editClaimStatus = async (req, res) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: customerPrimary?.firstName,
+        senderName: customerPrimary?.metaData[0]?.firstName,
         content: "The customer status has been updated for " + checkClaim.unique_key + "",
         subject: "Customer Status Update"
       }
@@ -893,7 +891,7 @@ exports.editClaimStatus = async (req, res) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: dealerPrimary?.firstName,
+        senderName: dealerPrimary?.metaData[0]?.firstName,
         content: "The customer status has been updated for " + checkClaim.unique_key + "",
         subject: "Customer Status Update"
       }
@@ -905,7 +903,7 @@ exports.editClaimStatus = async (req, res) => {
           lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
           address: settingData[0]?.address,
           websiteSetting: settingData[0],
-          senderName: resellerPrimary?.firstName,
+          senderName: resellerPrimary?.metaData[0]?.firstName,
           content: "The customer status has been updated for " + checkClaim.unique_key + "",
           subject: "Customer Status Update"
         }
@@ -919,7 +917,7 @@ exports.editClaimStatus = async (req, res) => {
           lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
           address: settingData[0]?.address,
           websiteSetting: settingData[0],
-          senderName: servicerPrimary?.firstName,
+          senderName: servicerPrimary?.metaData[0]?.firstName,
           content: "The customer status has been updated for " + checkClaim.unique_key + "",
           subject: "Customer Status Update"
         }
@@ -944,10 +942,12 @@ exports.editClaimStatus = async (req, res) => {
 
       //Send notification to all
       let IDs = await supportingFunction.getUserIds()
-      let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.dealerId, isPrimary: true })
-      let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.customerId, isPrimary: true })
-      let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder?.resellerId, isPrimary: true })
-      let servicerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkClaim?.servicerId, isPrimary: true })
+
+      let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } })
+      let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } })
+      let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } })
+      let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkClaim?.servicerId, isPrimary: true } } })
+
 
       if (resellerPrimary) {
         IDs.push(resellerPrimary._id)
@@ -979,7 +979,7 @@ exports.editClaimStatus = async (req, res) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: dealerPrimary.firstName,
+        senderName: dealerPrimary.metaData[0]?.firstName,
         content: "The claim repair status has been updated for " + checkClaim.unique_key + "",
         subject: "Repair Status Update"
       }
@@ -990,7 +990,7 @@ exports.editClaimStatus = async (req, res) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: customerPrimary?.firstName,
+        senderName: customerPrimary?.metaData[0]?.firstName,
         content: "The claim repair status has been updated for " + checkClaim.unique_key + "",
         subject: "Repair Status Update"
       }
@@ -1002,7 +1002,7 @@ exports.editClaimStatus = async (req, res) => {
           lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
           address: settingData[0]?.address,
           websiteSetting: settingData[0],
-          senderName: resellerPrimary?.firstName,
+          senderName: resellerPrimary?.metaData[0]?.firstName,
           content: "The claim repair status has been updated for " + checkClaim.unique_key + "",
           subject: "Repair Status Update"
         }
@@ -1015,7 +1015,7 @@ exports.editClaimStatus = async (req, res) => {
           lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
           address: settingData[0]?.address,
           websiteSetting: settingData[0],
-          senderName: servicerPrimary?.firstName,
+          senderName: servicerPrimary?.metaData[0]?.firstName,
           content: "The claim repair status has been updated for " + checkClaim.unique_key + "",
           subject: "Repair Status Update"
         }
@@ -1042,11 +1042,12 @@ exports.editClaimStatus = async (req, res) => {
 
       //Send notification to all
       let IDs = await supportingFunction.getUserIds()
-      const admin = await supportingFunction.getPrimaryUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true });
-      let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.dealerId, isPrimary: true })
-      let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.customerId, isPrimary: true })
-      let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder?.resellerId, isPrimary: true })
-      let servicerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkClaim?.servicerId, isPrimary: true })
+      const admin = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true } } });
+
+      let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } })
+      let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } })
+      let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } })
+      let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkClaim?.servicerId, isPrimary: true } } })
 
       if (resellerPrimary) {
         IDs.push(resellerPrimary._id)
@@ -1077,7 +1078,7 @@ exports.editClaimStatus = async (req, res) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: dealerPrimary.firstName,
+        senderName: dealerPrimary.metaData[0]?.firstName,
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Claim Status Update"
       }
@@ -1089,7 +1090,7 @@ exports.editClaimStatus = async (req, res) => {
           lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
           address: settingData[0]?.address,
           websiteSetting: settingData[0],
-          senderName: resellerPrimary?.firstName,
+          senderName: resellerPrimary?.metaData[0]?.firstName,
           content: "The claim status has been updated for " + checkClaim.unique_key + "",
           subject: "Claim Status Update"
         }
@@ -1102,7 +1103,7 @@ exports.editClaimStatus = async (req, res) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: customerPrimary.firstName,
+        senderName: customerPrimary.metaData[0]?.firstName,
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Claim Status Update"
       }
@@ -1114,7 +1115,7 @@ exports.editClaimStatus = async (req, res) => {
           lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
           address: settingData[0]?.address,
           websiteSetting: settingData[0],
-          senderName: servicerPrimary?.firstName,
+          senderName: servicerPrimary?.metaData[0]?.firstName,
           content: "The claim status has been updated for " + checkClaim.unique_key + "",
           subject: "Claim Status Update"
         }
@@ -1126,7 +1127,7 @@ exports.editClaimStatus = async (req, res) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: admin?.firstName,
+        senderName: admin?.metaData[0]?.firstName,
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Claim Status Update"
       }
@@ -1291,7 +1292,7 @@ exports.editServicer = async (req, res) => {
 
     //send notification to admin and dealer 
     let IDs = await supportingFunction.getUserIds()
-    let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.body.servicerId, isPrimary: true })
+    let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.body.servicerId, isPrimary: true } } })
     if (getPrimary) {
       IDs.push(getPrimary._id)
     }
@@ -1315,7 +1316,7 @@ exports.editServicer = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: getPrimary ? getPrimary.firstName : "",
+      senderName: getPrimary ? getPrimary.metaData[0]?.firstName : "",
       content: "The servicer has been updated for the claim " + checkClaim.unique_key + "",
       subject: "Servicer Update"
     }
@@ -2847,22 +2848,22 @@ exports.sendMessages = async (req, res) => {
     data.commentedTo = req.userId;
     data.commentedByUser = req.teammateId
 
-    emailTo = await supportingFunction.getPrimaryUser({ _id: req.teammateId, isPrimary: true })
+    emailTo = await supportingFunction.getPrimaryUser({ _id: req.teammateId, metaData: { $elemMatch: { isPrimary: true } } })
     if (data.type == 'Reseller') {
       data.commentedTo = orderData.resellerId
-      emailTo = await supportingFunction.getPrimaryUser({ metaId: orderData.resellerId, isPrimary: true })
+      emailTo = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.resellerId, isPrimary: true } } })
     }
     else if (data.type == 'Dealer') {
       data.commentedTo = orderData.dealerId
-      emailTo = await supportingFunction.getPrimaryUser({ metaId: orderData.dealerId, isPrimary: true })
+      emailTo = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.dealerId, isPrimary: true } } })
     }
     else if (data.type == 'Customer') {
       data.commentedTo = orderData.customerId
-      emailTo = await supportingFunction.getPrimaryUser({ metaId: orderData.customerId, isPrimary: true })
+      emailTo = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.customerId, isPrimary: true } } })
     }
     else if (data.type == 'Servicer') {
       data.commentedTo = orderData.servicerId
-      emailTo = await supportingFunction.getPrimaryUser({ metaId: checkClaim.servicerId, isPrimary: true })
+      emailTo = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkClaim.servicerId, isPrimary: true } } })
     }
 
     let sendMessage = await claimService.addMessage(data)
@@ -2902,10 +2903,10 @@ exports.sendMessages = async (req, res) => {
 
     //Send notification to all
     let IDs = await supportingFunction.getUserIds()
-    let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: orderData.dealerId, isPrimary: true })
-    let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: orderData.customerId, isPrimary: true })
-    let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: orderData?.resellerId, isPrimary: true })
-    let servicerPrimary = await supportingFunction.getPrimaryUser({ metaId: orderData?.servicerId, isPrimary: true })
+    let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.dealerId, isPrimary: true } } })
+    let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.customerId, isPrimary: true } } })
+    let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.resellerId, isPrimary: true } } })
+    let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.servicerId, isPrimary: true } } })
 
     if (resellerPrimary) {
       IDs.push(resellerPrimary._id)
@@ -2937,7 +2938,7 @@ exports.sendMessages = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: emailTo?.firstName,
+      senderName: emailTo?.metaData[0]?.firstName,
       content: "The new message for " + checkClaim.unique_key + " claim",
       subject: "New Message"
     }

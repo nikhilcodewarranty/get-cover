@@ -118,7 +118,7 @@ exports.createServiceProvider = async (req, res, next) => {
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
         title: settingData[0]?.title,
-        senderName: admin.firstName,
+        senderName: admin.metaData[0]?.firstName,
         content: "We are delighted to inform you that the servicer account for " + createServiceProvider.name + " has been created.",
         subject: "Servicer Account Created - " + createServiceProvider.name
       }
@@ -247,7 +247,7 @@ exports.createServiceProvider = async (req, res, next) => {
       let notificationEmails = await supportingFunction.getUserEmails();
 
       let emailData = {
-        senderName: admin.firstName,
+        senderName: admin.metaData[0]?.firstName,
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
@@ -515,7 +515,6 @@ exports.getServicer = async (req, res) => {
       }
     ]);
 
-
     if (!servicerUser) {
       res.send({
         code: constant.errorCode,
@@ -686,7 +685,7 @@ exports.rejectServicer = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: getServicer.name,
+      senderName: getServicer.metaData[0]?.name,
       content: "Dear " + getServicer.name + ",\n\nWe regret to inform you that your registration as an authorized dealer has been rejected by our admin team. If you have any questions or require further assistance, please feel free to contact us.\n\nBest regards,\nAdmin Team",
       subject: "Rejection Account"
     }
@@ -812,7 +811,7 @@ exports.editServicerDetail = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: checkServicer.name,
+      senderName: checkServicer.metaData[0]?.name,
       content: "Information has been updated successfully! effective immediately.",
       subject: "Update Info"
     }
@@ -1007,7 +1006,7 @@ exports.updateStatus = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: checkServicer.name,
+      senderName: checkServicer.metaData[0]?.name,
       content: "Status has been changed to " + status_content + " " + ", effective immediately.",
       subject: "Update Status"
     }
@@ -1265,7 +1264,7 @@ exports.registerServiceProvider = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: admin.firstName,
+      senderName: admin.metaData[0]?.firstName,
       content: "A new servicer " + ServicerMeta.name + " has been registered",
       subject: 'New Servicer Registration'
     }
