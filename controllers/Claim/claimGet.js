@@ -26,6 +26,7 @@ const fs = require("fs");
 const { S3Client } = require('@aws-sdk/client-s3');
 const { Upload } = require('@aws-sdk/lib-storage');
 const multerS3 = require('multer-s3');
+const { default: axios } = require("axios");
 
 // s3 bucket connections
 const s3 = new S3Client({
@@ -366,11 +367,11 @@ exports.getAllClaims = async (req, res, next) => {
     const result_Array = resultFiter.map((item1) => {
       servicer = []
       let mergedData = []
-      if(Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType){
+      if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
         mergedData = dynamicOption.value.filter(contract =>
           item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
         );
-    }
+      }
 
       let servicerName = ''
       let selfServicer = false;
@@ -908,17 +909,33 @@ exports.checkClaimAmount = async (req, res) => {
   try {
     let data = req.body
     let getClaim = await claimService.getClaimById({ _id: req.params.claimId })
+    if (!getClaim) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid claim ID"
+      })
+      return
+    }
     let getContractDetail = await contractService.getContractById({ _id: getClaim.contractId })
-    if (getClaim.claimType != ""&&getClaim.claimType != "New") {
 
+    const query = { contractId: new mongoose.Types.ObjectId(getClaim.contractId), claimFile: "completed" }
+    let claimTotalQuery = [
+      { $match: query },
+      { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
+
+    ]
+    let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
+    const contract = await contractService.getContractById({ _id: getClaim.contractId }, { productValue: 1 })
+    const claimAmount = claimTotal[0] ? claimTotal[0]?.amount : 0
+    const product = contract ? contract.productValue : 0
+    let claimAmountTaken = getClaim.totalAmount
+
+
+    if (getClaim.claimType != "" && getClaim.claimType != "New") {
       let coverageTypeDays = getContractDetail.adhDays
       let getDeductible = coverageTypeDays.filter(coverageType => {
-        console.log("Checking value: ", coverageTypeDays, coverageType.value, getClaim.claimType);
         return coverageType.value === getClaim.claimType;
       });
-      if(getClaim.claimType != "" || getClaim.claimType != "New"){
-        
-      }
       if (!getDeductible[0]) {
         res.send({
           code: constant.errorCode,
@@ -927,52 +944,45 @@ exports.checkClaimAmount = async (req, res) => {
         return
       }
       let deductableAmount;
-      let claimAmountTaken = getClaim.totalAmount
 
       if (getDeductible[0].amountType == "percentage") {
-        deductableAmount = (getDeductible[0].deductible / 100) * claimAmountTaken
+        deductableAmount = (getDeductible[0].deductible / 100) * getClaim.totalAmount
       } else {
         deductableAmount = getDeductible[0].deductible
       }
 
-      if (!getClaim) {
-        res.send({
-          code: constant.errorCode,
-          message: "Invalid claim ID"
-        })
-        return
-      }
 
-      if (getClaim.totalAmount > Number(getContractDetail.productValue)) {
+
+      let checkClaimNumber = await claimService.getClaims({ contractId: getClaim.contractId })
+
+      let justToCheck = product - claimAmount
+
+      if (getClaim.totalAmount >= Number(justToCheck)) {
         console.log("over amount conditions ak ")
         let serviceCoverageType = getContractDetail.serviceCoverageType
-        if (getDeductible[0].amountType == "percentage") {
-          deductableAmount = (getDeductible[0].deductible / 100) * getContractDetail.productValue
-        } else {
-          deductableAmount = getDeductible[0].deductible
-        }
-
-
-
-        let customerClaimAmount = deductableAmount
-        let getCoverClaimAmount = getContractDetail.productValue - customerClaimAmount
+        // let customerClaimAmount = deductableAmount < justToCheck ? deductableAmount : justToCheck
+        // let getCoverClaimAmount = justToCheck - customerClaimAmount
+        let customerClaimAmount
         let customerOverAmount
         let getcoverOverAmount
+        let getCoverClaimAmount
 
 
-        if (getClaim.totalAmount > Number(getContractDetail.productValue)) {
+        if (getClaim.totalAmount > Number(justToCheck)) {
           if (getContractDetail.isMaxClaimAmount) {
             console.log("1st condition +++++++++++++++++++++=", getContractDetail.isMaxClaimAmount)
-            customerOverAmount = getClaim.totalAmount - Number(getContractDetail.productValue)
+            customerOverAmount = getClaim.totalAmount - Number(getCoverClaimAmount) - customerClaimAmount
             getcoverOverAmount = 0
           } else {
             console.log("2nd t condition +++++++++++++++++++++=", getContractDetail.isMaxClaimAmount)
-
-            getcoverOverAmount = getClaim.totalAmount - Number(getContractDetail.productValue)
+            customerClaimAmount = deductableAmount > getClaim.totalAmount ? getClaim.totalAmount : deductableAmount
             customerOverAmount = 0
+            getCoverClaimAmount = justToCheck > 0 ? getClaim.totalAmount >= justToCheck ? justToCheck : getClaim.totalAmount : 0
+            getcoverOverAmount = getClaim.totalAmount - getCoverClaimAmount
           }
           let updateContract = await contractService.updateContract({ _id: getContractDetail._id }, { eligibilty: false })
         }
+        console.log("updatetheclaim+++++++++++++++++++++++", { customerClaimAmount, getCoverClaimAmount, customerOverAmount, getcoverOverAmount })
         let values = {
           $set: {
             customerClaimAmount: customerClaimAmount > 0 ? customerClaimAmount : 0,
@@ -982,9 +992,9 @@ exports.checkClaimAmount = async (req, res) => {
 
           }
         }
+        console.log("updatetheclaim+++++++++++++++++++++++", values)
 
         let updateTheClaim = await claimService.updateClaim({ _id: getClaim._id }, values, { new: true })
-        console.log("updatetheclaim+++++++++++++++++++++++", values, updateTheClaim)
         if (!updateTheClaim) {
           res.send({
             code: constant.errorCode,
@@ -1040,10 +1050,10 @@ exports.checkClaimAmount = async (req, res) => {
     } else {
       let values = {
         $set: {
-          customerClaimAmount:  0,
-          getCoverClaimAmount:  0,
-          customerOverAmount:  0,
-          getcoverOverAmount:  0
+          customerClaimAmount: 0,
+          getCoverClaimAmount: 0,
+          customerOverAmount: 0,
+          getcoverOverAmount: 0
 
         }
       }
@@ -1054,26 +1064,6 @@ exports.checkClaimAmount = async (req, res) => {
         message: "Updated"
       })
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   } catch (err) {
     res.send({
@@ -1105,6 +1095,43 @@ exports.checkCoverageTypeDate = async (req, res) => {
       let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0].waitingDays))
 
       if (checkCoverageTypeDate > getClaim.lossDate) {
+        // claim not allowed for that coverageType
+        res.send({
+          code: constant.errorCode,
+          message: `Claim not allowed for that coverage type till date ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}`
+        })
+        return
+
+      }
+    }
+    res.send({
+      code: 200,
+      message: "Allowed"
+    })
+
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.checkCoverageTypeDateInContract = async (req, res) => {
+  try {
+    let data = req.body
+
+    let getContractDetail = await contractService.getContractById({ _id: data.contractId })
+    let startDateToCheck = new Date(getContractDetail.coverageStartDate)
+    let coverageTypeDays = getContractDetail.adhDays
+    let serviceCoverageType = getContractDetail.serviceCoverageType
+    let claimAmountTaken = getClaim.totalAmount
+    if (data.coverageType) {
+      let getDeductible = coverageTypeDays.filter(coverageType => coverageType.value == data.coverageType)
+
+      let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0].waitingDays))
+
+      if (checkCoverageTypeDate > data.lossDate) {
         // claim not allowed for that coverageType
         res.send({
           code: constant.errorCode,
