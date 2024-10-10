@@ -1459,7 +1459,7 @@ exports.getMembers = async (req, res) => {
   try {
     let data = req.body
     data.isPrimary = false;
-    let userMembers = await userService.getMembers([
+    let userMembers = await userService.findUserforCustomer1([
       {
         $match: {
           $and: [
@@ -1499,7 +1499,7 @@ exports.getMembers = async (req, res) => {
       }
     ])
 
-    let userMember = await userService.getMembers([
+    let userMember = await userService.findUserforCustomer1([
       {
         $match: { _id: new mongoose.Types.ObjectId(req.teammateId) }
       },
