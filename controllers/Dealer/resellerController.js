@@ -237,34 +237,34 @@ exports.getAllResellers = async (req, res) => {
 
         const getPrimaryUser = await userService.findUserforCustomer1([
             {
-              $match: {
-                $and: [
-                  { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
-                  { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                  { metaData: { $elemMatch: { metaId: { $in: resellerId }, isPrimary: true } } }
-                ]
-              }
+                $match: {
+                    $and: [
+                        { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+                        { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { metaData: { $elemMatch: { metaId: { $in: resellerId }, isPrimary: true } } }
+                    ]
+                }
             },
             {
-              $project: {
-                email: 1,
-                'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
-                'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
-                'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
-                'position': { $arrayElemAt: ["$metaData.position", 0] },
-                'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
-                'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
-                'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
-                'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
-                'status': { $arrayElemAt: ["$metaData.status", 0] },
-                resetPasswordCode: 1,
-                isResetPassword: 1,
-                approvedStatus: 1,
-                createdAt: 1,
-                updatedAt: 1
-              }
+                $project: {
+                    email: 1,
+                    'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+                    'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+                    'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+                    'position': { $arrayElemAt: ["$metaData.position", 0] },
+                    'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                    'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+                    'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+                    'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                    'status': { $arrayElemAt: ["$metaData.status", 0] },
+                    resetPasswordCode: 1,
+                    isResetPassword: 1,
+                    approvedStatus: 1,
+                    createdAt: 1,
+                    updatedAt: 1
+                }
             }
-          ]);
+        ]);
         //Get Reseller Orders
         let project = {
             productsArray: 1,
@@ -340,9 +340,38 @@ exports.getResellerByDealerId = async (req, res) => {
         return;
     };
     let resellerData = await resellerService.getResellers({ dealerId: req.params.dealerId }, { isDeleted: 0 })
+    
     const resellerIds = resellerData.map(reseller => reseller._id)
-    const queryUser = { metaId: { $in: resellerIds }, isPrimary: true };
-    let getPrimaryUser = await userService.findUserforCustomer(queryUser)
+
+    const getPrimaryUser = await userService.findUserforCustomer1([
+        {
+          $match: {
+            $and: [
+              { metaData: { $elemMatch: { metaId: { $in: resellerIds }, isPrimary: true } } }
+            ]
+          }
+        },
+        {
+          $project: {
+            email: 1,
+            'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+            'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+            'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+            'position': { $arrayElemAt: ["$metaData.position", 0] },
+            'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+            'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+            'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+            'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+            'status': { $arrayElemAt: ["$metaData.status", 0] },
+            resetPasswordCode: 1,
+            isResetPassword: 1,
+            approvedStatus: 1,
+            createdAt: 1,
+            updatedAt: 1
+          }
+        }
+      ]);
+
     const result_Array = getPrimaryUser.map(item1 => {
         const matchingItem = resellerData.find(item2 => item2._id.toString() === item1.metaId.toString());
 
@@ -386,8 +415,36 @@ exports.getResellerById = async (req, res) => {
             return;
         }
         let checkDealerStatus = await dealerService.getDealerByName({ _id: checkReseller[0].dealerId })
-        const query1 = { metaId: { $in: [checkReseller[0]._id] }, isPrimary: true };
-        let resellerUser = await userService.getMembers(query1, { isDeleted: false })
+
+        const resellerUser = await userService.findUserforCustomer1([
+            {
+              $match: {
+                $and: [
+                  { metaData: { $elemMatch: { metaId: { $in: [checkReseller[0]._id] }, isPrimary: true } } }
+                ]
+              }
+            },
+            {
+              $project: {
+                email: 1,
+                'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+                'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+                'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+                'position': { $arrayElemAt: ["$metaData.position", 0] },
+                'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+                'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+                'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                'status': { $arrayElemAt: ["$metaData.status", 0] },
+                resetPasswordCode: 1,
+                isResetPassword: 1,
+                approvedStatus: 1,
+                createdAt: 1,
+                updatedAt: 1
+              }
+            }
+          ]);
+
         if (!resellerUser) {
             res.send({
                 code: constant.errorCode,
@@ -514,7 +571,7 @@ exports.getResellerById = async (req, res) => {
             let order = ordersResult.find(order => order._id.toString() === user.metaId.toString())
             if (matchItem || order) {
                 return {
-                    ...user.toObject(),
+                    ...user,
                     resellerData: matchItem.toObject(),
                     orderData: order ? order : {},
                     claimData: claimData
@@ -556,16 +613,41 @@ exports.getResellerUsers = async (req, res) => {
         });
         return;
     }
-    const queryUser = {
-        $and: [
-            { metaId: { $in: checkReseller._id } },
-            { firstName: { '$regex': data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { lastName: { '$regex': data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { phoneNumber: { '$regex': data.phone ? data.phone : '', '$options': 'i' } },
-        ]
-    }
-    let users = await userService.getMembers(queryUser, { isDeleted: 0 });
+
+    const users = await userService.findUserforCustomer1([
+        {
+            $match: {
+                $and: [
+                    { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+                    { metaData: { $elemMatch: { firstName: { '$regex': data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+                    { metaData: { $elemMatch: { lastName: { '$regex': data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+                    { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                    { metaData: { $elemMatch: { metaId: checkReseller._id, isPrimary: true } } }
+                ]
+            }
+        },
+        {
+            $project: {
+                email: 1,
+                'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+                'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+                'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+                'position': { $arrayElemAt: ["$metaData.position", 0] },
+                'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+                'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+                'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                'status': { $arrayElemAt: ["$metaData.status", 0] },
+                resetPasswordCode: 1,
+                isResetPassword: 1,
+                approvedStatus: 1,
+                createdAt: 1,
+                updatedAt: 1
+            }
+        }
+    ]);
+
+
     res.send({
         code: constant.successCode,
         data: users,
@@ -1110,7 +1192,7 @@ exports.getResellerServicers = async (req, res) => {
         const query1 = { metaId: { $in: servicerIds }, isPrimary: true };
         let servicerUser = await userService.getMembers(query1, {})
 
-        
+
         if (!servicerUser) {
             res.send({
                 code: constant.errorCode,
