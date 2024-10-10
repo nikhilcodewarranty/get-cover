@@ -1528,7 +1528,7 @@ exports.getMembers = async (req, res) => {
       code: constant.successCode,
       message: "Success!",
       result: userMembers ? userMembers : [],
-      loginMember: userMember
+      loginMember: userMember[0]
     })
 
   } catch (err) {
