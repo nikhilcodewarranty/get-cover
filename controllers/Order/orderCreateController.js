@@ -1178,8 +1178,8 @@ exports.createOrder1 = async (req, res) => {
             if (getChoosedProducts[A].coverageStartDate != "") {
                 let addOneDay = new Date(getChoosedProducts[A].coverageStartDate)
                 let addOneDay1 = new Date(getChoosedProducts[A].coverageEndDate)
-                data.coverageStartDate1 = addOneDay
-                data.coverageEndDate1 = addOneDay1
+                data.productsArray[A].coverageStartDate1 = addOneDay
+                data.productsArray[A].coverageEndDate1 = addOneDay1
                 data.productsArray[A].coverageStartDate = addOneDay.setDate(addOneDay.getDate() + 1);
                 data.productsArray[A].coverageStartDate = addOneDay1.setDate(addOneDay1.getDate() + 1);
 
@@ -2168,8 +2168,8 @@ exports.editOrderDetail = async (req, res) => {
             if (getChoosedProducts[A].coverageStartDate != "") {
                 let addOneDay = new Date(getChoosedProducts[A].coverageStartDate)
                 let addOneDay1 = new Date(getChoosedProducts[A].coverageEndDate)
-                data.coverageStartDate1 = addOneDay
-                data.coverageEndDate1 = addOneDay1
+                data.productsArray[A].coverageStartDate1 = addOneDay
+                data.productsArray[A].coverageEndDate1 = addOneDay1
                 data.productsArray[A].coverageStartDate = addOneDay.setDate(addOneDay.getDate() + 1);
                 data.productsArray[A].coverageStartDate = addOneDay1.setDate(addOneDay1.getDate() + 1);
 
