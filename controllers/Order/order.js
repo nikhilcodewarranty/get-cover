@@ -217,7 +217,7 @@ exports.getAllOrders = async (req, res) => {
             }
         );
         let customerIdsArray = ordersResult.map((result) => result.customerId);
-        
+
         let userCustomerIds = ordersResult
             .filter(result => result.customerId !== null)
             .map(result => result.customerId);
@@ -226,9 +226,39 @@ exports.getAllOrders = async (req, res) => {
 
         const allUserIds = mergedArray.concat(userCustomerIds);
 
-        const queryUser = { metaId: { $in: allUserIds }, isPrimary: true };
+        const getPrimaryUser = await userService.findUserforCustomer1([
+            {
+              $match: {
+                $and: [
+                  { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+                  { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                  { metaData: { $elemMatch: { metaId: { $in: allUserIds }, isPrimary: true } } }
+                ]
+              }
+            },
+            {
+              $project: {
+                email: 1,
+                'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+                'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+                'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+                'position': { $arrayElemAt: ["$metaData.position", 0] },
+                'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+                'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+                'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                'status': { $arrayElemAt: ["$metaData.status", 0] },
+                resetPasswordCode: 1,
+                isResetPassword: 1,
+                approvedStatus: 1,
+                createdAt: 1,
+                updatedAt: 1
+              }
+            }
+          ]);
 
-        let getPrimaryUser = await userService.findUserforCustomer(queryUser)
+          
+
         //Get Respective Customer
         let respectiveCustomer = await customerService.getAllCustomers(
             customerCreteria,
@@ -1233,9 +1263,9 @@ exports.archiveOrder = async (req, res) => {
         }
         //send notification to dealer,reseller,admin,customer
         let IDs = await supportingFunction.getUserIds()
-        let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.dealerId, isPrimary: true })
-        let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.customerId, isPrimary: true })
-        let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.resellerId, isPrimary: true })
+        let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } })
+        let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } })
+        let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } })
         if (resellerPrimary) {
             IDs.push(resellerPrimary._id)
         }
@@ -1272,7 +1302,7 @@ exports.archiveOrder = async (req, res) => {
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
-            senderName: dealerPrimary.firstName,
+            senderName: dealerPrimary.metaData[0]?.firstName,
             content: "The order " + checkOrder.unique_key + " has been archeived!.",
             subject: "Archeive Order"
         }
@@ -1282,7 +1312,7 @@ exports.archiveOrder = async (req, res) => {
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
-            senderName: resellerPrimary?.firstName,
+            senderName: resellerPrimary?.metaData[0]?.firstName,
             content: "The order " + checkOrder.unique_key + " has been archeived!.",
             subject: "Archeive Order"
         }
@@ -1363,12 +1393,15 @@ exports.getSingleOrder = async (req, res) => {
                     });
                 }
             });
+
+
             if (pricebook) {
                 product.name = pricebook.name;
                 product.pName = pricebook.pName;
                 product.dealerSku = dealerPriceBook.dealerSku
                 product.term = pricebook.term;
             }
+
             if (pricebookCat) {
                 product.catName = pricebookCat.name;
             }
@@ -1394,23 +1427,29 @@ exports.getSingleOrder = async (req, res) => {
             ],
         };
         let checkServicer = await servicerService.getServiceProviderById(query1);
-        let singleDealerUser = await userService.getUserById1({ metaId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false });
-        let singleResellerUser = await userService.getUserById1({ metaId: checkOrder.resellerId, isPrimary: true }, { isDeleted: false });
-        let singleCustomerUser = await userService.getUserById1({ metaId: checkOrder.customerId, isPrimary: true }, { isDeleted: false });
+
+        let singleDealerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } }, { isDeleted: false });
+        let singleResellerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } }, { isDeleted: false });
+        let singleCustomerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } }, { isDeleted: false });
         // ------------------------------------Get Dealer Servicer -----------------------------
         let getServicersIds = await dealerRelationService.getDealerRelations({
             dealerId: checkOrder.dealerId,
         });
+
         let ids = getServicersIds.map((item) => item.servicerId);
+
         servicer = await servicerService.getAllServiceProvider(
             { _id: { $in: ids }, status: true },
             {}
         );
+
         if (checkOrder.resellerId != null) {
             var checkReseller = await resellerService.getReseller({
                 _id: checkOrder.resellerId,
             });
         }
+
+
         if (reseller && reseller.isServicer) {
             if (reseller.status) {
                 servicer.unshift(reseller);
@@ -1421,12 +1460,40 @@ exports.getSingleOrder = async (req, res) => {
             if (dealer.accountStatus) {
                 servicer.unshift(dealer);
             }
-            //servicer.unshift(dealer);
         }
-        const servicerIds = servicer.map((obj) => obj._id);
-        const servicerQuery = { metaId: { $in: servicerIds }, isPrimary: true };
 
-        let servicerUser = await userService.getMembers(servicerQuery, {});
+
+        const servicerIds = servicer.map((obj) => obj._id);
+
+        const servicerUser = await userService.findUserforCustomer1([
+            {
+                $match: {
+                    $and: [
+                        { metaData: { $elemMatch: { metaId: { $in: servicerIds }, isPrimary: true } } }
+                    ]
+                }
+            },
+            {
+                $project: {
+                    email: 1,
+                    'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+                    'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+                    'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+                    'position': { $arrayElemAt: ["$metaData.position", 0] },
+                    'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                    'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+                    'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+                    'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                    'status': { $arrayElemAt: ["$metaData.status", 0] },
+                    resetPasswordCode: 1,
+                    isResetPassword: 1,
+                    approvedStatus: 1,
+                    createdAt: 1,
+                    updatedAt: 1
+                }
+            }
+        ]);
+
         let result_Array = servicer.map((item1) => {
             const matchingItem = servicerUser.find(
                 (item2) => item2.metaId.toString() === item1._id.toString()
@@ -1499,6 +1566,7 @@ exports.markAsPaid = async (req, res) => {
             userId: req.userId,
             response: {}
         };
+
         const checkOrder = await orderService.getOrder({ _id: req.params.orderId }, { isDeleted: false })
 
         if (checkOrder.status == 'Archieved') {
@@ -1538,7 +1606,6 @@ exports.markAsPaid = async (req, res) => {
             { new: true }
         );
         let orderServiceCoverageType = savedResponse.serviceCoverageType
-        console.log("saved response ++++++++++++++++++++++++++++++++++++++++++++++=", savedResponse.coverageType)
         let count1 = await contractService.getContractsCountNew();
         var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
         let checkLength = savedResponse.productsArray.length - 1
@@ -1644,6 +1711,7 @@ exports.markAsPaid = async (req, res) => {
                 let p_date1 = new Date(data.purchaseDate)
                 let l_date = new Date(data.purchaseDate)
                 let l_date1 = new Date(data.purchaseDate)
+
                 let purchaseMonth = p_date.getMonth();
                 let monthsPart = partWarrantyMonth;
                 let newPartMonth = purchaseMonth + monthsPart;
@@ -1666,21 +1734,16 @@ exports.markAsPaid = async (req, res) => {
 
                 const futureDate = new Date(product.coverageStartDate);
                 let minDate1 = futureDate.setDate(futureDate.getDate() + adhDaysArray[0].waitingDays);
-                console.log("_-------------------------------------1`11111", product.isManufacturerWarranty)
 
                 if (!product.isManufacturerWarranty) {
-                    console.log("_-------------------------------------1`11111", savedResponse.serviceCoverageType)
                     let minDate2
                     if (orderServiceCoverageType = "Parts") {
-                        console.log("_-------------------------------------22222222222222", orderServiceCoverageType)
 
                         minDate2 = partsWarrantyDate1
                     } else if (orderServiceCoverageType = "Labour") {
-                        console.log("_-------------------------------------333333333", orderServiceCoverageType)
 
                         minDate2 = labourWarrantyDate1
                     } else {
-                        console.log("_-------------------------------------444444444444", savedResponse.serviceCoverageType)
 
                         if (partsWarrantyDate1 > labourWarrantyDate1) {
                             minDate2 = labourWarrantyDate1
@@ -1771,9 +1834,9 @@ exports.markAsPaid = async (req, res) => {
                 }
                 // send notification to dealer,admin, customer
                 let IDs = await supportingFunction.getUserIds()
-                let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.dealerId, isPrimary: true })
-                let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.customerId, isPrimary: true })
-                let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.resellerId, isPrimary: true })
+                let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } })
+                let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } })
+                let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } })
                 if (resellerPrimary) {
                     IDs.push(resellerPrimary._id)
                 }
@@ -1798,7 +1861,7 @@ exports.markAsPaid = async (req, res) => {
                     lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
                     address: settingData[0]?.address,
                     websiteSetting: settingData[0],
-                    senderName: dealerPrimary.firstName,
+                    senderName: dealerPrimary.metaData[0]?.firstName,
                     content: "The  order " + savedResponse.unique_key + " has been paid",
                     subject: "Mark as paid"
                 }
@@ -1810,7 +1873,7 @@ exports.markAsPaid = async (req, res) => {
                     lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
                     address: settingData[0]?.address,
                     websiteSetting: settingData[0],
-                    senderName: resellerPrimary?.firstName,
+                    senderName: resellerPrimary?.metaData[0]?.firstName,
                     content: "The  order " + savedResponse.unique_key + " has been paid",
                     subject: "Mark As paid"
                 }

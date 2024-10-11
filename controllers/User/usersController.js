@@ -607,6 +607,7 @@ exports.updateUserData = async (req, res) => {
       ]
     }
     const updateUser = await userService.updateSingleUser(criteria, updateData, option);
+
     if (!updateUser) {
       //Save Logs updateUserData
       let logData = {
@@ -1896,18 +1897,15 @@ const S3FILE = new AWS.S3();
 //Download file
 exports.downloadFile = async (req, res) => {
   try {
+
     let data = req.body
     const bucketName = process.env.bucket_name
-
     const key = req.body.key
-
     const params = {
       Bucket: bucketName,
       Key: key
     };
-
     const s3Object = await S3FILE.getObject(params).promise();
-
     // Set the headers to trigger a download in the browser
     res.setHeader('Content-Disposition', `attachment; filename="${key.split('/').pop()}"`);
     res.setHeader('Content-Type', s3Object.ContentType);

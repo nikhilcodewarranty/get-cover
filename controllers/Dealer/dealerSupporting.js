@@ -1921,7 +1921,6 @@ exports.getDealerById = async (req, res) => {
         const dynamicOption = await userService.getOptions(optionQuery)
         const filteredOptions = dynamicOption.value.filter(item => coverageType.includes(item.value));
 
-        console.log("------------------------------------", adhDays)
 
         // Loop through adhDays and find matching coverageType
         adhDays.forEach(adhItem => {
