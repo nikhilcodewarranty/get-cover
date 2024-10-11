@@ -1130,7 +1130,8 @@ exports.checkCoverageTypeDate = async (req, res) => {
 
       let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0].waitingDays))
 
-      let getCoverageTypeFromOption = await optionService.getOption({ value: "coverage_type" })
+      let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
+      console.log("getCoverageTypeFromOption",getCoverageTypeFromOption)
       const result = getCoverageTypeFromOption.value.filter(item => item.value === data.coverageType).map(item => item.label);
       console.log(result[0]);
 
