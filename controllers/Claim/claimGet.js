@@ -1130,15 +1130,17 @@ exports.checkCoverageTypeDate = async (req, res) => {
 
       let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0].waitingDays))
 
-      let getCoverageTypeFromOption = await optionService.getOption({value:data.coverageType})
+      let getCoverageTypeFromOption = await optionService.getOption({ value: "coverage_type" })
+      const result = getCoverageTypeFromOption.value.filter(item => item.value === data.coverageType).map(item => item.label);
+      console.log(result[0]);
 
       if (checkCoverageTypeDate > getClaim.lossDate) {
         // claim not allowed for that coverageType
         res.send({
           code: 403,
-          tittle: `${getCoverageTypeFromOption.label} Not Eligible for the claim`,
+          tittle: `${result[0]} Not Eligible for the claim`,
           // message: `Claim not allowed for that coverage type till date ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}`
-          message: `Your selected ${getCoverageTypeFromOption.label} is currently not eligible for the claim. You can file the claim for ${getCoverageTypeFromOption.label} on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}. Do you wish to proceed in rejecting this claim?`
+          message: `Your selected ${result[0]} is currently not eligible for the claim. You can file the claim for ${result[0]} on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}. Do you wish to proceed in rejecting this claim?`
         })
         return
 
