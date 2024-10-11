@@ -3,7 +3,6 @@ const mongoose = require("mongoose");
 const connection = require('../../db')
 
 const orderSchema = new mongoose.Schema({
-
   dealerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "dealer",
@@ -192,9 +191,17 @@ const orderSchema = new mongoose.Schema({
         },
         coverageStartDate: {
           type: Date,
-          default: Date.now(),
+          default: new Date(),
+        },
+        coverageStartDate1: {
+          type: Date,
+          default: new Date(),
         },
         coverageEndDate: {
+          type: Date,
+          default: '',
+        },
+        coverageEndDate1: {
           type: Date,
           default: '',
         },
@@ -228,7 +235,7 @@ const orderSchema = new mongoose.Schema({
   },
   orderDate: {
     type: Date,
-    default: Date.now(),
+    default: new Date(),
   },
   paidAmount: {
     type: Number,
@@ -269,7 +276,6 @@ const orderSchema = new mongoose.Schema({
       }
     }
   },
-
   canProceed: {
     type: Boolean,
     default: false

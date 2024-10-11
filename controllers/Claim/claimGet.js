@@ -966,15 +966,24 @@ exports.checkClaimAmount = async (req, res) => {
         let customerOverAmount
         let getcoverOverAmount
         let getCoverClaimAmount
+        console.log("++++++++++++++++++++++ condition +++++++++++++++++++++=", justToCheck, getClaim.totalAmount)
 
 
         if (getClaim.totalAmount > Number(justToCheck)) {
           if (getContractDetail.isMaxClaimAmount) {
             console.log("1st condition +++++++++++++++++++++=", getContractDetail.isMaxClaimAmount)
-            customerClaimAmount = deductableAmount > getClaim.totalAmount ? getClaim.totalAmount : deductableAmount
-            getCoverClaimAmount = justToCheck > 0 ? getClaim.totalAmount >= justToCheck ? justToCheck : getClaim.totalAmount : 0
-            customerOverAmount = getClaim.totalAmount - (getCoverClaimAmount + customerClaimAmount)
-            getcoverOverAmount = 0
+            if (deductableAmount > justToCheck) {
+              customerClaimAmount = deductableAmount > getClaim.totalAmount ? getClaim.totalAmount : deductableAmount
+              getCoverClaimAmount = justToCheck > 0 ? getClaim.totalAmount >= justToCheck ? justToCheck : getClaim.totalAmount : 0
+              customerOverAmount = getClaim.totalAmount - (getCoverClaimAmount + customerClaimAmount)
+              getcoverOverAmount = 0
+            } else {
+              customerClaimAmount = deductableAmount > getClaim.totalAmount ? getClaim.totalAmount : deductableAmount
+              getCoverClaimAmount = justToCheck > 0 ? getClaim.totalAmount >= justToCheck ? justToCheck : getClaim.totalAmount : 0
+              customerOverAmount = getClaim.totalAmount - (getCoverClaimAmount + customerClaimAmount)
+              getcoverOverAmount = 0
+            }
+
           } else {
             console.log("2nd t condition +++++++++++++++++++++=", getContractDetail.isMaxClaimAmount)
             customerClaimAmount = deductableAmount > getClaim.totalAmount ? getClaim.totalAmount : deductableAmount
