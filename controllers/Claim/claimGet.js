@@ -5,6 +5,7 @@ const { comments } = require("../../models/Claim/comment");
 const LOG = require('../../models/User/logs')
 const claimService = require("../../services/Claim/claimService");
 const orderService = require("../../services/Order/orderService");
+const optionService = require("../../services/User/optionsService");
 const userService = require("../../services/User/userService");
 const contractService = require("../../services/Contract/contractService");
 const servicerService = require("../../services/Provider/providerService");
@@ -1129,13 +1130,15 @@ exports.checkCoverageTypeDate = async (req, res) => {
 
       let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0].waitingDays))
 
+      let getCoverageTypeFromOption = await optionService.getOption({value:data.coverageType})
+
       if (checkCoverageTypeDate > getClaim.lossDate) {
         // claim not allowed for that coverageType
         res.send({
           code: 403,
-          tittle: `${data.coverageType} Not Eligible for the claim`,
+          tittle: `${getCoverageTypeFromOption.label} Not Eligible for the claim`,
           // message: `Claim not allowed for that coverage type till date ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}`
-          message: `Your selected ${data.coverageType} is currently not eligible for the claim. You can file the claim for ${data.coverageType} on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}. Do you wish to proceed in rejecting this claim?`
+          message: `Your selected ${getCoverageTypeFromOption.label} is currently not eligible for the claim. You can file the claim for ${getCoverageTypeFromOption.label} on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}. Do you wish to proceed in rejecting this claim?`
         })
         return
 
