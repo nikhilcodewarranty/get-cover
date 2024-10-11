@@ -1081,7 +1081,7 @@ exports.checkClaimAmount = async (req, res) => {
 
 
     } else {
-      console.log("))))))))))))))))))))))))))))))))))))))))))--------)))",getClaim)
+      console.log("))))))))))))))))))))))))))))))))))))))))))--------)))", getClaim)
 
       let values = {
         $set: {
@@ -1132,8 +1132,10 @@ exports.checkCoverageTypeDate = async (req, res) => {
       if (checkCoverageTypeDate > getClaim.lossDate) {
         // claim not allowed for that coverageType
         res.send({
-          code: constant.errorCode,
-          message: `Claim not allowed for that coverage type till date ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}`
+          code: 403,
+          tittle: `${data.coverageType} Not Eligible for the claim`,
+          // message: `Claim not allowed for that coverage type till date ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}`
+          message: `Your selected ${data.coverageType} is currently not eligible for the claim. You can file the claim for ${data.coverageType} on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}. Do you wish to proceed in rejecting this claim?`
         })
         return
 
