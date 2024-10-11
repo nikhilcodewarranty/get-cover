@@ -1182,7 +1182,7 @@ exports.editClaimStatus = async (req, res) => {
     //Amount reset of the claim in rejected claim
     if (updateBodyStatus.claimFile == 'rejected') {
       console.log("--------------------------------------------------------")
-      let updatePrice = await claimService.updateClaim(criteria, { totalAmount: 0, customerClaimAmount: 0, getcoverClaimAmount: 0, customerOverAmount: 0, getcoverOverAmount: 0 }, { new: true })
+      let updatePrice = await claimService.updateClaim(criteria, { totalAmount: 0, customerClaimAmount: 0, getCoverClaimAmount: 0, customerOverAmount: 0, getcoverOverAmount: 0 }, { new: true })
       const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
       console.log("--------------------------------------------------------",updateContract)
 
