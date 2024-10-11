@@ -1638,6 +1638,8 @@ exports.markAsPaid = async (req, res) => {
             let orderProductId = product._id;
             let coverageStartDate = product.coverageStartDate;
             let coverageEndDate = product.coverageEndDate;
+            let coverageStartDate1 = product.coverageStartDate1;
+            let coverageEndDate1 = product.coverageEndDate1;
             let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
             let projection = { isDeleted: 0 };
             let priceBook = await priceBookService.getPriceBookById(
@@ -1797,6 +1799,8 @@ exports.markAsPaid = async (req, res) => {
                     minDate: minDate,
                     dealerSku: dealerPriceBook.dealerSku,
                     coverageStartDate: coverageStartDate,
+                    coverageStartDate1: coverageStartDate1,
+                    coverageEndDate1: coverageEndDate1,
                     coverageEndDate: coverageEndDate,
                     serviceCoverageType: serviceCoverage,
                     coverageType: checkOrder.coverageType,

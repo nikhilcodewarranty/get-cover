@@ -1352,7 +1352,9 @@ exports.createOrder1 = async (req, res) => {
                 }
                 let priceBookId = product.priceBookId;
                 let coverageStartDate = product.coverageStartDate;
+                let coverageStartDate1 = product.coverageStartDate1;
                 let coverageEndDate = product.coverageEndDate;
+                let coverageEndDate1 = product.coverageEndDate1;
                 let orderProductId = product._id;
 
                 let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
@@ -1483,8 +1485,10 @@ exports.createOrder1 = async (req, res) => {
                         venderOrder: savedResponse.venderOrder,
                         orderProductId: orderProductId,
                         coverageStartDate: coverageStartDate,
+                        coverageStartDate1: coverageStartDate1,
                         dealerSku: dealerPriceBook.dealerSku,
                         coverageEndDate: coverageEndDate,
+                        coverageEndDate1: coverageEndDate1,
                         productName: priceBook[0]?.name,
                         pName: priceBook[0]?.pName,
                         manufacture: data.brand,
@@ -2330,7 +2334,9 @@ exports.editOrderDetail = async (req, res) => {
                 let priceBookId = product.priceBookId;
                 let orderProductId = product._id;
                 let coverageStartDate = product.coverageStartDate;
+                let coverageStartDate1 = product.coverageStartDate1;
                 let coverageEndDate = product.coverageEndDate;
+                let coverageEndDate1 = product.coverageEndDate1;
                 let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
                 let projection = { isDeleted: 0 };
 
@@ -2475,6 +2481,8 @@ exports.editOrderDetail = async (req, res) => {
                         orderProductId: orderProductId,
                         minDate: minDate,
                         coverageStartDate: coverageStartDate,
+                        coverageStartDate1: coverageStartDate1,
+                        coverageEndDate1: coverageEndDate1,
                         coverageEndDate: coverageEndDate,
                         dealerSku: dealerPriceBook.dealerSku,
                         serviceCoverageType: serviceCoverage,

@@ -499,7 +499,9 @@ exports.createOrder = async (req, res) => {
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
                 let coverageStartDate = product.coverageStartDate;
+                let coverageStartDate1 = product.coverageStartDate1;
                 let coverageEndDate = product.coverageEndDate;
+                let coverageEndDate1 = product.coverageEndDate1;
                 let orderProductId = product._id;
                 let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
                 let projection = { isDeleted: 0 };
@@ -596,7 +598,9 @@ exports.createOrder = async (req, res) => {
                         orderUniqueKey: savedResponse.unique_key,
                         venderOrder: savedResponse.venderOrder,
                         coverageStartDate: coverageStartDate,
+                        coverageStartDate1: coverageStartDate1,
                         coverageEndDate: coverageEndDate,
+                        coverageEndDate1: coverageEndDate1,
                         status: claimStatus,
                         eligibilty: eligibilty,
                         productValue: data.retailValue,
@@ -1005,7 +1009,9 @@ exports.editOrderDetail = async (req, res) => {
                 const result = await getObjectFromS3(bucketReadUrl);
                 let priceBookId = product.priceBookId;
                 let coverageStartDate = product.coverageStartDate;
+                let coverageStartDate1 = product.coverageStartDate1;
                 let coverageEndDate = product.coverageEndDate;
+                let coverageEndDate1 = product.coverageEndDate1;
                 let orderProductId = product._id;
                 let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
                 let projection = { isDeleted: 0 };
@@ -1160,7 +1166,9 @@ exports.editOrderDetail = async (req, res) => {
                         orderUniqueKey: savedResponse.unique_key,
                         venderOrder: savedResponse.venderOrder,
                         coverageStartDate: coverageStartDate,
+                        coverageStartDate1: coverageStartDate1,
                         coverageEndDate: coverageEndDate,
+                        coverageEndDate1: coverageEndDate1,
                         status: claimStatus,
                         eligibilty: eligibilty,
                         productValue: data.retailValue,
