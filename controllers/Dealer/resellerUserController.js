@@ -373,9 +373,16 @@ exports.createOrder = async (req, res) => {
 
         let getChoosedProducts = data.productsArray
         for (let A = 0; A < getChoosedProducts.length; A++) {
-            if(getChoosedProducts[A].coverageStartDate!=""){
+            if (getChoosedProducts[A].coverageStartDate != "") {
                 let addOneDay = new Date(getChoosedProducts[A].coverageStartDate)
-                data.productsArray[A].coverageStartDate = addOneDay.setDate(addOneDay.getDate() + 1);
+                let addOneDay1 = new Date(getChoosedProducts[A].coverageStartDate)
+                let addOneDay2 = new Date(getChoosedProducts[A].coverageEndDate)
+                let addOneDay3 = new Date(getChoosedProducts[A].coverageEndDate)
+                data.productsArray[A].coverageStartDate1 = addOneDay
+                data.productsArray[A].coverageEndDate1 = addOneDay2
+                data.productsArray[A].coverageStartDate = addOneDay1.setDate(addOneDay1.getDate() + 1);
+                data.productsArray[A].coverageEndDate = addOneDay3.setDate(addOneDay3.getDate() + 1);
+
             }
             if (!getChoosedProducts[A].adhDays) {
                 res.send({
@@ -492,7 +499,9 @@ exports.createOrder = async (req, res) => {
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
                 let coverageStartDate = product.coverageStartDate;
+                let coverageStartDate1 = product.coverageStartDate1;
                 let coverageEndDate = product.coverageEndDate;
+                let coverageEndDate1 = product.coverageEndDate1;
                 let orderProductId = product._id;
                 let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
                 let projection = { isDeleted: 0 };
@@ -589,7 +598,9 @@ exports.createOrder = async (req, res) => {
                         orderUniqueKey: savedResponse.unique_key,
                         venderOrder: savedResponse.venderOrder,
                         coverageStartDate: coverageStartDate,
+                        coverageStartDate1: coverageStartDate1,
                         coverageEndDate: coverageEndDate,
+                        coverageEndDate1: coverageEndDate1,
                         status: claimStatus,
                         eligibilty: eligibilty,
                         productValue: data.retailValue,
@@ -998,7 +1009,9 @@ exports.editOrderDetail = async (req, res) => {
                 const result = await getObjectFromS3(bucketReadUrl);
                 let priceBookId = product.priceBookId;
                 let coverageStartDate = product.coverageStartDate;
+                let coverageStartDate1 = product.coverageStartDate1;
                 let coverageEndDate = product.coverageEndDate;
+                let coverageEndDate1 = product.coverageEndDate1;
                 let orderProductId = product._id;
                 let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
                 let projection = { isDeleted: 0 };
@@ -1153,7 +1166,9 @@ exports.editOrderDetail = async (req, res) => {
                         orderUniqueKey: savedResponse.unique_key,
                         venderOrder: savedResponse.venderOrder,
                         coverageStartDate: coverageStartDate,
+                        coverageStartDate1: coverageStartDate1,
                         coverageEndDate: coverageEndDate,
+                        coverageEndDate1: coverageEndDate1,
                         status: claimStatus,
                         eligibilty: eligibilty,
                         productValue: data.retailValue,
@@ -2602,11 +2617,10 @@ async function generateTC(orderData) {
 
     }
     catch (err) {
-        res.send({
+        return {
             code: constant.errorCode,
             message: err.message
-        })
-        return;
+        }
     }
 }
 
