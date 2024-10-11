@@ -932,6 +932,7 @@ exports.checkClaimAmount = async (req, res) => {
 
 
     if (getClaim.claimType != "" && getClaim.claimType != "New") {
+      console.log(")))))))))))))))))))))))))))))))))))))))))))))")
       let coverageTypeDays = getContractDetail.adhDays
       let getDeductible = coverageTypeDays.filter(coverageType => {
         return coverageType.value === getClaim.claimType;
@@ -944,18 +945,24 @@ exports.checkClaimAmount = async (req, res) => {
         return
       }
       let deductableAmount;
+      let checkClaimNumber = await claimService.getClaims({ contractId: getClaim.contractId })
+
+      let justToCheck = product - claimAmount
 
       if (getDeductible[0].amountType == "percentage") {
-        deductableAmount = (getDeductible[0].deductible / 100) * getClaim.totalAmount
+        if (justToCheck > getClaim.totalAmount) {
+          deductableAmount = (getDeductible[0].deductible / 100) * getClaim.totalAmount
+        } else {
+          deductableAmount = (getDeductible[0].deductible / 100) * justToCheck
+
+        }
       } else {
         deductableAmount = getDeductible[0].deductible
       }
 
 
 
-      let checkClaimNumber = await claimService.getClaims({ contractId: getClaim.contractId })
 
-      let justToCheck = product - claimAmount
 
       if (getClaim.totalAmount > Number(justToCheck)) {
         console.log("over amount conditions ak ")
@@ -988,7 +995,7 @@ exports.checkClaimAmount = async (req, res) => {
             if (deductableAmount >= justToCheck) {
               customerClaimAmount = deductableAmount
               customerOverAmount = 0
-              getCoverClaimAmount =  0
+              getCoverClaimAmount = 0
               getcoverOverAmount = getClaim.totalAmount - (getCoverClaimAmount + customerClaimAmount)
             } else {
               customerClaimAmount = deductableAmount
@@ -1074,6 +1081,8 @@ exports.checkClaimAmount = async (req, res) => {
 
 
     } else {
+      console.log("))))))))))))))))))))))))))))))))))))))))))--------)))",getClaim)
+
       let values = {
         $set: {
           customerClaimAmount: 0,

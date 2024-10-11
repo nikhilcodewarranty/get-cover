@@ -2617,11 +2617,10 @@ async function generateTC(orderData) {
 
     }
     catch (err) {
-        res.send({
+        return {
             code: constant.errorCode,
             message: err.message
-        })
-        return;
+        }
     }
 }
 
