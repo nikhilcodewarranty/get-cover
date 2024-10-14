@@ -2154,6 +2154,7 @@ exports.paidUnpaidClaim = async (req, res) => {
               "receiptImage": 1,
               reason: 1,
               "unique_key": 1,
+              ClaimType:1,
               note: 1,
               totalAmount: 1,
               servicerId: 1,
