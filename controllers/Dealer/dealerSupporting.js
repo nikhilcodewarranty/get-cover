@@ -1564,6 +1564,9 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
             matchConditions.push({ 'priceBooks.coverageType.value': { "$all": data.coverageType },'priceBooks.coverageType':{ "$size": data.coverageType.length }  });
         }
 
+
+        console.log("sdfsdfdsfdsdsf")
+
         if (data.name) {
             matchConditions.push({ 'priceBooks.name': { '$regex': req.body.name ? req.body.name.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } });
         }
