@@ -35,16 +35,16 @@ exports.getAllPriceBooks = async (req, res, next) => {
     data.status = typeof (filterStatus) == "string" ? "all" : filterStatus
     let query;
 
-    if(!Array.isArray(data.coverageType ) && data.coverageType!=''){
+    if (!Array.isArray(data.coverageType) && data.coverageType != '') {
       res.send({
-          code:constant.errorCode,
-          message:"Coverage type should be an array!"
+        code: constant.errorCode,
+        message: "Coverage type should be an array!"
       });
       return;
-  }
+    }
 
     if (data.status != "all") {
-      if (data.coverageType != "") {
+      if (data.coverageType.length != "") {
         query = {
           $and: [
             { isDeleted: false },
@@ -73,7 +73,8 @@ exports.getAllPriceBooks = async (req, res, next) => {
         $and: [
           { isDeleted: false },
           { 'pName': { '$regex': searchName1, '$options': 'i' } },
-          { 'coverageType': { $elemMatch: { value: data.coverageType } } },
+          { "coverageType.value": { "$all": data.coverageType } },
+          { "coverageType": { "$size": data.coverageType.length } },
           { 'name': { '$regex': searchName, '$options': 'i' } },
           { 'category': { $in: catIdsArray } }
         ]
