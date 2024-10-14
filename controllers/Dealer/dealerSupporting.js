@@ -867,8 +867,8 @@ exports.getDealerClaims = async (req, res) => {
                             claimStatus: 1,
                             repairStatus: 1,
                             "contracts.unique_key": 1,
-              "contracts.coverageType": 1,
-              "contracts.productName": 1,
+                            "contracts.coverageType": 1,
+                            "contracts.productName": 1,
                             "contracts.pName": 1,
                             "contracts.model": 1,
                             "contracts.manufacture": 1,
@@ -1042,11 +1042,11 @@ exports.getDealerClaims = async (req, res) => {
         const result_Array = resultFiter.map((item1) => {
             servicer = []
             let mergedData = []
-      if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
-        mergedData = dynamicOption.value.filter(contract =>
-          item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
-        );
-      }
+            if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
+                mergedData = dynamicOption.value.filter(contract =>
+                    item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
+                );
+            }
             let servicerName = '';
             let selfServicer = false;
             let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
@@ -1056,7 +1056,7 @@ exports.getDealerClaims = async (req, res) => {
             if (item1.contracts.orders.servicers[0]?.length > 0) {
                 servicer.unshift(item1.contracts.orders.servicers[0])
             }
-            if (item1.contracts.orders.resellers[0]?.isServicer) { 
+            if (item1.contracts.orders.resellers[0]?.isServicer) {
                 servicer.unshift(item1.contracts.orders.resellers[0])
             }
             if (item1.contracts.orders.dealers.isServicer) {
@@ -1074,7 +1074,7 @@ exports.getDealerClaims = async (req, res) => {
                 contracts: {
                     ...item1.contracts,
                     allServicer: servicer,
-                    mergedData:mergedData
+                    mergedData: mergedData
                 }
             }
         })
@@ -1391,10 +1391,10 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
                 { 'name': { '$regex': req.body.category ? req.body.category : '', '$options': 'i' } }
             ]
         };
-        if(!Array.isArray(data.coverageType ) && data.coverageType!=''){
+        if (!Array.isArray(data.coverageType) && data.coverageType != '') {
             res.send({
-                code:constant.errorCode,
-                message:"Coverage type should be an array!"
+                code: constant.errorCode,
+                message: "Coverage type should be an array!"
             });
             return;
         }
@@ -1409,7 +1409,8 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
                 query = {
                     $and: [
                         { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-                        { 'priceBooks.coverageType': { $elemMatch: { value: { $in: data.coverageType } } } },
+                        { 'priceBooks.coverageType.value': { $all: data.coverageType } },
+                        { 'priceBooks.coverageType': { $size: data.coverageType.length } },
                         { 'priceBooks.category._id': { $in: catIdsArray } },
                         { 'status': data.status },
                         { 'dealerSku': { '$regex': dealerSku, '$options': 'i' } },
@@ -1437,7 +1438,8 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
             query = {
                 $and: [
                     { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-                    { 'priceBooks.coverageType': { $elemMatch: { value: { $in: data.coverageType } } } },
+                    { 'priceBooks.coverageType.value': { $all: data.coverageType } },
+                    { 'priceBooks.coverageType': { $size: data.coverageType.length } },
                     { 'priceBooks.category._id': { $in: catIdsArray } },
                     { 'dealerSku': { '$regex': dealerSku, '$options': 'i' } },
 
@@ -1519,10 +1521,10 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
             })
             return;
         }
-        if(!Array.isArray(data.coverageType ) && data.coverageType!=''){
+        if (!Array.isArray(data.coverageType) && data.coverageType != '') {
             res.send({
-                code:constant.errorCode,
-                message:"Coverage type should be an array!"
+                code: constant.errorCode,
+                message: "Coverage type should be an array!"
             });
             return;
         }
@@ -1561,8 +1563,11 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
         }
 
         if (data.coverageType) {
-            matchConditions.push({ 'priceBooks.coverageType': { $elemMatch: { value: { $in: data.coverageType } } } });
+            matchConditions.push({ 'priceBooks.coverageType.value': { "$all": data.coverageType }, 'priceBooks.coverageType': { "$size": data.coverageType.length } });
         }
+
+
+        console.log("sdfsdfdsfdsdsf")
 
         if (data.name) {
             matchConditions.push({ 'priceBooks.name': { '$regex': req.body.name ? req.body.name.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } });
@@ -1992,7 +1997,7 @@ exports.getDealerSettings = async (req, res) => {
             const checkReseller = await resellerService.getReseller({ _id: req.userId }, {})
             dealerId = checkReseller.dealerId
         }
- 
+
         let query = [
             {
                 $match: {

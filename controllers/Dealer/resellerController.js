@@ -592,7 +592,8 @@ exports.getResellerPriceBook = async (req, res) => {
         query = {
             $and: [
                 { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-                { 'priceBooks.coverageType': { $elemMatch: { value: { $in: coverageType } } } },
+                { 'priceBooks.coverageType.value': { $all: coverageType } },
+                { 'priceBooks.coverageType': { $size: coverageType.length } }
                 { 'priceBooks.category._id': { $in: catIdsArray } },
                 { 'status': true },
                 { 'dealerSku': { '$regex': dealerSku, '$options': 'i' } },
@@ -2129,9 +2130,9 @@ exports.getResellerClaims = async (req, res) => {
             servicer = []
             let mergedData = []
             if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
-              mergedData = dynamicOption.value.filter(contract =>
-                item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
-              );
+                mergedData = dynamicOption.value.filter(contract =>
+                    item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
+                );
             }
             let servicerName = '';
             let selfServicer = false;
@@ -2165,7 +2166,7 @@ exports.getResellerClaims = async (req, res) => {
                 contracts: {
                     ...item1.contracts,
                     allServicer: servicer,
-                    mergedData:mergedData
+                    mergedData: mergedData
 
                 }
             }
