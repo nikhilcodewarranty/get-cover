@@ -2252,7 +2252,14 @@ exports.paidUnpaidClaim = async (req, res) => {
             { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { 'customerStatus.status': { '$regex': data.customerStatusValue ? data.customerStatusValue : '', '$options': 'i' } },
             { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
-            { 'claimStatus.status': 'Completed' },
+            {
+              $or: [
+                { 'claimStatus.status': 'Completed' },
+                { 'claimStatus.status': 'completed' },
+
+              ]
+            },
+           
             { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { 'productName': { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { claimPaymentStatus: flag },
@@ -2384,11 +2391,11 @@ exports.paidUnpaidClaim = async (req, res) => {
       let servicerName = '';
       let selfServicer = false;
       let mergedData = []
-      if(Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType){
+      if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
         mergedData = dynamicOption.value.filter(contract =>
           item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
         );
-    }
+      }
       let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
         const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId.toString());
         servicer.push(dealerOfServicer)
@@ -2414,7 +2421,7 @@ exports.paidUnpaidClaim = async (req, res) => {
         contracts: {
           ...item1.contracts,
           allServicer: servicer,
-          mergedData:mergedData
+          mergedData: mergedData
         }
       }
     })
