@@ -951,12 +951,17 @@ exports.checkClaimAmount = async (req, res) => {
       let justToCheck = product - claimAmount
 
       if (getDeductible[0].amountType == "percentage") {
-        if (justToCheck > getClaim.totalAmount) {
-          deductableAmount = (getDeductible[0].deductible / 100) * getClaim.totalAmount
-        } else {
-          deductableAmount = (getDeductible[0].deductible / 100) * justToCheck
+        if (getContractDetail.isMaxClaimAmount) {
+          if (justToCheck > getClaim.totalAmount) {
+            deductableAmount = (getDeductible[0].deductible / 100) * getClaim.totalAmount
+          } else {
+            deductableAmount = (getDeductible[0].deductible / 100) * justToCheck
 
+          }
+        } else {
+          deductableAmount = (getDeductible[0].deductible / 100) * getClaim.totalAmount
         }
+
       } else {
         deductableAmount = getDeductible[0].deductible
       }
@@ -993,6 +998,8 @@ exports.checkClaimAmount = async (req, res) => {
             }
 
           } else {
+            console.log("++++++++++++++++++++++ condition +++++++++++++++++++++=", deductableAmount, justToCheck, getClaim.totalAmount)
+
             if (deductableAmount >= justToCheck) {
               customerClaimAmount = deductableAmount
               customerOverAmount = 0
@@ -1134,7 +1141,7 @@ exports.checkCoverageTypeDate = async (req, res) => {
       let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
       console.log("getCoverageTypeFromOption", getCoverageTypeFromOption)
       const result = getCoverageTypeFromOption.value.filter(item => item.value === data.coverageType).map(item => item.label);
-      console.log(new Date(checkCoverageTypeDate).setHours(0,0,0,0));
+      console.log(new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0));
 
       if (checkCoverageTypeDate > getClaim.lossDate) {
         // claim not allowed for that coverageType
