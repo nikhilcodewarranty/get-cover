@@ -1162,19 +1162,88 @@ exports.editClaimStatus = async (req, res) => {
       return;
     }
 
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth() + 1; // 
+
+    let getNoOfClaimQuery = [
+      {
+        $match: { contractId: new mongoose.Types.ObjectId(checkClaim.contractId) }
+      },
+      // Step 1: Add fields to extract year and month from the createdAt field
+      {
+        $addFields: {
+          year: { $year: '$createdAt' },
+          month: { $month: '$createdAt' }
+        }
+      },
+      // Step 2: Group the results to get counts for both year and month
+      {
+        $group: {
+          _id: null,
+          monthlyCount: {
+            $sum: {
+              $cond: [
+                { $and: [{ $eq: ['$year', currentYear] }, { $eq: ['$month', currentMonth] }] },
+                1,
+                0
+              ]
+            }
+          },
+          yearlyCount: {
+            $sum: {
+              $cond: [
+                { $eq: ['$year', currentYear] },
+                1,
+                0
+              ]
+            }
+          }
+        }
+      }
+    ]
+
+    let checkNoOfClaims = await claimService.getClaimWithAggregate(getNoOfClaimQuery)
+    if (checkNoOfClaims.length == 0) {
+      checkNoOfClaims = {
+        "monthlyCount": 0,
+        "yearlyCount": 0
+      }
+    }
+
+
     //Eligibility true when claim is completed and rejected
     if (updateBodyStatus.claimFile == 'completed') {
+      let forCheckOnly;
       if (checkContract.isMaxClaimAmount) {
         if (checkContract.productValue > claimTotal[0]?.amount) {
           const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
+          forCheckOnly = true
         }
         else if (checkContract.productValue < claimTotal[0]?.amount) {
           const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: false }, { new: true })
+          forCheckOnly = false
         }
       } else {
         const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
-      }
+        forCheckOnly = true
 
+      }
+      // if (forCheckOnly) {
+      //   let checkThePeriod = checkContract.noOfClaim
+      //   if (checkThePeriod.value != -1) {
+      //     if (checkThePeriod.period == "Monthly") {
+      //       let eligibility = checkNoOfClaims.monthlyCount >= checkThePeriod.value ? false : true
+      //       if(eligibility){
+      //         eligibility = 
+      //       }
+      //       const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: eligibility }, { new: true })
+      //     } else {
+      //       let eligibility = checkNoOfClaims.yearlyCount >= checkThePeriod.value ? false : true
+      //       const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: eligibility }, { new: true })
+      //     }
+      //   }
+      // }
     }
 
     console.log("-----------++++++++++++++++++++++++++---------------------------------------------")
@@ -1184,7 +1253,7 @@ exports.editClaimStatus = async (req, res) => {
       console.log("--------------------------------------------------------")
       let updatePrice = await claimService.updateClaim(criteria, { totalAmount: 0, customerClaimAmount: 0, getCoverClaimAmount: 0, customerOverAmount: 0, getcoverOverAmount: 0 }, { new: true })
       const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
-      console.log("--------------------------------------------------------",updateContract)
+      console.log("--------------------------------------------------------", updateContract)
 
     }
 

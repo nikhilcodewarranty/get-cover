@@ -8,7 +8,7 @@ const supportingFunction = require("../../config/supportingFunction")
 // price book api's
 router.post("/createPriceBook", [verifyToken], validator('create_price_validation'), priceController.createPriceBook); // create price book with defined price category ID
 router.get("/getPriceBookById/:priceBookId", [verifyToken], supportingFunction.checkObjectId, priceController.getPriceBookById); //get price book detail with ID
-router.post("/priceBooks", [verifyToken], validator('filter_price_book'), priceController.getAllPriceBooks); //get price books api
+router.post("/priceBooks", [verifyToken], priceController.getAllPriceBooks); //get price books api
 router.get("/getAllActivePriceBook", [verifyToken], priceController.getAllActivePriceBook); //get price books api
 router.post("/searchPriceBook", [verifyToken], validator('search_price_book_validation'), priceController.searchPriceBook); // search price book with defined price category ID
 router.put("/updatePriceBook/:priceBookId", [verifyToken], priceController.updatePriceBookById); // update price book detail with ID
