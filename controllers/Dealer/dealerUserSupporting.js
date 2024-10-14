@@ -788,7 +788,8 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
                     { 'priceBooks.priceType': { '$regex': priceType, '$options': 'i' } },
                     { 'priceBooks.pName': { '$regex': searchPName, '$options': 'i' } },
                     { 'priceBooks.category._id': { $in: catIdsArray } },
-                    { 'priceBooks.coverageType': { $elemMatch: { value: { $in: data.coverageType } } } },
+                    { 'priceBooks.coverageType.value': { $all: data.coverageType } },
+                    { "priceBooks.coverageType": { $size: data.coverageType.length } },
                     { 'status': true },
                     { 'dealerSku': { '$regex': dealerSku, '$options': 'i' } },
                     { dealerId: new mongoose.Types.ObjectId(req.userId) }
