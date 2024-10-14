@@ -1134,7 +1134,7 @@ exports.checkCoverageTypeDate = async (req, res) => {
       let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
       console.log("getCoverageTypeFromOption", getCoverageTypeFromOption)
       const result = getCoverageTypeFromOption.value.filter(item => item.value === data.coverageType).map(item => item.label);
-      console.log(result[0]);
+      console.log(new Date(checkCoverageTypeDate).setHours(0,0,0,0));
 
       if (checkCoverageTypeDate > getClaim.lossDate) {
         // claim not allowed for that coverageType

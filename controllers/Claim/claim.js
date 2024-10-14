@@ -1229,21 +1229,26 @@ exports.editClaimStatus = async (req, res) => {
         forCheckOnly = true
 
       }
-      // if (forCheckOnly) {
-      //   let checkThePeriod = checkContract.noOfClaim
-      //   if (checkThePeriod.value != -1) {
-      //     if (checkThePeriod.period == "Monthly") {
-      //       let eligibility = checkNoOfClaims.monthlyCount >= checkThePeriod.value ? false : true
-      //       if(eligibility){
-      //         eligibility = 
-      //       }
-      //       const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: eligibility }, { new: true })
-      //     } else {
-      //       let eligibility = checkNoOfClaims.yearlyCount >= checkThePeriod.value ? false : true
-      //       const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: eligibility }, { new: true })
-      //     }
-      //   }
-      // }
+      if (forCheckOnly) {
+        let checkThePeriod = checkContract.noOfClaim
+        let getTotalClaim = await claimService.getClaims({ contractId: checkClaim.contractId, claimFile: "completed" })
+        let noOfTotalClaims = getTotalClaim.length
+        if (checkThePeriod.value != -1) {
+          if (checkThePeriod.period == "Monthly") {
+            let eligibility = checkNoOfClaims.monthlyCount >= checkThePeriod.value ? false : true
+            if (eligibility) {
+              eligibility = noOfTotalClaims >= checkContract.noOfClaimPerPeriod ? false : true
+            }
+            const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: eligibility }, { new: true })
+          } else {
+            let eligibility = checkNoOfClaims.yearlyCount >= checkThePeriod.value ? false : true
+            if (eligibility) {
+              eligibility = noOfTotalClaims >= checkContract.noOfClaimPerPeriod ? false : true
+            }
+            const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: eligibility }, { new: true })
+          }
+        }
+      }
     }
 
     console.log("-----------++++++++++++++++++++++++++---------------------------------------------")
