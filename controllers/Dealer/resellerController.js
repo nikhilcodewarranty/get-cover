@@ -593,7 +593,7 @@ exports.getResellerPriceBook = async (req, res) => {
             $and: [
                 { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
                 { 'priceBooks.coverageType.value': { $all: coverageType } },
-                { 'priceBooks.coverageType': { $size: coverageType.length } }
+                { 'priceBooks.coverageType': { $size: coverageType.length } },
                 { 'priceBooks.category._id': { $in: catIdsArray } },
                 { 'status': true },
                 { 'dealerSku': { '$regex': dealerSku, '$options': 'i' } },
