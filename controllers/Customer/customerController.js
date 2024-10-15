@@ -153,9 +153,9 @@ exports.createCustomer = async (req, res, next) => {
               flag: "created", title: settingData[0]?.title,
               darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
               lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-               link: resetLink, subject: "Set Password", role: "Customer",
-                servicerName: saveMembers[i].firstName,
-               address: settingData[0]?.address,
+              link: resetLink, subject: "Set Password", role: "Customer",
+              servicerName: saveMembers[i].firstName,
+              address: settingData[0]?.address,
             }))
 
           }
@@ -404,6 +404,7 @@ exports.getResellerCustomers = async (req, res) => {
     let data = req.body;
     let query = { isDeleted: false, resellerId: req.params.resellerId }
     let projection = { __v: 0, firstName: 0, lastName: 0, email: 0, password: 0 }
+    console.log("query++++++++++++++++++++++++++", query)
     const customers = await customerService.getAllCustomers(query, projection);
     if (!customers) {
       res.send({
@@ -412,6 +413,8 @@ exports.getResellerCustomers = async (req, res) => {
       });
       return;
     };
+    console.log("query++++++++++++++++++++++++++", customers)
+
     const customersId = customers.map(obj => obj._id);
     const orderCustomerIds = customers.map(obj => obj._id);
     const queryUser = { metaId: { $in: customersId }, isPrimary: true };
@@ -1347,7 +1350,7 @@ exports.getCustomerContract = async (req, res) => {
       contractFilterWithEligibilty.push({ orderId: { $in: orderIds } })
     }
     let mainQuery = []
-    if (data.contractId === "" && data.productName === "" && data.dealerSku === "" &&  data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
+    if (data.contractId === "" && data.productName === "" && data.dealerSku === "" && data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
       mainQuery = [
         { $sort: { unique_key_number: -1 } },
         {
@@ -1595,7 +1598,7 @@ exports.customerClaims = async (req, res) => {
               reason: 1,
               "unique_key": 1,
               note: 1,
-              dealerSku:1,
+              dealerSku: 1,
               totalAmount: 1,
               servicerId: 1,
               customerStatus: 1,

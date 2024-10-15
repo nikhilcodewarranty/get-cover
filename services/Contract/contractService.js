@@ -124,6 +124,16 @@ module.exports = class contractService {
     }
   }
 
+  static async deleteManyContract(criteria) {
+    try {
+      const updatedResponse = await contract.deleteMany(criteria);
+
+      return updatedResponse;
+    } catch (error) {
+      return `Could not update contract: ${error}`;
+    }
+  }
+
   // Delete a contract by its ID
   static async deleteContract(contractId) {
     try {

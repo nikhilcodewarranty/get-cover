@@ -1216,10 +1216,11 @@ exports.updateContracts = async (req, res) => {
         status: "Active"
       }
     }
-    let updateContracts = await contractService.updateManyContract({ orderId: "670d4ca5e7cbbc76c394ef51", orderProductId: "670d4ca5e7cbbc76c394ef53" }, objectToUpdate, { new: true })
-    res.send({
-      code: updateContracts
-    })
+    // let updateContracts = await contractService.updateManyContract({ orderId: "670d4ca5e7cbbc76c394ef51", orderProductId: "670d4ca5e7cbbc76c394ef53" }, objectToUpdate, { new: true })
+    let updateContracts = await contractService.deleteManyContract({ orderId: "orderID"})
+      res.send({
+        code: updateContracts
+      })
   } catch (err) {
     res.send({
       code: constant.errorCode,

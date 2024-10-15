@@ -1549,6 +1549,13 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
         })
         return;
       }
+      let getDealerSetting = await eligibilityService.getEligibility({ dealerId: checkDealer._id })
+      let adhDays = checkDealer[0].adhDays
+      let noOfClaim = getDealerSetting.noOfClaim
+      let noOfClaimPerPeriod = getDealerSetting.noOfClaimPerPeriod
+      let isMaxClaimAmount = getDealerSetting.isMaxClaimAmount
+      let isManufacturerWarranty = getDealerSetting.isManufacturerWarranty
+
       if (!req.file) {
         res.send({
           code: constant.errorCode,
@@ -1648,7 +1655,7 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
       for (let s = 0; s < totalDataComing.length; s++) {
         let currentData = totalDataComing[s]
         // if (currentData.isExist) {
-        let checkPriceBook = await priceBookService.findByName1({ name: currentData.productSku, coverageType: { $elemMatch: { $in: checkDealer[0].coverageType } } })
+        let checkPriceBook = await priceBookService.findByName1({ name: currentData.productSku, coverageType: { $elemMatch: { value: { $in: checkDealer[0].coverageType } } } })
         if (checkPriceBook) {
           let wholeSalePrice = Number(checkPriceBook.frontingFee) + Number(checkPriceBook.reserveFutureFee) + Number(checkPriceBook.reinsuranceFee) + Number(checkPriceBook.adminFee)
           let checkDealerSku = await dealerPriceService.getDealerPriceById({ priceBook: checkPriceBook._id, dealerId: data.dealerId })
@@ -1657,7 +1664,8 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
             currentData.message = "Updated successfully"
           } else {
             let brokerFee = wholeSalePrice - currentData.retailPrice
-            let createDealerPriceBook = await dealerPriceService.createDealerPrice({ priceBook: checkPriceBook._id, dealerSku: currentData.dealerSku, retailPrice: currentData.retailPrice, status: true, dealerId: data.dealerId, brokerFee: brokerFee, wholesalePrice: wholeSalePrice })
+            let createDealerPriceBook = await dealerPriceService.createDealerPrice({ priceBook: checkPriceBook._id, dealerSku: currentData.dealerSku, retailPrice: currentData.retailPrice, status: true, dealerId: data.dealerId, brokerFee: brokerFee, wholesalePrice: wholeSalePrice, adhDays: adhDays, noOfClaim: noOfClaim, noOfClaimPerPeriod: noOfClaimPerPeriod, isMaxClaimAmount: isMaxClaimAmount, isManufacturerWarranty: isManufacturerWarranty })
+            // code to be added here
             currentData.message = "created successfully"
           }
         } else {
