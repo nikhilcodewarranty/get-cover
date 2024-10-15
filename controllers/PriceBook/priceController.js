@@ -14,6 +14,46 @@ const supportingFunction = require('../../config/supportingFunction')
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey('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 ');
 const emailConstant = require('../../config/emailConstant');
+const multer = require('multer');
+const path = require('path');
+
+//multer file upload 
+const { S3Client } = require('@aws-sdk/client-s3');
+const aws = require('aws-sdk');
+const { Upload } = require('@aws-sdk/lib-storage');
+const multerS3 = require('multer-s3');
+aws.config.update({
+  accessKeyId: process.env.aws_access_key_id,
+  secretAccessKey: process.env.aws_secret_access_key,
+});
+const S3Bucket = new aws.S3();
+// s3 bucket connections
+const s3 = new S3Client({
+  region: process.env.region,
+  credentials: {
+    accessKeyId: process.env.aws_access_key_id,
+    secretAccessKey: process.env.aws_secret_access_key,
+  }
+});
+const folderName = 'companyPriceBook'; // Replace with your specific folder name
+const StorageP = multerS3({
+    s3: s3,
+    bucket: process.env.bucket_name,
+    metadata: (req, file, cb) => {
+        cb(null, { fieldName: file.fieldname });
+    },
+    key: (req, file, cb) => {
+        const fileName = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
+        const fullPath = `${folderName}/${fileName}`;
+        cb(null, fullPath);
+    }
+});
+var uploadP = multer({
+  storage: StorageP,
+  limits: {
+    fileSize: 500 * 1024 * 1024, // 500 MB limit
+  },
+}).single('companyPriceBook');
 //------------- price book api's------------------//
 
 //get all price books
@@ -1370,4 +1410,17 @@ exports.getCategoryByPriceBook = async (req, res) => {
   }
 }
 
+exports.uploadRegularPriceBook = async (req, res) => {
+  try {
+    uploadP(req, res, async (err) => {
+      let file = req.file;
+      
+    })
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
 

@@ -1486,8 +1486,8 @@ exports.createOrder1 = async (req, res) => {
                     }
 
                     // let eligibilty = new Date(dateCheck) < new Date() ? true : false
-                    let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
                     minDate = new Date(minDate).setHours(0, 0, 0, 0)
+                    let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
                     //reporting codes 
                     let contractObject = {
                         orderId: savedResponse._id,
