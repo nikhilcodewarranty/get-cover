@@ -1176,7 +1176,7 @@ exports.createOrder1 = async (req, res) => {
         let getChoosedProducts = data.productsArray
         for (let A = 0; A < getChoosedProducts.length; A++) {
             if (getChoosedProducts[A].coverageStartDate != "") {
-                
+
 
 
                 let addOneDay = new Date(getChoosedProducts[A].coverageStartDate)
@@ -1487,12 +1487,12 @@ exports.createOrder1 = async (req, res) => {
 
                     // let eligibilty = new Date(dateCheck) < new Date() ? true : false
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
-
+                    minDate = new Date(minDate).setHours(0, 0, 0, 0)
                     //reporting codes 
                     let contractObject = {
                         orderId: savedResponse._id,
                         orderUniqueKey: savedResponse.unique_key,
-                        minDate: minDate,
+                        minDate: new Date(minDate),
                         venderOrder: savedResponse.venderOrder,
                         orderProductId: orderProductId,
                         coverageStartDate: coverageStartDate,
