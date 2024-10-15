@@ -86,14 +86,15 @@ exports.createReseller = async (req, res) => {
 
         // Create the user
         teamMembers = teamMembers.map(member => ({ ...member, metaId: createdReseler._id, roleId: '65bb94b4b68e5a4a62a0b563' }));
-
         // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
         // Primary User Welcoime email
         let notificationEmails = await supportingFunction.getUserEmails();
         let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
-        notificationEmails.push(getPrimary.email)
-        IDs.push(getPrimary._id)
+        if (checkDealer.isAccountCreate) {
+            IDs.push(getPrimary._id)
+            notificationEmails.push(getPrimary.email)
+        }
         let notificationData = {
             title: "Reseller Account Creation",
             description: data.accountName + " " + "reseller account has been created successfully!",
@@ -768,7 +769,14 @@ exports.editResellers = async (req, res) => {
             street: data.street,
             zip: data.zip
         }
+        // check dealer for existing 
+        let checkDealer = await dealerService.getDealerByName({ _id: checkReseller.dealerId }, {});
         const updateServicerMeta = await providerService.updateServiceProvider({ resellerId: req.params.resellerId }, servicerMeta)
+
+        let IDs = await supportingFunction.getUserIds()
+        let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkReseller.dealerId, isPrimary: true })
+        let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkReseller._id, isPrimary: true })
+        let notificationEmails = await supportingFunction.getUserEmails();
 
         if (data.isServicer) {
             const checkServicer = await providerService.getServiceProviderById({ resellerId: req.params.resellerId })
@@ -810,15 +818,16 @@ exports.editResellers = async (req, res) => {
             newValue = {
                 status: true
             };
+            IDs.push(resellerPrimary._id)
+
         }
+        if (checkDealer.isAccountCreate) {
+            IDs.push(dealerPrimary._id)
+            notificationEmails.push(dealerPrimary.email);
+        }
+
         const changeResellerUser = await userService.updateUser(resellerUserCreateria, newValue, { new: true });
         //Send notification to admin,dealer,reseller
-
-        let IDs = await supportingFunction.getUserIds()
-        let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkReseller.dealerId, isPrimary: true })
-        let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkReseller._id, isPrimary: true })
-        IDs.push(dealerPrimary._id)
-        IDs.push(resellerPrimary._id)
         let notificationData = {
             title: "Reseller updated",
             description: checkReseller.name + " , " + "details has been updated",
@@ -829,10 +838,8 @@ exports.editResellers = async (req, res) => {
         // save notification
         let createNotification = await userService.createNotification(notificationData);
         // Send Email code here
-        let notificationEmails = await supportingFunction.getUserEmails();
         let settingData = await userService.getSetting({});
         //notificationEmails.push(resellerPrimary.email);
-        notificationEmails.push(dealerPrimary.email);
         let emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -1707,6 +1714,18 @@ exports.getResellerContract = async (req, res) => {
 exports.changeResellerStatus = async (req, res) => {
     try {
         const singleReseller = await resellerService.getReseller({ _id: req.params.resellerId });
+        let IDs = await supportingFunction.getUserIds()
+        let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: singleReseller.dealerId, isPrimary: true })
+        let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.resellerId, isPrimary: true })
+        let notificationEmails = await supportingFunction.getUserEmails();
+        //check Reseller dealer
+        let checkDealer = await dealerService.getDealerByName({ _id: singleReseller.dealerId }, {})
+        if (checkDealer.isAccountCreate) {
+            IDs.push(dealerPrimary._id)
+            notificationEmails.push(dealerPrimary.email);
+        }
+        let toEmail;
+        let ccEmail;
         if (!singleReseller) {
             res.send({
                 code: constant.errorCode,
@@ -1714,8 +1733,11 @@ exports.changeResellerStatus = async (req, res) => {
             })
             return;
         }
+
         //Update Reseller User Status if inactive
         if (!req.body.status) {
+            toEmail = notificationEmails
+            ccEmail = "noreply@getcover.com"
             let resellerUserCreateria = { metaId: req.params.resellerId };
             let newValue = {
                 $set: {
@@ -1728,6 +1750,9 @@ exports.changeResellerStatus = async (req, res) => {
         }
 
         else if (singleReseller.isAccountCreate && req.body.status) {
+            toEmail = getPrimary.email
+            ccEmail = notificationEmails
+
             let resellerUserCreateria = { metaId: req.params.resellerId, isPrimary: true };
             let newValue = {
                 $set: {
@@ -1750,26 +1775,8 @@ exports.changeResellerStatus = async (req, res) => {
         if (changedResellerStatus) {
             //Update status if reseller is inactive
             const updateServicer = await providerService.updateServiceProvider({ resellerId: req.params.resellerId }, { status: req.body.status })
-            //Send notification to reseller,dealer and admin
-            let IDs = await supportingFunction.getUserIds()
-            let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: singleReseller.dealerId, isPrimary: true })
-            let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.resellerId, isPrimary: true })
-            IDs.push(dealerPrimary._id)
-            IDs.push(getPrimary._id)
-            let notificationData = {
-                title: "Reseller status update",
-                description: singleReseller.name + " , " + "your status has been updated",
-                userId: req.teammateId,
-                flag: 'reseller',
-                notificationFor: IDs
-            };
-
-            let createNotification = await userService.createNotification(notificationData);
-
             // Send Email code here
-            let notificationEmails = await supportingFunction.getUserEmails();
             let settingData = await userService.getSetting({});
-            notificationEmails.push(dealerPrimary.email);
             const status_content = req.body.status ? 'Active' : 'Inactive';
             let emailData = {
                 darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -1780,8 +1787,21 @@ exports.changeResellerStatus = async (req, res) => {
                 content: "Status has been changed to " + status_content + " " + ", effective immediately.",
                 subject: "Update Status"
             }
+            if (singleReseller.isAccountCreate && req.body.status) {
+                IDs.push(getPrimary._id)
+            }
+            //Send notification to reseller,dealer and admin
+            let notificationData = {
+                title: "Reseller status update",
+                description: singleReseller.name + " , " + "your status has been updated",
+                userId: req.teammateId,
+                flag: 'reseller',
+                notificationFor: IDs
+            };
 
-            let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+            let createNotification = await userService.createNotification(notificationData);
+
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(toEmail, ccEmail, emailData))
             //Save Logs change reseller status
             let logData = {
                 userId: req.userId,
