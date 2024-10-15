@@ -1736,7 +1736,7 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
       let createNotification = await userService.createNotification(notificationData);
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
-      const mailing = sgMail.send(emailConstant.sendCsvFile("anil+1@codenomad.net", notificationEmails, htmlTableString));
+      const mailing = sgMail.send(emailConstant.sendCsvFile(dealerPrimary.email, notificationEmails, htmlTableString));
 
       res.send({
         code: constant.successCode,
