@@ -1704,7 +1704,14 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
             currentData.message = "Updated successfully"
           } else {
             let brokerFee = wholeSalePrice - currentData.retailPrice
-            let createDealerPriceBook = await dealerPriceService.createDealerPrice({ priceBook: checkPriceBook._id, dealerSku: currentData.dealerSku, retailPrice: currentData.retailPrice, status: true, dealerId: data.dealerId, brokerFee: brokerFee, wholesalePrice: wholeSalePrice, adhDays: adhDays, noOfClaim: noOfClaim, noOfClaimPerPeriod: noOfClaimPerPeriod, isMaxClaimAmount: isMaxClaimAmount, isManufacturerWarranty: isManufacturerWarranty })
+            let updateAdh = checkPriceBook.coverageType.map(item1 => {
+              // Find a match in array2
+              let match = adhDays.find(item2 => item2.value === item1.value);
+
+              // Return the merged object only if there's a match
+              return match ? { ...item1, ...match } : item1;
+            });
+            let createDealerPriceBook = await dealerPriceService.createDealerPrice({ priceBook: checkPriceBook._id, dealerSku: currentData.dealerSku, retailPrice: currentData.retailPrice, status: true, dealerId: data.dealerId, brokerFee: brokerFee, wholesalePrice: wholeSalePrice, adhDays: updateAdh, noOfClaim: noOfClaim, noOfClaimPerPeriod: noOfClaimPerPeriod, isMaxClaimAmount: isMaxClaimAmount, isManufacturerWarranty: isManufacturerWarranty })
             // code to be added here
             currentData.message = "created successfully"
           }

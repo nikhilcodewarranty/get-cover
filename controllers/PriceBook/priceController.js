@@ -1414,7 +1414,18 @@ exports.uploadRegularPriceBook = async (req, res) => {
   try {
     uploadP(req, res, async (err) => {
       let file = req.file;
-
+      const bucketReadUrl = { Bucket: process.env.bucket_name, Key: file.key };
+      // Await the getObjectFromS3 function to complete
+      const result = await getObjectFromS3(bucketReadUrl);
+      let responseData = result.data;
+      const headers = result.headers
+      if (headers.length !== 3) {
+        res.send({
+          code: constant.errorCode,
+          message: "Invalid file format detected. The sheet should contain exactly three columns."
+        })
+        return
+      }
     })
   } catch (err) {
     res.send({
