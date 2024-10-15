@@ -2180,7 +2180,7 @@ exports.editOrderDetail = async (req, res) => {
                 console.log("checking the date+++++++++++++++++++++++", addOneDay2)
                 let addOneDay3 = new Date(getChoosedProducts[A].coverageStartDate)
                 console.log("checking the date+++++++++++++++++++++++", addOneDay3)
-                addOneDay2.setMonth(addOneDay2.getMonth() + getChoosedProducts[A].term)
+                addOneDay3.setMonth(addOneDay3.getMonth() + getChoosedProducts[A].term)
                 console.log("checking the date+++++++++++++++++++++++", addOneDay3)
 
                 data.productsArray[A].coverageStartDate1 = addOneDay
