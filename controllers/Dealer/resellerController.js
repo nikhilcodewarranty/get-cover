@@ -233,8 +233,6 @@ exports.getAllResellers = async (req, res) => {
 
         const resellerId = resellers.map(obj => obj._id);
         const resellerOrderIds = resellers.map(obj => obj._id);
-        const queryUser = { metaId: { $in: resellerId }, isPrimary: true };
-
         const getPrimaryUser = await userService.findUserforCustomer1([
             {
                 $match: {

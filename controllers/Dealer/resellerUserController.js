@@ -605,9 +605,9 @@ exports.createOrder = async (req, res) => {
                 let saveContracts = await contractService.createBulkContracts(contractArray);
                 //send notification to dealer,reseller,admin,customer
                 let IDs = await supportingFunction.getUserIds()
-                let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: savedResponse.dealerId, isPrimary: true })
-                let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: savedResponse.customerId, isPrimary: true })
-                let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: savedResponse.resellerId, isPrimary: true })
+                let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: savedResponse.dealerId, isPrimary: true } } })
+                let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: savedResponse.customerId, isPrimary: true } } })
+                let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: savedResponse.resellerId, isPrimary: true } } })
                 if (resellerPrimary) {
                     IDs.push(resellerPrimary?._id)
                 }
@@ -850,7 +850,7 @@ exports.editOrderDetail = async (req, res) => {
             let checkDealer = await dealerService.getDealerById(
                 checkReseller.dealerId
             );
-            let getUser = await userService.getSingleUserByEmail({ metaId: checkDealer._id, isPrimary: true })
+            let getUser = await userService.getSingleUserByEmail({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
             data.billDetail = {
                 billTo: "Dealer",
                 detail: {
@@ -864,7 +864,7 @@ exports.editOrderDetail = async (req, res) => {
         }
         if (data.billTo == "Reseller") {
             let getReseller = await resellerService.getReseller({ _id: checkReseller._id })
-            let getUser = await userService.getSingleUserByEmail({ metaId: getReseller._id, isPrimary: true })
+            let getUser = await userService.getSingleUserByEmail({ metaData: { $elemMatch: { metaId: getReseller._id, isPrimary: true } } })
             data.billDetail = {
                 billTo: "Reseller",
                 detail: {
@@ -949,7 +949,7 @@ exports.editOrderDetail = async (req, res) => {
 
         //send notification to dealer,reseller,admin,customer
         let IDs = await supportingFunction.getUserIds()
-        let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.dealerId, isPrimary: true })
+        let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } })
         IDs.push(dealerPrimary._id)
         let notificationData = {
             title: "Order update",
@@ -1189,9 +1189,9 @@ exports.editOrderDetail = async (req, res) => {
                     await LOG(logData).save();
                     //send notification to dealer,reseller,admin,customer
                     let IDs = await supportingFunction.getUserIds()
-                    let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: savedResponse.dealerId, isPrimary: true })
-                    let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: savedResponse.customerId, isPrimary: true })
-                    let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: savedResponse.resellerId, isPrimary: true })
+                    let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: savedResponse.dealerId, isPrimary: true } }  })
+                    let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: savedResponse.customerId, isPrimary: true } }  })
+                    let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: savedResponse.resellerId, isPrimary: true } }  })
                     if (resellerPrimary) {
                         IDs.push(resellerPrimary._id)
                     }
@@ -1952,8 +1952,6 @@ exports.addResellerUser = async (req, res) => {
             return;
         }
 
-        data.metaId = checkReseller._id
-        data.roleId = '65bb94b4b68e5a4a62a0b563'
 
         let statusCheck;
         if (!checkReseller.status) {
@@ -1961,8 +1959,25 @@ exports.addResellerUser = async (req, res) => {
         } else {
             statusCheck = data.status
         }
-        data.status = statusCheck
-        let saveData = await userService.createUser(data)
+        let metaData = {
+            email: data.email,
+            metaData: [
+                {
+                    metaId: checkReseller._id,
+                    status: statusCheck,
+                    roleId: "65bb94b4b68e5a4a62a0b563",
+                    firstName: data.firstName,
+                    lastName: data.lastName,
+                    phoneNumber: data.phoneNumber,
+                    position: data.position,
+                    isPrimary: false,
+                    dialCode: data.dialCode ? data.dialCode : "+1"
+
+                }
+            ]
+
+        }
+        let saveData = await userService.createUser(metaData)
         if (!saveData) {
             //Save Logs add user
             let logData = {
