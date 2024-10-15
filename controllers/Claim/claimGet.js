@@ -1142,8 +1142,9 @@ exports.checkCoverageTypeDate = async (req, res) => {
       console.log("getCoverageTypeFromOption", getCoverageTypeFromOption)
       const result = getCoverageTypeFromOption.value.filter(item => item.value === data.coverageType).map(item => item.label);
       console.log(new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0));
-
-      if (checkCoverageTypeDate > getClaim.lossDate) {
+      checkCoverageTypeDate = new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0)
+      getClaim.lossDate = new Date(getClaim.lossDate).setHours(0, 0, 0, 0)
+      if (new Date(checkCoverageTypeDate) > new Date(getClaim.lossDate)) {
         // claim not allowed for that coverageType
         res.send({
           code: 403,
@@ -1217,10 +1218,10 @@ exports.updateContracts = async (req, res) => {
       }
     }
     // let updateContracts = await contractService.updateManyContract({ orderId: "670d4ca5e7cbbc76c394ef51", orderProductId: "670d4ca5e7cbbc76c394ef53" }, objectToUpdate, { new: true })
-    let updateContracts = await contractService.deleteManyContract({ orderId: "orderID"})
-      res.send({
-        code: updateContracts
-      })
+    let updateContracts = await contractService.deleteManyContract({ orderId: "orderID" })
+    res.send({
+      code: updateContracts
+    })
   } catch (err) {
     res.send({
       code: constant.errorCode,

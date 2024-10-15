@@ -19,9 +19,13 @@ const path = require('path');
 
 //multer file upload 
 const { S3Client } = require('@aws-sdk/client-s3');
+const XLSX = require("xlsx");
+
 const aws = require('aws-sdk');
 const { Upload } = require('@aws-sdk/lib-storage');
 const multerS3 = require('multer-s3');
+const terms = require("../../models/User/terms");
+const options = require("../../models/User/options");
 aws.config.update({
   accessKeyId: process.env.aws_access_key_id,
   secretAccessKey: process.env.aws_secret_access_key,
@@ -1410,6 +1414,41 @@ exports.getCategoryByPriceBook = async (req, res) => {
   }
 }
 
+
+//Get File data from S3 bucket
+const getObjectFromS3 = (bucketReadUrl) => {
+  return new Promise((resolve, reject) => {
+    S3Bucket.getObject(bucketReadUrl, (err, data) => {
+      if (err) {
+        reject(err);
+      } else {
+        const wb = XLSX.read(data.Body, { type: 'buffer' });
+        const sheetName = wb.SheetNames[0];
+        const sheet = wb.Sheets[sheetName];
+        let headers = [];
+
+        for (let cell in sheet) {
+          if (
+            /^[A-Z]1$/.test(cell) &&
+            sheet[cell].v !== undefined &&
+            sheet[cell].v !== null &&
+            sheet[cell].v.trim() !== ""
+          ) {
+            headers.push(sheet[cell].v);
+          }
+        }
+
+        const result = {
+          headers: headers,
+          data: XLSX.utils.sheet_to_json(sheet, { defval: "" }),
+        };
+
+        resolve(result);
+      }
+    });
+  });
+};
+
 exports.uploadRegularPriceBook = async (req, res) => {
   try {
     uploadP(req, res, async (err) => {
@@ -1419,13 +1458,70 @@ exports.uploadRegularPriceBook = async (req, res) => {
       const result = await getObjectFromS3(bucketReadUrl);
       let responseData = result.data;
       const headers = result.headers
-      if (headers.length !== 3) {
+
+      //check the header of file
+      if (headers.length !== 10) {
         res.send({
           code: constant.errorCode,
           message: "Invalid file format detected. The sheet should contain exactly three columns."
         })
         return
       }
+
+      // updating the key names 
+      let totalDataComing = responseData.map(item => {
+        let keys = Object.keys(item);
+        return {
+          category: item[keys[0]],  // First key's value
+          name: item[keys[1]],   // Second key's value
+          pName: item[keys[2]],  // Third key's value
+          description: item[keys[3]],   // Second key's value
+          frontingFee: item[keys[4]],   // Second key's value
+          reinsuranceFee: item[keys[5]],   // Second key's value
+          reserveFutureFee: item[keys[6]],   // Second key's value
+          adminFee: item[keys[7]],   // Second key's value
+          coverageType: item[keys[8]],   // Second key's value
+          term: item[keys[9]],   // Second key's value
+        };
+      });
+
+      for (let c = 0; c < totalDataComing.length; c++) {
+        let category = totalDataComing[c].category;
+        let name = totalDataComing[c].name;
+        let term = totalDataComing[c].term;
+        let coverageType = totalDataComing[c].coverageType;
+        let catSearch = new RegExp(`^${category}$`, 'i');
+        let priceNameSearch = new RegExp(`^${name}$`, 'i');
+        let checkCategory = await priceBookService.getPriceCatByName({ name: catSearch })
+        if (!checkCategory) {
+          totalDataComing[c].inValid = false
+          totalDataComing[c].reason = "Invalid category"
+        }
+        let checkPriceBook = await priceBookService.findByName1({ name: name })
+        if (checkPriceBook) {
+          totalDataComing[c].inValid = false
+          totalDataComing[c].reason = "Product sku already exist"
+        }
+        let checkTerms = await terms.findOne({ term: term })
+        if (!checkTerms) {
+          totalDataComing[c].inValid = false
+          totalDataComing[c].reason = "Invalid term"
+        }
+        coverageType = coverageType.split(',')
+        console.log("check",coverageType)
+        let checkCoverageType = await options.findOne({ "value.value": { $all: coverageType }, "name": "coverage_type" })
+        if (!checkCoverageType) {
+          totalDataComing[c].inValid = false
+          totalDataComing[c].reason = "Invalid coverage type"
+        }
+      }
+
+      res.send({
+        code: constant.successCode,
+        data: totalDataComing
+      })
+
+
     })
   } catch (err) {
     res.send({
