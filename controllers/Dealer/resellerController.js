@@ -1718,6 +1718,12 @@ exports.changeResellerStatus = async (req, res) => {
         let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: singleReseller.dealerId, isPrimary: true })
         let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.resellerId, isPrimary: true })
         let notificationEmails = await supportingFunction.getUserEmails();
+        //check Reseller dealer
+        let checkDealer = await dealerService.getDealerByName({ _id: singleReseller.dealerId }, {})
+        if (checkDealer.isAccountCreate) {
+            IDs.push(dealerPrimary._id)
+            notificationEmails.push(dealerPrimary.email);
+        }
         let toEmail;
         let ccEmail;
         if (!singleReseller) {
@@ -1728,8 +1734,6 @@ exports.changeResellerStatus = async (req, res) => {
             return;
         }
 
-        //check Reseller dealer
-        let checkDealer = await dealerService.getDealerByName({ _id: singleReseller.dealerId }, {})
         //Update Reseller User Status if inactive
         if (!req.body.status) {
             toEmail = notificationEmails
@@ -1771,8 +1775,6 @@ exports.changeResellerStatus = async (req, res) => {
         if (changedResellerStatus) {
             //Update status if reseller is inactive
             const updateServicer = await providerService.updateServiceProvider({ resellerId: req.params.resellerId }, { status: req.body.status })
-            //Send notification to reseller,dealer and admin
-
             // Send Email code here
             let settingData = await userService.getSetting({});
             const status_content = req.body.status ? 'Active' : 'Inactive';
@@ -1785,14 +1787,10 @@ exports.changeResellerStatus = async (req, res) => {
                 content: "Status has been changed to " + status_content + " " + ", effective immediately.",
                 subject: "Update Status"
             }
-
-            if (checkDealer.isAccountCreate) {
-                IDs.push(dealerPrimary._id)
-                notificationEmails.push(dealerPrimary.email);
-            }
             if (singleReseller.isAccountCreate && req.body.status) {
                 IDs.push(getPrimary._id)
             }
+            //Send notification to reseller,dealer and admin
             let notificationData = {
                 title: "Reseller status update",
                 description: singleReseller.name + " , " + "your status has been updated",
@@ -1800,12 +1798,10 @@ exports.changeResellerStatus = async (req, res) => {
                 flag: 'reseller',
                 notificationFor: IDs
             };
-            
+
             let createNotification = await userService.createNotification(notificationData);
 
             let mailing = sgMail.send(emailConstant.sendEmailTemplate(toEmail, ccEmail, emailData))
-
-
             //Save Logs change reseller status
             let logData = {
                 userId: req.userId,
