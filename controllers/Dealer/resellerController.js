@@ -1724,8 +1724,8 @@ exports.changeResellerStatus = async (req, res) => {
             IDs.push(dealerPrimary._id)
             notificationEmails.push(dealerPrimary.email);
         }
-        let toEmail;
-        let ccEmail;
+        let toEmail = notificationEmails;
+        let ccEmail = "noreply@getcover.com";
         if (!singleReseller) {
             res.send({
                 code: constant.errorCode,
@@ -1736,8 +1736,6 @@ exports.changeResellerStatus = async (req, res) => {
 
         //Update Reseller User Status if inactive
         if (!req.body.status) {
-            toEmail = notificationEmails
-            ccEmail = "noreply@getcover.com"
             let resellerUserCreateria = { metaId: req.params.resellerId };
             let newValue = {
                 $set: {
@@ -1750,9 +1748,6 @@ exports.changeResellerStatus = async (req, res) => {
         }
 
         else if (singleReseller.isAccountCreate && req.body.status) {
-            toEmail = getPrimary.email
-            ccEmail = notificationEmails
-
             let resellerUserCreateria = { metaId: req.params.resellerId, isPrimary: true };
             let newValue = {
                 $set: {
@@ -1787,7 +1782,9 @@ exports.changeResellerStatus = async (req, res) => {
                 content: "Status has been changed to " + status_content + " " + ", effective immediately.",
                 subject: "Update Status"
             }
-            if (singleReseller.isAccountCreate && req.body.status) {
+            if (singleReseller.isAccountCreate) {
+                toEmail = getPrimary.email
+                ccEmail = notificationEmails
                 IDs.push(getPrimary._id)
             }
             //Send notification to reseller,dealer and admin
@@ -1801,7 +1798,11 @@ exports.changeResellerStatus = async (req, res) => {
 
             let createNotification = await userService.createNotification(notificationData);
 
-            let mailing = sgMail.send(emailConstant.sendEmailTemplate(toEmail, ccEmail, emailData))
+            console.log("to--------------", toEmail)
+            console.log("to--------------", ccEmail)
+            console.log("to--------------", emailData)
+
+                let mailing = sgMail.send(emailConstant.sendEmailTemplate(toEmail, ccEmail, emailData))
             //Save Logs change reseller status
             let logData = {
                 userId: req.userId,
