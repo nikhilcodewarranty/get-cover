@@ -1205,3 +1205,25 @@ exports.checkCoverageTypeDateInContract = async (req, res) => {
   }
 }
 
+
+exports.updateContracts = async (req, res) => {
+  try {
+    let endDate = "2026-08-31"
+    let objectToUpdate = {
+      $set: {
+        coverageEndDate: endDate,
+        eligibilty: true,
+        status: "Active"
+      }
+    }
+    let updateContracts = await contractService.updateManyContract({ orderId: "670d4ca5e7cbbc76c394ef51", orderProductId: "670d4ca5e7cbbc76c394ef53" }, objectToUpdate, { new: true })
+    res.send({
+      code: updateContracts
+    })
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}

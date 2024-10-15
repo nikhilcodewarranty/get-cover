@@ -2174,8 +2174,15 @@ exports.editOrderDetail = async (req, res) => {
             if (getChoosedProducts[A].coverageStartDate != "") {
                 let addOneDay = new Date(getChoosedProducts[A].coverageStartDate)
                 let addOneDay1 = new Date(getChoosedProducts[A].coverageStartDate)
-                let addOneDay2 = new Date(getChoosedProducts[A].coverageEndDate)
-                let addOneDay3 = new Date(getChoosedProducts[A].coverageEndDate)
+                let addOneDay2 = new Date(getChoosedProducts[A].coverageStartDate)
+                console.log("checking the date+++++++++++++++++++++++", addOneDay2)
+                addOneDay2.setMonth(addOneDay2.getMonth() + getChoosedProducts[A].term)
+                console.log("checking the date+++++++++++++++++++++++", addOneDay2)
+                let addOneDay3 = new Date(getChoosedProducts[A].coverageStartDate)
+                console.log("checking the date+++++++++++++++++++++++", addOneDay3)
+                addOneDay2.setMonth(addOneDay2.getMonth() + getChoosedProducts[A].term)
+                console.log("checking the date+++++++++++++++++++++++", addOneDay3)
+
                 data.productsArray[A].coverageStartDate1 = addOneDay
                 data.productsArray[A].coverageEndDate1 = addOneDay2
                 data.productsArray[A].coverageStartDate = addOneDay1.setDate(addOneDay1.getDate() + 1);
