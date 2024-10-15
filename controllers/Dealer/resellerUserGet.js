@@ -1613,6 +1613,7 @@ exports.getCustomerInOrder = async (req, res) => {
 //Get servicer for order
 exports.getServicerInOrders = async (req, res) => {
     let data = req.body;
+
     let checkReseller = await resellerService.getReseller({ _id: req.userId }, { isDeleted: 0 });
     if (!checkReseller) {
         res.send({
