@@ -459,15 +459,26 @@ exports.addClaim = async (req, res, next) => {
     let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder?.resellerId, isPrimary: true })
     let servicerPrimary = await supportingFunction.getPrimaryUser({ metaId: data?.servicerId, isPrimary: true })
 
-    if (resellerPrimary) {
+    //Get Dealer,reseller, customer status
+    const checkDealer = await dealerService.getDealerById(checkOrder.dealerId)
+    const checkReseller = await resellerService.getReseller({ _id: checkOrder?.resellerId }, {})
+    const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
+    const checkServicer = await servicerService.getServiceProviderById({ _id: data?.servicerId })
+
+    if (resellerPrimary && checkReseller, isAccountCreate) {
       IDs.push(resellerPrimary._id)
     }
-    if (servicerPrimary) {
+    if (servicerPrimary && checkServicer.isAccountCreate) {
       IDs.push(servicerPrimary._id)
     }
+    if (checkDealer.isAccountCreate) {
+      IDs.push(dealerPrimary._id)
 
-    IDs.push(customerPrimary._id)
-    IDs.push(dealerPrimary._id)
+    }
+    if (checkCustomer.isAccountCreate) {
+      IDs.push(customerPrimary._id)
+
+    }
     let notificationData1 = {
       title: "Add Claim",
       description: "The claim has been added",
@@ -484,8 +495,14 @@ exports.addClaim = async (req, res, next) => {
     let settingData = await userService.getSetting({});
     let adminCC = await supportingFunction.getUserEmails();
     //let cc = notificationEmails;
-    notificationCC.push(dealerPrimary.email);
-    notificationCC.push(resellerPrimary?.email);
+    if (checkDealer.isAccountCreate) {
+      notificationCC.push(dealerPrimary.email);
+
+    }
+    if (checkReseller.isAccountCreate) {
+      notificationCC.push(resellerPrimary.email);
+
+    }
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -495,8 +512,13 @@ exports.addClaim = async (req, res, next) => {
       content: "The claim " + claimResponse.unique_key + " has been filed for the " + checkContract.unique_key + " contract!.",
       subject: 'Add Claim'
     }
-
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationCC, emailData))
+    let mailing;
+    if (checkCustomer.isAccountCreate) {
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationCC, emailData))
+    }
+    else {
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationCC, ["noreply@getcover.com"], emailData))
+    }
 
     // Email to servicer and cc to admin 
     if (servicerPrimary) {
@@ -509,7 +531,12 @@ exports.addClaim = async (req, res, next) => {
         content: "The claim " + claimResponse.unique_key + " has been filed for the " + checkContract.unique_key + " contract!.",
         subject: 'Add Claim'
       }
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary?.email, adminCC, emailData))
+      if (checkServicer.isAccountCreate) {
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary?.email, notificationCC, emailData))
+      }
+      else {
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationCC, ["noreply@getcover.com"], emailData))
+      }
     }
 
 
@@ -603,19 +630,18 @@ exports.editClaim = async (req, res) => {
         })
         return;
       }
-      console.log("checking ak ++++++++++++++++++++++++++", req.header)
       let udpateclaimAmount = await axios.get(process.env.API_ENDPOINT + "api-v1/claim/checkClaimAmount/" + updateData._id, {
         headers: {
           "x-access-token": req.header["x-access-token"],  // Include the token in the Authorization header
         }
       });
-      console.log("updated data +++++++++++++++++++++++++++++++++++", udpateclaimAmount)
 
       //Send notification to all
       let IDs = await supportingFunction.getUserIds()
       let servicerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkClaim?.servicerId, isPrimary: true })
-
-      if (servicerPrimary) {
+      //chek servicer status
+      const checkServicer = await servicerService.getServiceProviderById({ _id: checkClaim?.servicerId })
+      if (servicerPrimary && checkServicer.isAccountCreate) {
         IDs.push(servicerPrimary._id)
       }
 
@@ -814,6 +840,12 @@ exports.editClaimStatus = async (req, res) => {
     let status = {};
     let updateData = {};
 
+    //Get Dealer,reseller, customer status
+    const checkDealer = await dealerService.getDealerById(checkOrder.dealerId)
+    const checkReseller = await resellerService.getReseller({ _id: checkOrder?.resellerId }, {})
+    const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
+    const checkServicer = await servicerService.getServiceProviderById({ _id: checkClaim?.servicerId })
+
     if (data.hasOwnProperty("customerStatus")) {
       if (data.customerStatus == 'product_received') {
         let option = { new: true }
@@ -854,14 +886,20 @@ exports.editClaimStatus = async (req, res) => {
       let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder?.resellerId, isPrimary: true })
       let servicerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkClaim?.servicerId, isPrimary: true })
 
-      if (resellerPrimary) {
+      if (resellerPrimary && checkReseller.isAccountCreate) {
         IDs.push(resellerPrimary._id)
       }
-      if (servicerPrimary) {
+      if (servicerPrimary && checkServicer.isAccountCreate) {
         IDs.push(servicerPrimary._id)
       }
-      IDs.push(customerPrimary._id)
-      IDs.push(dealerPrimary._id)
+      if (checkDealer.isAccountCreate) {
+        IDs.push(dealerPrimary._id)
+
+      }
+      if (checkCustomer.isAccountCreate) {
+        IDs.push(customerPrimary._id)
+
+      }
 
       let notificationData1 = {
         title: "Customer Status Update",
@@ -886,7 +924,10 @@ exports.editClaimStatus = async (req, res) => {
         content: "The customer status has been updated for " + checkClaim.unique_key + "",
         subject: "Customer Status Update"
       }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationEmails, emailData))
+      let mailing;
+
+      mailing = checkCustomer.isAccountCreate ? sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+
       //Email to dealer
       emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -897,7 +938,7 @@ exports.editClaimStatus = async (req, res) => {
         content: "The customer status has been updated for " + checkClaim.unique_key + "",
         subject: "Customer Status Update"
       }
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+      mailing = checkDealer.isAccountCreate ? sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
       //Email to Reseller
       if (resellerPrimary) {
         emailData = {
@@ -909,7 +950,8 @@ exports.editClaimStatus = async (req, res) => {
           content: "The customer status has been updated for " + checkClaim.unique_key + "",
           subject: "Customer Status Update"
         }
-        mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary?.email, ['noreply@getcover.com'], emailData))
+        mailing = checkReseller.isAccountCreate ? sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary?.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+
       }
 
       //email to servicer 
@@ -923,7 +965,8 @@ exports.editClaimStatus = async (req, res) => {
           content: "The customer status has been updated for " + checkClaim.unique_key + "",
           subject: "Customer Status Update"
         }
-        mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary?.email, ['noreply@getcover.com'], emailData))
+        mailing = checkServicer.isAccountCreate ? sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary?.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+
       }
     }
 
@@ -949,15 +992,19 @@ exports.editClaimStatus = async (req, res) => {
       let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder?.resellerId, isPrimary: true })
       let servicerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkClaim?.servicerId, isPrimary: true })
 
-      if (resellerPrimary) {
+      if (resellerPrimary && checkReseller.isAccountCreate) {
         IDs.push(resellerPrimary._id)
       }
-      if (servicerPrimary) {
+      if (servicerPrimary && checkServicer.isAccountCreate) {
         IDs.push(servicerPrimary._id)
       }
-      IDs.push(customerPrimary._id)
-      IDs.push(dealerPrimary._id)
+      if (checkDealer.isAccountCreate) {
+        IDs.push(dealerPrimary._id)
 
+      }
+      if (checkCustomer.isAccountCreate) {
+        IDs.push(customerPrimary._id)
+      }
       let notificationData1 = {
         title: "Repair Status Update",
         description: "The repair status has been updated for " + checkClaim.unique_key + "",
@@ -994,7 +1041,8 @@ exports.editClaimStatus = async (req, res) => {
         content: "The claim repair status has been updated for " + checkClaim.unique_key + "",
         subject: "Repair Status Update"
       }
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationEmails, emailData))
+      mailing = checkCustomer.isAccountCreate ? sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+
       // Email to Reseller
       if (resellerPrimary) {
         emailData = {
@@ -1006,7 +1054,8 @@ exports.editClaimStatus = async (req, res) => {
           content: "The claim repair status has been updated for " + checkClaim.unique_key + "",
           subject: "Repair Status Update"
         }
-        mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : 'reseller@yopmail.com', notificationEmails, emailData))
+        mailing = checkReseller.isAccountCreate ? sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+
       }
       //email to servicer
       if (servicerPrimary) {
@@ -1020,7 +1069,9 @@ exports.editClaimStatus = async (req, res) => {
           subject: "Repair Status Update"
         }
         const servicerEmail = servicerPrimary ? servicerPrimary?.email : process.env.servicerEmail
-        mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, notificationEmails, emailData))
+
+        mailing = checkServicer.isAccountCreate ? sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, notificationEmails, emailData)) : sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+
       }
     }
     if (data.hasOwnProperty("claimStatus")) {
@@ -1048,14 +1099,20 @@ exports.editClaimStatus = async (req, res) => {
       let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder?.resellerId, isPrimary: true })
       let servicerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkClaim?.servicerId, isPrimary: true })
 
-      if (resellerPrimary) {
+      if (resellerPrimary && checkReseller.isAccountCreate) {
         IDs.push(resellerPrimary._id)
       }
-      if (servicerPrimary) {
+      if (servicerPrimary && checkServicer.isAccountCreate) {
         IDs.push(servicerPrimary._id)
       }
-      IDs.push(customerPrimary._id)
-      IDs.push(dealerPrimary._id)
+      if (checkDealer.isAccountCreate) {
+        IDs.push(dealerPrimary._id)
+
+      }
+      if (checkCustomer.isAccountCreate) {
+        IDs.push(customerPrimary._id)
+
+      }
 
       let notificationData1 = {
         title: "Claim Status Update",
@@ -1081,7 +1138,8 @@ exports.editClaimStatus = async (req, res) => {
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Claim Status Update"
       }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, ['noreply@getcover.com'], emailData))
+      let mailing = checkDealer.isAccountCreate ? sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+
       //Email to Reseller
       if (resellerPrimary) {
         emailData = {
@@ -1093,7 +1151,8 @@ exports.editClaimStatus = async (req, res) => {
           content: "The claim status has been updated for " + checkClaim.unique_key + "",
           subject: "Claim Status Update"
         }
-        mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary?.email, ['noreply@getcover.com'], emailData))
+        mailing = checkReseller.isAccountCreate ? sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+
       }
 
       //Email to customer
@@ -1106,7 +1165,8 @@ exports.editClaimStatus = async (req, res) => {
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Claim Status Update"
       }
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary?.email, ['noreply@getcover.com'], emailData))
+      mailing = checkCustomer.isAccountCreate ? sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+
       //Email to Servicer
       if (servicerPrimary) {
         emailData = {
@@ -1118,7 +1178,8 @@ exports.editClaimStatus = async (req, res) => {
           content: "The claim status has been updated for " + checkClaim.unique_key + "",
           subject: "Claim Status Update"
         }
-        mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary?.email, ['noreply@getcover.com'], emailData))
+        mailing = checkServicer.isAccountCreate ? sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+
       }
       //Email to admin
       emailData = {
