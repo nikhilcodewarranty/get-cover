@@ -90,7 +90,7 @@ exports.createDealer = async (req, res) => {
             }
 
 
-            
+
 
             // Check if the specified role exists
             const checkRole = await role.findOne({ role: { '$regex': data.role, '$options': 'i' } });
@@ -251,7 +251,9 @@ exports.createDealer = async (req, res) => {
                 await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
                 // Send notification when approved
                 let IDs = await supportingFunction.getUserIds()
-                IDs.push(req.body.dealerId);
+                if (req.body.isAccountCreate) {
+                    IDs.push(req.body.dealerId);
+                }
                 let notificationData = {
                     title: "Dealer Approval",
                     description: req.body.name + " " + "has been successfully approved",
@@ -401,7 +403,6 @@ exports.createDealer = async (req, res) => {
                     });
                     return;
                 }
-                console.log("k=================================================================", data.noOfClaim, createEligibility, data)
                 //Save Logs
                 let logData = {
                     userId: req.teammateId,
