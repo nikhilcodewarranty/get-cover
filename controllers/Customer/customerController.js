@@ -122,10 +122,17 @@ exports.createCustomer = async (req, res, next) => {
     let notificationEmails = await supportingFunction.getUserEmails();
     let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
     let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkReseller?._id, isPrimary: true })
-    IDs.push(resellerPrimary?._id)
+    if (checkReseller.isAccountCreate) {
+      IDs.push(resellerPrimary?._id)
+      notificationEmails.push(resellerPrimary?.email)
+    }
+    if (checkDealer.isAccountCreate) {
+      IDs.push(getPrimary?._id)
+      notificationEmails.push(getPrimary.email)
+    }
 
-    notificationEmails.push(getPrimary.email)
-    notificationEmails.push(resellerPrimary?.email)
+
+
     //SEND EMAIL
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -165,7 +172,6 @@ exports.createCustomer = async (req, res, next) => {
     }
 
     //Send Notification to customer,admin,reseller,dealer 
-    IDs.push(getPrimary._id)
     let notificationData = {
       title: "New Customer Created",
       description: data.accountName + " " + "customer account has been created successfully!",
@@ -534,7 +540,10 @@ exports.editCustomer = async (req, res) => {
     let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
     let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer.dealerId, isPrimary: true })
     let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer.resellerId, isPrimary: true })
-    IDs.push(customerPrimary._id)
+    if (checkDealer.isAccountCreate) {
+      IDs.push(customerPrimary._id)
+    }
+
     IDs.push(dealerPrimary._id)
     IDs.push(resellerPrimary?._id)
     let notificationData = {
@@ -604,6 +613,20 @@ exports.changePrimaryUser = async (req, res) => {
   try {
     let data = req.body
     let checkUser = await userService.findOneUser({ _id: req.params.userId }, {})
+    let findUser;
+    if (req.role == "Dealer") {
+      findUser = await dealerService.getDealerById(checkUser.metaId)
+    }
+    if (req.role == "Reseller") {
+      findUser = await resellerService.getReseller({ _id: checkUser.metaId }, { isDeleted: false })
+    }
+    if (req.role == "Customer") {
+      findUser = await customerService.getCustomerById({ _id: checkUser.metaId })
+
+    }
+    if (req.role == "Servicer") {
+      findUser = await servicerService.getServiceProviderById({ _id: checkUser.metaId })
+    }
     let settingData = await userService.getSetting({});
     if (!checkUser) {
       res.send({
@@ -670,8 +693,7 @@ exports.changePrimaryUser = async (req, res) => {
 
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
-      notificationEmails.push(updateLastPrimary.email);
-      notificationEmails.push(updatePrimary.email);
+
       let emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -681,7 +703,12 @@ exports.changePrimaryUser = async (req, res) => {
         content: "The primary user for your account has been changed from " + updateLastPrimary.firstName + " to " + updatePrimary.firstName + ".",
         subject: "Primary User change"
       };
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(updatePrimary.email, updateLastPrimary.email, emailData))
+      if(findUser.isAccountCreate){
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(updatePrimary.email, updateLastPrimary.email, emailData))
+      }
+      else{
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+      }
       //Save Logs changePrimaryUser
       let logData = {
         endpoint: "changePrimaryUser",

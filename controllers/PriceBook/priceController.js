@@ -611,7 +611,7 @@ exports.updatePriceBookById = async (req, res, next) => {
         subject: "Update Status"
       }
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "", emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "noreply@getcover.com", emailData))
     let logData = {
       userId: req.teammateId,
       endpoint: "price/updatePriceBook",
@@ -755,7 +755,7 @@ exports.createPriceBookCat = async (req, res) => {
       content: "The category " + data.name + " created successfully! effective immediately.",
       subject: "New Category Added"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
 
     let logData = {
       userId: req.teammateId,
@@ -1049,7 +1049,7 @@ exports.updatePriceBookCat = async (req, res) => {
       content: "The category " + data.name + " updated successfully! effective immediately.",
       subject: "Update Category"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
     let logData = {
       userId: req.teammateId,
       endpoint: "price/updatePricebookCat",

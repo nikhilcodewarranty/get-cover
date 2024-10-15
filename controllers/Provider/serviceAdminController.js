@@ -128,8 +128,6 @@ exports.createServiceProvider = async (req, res, next) => {
       }
       let IDs = await supportingFunction.getUserIds()
       //Send Notification to ,admin,,servicer 
-      IDs.push(createServiceProvider._id)
-
       let notificationData = {
         title: "Servicer Account Creation",
         description: data.accountName + " " + "servicer account has been created successfully!",
@@ -284,8 +282,6 @@ exports.createServiceProvider = async (req, res, next) => {
 
       let IDs = await supportingFunction.getUserIds()
       //Send Notification to ,admin,,servicer 
-      IDs.push(data.providerId)
-
       let notificationData = {
         title: "Servicer Account Approved",
         description: data.accountName + " " + "servicer account has been approved successfully!",
@@ -580,9 +576,15 @@ exports.rejectServicer = async (req, res) => {
     let IDs = await supportingFunction.getUserIds()
     let getServicer = await providerService.getServiceProviderById({ _id: req.params.servicerId });
     let checkServicer = await providerService.deleteServicer({ _id: req.params.servicerId })
+    let notificationEmails = await supportingFunction.getUserEmails();
     let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.servicerId, isPrimary: true })
-
-    IDs.push(getPrimary._id)
+    let toEmail = notificationEmails;
+    let ccEmail = "noreply@getcover.com";
+    if (getServicer.isAccountCreate) {
+      toEmail = getPrimary.email
+      ccEmail = notificationEmails
+      IDs.push(getPrimary._id)
+    }
 
     if (!checkServicer) {
       res.send({
@@ -602,8 +604,6 @@ exports.rejectServicer = async (req, res) => {
     };
 
     let createNotification = await userService.createNotification(notificationData);
-    // Primary User Welcoime email
-    let notificationEmails = await supportingFunction.getUserEmails();
     let settingData = await userService.getSetting({});
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -615,7 +615,7 @@ exports.rejectServicer = async (req, res) => {
       subject: "Rejection Account"
     }
     // Send Email code here
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(toEmail, ccEmail, emailData))
     res.send({
       code: constant.successCode,
       message: "Deleted Successfully!"
@@ -712,8 +712,16 @@ exports.editServicerDetail = async (req, res) => {
 
     //send notification to admin and servicer
     let IDs = await supportingFunction.getUserIds()
+    let notificationEmails = await supportingFunction.getUserEmails();
     let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.servicerId, isPrimary: true })
-    IDs.push(getPrimary._id)
+    let toEmail = notificationEmails;
+    let ccEmail = "noreply@getcover.com"
+    if (updateData.isAccountCreate) {
+      toEmail = getPrimary.email
+      ccEmail = notificationEmails
+      IDs.push(getPrimary._id)
+
+    }
     let notificationData = {
       title: "Servicer Detail Update",
       description: "The servicer information has been changed!",
@@ -724,7 +732,7 @@ exports.editServicerDetail = async (req, res) => {
 
     let createNotification = await userService.createNotification(notificationData);
     // Send Email code here
-    let notificationEmails = await supportingFunction.getUserEmails();
+
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -734,7 +742,7 @@ exports.editServicerDetail = async (req, res) => {
       content: "Information has been updated successfully! effective immediately.",
       subject: "Update Info"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(toEmail, ccEmail, emailData))
     //Save Logs
     let logData = {
       userId: req.userId,
@@ -840,7 +848,10 @@ exports.updateStatus = async (req, res) => {
         //Send notification to servicer and admin
         let IDs = await supportingFunction.getUserIds()
         let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.servicerId, isPrimary: true })
-        IDs.push(getPrimary._id)
+        if (updateData.isAccountCreate) {
+          IDs.push(getPrimary._id)
+
+        }
         let notificationData = {
           title: "Servicer status update",
           description: checkServicer.name + " , " + "your status has been updated",
@@ -873,7 +884,9 @@ exports.updateStatus = async (req, res) => {
       }
     } else {
       let IDs = await supportingFunction.getUserIds()
-      IDs.push(getPrimary._id)
+      if (updateData.isAccountCreate) {
+        IDs.push(getPrimary._id)
+      }
       let notificationData = {
         title: "Servicer status update",
         description: checkServicer.name + " , " + "your status has been updated",
@@ -918,7 +931,13 @@ exports.updateStatus = async (req, res) => {
       subject: "Update Status"
     }
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary?.email, notificationEmails, emailData))
+
+    if (updateData.isAccountCreate) {
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary?.email, notificationEmails, emailData))
+    }
+    else {
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, 'noreply@getcover.com', emailData))
+    }
     //Save Logs
     let logData = {
       userId: req.userId,
@@ -2083,7 +2102,7 @@ exports.paidUnpaid = async (req, res) => {
 exports.paidUnpaidClaim = async (req, res) => {
   try {
     let data = req.body
-    console.log("sdfsssssssssssssssssssss",data)
+    console.log("sdfsssssssssssssssssssss", data)
     let dateQuery = {}
     if (data.noOfDays) {
       const end = moment().startOf('day')
@@ -2146,7 +2165,7 @@ exports.paidUnpaidClaim = async (req, res) => {
               as: "contracts.orders.resellers",
             }
           },
-          { 
+          {
             $project: {
               "contractId": 1,
               "claimFile": 1,
@@ -2154,7 +2173,7 @@ exports.paidUnpaidClaim = async (req, res) => {
               "receiptImage": 1,
               reason: 1,
               "unique_key": 1,
-              ClaimType:1,
+              ClaimType: 1,
               note: 1,
               totalAmount: 1,
               servicerId: 1,
@@ -2262,7 +2281,7 @@ exports.paidUnpaidClaim = async (req, res) => {
 
               ]
             },
-           
+
             { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { 'productName': { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { claimPaymentStatus: flag },

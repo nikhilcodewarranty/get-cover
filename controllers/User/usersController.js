@@ -1263,7 +1263,6 @@ exports.addMembers = async (req, res) => {
     };
 
     let createNotification = await userService.createNotification(notificationData);
-
     let resetPasswordCode = randtoken.generate(4, '123456789')
     let checkPrimaryEmail2 = await userService.updateSingleUser({ email: data.email }, { resetPasswordCode: resetPasswordCode }, { new: true });
     let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`

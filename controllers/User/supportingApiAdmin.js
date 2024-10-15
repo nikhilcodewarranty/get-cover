@@ -88,10 +88,6 @@ exports.createDealer = async (req, res) => {
                 name: termFile ? termFile.originalname : '',
                 size: termFile ? termFile.size : '',
             }
-
-
-
-
             // Check if the specified role exists
             const checkRole = await role.findOne({ role: { '$regex': data.role, '$options': 'i' } });
             if (!checkRole) {

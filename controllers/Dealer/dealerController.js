@@ -99,7 +99,9 @@ exports.updateDealer = async (req, res) => {
     let primaryUser = await supportingFunction.getPrimaryUser({ metaId: req.params.dealerId, isPrimary: true })
 
     let IDs = await supportingFunction.getUserIds()
-    IDs.push(primaryUser._id)
+    if (updatedDealer.isAccountCreate) {
+      IDs.push(primaryUser._id)
+    }
     const notificationData = {
       title: "Dealer updated",
       description: data.name + " ," + "detail has beed updated ",
@@ -414,8 +416,11 @@ exports.statusUpdate = async (req, res) => {
     let settingData = await userService.getSetting({});
 
     let getPrimary = await supportingFunction.getPrimaryUser({ metaId: existingDealerPriceBook.dealerId, isPrimary: true })
-    IDs.push(getPrimary._id)
+
     let getDealerDetail = await dealerService.getDealerByName({ _id: existingDealerPriceBook.dealerId })
+    if (getDealerDetail.isAccountCreate) {
+      IDs.push(getPrimary._id)
+    }
     let notificationData = {
       title: "Dealer price book updated",
       description: getDealerDetail.name + " , " + "your price book has been updated",
@@ -439,7 +444,15 @@ exports.statusUpdate = async (req, res) => {
       subject: "Update Price Book"
     }
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+    //check if account create true
+    if (getDealerDetail.isAccountCreate) {
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+    }
+    else {
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+
+    }
+
 
     let logData = {
       userId: req.teammateId,
@@ -545,8 +558,10 @@ exports.changeDealerStatus = async (req, res) => {
     if (changedDealerStatus) {
       let IDs = await supportingFunction.getUserIds()
       let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.dealerId, isPrimary: true })
+      if (singleDealer.isAccountCreate) {
+        IDs.push(getPrimary._id)
+      }
 
-      IDs.push(getPrimary._id)
       let notificationData = {
         title: "Dealer status update",
         description: singleDealer.name + ", " + "your status has been updated",
@@ -570,7 +585,12 @@ exports.changeDealerStatus = async (req, res) => {
         content: "Status has been changed to " + status_content + " " + ", effective immediately.",
         subject: "Update Status"
       }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+      if (singleDealer.isAccountCreate) {
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+      }
+      else {
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+      }
       let logData = {
         userId: req.teammateId,
         endpoint: "dealer/changeDealerStatus",
@@ -684,7 +704,10 @@ exports.createDealerPriceBook = async (req, res) => {
       let IDs = await supportingFunction.getUserIds()
       let getPrimary = await supportingFunction.getPrimaryUser({ metaId: data.dealerId, isPrimary: true })
       let settingData = await userService.getSetting({});
-      IDs.push(getPrimary._id)
+      if(checkDealer.isAccountCreate){
+        IDs.push(getPrimary._id)
+      }
+      
       let notificationData = {
         title: "New dealer price book created",
         description: "The price book " + data.dealerSku + " has been created! ",
@@ -708,7 +731,14 @@ exports.createDealerPriceBook = async (req, res) => {
         content: "The price book name" + " " + checkPriceBookMain[0]?.pName + " has been created successfully! effective immediately.",
         subject: "New Price Book"
       }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+      if(checkDealer.isAccountCreate){
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+
+      }
+      else{
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+
+      }
       let logData = {
         userId: req.teammateId,
         endpoint: "dealer/createPriceBook",
@@ -899,7 +929,10 @@ exports.rejectDealer = async (req, res) => {
     if (req.body.status == 'Rejected') {
       let IDs = await supportingFunction.getUserIds()
       let getPrimary = await supportingFunction.getPrimaryUser({ metaId: singleDealer._id, isPrimary: true })
-      IDs.push(getPrimary._id)
+      if(singleDealer.isAccountCreate){
+        IDs.push(getPrimary._id)
+      }
+ 
       const deleteUser = await userService.deleteUser({ metaId: req.params.dealerId })
       if (!deleteUser) {
         res.send({
@@ -939,7 +972,12 @@ exports.rejectDealer = async (req, res) => {
         subject: "Rejection Account"
       }
       // Send Email code here
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+      if(singleDealer.isAccountCreate){
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+      }else{
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+      }
+
       //Delete the user
 
       res.send({
@@ -965,8 +1003,6 @@ exports.updateDealerMeta = async (req, res) => {
     let checkDealer = await dealerService.getDealerById(data.dealerId, {})
 
     let coverageType = data.coverageType
-
-
 
     // data.coverageType = coverageType.map(types => types.value);
 
@@ -1059,7 +1095,10 @@ exports.updateDealerMeta = async (req, res) => {
     let IDs = await supportingFunction.getUserIds()
     let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
     let settingData = await userService.getSetting({});
-    IDs.push(getPrimary._id)
+    if(updatedData.isAccountCreate){
+      IDs.push(getPrimary._id)
+    }
+ 
     let notificationData = {
       title: "Dealer updated",
       description: checkDealer.name + " , " + "details has been updated",
@@ -1082,7 +1121,13 @@ exports.updateDealerMeta = async (req, res) => {
       subject: "Update Info"
     }
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+    if(updatedData.isAccountCreate){
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+    }
+    else{
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+
+    }
     //Save Logs update dealer
     let logData = {
       userId: req.userId,
@@ -1225,7 +1270,9 @@ exports.addDealerUser = async (req, res) => {
     } else {
       let IDs = await supportingFunction.getUserIds()
       let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
-      IDs.push(getPrimary._id)
+      if(checkDealer.isAccountCreate){
+        IDs.push(getPrimary._id)
+      }      
 
       let notificationData = {
         title: "New user added",
@@ -1533,10 +1580,8 @@ exports.uploadDealerPriceBook = async (req, res) => {
 exports.uploadDealerPriceBookNew = async (req, res) => {
   try {
     let data = req.body
-    console.log("check++++++++++++++++++++++11111111111111111111111111111111111")
 
     uploadP(req, res, async (err) => {
-      console.log("check++++++++++++++++++++++11111111111111111111111111111111111")
 
       let file = req.file
       let data = req.body
@@ -1607,7 +1652,6 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
       //   }
       // });
 
-      console.log("check++++++++++++++++++++++11111111111111111111111111111111111")
       let lastOccurrenceMap = {};
 
       // Track the first occurrence of each productSku
@@ -1628,10 +1672,6 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
           isExist: index === lastOccurrenceMap[item.productSku]
         };
       });
-
-
-
-
 
       function checkForDuplicateDealerSku(data) {
         let dealerSkuMap = {};
@@ -1687,7 +1727,6 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
 
 
 
-      console.log("responseData+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++", totalDataComing, newArray)
       function convertArrayToHTMLTable(array) {
         const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');
         const rows = array.map(obj => {
@@ -1730,7 +1769,10 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
 
       let IDs = await supportingFunction.getUserIds()
       let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: req.body.dealerId, isPrimary: true })
-      IDs.push(dealerPrimary?._id)
+      if(checkDealer.isAccountCreate){
+        IDs.push(dealerPrimary?._id)
+      }
+      
 
       let notificationData = {
         title: "Dealer Price Book Uploaded",
@@ -1743,7 +1785,13 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
       let createNotification = await userService.createNotification(notificationData);
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
-      const mailing = sgMail.send(emailConstant.sendCsvFile(dealerPrimary.email, notificationEmails, htmlTableString));
+      if(checkDealer.isAccountCreate){
+        const mailing = sgMail.send(emailConstant.sendCsvFile(dealerPrimary.email, notificationEmails, htmlTableString));
+      }
+      else{
+      const mailing = sgMail.send(emailConstant.sendCsvFile(notificationEmails, "noreply@getcover.com", htmlTableString));
+
+      }
 
       res.send({
         code: constant.successCode,

@@ -819,8 +819,8 @@ exports.editResellers = async (req, res) => {
                 status: true
             };
             IDs.push(resellerPrimary._id)
-
         }
+
         if (checkDealer.isAccountCreate) {
             IDs.push(dealerPrimary._id)
             notificationEmails.push(dealerPrimary.email);
@@ -850,7 +850,13 @@ exports.editResellers = async (req, res) => {
             subject: "Update Info"
         }
 
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary.email, notificationEmails, emailData))
+        if (checkReseller.isAccountCreate || data.isAccountCreate) {
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary.email, notificationEmails, emailData))
+        }
+        else {
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+
+        }
         //Save Logs update reseller
         let logData = {
             userId: req.userId,
@@ -1798,11 +1804,7 @@ exports.changeResellerStatus = async (req, res) => {
 
             let createNotification = await userService.createNotification(notificationData);
 
-            console.log("to--------------", toEmail)
-            console.log("to--------------", ccEmail)
-            console.log("to--------------", emailData)
-
-                let mailing = sgMail.send(emailConstant.sendEmailTemplate(toEmail, ccEmail, emailData))
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(toEmail, ccEmail, emailData))
             //Save Logs change reseller status
             let logData = {
                 userId: req.userId,
