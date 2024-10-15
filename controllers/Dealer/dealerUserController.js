@@ -526,6 +526,7 @@ exports.createCustomer = async (req, res, next) => {
             dealerId: checkDealer._id,
             isAccountCreate: !checkDealer.userAccount ? false : data.status,
             resellerId: checkReseller ? checkReseller._id : null,
+            resellerId1: checkReseller ? checkReseller._id : null,
             zip: data.zip,
             state: data.state,
             country: data.country,
