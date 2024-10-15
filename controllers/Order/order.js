@@ -692,9 +692,38 @@ exports.getServicerByOrderId = async (req, res) => {
             servicer.unshift(checkDealer);
         }
         const servicerIds = servicer.map((obj) => obj._id);
-        const query1 = { metaId: { $in: servicerIds }, isPrimary: true };
 
-        let servicerUser = await userService.getMembers(query1, {});
+        const servicerUser = await userService.findUserforCustomer1([
+            {
+              $match: {
+                $and: [
+                  { metaData: { $elemMatch: { metaId: { $in: servicerIds }, isPrimary: true } } }
+                ]
+              }
+            },
+            {
+              $project: {
+                email: 1,
+                'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+                'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+                'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+                'position': { $arrayElemAt: ["$metaData.position", 0] },
+                'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+                'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+                'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                'status': { $arrayElemAt: ["$metaData.status", 0] },
+                resetPasswordCode: 1,
+                isResetPassword: 1,
+                approvedStatus: 1,
+                createdAt: 1,
+                updatedAt: 1
+              }
+            }
+          ]);
+
+
+
         if (!servicerUser) {
             res.send({
                 code: constant.errorCode,
@@ -710,7 +739,7 @@ exports.getServicerByOrderId = async (req, res) => {
 
             if (matchingItem) {
                 return {
-                    ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+                    ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
                     servicerData: matchingItem.toObject(),
                 };
             } else {

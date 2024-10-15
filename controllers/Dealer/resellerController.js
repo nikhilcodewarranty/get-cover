@@ -407,6 +407,7 @@ exports.getResellerById = async (req, res) => {
         }
 
         let checkReseller = await resellerService.getResellers({ _id: req.params.resellerId }, { isDeleted: 0 });
+
         if (!checkReseller[0]) {
             res.send({
                 code: constant.errorCode,
@@ -470,9 +471,11 @@ exports.getResellerById = async (req, res) => {
                 { resellerId: { $in: [checkReseller[0]._id] }, status: "Active" },
             ]
         }
+
         let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project, "$resellerId");
         //Get Claim Result 
         const claimQuery = { claimFile: 'completed' }
+        
         let lookupQuery = [
             {
                 $match: claimQuery
