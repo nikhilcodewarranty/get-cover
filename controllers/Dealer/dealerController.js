@@ -1655,7 +1655,7 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
       for (let s = 0; s < totalDataComing.length; s++) {
         let currentData = totalDataComing[s]
         // if (currentData.isExist) {
-        let checkPriceBook = await priceBookService.findByName1({ name: currentData.productSku, coverageType: { $elemMatch: { $in: checkDealer[0].coverageType } } })
+        let checkPriceBook = await priceBookService.findByName1({ name: currentData.productSku, coverageType: { $elemMatch: { value: { $in: checkDealer[0].coverageType } } } })
         if (checkPriceBook) {
           let wholeSalePrice = Number(checkPriceBook.frontingFee) + Number(checkPriceBook.reserveFutureFee) + Number(checkPriceBook.reinsuranceFee) + Number(checkPriceBook.adminFee)
           let checkDealerSku = await dealerPriceService.getDealerPriceById({ priceBook: checkPriceBook._id, dealerId: data.dealerId })
