@@ -37,16 +37,16 @@ const s3 = new S3Client({
 });
 const folderName = 'companyPriceBook'; // Replace with your specific folder name
 const StorageP = multerS3({
-    s3: s3,
-    bucket: process.env.bucket_name,
-    metadata: (req, file, cb) => {
-        cb(null, { fieldName: file.fieldname });
-    },
-    key: (req, file, cb) => {
-        const fileName = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
-        const fullPath = `${folderName}/${fileName}`;
-        cb(null, fullPath);
-    }
+  s3: s3,
+  bucket: process.env.bucket_name,
+  metadata: (req, file, cb) => {
+    cb(null, { fieldName: file.fieldname });
+  },
+  key: (req, file, cb) => {
+    const fileName = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
+    const fullPath = `${folderName}/${fileName}`;
+    cb(null, fullPath);
+  }
 });
 var uploadP = multer({
   storage: StorageP,
@@ -1414,7 +1414,18 @@ exports.uploadRegularPriceBook = async (req, res) => {
   try {
     uploadP(req, res, async (err) => {
       let file = req.file;
-      
+      const bucketReadUrl = { Bucket: process.env.bucket_name, Key: file.key };
+      // Await the getObjectFromS3 function to complete
+      const result = await getObjectFromS3(bucketReadUrl);
+      let responseData = result.data;
+      const headers = result.headers
+      if (headers.length !== 3) {
+        res.send({
+          code: constant.errorCode,
+          message: "Invalid file format detected. The sheet should contain exactly three columns."
+        })
+        return
+      }
     })
   } catch (err) {
     res.send({
