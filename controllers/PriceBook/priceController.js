@@ -37,16 +37,16 @@ const s3 = new S3Client({
 });
 const folderName = 'companyPriceBook'; // Replace with your specific folder name
 const StorageP = multerS3({
-    s3: s3,
-    bucket: process.env.bucket_name,
-    metadata: (req, file, cb) => {
-        cb(null, { fieldName: file.fieldname });
-    },
-    key: (req, file, cb) => {
-        const fileName = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
-        const fullPath = `${folderName}/${fileName}`;
-        cb(null, fullPath);
-    }
+  s3: s3,
+  bucket: process.env.bucket_name,
+  metadata: (req, file, cb) => {
+    cb(null, { fieldName: file.fieldname });
+  },
+  key: (req, file, cb) => {
+    const fileName = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
+    const fullPath = `${folderName}/${fileName}`;
+    cb(null, fullPath);
+  }
 });
 var uploadP = multer({
   storage: StorageP,
@@ -607,7 +607,7 @@ exports.updatePriceBookById = async (req, res, next) => {
         subject: "Update Status"
       }
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "", emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "noreply@getcover.com", emailData))
     let logData = {
       userId: req.teammateId,
       endpoint: "price/updatePriceBook",
@@ -751,7 +751,7 @@ exports.createPriceBookCat = async (req, res) => {
       content: "The category " + data.name + " created successfully! effective immediately.",
       subject: "New Category Added"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
 
     let logData = {
       userId: req.teammateId,
@@ -1045,7 +1045,7 @@ exports.updatePriceBookCat = async (req, res) => {
       content: "The category " + data.name + " updated successfully! effective immediately.",
       subject: "Update Category"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
     let logData = {
       userId: req.teammateId,
       endpoint: "price/updatePricebookCat",
@@ -1414,7 +1414,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
   try {
     uploadP(req, res, async (err) => {
       let file = req.file;
-      
+
     })
   } catch (err) {
     res.send({

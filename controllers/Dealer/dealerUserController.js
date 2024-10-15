@@ -574,8 +574,14 @@ exports.createCustomer = async (req, res, next) => {
         let settingData = await userService.getSetting({});
         let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
         let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkReseller?._id, isPrimary: true })
-        notificationEmails.push(getPrimary.email)
-        notificationEmails.push(resellerPrimary?.email)
+        if (checkDealer.isAccountCreate) {
+            IDs.push(getPrimary._id)
+            notificationEmails.push(getPrimary.email)
+        }
+        if (checkReseller.isAccountCreate) {
+            IDs.push(resellerPrimary?._id)
+            notificationEmails.push(resellerPrimary.email)
+        }
         let emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -615,8 +621,7 @@ exports.createCustomer = async (req, res, next) => {
             }
         }
         //Send Notification to customer,admin,reseller,dealer 
-        IDs.push(getPrimary._id)
-        IDs.push(resellerPrimary?._id)
+  
         let notificationData = {
             title: "New Customer Created",
             description: data.accountName + " " + "customer account has been created successfully!",
@@ -844,10 +849,7 @@ exports.createOrder = async (req, res) => {
             req.userId,
             projection
         );
-
         const orderTermCondition = data.termCondition != null ? data.termCondition : {}
-
-
         if (!checkDealer) {
             res.send({
                 code: constant.errorCode,
@@ -978,12 +980,9 @@ exports.createOrder = async (req, res) => {
                 let addOneDay = new Date(getChoosedProducts[A].coverageStartDate)
                 let addOneDay1 = new Date(getChoosedProducts[A].coverageStartDate)
                 let addOneDay2 = new Date(getChoosedProducts[A].coverageStartDate)
-                console.log("checking the date+++++++++++++++++++++++", addOneDay2)
                 addOneDay2.setMonth(addOneDay2.getMonth() + getChoosedProducts[A].term)
                 addOneDay2.setDate(addOneDay2.getDate() - 1)
-                console.log("checking the date+++++++++++++++++++++++", addOneDay2)
                 let addOneDay3 = new Date(getChoosedProducts[A].coverageStartDate)
-                console.log("checking the date+++++++++++++++++++++++", addOneDay3)
                 addOneDay3.setMonth(addOneDay3.getMonth() + getChoosedProducts[A].term)
                 addOneDay3.setDate(addOneDay3.getDate() - 1)
 
