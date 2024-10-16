@@ -703,7 +703,7 @@ exports.changePrimaryUser = async (req, res) => {
         content: "The primary user for your account has been changed from " + updateLastPrimary.firstName + " to " + updatePrimary.firstName + ".",
         subject: "Primary User change"
       };
-      if(findUser.isAccountCreate){
+      if(findUser?.isAccountCreate){
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(updatePrimary.email, updateLastPrimary.email, emailData))
       }
       else{
