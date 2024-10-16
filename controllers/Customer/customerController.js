@@ -612,9 +612,9 @@ exports.changePrimaryUser = async (req, res) => {
     // let updateLastPrimary = await userService.updateSingleUser({ metadata: checkUser.metaData[0]?.metaId, isPrimary: true }, { isPrimary: false }, { new: true })
 
     let updateLastPrimary = await userService.updateSingleUser(
-      { 
-        'metaData.metaId': checkUser.metaData[0]?.metaId, 
-        'metaData.isPrimary': true 
+      {
+        'metaData.metaId': checkUser.metaData[0]?.metaId,
+        'metaData.isPrimary': true
       },
       {
         $set: {
@@ -1877,14 +1877,15 @@ exports.customerClaims = async (req, res) => {
 
 // -----------------------------------------add cutomer with multiple dealer code --------------------------------------------------------------------------------
 
-
 exports.createCustomerNew = async (req, res, next) => {
   try {
-    console.log("api hitted")
     let data = req.body;
     data.accountName = data.accountName.trim().replace(/\s+/g, ' ');
     let getCount = await customerService.getCustomersCount({})
     data.unique_key = getCount[0] ? getCount[0].unique_key + 1 : 1
+
+    let memberEmail = data.members.map(member => member.email)
+    console.log("memberEmail-------------------", memberEmail);
 
     // check dealer ID
     let checkDealer = await dealerService.getDealerByName({ _id: data.dealerName }, {});
@@ -1909,6 +1910,34 @@ exports.createCustomerNew = async (req, res, next) => {
       }
 
     }
+
+    //check email for current dealer and current reseller
+
+    if (data.resellerName != "" && data.dealerName != "") {
+      let checkCustomer = await userService.getMembers(
+        {
+          $and: [
+            {
+              email: { $in: memberEmail }
+            },
+            {
+              $or: [
+                { metaData: { $elemMatch: { metaId: data.dealerName } } },
+                { metaData: { $elemMatch: { metaId: data.resellerName } } },
+              ]
+            },
+
+          ]
+        }
+      );
+    }
+
+
+
+    console.log("checkCustomer---------------------", checkCustomer);
+
+    return;
+
 
     // check customer acccount name 
     let checkAccountName = await customerService.getCustomerByName({
@@ -2092,6 +2121,9 @@ exports.createCustomerNew = async (req, res, next) => {
     })
   }
 };
+
+
+//
 
 //get all customers
 exports.getAllCustomersNew = async (req, res, next) => {
