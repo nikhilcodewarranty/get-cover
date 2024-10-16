@@ -1881,8 +1881,7 @@ exports.getOptions1 = async (req, res) => {
         { value: { $elemMatch: { status: true } } }
       ]
     }
-    console.log("query-----------------", dds)
-    const getOptions = await userService.getMultipleOptions(dds);
+    const getOptions = await userService.getMultipleOptions(query);
     console.log("getOptions-----------------", getOptions)
 
     if (!getOptions) {
