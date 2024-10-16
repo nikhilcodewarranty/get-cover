@@ -606,7 +606,7 @@ exports.editCustomer = async (req, res) => {
       message: err.message
     })
   }
-}
+} 
 
 //change customer primary user api
 exports.changePrimaryUser = async (req, res) => {
