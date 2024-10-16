@@ -1931,7 +1931,7 @@ exports.editOption = async (req, res) => {
     if (result instanceof Error) {
       res.send({ code: constant.errorCode, message: "Some fields are repeated" }) // Outputs: Duplicate found: Accidental or liquid_damage already exists
     } else {
-      let updateOption = await userService.updateData({ name: data.name }, data.{ new: true })
+      let updateOption = await userService.updateData({ name: data.name }, data,{ new: true })
       if (!updateOption) {
         res.send({
           code: constant.errorCode,
