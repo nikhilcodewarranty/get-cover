@@ -1255,7 +1255,6 @@ exports.getPriceBookByCategoryId = async (req, res) => {
 }
 
 //Get coverage type by price book
-
 exports.getCoverageType = async (req, res) => {
   try {
     let data = req.body
@@ -1377,7 +1376,6 @@ exports.getCoverageTypeAndAdhDays = async (req, res) => {
   }
 }
 
-
 // get category bu price book name
 exports.getCategoryByPriceBook = async (req, res) => {
   try {
@@ -1413,7 +1411,6 @@ exports.getCategoryByPriceBook = async (req, res) => {
     })
   }
 }
-
 
 //Get File data from S3 bucket
 const getObjectFromS3 = (bucketReadUrl) => {
@@ -1526,7 +1523,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
         coverageType = coverageType.split(',')
         console.log("check", coverageType)
         coverageType = ["breakdown", "accidental", "liquid_damage"]
-        let checkCoverageType = await options.findOne({ "value.value": { $all: coverageType }, "name": "coverage_type" })
+        let checkCoverageType = await options.findOne({ "value.label": { $all: coverageType }, "name": "coverage_type" })
 
         if (!checkCoverageType) {
           totalDataComing[c].inValid = true
@@ -1547,7 +1544,11 @@ exports.uploadRegularPriceBook = async (req, res) => {
         }
         totalDataComing[c].category = checkCategory ? checkCategory._id : ""
         totalDataComing[c].term = term
+        totalDataComing[c].priceType = "Regular Pricing"
 
+        if (!totalDataComing[c].inValid) {
+          let createCompanyPriceBook = await priceBookService.createPriceBook(totalDataComing[c])
+        }
       }
 
       res.send({
