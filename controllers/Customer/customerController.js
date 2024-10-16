@@ -571,8 +571,14 @@ exports.editCustomer = async (req, res) => {
       content: "The customer " + checkDealer.username + "" + " " + "has been updated successfully.",
       subject: "Customer Update"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationEmails, emailData))
+    if (checkDealer.isAccountCreate) {
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationEmails, emailData))
 
+    }
+    else {
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.comI"], emailData))
+
+    }
     //Save Logs editCustomer
     let logData = {
       userId: req.userId,
