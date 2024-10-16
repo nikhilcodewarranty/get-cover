@@ -45,7 +45,7 @@ router.post('/saveOptions', [verifyToken], userController.saveOptions);
 //edit Dropdown
 router.put('/editOption', [verifyToken], userController.editOption);
 
- router.get('/getOptions/:name', [verifyToken], userController.getOptions)
+ router.get('/getOption/:name', [verifyToken], userController.getOptions)
 
 router.get('/getOptions/:filter', [verifyToken], userController.getOptions1)
 

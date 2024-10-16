@@ -1875,12 +1875,7 @@ exports.getOptions1 = async (req, res) => {
   try {
     let filterOption = req.query.key
     const query = { name: { $in: filterOption } }
-    const dds = {
-      $and: [
-        { name: { $in: filterOption } },
-        { value: { $elemMatch: { status: true } } }
-      ]
-    }
+    console.log("sklfskdfjskjf",query)
     const getOptions = await userService.getMultipleOptions(query);
 
     if (!getOptions) {
