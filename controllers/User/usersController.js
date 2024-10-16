@@ -1904,7 +1904,7 @@ exports.getOptions1 = async (req, res) => {
 exports.editOption = async (req, res) => {
   try {
     let optionId = req.params.optionId
-    const data = req.body
+    const data = req.body.data
 
     function checkUniqueLabelValue(array) {
       let labelSet = new Set();
