@@ -1887,9 +1887,12 @@ exports.getOptions1 = async (req, res) => {
       return getOptions.find(item => item.name === key);
     });
 
-    for (let v = 0; v < reorderedData.length; v++) {
-      reorderedData[v].value = reorderedData[v].value.filter(item => item.status === true)
+    if (req.params.filter == 1) {
+      for (let v = 0; v < reorderedData.length; v++) {
+        reorderedData[v].value = reorderedData[v].value.filter(item => item.status === true)
+      }
     }
+
     res.send({
       code: constant.successCode,
       result: reorderedData
