@@ -1919,24 +1919,12 @@ exports.createCustomerNew = async (req, res, next) => {
           $and: [
             {
               email: { $in: memberEmail }
-            },
-            {
-              $or: [
-                { metaData: { $elemMatch: { metaId: data.dealerName } } },
-                { metaData: { $elemMatch: { metaId: data.resellerName } } },
-              ]
-            },
+            },  
 
           ]
         }
       );
     }
-
-
-
-    console.log("checkCustomer---------------------", checkCustomer);
-
-    return;
 
 
     // check customer acccount name 
