@@ -1886,6 +1886,10 @@ exports.getOptions1 = async (req, res) => {
     const reorderedData = query.name['$in'].map(key => {
       return getOptions.find(item => item.name === key);
     });
+
+    for (let v = 0; v < reorderedData.length; v++) {
+      reorderedData[v].value = reorderedData[v].value.filter(item => item.status === true)
+    }
     res.send({
       code: constant.successCode,
       result: reorderedData
@@ -1931,7 +1935,7 @@ exports.editOption = async (req, res) => {
     if (result instanceof Error) {
       res.send({ code: constant.errorCode, message: "Some fields are repeated" }) // Outputs: Duplicate found: Accidental or liquid_damage already exists
     } else {
-      let updateOption = await userService.updateData({ name: data.name }, data,{ new: true })
+      let updateOption = await userService.updateData({ name: data.name }, data, { new: true })
       if (!updateOption) {
         res.send({
           code: constant.errorCode,
