@@ -207,7 +207,26 @@ exports.createCustomer = async (req, res, next) => {
             return;
         };
 
-        teamMembers = teamMembers.map(member => ({ ...member, metaId: createdCustomer._id, roleId: process.env.customer }));
+        teamMembers = teamMembers.map(member => ({
+            ...member,
+            metaData:
+                [
+                    {
+                        firstName: member.firstName,
+                        lastName: member.lastName,
+                        phoneNumber: member.phoneNumber,
+                        metaId: createdCustomer._id,
+                        roleId: process.env.customer,
+                        position: member.position,
+                        dialCode: member.dialCode,
+                        status: member.status,
+                        isPrimary: member.isPrimary
+                    }
+                ],
+            approvedStatus: "Approved",
+
+        })
+        );
         // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
         res.send({
@@ -1189,9 +1208,9 @@ exports.editOrderDetail = async (req, res) => {
                     await LOG(logData).save();
                     //send notification to dealer,reseller,admin,customer
                     let IDs = await supportingFunction.getUserIds()
-                    let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: savedResponse.dealerId, isPrimary: true } }  })
-                    let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: savedResponse.customerId, isPrimary: true } }  })
-                    let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: savedResponse.resellerId, isPrimary: true } }  })
+                    let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: savedResponse.dealerId, isPrimary: true } } })
+                    let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: savedResponse.customerId, isPrimary: true } } })
+                    let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: savedResponse.resellerId, isPrimary: true } } })
                     if (resellerPrimary) {
                         IDs.push(resellerPrimary._id)
                     }

@@ -565,14 +565,35 @@ exports.createCustomer = async (req, res, next) => {
             })
             return;
         };
-        teamMembers = teamMembers.map(member => ({ ...member, status: !data.status ? false : member.status, metaId: createdCustomer._id, roleId: process.env.customer }));
+        teamMembers = teamMembers.map(member => ({
+            ...member,
+            metaData:
+              [
+                {
+                  firstName: member.firstName,
+                  lastName: member.lastName,
+                  phoneNumber: member.phoneNumber,
+                  metaId: createdCustomer._id,
+                  roleId: process.env.customer,
+                  position: member.position,
+                  dialCode: member?.dialCode,
+                  status: !data.status ? false : member.status,
+                  isPrimary: member.isPrimary
+                }
+              ],
+            approvedStatus: "Approved",
+      
+          })
+          );
         // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
         // Primary User Welcoime email
         let notificationEmails = await supportingFunction.getUserEmails();
         let settingData = await userService.getSetting({});
-        let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
-        let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkReseller?._id, isPrimary: true })
+
+        let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
+        let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkReseller?._id, isPrimary: true } }  })
+
         notificationEmails.push(getPrimary.email)
         notificationEmails.push(resellerPrimary?.email)
         let emailData = {

@@ -1934,8 +1934,8 @@ exports.changeResellerStatus = async (req, res) => {
             let resellerUserCreateria = { metaData: { $elemMatch: { metaId: req.params.resellerId } } }
             let newValue = {
                 $set: {
-                    status: req.body.status
-                }
+                    'metaData.$.status': req.body.status,
+                  }
             };
             let option = { new: true };
             const changeResellerUser = await userService.updateUser(resellerUserCreateria, newValue, option);
@@ -1947,8 +1947,8 @@ exports.changeResellerStatus = async (req, res) => {
 
             let newValue = {
                 $set: {
-                    status: req.body.status
-                }
+                    'metaData.$.status': req.body.status,
+                  }
             };
             let option = { new: true };
             const changeResellerUser = await userService.updateUser(resellerUserCreateria, newValue, option);
