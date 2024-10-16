@@ -1885,8 +1885,6 @@ exports.createCustomerNew = async (req, res, next) => {
     data.unique_key = getCount[0] ? getCount[0].unique_key + 1 : 1
 
     let memberEmail = data.members.map(member => member.email)
-    console.log("memberEmail-------------------", memberEmail);
-
     // check dealer ID
     let checkDealer = await dealerService.getDealerByName({ _id: data.dealerName }, {});
     let IDs = await supportingFunction.getUserIds()
@@ -1910,21 +1908,8 @@ exports.createCustomerNew = async (req, res, next) => {
       }
 
     }
-
+    let checkCustomer = await userService.getMembers({ email: { $in: memberEmail } });
     //check email for current dealer and current reseller
-
-    if (data.resellerName != "" && data.dealerName != "") {
-      let checkCustomer = await userService.getMembers(
-        {
-          $and: [
-            {
-              email: { $in: memberEmail }
-            },  
-
-          ]
-        }
-      );
-    }
 
 
     // check customer acccount name 
