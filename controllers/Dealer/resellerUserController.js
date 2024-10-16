@@ -2024,7 +2024,7 @@ exports.addResellerUser = async (req, res) => {
 
         data.metaId = checkReseller._id
         data.roleId = '65bb94b4b68e5a4a62a0b563'
-
+ 
         let statusCheck;
         if (!checkReseller.status) {
             statusCheck = false
