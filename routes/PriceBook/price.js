@@ -16,6 +16,7 @@ router.get("/getPriceBookByCategory/:categoryName", [verifyToken], priceControll
 router.post("/getPriceBookByCategoryId/:categoryId", [verifyToken], priceController.getPriceBookByCategoryId); // update price book detail with ID
 router.post("/getCoverageType/:priceBookId", [verifyToken], priceController.getCoverageType); //Get coverage type by price book
 router.post("/getCoverageTypeAndAdhDays/:priceBookId", [verifyToken], priceController.getCoverageTypeAndAdhDays); //Get coverage type and adh days from dealer by price book
+
 // price categories api's
 router.post('/createPriceBookCategory', [verifyToken], validator("create_price_cat_validation"), priceController.createPriceBookCat) // create price book category with uninque name
 router.post('/searchPriceBookCategories', [verifyToken], validator("search_price_cat_validation"), priceController.searchPriceBookCategories) // search price book category with  name

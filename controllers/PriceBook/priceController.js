@@ -1494,26 +1494,41 @@ exports.uploadRegularPriceBook = async (req, res) => {
         let priceNameSearch = new RegExp(`^${name}$`, 'i');
         let checkCategory = await priceBookService.getPriceCatByName({ name: catSearch })
         if (!checkCategory) {
-          totalDataComing[c].inValid = false
+          totalDataComing[c].inValid = true
           totalDataComing[c].reason = "Invalid category"
         }
         let checkPriceBook = await priceBookService.findByName1({ name: name })
         if (checkPriceBook) {
-          totalDataComing[c].inValid = false
+          totalDataComing[c].inValid = true
           totalDataComing[c].reason = "Product sku already exist"
         }
         let checkTerms = await terms.findOne({ term: term })
         if (!checkTerms) {
-          totalDataComing[c].inValid = false
+          totalDataComing[c].inValid = true
           totalDataComing[c].reason = "Invalid term"
         }
         coverageType = coverageType.split(',')
-        console.log("check",coverageType)
+        console.log("check", coverageType)
+        coverageType = ["breakdown", "accidental", "fire"]
         let checkCoverageType = await options.findOne({ "value.value": { $all: coverageType }, "name": "coverage_type" })
+
         if (!checkCoverageType) {
-          totalDataComing[c].inValid = false
+          totalDataComing[c].inValid = true
           totalDataComing[c].reason = "Invalid coverage type"
         }
+        totalDataComing[c].coverageType = []
+        if (checkCoverageType) {
+          let mergedArray = coverageType.map(id => {
+            // Find a match in array2 based on id
+            let match = checkCoverageType.value.find(item2 => item2.value === id);
+
+            // Return the match only if found
+            return match ? match : { id }; // If no match, return the id object
+          });
+          totalDataComing[c].coverageType = mergedArray
+
+        }
+        totalDataComing[c].category = checkCategory ? checkCategory._id : ""
       }
 
       res.send({
