@@ -1875,7 +1875,16 @@ exports.getOptions1 = async (req, res) => {
   try {
     let filterOption = req.query.key
     const query = { name: { $in: filterOption } }
-    const getOptions = await userService.getMultipleOptions(query);
+    const dds = {
+      $and: [
+        { name: { $in: filterOption } },
+        { value: { $elemMatch: { status: true } } }
+      ]
+    }
+    console.log("query-----------------", dds)
+    const getOptions = await userService.getMultipleOptions(dds);
+    console.log("getOptions-----------------", getOptions)
+
     if (!getOptions) {
       res.send({
         code: constant.errorCode,
@@ -1931,7 +1940,7 @@ exports.editOption = async (req, res) => {
     if (result instanceof Error) {
       res.send({ code: constant.errorCode, message: "Some fields are repeated" }) // Outputs: Duplicate found: Accidental or liquid_damage already exists
     } else {
-      let updateOption = await userService.updateData({ name: data.name }, data,{ new: true })
+      let updateOption = await userService.updateData({ name: data.name }, data, { new: true })
       if (!updateOption) {
         res.send({
           code: constant.errorCode,
