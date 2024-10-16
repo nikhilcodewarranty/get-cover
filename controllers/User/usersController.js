@@ -1895,6 +1895,10 @@ exports.getOptions1 = async (req, res) => {
     const reorderedData = query.name['$in'].map(key => {
       return getOptions.find(item => item.name === key);
     });
+
+    for (let v = 0; v < reorderedData.length; v++) {
+      reorderedData[v].value = reorderedData[v].value.filter(item => item.status === true)
+    }
     res.send({
       code: constant.successCode,
       result: reorderedData
@@ -1913,7 +1917,7 @@ exports.getOptions1 = async (req, res) => {
 exports.editOption = async (req, res) => {
   try {
     let optionId = req.params.optionId
-    const data = req.body
+    const data = req.body.data
 
     function checkUniqueLabelValue(array) {
       let labelSet = new Set();

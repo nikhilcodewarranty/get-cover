@@ -1486,34 +1486,68 @@ exports.uploadRegularPriceBook = async (req, res) => {
       });
 
       for (let c = 0; c < totalDataComing.length; c++) {
+
+        totalDataComing[c].inValid = false
+        totalDataComing[c].reason = "Success"
+        function convertToMonths(term) {
+          // Use a regular expression to extract the number and the unit (year/years)
+          const match = term.match(/(\d+)\s*(year|years)/i);
+
+          if (match) {
+            const years = parseInt(match[1], 10);  // Extract the number of years
+            const months = years * 12;             // Convert years to months
+            return months;
+          } else {
+            throw new Error("Invalid input format");
+          }
+        }
         let category = totalDataComing[c].category;
         let name = totalDataComing[c].name;
-        let term = totalDataComing[c].term;
+        let term = convertToMonths(totalDataComing[c].term);
+        console.log("term checking+++++++++++++", term)
         let coverageType = totalDataComing[c].coverageType;
         let catSearch = new RegExp(`^${category}$`, 'i');
         let priceNameSearch = new RegExp(`^${name}$`, 'i');
         let checkCategory = await priceBookService.getPriceCatByName({ name: catSearch })
         if (!checkCategory) {
-          totalDataComing[c].inValid = false
+          totalDataComing[c].inValid = true
           totalDataComing[c].reason = "Invalid category"
         }
         let checkPriceBook = await priceBookService.findByName1({ name: name })
         if (checkPriceBook) {
-          totalDataComing[c].inValid = false
+          totalDataComing[c].inValid = true
           totalDataComing[c].reason = "Product sku already exist"
         }
-        let checkTerms = await terms.findOne({ term: term })
+        let checkTerms = await terms.findOne({ terms: term })
         if (!checkTerms) {
-          totalDataComing[c].inValid = false
+          totalDataComing[c].inValid = true
           totalDataComing[c].reason = "Invalid term"
         }
         coverageType = coverageType.split(',')
-        console.log("check",coverageType)
+        console.log("check", coverageType)
+        coverageType = ["breakdown", "accidental", "liquid_damage"]
         let checkCoverageType = await options.findOne({ "value.value": { $all: coverageType }, "name": "coverage_type" })
+
         if (!checkCoverageType) {
-          totalDataComing[c].inValid = false
+          totalDataComing[c].inValid = true
           totalDataComing[c].reason = "Invalid coverage type"
         }
+        totalDataComing[c].coverageType = []
+        if (checkCoverageType) {
+          let mergedArray = coverageType.map(id => {
+            // Find a match in array2 based on id
+            let match = checkCoverageType.value.find(item2 => item2.value === id);
+
+            // Return the match only if found
+            // return match ? match : { id }; // If no match, return the id object
+            return match ? { label: match.label, value: match.value } : { id }; // If no match, return the id object
+          });
+          totalDataComing[c].coverageType = mergedArray
+
+        }
+        totalDataComing[c].category = checkCategory ? checkCategory._id : ""
+        totalDataComing[c].term = term
+
       }
 
       res.send({
