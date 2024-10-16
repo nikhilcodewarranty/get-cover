@@ -1451,6 +1451,13 @@ exports.uploadRegularPriceBook = async (req, res) => {
     uploadP(req, res, async (err) => {
       let file = req.file;
       let data = req.body
+      if (!file || data.priceType) {
+        res.send({
+          code: constant.errorCode,
+          message: "File and price type is required"
+        })
+        return
+      }
       const bucketReadUrl = { Bucket: process.env.bucket_name, Key: file.key };
       // Await the getObjectFromS3 function to complete
       const result = await getObjectFromS3(bucketReadUrl);
@@ -1458,7 +1465,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
       const headers = result.headers
 
 
-      if (data.priceType == "Regular Price") {
+      if (data.priceType == "Regular Pricing") {
         //check the header of file
         if (headers.length !== 10) {
           res.send({
@@ -1558,7 +1565,123 @@ exports.uploadRegularPriceBook = async (req, res) => {
           code: constant.successCode,
           data: totalDataComing
         })
+      } else if (data.priceType == "Flat Pricing") {
+        if (headers.length !== 12) {
+          res.send({
+            code: constant.errorCode,
+            message: "Invalid file format detected. The sheet should contain exactly three columns."
+          })
+          return
+        }
+
+        // updating the key names 
+        let totalDataComing = responseData.map(item => {
+          let keys = Object.keys(item);
+          return {
+            category: item[keys[0]],  // First key's value
+            name: item[keys[1]],   // Second key's value
+            pName: item[keys[2]],  // Third key's value
+            description: item[keys[3]],   // Second key's value
+            frontingFee: item[keys[4]],   // Second key's value
+            reinsuranceFee: item[keys[5]],   // Second key's value
+            reserveFutureFee: item[keys[6]],   // Second key's value
+            adminFee: item[keys[7]],   // Second key's value
+            coverageType: item[keys[8]],   // Second key's value
+            term: item[keys[9]],   // Second key's value
+            rangeStart: item[keys[10]],   // Second key's value
+            rangeEnd: item[keys[11]],   // Second key's value
+          };
+        });
+
+        for (let c = 0; c < totalDataComing.length; c++) {
+
+          totalDataComing[c].inValid = false
+          totalDataComing[c].reason = "Success"
+          function convertToMonths(term) {
+            // Use a regular expression to extract the number and the unit (year/years)
+            const match = term.match(/(\d+)\s*(year|years)/i);
+
+            if (match) {
+              const years = parseInt(match[1], 10);  // Extract the number of years
+              const months = years * 12;             // Convert years to months
+              return months;
+            } else {
+              throw new Error("Invalid input format");
+            }
+          }
+          let category = totalDataComing[c].category;
+          let name = totalDataComing[c].name;
+          let term = convertToMonths(totalDataComing[c].term);
+          console.log("term checking+++++++++++++", term)
+          let coverageType = totalDataComing[c].coverageType;
+          let catSearch = new RegExp(`^${category}$`, 'i');
+          let priceNameSearch = new RegExp(`^${name}$`, 'i');
+          let checkCategory = await priceBookService.getPriceCatByName({ name: catSearch })
+          if (!checkCategory) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Invalid category"
+          }
+          let checkPriceBook = await priceBookService.findByName1({ name: name })
+          if (checkPriceBook) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Product sku already exist"
+          }
+          let checkTerms = await terms.findOne({ terms: term })
+          if (!checkTerms) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Invalid term"
+          }
+          coverageType = coverageType.split(',').map(type => type.trim());
+          console.log("check", coverageType)
+          // coverageType = ["breakdown", "accidental", "liquid_damage"]
+          let checkCoverageType = await options.findOne({ "value.label": { $all: coverageType }, "name": "coverage_type" })
+
+          if (!checkCoverageType) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Invalid coverage type"
+          }
+          totalDataComing[c].coverageType = coverageType
+          if (checkCoverageType) {
+            let mergedArray = coverageType.map(id => {
+              // Find a match in array2 based on id
+              let match = checkCoverageType.value.find(item2 => item2.value === id);
+
+              // Return the match only if found
+              // return match ? match : { id }; // If no match, return the id object
+              return match ? { label: match.label, value: match.value } : { id }; // If no match, return the id object
+            });
+            totalDataComing[c].coverageType = mergedArray
+
+          }
+          if (totalDataComing[c].rangeStart < 0 || !totalDataComing[c].rangeStart) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Invalid range start price"
+          }
+          if (totalDataComing[c].rangeEnd < 0 || !totalDataComing[c].rangeEnd || totalDataComing[c].rangeEnd < totalDataComing[c].rangeStart) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Invalid range end price"
+          }
+          totalDataComing[c].category = checkCategory ? checkCategory._id : ""
+          totalDataComing[c].term = term
+          totalDataComing[c].priceType = "Flat Pricing"
+
+          if (!totalDataComing[c].inValid) {
+            let createCompanyPriceBook = await priceBookService.createPriceBook(totalDataComing[c])
+          }
+        }
+
+        res.send({
+          code: constant.successCode,
+          data: totalDataComing
+        })
+
+      } else {
+        res.send({
+          code: constant.errorCode,
+          message: "Invalid price type "
+        })
       }
+
 
 
 
