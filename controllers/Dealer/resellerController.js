@@ -1808,7 +1808,7 @@ exports.changeResellerStatus = async (req, res) => {
             //Save Logs change reseller status
             let logData = {
                 userId: req.userId,
-                endpoint: "reseller/changeResellerStatus/:resellerId",
+                endpoint: "reseller/qwqwqeqwwq/:resellerId",
                 body: req.body,
                 response: {
                     code: constant.successCode,
