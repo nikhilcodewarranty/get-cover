@@ -468,6 +468,7 @@ exports.addClaim = async (req, res, next) => {
     if (resellerPrimary && checkReseller.isAccountCreate) {
       IDs.push(resellerPrimary._id)
     }
+    console.log(servicerPrimary, checkServicer)
     if (servicerPrimary && checkServicer.isAccountCreate) {
       IDs.push(servicerPrimary._id)
     }
