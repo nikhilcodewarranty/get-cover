@@ -1594,7 +1594,7 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
         })
         return;
       }
-      let getDealerSetting = await eligibilityService.getEligibility({ dealerId: checkDealer._id })
+      let getDealerSetting = await eligibilityService.getEligibility({ userId: checkDealer._id })
       let adhDays = checkDealer[0].adhDays
       let noOfClaim = getDealerSetting.noOfClaim
       let noOfClaimPerPeriod = getDealerSetting.noOfClaimPerPeriod

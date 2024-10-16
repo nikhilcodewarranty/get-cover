@@ -589,13 +589,14 @@ exports.createOrder = async (req, res) => {
                             minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
                         }
                     }
+                    minDate = new Date(minDate).setHours(0, 0, 0, 0)
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
                     let contractObject = {
                         orderId: savedResponse._id,
                         orderProductId: orderProductId,
                         productName: priceBook[0].name,
                         pName: priceBook[0]?.pName,
-                        minDate: minDate,
+                        minDate: new Date(minDate),
                         manufacture: data.brand,
                         model: data.model,
                         partsWarranty: partsWarrantyDate1,
@@ -1191,13 +1192,14 @@ exports.editOrderDetail = async (req, res) => {
                         minDate = minDate1
 
                     }
+                    minDate = new Date(minDate).setHours(0, 0, 0, 0)
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
                     let contractObject = {
                         orderId: savedResponse._id,
                         orderProductId: orderProductId,
                         productName: priceBook[0].name,
                         pName: priceBook[0]?.pName,
-                        minDate: minDate,
+                        minDate: new Date(minDate),
                         manufacture: data.brand,
                         model: data.model,
                         partsWarranty: partsWarrantyDate1,

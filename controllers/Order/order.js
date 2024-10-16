@@ -1780,7 +1780,7 @@ exports.markAsPaid = async (req, res) => {
                 } else {
                     minDate = minDate1
                 }
-
+                minDate = new Date(minDate).setHours(0, 0, 0, 0)
                 let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
                 let serviceCoverage;
                 if (checkOrder.serviceCoverageType == "Labour") {
@@ -1795,7 +1795,7 @@ exports.markAsPaid = async (req, res) => {
                     orderUniqueKey: savedResponse.unique_key,
                     venderOrder: savedResponse.venderOrder,
                     orderProductId: orderProductId,
-                    minDate: minDate,
+                    minDate: new Date(minDate),
                     dealerSku: dealerPriceBook.dealerSku,
                     coverageStartDate: coverageStartDate,
                     coverageStartDate1: coverageStartDate1,

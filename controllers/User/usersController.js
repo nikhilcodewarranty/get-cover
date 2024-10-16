@@ -322,10 +322,10 @@ exports.login = async (req, res) => {
     }
 
     // Compare the provided password with the hashed password in the database
-    let checkMasterPassword = await bcrypt.compare(req.body.password,process.env.masterPassword)
-    if(!checkMasterPassword){
+    let checkMasterPassword = await bcrypt.compare(req.body.password, process.env.masterPassword)
+    if (!checkMasterPassword) {
       const passwordMatch = await bcrypt.compare(req.body.password, user.password);
-      
+
       if (!passwordMatch) {
         res.send({
           code: constant.errorCode,
@@ -334,7 +334,7 @@ exports.login = async (req, res) => {
         return;
       }
     }
-    
+
 
     // Generate JWT token
     const token = jwt.sign(
@@ -386,7 +386,7 @@ exports.createSuperAdmin = async (req, res) => {
         message: "Role not found"
       })
       return;
-    } 
+    }
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(data.password, 10);
@@ -1905,50 +1905,92 @@ exports.editOption = async (req, res) => {
   try {
     let optionId = req.params.optionId
     const data = req.body
-    const getOption = await userService.getMultipleOptions({ name: data.name, _id: optionId }, {})
-    if (!getOption) {
-      res.send({
-        code: constant.errorCode,
-        message: "Option not found!"
-      });
-      return;
-    }
 
-    let existData = await optionsService.getOption({ value: { $elemMatch: { value: { $regex: new RegExp("^" + data.value.toLowerCase(), "i") } } } })
-    if (existData) {
-      res.send({
-        code: constant.errorCode,
-        message: "The coverage type of this value is already exist!"
-      });
-      return
-    }
-    const updatedDropdown = await userService.updateData(
-      { _id: optionId, 'value._id': data.labelId },  // Match the option and the specific array element
-      {
-        $set: {
-          'value.$.label': data.label,    // Update the 'label' of the matched array element
-          'value.$.status': data.status      // Update the 'value' of the matched array element
+    function checkUniqueLabelValue(array) {
+      let labelSet = new Set();
+      let valueSet = new Set();
+
+      for (let obj of array) {
+        // Check if the label or value already exists in the set
+        if (labelSet.has(obj.label) || valueSet.has(obj.value)) {
+          return new Error(`Duplicate found: ${obj.label} or ${obj.value} already exists`);
         }
-      },
-      {
-        new: true      // Return the updated document
+
+        // Add label and value to the set
+        labelSet.add(obj.label);
+        valueSet.add(obj.value);
       }
-    );
 
-
-    if (!updatedDropdown) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to update!"
-      })
-      return;
+      return "All labels and values are unique!";
     }
 
-    res.send({
-      code: constant.successCode,
-      message: "Success!",
-      result: updatedDropdown
-    })
+    // Example usage:
+    let array = data.value
+
+    let result = checkUniqueLabelValue(array);
+    if (result instanceof Error) {
+      res.send({ code: constant.errorCode, message: "Some fields are repeated" }) // Outputs: Duplicate found: Accidental or liquid_damage already exists
+    } else {
+      let updateOption = await userService.updateData({ name: data.name }, data,{ new: true })
+      if (!updateOption) {
+        res.send({
+          code: constant.errorCode,
+          message: "Unable to process the request "
+        })
+      } else {
+        res.send({
+          code: constant.successCode,
+          message: "Success",
+          result: updateOption
+        })
+      }
+    }
+
+
+    // const getOption = await userService.getMultipleOptions({ name: data.name, _id: optionId }, {})
+    // if (!getOption) {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Option not found!"
+    //   });
+    //   return;
+    // }
+
+    // let existData = await optionsService.getOption({ value: { $elemMatch: { value: { $regex: new RegExp("^" + data.value.toLowerCase(), "i") } } } })
+    // if (existData) {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "The coverage type of this value is already exist!"
+    //   });
+    //   return
+    // }
+    // const updatedDropdown = await userService.updateData(
+    //   { _id: optionId, 'value._id': data.labelId },  // Match the option and the specific array element
+    //   {
+    //     $set: {
+    //       'value.$.label': data.label,    // Update the 'label' of the matched array element
+    //       'value.$.status': data.status      // Update the 'value' of the matched array element
+    //     }
+    //   },
+    //   {
+    //     new: true      // Return the updated document
+    //   }
+    // );
+
+
+    // if (!updatedDropdown) {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Unable to update!"
+    //   })
+    //   return;
+    // }
+
+    // res.send({
+    //   code: constant.successCode,
+    //   message: "Success!",
+    //   result: updatedDropdown
+    // })
 
   }
   catch (err) {

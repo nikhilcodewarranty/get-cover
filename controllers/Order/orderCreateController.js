@@ -2485,7 +2485,7 @@ exports.editOrderDetail = async (req, res) => {
                     } else {
                         minDate = minDate1
                     }
-
+                    minDate = new Date(minDate).setHours(0, 0, 0, 0)
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
                     let serviceCoverage;
                     if (orderServiceCoverageType == "Labour") {
@@ -2500,7 +2500,7 @@ exports.editOrderDetail = async (req, res) => {
                         orderUniqueKey: savedResponse.unique_key,
                         venderOrder: savedResponse.venderOrder,
                         orderProductId: orderProductId,
-                        minDate: minDate,
+                        minDate: new Date(minDate),
                         coverageStartDate: coverageStartDate,
                         coverageStartDate1: coverageStartDate1,
                         coverageEndDate1: coverageEndDate1,
