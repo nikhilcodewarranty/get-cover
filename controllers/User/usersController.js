@@ -1875,12 +1875,7 @@ exports.getOptions1 = async (req, res) => {
   try {
     let filterOption = req.query.key
     const query = { name: { $in: filterOption } }
-    const dds = {
-      $and: [
-        { name: { $in: filterOption } },
-        { value: { $elemMatch: { status: true } } }
-      ]
-    }
+    console.log("sklfskdfjskjf", query)
     const getOptions = await userService.getMultipleOptions(query);
 
     if (!getOptions) {
@@ -1894,9 +1889,12 @@ exports.getOptions1 = async (req, res) => {
       return getOptions.find(item => item.name === key);
     });
 
-    for (let v = 0; v < reorderedData.length; v++) {
-      reorderedData[v].value = reorderedData[v].value.filter(item => item.status === true)
+    if (req.params.filter == 1) {
+      for (let v = 0; v < reorderedData.length; v++) {
+        reorderedData[v].value = reorderedData[v].value.filter(item => item.status === true)
+      }
     }
+
     res.send({
       code: constant.successCode,
       result: reorderedData
@@ -1916,6 +1914,15 @@ exports.editOption = async (req, res) => {
   try {
     let optionId = req.params.optionId
     const data = req.body.data
+
+    let getOptionData = await userService.getOptions({ name: data.name })
+    if (getOptionData.value.length != data.value.length) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid coverage types"
+      })
+      return
+    }
 
     function checkUniqueLabelValue(array) {
       let labelSet = new Set();

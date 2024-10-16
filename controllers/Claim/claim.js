@@ -2414,7 +2414,7 @@ exports.saveBulkClaim = async (req, res) => {
       }
 
       const claimArray = await claimService.getClaims({
-        claimFile: 'Open'
+        claimFile: 'open'
       });
 
       // Get Contract with dealer, customer, reseller
@@ -2633,7 +2633,7 @@ exports.saveBulkClaim = async (req, res) => {
             unique_key: "CC-" + "2024-" + unique_key_number,
             diagnosis: data.diagnosis,
             lossDate: data.lossDate,
-            claimFile: 'Open',
+            claimFile: 'open',
           }
           unique_key_number++
           finalArray.push(obj)

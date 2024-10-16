@@ -25,7 +25,7 @@ router.post('/getPriceBookCategories', [verifyToken], validator("filter_price_ca
 router.post('/getActivePriceBookCategories', [verifyToken], priceController.getActivePriceBookCategories) // get price book category api
 router.get('/getPriceBookCategoryById/:catId', [verifyToken], supportingFunction.checkObjectId, priceController.getPriceBookCatById) // get price book by category
 router.get('/getCategoryByPriceBook/:name', [verifyToken], priceController.getCategoryByPriceBook) // get price book category by price book
-router.post('/uploadRegularPriceBook',  priceController.uploadRegularPriceBook) // get price book category by price book
+router.post('/uploadPriceBook',  priceController.uploadRegularPriceBook) // get price book category by price book
 // Dealer Price Book api's
 
 module.exports = router;
