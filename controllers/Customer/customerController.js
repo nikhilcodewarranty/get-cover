@@ -613,20 +613,6 @@ exports.changePrimaryUser = async (req, res) => {
   try {
     let data = req.body
     let checkUser = await userService.findOneUser({ _id: req.params.userId }, {})
-    let findUser;
-    if (req.role == "Dealer") {
-      findUser = await dealerService.getDealerById(checkUser.metaId)
-    }
-    if (req.role == "Reseller") {
-      findUser = await resellerService.getReseller({ _id: checkUser.metaId }, { isDeleted: false })
-    }
-    if (req.role == "Customer") {
-      findUser = await customerService.getCustomerById({ _id: checkUser.metaId })
-
-    }
-    if (req.role == "Servicer") {
-      findUser = await servicerService.getServiceProviderById({ _id: checkUser.metaId })
-    }
     let settingData = await userService.getSetting({});
     if (!checkUser) {
       res.send({
@@ -656,6 +642,21 @@ exports.changePrimaryUser = async (req, res) => {
       return;
     };
     let updatePrimary = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true })
+
+    let findUser;
+    if (req.role == "Dealer") {
+      findUser = await dealerService.getDealerById(updateLastPrimary.metaId)
+    }
+    if (req.role == "Reseller") {
+      findUser = await resellerService.getReseller({ _id: updateLastPrimary.metaId }, { isDeleted: false })
+    }
+    if (req.role == "Customer") {
+      findUser = await customerService.getCustomerById({ _id: updateLastPrimary.metaId })
+
+    }
+    if (req.role == "Servicer") {
+      findUser = await servicerService.getServiceProviderById({ _id: updateLastPrimary.metaId })
+    }
     //Get role by id
     const checkRole = await userService.getRoleById({ _id: checkUser.roleId }, {});
 
