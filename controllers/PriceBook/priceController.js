@@ -1451,7 +1451,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
     uploadP(req, res, async (err) => {
       let file = req.file;
       let data = req.body
-      if (!file || data.priceType) {
+      if (!file || !data.priceType) {
         res.send({
           code: constant.errorCode,
           message: "File and price type is required"
@@ -1463,7 +1463,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
       const result = await getObjectFromS3(bucketReadUrl);
       let responseData = result.data;
       const headers = result.headers
-
+      console.log("check the header length ++++++++++++++++++++++++++++++", headers.length)
 
       if (data.priceType == "Regular Pricing") {
         //check the header of file
@@ -1675,16 +1675,148 @@ exports.uploadRegularPriceBook = async (req, res) => {
           data: totalDataComing
         })
 
+      } else if (data.priceType == "Quantity Pricing") {
+        if (headers.length < 10) {
+          res.send({
+            code: constant.errorCode,
+            message: "Invalid file format detected. The sheet should contain exactly three columns."
+          })
+          return
+        }
+
+        let quantityPriceDetail = []
+        // updating the key names 
+        let totalDataComing = responseData.map(item => {
+          quantityPriceDetail = []
+
+          let keys = Object.keys(item);
+          for (let i = 0; i < (headers.length - 10) / 2; i++) { // Loop for creating 6 entries
+            if (item[keys[10 + (2 * i)]] != "" || item[keys[11 + (2 * i)]] != "") {
+              console.log(i, '++++++++++', item[keys[10 + i]], "----------------------", item[keys[11 + i]])
+              quantityPriceDetail.push({
+                name: item[keys[10 + (2 * i)]],       // Set the name value from item
+                quantity: item[keys[11 + (2 * i)]]   // Set the quantity value from item
+              });
+            }
+          }
+          console.log("checking the arrray++++++++++++++++", quantityPriceDetail)
+          return {
+            category: item[keys[0]],  // First key's value
+            name: item[keys[1]],   // Second key's value
+            pName: item[keys[2]],  // Third key's value
+            description: item[keys[3]],   // Second key's value
+            frontingFee: item[keys[4]],   // Second key's value
+            reinsuranceFee: item[keys[5]],   // Second key's value
+            reserveFutureFee: item[keys[6]],   // Second key's value
+            adminFee: item[keys[7]],   // Second key's value
+            coverageType: item[keys[8]],   // Second key's value
+            term: item[keys[9]],   // Second key's value
+            quantityPriceDetail: quantityPriceDetail
+          };
+        });
+
+
+        for (let c = 0; c < totalDataComing.length; c++) {
+
+          totalDataComing[c].inValid = false
+          totalDataComing[c].reason = "Success"
+
+          // function to convert the year to months
+          function convertToMonths(term) {
+            // Use a regular expression to extract the number and the unit (year/years)
+            const match = term.match(/(\d+)\s*(year|years)/i);
+
+            if (match) {
+              const years = parseInt(match[1], 10);  // Extract the number of years
+              const months = years * 12;             // Convert years to months
+              return months;
+            } else {
+              throw new Error("Invalid input format");
+            }
+          }
+
+          // function for quantity price item details
+          function validateQuantityPriceDetail(data) {
+            let invalidEntries = data.quantityPriceDetail.filter(item => {
+              return !item.name?.trim() || !item.quantity;
+            });
+
+            if (invalidEntries.length > 0) {
+              console.log("Error: Some entries have empty name or quantity values.");
+              return false;
+            }
+
+            console.log("All entries are valid.");
+            return true;
+          }
+
+          let category = totalDataComing[c].category;
+          let name = totalDataComing[c].name;
+          let term = convertToMonths(totalDataComing[c].term);
+          let coverageType = totalDataComing[c].coverageType;
+          let catSearch = new RegExp(`^${category}$`, 'i');
+          let priceNameSearch = new RegExp(`^${name}$`, 'i');
+          let checkCategory = await priceBookService.getPriceCatByName({ name: catSearch })
+          if (!checkCategory) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Invalid category"
+          }
+          let checkPriceBook = await priceBookService.findByName1({ name: name })
+          if (checkPriceBook) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Product sku already exist"
+          }
+          let checkTerms = await terms.findOne({ terms: term })
+          if (!checkTerms) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Invalid term"
+          }
+          coverageType = coverageType.split(',').map(type => type.trim());
+          // coverageType = ["breakdown", "accidental", "liquid_damage"]
+          let checkCoverageType = await options.findOne({ "value.label": { $all: coverageType }, "name": "coverage_type" })
+
+          if (!checkCoverageType) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Invalid coverage type"
+          }
+          totalDataComing[c].coverageType = coverageType
+          if (checkCoverageType) {
+            let mergedArray = coverageType.map(id => {
+              // Find a match in array2 based on id
+              let match = checkCoverageType.value.find(item2 => item2.label === id);
+
+              // Return the match only if found
+              // return match ? match : { id }; // If no match, return the id object
+              return match ? { label: match.label, value: match.value } : { id }; // If no match, return the id object
+            });
+            totalDataComing[c].coverageType = mergedArray
+
+          }
+          console.log("quantity item pricing ++++++++++++ start", validateQuantityPriceDetail(totalDataComing[c]))
+          if (!validateQuantityPriceDetail(totalDataComing[c])) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Invalid quantity price items"
+          }
+
+          totalDataComing[c].category = checkCategory ? checkCategory._id : ""
+          totalDataComing[c].term = term
+          totalDataComing[c].priceType = "Flat Pricing"
+
+          if (!totalDataComing[c].inValid) {
+            let createCompanyPriceBook = await priceBookService.createPriceBook(totalDataComing[c])
+          }
+        }
+
+        res.send({
+          code: constant.successCode,
+          data: totalDataComing
+        })
       } else {
         res.send({
           code: constant.errorCode,
           message: "Invalid price type "
         })
       }
-
-
-
-
 
     })
   } catch (err) {
