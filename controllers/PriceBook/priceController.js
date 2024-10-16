@@ -1825,7 +1825,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
       message: err.message
     })
   }
-}
+} 
 
 exports.uploadCompanyPriceBook = async (req, res) => {
   try {
