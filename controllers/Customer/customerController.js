@@ -606,7 +606,7 @@ exports.editCustomer = async (req, res) => {
       message: err.message
     })
   }
-} 
+}
 
 //change customer primary user api
 exports.changePrimaryUser = async (req, res) => {
@@ -643,7 +643,7 @@ exports.changePrimaryUser = async (req, res) => {
     };
     let updatePrimary = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true })
 
-    let findUser;
+    let findUser = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true });
     if (req.role == "Dealer") {
       findUser = await dealerService.getDealerById(updateLastPrimary.metaId)
     }
@@ -704,10 +704,10 @@ exports.changePrimaryUser = async (req, res) => {
         content: "The primary user for your account has been changed from " + updateLastPrimary.firstName + " to " + updatePrimary.firstName + ".",
         subject: "Primary User change"
       };
-      if(findUser?.isAccountCreate){
+      if (findUser?.isAccountCreate) {
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(updatePrimary.email, updateLastPrimary.email, emailData))
       }
-      else{
+      else {
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
       }
       //Save Logs changePrimaryUser
