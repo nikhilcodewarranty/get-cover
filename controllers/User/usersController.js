@@ -1882,7 +1882,6 @@ exports.getOptions1 = async (req, res) => {
       ]
     }
     const getOptions = await userService.getMultipleOptions(query);
-    console.log("getOptions-----------------", getOptions)
 
     if (!getOptions) {
       res.send({
