@@ -2170,6 +2170,7 @@ exports.paidUnpaidClaim = async (req, res) => {
               "contractId": 1,
               "claimFile": 1,
               "lossDate": 1,
+              "claimType": 1,
               "receiptImage": 1,
               reason: 1,
               "unique_key": 1,

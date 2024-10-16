@@ -463,13 +463,12 @@ exports.addClaim = async (req, res, next) => {
     const checkDealer = await dealerService.getDealerById(checkOrder.dealerId)
     const checkReseller = await resellerService.getReseller({ _id: checkOrder?.resellerId }, {})
     const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
-    const checkServicer = await servicerService.getServiceProviderById({ $or:[{_id: data?.servicerId},{dealerId: data?.servicerId}] })
+    const checkServicer = await servicerService.getServiceProviderById({ $or: [{ _id: data?.servicerId }, { dealerId: data?.servicerId }, { resellerId: data?.servicerId }] })
 
-    if (resellerPrimary && checkReseller.isAccountCreate) {
+    if (resellerPrimary && checkReseller?.isAccountCreate) {
       IDs.push(resellerPrimary._id)
     }
-    console.log(servicerPrimary, checkServicer)
-    if (servicerPrimary && checkServicer.isAccountCreate) {
+    if (servicerPrimary && checkServicer?.isAccountCreate) {
       IDs.push(servicerPrimary._id)
     }
     if (checkDealer.isAccountCreate) {
@@ -500,7 +499,7 @@ exports.addClaim = async (req, res, next) => {
       notificationCC.push(dealerPrimary.email);
 
     }
-    if (checkReseller.isAccountCreate) {
+    if (checkReseller?.isAccountCreate) {
       notificationCC.push(resellerPrimary.email);
 
     }
@@ -532,7 +531,7 @@ exports.addClaim = async (req, res, next) => {
         content: "The claim " + claimResponse.unique_key + " has been filed for the " + checkContract.unique_key + " contract!.",
         subject: 'Add Claim'
       }
-      if (checkServicer.isAccountCreate) {
+      if (checkServicer?.isAccountCreate) {
         mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary?.email, notificationCC, emailData))
       }
       else {
@@ -642,8 +641,9 @@ exports.editClaim = async (req, res) => {
       let IDs = await supportingFunction.getUserIds()
       let servicerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkClaim?.servicerId, isPrimary: true })
       //chek servicer status
-      const checkServicer = await servicerService.getServiceProviderById({ _id: checkClaim?.servicerId })
-      if (servicerPrimary && checkServicer.isAccountCreate) {
+      const checkServicer = await servicerService.getServiceProviderById({ $or: [{ _id: checkClaim?.servicerId }, { dealerId: checkClaim?.servicerId }, { resellerId: checkClaim?.servicerId }] })
+
+      if (servicerPrimary && checkServicer?.isAccountCreate) {
         IDs.push(servicerPrimary._id)
       }
 
@@ -846,7 +846,8 @@ exports.editClaimStatus = async (req, res) => {
     const checkDealer = await dealerService.getDealerById(checkOrder.dealerId)
     const checkReseller = await resellerService.getReseller({ _id: checkOrder?.resellerId }, {})
     const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
-    const checkServicer = await servicerService.getServiceProviderById({ _id: checkClaim?.servicerId })
+    const checkServicer = await servicerService.getServiceProviderById({ $or: [{ _id: checkClaim?.servicerId }, { dealerId: checkClaim?.servicerId }, { resellerId: checkClaim?.servicerId }] })
+    
 
     if (data.hasOwnProperty("customerStatus")) {
       if (data.customerStatus == 'product_received') {
@@ -888,10 +889,10 @@ exports.editClaimStatus = async (req, res) => {
       let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder?.resellerId, isPrimary: true })
       let servicerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkClaim?.servicerId, isPrimary: true })
 
-      if (resellerPrimary && checkReseller.isAccountCreate) {
+      if (resellerPrimary && checkReseller?.isAccountCreate) {
         IDs.push(resellerPrimary._id)
       }
-      if (servicerPrimary && checkServicer.isAccountCreate) {
+      if (servicerPrimary && checkServicer?.isAccountCreate) {
         IDs.push(servicerPrimary._id)
       }
       if (checkDealer.isAccountCreate) {
@@ -994,10 +995,10 @@ exports.editClaimStatus = async (req, res) => {
       let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder?.resellerId, isPrimary: true })
       let servicerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkClaim?.servicerId, isPrimary: true })
 
-      if (resellerPrimary && checkReseller.isAccountCreate) {
+      if (resellerPrimary && checkReseller?.isAccountCreate) {
         IDs.push(resellerPrimary._id)
       }
-      if (servicerPrimary && checkServicer.isAccountCreate) {
+      if (servicerPrimary && checkServicer?.isAccountCreate) {
         IDs.push(servicerPrimary._id)
       }
       if (checkDealer.isAccountCreate) {
@@ -1101,10 +1102,10 @@ exports.editClaimStatus = async (req, res) => {
       let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder?.resellerId, isPrimary: true })
       let servicerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkClaim?.servicerId, isPrimary: true })
 
-      if (resellerPrimary && checkReseller.isAccountCreate) {
+      if (resellerPrimary && checkReseller?.isAccountCreate) {
         IDs.push(resellerPrimary._id)
       }
-      if (servicerPrimary && checkServicer.isAccountCreate) {
+      if (servicerPrimary && checkServicer?.isAccountCreate) {
         IDs.push(servicerPrimary._id)
       }
       if (checkDealer.isAccountCreate) {
