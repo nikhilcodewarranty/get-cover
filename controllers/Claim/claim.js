@@ -556,6 +556,7 @@ exports.addClaim = async (req, res, next) => {
       response: {
         code: constant.errorCode,
         message: err.message,
+        stack: err.stack
       }
     }
     await LOG(logData).save()
