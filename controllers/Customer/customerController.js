@@ -122,7 +122,7 @@ exports.createCustomer = async (req, res, next) => {
     let notificationEmails = await supportingFunction.getUserEmails();
     let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
     let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkReseller?._id, isPrimary: true })
-    if (checkReseller.isAccountCreate) {
+    if (checkReseller?.isAccountCreate) {
       IDs.push(resellerPrimary?._id)
       notificationEmails.push(resellerPrimary?.email)
     }
