@@ -463,7 +463,7 @@ exports.addClaim = async (req, res, next) => {
     const checkDealer = await dealerService.getDealerById(checkOrder.dealerId)
     const checkReseller = await resellerService.getReseller({ _id: checkOrder?.resellerId }, {})
     const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
-    const checkServicer = await servicerService.getServiceProviderById({ _id: data?.servicerId })
+    const checkServicer = await servicerService.getServiceProviderById({ $or:[{_id: data?.servicerId},{dealerId: data?.servicerId}] })
 
     if (resellerPrimary && checkReseller.isAccountCreate) {
       IDs.push(resellerPrimary._id)
