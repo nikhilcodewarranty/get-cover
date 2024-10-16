@@ -465,7 +465,7 @@ exports.addClaim = async (req, res, next) => {
     const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
     const checkServicer = await servicerService.getServiceProviderById({ _id: data?.servicerId })
 
-    if (resellerPrimary && checkReseller, isAccountCreate) {
+    if (resellerPrimary && checkReseller.isAccountCreate) {
       IDs.push(resellerPrimary._id)
     }
     if (servicerPrimary && checkServicer.isAccountCreate) {
