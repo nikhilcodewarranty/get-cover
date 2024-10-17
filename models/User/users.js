@@ -29,7 +29,7 @@ const userSchema = new mongoose.Schema({
       }
     }
   },
-  threshHoldLimit: {
+  isThreshHoldLimit: {
     type: Boolean,
     default: false
   },
