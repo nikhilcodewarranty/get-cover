@@ -609,7 +609,7 @@ exports.getServiceProviderById = async (req, res, next) => {
       return;
     };
 
-   // let getMetaData = await userService.findOneUser({ metaId: singleServiceProvider._id, isPrimary: true })
+    // let getMetaData = await userService.findOneUser({ metaId: singleServiceProvider._id, isPrimary: true })
     const getMetaData = await userService.findUserforCustomer1([
       {
         $match: {
@@ -789,7 +789,7 @@ exports.editServicerDetail = async (req, res) => {
     };
 
     if (data.isAccountCreate) {
-      servicerUserCreateria = { metaId: req.params.servicerId, isPrimary: true };
+      servicerUserCreateria = { metaData: { $elemMatch: { metaId: req.params.servicerId, isPrimary: true } } };
       newValue = {
         $set: {
           'metaData.$.status': true,
@@ -926,7 +926,7 @@ exports.updateStatus = async (req, res) => {
 
     if (data.status == "false" || !data.status) {
       let criteria1 = { metaData: { $elemMatch: { metaId: checkServicer._id } } }
-      
+
       let updateMetaData = await userService.updateUser(criteria1, {
         $set: {
           'metaData.$.status': data.status,
