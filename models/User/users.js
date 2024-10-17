@@ -20,14 +20,18 @@ const userSchema = new mongoose.Schema({
     index: true,
     lowercase: true
   },
-  threshHoldLimit:{
-    type:{
-      value:Number,
-      amountType:{
-        type:String,
-        default:"percentage"
+  threshHoldLimit: {
+    type: {
+      value: Number,
+      amountType: {
+        type: String,
+        default: "percentage"
       }
     }
+  },
+  threshHoldLimit: {
+    type: Boolean,
+    default: false
   },
   password: {
     type: String,
