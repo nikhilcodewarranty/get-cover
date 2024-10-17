@@ -602,17 +602,13 @@ exports.updateUserData = async (req, res) => {
 
 
     if (checkServicer?.isAccountCreate || checkReseller?.isAccountCreate || checkDealer?.isAccountCreate || checkCustomer?.isAccountCreate) {
-      console.log("dasssssssssssssss",updateUser)
       notificationEmails.push(getPrimary.email);
       notificationEmails.push(updateUser.email);
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(updateUser.email, getPrimary.email, emailData))
       IDs.push(getPrimary._id)
     }
     else {
-      console.log("werwer232332",notificationEmails)
-
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
-
     }
 
     let notificationData = {

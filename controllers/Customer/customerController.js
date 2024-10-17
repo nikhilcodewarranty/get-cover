@@ -1647,7 +1647,12 @@ exports.customerClaims = async (req, res) => {
               "unique_key": 1,
               note: 1,
               dealerSku: 1,
+              claimType: 1,
               totalAmount: 1,
+              getcoverOverAmount: 1,
+              customerOverAmount: 1,
+              customerClaimAmount: 1,
+              getCoverClaimAmount: 1,
               servicerId: 1,
               customerStatus: 1,
               trackingNumber: 1,
@@ -1661,6 +1666,7 @@ exports.customerClaims = async (req, res) => {
               "contracts.productName": 1,
               "contracts.model": 1,
               "contracts.manufacture": 1,
+              "contracts.coverageType": 1,
               "contracts.serial": 1,
               "contracts.pName": 1,
               "contracts.orders.dealerId": 1,
@@ -1838,8 +1844,16 @@ exports.customerClaims = async (req, res) => {
       { _id: { $in: allServicerIds }, status: true },
       {}
     );
+    const dynamicOption = await userService.getOptions({ name: 'coverage_type' })
+
     const result_Array = resultFiter.map((item1) => {
       servicer = []
+      let mergedData = []
+      if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
+        mergedData = dynamicOption.value.filter(contract =>
+            item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
+        );
+    }
       let servicerName = '';
       let selfServicer = false;
       let selfResellerServicer = false;
@@ -1870,7 +1884,8 @@ exports.customerClaims = async (req, res) => {
         selfServicer: selfServicer,
         contracts: {
           ...item1.contracts,
-          allServicer: servicer
+          allServicer: servicer,
+          mergedData:mergedData
         }
       }
     })
