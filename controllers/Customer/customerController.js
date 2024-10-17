@@ -1893,7 +1893,6 @@ exports.customerClaims = async (req, res) => {
 
 // -----------------------------------------add cutomer with multiple dealer code --------------------------------------------------------------------------------
 
-
 exports.createCustomerNew = async (req, res, next) => {
   try {
     console.log("api hitted")

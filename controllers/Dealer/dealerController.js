@@ -1579,7 +1579,6 @@ exports.uploadDealerPriceBook = async (req, res) => {
 
 exports.uploadDealerPriceBookNew = async (req, res) => {
   try {
-    let data = req.body
 
     uploadP(req, res, async (err) => {
 
@@ -1595,6 +1594,8 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
         return;
       }
       let getDealerSetting = await eligibilityService.getEligibility({ userId: checkDealer._id })
+      console.log("get dealer settings +++++++++++", getDealerSetting)
+
       let adhDays = checkDealer[0].adhDays
       let noOfClaim = getDealerSetting.noOfClaim
       let noOfClaimPerPeriod = getDealerSetting.noOfClaimPerPeriod
@@ -1699,7 +1700,7 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
               // code to be added here
               currentData.message = "created successfully"
             }
-          }else{
+          } else {
             currentData.message = "dealer sku already exist"
           }
 
