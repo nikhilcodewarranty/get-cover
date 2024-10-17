@@ -1594,7 +1594,7 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
         return;
       }
       let getDealerSetting = await eligibilityService.getEligibility({ userId: req.body.dealerId })
-      console.log("get dealer settings +++++++++++",data, getDealerSetting)
+      console.log("get dealer settings +++++++++++", data, getDealerSetting)
 
       let adhDays = checkDealer[0].adhDays
       let noOfClaim = getDealerSetting.noOfClaim
@@ -1680,14 +1680,29 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
         // if (currentData.isExist) {
         let checkPriceBook = await priceBookService.findByName1({ name: currentData.productSku, coverageType: { $elemMatch: { value: { $in: checkDealer[0].coverageType } } } })
         if (checkPriceBook) {
-          let checkDealerSku1 = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, dealerSku: currentData.dealerSku })
-          if (checkPriceBook._id == checkDealerSku1.priceBook) {
-            let wholeSalePrice = Number(checkPriceBook.frontingFee) + Number(checkPriceBook.reserveFutureFee) + Number(checkPriceBook.reinsuranceFee) + Number(checkPriceBook.adminFee)
-            let checkDealerSku = await dealerPriceService.getDealerPriceById({ priceBook: checkPriceBook._id, dealerId: data.dealerId })
+          let wholeSalePrice = Number(checkPriceBook.frontingFee) + Number(checkPriceBook.reserveFutureFee) + Number(checkPriceBook.reinsuranceFee) + Number(checkPriceBook.adminFee)
+          let checkDealerSku = await dealerPriceService.getDealerPriceById({ priceBook: checkPriceBook._id, dealerId: data.dealerId })
+          if (checkDealerSku) {
+            let checkDealerSku = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, dealerSku: currentData.dealerSku })
             if (checkDealerSku) {
+              if (checkDealerSku.priceBook.toString == checkPriceBook._id.toString) {
+                let updateDealerPriceBook = await dealerPriceService.updateDealerPrice({ _id: checkDealerSku._id }, { retailPrice: currentData.retailPrice, dealerSku: currentData.dealerSku }, { new: true })
+                currentData.message = "Updated successfully"
+              } else {
+                currentData.message = "Dealer sku already exist"
+              }
+            } else {
               let updateDealerPriceBook = await dealerPriceService.updateDealerPrice({ _id: checkDealerSku._id }, { retailPrice: currentData.retailPrice, dealerSku: currentData.dealerSku }, { new: true })
               currentData.message = "Updated successfully"
+            }
+
+          } else {
+            let checkDealerSku = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, dealerSku: currentData.dealerSku })
+            if (checkDealerSku) {
+              currentData.message = "Dealer sku already exist"
+
             } else {
+
               let brokerFee = wholeSalePrice - currentData.retailPrice
               let updateAdh = checkPriceBook.coverageType.map(item1 => {
                 // Find a match in array2
@@ -1700,21 +1715,15 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
               // code to be added here
               currentData.message = "created successfully"
             }
-          } else {
-            currentData.message = "dealer sku already exist"
           }
-
         } else {
           currentData.message = "Product sku does not exist"
-
         }
 
 
         newArray.push(currentData)
 
       }
-
-
 
       function convertArrayToHTMLTable(array) {
         const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');

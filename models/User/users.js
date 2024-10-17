@@ -20,6 +20,15 @@ const userSchema = new mongoose.Schema({
     index: true,
     lowercase: true
   },
+  threshHoldLimit:{
+    type:{
+      value:Number,
+      amountType:{
+        type:String,
+        default:"percentage"
+      }
+    }
+  },
   password: {
     type: String,
     default: process.env.DUMMY_PASSWORD
