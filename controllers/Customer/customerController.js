@@ -1102,6 +1102,8 @@ exports.getCustomerUsers = async (req, res) => {
   try {
     let data = req.body
 
+    console.log("sdfdsfsdfsf",req.params.customerId)
+
     const getCustomerUsers = await userService.findUserforCustomer1([
       {
         $match: {
@@ -1110,7 +1112,7 @@ exports.getCustomerUsers = async (req, res) => {
             { metaData: { $elemMatch: { firstName: { '$regex': data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
             { metaData: { $elemMatch: { lastName: { '$regex': data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
             { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { metaData: { $elemMatch: { metaId: req.params.customerId, isDeleted: false } } }
+            { metaData: { $elemMatch: { metaId: new mongoose.Types.ObjectId(req.params.customerId) } } }
           ]
         }
       },
