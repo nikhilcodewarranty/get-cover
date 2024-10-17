@@ -859,20 +859,9 @@ exports.deleteUser = async (req, res) => {
 
     //send notification to dealer when deleted
     let IDs = await supportingFunction.getUserIds()
-    let notificationData = {
-      title: "User Deletion",
-      description: checkUser.firstName + " user has been deleted!",
-      userId: req.teammateId,
-      flag: checkRole.role,
-      notificationFor: [primaryUser._id]
-    };
-
-    let createNotification = await userService.createNotification(notificationData);
-
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
-    notificationEmails.push(primaryUser.email);
-    notificationEmails.push(checkUser.email);
+
 
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -885,9 +874,36 @@ exports.deleteUser = async (req, res) => {
     }
 
     let notificationDataUpdate = primaryUser.notificationTo.filter(email => email != checkUser.email);
+    
     let updateUser = await userService.updateSingleUser({ _id: primaryUser._id }, { notificationTo: notificationDataUpdate }, { new: true })
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(checkUser.email, primaryUser.email, emailData))
+    const checkDealer = await dealerService.getDealerById(primaryUser.metaId)
+
+    const checkReseller = await resellerService.getReseller({ _id: primaryUser.metaId }, { isDeleted: false })
+
+    const checkCustomer = await customerService.getCustomerById({ _id: primaryUser.metaId })
+
+    const checkServicer = await providerService.getServiceProviderById({ _id: primaryUser.metaId })
+
+    if (checkServicer?.isAccountCreate || checkReseller?.isAccountCreate || checkDealer?.isAccountCreate || checkCustomer?.isAccountCreate) {
+      notificationEmails.push(primaryUser.email);
+      notificationEmails.push(checkUser.email);
+      IDs.push(primaryUser._id)
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(checkUser.email, primaryUser.email, emailData))
+    }
+    else {
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+
+    }
+    let notificationData = {
+      title: "User Deletion",
+      description: checkUser.firstName + " user has been deleted!",
+      userId: req.teammateId,
+      flag: checkRole.role,
+      notificationFor: IDs
+    };
+
+    let createNotification = await userService.createNotification(notificationData);
     //Save Logs delete user
     let logData = {
       endpoint: "user/deleteUser",
