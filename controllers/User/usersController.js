@@ -564,7 +564,7 @@ exports.updateUserData = async (req, res) => {
 
     const checkCustomer = await customerService.getCustomerById({ _id: updateUser.metaId })
 
-    const checkServicer = await servicerService.getServiceProviderById({ _id: updateUser.metaId })
+    const checkServicer = await providerService.getServiceProviderById({ _id: updateUser.metaId })
 
 
     //send notification to dealer when status change
