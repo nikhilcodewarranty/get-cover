@@ -1266,7 +1266,7 @@ exports.createOrder1 = async (req, res) => {
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
-            senderName: getPrimary.firstName,
+            senderName: getPrimary.metaData[0]?.firstName,
             content: "The new order " + checkOrder.unique_key + "  has been created for " + getPrimary.firstName + "",
             subject: "New Order"
         }
@@ -1557,7 +1557,7 @@ exports.createOrder1 = async (req, res) => {
                         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
                         address: settingData[0]?.address,
                         websiteSetting: settingData[0],
-                        senderName: dealerPrimary.firstName,
+                        senderName: dealerPrimary.metaData[0]?.firstName,
                         content: "The  order " + checkOrder.unique_key + " has been updated and processed",
                         subject: "Process Order"
                     }
@@ -1569,7 +1569,7 @@ exports.createOrder1 = async (req, res) => {
                         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
                         address: settingData[0]?.address,
                         websiteSetting: settingData[0],
-                        senderName: resellerPrimary?.firstName,
+                        senderName: resellerPrimary?.metaData[0].firstName,
                         content: "The  order " + checkOrder.unique_key + " has been updated and processed",
                         subject: "Process Order"
                     }
@@ -2241,7 +2241,7 @@ exports.editOrderDetail = async (req, res) => {
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
-            senderName: dealerPrimary.firstName,
+            senderName: dealerPrimary.metaData[0].firstName,
             content: "The  order " + savedResponse.unique_key + " has been updated",
             subject: "Order Update"
         }
@@ -2520,7 +2520,7 @@ exports.editOrderDetail = async (req, res) => {
                         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
                         address: settingData[0]?.address,
                         websiteSetting: settingData[0],
-                        senderName: dealerPrimary.firstName,
+                        senderName: dealerPrimary.metaData[0].firstName,
                         content: "The  order " + savedResponse.unique_key + " updated and processed",
                         subject: "Process Order"
                     }
@@ -2532,7 +2532,7 @@ exports.editOrderDetail = async (req, res) => {
                         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
                         address: settingData[0]?.address,
                         websiteSetting: settingData[0],
-                        senderName: resellerPrimary?.firstName,
+                        senderName: resellerPrimary?.metaData[0].firstName,
                         content: "The  order " + savedResponse.unique_key + " has been paid",
                         subject: "Process Order"
                     }
