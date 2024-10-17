@@ -617,17 +617,25 @@ exports.editCustomer = async (req, res) => {
     }
     if (data.hasOwnProperty("isAccountCreate")) {
       if ((data.isAccountCreate || data.isAccountCreate == 'true')) {
-        let updatePrimaryUser = await userService.updateSingleUser({ metaId: req.params.customerId, isPrimary: true }, { status: true }, { new: true })
+        let updatePrimaryUser = await userService.updateSingleUser({ metaData: { $elemMatch: { metaId: req.params.customerId, isPrimary: true } } },   {
+          $set: {
+            'metaData.$.status': true,
+          }
+        }, { new: true })
       } else {
-        let updatePrimaryUser = await userService.updateUser({ metaId: req.params.customerId }, { status: false }, { new: true })
+        let updatePrimaryUser = await userService.updateUser({ metaData: { $elemMatch: { metaId: req.params.customerId } } },   {
+          $set: {
+            'metaData.$.status': false,
+          }
+        }, { new: true })
       }
     }
 
     //send notification to dealer,customer,admin,reseller
     let IDs = await supportingFunction.getUserIds()
-    let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
-    let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer.dealerId, isPrimary: true })
-    let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer.resellerId, isPrimary: true })
+    let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
+    let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer.dealerId, isPrimary: true } } })
+    let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer.resellerId, isPrimary: true } } })
     IDs.push(customerPrimary._id)
     IDs.push(dealerPrimary._id)
     IDs.push(resellerPrimary?._id)
