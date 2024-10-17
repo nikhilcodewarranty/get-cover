@@ -959,7 +959,38 @@ exports.getCustomerById = async (req, res) => {
         message: "Invalid customer ID"
       })
     } else {
-      let getPrimaryUser = await userService.findOneUser({ metaId: checkCustomer._id, isPrimary: true }, {})
+
+      const getPrimaryUser = await userService.findUserforCustomer1([
+        {
+            $match: {
+                $and: [
+          
+                    { metaData: { $elemMatch: { metaId: checkCustomer._id, isPrimary: true } } }
+                ]
+            }
+        },
+        {
+            $project: {
+                email: 1,
+                'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+                'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+                'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+                'position': { $arrayElemAt: ["$metaData.position", 0] },
+                'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+                'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+                'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                'status': { $arrayElemAt: ["$metaData.status", 0] },
+                resetPasswordCode: 1,
+                isResetPassword: 1,
+                approvedStatus: 1,
+                createdAt: 1,
+                updatedAt: 1
+            }
+        }
+    ]);
+
+
       let checkReseller = await resellerService.getReseller({ _id: checkCustomer.resellerId }, { isDeleted: 0 });
       let checkDealer = await dealerService.getDealerByName({ _id: checkCustomer.dealerId }, { isDeleted: 0 });
       let project = {
@@ -1078,7 +1109,7 @@ exports.getCustomerById = async (req, res) => {
         message: "Success",
         result: {
           meta: checkCustomer,
-          primary: getPrimaryUser,
+          primary: getPrimaryUser[0],
           resellerName: checkReseller ? checkReseller.name : '',
           resellerStatus: checkReseller ? checkReseller.status : null,
           dealerStatus: checkDealer.accountStatus,
