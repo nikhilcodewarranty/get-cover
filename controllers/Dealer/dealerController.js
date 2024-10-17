@@ -1767,7 +1767,7 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
 
       let IDs = await supportingFunction.getUserIds()
       let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: req.body.dealerId, isPrimary: true })
-      if (checkDealer.isAccountCreate) {
+      if (checkDealer[0].isAccountCreate) {
         IDs.push(dealerPrimary?._id)
       }
 
@@ -1783,8 +1783,8 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
       let createNotification = await userService.createNotification(notificationData);
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
-      console.log(dealerPrimary.email, checkDealer.isAccountCreate)
-      if (checkDealer.isAccountCreate) {
+      console.log(dealerPrimary.email, checkDealer[0].isAccountCreate)
+      if (checkDealer[0].isAccountCreate) {
         const mailing = sgMail.send(emailConstant.sendCsvFile(dealerPrimary.email, notificationEmails, htmlTableString));
       }
       else {
