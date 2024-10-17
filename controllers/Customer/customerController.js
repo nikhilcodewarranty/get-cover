@@ -617,13 +617,13 @@ exports.editCustomer = async (req, res) => {
     }
     if (data.hasOwnProperty("isAccountCreate")) {
       if ((data.isAccountCreate || data.isAccountCreate == 'true')) {
-        let updatePrimaryUser = await userService.updateSingleUser({ metaData: { $elemMatch: { metaId: req.params.customerId, isPrimary: true } } },   {
+        let updatePrimaryUser = await userService.updateSingleUser({ metaData: { $elemMatch: { metaId: req.params.customerId, isPrimary: true } } }, {
           $set: {
             'metaData.$.status': true,
           }
         }, { new: true })
       } else {
-        let updatePrimaryUser = await userService.updateUser({ metaData: { $elemMatch: { metaId: req.params.customerId } } },   {
+        let updatePrimaryUser = await userService.updateUser({ metaData: { $elemMatch: { metaId: req.params.customerId } } }, {
           $set: {
             'metaData.$.status': false,
           }
@@ -880,12 +880,27 @@ exports.addCustomerUser = async (req, res) => {
       })
       return;
     };
-    let checkUser = await userService.getUserById1({ metaId: data.customerId, isPrimary: true }, { isDeleted: false })
-    data.accountId = checkCustomer._id
-    data.metaId = checkCustomer._id
-    data.status = checkUser.status ? true : false;
-    data.roleId = process.env.customer
-    let saveData = await userService.createUser(data)
+    let checkUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: data.customerId, isPrimary: true } } }, { isDeleted: false })
+
+    let metaData = {
+      email: data.email,
+      metaData: [
+        {
+          metaId: checkCustomer._id,
+          status: checkUser.metaData[0]?.status ? true : false,
+          roleId: process.env.customer,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          phoneNumber: data.phoneNumber,
+          position: data.position,
+          isPrimary: false,
+          dialCode: data.dialCode ? data.dialCode : "+1"
+
+        }
+      ]
+
+    }
+    let saveData = await userService.createUser(metaData)
     if (!saveData) {
       //Save Logs
       let logData = {
@@ -962,33 +977,33 @@ exports.getCustomerById = async (req, res) => {
 
       const getPrimaryUser = await userService.findUserforCustomer1([
         {
-            $match: {
-                $and: [
-          
-                    { metaData: { $elemMatch: { metaId: checkCustomer._id, isPrimary: true } } }
-                ]
-            }
+          $match: {
+            $and: [
+
+              { metaData: { $elemMatch: { metaId: checkCustomer._id, isPrimary: true } } }
+            ]
+          }
         },
         {
-            $project: {
-                email: 1,
-                'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
-                'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
-                'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
-                'position': { $arrayElemAt: ["$metaData.position", 0] },
-                'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
-                'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
-                'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
-                'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
-                'status': { $arrayElemAt: ["$metaData.status", 0] },
-                resetPasswordCode: 1,
-                isResetPassword: 1,
-                approvedStatus: 1,
-                createdAt: 1,
-                updatedAt: 1
-            }
+          $project: {
+            email: 1,
+            'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+            'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+            'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+            'position': { $arrayElemAt: ["$metaData.position", 0] },
+            'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+            'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+            'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+            'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+            'status': { $arrayElemAt: ["$metaData.status", 0] },
+            resetPasswordCode: 1,
+            isResetPassword: 1,
+            approvedStatus: 1,
+            createdAt: 1,
+            updatedAt: 1
+          }
         }
-    ]);
+      ]);
 
 
       let checkReseller = await resellerService.getReseller({ _id: checkCustomer.resellerId }, { isDeleted: 0 });
@@ -1133,7 +1148,7 @@ exports.getCustomerUsers = async (req, res) => {
   try {
     let data = req.body
 
-    console.log("sdfdsfsdfsf",req.params.customerId)
+    console.log("sdfdsfsdfsf", req.params.customerId)
 
     const getCustomerUsers = await userService.findUserforCustomer1([
       {
