@@ -660,7 +660,7 @@ exports.editCustomer = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: checkDealer.metaData[0]?.username,
+      senderName: checkDealer.username,
       content: "The customer " + checkDealer.username + "" + " " + "has been updated successfully.",
       subject: "Customer Update"
     }
