@@ -558,24 +558,21 @@ exports.updateUserData = async (req, res) => {
     //Get role by id
     const checkRole = await userService.getRoleById({ _id: updateUser.roleId }, {});
 
+    const checkDealer = await dealerService.getDealerById(updateUser.metaId)
+
+    const checkReseller = await resellerService.getReseller({ _id: updateUser.metaId }, { isDeleted: false })
+
+    const checkCustomer = await customerService.getCustomerById({ _id: updateUser.metaId })
+
+    const checkServicer = await servicerService.getServiceProviderById({ _id: updateUser.metaId })
+
+
     //send notification to dealer when status change
     let IDs = await supportingFunction.getUserIds()
     let getPrimary = await supportingFunction.getPrimaryUser({ metaId: updateUser.metaId, isPrimary: true })
 
-    IDs.push(getPrimary._id)
-    let notificationData = {
-      title: checkRole.role + " " + "user change",
-      description: "The  user has been changed!",
-      userId: req.teammateId,
-      flag: checkRole.role,
-      notificationFor: [getPrimary._id]
-    };
-
-    let createNotification = await userService.createNotification(notificationData);
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
-    notificationEmails.push(getPrimary.email);
-    notificationEmails.push(updateUser.email);
     let emailData;
 
     if (data.firstName) {
@@ -603,7 +600,27 @@ exports.updateUserData = async (req, res) => {
       }
     }
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(updateUser.email, getPrimary.email, emailData))
+
+    if (checkServicer?.isAccountCreate || checkReseller?.isAccountCreate || checkDealer?.isAccountCreate || checkCustomer?.isAccountCreate) {
+      notificationEmails.push(getPrimary.email);
+      notificationEmails.push(updateUser.email);
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(updateUser.email, getPrimary.email, emailData))
+      IDs.push(getPrimary._id)
+    }
+    else {
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+
+    }
+
+    let notificationData = {
+      title: checkRole.role + " " + "user change",
+      description: "The  user has been changed!",
+      userId: req.teammateId,
+      flag: checkRole.role,
+      notificationFor: IDs
+    };
+
+    let createNotification = await userService.createNotification(notificationData);
 
     //Save Logs updateUserData
     let logData = {
