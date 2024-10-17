@@ -651,6 +651,8 @@ exports.changePrimaryUser = async (req, res) => {
 
     let findUser = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true });
 
+    console.log("findUser===================",findUser)
+
     findUser = await dealerService.getDealerById(findUser.metaId)
 
     findUser = await resellerService.getReseller({ _id: findUser.metaId }, { isDeleted: false })
