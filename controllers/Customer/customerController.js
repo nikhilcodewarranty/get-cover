@@ -1844,6 +1844,8 @@ exports.customerClaims = async (req, res) => {
       { _id: { $in: allServicerIds }, status: true },
       {}
     );
+    const dynamicOption = await userService.getOptions({ name: 'coverage_type' })
+
     const result_Array = resultFiter.map((item1) => {
       servicer = []
       let mergedData = []
