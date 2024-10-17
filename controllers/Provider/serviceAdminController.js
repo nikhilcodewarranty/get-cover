@@ -1362,9 +1362,13 @@ exports.statusUpdate = async (req, res) => {
     };
 
     if (req.body.status == false) {
-      let criteria1 = { metaId: updatedResult._id }
+      let criteria1 = { metaData: { $elemMatch: { metaId: updatedResult._id } } }
       let option = { new: true }
-      let updateUsers = await userService.updateUser(criteria1, { status: req.body.status }, option)
+      let updateUsers = await userService.updateUser(criteria1, {
+        $set: {
+          'metaData.$.status': req.body.status,
+        }
+      }, option)
       if (!updateUsers) {
         res.send({
           code: constant.errorCode,
@@ -1377,9 +1381,13 @@ exports.statusUpdate = async (req, res) => {
         message: "Updated Successfully",
       })
     } else {
-      let criteria1 = { metaId: updatedResult._id, isPrimary: true }
+      let criteria1 = { metaData: { $elemMatch: { metaId: updatedResult._id, isPrimary: true } }  }
       let option = { new: true }
-      let updateUsers = await userService.updateUser(criteria1, { status: req.body.status }, option)
+      let updateUsers = await userService.updateUser(criteria1, {
+        $set: {
+            'metaData.$.status': req.body.status,
+          }
+    }, option)
       if (!updateUsers) {
         res.send({
           code: constant.errorCode,
