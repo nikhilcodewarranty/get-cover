@@ -45,7 +45,7 @@ router.post('/saveOptions', [verifyToken], userController.saveOptions);
 //edit Dropdown
 router.put('/editOption', [verifyToken], userController.editOption);
 
- router.get('/getOption/:name', [verifyToken], userController.getOptions)
+router.get('/getOption/:name', [verifyToken], userController.getOptions)
 
 router.get('/getOptions/:filter', [verifyToken], userController.getOptions1)
 
@@ -54,7 +54,7 @@ router.post("/addMember", [verifyToken], userController.addMembers); // add memb
 router.post("/getMembers", [verifyToken], userController.getMembers); // get members
 router.post("/createTerms", userController.createTerms); // create terms
 router.post("/login", validator('login_validation'), userController.login); // login for all users
-router.post("/addRole", [verifyToken], validator("add_role_validation") , userController.addRole); // add role
+router.post("/addRole", [verifyToken], validator("add_role_validation"), userController.addRole); // add role
 router.post("/sendLinkToEmail", userController.sendLinkToEmail); // send password link to email
 router.post("/resetPassword/:userId/:code", userController.resetPassword); // reset password
 router.post("/dealerStatusUpdate", [verifyToken], dealerController.statusUpdate); // update dealer status
@@ -62,7 +62,7 @@ router.post("/servicerStatusUpdate", [verifyToken], servicerAdminController.stat
 router.post("/updateProfile", [verifyToken], userController.updateProfile); // update profile
 router.put("/updatePassword", [verifyToken], userController.updatePassword); // update password
 router.put("/rejectDealer/:dealerId", [verifyToken], validator("approve_reject_dealer_validation"), supportingFunction.checkObjectId, dealerController.rejectDealer); // reject dealer
-router.put("/updateThreshHoldLimit", [verifyToken], dealerController.updateThreshHoldLimit); // reject dealer
+router.put("/updateThreshHoldLimit", [verifyToken], userController.updateThreshHoldLimit); // reject dealer
 router.put("/updateUserData/:userId", [verifyToken], userController.updateUserData); // update user data
 router.put("/updateUser/:userId", [verifyToken], userController.updateUser); // update user
 router.post("/checkEmail", [verifyToken], validator("email_validation"), userController.checkEmail); // check email
@@ -71,7 +71,7 @@ router.post("/validateData", [verifyToken], userController.validateData); // val
 router.get("/checkToken", [verifyToken], userController.checkToken); // check token
 router.get("/getAccountInfo", [verifyToken], userController.getAccountInfo); // get account info
 router.delete('/deleteUser/:userId', [verifyToken], userController.deleteUser); // delete user
-router.get('/checkIdAndToken/:userId/:code',  userController.checkIdAndToken); // check ID and token
+router.get('/checkIdAndToken/:userId/:code', userController.checkIdAndToken); // check ID and token
 router.get("/getDashboardInfo", [verifyToken], graphdataController.getDashboardInfo); // get dashboard info
 router.get("/getDashboardGraph", [verifyToken], graphdataController.getDashboardGraph); // get dashboard graph
 router.get("/getSkuData", [verifyToken], graphdataController.getSkuData); // get SKU data
