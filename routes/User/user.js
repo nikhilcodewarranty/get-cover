@@ -62,6 +62,7 @@ router.post("/servicerStatusUpdate", [verifyToken], servicerAdminController.stat
 router.post("/updateProfile", [verifyToken], userController.updateProfile); // update profile
 router.put("/updatePassword", [verifyToken], userController.updatePassword); // update password
 router.put("/rejectDealer/:dealerId", [verifyToken], validator("approve_reject_dealer_validation"), supportingFunction.checkObjectId, dealerController.rejectDealer); // reject dealer
+router.put("/updateThreshHoldLimit", [verifyToken], dealerController.updateThreshHoldLimit); // reject dealer
 router.put("/updateUserData/:userId", [verifyToken], userController.updateUserData); // update user data
 router.put("/updateUser/:userId", [verifyToken], userController.updateUser); // update user
 router.post("/checkEmail", [verifyToken], validator("email_validation"), userController.checkEmail); // check email

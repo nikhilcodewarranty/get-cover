@@ -2003,7 +2003,7 @@ exports.editOption = async (req, res) => {
   }
 }
 
-exports.updateDealerSetting = async (req, res) => {
+exports.updateThreshHoldLimit = async (req, res) => {
   try {
     let data = req.body
     let updateAdmin = await userService.updateUser({ _id: req.userId }, { $set: { threshHoldLimit: data.threshHoldLimit } }, { new: true })
