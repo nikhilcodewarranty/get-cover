@@ -571,8 +571,14 @@ exports.editCustomer = async (req, res) => {
       content: "The customer " + checkDealer.username + "" + " " + "has been updated successfully.",
       subject: "Customer Update"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationEmails, emailData))
+    if (checkDealer.isAccountCreate) {
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationEmails, emailData))
 
+    }
+    else {
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.comI"], emailData))
+
+    }
     //Save Logs editCustomer
     let logData = {
       userId: req.userId,
@@ -613,20 +619,6 @@ exports.changePrimaryUser = async (req, res) => {
   try {
     let data = req.body
     let checkUser = await userService.findOneUser({ _id: req.params.userId }, {})
-    let findUser;
-    if (req.role == "Dealer") {
-      findUser = await dealerService.getDealerById(checkUser.metaId)
-    }
-    if (req.role == "Reseller") {
-      findUser = await resellerService.getReseller({ _id: checkUser.metaId }, { isDeleted: false })
-    }
-    if (req.role == "Customer") {
-      findUser = await customerService.getCustomerById({ _id: checkUser.metaId })
-
-    }
-    if (req.role == "Servicer") {
-      findUser = await servicerService.getServiceProviderById({ _id: checkUser.metaId })
-    }
     let settingData = await userService.getSetting({});
     if (!checkUser) {
       res.send({
@@ -656,6 +648,21 @@ exports.changePrimaryUser = async (req, res) => {
       return;
     };
     let updatePrimary = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true })
+
+    let findUser = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true });
+    if (req.role == "Dealer") {
+      findUser = await dealerService.getDealerById(updateLastPrimary.metaId)
+    }
+    if (req.role == "Reseller") {
+      findUser = await resellerService.getReseller({ _id: updateLastPrimary.metaId }, { isDeleted: false })
+    }
+    if (req.role == "Customer") {
+      findUser = await customerService.getCustomerById({ _id: updateLastPrimary.metaId })
+
+    }
+    if (req.role == "Servicer") {
+      findUser = await servicerService.getServiceProviderById({ _id: updateLastPrimary.metaId })
+    }
     //Get role by id
     const checkRole = await userService.getRoleById({ _id: checkUser.roleId }, {});
 
@@ -703,10 +710,10 @@ exports.changePrimaryUser = async (req, res) => {
         content: "The primary user for your account has been changed from " + updateLastPrimary.firstName + " to " + updatePrimary.firstName + ".",
         subject: "Primary User change"
       };
-      if(findUser.isAccountCreate){
+      if (findUser?.isAccountCreate) {
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(updatePrimary.email, updateLastPrimary.email, emailData))
       }
-      else{
+      else {
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
       }
       //Save Logs changePrimaryUser
