@@ -650,14 +650,13 @@ exports.changePrimaryUser = async (req, res) => {
     let updatePrimary = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true })
 
 
-   let findUser = await dealerService.getDealerById(updatePrimary.metaId)
+   const checkDealer = await dealerService.getDealerById(updatePrimary.metaId)
 
+   const checkReseller = await resellerService.getReseller({ _id: updatePrimary.metaId }, { isDeleted: false })
 
-    findUser = await resellerService.getReseller({ _id: updatePrimary.metaId }, { isDeleted: false })
+   const checkCustomer = await customerService.getCustomerById({ _id: updatePrimary.metaId })
 
-    findUser = await customerService.getCustomerById({ _id: updatePrimary.metaId })
-
-    findUser = await servicerService.getServiceProviderById({ _id: updatePrimary.metaId })
+    const checkServicer = await servicerService.getServiceProviderById({ _id: updatePrimary.metaId })
 
 
     //Get role by id
@@ -708,8 +707,13 @@ exports.changePrimaryUser = async (req, res) => {
         subject: "Primary User change"
       };
       console.log("findUser--------------------", findUser)
+      console.log("updatePrimary--------------------", updatePrimary)
+      console.log("updateLastPrimary--------------------", updateLastPrimary)
 
-      if (findUser?.isAccountCreate) {
+
+
+
+      if (checkServicer?.isAccountCreate || checkReseller?.isAccountCreate || checkDealer?.isAccountCreate || checkCustomer?.isAccountCreate) {
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(updatePrimary.email, updateLastPrimary.email, emailData))
       }
       else {
