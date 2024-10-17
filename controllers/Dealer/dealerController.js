@@ -1634,24 +1634,6 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
         };
       });
 
-
-      // let lastOccurrenceMap = {};
-
-      // totalDataComing.forEach((item, index) => {
-      //   lastOccurrenceMap[item.productSku] = index;
-      // });
-
-      // // Add the isExist key
-      // totalDataComing = totalDataComing.map((item, index) => {
-      //   if (item.dealerSku == "") {
-      //     item.dealerSku = item.productSku
-      //   }
-      //   return {
-      //     ...item,
-      //     isExist: index === lastOccurrenceMap[item.productSku]
-      //   }
-      // });
-
       let lastOccurrenceMap = {};
 
       // Track the first occurrence of each productSku
@@ -1718,7 +1700,7 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
               currentData.message = "created successfully"
             }
           }else{
-            currentData.message = "dealer sku does not exist"
+            currentData.message = "dealer sku already exist"
           }
 
         } else {
