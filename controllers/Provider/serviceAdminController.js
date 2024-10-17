@@ -674,7 +674,7 @@ exports.getServiceProviderById = async (req, res, next) => {
   } catch (error) {
     res.send({
       code: constant.errorCode,
-      message: err.message
+      message: error.message
     })
   }
 };
