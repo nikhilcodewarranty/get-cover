@@ -1087,6 +1087,8 @@ exports.customerOrders = async (req, res) => {
       createdAt: 1,
       venderOrder: 1,
       orderAmount: 1,
+      paidAmount: 1,
+      dueAmount: 1,
       contract: "$contract"
     };
 
