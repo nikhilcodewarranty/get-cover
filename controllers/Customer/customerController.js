@@ -537,15 +537,29 @@ exports.editCustomer = async (req, res) => {
 
     //send notification to dealer,customer,admin,reseller
     let IDs = await supportingFunction.getUserIds()
+    let notificationEmails = await supportingFunction.getUserEmails();
     let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
     let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer.dealerId, isPrimary: true })
     let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer.resellerId, isPrimary: true })
+
+    const dealerCheck = await dealerService.getDealerById(checkDealer.dealerId)
+
+    const checkReseller = await resellerService.getReseller({ _id: checkDealer.resellerId }, { isDeleted: false })
+
+    if (dealerCheck.isAccountCreate) {
+      IDs.push(dealerPrimary._id)
+      notificationEmails.push(dealerPrimary.email);
+    }
+
+    if (checkReseller?.isAccountCreate) {
+      IDs.push(resellerPrimary?._id)
+      notificationEmails.push(resellerPrimary?.email);
+    }
+
     if (checkDealer.isAccountCreate) {
       IDs.push(customerPrimary._id)
     }
 
-    IDs.push(dealerPrimary._id)
-    IDs.push(resellerPrimary?._id)
     let notificationData = {
       title: "Customer Detail Update",
       description: "The customer information has been changed!",
@@ -557,11 +571,8 @@ exports.editCustomer = async (req, res) => {
 
     let createNotification = await userService.createNotification(notificationData);
 
-
     // Send Email code here
-    let notificationEmails = await supportingFunction.getUserEmails();
-    notificationEmails.push(resellerPrimary?.email);
-    notificationEmails.push(dealerPrimary.email);
+
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -576,7 +587,7 @@ exports.editCustomer = async (req, res) => {
 
     }
     else {
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.comI"], emailData))
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
 
     }
     //Save Logs editCustomer
@@ -625,7 +636,7 @@ exports.changePrimaryUser = async (req, res) => {
         code: constant.errorCode,
         message: "Unable to find the user"
       })
-      return; 
+      return;
     };
     let updateLastPrimary = await userService.updateSingleUser({ metaId: checkUser.metaId, isPrimary: true }, { isPrimary: false }, { new: true })
     if (!updateLastPrimary) {
@@ -650,11 +661,11 @@ exports.changePrimaryUser = async (req, res) => {
     let updatePrimary = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true })
 
 
-   const checkDealer = await dealerService.getDealerById(updatePrimary.metaId)
+    const checkDealer = await dealerService.getDealerById(updatePrimary.metaId)
 
-   const checkReseller = await resellerService.getReseller({ _id: updatePrimary.metaId }, { isDeleted: false })
+    const checkReseller = await resellerService.getReseller({ _id: updatePrimary.metaId }, { isDeleted: false })
 
-   const checkCustomer = await customerService.getCustomerById({ _id: updatePrimary.metaId })
+    const checkCustomer = await customerService.getCustomerById({ _id: updatePrimary.metaId })
 
     const checkServicer = await servicerService.getServiceProviderById({ _id: updatePrimary.metaId })
 
@@ -706,7 +717,7 @@ exports.changePrimaryUser = async (req, res) => {
         content: "The primary user for your account has been changed from " + updateLastPrimary.firstName + " to " + updatePrimary.firstName + ".",
         subject: "Primary User change"
       };
- 
+
 
 
 
