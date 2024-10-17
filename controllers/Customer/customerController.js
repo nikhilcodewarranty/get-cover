@@ -625,7 +625,7 @@ exports.changePrimaryUser = async (req, res) => {
         code: constant.errorCode,
         message: "Unable to find the user"
       })
-      return;
+      return; 
     };
     let updateLastPrimary = await userService.updateSingleUser({ metaId: checkUser.metaId, isPrimary: true }, { isPrimary: false }, { new: true })
     if (!updateLastPrimary) {
@@ -706,9 +706,7 @@ exports.changePrimaryUser = async (req, res) => {
         content: "The primary user for your account has been changed from " + updateLastPrimary.firstName + " to " + updatePrimary.firstName + ".",
         subject: "Primary User change"
       };
-      console.log("findUser--------------------", findUser)
-      console.log("updatePrimary--------------------", updatePrimary)
-      console.log("updateLastPrimary--------------------", updateLastPrimary)
+ 
 
 
 
