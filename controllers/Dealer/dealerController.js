@@ -1783,6 +1783,7 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
       let createNotification = await userService.createNotification(notificationData);
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
+      console.log(dealerPrimary.email, checkDealer.isAccountCreate)
       if (checkDealer.isAccountCreate) {
         const mailing = sgMail.send(emailConstant.sendCsvFile(dealerPrimary.email, notificationEmails, htmlTableString));
       }
