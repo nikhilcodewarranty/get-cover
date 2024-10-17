@@ -704,10 +704,10 @@ exports.createDealerPriceBook = async (req, res) => {
       let IDs = await supportingFunction.getUserIds()
       let getPrimary = await supportingFunction.getPrimaryUser({ metaId: data.dealerId, isPrimary: true })
       let settingData = await userService.getSetting({});
-      if(checkDealer.isAccountCreate){
+      if (checkDealer.isAccountCreate) {
         IDs.push(getPrimary._id)
       }
-      
+
       let notificationData = {
         title: "New dealer price book created",
         description: "The price book " + data.dealerSku + " has been created! ",
@@ -731,12 +731,12 @@ exports.createDealerPriceBook = async (req, res) => {
         content: "The price book name" + " " + checkPriceBookMain[0]?.pName + " has been created successfully! effective immediately.",
         subject: "New Price Book"
       }
-      if(checkDealer.isAccountCreate){
+      if (checkDealer.isAccountCreate) {
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
 
       }
-      else{
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+      else {
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
 
       }
       let logData = {
@@ -929,10 +929,10 @@ exports.rejectDealer = async (req, res) => {
     if (req.body.status == 'Rejected') {
       let IDs = await supportingFunction.getUserIds()
       let getPrimary = await supportingFunction.getPrimaryUser({ metaId: singleDealer._id, isPrimary: true })
-      if(singleDealer.isAccountCreate){
+      if (singleDealer.isAccountCreate) {
         IDs.push(getPrimary._id)
       }
- 
+
       const deleteUser = await userService.deleteUser({ metaId: req.params.dealerId })
       if (!deleteUser) {
         res.send({
@@ -972,9 +972,9 @@ exports.rejectDealer = async (req, res) => {
         subject: "Rejection Account"
       }
       // Send Email code here
-      if(singleDealer.isAccountCreate){
+      if (singleDealer.isAccountCreate) {
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
-      }else{
+      } else {
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
       }
 
@@ -1095,10 +1095,10 @@ exports.updateDealerMeta = async (req, res) => {
     let IDs = await supportingFunction.getUserIds()
     let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
     let settingData = await userService.getSetting({});
-    if(updatedData.isAccountCreate){
+    if (updatedData.isAccountCreate) {
       IDs.push(getPrimary._id)
     }
- 
+
     let notificationData = {
       title: "Dealer updated",
       description: checkDealer.name + " , " + "details has been updated",
@@ -1121,11 +1121,11 @@ exports.updateDealerMeta = async (req, res) => {
       subject: "Update Info"
     }
 
-    if(updatedData.isAccountCreate){
+    if (updatedData.isAccountCreate) {
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
     }
-    else{
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+    else {
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
 
     }
     //Save Logs update dealer
@@ -1270,9 +1270,9 @@ exports.addDealerUser = async (req, res) => {
     } else {
       let IDs = await supportingFunction.getUserIds()
       let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
-      if(checkDealer.isAccountCreate){
+      if (checkDealer.isAccountCreate) {
         IDs.push(getPrimary._id)
-      }      
+      }
 
       let notificationData = {
         title: "New user added",
@@ -1634,24 +1634,6 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
         };
       });
 
-
-      // let lastOccurrenceMap = {};
-
-      // totalDataComing.forEach((item, index) => {
-      //   lastOccurrenceMap[item.productSku] = index;
-      // });
-
-      // // Add the isExist key
-      // totalDataComing = totalDataComing.map((item, index) => {
-      //   if (item.dealerSku == "") {
-      //     item.dealerSku = item.productSku
-      //   }
-      //   return {
-      //     ...item,
-      //     isExist: index === lastOccurrenceMap[item.productSku]
-      //   }
-      // });
-
       let lastOccurrenceMap = {};
 
       // Track the first occurrence of each productSku
@@ -1697,24 +1679,30 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
         // if (currentData.isExist) {
         let checkPriceBook = await priceBookService.findByName1({ name: currentData.productSku, coverageType: { $elemMatch: { value: { $in: checkDealer[0].coverageType } } } })
         if (checkPriceBook) {
-          let wholeSalePrice = Number(checkPriceBook.frontingFee) + Number(checkPriceBook.reserveFutureFee) + Number(checkPriceBook.reinsuranceFee) + Number(checkPriceBook.adminFee)
-          let checkDealerSku = await dealerPriceService.getDealerPriceById({ priceBook: checkPriceBook._id, dealerId: data.dealerId })
-          if (checkDealerSku) {
-            let updateDealerPriceBook = await dealerPriceService.updateDealerPrice({ _id: checkDealerSku._id }, { retailPrice: currentData.retailPrice, dealerSku: currentData.dealerSku }, { new: true })
-            currentData.message = "Updated successfully"
-          } else {
-            let brokerFee = wholeSalePrice - currentData.retailPrice
-            let updateAdh = checkPriceBook.coverageType.map(item1 => {
-              // Find a match in array2
-              let match = adhDays.find(item2 => item2.value === item1.value);
+          let checkDealerSku1 = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, dealerSku: currentData.dealerSku })
+          if (checkPriceBook._id == checkDealerSku1.priceBook) {
+            let wholeSalePrice = Number(checkPriceBook.frontingFee) + Number(checkPriceBook.reserveFutureFee) + Number(checkPriceBook.reinsuranceFee) + Number(checkPriceBook.adminFee)
+            let checkDealerSku = await dealerPriceService.getDealerPriceById({ priceBook: checkPriceBook._id, dealerId: data.dealerId })
+            if (checkDealerSku) {
+              let updateDealerPriceBook = await dealerPriceService.updateDealerPrice({ _id: checkDealerSku._id }, { retailPrice: currentData.retailPrice, dealerSku: currentData.dealerSku }, { new: true })
+              currentData.message = "Updated successfully"
+            } else {
+              let brokerFee = wholeSalePrice - currentData.retailPrice
+              let updateAdh = checkPriceBook.coverageType.map(item1 => {
+                // Find a match in array2
+                let match = adhDays.find(item2 => item2.value === item1.value);
 
-              // Return the merged object only if there's a match
-              return match ? { ...item1, ...match } : item1;
-            });
-            let createDealerPriceBook = await dealerPriceService.createDealerPrice({ priceBook: checkPriceBook._id, dealerSku: currentData.dealerSku, retailPrice: currentData.retailPrice, status: true, dealerId: data.dealerId, brokerFee: brokerFee, wholesalePrice: wholeSalePrice, adhDays: updateAdh, noOfClaim: noOfClaim, noOfClaimPerPeriod: noOfClaimPerPeriod, isMaxClaimAmount: isMaxClaimAmount, isManufacturerWarranty: isManufacturerWarranty })
-            // code to be added here
-            currentData.message = "created successfully"
+                // Return the merged object only if there's a match
+                return match ? { ...item1, ...match } : item1;
+              });
+              let createDealerPriceBook = await dealerPriceService.createDealerPrice({ priceBook: checkPriceBook._id, dealerSku: currentData.dealerSku, retailPrice: currentData.retailPrice, status: true, dealerId: data.dealerId, brokerFee: brokerFee, wholesalePrice: wholeSalePrice, adhDays: updateAdh, noOfClaim: noOfClaim, noOfClaimPerPeriod: noOfClaimPerPeriod, isMaxClaimAmount: isMaxClaimAmount, isManufacturerWarranty: isManufacturerWarranty })
+              // code to be added here
+              currentData.message = "created successfully"
+            }
+          }else{
+            currentData.message = "dealer sku already exist"
           }
+
         } else {
           currentData.message = "Product sku does not exist"
 
@@ -1769,10 +1757,10 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
 
       let IDs = await supportingFunction.getUserIds()
       let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: req.body.dealerId, isPrimary: true })
-      if(checkDealer.isAccountCreate){
+      if (checkDealer.isAccountCreate) {
         IDs.push(dealerPrimary?._id)
       }
-      
+
 
       let notificationData = {
         title: "Dealer Price Book Uploaded",
@@ -1785,11 +1773,11 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
       let createNotification = await userService.createNotification(notificationData);
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
-      if(checkDealer.isAccountCreate){
+      if (checkDealer.isAccountCreate) {
         const mailing = sgMail.send(emailConstant.sendCsvFile(dealerPrimary.email, notificationEmails, htmlTableString));
       }
-      else{
-      const mailing = sgMail.send(emailConstant.sendCsvFile(notificationEmails, "noreply@getcover.com", htmlTableString));
+      else {
+        const mailing = sgMail.send(emailConstant.sendCsvFile(notificationEmails, "noreply@getcover.com", htmlTableString));
 
       }
 
