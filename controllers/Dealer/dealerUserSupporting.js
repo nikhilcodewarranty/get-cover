@@ -1606,7 +1606,44 @@ exports.getServicerInOrders = async (req, res) => {
         ]
     };
 
-    let servicerUser = await userService.getMembers(query1, {});
+
+    const servicerUser = await userService.findUserforCustomer1([
+        {
+            $match: {
+                $and: [
+                    { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+                    { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                    {
+                        $or: [
+                            { metaData: { $elemMatch: { metaId: { $in: servicerIds }, isPrimary: true } } },
+                            { metaData: { $elemMatch: { metaId: { $in: resellerIdss }, isPrimary: true } } },
+                            { metaData: { $elemMatch: { metaId: { $in: dealerIdss }, isPrimary: true } } }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            $project: {
+                email: 1,
+                'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+                'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+                'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+                'position': { $arrayElemAt: ["$metaData.position", 0] },
+                'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+                'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+                'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                'status': { $arrayElemAt: ["$metaData.status", 0] },
+                resetPasswordCode: 1,
+                isResetPassword: 1,
+                approvedStatus: 1,
+                createdAt: 1,
+                updatedAt: 1
+            }
+        }
+    ]);
+
     if (!servicerUser) {
         res.send({
             code: constant.errorCode,
