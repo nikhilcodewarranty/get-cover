@@ -1306,6 +1306,7 @@ exports.editClaimStatus = async (req, res) => {
 
       }
 
+      
       if (forCheckOnly) {
         let checkThePeriod = checkContract.noOfClaim
         let getTotalClaim = await claimService.getClaims({ contractId: checkClaim.contractId, claimFile: "completed" })
