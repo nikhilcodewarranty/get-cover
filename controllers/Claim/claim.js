@@ -2674,7 +2674,7 @@ exports.saveBulkClaim = async (req, res) => {
         if (customer?.resellerId) {
           // Get Reseller by id
           const reseller = await resellerService.getReseller({ _id: customer.resellerId }, {});
-          let resellerData = await userService.getUserById1({ metaId: reseller._id, isPrimary: true }, {});
+          var resellerData = await userService.getUserById1({ metaId: reseller._id, isPrimary: true }, {});
           new_admin_array.push(resellerData.email);
           IDs.push(resellerData._id);
         }
@@ -2683,7 +2683,7 @@ exports.saveBulkClaim = async (req, res) => {
         // Get dealer info
         let dealerData = await userService.getUserById1({ metaId: dealer._id, isPrimary: true }, {});
         // Get customer user info
-        let userData = await userService.getUserById1({ metaId: userId, isPrimary: true }, {});
+        var userData = await userService.getUserById1({ metaId: userId, isPrimary: true }, {});
         new_admin_array.push(dealerData.email);
         IDs.push(req.teammateId);
         IDs.push(dealerData._id);
