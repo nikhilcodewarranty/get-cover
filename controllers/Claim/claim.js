@@ -2236,6 +2236,7 @@ exports.saveBulkClaim = async (req, res) => {
     try {
       let data = req.body
       let headerLength;
+
       const bucketReadUrl = { Bucket: process.env.bucket_name, Key: req.files[0].key };
       // Await the getObjectFromS3 function to complete
       const result = await getObjectFromS3(bucketReadUrl);
@@ -2524,8 +2525,6 @@ exports.saveBulkClaim = async (req, res) => {
 
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
 
-
-
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {
         if (!item.exit) {
@@ -2649,7 +2648,8 @@ exports.saveBulkClaim = async (req, res) => {
 
       let IDs = await supportingFunction.getUserIds()
       let adminEmail = await supportingFunction.getUserEmails();
-      let new_admin_array = adminEmail.concat(emailArray)
+     let new_admin_array = adminEmail.concat(emailArray)
+    //  let new_admin_array = adminEmail
       let toMail = [];
       let ccMail;
       const csvArray = await Promise.all(totalDataComing.map(async (item, i) => {
@@ -2866,6 +2866,9 @@ exports.saveBulkClaim = async (req, res) => {
 
           //get email of all servicer
           const emailServicer = await userService.getMembers({ metaId: { $in: emailServicerId }, isPrimary: true }, {})
+
+          res.json(emailServicer);
+          return;
           // If you need to convert existArray.data to a flat array format
           if (emailServicer.length > 0) {
             IDs = IDs.concat(emailServicerId)
