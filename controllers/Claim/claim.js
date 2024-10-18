@@ -2652,15 +2652,43 @@ exports.saveBulkClaim = async (req, res) => {
       //  let new_admin_array = adminEmail
       let toMail = [];
       let ccMail;
+
+
       const userId = req.userId;
       // Get Reseller by id
-      const reseller = await resellerService.getReseller({ _id: req.userId }, {});
-      // Get dealer by id
-      const dealer = await dealerService.getDealerById(reseller.dealerId, {});
-      let resellerData = await userService.getUserById1({ metaId: userId, isPrimary: true }, {});
-      // Get dealer info
-      let dealerData = await userService.getUserById1({ metaId: dealer._id, isPrimary: true }, {});
-      new_admin_array.push(dealerData.email);
+      if (req.role == "Reseller") {
+        const reseller = await resellerService.getReseller({ _id: req.userId }, {});
+        // Get dealer by id
+        const dealer = await dealerService.getDealerById(reseller.dealerId, {});
+        let resellerData = await userService.getUserById1({ metaId: userId, isPrimary: true }, {});
+        // Get dealer info
+        let dealerData = await userService.getUserById1({ metaId: dealer._id, isPrimary: true }, {});
+        new_admin_array.push(dealerData.email);
+        IDs.push(req.teammateId);
+        IDs.push(dealerData._id);
+      }
+      if (req.role == "Customer") {
+        const userId = req.userId;
+        // Get customer
+        const customer = await customerService.getCustomerById({ _id: req.userId });
+        if (customer?.resellerId) {
+          // Get Reseller by id
+          const reseller = await resellerService.getReseller({ _id: customer.resellerId }, {});
+          let resellerData = await userService.getUserById1({ metaId: reseller._id, isPrimary: true }, {});
+          new_admin_array.push(resellerData.email);
+          IDs.push(resellerData._id);
+        }
+        // Get dealer by customer
+        const dealer = await dealerService.getDealerById(customer.dealerId, {});
+        // Get dealer info
+        let dealerData = await userService.getUserById1({ metaId: dealer._id, isPrimary: true }, {});
+        // Get customer user info
+        let userData = await userService.getUserById1({ metaId: userId, isPrimary: true }, {});
+        new_admin_array.push(dealerData.email);
+        IDs.push(req.teammateId);
+        IDs.push(dealerData._id);
+      }
+
       const csvArray = await Promise.all(totalDataComing.map(async (item, i) => {
         // Build bulk csv for dealer only
         let servicerId = item.servicerData?._id
@@ -2703,10 +2731,7 @@ exports.saveBulkClaim = async (req, res) => {
         }
         // Build bulk csv for Reseller only
         else if (req.role === 'Reseller') {
- 
-          IDs.push(req.teammateId);
-          IDs.push(dealerData._id);
-  
+
           toMail = resellerData.email;
           ccMail = new_admin_array;
           if (req.userId.toString() === item.orderData?.order?.resellerId?.toString()) {
@@ -2724,7 +2749,7 @@ exports.saveBulkClaim = async (req, res) => {
                 status: item.status ? item.status : '',
               });
             }
-         
+
           }
           return {
             contractId: item.contractId || "",
@@ -2735,27 +2760,10 @@ exports.saveBulkClaim = async (req, res) => {
         }
         // Build bulk csv for Customer only
         else if (req.role === 'Customer') {
-          const userId = req.userId;
-          // Get customer
-          const customer = await customerService.getCustomerById({ _id: req.userId });
-          if (customer?.resellerId) {
-            // Get Reseller by id
-            const reseller = await resellerService.getReseller({ _id: customer.resellerId }, {});
-            let resellerData = await userService.getUserById1({ metaId: reseller._id, isPrimary: true }, {});
-            new_admin_array.push(resellerData.email);
-            IDs.push(resellerData._id);
-          }
-          // Get dealer by customer
-          const dealer = await dealerService.getDealerById(customer.dealerId, {});
-          // Get dealer info
-          let dealerData = await userService.getUserById1({ metaId: dealer._id, isPrimary: true }, {});
-          // Get customer user info
-          let userData = await userService.getUserById1({ metaId: userId, isPrimary: true }, {});
-          new_admin_array.push(dealerData.email);
+
           toMail = userData.email;
           ccMail = new_admin_array;
-          IDs.push(req.teammateId);
-          IDs.push(dealerData._id);
+
           if (req.userId.toString() === item.orderData?.order?.customerId?.toString()) {
             // For servicer
             if (!existArray.data[servicerId] && servicerId != undefined) {
@@ -2771,7 +2779,7 @@ exports.saveBulkClaim = async (req, res) => {
                 status: item.status ? item.status : '',
               });
             }
-         
+
           }
           return {
             contractId: item.contractId || "",
@@ -2873,8 +2881,8 @@ exports.saveBulkClaim = async (req, res) => {
 
       const htmlTableString = convertArrayToHTMLTable(csvArray);
       //send Email to admin
-      console.log("toMail---------------------------",toMail)
-      console.log("ccMail---------------------------",ccMail)
+      console.log("toMail---------------------------", toMail)
+      console.log("ccMail---------------------------", ccMail)
       let mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
 
       if (saveBulkClaim.length > 0) {
