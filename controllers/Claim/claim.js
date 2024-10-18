@@ -2684,29 +2684,6 @@ exports.saveBulkClaim = async (req, res) => {
               });
             }
 
-            //get email of all servicer
-            const emailServicer = await userService.getMembers({ metaId: { $in: emailServicerId }, isPrimary: true }, {})
-            // If you need to convert existArray.data to a flat array format
-            if (emailServicer.length > 0) {
-              IDs = IDs.concat()
-              let flatArray = [];
-              for (let servicerId in existArray.data) {
-                let matchData = emailServicer.find(matchServicer => matchServicer.metaId.toString() === servicerId.toString());
-                let email = matchData ? matchData.email : ''; // Replace servicerId with email if matchData is found
-                flatArray.push({
-                  email: email,
-                  response: existArray.data[servicerId]
-                });
-              }
-              //send email to servicer      
-              for (const item of flatArray) {
-                if (item.email != '') {
-                  const htmlTableString = convertArrayToHTMLTable(item.response);
-                  let mailing_servicer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
-                }
-
-              }
-            }
           }
           return {
             contractId: item.contractId || "",
@@ -2745,30 +2722,7 @@ exports.saveBulkClaim = async (req, res) => {
                 status: item.status ? item.status : '',
               });
             }
-
-            //get email of all servicer
-            const emailServicer = await userService.getMembers({ metaId: { $in: emailServicerId }, isPrimary: true }, {})
-            // If you need to convert existArray.data to a flat array format
-            if (emailServicer.length > 0) {
-              IDs = IDs.concat(emailServicerId)
-              let flatArray = [];
-              for (let servicerId in existArray.data) {
-                let matchData = emailServicer.find(matchServicer => matchServicer.metaId.toString() === servicerId.toString());
-                let email = matchData ? matchData.email : ''; // Replace servicerId with email if matchData is found
-                flatArray.push({
-                  email: email,
-                  response: existArray.data[servicerId]
-                });
-              }
-              //send email to servicer      
-              for (const item of flatArray) {
-                if (item.email != '') {
-                  const htmlTableString = convertArrayToHTMLTable(item.response);
-                  let mailing_servicer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
-                }
-
-              }
-            }
+         
           }
           return {
             contractId: item.contractId || "",
@@ -2815,30 +2769,7 @@ exports.saveBulkClaim = async (req, res) => {
                 status: item.status ? item.status : '',
               });
             }
-
-            //get email of all servicer
-            const emailServicer = await userService.getMembers({ metaId: { $in: emailServicerId }, isPrimary: true }, {})
-            // If you need to convert existArray.data to a flat array format
-            if (emailServicer.length > 0) {
-              IDs = IDs.concat(emailServicerId)
-              let flatArray = [];
-              for (let servicerId in existArray.data) {
-                let matchData = emailServicer.find(matchServicer => matchServicer.metaId.toString() === servicerId.toString());
-                let email = matchData ? matchData.email : ''; // Replace servicerId with email if matchData is found
-                flatArray.push({
-                  email: email,
-                  response: existArray.data[servicerId]
-                });
-              }
-              //send email to servicer      
-              for (const item of flatArray) {
-                if (item.email != '') {
-                  const htmlTableString = convertArrayToHTMLTable(item.response);
-                  let mailing_servicer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
-                }
-
-              }
-            }
+         
           }
           return {
             contractId: item.contractId || "",
