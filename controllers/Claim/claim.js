@@ -2867,7 +2867,7 @@ exports.saveBulkClaim = async (req, res) => {
           //get email of all servicer
           const emailServicer = await userService.getMembers({ metaId: { $in: emailServicerId }, isPrimary: true }, {})
 
-          res.json(emailServicer);
+          console.log(emailServicer);
           return;
           // If you need to convert existArray.data to a flat array format
           if (emailServicer.length > 0) {
