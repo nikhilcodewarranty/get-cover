@@ -2884,6 +2884,7 @@ exports.saveBulkClaim = async (req, res) => {
             //send email to servicer      
             for (const item of flatArray) {
               if (item.email != '') {
+                console.log("itemresponse------------------",item.response)
                 const htmlTableString = convertArrayToHTMLTable(item.response);
                 let mailing_servicer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
               }
