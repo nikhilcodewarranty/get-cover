@@ -2878,12 +2878,13 @@ exports.saveBulkClaim = async (req, res) => {
                 response: existArray.data[servicerId]
               });
             }
-     
+            
 
+            console.log("flatArray----------------",flatArray)
+            console.log("existArray----------------",existArray)
             //send email to servicer      
             for (const item of flatArray) {
               if (item.email != '') {
-                console.log("itemresponse------------------",item.response)
                 const htmlTableString = convertArrayToHTMLTable(item.response);
                 let mailing_servicer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
               }
