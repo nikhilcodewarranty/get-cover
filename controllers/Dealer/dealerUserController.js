@@ -621,7 +621,7 @@ exports.createCustomer = async (req, res, next) => {
             }
         }
         //Send Notification to customer,admin,reseller,dealer 
-  
+
         let notificationData = {
             title: "New Customer Created",
             description: data.accountName + " " + "customer account has been created successfully!",
@@ -1079,9 +1079,10 @@ exports.createOrder = async (req, res) => {
             content: "The new order " + savedResponse.unique_key + "  has been created for " + getPrimary.firstName + "",
             subject: "New Order"
         }
+        if (req.body.sendNotification) {
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+        }
 
-
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
 
         res.send({
             code: constant.successCode,
@@ -1413,8 +1414,9 @@ exports.editOrderDetail = async (req, res) => {
             content: "The  order " + checkOrder.unique_key + " has been updated",
             subject: "Order Updated"
         }
-
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+        if (req.body.sendNotification) {
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+        }
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
             let savedResponse = await orderService.updateOrder(
                 { _id: req.params.orderId },
@@ -1670,7 +1672,9 @@ exports.editOrderDetail = async (req, res) => {
                         content: "The  order " + savedResponse.unique_key + " has been updated and processed",
                         subject: "Process Order"
                     }
-                    let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+                    if (req.body.sendNotification) {
+                        let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+                    }
                     //Email to Reseller
                     emailData = {
                         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -1681,7 +1685,10 @@ exports.editOrderDetail = async (req, res) => {
                         content: "The  order " + savedResponse.unique_key + " has been updated and processed",
                         subject: "Process Order"
                     }
-                    mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
+                    if (req.body.sendNotification) {
+                        mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
+
+                    }
                     // Customer Email here with T and C
                     //generate T anc C
 

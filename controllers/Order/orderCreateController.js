@@ -1292,7 +1292,10 @@ exports.createOrder1 = async (req, res) => {
             subject: "New Order"
         }
 
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+
+        if (data.sendNotification) {
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+        }
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
             let paidDate = {
                 name: "processOrder",
@@ -1444,9 +1447,7 @@ exports.createOrder1 = async (req, res) => {
                     // Find the minimum date
                     let minDate;
 
-
                     let adhDaysArray = product.adhDays
-
                     adhDaysArray.sort((a, b) => a.waitingDays - b.waitingDays);
                     const futureDate = new Date(product.coverageStartDate);
                     let minDate1 = futureDate.setDate(futureDate.getDate() + adhDaysArray[0].waitingDays);
@@ -1484,7 +1485,6 @@ exports.createOrder1 = async (req, res) => {
                         minDate = minDate1
 
                     }
-
                     // let eligibilty = new Date(dateCheck) < new Date() ? true : false
                     minDate = new Date(minDate).setHours(0, 0, 0, 0)
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
@@ -2300,8 +2300,9 @@ exports.editOrderDetail = async (req, res) => {
             content: "The  order " + savedResponse.unique_key + " has been updated",
             subject: "Order Update"
         }
-
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+        if (data.sendNotification) {
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+        }
 
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
 
