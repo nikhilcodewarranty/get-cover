@@ -847,7 +847,7 @@ exports.editClaimStatus = async (req, res) => {
     const checkReseller = await resellerService.getReseller({ _id: checkOrder?.resellerId }, {})
     const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
     const checkServicer = await servicerService.getServiceProviderById({ $or: [{ _id: checkClaim?.servicerId }, { dealerId: checkClaim?.servicerId }, { resellerId: checkClaim?.servicerId }] })
-    
+
 
     if (data.hasOwnProperty("customerStatus")) {
       if (data.customerStatus == 'product_received') {
@@ -1293,6 +1293,19 @@ exports.editClaimStatus = async (req, res) => {
         forCheckOnly = true
 
       }
+
+      console.log("-----------++++++++++++++++++++++++++---------------------------------------------")
+      //Amount reset of the claim in rejected claim
+      if (updateBodyStatus.claimFile == 'rejected') {
+        console.log("--------------------------------------------------------")
+        let updatePrice = await claimService.updateClaim(criteria, { totalAmount: 0, customerClaimAmount: 0, getCoverClaimAmount: 0, customerOverAmount: 0, getcoverOverAmount: 0 }, { new: true })
+        const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
+        forCheckOnly = true
+
+        console.log("--------------------------------------------------------", updateContract)
+
+      }
+
       if (forCheckOnly) {
         let checkThePeriod = checkContract.noOfClaim
         let getTotalClaim = await claimService.getClaims({ contractId: checkClaim.contractId, claimFile: "completed" })
@@ -1313,17 +1326,6 @@ exports.editClaimStatus = async (req, res) => {
           }
         }
       }
-    }
-
-    console.log("-----------++++++++++++++++++++++++++---------------------------------------------")
-
-    //Amount reset of the claim in rejected claim
-    if (updateBodyStatus.claimFile == 'rejected') {
-      console.log("--------------------------------------------------------")
-      let updatePrice = await claimService.updateClaim(criteria, { totalAmount: 0, customerClaimAmount: 0, getCoverClaimAmount: 0, customerOverAmount: 0, getcoverOverAmount: 0 }, { new: true })
-      const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
-      console.log("--------------------------------------------------------", updateContract)
-
     }
 
     //Save logs
