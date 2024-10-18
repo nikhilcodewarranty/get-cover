@@ -1947,7 +1947,7 @@ exports.editOption = async (req, res) => {
     const data = req.body.data
 
     let getOptionData = await userService.getOptions({ name: data.name })
-    if (getOptionData.value.length != data.value.length) {
+    if (getOptionData.value.length > data.value.length) {
       res.send({
         code: constant.errorCode,
         message: "Invalid coverage types"

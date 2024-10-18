@@ -1354,7 +1354,9 @@ exports.archiveOrder = async (req, res) => {
             content: "The order " + checkOrder.unique_key + " has been archeived!.",
             subject: "Archeive Order"
         }
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+        if (checkOrder.sendNotification) {
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+        }
         emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -1364,7 +1366,9 @@ exports.archiveOrder = async (req, res) => {
             content: "The order " + checkOrder.unique_key + " has been archeived!.",
             subject: "Archeive Order"
         }
-        mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
+        if (checkOrder.sendNotification) {
+            mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
+        }
         //  }
         res.send({
             code: constant.successCode,
@@ -1886,8 +1890,9 @@ exports.markAsPaid = async (req, res) => {
                     content: "The  order " + savedResponse.unique_key + " has been paid",
                     subject: "Mark as paid"
                 }
-
-                let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+                if (checkOrder.sendNotification) {
+                    let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+                }
                 //Email to Reseller 
                 emailData = {
                     darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -1898,8 +1903,10 @@ exports.markAsPaid = async (req, res) => {
                     content: "The  order " + savedResponse.unique_key + " has been paid",
                     subject: "Mark As paid"
                 }
+                if (checkOrder.sendNotification) {
 
-                mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
+                    mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
+                }
                 //Email to customer code here........
                 if (index == checkLength) {
 
@@ -2471,7 +2478,9 @@ async function generateTC(orderData) {
                 content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
                 subject: 'Order Term and Condition-' + checkOrder.unique_key,
             }
-            let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
+            if (checkOrder.sendNotification) {
+                let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
+            }
         })
         return 1
 
