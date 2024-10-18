@@ -2006,7 +2006,7 @@ exports.editOption = async (req, res) => {
 exports.updateThreshHoldLimit = async (req, res) => {
   try {
     let data = req.body
-    let updateAdmin = await userService.updateUser({ _id: req.userId }, { $set: { threshHoldLimit: data.threshHoldLimit } }, { new: true })
+    let updateAdmin = await userService.updateUser({ roleId: process.env.super_admin, isPrimary: true }, { $set: { threshHoldLimit: data.threshHoldLimit, isThreshHoldLimit: data.isThreshHoldLimit } }, { new: true })
     if (!updateAdmin) {
       res.send({
         code: constant.errorCode,
