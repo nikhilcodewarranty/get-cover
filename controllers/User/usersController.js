@@ -1611,7 +1611,6 @@ exports.resetSetting = async (req, res) => {
 }
 
 //Set As default setting
-
 exports.setDefault = async (req, res) => {
   try {
     // if (req.role != "Super Admin") {
@@ -1995,53 +1994,6 @@ exports.editOption = async (req, res) => {
         })
       }
     }
-
-
-    // const getOption = await userService.getMultipleOptions({ name: data.name, _id: optionId }, {})
-    // if (!getOption) {
-    //   res.send({
-    //     code: constant.errorCode,
-    //     message: "Option not found!"
-    //   });
-    //   return;
-    // }
-
-    // let existData = await optionsService.getOption({ value: { $elemMatch: { value: { $regex: new RegExp("^" + data.value.toLowerCase(), "i") } } } })
-    // if (existData) {
-    //   res.send({
-    //     code: constant.errorCode,
-    //     message: "The coverage type of this value is already exist!"
-    //   });
-    //   return
-    // }
-    // const updatedDropdown = await userService.updateData(
-    //   { _id: optionId, 'value._id': data.labelId },  // Match the option and the specific array element
-    //   {
-    //     $set: {
-    //       'value.$.label': data.label,    // Update the 'label' of the matched array element
-    //       'value.$.status': data.status      // Update the 'value' of the matched array element
-    //     }
-    //   },
-    //   {
-    //     new: true      // Return the updated document
-    //   }
-    // );
-
-
-    // if (!updatedDropdown) {
-    //   res.send({
-    //     code: constant.errorCode,
-    //     message: "Unable to update!"
-    //   })
-    //   return;
-    // }
-
-    // res.send({
-    //   code: constant.successCode,
-    //   message: "Success!",
-    //   result: updatedDropdown
-    // })
-
   }
   catch (err) {
     res.send({
@@ -2051,4 +2003,25 @@ exports.editOption = async (req, res) => {
   }
 }
 
-
+exports.updateThreshHoldLimit = async (req, res) => {
+  try {
+    let data = req.body
+    let updateAdmin = await userService.updateUser({ roleId: process.env.super_admin, isPrimary: true }, { $set: { threshHoldLimit: data.threshHoldLimit, isThreshHoldLimit: data.isThreshHoldLimit } }, { new: true })
+    if (!updateAdmin) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to update the limit"
+      })
+    } else {
+      res.send({
+        code: constant.successCode,
+        message: "Updated successfully"
+      })
+    }
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}

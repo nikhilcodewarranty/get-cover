@@ -493,8 +493,10 @@ exports.createOrder = async (req, res) => {
             content: "The new order " + checkOrder.unique_key + "  has been created for " + getPrimary.firstName + "",
             subject: "New Order"
         }
+        if (req.body.sendNotification) {
 
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+        }
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
             let savedResponse = await orderService.updateOrder(
                 { _id: checkOrder._id },
@@ -656,8 +658,10 @@ exports.createOrder = async (req, res) => {
                     content: "The order " + savedResponse.unique_key + " has been updated and processed",
                     subject: "Order Processed"
                 }
+                if (req.body.sendNotification) {
+                    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
 
-                let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+                }
 
             })
 
@@ -1032,7 +1036,9 @@ exports.editOrderDetail = async (req, res) => {
             subject: "Order Updated"
         }
 
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+        if (req.body.sendNotification) {
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+        }
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
             let savedResponse = await orderService.updateOrder(
                 { _id: req.params.orderId },
@@ -1288,7 +1294,10 @@ exports.editOrderDetail = async (req, res) => {
                         content: "The  order " + savedResponse.unique_key + " has been updated and processed",
                         subject: "Process Order"
                     }
-                    let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+                    if (req.body.sendNotification) {
+
+                        let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+                    }
                     //Email to Reseller
                     emailData = {
                         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -1299,8 +1308,10 @@ exports.editOrderDetail = async (req, res) => {
                         content: "The  order " + savedResponse.unique_key + " has been updated and processed",
                         subject: "Process Order"
                     }
-                    mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
-                    // Customer Email here with T and C
+                    if (req.body.sendNotification) {
+
+                        mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
+                    }  // Customer Email here with T and C
                     //generate T anc C
 
                     if (index == checkLength) {
@@ -2026,7 +2037,7 @@ exports.addResellerUser = async (req, res) => {
 
         data.metaId = checkReseller._id
         data.roleId = '65bb94b4b68e5a4a62a0b563'
- 
+
         let statusCheck;
         if (!checkReseller.status) {
             statusCheck = false
@@ -2656,7 +2667,10 @@ async function generateTC(orderData) {
                 content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
                 subject: 'Order Term and Condition-' + checkOrder.unique_key,
             }
-            let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
+            if (checkOrder.sendNotification) {
+                let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
+
+            }
 
         })
         return 1
