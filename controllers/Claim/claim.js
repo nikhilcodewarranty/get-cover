@@ -2866,9 +2866,6 @@ exports.saveBulkClaim = async (req, res) => {
 
           //get email of all servicer
           const emailServicer = await userService.getMembers({ metaId: { $in: emailServicerId }, isPrimary: true }, {})
-
-          console.log(emailServicer);
-          return;
           // If you need to convert existArray.data to a flat array format
           if (emailServicer.length > 0) {
             IDs = IDs.concat(emailServicerId)
@@ -2937,7 +2934,11 @@ exports.saveBulkClaim = async (req, res) => {
         return htmlContent;
       }
 
+      console.log("csvArray----------------------",csvArray)
       const htmlTableString = convertArrayToHTMLTable(csvArray);
+      console.log("htmlTableString----------------------",htmlTableString)
+      console.log("toMail----------------------",toMail)
+      console.log("ccMail----------------------",ccMail)
       //send Email to admin
       let mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
 
