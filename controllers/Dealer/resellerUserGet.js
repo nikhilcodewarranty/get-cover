@@ -1075,8 +1075,6 @@ exports.getResellerPriceBook = async (req, res) => {
 
 
     if (data.coverageType == "") {
-
-        console.log("sdfsdffffffffffff-------------------if")
         query = {
 
             $and: [
@@ -1096,12 +1094,12 @@ exports.getResellerPriceBook = async (req, res) => {
     }
 
     else {
-        console.log("sdfsdffffffffffff-------------------else")
 
         query = {
             $and: [
                 { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-                { 'priceBooks.coverageType': { $elemMatch: { value: { $in: coverageType } } } },
+                { 'priceBooks.coverageType.value': { $all: coverageType } },
+                { 'priceBooks.coverageType': { $size: coverageType.length } },
                 { 'priceBooks.category._id': { $in: catIdsArray } },
                 { 'status': true },
                 { 'dealerSku': { '$regex': dealerSku, '$options': 'i' } },
