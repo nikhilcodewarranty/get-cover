@@ -2878,6 +2878,9 @@ exports.saveBulkClaim = async (req, res) => {
                 response: existArray.data[servicerId]
               });
             }
+             console.log("flatArray----------------------",flatArray)
+     
+
             //send email to servicer      
             for (const item of flatArray) {
               if (item.email != '') {
