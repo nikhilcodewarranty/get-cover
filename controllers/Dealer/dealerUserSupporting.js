@@ -1337,7 +1337,7 @@ exports.getDealerCustomers = async (req, res) => {
             let getResellers = await resellerService.getResellers({ name: { '$regex': req.body.resellerName, '$options': 'i' } })
             const resellerIds = getResellers.map(obj => obj._id.toString());
             if (resellerIds.length == 0) {
-                query = { isDeleted: false, dealerId: req.userId, resellerId1: { $in: ["1111121ccf9d400000000000"] } }
+                query = { isDeleted: false, dealerId: req.userId, resellerId1:   { $in: ["1111121ccf9d400000000000"] } }
 
             } else {
                 query = { isDeleted: false, dealerId: req.userId, resellerId1: { $in: resellerIds } }
@@ -1358,6 +1358,8 @@ exports.getDealerCustomers = async (req, res) => {
         const queryUser = { metaId: { $in: customersId }, isPrimary: true };
         //Get Customer Resellers
         let resellerData = await resellerService.getResellers({ _id: { $in: customersResellerId } }, {})
+        let name = data.firstName ? data.firstName : ""
+
         let nameArray = name.split(" ");
 
         // Create new keys for first name and last name
@@ -1437,7 +1439,6 @@ exports.getDealerCustomers = async (req, res) => {
             };
         })
 
-        let name = data.firstName ? data.firstName : ""
 
 
 
