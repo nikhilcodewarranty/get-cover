@@ -144,6 +144,8 @@ exports.getAllClaims = async (req, res, next) => {
               repairStatus: 1,
               "contracts.unique_key": 1,
               "contracts.productName": 1,
+              "contracts.productValue": 1,
+              "contracts.claimAmount": 1,
               "contracts.coverageType": 1,
               "contracts.model": 1,
               "contracts.pName": 1,
@@ -365,7 +367,7 @@ exports.getAllClaims = async (req, res, next) => {
 
     const dynamicOption = await userService.getOptions({ name: 'coverage_type' })
 
-    const result_Array = resultFiter.map((item1) => {
+    let result_Array = resultFiter.map((item1) => {
       servicer = []
       let mergedData = []
       if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
@@ -416,6 +418,31 @@ exports.getAllClaims = async (req, res, next) => {
     })
 
     let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0 // getting the total count 
+    let getTheThresholdLimit = await userService.getUserById1({ roleId: process.env.super_admin, isPrimary: true })
+
+    result_Array = result_Array.map(claimObject => {
+      const { productValue, claimAmount } = claimObject.contracts;
+
+      // Calculate the threshold limit value
+      const thresholdLimitValue = (getTheThresholdLimit.threshHoldLimit.value / 100) * productValue;
+
+      // Check if claimAmount exceeds the threshold limit value
+      let overThreshold = claimAmount > thresholdLimitValue;
+      let threshHoldMessage = "Claim amount exceeds the allowed limit"
+      if (!overThreshold) {
+        threshHoldMessage = ""
+      }
+      if (!getTheThresholdLimit.isThreshHoldLimit) {
+        overThreshold = false
+        threshHoldMessage = ""
+      }
+
+      // Return the updated object with the new key 'overThreshold'
+      return {
+        ...claimObject,
+        overThreshold
+      };
+    });
 
     res.send({
       code: constant.successCode,
