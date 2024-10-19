@@ -99,6 +99,7 @@ exports.createServiceProvider = async (req, res, next) => {
               roleId: "65719c8368a8a86ef8e1ae4d",
               position: member.position,
               dialCode: member.dialCode,
+              phoneNumber: member.phoneNumber,
               status: member.status,
               isPrimary: member.isPrimary
             }
@@ -292,6 +293,7 @@ exports.createServiceProvider = async (req, res, next) => {
               roleId: "65719c8368a8a86ef8e1ae4d",
               position: member.position,
               dialCode: member.dialCode,
+              phoneNumber: member.phoneNumber,
               status: true,
               isPrimary: member.isPrimary
             }
