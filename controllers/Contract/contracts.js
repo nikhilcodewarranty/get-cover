@@ -17,7 +17,7 @@ const { default: mongoose } = require("mongoose");
 exports.getContracts = async (req, res) => {
   try {
     let data = req.body
-    let getTheThresholdLimir = await userService.getUserById1({ roleId: process.env.superAdmin, isPrimary: true })
+    let getTheThresholdLimir = await userService.getUserById1({ roleId: process.env.super_admin, isPrimary: true })
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
