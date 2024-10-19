@@ -574,6 +574,7 @@ exports.editClaim = async (req, res) => {
     let criteria = { _id: req.params.claimId }
 
     let checkClaim = await claimService.getClaimById(criteria)
+    console.log("claim amount++++++++++++++",criteria,checkClaim.totalAmount)
     if (!checkClaim) {
       res.send({
         code: constant.errorCode,
@@ -683,15 +684,45 @@ exports.editClaim = async (req, res) => {
         content: "The  repair part update for " + checkClaim.unique_key + " claim",
         subject: "Repair Part Update"
       }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, notificationEmails, emailData))
+      // let mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, notificationEmails, emailData))
+      let totalClaimQuery1 = [
+        {
+          $match: {
+            contractId: new mongoose.Types.ObjectId(checkClaim.contractId)
+          }
+        },
+        {
+          $group: {
+            _id: null,            // Group by null to aggregate over all documents
+            totalAmount: { $sum: "$totalAmount" }  // Sum the 'amount' field
+          }
+        }
+      ]
+      let getClaims = await claimService.getClaimWithAggregate(totalClaimQuery1)
+      let updateTheContract = await contractService.updateContract({ _id: checkClaim.contractId }, { claimAmount: getClaims[0] ? getClaims[0].totalAmount : 0 }, { new: true })
+      console.log("updated contract ak------", getClaims, updateTheContract.claimAmount)
       res.send({
         code: constant.successCode,
         message: "Updated successfully"
       })
       return;
     }
-
-
+    let totalClaimQuery1 = [
+      {
+        $match: {
+          contractId: new mongoose.Types.ObjectId(checkClaim.contractId)
+        }
+      },
+      {
+        $group: {
+          _id: null,            // Group by null to aggregate over all documents
+          totalAmount: { $sum: "$totalAmount" }  // Sum the 'amount' field
+        }
+      }
+    ]
+    let getClaims = await claimService.getClaimWithAggregate(totalClaimQuery1)
+    let updateTheContract = await contractService.updateContract({ _id: checkClaim._id }, { claimAmount: getClaims[0] ? getClaims[0].totalAmount : 0 }, { new: true })
+    console.log("updated contract ak",getClaims, updateTheContract.claimAmount)
 
     res.send({
       code: constant.successCode,
@@ -1306,7 +1337,7 @@ exports.editClaimStatus = async (req, res) => {
 
       }
 
-      
+
       if (forCheckOnly) {
         let checkThePeriod = checkContract.noOfClaim
         let getTotalClaim = await claimService.getClaims({ contractId: checkClaim.contractId, claimFile: "completed" })

@@ -17,6 +17,7 @@ const { default: mongoose } = require("mongoose");
 exports.getContracts = async (req, res) => {
   try {
     let data = req.body
+    let getTheThresholdLimir = await userService.getUserById1({ roleId: process.env.superAdmin, isPrimary: true })
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
@@ -161,6 +162,7 @@ exports.getContracts = async (req, res) => {
                   serial: 1,
                   dealerSku: 1,
                   unique_key: 1,
+                  claimAmount: 1,
                   minDate: 1,
                   status: 1,
                   productValue: 1,
@@ -210,6 +212,7 @@ exports.getContracts = async (req, res) => {
                 unique_key: 1,
                 dealerSku: 1,
                 status: 1,
+                claimAmount: 1,
                 manufacture: 1,
                 productValue: 1,
                 eligibilty: 1,
@@ -277,6 +280,11 @@ exports.getContracts = async (req, res) => {
           result1[e].reason = "Claim value exceed the product value limit"
         }
       }
+
+      let thresholdLimitPercentage = getTheThresholdLimir.threshHoldLimit.value
+      const thresholdLimitValue = (thresholdLimitPercentage / 100) * Number(result1[e].productValue);
+      const overThreshold = result1[e].claimAmount > thresholdLimitValue;
+      result1[e].overThreshold = overThreshold
     }
 
     res.send({
@@ -503,14 +511,14 @@ exports.getContractById = async (req, res) => {
 
       if (matchedOption) {
         getData[0].mergedData.push({
-              label: matchedOption.label,
-              value: adhItem.value,
-              waitingDays: adhItem.waitingDays,
-              deductible: adhItem.deductible,
-              amountType: adhItem.amountType
-          });
+          label: matchedOption.label,
+          value: adhItem.value,
+          waitingDays: adhItem.waitingDays,
+          deductible: adhItem.deductible,
+          amountType: adhItem.amountType
+        });
       }
-  });
+    });
 
     if (!getData) {
       res.send({
