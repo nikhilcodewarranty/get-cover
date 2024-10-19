@@ -1518,7 +1518,7 @@ exports.getCustomerInOrder = async (req, res) => {
             const matchingItem = getCustomers.find(item2 => item2._id?.toString() === item1.metaId?.toString());
             if (matchingItem) {
                 return {
-                    ...matchingItem,
+                    ...matchingItem.toObject(),
                     email: item1.email  // Use toObject() to convert Mongoose document to plain JavaScript object
                 };
             } else {
