@@ -1762,8 +1762,8 @@ exports.getServicerInOrders = async (req, res) => {
             (item2) => item2.metaId?.toString() === item1._id?.toString());
         if (matchingItem) {
             return {
-                ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
-                servicerData: matchingItem.toObject(),
+                ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+                servicerData: matchingItem,
             };
         } else {
             return servicer.toObject();
