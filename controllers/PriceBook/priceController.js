@@ -1800,7 +1800,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
 
           totalDataComing[c].category = checkCategory ? checkCategory._id : ""
           totalDataComing[c].term = term
-          totalDataComing[c].priceType = "Flat Pricing"
+          totalDataComing[c].priceType = "Quantity Pricing"
 
           if (!totalDataComing[c].inValid) {
             let createCompanyPriceBook = await priceBookService.createPriceBook(totalDataComing[c])
