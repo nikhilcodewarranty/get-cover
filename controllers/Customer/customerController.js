@@ -1322,6 +1322,8 @@ exports.getCustomerContract = async (req, res) => {
   try {
     let data = req.body
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+    let getTheThresholdLimir = await userService.getUserById1({ roleId: process.env.super_admin, isPrimary: true })
+
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
     let dealerIds = [];
@@ -1532,6 +1534,20 @@ exports.getCustomerContract = async (req, res) => {
           result1[e].reason = "Claim value exceed the product value limit"
         }
       }
+
+      let thresholdLimitPercentage = getTheThresholdLimir.threshHoldLimit.value
+      const thresholdLimitValue = (thresholdLimitPercentage / 100) * Number(result1[e].productValue);
+      let overThreshold = result1[e].claimAmount > thresholdLimitValue;
+      let threshHoldMessage = "Claim amount exceeds the allowed limit"
+      if (!overThreshold) {
+        threshHoldMessage = ""
+      }
+      if (!thresholdLimitPercentage.isThreshHoldLimit) {
+        overThreshold = false
+        threshHoldMessage = ""
+      }
+      result1[e].threshHoldMessage = threshHoldMessage
+      result1[e].overThreshold = overThreshold
     }
     res.send({
       code: constant.successCode,
@@ -1851,9 +1867,9 @@ exports.customerClaims = async (req, res) => {
       let mergedData = []
       if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
         mergedData = dynamicOption.value.filter(contract =>
-            item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
+          item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
         );
-    }
+      }
       let servicerName = '';
       let selfServicer = false;
       let selfResellerServicer = false;
@@ -1885,7 +1901,7 @@ exports.customerClaims = async (req, res) => {
         contracts: {
           ...item1.contracts,
           allServicer: servicer,
-          mergedData:mergedData
+          mergedData: mergedData
         }
       }
     })
