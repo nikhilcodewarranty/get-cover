@@ -366,11 +366,11 @@ exports.getAllClaims = async (req, res, next) => {
     const result_Array = resultFiter.map((item1) => {
       servicer = []
       let mergedData = []
-      if(Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType){
+      if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
         mergedData = dynamicOption.value.filter(contract =>
           item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
         );
-    }
+      }
 
       let servicerName = ''
       let selfServicer = false;
@@ -781,8 +781,8 @@ exports.getMessages = async (req, res) => {
             $match:
             {
               $and: [
-                { isPrimary: true },
-                { metaId: { $ne: null } }
+                { metaData: { $elemMatch: { isPrimary: true } } },
+                { metaData: { $elemMatch: { metaId: { $ne: null } } } }
               ]
             },
           },
@@ -909,15 +909,15 @@ exports.checkClaimAmount = async (req, res) => {
     let data = req.body
     let getClaim = await claimService.getClaimById({ _id: req.params.claimId })
     let getContractDetail = await contractService.getContractById({ _id: getClaim.contractId })
-    if (getClaim.claimType != ""&&getClaim.claimType != "New") {
+    if (getClaim.claimType != "" && getClaim.claimType != "New") {
 
       let coverageTypeDays = getContractDetail.adhDays
       let getDeductible = coverageTypeDays.filter(coverageType => {
         console.log("Checking value: ", coverageTypeDays, coverageType.value, getClaim.claimType);
         return coverageType.value === getClaim.claimType;
       });
-      if(getClaim.claimType != "" || getClaim.claimType != "New"){
-        
+      if (getClaim.claimType != "" || getClaim.claimType != "New") {
+
       }
       if (!getDeductible[0]) {
         res.send({
@@ -1040,10 +1040,10 @@ exports.checkClaimAmount = async (req, res) => {
     } else {
       let values = {
         $set: {
-          customerClaimAmount:  0,
-          getCoverClaimAmount:  0,
-          customerOverAmount:  0,
-          getcoverOverAmount:  0
+          customerClaimAmount: 0,
+          getCoverClaimAmount: 0,
+          customerOverAmount: 0,
+          getcoverOverAmount: 0
 
         }
       }
