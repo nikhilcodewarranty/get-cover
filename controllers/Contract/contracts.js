@@ -684,3 +684,10 @@ exports.cronJobEligible = async (req, res) => {
   }
 };
 
+exports.checkThreshHoldLimit  = async(req,res)=>{
+  try{
+
+  }catch(err){
+    
+  }
+}
