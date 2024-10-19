@@ -1763,7 +1763,7 @@ exports.getServicerInOrders = async (req, res) => {
         if (matchingItem) {
             return {
                 ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
-                servicerData: matchingItem,
+                servicerData: matchingItem.toObject(),
             };
         } else {
             return servicer.toObject();
