@@ -2513,11 +2513,10 @@ exports.saveBulkClaim = async (req, res) => {
           const userId = req.userId;
           ccMail = new_admin_array;
           IDs.push(req.teammateId);
-          let userData = await userService.getUserById1({ metaId: userId, isPrimary: true }, {});
+          let userData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: userId, isPrimary: true } }  }, {});
           toMail = userData.email;
           if (req.userId.toString() === item.orderData?.order?.dealerId?.toString()) {
             // For servicer
-
             if (!existArray.data[servicerId] && servicerId != undefined) {
               emailServicerId.push(servicerId);
               existArray.data[servicerId] = [];
