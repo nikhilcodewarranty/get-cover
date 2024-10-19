@@ -284,11 +284,11 @@ exports.getContracts = async (req, res) => {
       let thresholdLimitPercentage = getTheThresholdLimir.threshHoldLimit.value
       const thresholdLimitValue = (thresholdLimitPercentage / 100) * Number(result1[e].productValue);
       let overThreshold = result1[e].claimAmount > thresholdLimitValue;
-      let threshHoldMessage = "Claim amount exceeds the allowed limit"
+      let threshHoldMessage = "Claim amount exceeds the allowed limit. This might lead to claim rejection. To proceed further with claim please contact admin."
       if (!overThreshold) {
         threshHoldMessage = ""
       }
-      if (!thresholdLimitPercentage.isThreshHoldLimit) {
+      if (!getTheThresholdLimir.isThreshHoldLimit) {
         overThreshold = false
         threshHoldMessage = ""
       }
@@ -684,10 +684,3 @@ exports.cronJobEligible = async (req, res) => {
   }
 };
 
-exports.checkThreshHoldLimit  = async(req,res)=>{
-  try{
-
-  }catch(err){
-    
-  }
-}

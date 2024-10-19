@@ -1561,6 +1561,12 @@ exports.uploadRegularPriceBook = async (req, res) => {
           }
         }
 
+
+        //html code here
+
+
+
+
         res.send({
           code: constant.successCode,
           data: totalDataComing
@@ -1612,7 +1618,6 @@ exports.uploadRegularPriceBook = async (req, res) => {
           let category = totalDataComing[c].category;
           let name = totalDataComing[c].name;
           let term = convertToMonths(totalDataComing[c].term);
-          console.log("term checking+++++++++++++", term)
           let coverageType = totalDataComing[c].coverageType;
           let catSearch = new RegExp(`^${category}$`, 'i');
           let priceNameSearch = new RegExp(`^${name}$`, 'i');
@@ -1632,7 +1637,6 @@ exports.uploadRegularPriceBook = async (req, res) => {
             totalDataComing[c].reason = "Invalid term"
           }
           coverageType = coverageType.split(',').map(type => type.trim());
-          console.log("check", coverageType)
           // coverageType = ["breakdown", "accidental", "liquid_damage"]
           let checkCoverageType = await options.findOne({ "value.label": { $all: coverageType }, "name": "coverage_type" })
 
@@ -1676,7 +1680,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
         })
 
       } else if (data.priceType == "Quantity Pricing") {
-        if (headers.length < 10) {
+        if (headers.length < 12) {
           res.send({
             code: constant.errorCode,
             message: "Invalid file format detected. The sheet should contain exactly three columns."
@@ -1699,7 +1703,6 @@ exports.uploadRegularPriceBook = async (req, res) => {
               });
             }
           }
-          console.log("checking the arrray++++++++++++++++", quantityPriceDetail)
           return {
             category: item[keys[0]],  // First key's value
             name: item[keys[1]],   // Second key's value
@@ -1792,7 +1795,6 @@ exports.uploadRegularPriceBook = async (req, res) => {
             totalDataComing[c].coverageType = mergedArray
 
           }
-          console.log("quantity item pricing ++++++++++++ start", validateQuantityPriceDetail(totalDataComing[c]))
           if (!validateQuantityPriceDetail(totalDataComing[c])) {
             totalDataComing[c].inValid = true
             totalDataComing[c].reason = "Invalid quantity price items"
@@ -1825,7 +1827,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
       message: err.message
     })
   }
-} 
+}
 
 exports.uploadCompanyPriceBook = async (req, res) => {
   try {
