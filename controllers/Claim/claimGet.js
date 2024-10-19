@@ -440,7 +440,8 @@ exports.getAllClaims = async (req, res, next) => {
       // Return the updated object with the new key 'overThreshold'
       return {
         ...claimObject,
-        overThreshold
+        overThreshold,
+        threshHoldMessage
       };
     });
 
@@ -1175,9 +1176,9 @@ exports.checkCoverageTypeDate = async (req, res) => {
         // claim not allowed for that coverageType
         res.send({
           code: 403,
-          tittle: `${result[0]} Not Eligible for the claim`,
-          // message: `Claim not allowed for that coverage type till date ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}`
-          message: `Your selected ${result[0]} is currently not eligible for the claim. You can file the claim for ${result[0]} on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}. Do you wish to proceed in rejecting this claim?`
+          tittle: `Claim not eligible for ${result[0]}.`,
+          // message: `Your selected ${result[0]} is currently not eligible for the claim. You can file the claim for ${result[0]} on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}. Do you wish to proceed in rejecting this claim?`
+          message: `Your claim for ${result[0]} cannot be filed because it is not eligible based on the loss date. You will be able to file this claim starting on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}. Would you like to proceed with rejecting the claim now?`
         })
         return
 
@@ -1232,7 +1233,6 @@ exports.checkCoverageTypeDateInContract = async (req, res) => {
     })
   }
 }
-
 
 exports.updateContracts = async (req, res) => {
   try {
