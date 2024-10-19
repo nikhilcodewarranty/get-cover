@@ -1358,6 +1358,8 @@ exports.getDealerCustomers = async (req, res) => {
         const queryUser = { metaId: { $in: customersId }, isPrimary: true };
         //Get Customer Resellers
         let resellerData = await resellerService.getResellers({ _id: { $in: customersResellerId } }, {})
+        let nameArray = name.split(" ");
+
         // Create new keys for first name and last name
         let newObj = {
             f_name: nameArray[0],  // First name
@@ -1436,7 +1438,6 @@ exports.getDealerCustomers = async (req, res) => {
         })
 
         let name = data.firstName ? data.firstName : ""
-        let nameArray = name.split(" ");
 
 
 
