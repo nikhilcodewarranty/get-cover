@@ -763,8 +763,7 @@ exports.getMessages = async (req, res) => {
 
   let lookupQuery = [
     {
-      $match:
-      {
+      $match: {
         $and: [
           { claimId: new mongoose.Types.ObjectId(req.params.claimId) }
         ]
@@ -774,26 +773,18 @@ exports.getMessages = async (req, res) => {
       $lookup: {
         from: "users",
         localField: "commentedTo",
-        foreignField: "metaId",
+        foreignField: "metaData.metaId",
         as: "commentTo",
         pipeline: [
           {
-            $match:
-            {
+            $match: {
               $and: [
-                { metaData: { $elemMatch: { isPrimary: true } } },
-                { metaData: { $elemMatch: { metaId: { $ne: null } } } }
+                // Matching the element in the metaData array with isPrimary and non-null metaId
+                { metaData: { $elemMatch: { isPrimary: true, metaId: { $ne: null } } } }
               ]
             },
           },
-          {
-            $project: {
-              firstName: 1,
-              lastName: 1,
-            }
-          }
         ]
-
       }
     },
     { $unwind: { path: "$commentTo", preserveNullAndEmptyArrays: true } },
@@ -807,7 +798,7 @@ exports.getMessages = async (req, res) => {
           {
             $lookup: {
               from: 'roles',
-              localField: 'roleId',
+              localField: 'metaData.roleId',
               foreignField: '_id',
               as: 'roles'
             }
@@ -815,13 +806,6 @@ exports.getMessages = async (req, res) => {
           {
             $unwind: "$roles"
           },
-          {
-            $project: {
-              firstName: 1,
-              lastName: 1,
-              "roles.role": 1,
-            }
-          }
         ]
       }
     },
@@ -833,13 +817,30 @@ exports.getMessages = async (req, res) => {
         type: 1,
         messageFile: 1,
         content: 1,
-        "commentBy": 1,
-        "commentTo": 1,
+        'commentTo.firstName': { $arrayElemAt: ["$commentTo.metaData.firstName", 0] },
+        'commentTo.lastName': { $arrayElemAt: ["$commentTo.metaData.lastName", 0] },
+        'commentBy.lastName': { $arrayElemAt: ["$commentBy.metaData.lastName", 0] },
+        'commentBy.firstName': { $arrayElemAt: ["$commentBy.metaData.firstName", 0] },
+        "commentBy.roles":1
+
       }
-    }
+    },
+    // {
+    //   $project: {
+    //     _id: 1,
+    //     date: 1,
+    //     type: 1,
+    //     messageFile: 1,
+    //     content: 1,
+    //     "commentBy.metaData.firstName": 1,
+    //     "commentTo": 1,
+    //   }
+    // }
   ]
 
+
   let allMessages = await claimService.getAllMessages(lookupQuery);
+
   res.send({
     code: constant.successCode,
     messages: 'Success!',
