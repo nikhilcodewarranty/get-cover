@@ -1662,12 +1662,12 @@ exports.getServicerInOrders = async (req, res) => {
         if (matchingItem) {
             return {
                 ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-                servicerData: matchingItem.toObject(),
+                servicerData: matchingItem,
             };
         } else if (matchingItem2) {
             return {
                 ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-                servicerData: matchingItem2.toObject(),
+                servicerData: matchingItem2,
             };
         } else {
             return {}
