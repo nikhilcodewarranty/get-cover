@@ -1556,7 +1556,7 @@ exports.getSingleOrder = async (req, res) => {
             if (matchingItem) {
                 return {
                     ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-                    servicerData: matchingItem.toObject(),
+                    servicerData: matchingItem
                 };
             } else {
                 return {};
