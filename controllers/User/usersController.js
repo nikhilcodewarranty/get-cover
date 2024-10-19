@@ -281,7 +281,7 @@ exports.login = async (req, res) => {
     let getRole = await userService.getRoleById(roleQuery, roleProjection)
 
     if (getRole.role == "Dealer") {
-      let checkDealer = await dealerService.getDealerById(user.metaId)
+      let checkDealer = await dealerService.getDealerById(user.metaData[0].metaId)
       if (!checkDealer?.accountStatus) {
         res.send({
           code: constant.errorCode,
@@ -292,7 +292,7 @@ exports.login = async (req, res) => {
     }
 
     if (getRole.role == "Reseller") {
-      let checkReseller = await resellerService.getReseller({ _id: user.metaId })
+      let checkReseller = await resellerService.getReseller({ _id: user.metaData[0].metaId })
       if (!checkReseller?.status) {
         res.send({
           code: constant.errorCode,
@@ -303,7 +303,7 @@ exports.login = async (req, res) => {
     }
 
     if (getRole.role == "Servicer") {
-      let checkServicer = await providerService.getServiceProviderById({ _id: user.metaId })
+      let checkServicer = await providerService.getServiceProviderById({ _id: user.metaData[0].metaId })
       if (!checkServicer?.status) {
         res.send({
           code: constant.errorCode,
