@@ -881,24 +881,34 @@ exports.getMessages = async (req, res) => {
 exports.getMaxClaimAmount = async (req, res) => {
   try {
     const query = { contractId: new mongoose.Types.ObjectId(req.params.contractId) }
+    const query1 = { contractId: new mongoose.Types.ObjectId(req.params.contractId), claimFile: "Completed" }
     let claimTotalQuery = [
       { $match: query },
       { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
 
     ]
+
+    let claimTotalQueryCompleted = [
+      { $match: query1 },
+      { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
+
+    ]
     let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
+    let claimTotalCompleted = await claimService.getClaimWithAggregate(claimTotalQueryCompleted);
     const contract = await contractService.getContractById({ _id: req.params.contractId }, { productValue: 1 })
     const claimAmount = claimTotal[0]?.amount ? claimTotal[0]?.amount : 0
+    const claimAmountCompleted = claimTotalCompleted[0]?.amount ? claimTotalCompleted[0]?.amount : 0
     const product = contract ? contract.productValue : 0
     let getTheThresholdLimit = await userService.getUserById1({ roleId: process.env.super_admin, isPrimary: true })
     let thresholdLimitPercentage = getTheThresholdLimit.threshHoldLimit.value
     const thresholdLimitValue = (thresholdLimitPercentage / 100) * Number(contract.productValue);
     let remainingThreshHoldLimit = thresholdLimitValue - Number(claimAmount)
+    let remainingThreshHoldLimitPastClaim = thresholdLimitValue - Number(claimAmountCompleted)
     // if (Number(remainingThreshHoldLimit) < 0) {
     //   remainingThreshHoldLimit = 0
     // }
-    if(!getTheThresholdLimit.isThreshHoldLimit){
-      remainingThreshHoldLimit=null
+    if (!getTheThresholdLimit.isThreshHoldLimit) {
+      remainingThreshHoldLimit = null
     }
 
     res.send({
@@ -906,7 +916,8 @@ exports.getMaxClaimAmount = async (req, res) => {
       message: 'Success!',
       result: product - claimAmount,
       thresholdLimitValue: thresholdLimitValue,
-      remainingThreshHoldLimit: remainingThreshHoldLimit
+      remainingThreshHoldLimit: remainingThreshHoldLimit,
+      remainingThreshHoldLimitPastClaim: remainingThreshHoldLimitPastClaim
     })
   }
   catch (err) {
