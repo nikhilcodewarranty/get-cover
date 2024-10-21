@@ -1547,7 +1547,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
 
               // Return the match only if found
               // return match ? match :null; // If no match, return the id object
-              return match ? { label: match.label, value: match.value } :null; // If no match, return the id object
+              return match ? { label: match.label, value: match.value } : null; // If no match, return the id object
             });
             totalDataComing[c].coverageType = mergedArray
 
@@ -1555,6 +1555,22 @@ exports.uploadRegularPriceBook = async (req, res) => {
           totalDataComing[c].category = checkCategory ? checkCategory._id : ""
           totalDataComing[c].term = term
           totalDataComing[c].priceType = "Regular Pricing"
+          totalDataComing[c].frontingFee = totalDataComing[c].frontingFee  ? totalDataComing[c].frontingFee : 0
+          totalDataComing[c].reinsuranceFee = totalDataComing[c].reinsuranceFee  ? totalDataComing[c].reinsuranceFee : 0
+          totalDataComing[c].reserveFutureFee = totalDataComing[c].reserveFutureFee  ? totalDataComing[c].reserveFutureFee : 0
+          totalDataComing[c].adminFee = totalDataComing[c].adminFee  ? totalDataComing[c].adminFee : 0
+          // totalDataComing[c].inValid = totalDataComing[c].description != "" ? false : true
+          // console.log("sldfjshfljhdf",totalDataComing[c],"======",totalDataComing[c].description,"++++++++++++")
+          // totalDataComing[c].reason = totalDataComing[c].description != "" ? "" : "Description is required"
+          // totalDataComing[c].inValid = totalDataComing[c].pName != "" ? false : true
+          // totalDataComing[c].reason = totalDataComing[c].pName != "" ? "" : "Product name is required"
+          if (!totalDataComing[c].description || !totalDataComing[c].pName) {
+            totalDataComing[c].reason = "Product name and description both are required"
+            totalDataComing[c].inValid = true
+          } else {
+            totalDataComing[c].reason = ""
+            totalDataComing[c].inValid = false
+          }
 
           if (!totalDataComing[c].inValid) {
             let createCompanyPriceBook = await priceBookService.createPriceBook(totalDataComing[c])
@@ -1645,23 +1661,19 @@ exports.uploadRegularPriceBook = async (req, res) => {
             totalDataComing[c].reason = "Invalid coverage type"
           }
           totalDataComing[c].coverageType = coverageType
-          console.log("----------------0000---------------",checkCoverageType,totalDataComing[c].coverageType)
           if (checkCoverageType) {
 
             let mergedArray = coverageType.map(id => {
               // Find a match in array2 based on id
               let match = checkCoverageType.value.find(item2 => item2.label == id);
-              console.log("----------------222222222---------------",id,checkCoverageType.value,match)
 
               // Return the match only if found
               // return match ? match :null; // If no match, return the id object
-              return match ? { label: match.label, value: match.value } :null; // If no match, return the id object
+              return match ? { label: match.label, value: match.value } : null; // If no match, return the id object
             });
             totalDataComing[c].coverageType = mergedArray
 
           }
-          console.log("----------------1111---------------",totalDataComing[c].coverageType)
-
           if (totalDataComing[c].rangeStart < 0 || !totalDataComing[c].rangeStart) {
             totalDataComing[c].inValid = true
             totalDataComing[c].reason = "Invalid range start price"
@@ -1673,6 +1685,22 @@ exports.uploadRegularPriceBook = async (req, res) => {
           totalDataComing[c].category = checkCategory ? checkCategory._id : ""
           totalDataComing[c].term = term
           totalDataComing[c].priceType = "Flat Pricing"
+          totalDataComing[c].frontingFee = totalDataComing[c].frontingFee  ? totalDataComing[c].frontingFee : 0
+          totalDataComing[c].reinsuranceFee = totalDataComing[c].reinsuranceFee  ? totalDataComing[c].reinsuranceFee : 0
+          totalDataComing[c].reserveFutureFee = totalDataComing[c].reserveFutureFee  ? totalDataComing[c].reserveFutureFee : 0
+          totalDataComing[c].adminFee = totalDataComing[c].adminFee  ? totalDataComing[c].adminFee : 0
+          // totalDataComing[c].inValid = totalDataComing[c].description != "" ? false : true
+          // console.log("sldfjshfljhdf",totalDataComing[c],"======",totalDataComing[c].description,"++++++++++++")
+          // totalDataComing[c].reason = totalDataComing[c].description != "" ? "" : "Description is required"
+          // totalDataComing[c].inValid = totalDataComing[c].pName != "" ? false : true
+          // totalDataComing[c].reason = totalDataComing[c].pName != "" ? "" : "Product name is required"
+          if (!totalDataComing[c].description || !totalDataComing[c].pName) {
+            totalDataComing[c].reason = "Product name and description both are required"
+            totalDataComing[c].inValid = true
+          } else {
+            totalDataComing[c].reason = ""
+            totalDataComing[c].inValid = false
+          }
 
           if (!totalDataComing[c].inValid) {
             let createCompanyPriceBook = await priceBookService.createPriceBook(totalDataComing[c])
@@ -1795,7 +1823,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
 
               // Return the match only if found
               // return match ? match :null; // If no match, return the id object
-              return match ? { label: match.label, value: match.value } :null; // If no match, return the id object
+              return match ? { label: match.label, value: match.value } : null; // If no match, return the id object
             });
             totalDataComing[c].coverageType = mergedArray
 
@@ -1808,6 +1836,22 @@ exports.uploadRegularPriceBook = async (req, res) => {
           totalDataComing[c].category = checkCategory ? checkCategory._id : ""
           totalDataComing[c].term = term
           totalDataComing[c].priceType = "Quantity Pricing"
+          totalDataComing[c].frontingFee = totalDataComing[c].frontingFee  ? totalDataComing[c].frontingFee : 0
+          totalDataComing[c].reinsuranceFee = totalDataComing[c].reinsuranceFee  ? totalDataComing[c].reinsuranceFee : 0
+          totalDataComing[c].reserveFutureFee = totalDataComing[c].reserveFutureFee  ? totalDataComing[c].reserveFutureFee : 0
+          totalDataComing[c].adminFee = totalDataComing[c].adminFee  ? totalDataComing[c].adminFee : 0
+          // totalDataComing[c].inValid = totalDataComing[c].description != "" ? false : true
+          // console.log("sldfjshfljhdf",totalDataComing[c],"======",totalDataComing[c].description,"++++++++++++")
+          // totalDataComing[c].reason = totalDataComing[c].description != "" ? "" : "Description is required"
+          // totalDataComing[c].inValid = totalDataComing[c].pName != "" ? false : true
+          // totalDataComing[c].reason = totalDataComing[c].pName != "" ? "" : "Product name is required"
+          if (!totalDataComing[c].description || !totalDataComing[c].pName) {
+            totalDataComing[c].reason = "Product name and description both are required"
+            totalDataComing[c].inValid = true
+          } else {
+            totalDataComing[c].reason = ""
+            totalDataComing[c].inValid = false
+          }
 
           if (!totalDataComing[c].inValid) {
             let createCompanyPriceBook = await priceBookService.createPriceBook(totalDataComing[c])

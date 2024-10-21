@@ -913,9 +913,7 @@ exports.getMaxClaimAmount = async (req, res) => {
     const thresholdLimitValue = (thresholdLimitPercentage / 100) * Number(contract.productValue);
     let remainingThreshHoldLimit = thresholdLimitValue - Number(claimAmount)
     let remainingThreshHoldLimitPastClaim = thresholdLimitValue - Number(claimAmountCompleted)
-    // if (Number(remainingThreshHoldLimit) < 0) {
-    //   remainingThreshHoldLimit = 0
-    // }
+   
     if (!getTheThresholdLimit.isThreshHoldLimit) {
       remainingThreshHoldLimit = null
       remainingThreshHoldLimitPastClaim = null
