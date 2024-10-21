@@ -1543,11 +1543,11 @@ exports.uploadRegularPriceBook = async (req, res) => {
           if (checkCoverageType) {
             let mergedArray = coverageType.map(id => {
               // Find a match in array2 based on id
-              let match = checkCoverageType.value.find(item2 => item2.value === id);
+              let match = checkCoverageType.value.find(item2 => item2.label === id);
 
               // Return the match only if found
-              // return match ? match : { id }; // If no match, return the id object
-              return match ? { label: match.label, value: match.value } : { id }; // If no match, return the id object
+              // return match ? match :null; // If no match, return the id object
+              return match ? { label: match.label, value: match.value } :null; // If no match, return the id object
             });
             totalDataComing[c].coverageType = mergedArray
 
@@ -1645,18 +1645,23 @@ exports.uploadRegularPriceBook = async (req, res) => {
             totalDataComing[c].reason = "Invalid coverage type"
           }
           totalDataComing[c].coverageType = coverageType
+          console.log("----------------0000---------------",checkCoverageType,totalDataComing[c].coverageType)
           if (checkCoverageType) {
+
             let mergedArray = coverageType.map(id => {
               // Find a match in array2 based on id
-              let match = checkCoverageType.value.find(item2 => item2.value === id);
+              let match = checkCoverageType.value.find(item2 => item2.label == id);
+              console.log("----------------222222222---------------",id,checkCoverageType.value,match)
 
               // Return the match only if found
-              // return match ? match : { id }; // If no match, return the id object
-              return match ? { label: match.label, value: match.value } : { id }; // If no match, return the id object
+              // return match ? match :null; // If no match, return the id object
+              return match ? { label: match.label, value: match.value } :null; // If no match, return the id object
             });
             totalDataComing[c].coverageType = mergedArray
 
           }
+          console.log("----------------1111---------------",totalDataComing[c].coverageType)
+
           if (totalDataComing[c].rangeStart < 0 || !totalDataComing[c].rangeStart) {
             totalDataComing[c].inValid = true
             totalDataComing[c].reason = "Invalid range start price"
@@ -1789,8 +1794,8 @@ exports.uploadRegularPriceBook = async (req, res) => {
               let match = checkCoverageType.value.find(item2 => item2.label === id);
 
               // Return the match only if found
-              // return match ? match : { id }; // If no match, return the id object
-              return match ? { label: match.label, value: match.value } : { id }; // If no match, return the id object
+              // return match ? match :null; // If no match, return the id object
+              return match ? { label: match.label, value: match.value } :null; // If no match, return the id object
             });
             totalDataComing[c].coverageType = mergedArray
 
