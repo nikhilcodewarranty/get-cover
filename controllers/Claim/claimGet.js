@@ -881,7 +881,13 @@ exports.getMessages = async (req, res) => {
 exports.getMaxClaimAmount = async (req, res) => {
   try {
     const query = { contractId: new mongoose.Types.ObjectId(req.params.contractId) }
-    const query1 = { contractId: new mongoose.Types.ObjectId(req.params.contractId), claimFile: "Completed" }
+    const query1 = {
+      $and:[
+        {contractId: new mongoose.Types.ObjectId(req.params.contractId)},
+        {claimFile: "Completed"}
+      ]
+    }
+    // const query1 = { contractId: new mongoose.Types.ObjectId(req.params.contractId), claimFile: "Completed" }
     let claimTotalQuery = [
       { $match: query },
       { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
@@ -898,6 +904,7 @@ exports.getMaxClaimAmount = async (req, res) => {
     const contract = await contractService.getContractById({ _id: req.params.contractId }, { productValue: 1 })
     const claimAmount = claimTotal[0]?.amount ? claimTotal[0]?.amount : 0
     const claimAmountCompleted = claimTotalCompleted[0]?.amount ? claimTotalCompleted[0]?.amount : 0
+    console.log(claimAmountCompleted,claimTotalCompleted[0,"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++"])
     const product = contract ? contract.productValue : 0
     let getTheThresholdLimit = await userService.getUserById1({ roleId: process.env.super_admin, isPrimary: true })
     let thresholdLimitPercentage = getTheThresholdLimit.threshHoldLimit.value
