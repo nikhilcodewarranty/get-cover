@@ -893,7 +893,10 @@ exports.getMaxClaimAmount = async (req, res) => {
     let getTheThresholdLimit = await userService.getUserById1({ roleId: process.env.super_admin, isPrimary: true })
     let thresholdLimitPercentage = getTheThresholdLimit.threshHoldLimit.value
     const thresholdLimitValue = (thresholdLimitPercentage / 100) * Number(contract.productValue);
-    let remainingThreshHoldLimit = thresholdLimitValue-Number(contract.claimAmount) 
+    let remainingThreshHoldLimit = thresholdLimitValue - Number(claimAmount)
+    if (Number(claimAmount) < 0) {
+      remainingThreshHoldLimit = 0
+    }
 
     res.send({
       code: constant.successCode,
