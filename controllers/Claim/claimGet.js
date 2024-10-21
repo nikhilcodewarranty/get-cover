@@ -918,6 +918,7 @@ exports.getMaxClaimAmount = async (req, res) => {
     // }
     if (!getTheThresholdLimit.isThreshHoldLimit) {
       remainingThreshHoldLimit = null
+      remainingThreshHoldLimitPastClaim = null
     }
 
     res.send({
