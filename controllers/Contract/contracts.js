@@ -284,7 +284,7 @@ exports.getContracts = async (req, res) => {
       let thresholdLimitPercentage = getTheThresholdLimir.threshHoldLimit.value
       const thresholdLimitValue = (thresholdLimitPercentage / 100) * Number(result1[e].productValue);
       let overThreshold = result1[e].claimAmount > thresholdLimitValue;
-      let threshHoldMessage = "Claim amount exceeds the allowed limit. This might lead to claim rejection. To proceed further with claim please contact admin."
+      let threshHoldMessage = "This claim amount surpasses the maximum allowed threshold."
       if (!overThreshold) {
         threshHoldMessage = ""
       }
