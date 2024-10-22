@@ -368,7 +368,7 @@ exports.getServicerDealers = async (req, res) => {
                                 localField: "_id",
                                 foreignField: "metaData.metaId",
                                 as: "userData",
-                                pipeline: [
+                                pipeline: [ 
                                     {
                                         $match: {
                                           "metaData": {
