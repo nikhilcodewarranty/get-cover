@@ -958,8 +958,8 @@ exports.editResellers = async (req, res) => {
 
         let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkReseller._id, isPrimary: true } } })
 
-        IDs.push(dealerPrimary._id)
-        IDs.push(resellerPrimary._id)
+        IDs.push(dealerPrimary?._id)
+        IDs.push(resellerPrimary?._id)
         let notificationData = {
             title: "Reseller updated",
             description: checkReseller.name + " , " + "details has been updated",
