@@ -630,13 +630,13 @@ exports.updateUserData = async (req, res) => {
         'metaData.$.lastName': data.lastName,
         'metaData.$.position': data.position,
         'metaData.$.status': data.status,
-        'metaData.$.metaId':  checkUserId1[0].metaId,
-        'metaData.$.roleId':checkUserId1[0].roleId
+        'metaData.$.metaId': checkUserId1[0].metaId,
+        'metaData.$.roleId': checkUserId1[0].roleId
 
       }
     }
-    const updateUser = await userService.updateSingleUser({"metaData._id":checkUserId1[0].metaId,_id:req.params.userId }, updateData, option);
-console.log("fdfgdgdfgd",updateUser)
+    const updateUser = await userService.updateSingleUser({ "metaData.metaId": checkUserId1[0].metaId, _id: req.params.userId }, updateData, option);
+    console.log("fdfgdgdfgd", updateUser)
     if (!updateUser) {
       //Save Logs updateUserData
       let logData = {
