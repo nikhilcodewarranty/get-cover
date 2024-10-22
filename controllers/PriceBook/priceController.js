@@ -1777,7 +1777,8 @@ exports.uploadRegularPriceBook = async (req, res) => {
           // function for quantity price item details
           function validateQuantityPriceDetail(data) {
             let invalidEntries = data.quantityPriceDetail.filter(item => {
-              return !item.name?.trim() || !item.quantity;
+              console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++",item)
+              return !(item.name).toString()?.trim() || !item.quantity;
             });
 
             if (invalidEntries.length > 0) {
@@ -1807,7 +1808,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
           }
           let checkTerms = await terms.findOne({ terms: term })
           console.log("checking the term++++++++++++++",checkTerms)
-          if (!checkTerms) {
+          if (checkTerms == null) {
             totalDataComing[c].inValid = true
             totalDataComing[c].reason = "Invalid term"
           }
@@ -1852,13 +1853,10 @@ exports.uploadRegularPriceBook = async (req, res) => {
           if (!totalDataComing[c].description || !totalDataComing[c].pName) {
             totalDataComing[c].reason = "Product name and description both are required"
             totalDataComing[c].inValid = true
-          } else {
-            totalDataComing[c].reason = ""
-            totalDataComing[c].inValid = false
-          }
+          } 
 
           if (!totalDataComing[c].inValid) {
-            let createCompanyPriceBook = await priceBookService.createPriceBook(totalDataComing[c])
+            // let createCompanyPriceBook = await priceBookService.createPriceBook(totalDataComing[c])
           }
         }
 
