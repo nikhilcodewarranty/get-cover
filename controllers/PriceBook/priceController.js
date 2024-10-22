@@ -1769,8 +1769,8 @@ exports.uploadRegularPriceBook = async (req, res) => {
               const months = years * 12;             // Convert years to months
               return months;
             } else {
-              totalDataComing[c].inValid = true
-              totalDataComing[c].reason = "Invalid term"
+              return 0
+              console.log("invalid terms")
             }
           }
 
@@ -1806,6 +1806,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
             totalDataComing[c].reason = "Product sku already exist"
           }
           let checkTerms = await terms.findOne({ terms: term })
+          console.log("checking the term++++++++++++++",checkTerms)
           if (!checkTerms) {
             totalDataComing[c].inValid = true
             totalDataComing[c].reason = "Invalid term"
