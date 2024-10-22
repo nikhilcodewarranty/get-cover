@@ -601,7 +601,7 @@ exports.createCustomer = async (req, res, next) => {
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
-            senderName: getPrimary.firstName,
+            senderName: getPrimary.metaData[0]?.firstName,
             content: "We are delighted to inform you that the customer account for " + createdCustomer.username + " has been created.",
             subject: "Customer Account Created - " + createdCustomer.username
         }
@@ -802,7 +802,7 @@ exports.createReseller = async (req, res) => {
             address: settingData[0]?.address,
             title: settingData[0]?.title,
             websiteSetting: settingData[0],
-            senderName: getPrimary.firstName,
+            senderName: getPrimary.metaData[0]?.firstName,
             content: "We are delighted to inform you that the reseller account for " + createdReseler.name + " has been created.",
             subject: "Reseller Account Created - " + createdReseler.name
         }
