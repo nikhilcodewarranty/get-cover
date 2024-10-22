@@ -1527,6 +1527,11 @@ exports.uploadRegularPriceBook = async (req, res) => {
             totalDataComing[c].inValid = true
             totalDataComing[c].reason = "Product sku already exist"
           }
+          console.log("name check ----------------------",name)
+          if(!name){
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Product sku required"
+          }
           let checkTerms = await terms.findOne({ terms: term })
           if (!checkTerms) {
             totalDataComing[c].inValid = true
@@ -1646,6 +1651,11 @@ exports.uploadRegularPriceBook = async (req, res) => {
           if (checkPriceBook) {
             totalDataComing[c].inValid = true
             totalDataComing[c].reason = "Product sku already exist"
+          }
+          console.log("name check ----------------------",name)
+          if(!name){
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Product sku required"
           }
           let checkTerms = await terms.findOne({ terms: term })
           if (!checkTerms) {
@@ -1799,6 +1809,11 @@ exports.uploadRegularPriceBook = async (req, res) => {
           if (checkPriceBook) {
             totalDataComing[c].inValid = true
             totalDataComing[c].reason = "Product sku already exist"
+          }
+          console.log("name check ----------------------",name)
+          if(!name){
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Product sku required"
           }
           let checkTerms = await terms.findOne({ terms: term })
           if (!checkTerms) {

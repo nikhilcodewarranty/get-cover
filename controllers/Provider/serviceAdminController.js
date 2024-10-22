@@ -2132,7 +2132,6 @@ exports.paidUnpaid = async (req, res) => {
 exports.paidUnpaidClaim = async (req, res) => {
   try {
     let data = req.body
-    console.log("sdfsssssssssssssssssssss", data)
     let dateQuery = {}
     if (data.noOfDays) {
       const end = moment().startOf('day')
