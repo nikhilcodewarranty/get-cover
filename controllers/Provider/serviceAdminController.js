@@ -2017,7 +2017,7 @@ exports.getServicerClaims = async (req, res) => {
       {}
     );
 
-    const result_Array = resultFiter.map((item1) => {
+    let result_Array = resultFiter.map((item1) => {
       servicer = []
       let mergedData = []
       if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
