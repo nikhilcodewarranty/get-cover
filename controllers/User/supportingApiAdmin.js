@@ -177,11 +177,10 @@ exports.createDealer = async (req, res) => {
                         'metaData.$.position':allUserData[0].position,
                         'metaData.$.phoneNumber':allUserData[0].phoneNumber,
                         'metaData.$.status':allUserData[0].status ? true : false,
-                        'metaData.$.metaId': checkUserId1[0].metaId,
                         'metaData.$.roleId': "656f08041eb1acda244af8c6"
                 
                       }
-                 
+                  
                 }
 
                 await userService.updateUser(userQuery, newValues1, { new: true })
