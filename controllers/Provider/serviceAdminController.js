@@ -2058,6 +2058,8 @@ exports.getServicerClaims = async (req, res) => {
       }
     })
     let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0
+    let getTheThresholdLimit = await userService.getUserById1({ roleId: process.env.super_admin, isPrimary: true })
+
     result_Array = result_Array.map(claimObject => {
       const { productValue, claimAmount } = claimObject.contracts;
 
