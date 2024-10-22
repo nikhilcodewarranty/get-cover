@@ -391,6 +391,7 @@ exports.getServicerDealers = async (req, res) => {
                                             "status":{ $arrayElemAt: ["$metaData.status", 0] },
                                             "metaId":{ $arrayElemAt: ["$metaData.metaId", 0] },
                                             "approvedStatus":1,
+                                            "email":1,
                                         }
                                     }
                                 ]
