@@ -1505,8 +1505,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
               const months = years * 12;             // Convert years to months
               return months;
             } else {
-              totalDataComing[c].inValid = true
-              totalDataComing[c].reason = "Invalid term"
+              throw new Error("Invalid input format");
             }
           }
           let category = totalDataComing[c].category;
@@ -1556,10 +1555,10 @@ exports.uploadRegularPriceBook = async (req, res) => {
           totalDataComing[c].category = checkCategory ? checkCategory._id : ""
           totalDataComing[c].term = term
           totalDataComing[c].priceType = "Regular Pricing"
-          totalDataComing[c].frontingFee = totalDataComing[c].frontingFee ? totalDataComing[c].frontingFee : 0
-          totalDataComing[c].reinsuranceFee = totalDataComing[c].reinsuranceFee ? totalDataComing[c].reinsuranceFee : 0
-          totalDataComing[c].reserveFutureFee = totalDataComing[c].reserveFutureFee ? totalDataComing[c].reserveFutureFee : 0
-          totalDataComing[c].adminFee = totalDataComing[c].adminFee ? totalDataComing[c].adminFee : 0
+          totalDataComing[c].frontingFee = totalDataComing[c].frontingFee  ? totalDataComing[c].frontingFee : 0
+          totalDataComing[c].reinsuranceFee = totalDataComing[c].reinsuranceFee  ? totalDataComing[c].reinsuranceFee : 0
+          totalDataComing[c].reserveFutureFee = totalDataComing[c].reserveFutureFee  ? totalDataComing[c].reserveFutureFee : 0
+          totalDataComing[c].adminFee = totalDataComing[c].adminFee  ? totalDataComing[c].adminFee : 0
           // totalDataComing[c].inValid = totalDataComing[c].description != "" ? false : true
           // console.log("sldfjshfljhdf",totalDataComing[c],"======",totalDataComing[c].description,"++++++++++++")
           // totalDataComing[c].reason = totalDataComing[c].description != "" ? "" : "Description is required"
@@ -1568,9 +1567,6 @@ exports.uploadRegularPriceBook = async (req, res) => {
           if (!totalDataComing[c].description || !totalDataComing[c].pName) {
             totalDataComing[c].reason = "Product name and description both are required"
             totalDataComing[c].inValid = true
-          } else {
-            totalDataComing[c].reason = ""
-            totalDataComing[c].inValid = false
           }
 
           if (!totalDataComing[c].inValid) {
@@ -1629,8 +1625,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
               const months = years * 12;             // Convert years to months
               return months;
             } else {
-              totalDataComing[c].inValid = true
-              totalDataComing[c].reason = "Invalid term"
+              throw new Error("Invalid input format");
             }
           }
           let category = totalDataComing[c].category;
@@ -1687,10 +1682,10 @@ exports.uploadRegularPriceBook = async (req, res) => {
           totalDataComing[c].category = checkCategory ? checkCategory._id : ""
           totalDataComing[c].term = term
           totalDataComing[c].priceType = "Flat Pricing"
-          totalDataComing[c].frontingFee = totalDataComing[c].frontingFee ? totalDataComing[c].frontingFee : 0
-          totalDataComing[c].reinsuranceFee = totalDataComing[c].reinsuranceFee ? totalDataComing[c].reinsuranceFee : 0
-          totalDataComing[c].reserveFutureFee = totalDataComing[c].reserveFutureFee ? totalDataComing[c].reserveFutureFee : 0
-          totalDataComing[c].adminFee = totalDataComing[c].adminFee ? totalDataComing[c].adminFee : 0
+          totalDataComing[c].frontingFee = totalDataComing[c].frontingFee  ? totalDataComing[c].frontingFee : 0
+          totalDataComing[c].reinsuranceFee = totalDataComing[c].reinsuranceFee  ? totalDataComing[c].reinsuranceFee : 0
+          totalDataComing[c].reserveFutureFee = totalDataComing[c].reserveFutureFee  ? totalDataComing[c].reserveFutureFee : 0
+          totalDataComing[c].adminFee = totalDataComing[c].adminFee  ? totalDataComing[c].adminFee : 0
           // totalDataComing[c].inValid = totalDataComing[c].description != "" ? false : true
           // console.log("sldfjshfljhdf",totalDataComing[c],"======",totalDataComing[c].description,"++++++++++++")
           // totalDataComing[c].reason = totalDataComing[c].description != "" ? "" : "Description is required"
@@ -1699,9 +1694,6 @@ exports.uploadRegularPriceBook = async (req, res) => {
           if (!totalDataComing[c].description || !totalDataComing[c].pName) {
             totalDataComing[c].reason = "Product name and description both are required"
             totalDataComing[c].inValid = true
-          } else {
-            totalDataComing[c].reason = ""
-            totalDataComing[c].inValid = false
           }
 
           if (!totalDataComing[c].inValid) {
@@ -1769,16 +1761,14 @@ exports.uploadRegularPriceBook = async (req, res) => {
               const months = years * 12;             // Convert years to months
               return months;
             } else {
-              return 0
-              console.log("invalid terms")
+              throw new Error("Invalid input format");
             }
           }
 
           // function for quantity price item details
           function validateQuantityPriceDetail(data) {
             let invalidEntries = data.quantityPriceDetail.filter(item => {
-              console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++",item)
-              return !(item.name).toString()?.trim() || !item.quantity;
+              return !item.name?.trim() || !item.quantity;
             });
 
             if (invalidEntries.length > 0) {
@@ -1807,8 +1797,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
             totalDataComing[c].reason = "Product sku already exist"
           }
           let checkTerms = await terms.findOne({ terms: term })
-          console.log("checking the term++++++++++++++",checkTerms)
-          if (checkTerms == null) {
+          if (!checkTerms) {
             totalDataComing[c].inValid = true
             totalDataComing[c].reason = "Invalid term"
           }
@@ -1841,10 +1830,10 @@ exports.uploadRegularPriceBook = async (req, res) => {
           totalDataComing[c].category = checkCategory ? checkCategory._id : ""
           totalDataComing[c].term = term
           totalDataComing[c].priceType = "Quantity Pricing"
-          totalDataComing[c].frontingFee = totalDataComing[c].frontingFee ? totalDataComing[c].frontingFee : 0
-          totalDataComing[c].reinsuranceFee = totalDataComing[c].reinsuranceFee ? totalDataComing[c].reinsuranceFee : 0
-          totalDataComing[c].reserveFutureFee = totalDataComing[c].reserveFutureFee ? totalDataComing[c].reserveFutureFee : 0
-          totalDataComing[c].adminFee = totalDataComing[c].adminFee ? totalDataComing[c].adminFee : 0
+          totalDataComing[c].frontingFee = totalDataComing[c].frontingFee  ? totalDataComing[c].frontingFee : 0
+          totalDataComing[c].reinsuranceFee = totalDataComing[c].reinsuranceFee  ? totalDataComing[c].reinsuranceFee : 0
+          totalDataComing[c].reserveFutureFee = totalDataComing[c].reserveFutureFee  ? totalDataComing[c].reserveFutureFee : 0
+          totalDataComing[c].adminFee = totalDataComing[c].adminFee  ? totalDataComing[c].adminFee : 0
           // totalDataComing[c].inValid = totalDataComing[c].description != "" ? false : true
           // console.log("sldfjshfljhdf",totalDataComing[c],"======",totalDataComing[c].description,"++++++++++++")
           // totalDataComing[c].reason = totalDataComing[c].description != "" ? "" : "Description is required"
@@ -1853,10 +1842,10 @@ exports.uploadRegularPriceBook = async (req, res) => {
           if (!totalDataComing[c].description || !totalDataComing[c].pName) {
             totalDataComing[c].reason = "Product name and description both are required"
             totalDataComing[c].inValid = true
-          } 
+          }
 
           if (!totalDataComing[c].inValid) {
-            // let createCompanyPriceBook = await priceBookService.createPriceBook(totalDataComing[c])
+            let createCompanyPriceBook = await priceBookService.createPriceBook(totalDataComing[c])
           }
         }
 
