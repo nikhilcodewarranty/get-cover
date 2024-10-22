@@ -371,14 +371,28 @@ exports.getServicerDealers = async (req, res) => {
                                 pipeline: [
                                     {
                                         $match: {
-                                          $and: [
-                                            // Matching the element in the metaData array with isPrimary and non-null metaId
-                                            { metaData: { $elemMatch: { isPrimary: true } } },
-                                            {meteData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone : '', '$options': 'i' } } }},
-                                            {"email": { '$regex': data.email ? data.email : '', '$options': 'i' }}
-                                          ]
+                                            $and: [
+                                                // Matching the element in the metaData array with isPrimary and non-null metaId
+                                                { metaData: { $elemMatch: { isPrimary: true } } },
+                                                // { meteData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone : '', '$options': 'i' } } } },
+                                                // { "email": { '$regex': data.email ? data.email : '', '$options': 'i' } }
+                                            ]
                                         },
-                                      },
+                                    },
+                                    {
+                                        $project:{
+                                            "firstName":{ $arrayElemAt: ["$metaData.firstName", 0] },
+                                            "lastName":{ $arrayElemAt: ["$metaData.firstName", 0] },
+                                            "email":{ $arrayElemAt: ["$metaData.email", 0] },
+                                            "phoneNumber":{ $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                                            "dialCode":{ $arrayElemAt: ["$metaData.dialCode", 0] },
+                                            "roleId":{ $arrayElemAt: ["$metaData.roleId", 0] },
+                                            "isPrimary":{ $arrayElemAt: ["$metaData.isPrimary", 0] },
+                                            "status":{ $arrayElemAt: ["$metaData.status", 0] },
+                                            "metaId":{ $arrayElemAt: ["$metaData.metaId", 0] },
+                                            "approvedStatus":1,
+                                        }
+                                    }
                                 ]
                             }
                         },
@@ -420,6 +434,16 @@ exports.getServicerDealers = async (req, res) => {
             {
                 $unwind: "$dealerData"
             },
+
+            {
+                $project:{
+                    _id:1,
+                    servicerId:1,
+                    dealerId:1,
+                    status:1,
+                    dealerData:1,
+                }
+            }
         ]
 
         let filteredData = await dealerRelationService.getDealerRelationsAggregate(query)
