@@ -635,7 +635,7 @@ exports.updateUserData = async (req, res) => {
 
       }
     }
-    const updateUser = await userService.updateSingleUser(criteria, updateData, option);
+    const updateUser = await userService.updateSingleUser({"metaData._id":checkUserId1[0].metaId,_id:req.params.userId }, updateData, option);
 console.log("fdfgdgdfgd",updateUser)
     if (!updateUser) {
       //Save Logs updateUserData
