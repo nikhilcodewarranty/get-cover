@@ -624,18 +624,16 @@ exports.updateUserData = async (req, res) => {
     ])
     const settingData = await userService.getSetting({});
     let updateData = {
-      notificationTo: ["anil@codenomad.net"],
-      metaData: [
-        {
-          firstName: data.firstName,
-          lastName: data.lastName,
-          phoneNumber: data.phoneNumber,
-          position: data.position,
-          status: data.status,
-          metaId: checkUserId1[0].metaId,
-          roleId: checkUserId1[0].roleId
-        }
-      ]
+      $set: {
+        notificationTo: ["anil@codenomad.net"],
+        'metaData.$.firstName': data.firstName,
+        'metaData.$.lastName': data.lastName,
+        'metaData.$.position': data.position,
+        'metaData.$.status': data.status,
+        'metaData.$.metaId':  checkUserId1[0].metaId,
+        'metaData.$.roleId':checkUserId1[0].roleId
+
+      }
     }
     const updateUser = await userService.updateSingleUser(criteria, updateData, option);
 
