@@ -842,7 +842,7 @@ exports.editServicerDetail = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: checkServicer.metaData[0]?.name,
+      senderName: checkServicer?.name,
       content: "Information has been updated successfully! effective immediately.",
       subject: "Update Info"
     }
