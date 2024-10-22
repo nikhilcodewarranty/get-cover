@@ -374,7 +374,7 @@ exports.getServicerDealers = async (req, res) => {
                                           "metaData": {
                                             $elemMatch: {
                                               isPrimary: true,
-                                              phoneNumber: { '$regex': data.phone ? data.phone : '', '$options': 'i' },
+                                              phoneNumber: { '$regex': data.phoneNumber ? data.phoneNumber : '', '$options': 'i' },
                                             }
                                           },
                                           email: { '$regex': data.email ? data.email : '', '$options': 'i' }
