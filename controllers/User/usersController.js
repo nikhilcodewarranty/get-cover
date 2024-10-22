@@ -595,7 +595,6 @@ exports.updateUser = async (req, res) => {
 exports.updateUserData = async (req, res) => {
   try {
     let data = req.body
-    let criteria = { _id: req.params.userId ? req.params.userId : req.teammateId };
     let option = { new: true };
     let checkUserId1 = await userService.findUserforCustomer1([
       {
@@ -635,7 +634,8 @@ exports.updateUserData = async (req, res) => {
 
       }
     }
-    const updateUser = await userService.updateSingleUser({ "metaData.metaId": checkUserId1[0].metaId, _id: req.params.userId }, updateData, option);
+    let criteria = { metaData: { $elemMatch: { metaId:checkUserId1[0].metaId } },_id: req.params.userId  }
+    const updateUser = await userService.updateSingleUser(criteria, updateData, option);
     console.log("fdfgdgdfgd", updateUser)
     if (!updateUser) {
       //Save Logs updateUserData
