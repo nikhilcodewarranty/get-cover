@@ -373,7 +373,9 @@ exports.getServicerDealers = async (req, res) => {
                                         $match: {
                                           $and: [
                                             // Matching the element in the metaData array with isPrimary and non-null metaId
-                                            { metaData: { $elemMatch: { isPrimary: true } } }
+                                            { metaData: { $elemMatch: { isPrimary: true } } },
+                                            {meteData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone : '', '$options': 'i' } } }},
+                                            {"email": { '$regex': data.email ? data.email : '', '$options': 'i' }}
                                           ]
                                         },
                                       },
