@@ -1066,7 +1066,7 @@ exports.getResellerCustomers = async (req, res) => {
             return;
         };
 
-        const customersId = customers.map(obj => obj._id);
+        const customersId = customers.map(obj => new mongoose.Types.ObjectId(obj._id));
         const orderCustomerIds = customers.map(obj => obj._id);
         const getPrimaryUser = await userService.findUserforCustomer1([
             {
@@ -1076,7 +1076,7 @@ exports.getResellerCustomers = async (req, res) => {
                         { metaData: { $elemMatch: { firstName: { '$regex': data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
                         { metaData: { $elemMatch: { lastName: { '$regex': data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
                         { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                        { metaData: { $elemMatch: { metaId: customersId, isPrimary: true } } }
+                        { metaData: { $elemMatch: { metaId: { $in: customersId }, isPrimary: true } } }
                     ]
                 }
             },
@@ -1145,7 +1145,7 @@ exports.getResellerCustomers = async (req, res) => {
         const dealerRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
         result_Array = result_Array.filter(entry => {
             return (
-                nameRegex.test(entry.customerData.username) &&
+               
                 dealerRegex.test(entry.customerData.dealerId)
             );
         });
