@@ -952,7 +952,7 @@ exports.deleteUser = async (req, res) => {
     let option = { new: true }
     const checkUser = await userService.getUserById1({ _id: req.params.userId }, {});
     const deleteUser = await userService.deleteUser(criteria, newValue, option);
-    console.log("checkUser-----------------------",checkUser)
+    console.log("checkUser-----------------------", checkUser)
     let settingData = await userService.getSetting({});
     if (!deleteUser) {
       //Save Logs delete user
@@ -973,10 +973,10 @@ exports.deleteUser = async (req, res) => {
       return;
     };
     const checkRole = await userService.getRoleById({ _id: checkUser?.metaData[0].roleId }, {});
-    console.log("checkRole-----------------------",checkRole)
+    console.log("checkRole-----------------------", checkRole)
 
-    let primaryUser = await supportingFunction.getPrimaryUser({ metaId: checkUser?.metaData[0].metaId, isPrimary: true })
-    console.log("primaryUser-----------------------",primaryUser)
+    let primaryUser = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkUser?.metaData[0].metaId, isPrimary: true } } })
+    console.log("primaryUser-----------------------", primaryUser)
 
     //send notification to dealer when deleted
     let IDs = await supportingFunction.getUserIds()
