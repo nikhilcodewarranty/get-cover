@@ -1097,6 +1097,30 @@ exports.getDealerClaims = async (req, res) => {
             }
         })
         let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0
+        result_Array = result_Array.map(claimObject => {
+            const { productValue, claimAmount } = claimObject.contracts;
+      
+            // Calculate the threshold limit value
+            const thresholdLimitValue = (getTheThresholdLimit.threshHoldLimit.value / 100) * productValue;
+      
+            // Check if claimAmount exceeds the threshold limit value
+            let overThreshold = claimAmount > thresholdLimitValue;
+            let threshHoldMessage = "Claim amount exceeds the allowed limit. This might lead to claim rejection. To proceed further with claim please contact admin."
+            if (!overThreshold) {
+              threshHoldMessage = ""
+            }
+            if (!getTheThresholdLimit.isThreshHoldLimit) {
+              overThreshold = false
+              threshHoldMessage = ""
+            }
+      
+            // Return the updated object with the new key 'overThreshold'
+            return {
+              ...claimObject,
+              overThreshold,
+              threshHoldMessage
+            };
+          });
         res.send({
             code: constant.successCode,
             message: "Success",
