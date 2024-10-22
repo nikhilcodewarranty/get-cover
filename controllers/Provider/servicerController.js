@@ -368,15 +368,15 @@ exports.getServicerDealers = async (req, res) => {
                                 localField: "_id",
                                 foreignField: "metaData.metaId",
                                 as: "userData",
-                                pipeline: [
-                                    {
-                                        $match: {
-                                            metaData: { $elemMatch: { isPrimary: true } },
-                                            "email": { '$regex': data.email ? data.email : '', '$options': 'i' },
-                                            "meteData": { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone : '', '$options': 'i' } } },
-                                        }
-                                    }
-                                ]
+                                // pipeline: [
+                                //     {
+                                //         $match: {
+                                //             metaData: { $elemMatch: { isPrimary: true } },
+                                //             "email": { '$regex': data.email ? data.email : '', '$options': 'i' },
+                                //             "meteData": { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone : '', '$options': 'i' } } },
+                                //         }
+                                //     }
+                                // ]
                             }
                         },
                         { $unwind: "$userData" },

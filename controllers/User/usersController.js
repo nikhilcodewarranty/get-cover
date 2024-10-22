@@ -632,6 +632,7 @@ exports.updateUserData = async (req, res) => {
           phoneNumber: data.phoneNumber,
           position: data.position,
           status: data.status,
+          isPrimary: false,
           metaId: checkUserId1[0].metaId,
           roleId: checkUserId1[0].roleId
         }
