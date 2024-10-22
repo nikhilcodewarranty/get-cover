@@ -1505,7 +1505,8 @@ exports.uploadRegularPriceBook = async (req, res) => {
               const months = years * 12;             // Convert years to months
               return months;
             } else {
-              throw new Error("Invalid input format");
+              totalDataComing[c].inValid = true
+              totalDataComing[c].reason = "Invalid term"
             }
           }
           let category = totalDataComing[c].category;
@@ -1555,10 +1556,10 @@ exports.uploadRegularPriceBook = async (req, res) => {
           totalDataComing[c].category = checkCategory ? checkCategory._id : ""
           totalDataComing[c].term = term
           totalDataComing[c].priceType = "Regular Pricing"
-          totalDataComing[c].frontingFee = totalDataComing[c].frontingFee  ? totalDataComing[c].frontingFee : 0
-          totalDataComing[c].reinsuranceFee = totalDataComing[c].reinsuranceFee  ? totalDataComing[c].reinsuranceFee : 0
-          totalDataComing[c].reserveFutureFee = totalDataComing[c].reserveFutureFee  ? totalDataComing[c].reserveFutureFee : 0
-          totalDataComing[c].adminFee = totalDataComing[c].adminFee  ? totalDataComing[c].adminFee : 0
+          totalDataComing[c].frontingFee = totalDataComing[c].frontingFee ? totalDataComing[c].frontingFee : 0
+          totalDataComing[c].reinsuranceFee = totalDataComing[c].reinsuranceFee ? totalDataComing[c].reinsuranceFee : 0
+          totalDataComing[c].reserveFutureFee = totalDataComing[c].reserveFutureFee ? totalDataComing[c].reserveFutureFee : 0
+          totalDataComing[c].adminFee = totalDataComing[c].adminFee ? totalDataComing[c].adminFee : 0
           // totalDataComing[c].inValid = totalDataComing[c].description != "" ? false : true
           // console.log("sldfjshfljhdf",totalDataComing[c],"======",totalDataComing[c].description,"++++++++++++")
           // totalDataComing[c].reason = totalDataComing[c].description != "" ? "" : "Description is required"
@@ -1628,7 +1629,8 @@ exports.uploadRegularPriceBook = async (req, res) => {
               const months = years * 12;             // Convert years to months
               return months;
             } else {
-              throw new Error("Invalid input format");
+              totalDataComing[c].inValid = true
+              totalDataComing[c].reason = "Invalid term"
             }
           }
           let category = totalDataComing[c].category;
@@ -1685,10 +1687,10 @@ exports.uploadRegularPriceBook = async (req, res) => {
           totalDataComing[c].category = checkCategory ? checkCategory._id : ""
           totalDataComing[c].term = term
           totalDataComing[c].priceType = "Flat Pricing"
-          totalDataComing[c].frontingFee = totalDataComing[c].frontingFee  ? totalDataComing[c].frontingFee : 0
-          totalDataComing[c].reinsuranceFee = totalDataComing[c].reinsuranceFee  ? totalDataComing[c].reinsuranceFee : 0
-          totalDataComing[c].reserveFutureFee = totalDataComing[c].reserveFutureFee  ? totalDataComing[c].reserveFutureFee : 0
-          totalDataComing[c].adminFee = totalDataComing[c].adminFee  ? totalDataComing[c].adminFee : 0
+          totalDataComing[c].frontingFee = totalDataComing[c].frontingFee ? totalDataComing[c].frontingFee : 0
+          totalDataComing[c].reinsuranceFee = totalDataComing[c].reinsuranceFee ? totalDataComing[c].reinsuranceFee : 0
+          totalDataComing[c].reserveFutureFee = totalDataComing[c].reserveFutureFee ? totalDataComing[c].reserveFutureFee : 0
+          totalDataComing[c].adminFee = totalDataComing[c].adminFee ? totalDataComing[c].adminFee : 0
           // totalDataComing[c].inValid = totalDataComing[c].description != "" ? false : true
           // console.log("sldfjshfljhdf",totalDataComing[c],"======",totalDataComing[c].description,"++++++++++++")
           // totalDataComing[c].reason = totalDataComing[c].description != "" ? "" : "Description is required"
@@ -1767,7 +1769,8 @@ exports.uploadRegularPriceBook = async (req, res) => {
               const months = years * 12;             // Convert years to months
               return months;
             } else {
-              throw new Error("Invalid input format");
+              totalDataComing[c].inValid = true
+              totalDataComing[c].reason = "Invalid term"
             }
           }
 
@@ -1836,10 +1839,10 @@ exports.uploadRegularPriceBook = async (req, res) => {
           totalDataComing[c].category = checkCategory ? checkCategory._id : ""
           totalDataComing[c].term = term
           totalDataComing[c].priceType = "Quantity Pricing"
-          totalDataComing[c].frontingFee = totalDataComing[c].frontingFee  ? totalDataComing[c].frontingFee : 0
-          totalDataComing[c].reinsuranceFee = totalDataComing[c].reinsuranceFee  ? totalDataComing[c].reinsuranceFee : 0
-          totalDataComing[c].reserveFutureFee = totalDataComing[c].reserveFutureFee  ? totalDataComing[c].reserveFutureFee : 0
-          totalDataComing[c].adminFee = totalDataComing[c].adminFee  ? totalDataComing[c].adminFee : 0
+          totalDataComing[c].frontingFee = totalDataComing[c].frontingFee ? totalDataComing[c].frontingFee : 0
+          totalDataComing[c].reinsuranceFee = totalDataComing[c].reinsuranceFee ? totalDataComing[c].reinsuranceFee : 0
+          totalDataComing[c].reserveFutureFee = totalDataComing[c].reserveFutureFee ? totalDataComing[c].reserveFutureFee : 0
+          totalDataComing[c].adminFee = totalDataComing[c].adminFee ? totalDataComing[c].adminFee : 0
           // totalDataComing[c].inValid = totalDataComing[c].description != "" ? false : true
           // console.log("sldfjshfljhdf",totalDataComing[c],"======",totalDataComing[c].description,"++++++++++++")
           // totalDataComing[c].reason = totalDataComing[c].description != "" ? "" : "Description is required"
