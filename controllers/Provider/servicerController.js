@@ -366,14 +366,14 @@ exports.getServicerDealers = async (req, res) => {
                             $lookup: {
                                 from: "users",
                                 localField: "_id",
-                                foreignField: "metaId",
+                                foreignField: "metaData.metaId",
                                 as: "userData",
                                 pipeline: [
                                     {
                                         $match: {
-                                            isPrimary: true,
+                                            metaData: { $elemMatch: { isPrimary: true } },
                                             "email": { '$regex': data.email ? data.email : '', '$options': 'i' },
-                                            "phoneNumber": { '$regex': data.phone ? data.phone : '', '$options': 'i' },
+                                            "meteData": { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone : '', '$options': 'i' } } },
                                         }
                                     }
                                 ]
