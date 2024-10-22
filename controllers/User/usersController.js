@@ -636,7 +636,7 @@ exports.updateUserData = async (req, res) => {
       }
     }
     const updateUser = await userService.updateSingleUser(criteria, updateData, option);
-
+console.log("fdfgdgdfgd",updateUser)
     if (!updateUser) {
       //Save Logs updateUserData
       let logData = {
