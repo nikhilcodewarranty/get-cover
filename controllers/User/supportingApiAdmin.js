@@ -168,22 +168,20 @@ exports.createDealer = async (req, res) => {
                 //Primary information edit
                 let userQuery = { metaData: { $elemMatch: { metaId: { $in: [data.dealerId] }, isPrimary: true } } }
 
-
+         
                 let newValues1 = {
                     $set: {
                         email: allUserData[0].email,
-                        metaData: [
-                            {
-                                firstName: allUserData[0].firstName,
-                                lastName: allUserData[0].lastName,
-                                phoneNumber: allUserData[0].phoneNumber,
-                                position: allUserData[0].position,
-                                roleId: '656f08041eb1acda244af8c6',
-                                status: allUserData[0].status ? true : false,
-                            }
-                        ]
-
-                    }
+                        'metaData.$.firstName':allUserData[0].firstNam,
+                        'metaData.$.lastName':  allUserData[0].lastName,
+                        'metaData.$.position':allUserData[0].position,
+                        'metaData.$.phoneNumber':allUserData[0].phoneNumber,
+                        'metaData.$.status':allUserData[0].status ? true : false,
+                        'metaData.$.metaId': checkUserId1[0].metaId,
+                        'metaData.$.roleId': "656f08041eb1acda244af8c6"
+                
+                      }
+                 
                 }
 
                 await userService.updateUser(userQuery, newValues1, { new: true })
