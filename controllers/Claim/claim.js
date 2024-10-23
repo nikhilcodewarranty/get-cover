@@ -396,42 +396,42 @@ exports.addClaim = async (req, res, next) => {
 
     let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
     let remainingPrice = checkContract.productValue - claimTotal[0]?.amount
-    if (data.coverageType != "") {
-      let checkCoverageTypeForContract = checkContract.coverageType.find(item => item.value == data.coverageType)
-      if (!checkCoverageTypeForContract) {
-        res.send({
-          code: constant.errorCode,
-          message: 'Coverage type is not available for this contract!'
-        })
-        return;
-      }
-      let startDateToCheck = new Date(checkContract.coverageStartDate)
-      let coverageTypeDays = checkContract.adhDays
-      let serviceCoverageType = checkContract.serviceCoverageType
+    // if (!data.coverageType || data.coverageType != "") {
+    //   let checkCoverageTypeForContract = checkContract.coverageType.find(item => item.value == data.coverageType)
+    //   if (!checkCoverageTypeForContract) {
+    //     res.send({
+    //       code: constant.errorCode,
+    //       message: 'Coverage type is not available for this contract!'
+    //     })
+    //     return;
+    //   }
+    //   let startDateToCheck = new Date(checkContract.coverageStartDate)
+    //   let coverageTypeDays = checkContract.adhDays
+    //   let serviceCoverageType = checkContract.serviceCoverageType
 
-      let getDeductible = coverageTypeDays.filter(coverageType => coverageType.value == data.coverageType)
+    //   let getDeductible = coverageTypeDays.filter(coverageType => coverageType.value == data.coverageType)
 
-      let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0].waitingDays))
+    //   let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0].waitingDays))
 
-      let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
-      console.log("getCoverageTypeFromOption", getCoverageTypeFromOption)
-      const result = getCoverageTypeFromOption.value.filter(item => item.value === data.coverageType).map(item => item.label);
-      console.log(new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0));
-      checkCoverageTypeDate = new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0)
-      data.lossDate = new Date(data.lossDate).setHours(0, 0, 0, 0)
-      if (new Date(checkCoverageTypeDate) > new Date(data.lossDate)) {
-        // claim not allowed for that coverageType
-        res.send({
-          code: 403,
-          tittle: `Claim not eligible for ${result[0]}.`,
-          // message: `Your selected ${result[0]} is currently not eligible for the claim. You can file the claim for ${result[0]} on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}. Do you wish to proceed in rejecting this claim?`
-          message: `Your claim for ${result[0]} cannot be filed because it is not eligible based on the loss date. You will be able to file this claim starting on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}. Would you like to proceed with rejecting the claim now?`
-        })
-        return
+    //   let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
+    //   console.log("getCoverageTypeFromOption", getCoverageTypeFromOption)
+    //   const result = getCoverageTypeFromOption.value.filter(item => item.value === data.coverageType).map(item => item.label);
+    //   console.log(new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0));
+    //   checkCoverageTypeDate = new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0)
+    //   data.lossDate = new Date(data.lossDate).setHours(0, 0, 0, 0)
+    //   if (new Date(checkCoverageTypeDate) > new Date(data.lossDate)) {
+    //     // claim not allowed for that coverageType
+    //     res.send({
+    //       code: 403,
+    //       tittle: `Claim not eligible for ${result[0]}.`,
+    //       // message: `Your selected ${result[0]} is currently not eligible for the claim. You can file the claim for ${result[0]} on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}. Do you wish to proceed in rejecting this claim?`
+    //       message: `Your claim for ${result[0]} cannot be filed because it is not eligible based on the loss date. You will be able to file this claim starting on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}. Would you like to proceed with rejecting the claim now?`
+    //     })
+    //     return
 
-      }
+    //   }
 
-    }
+    // }
 
     data.receiptImage = data.file
     data.servicerId = data.servicerId ? data.servicerId : null
@@ -454,6 +454,7 @@ exports.addClaim = async (req, res, next) => {
     data.model = checkContract.model
     data.manufacture = checkContract.manufacture
     data.serialNumber = checkContract.serial
+    data.claimType = data.coverageType
 
     let claimResponse = await claimService.createClaim(data)
     if (!claimResponse) {
@@ -1302,7 +1303,7 @@ exports.editClaimStatus = async (req, res) => {
 
     let getNoOfClaimQuery = [
       {
-        $match: { contractId: new mongoose.Types.ObjectId(checkClaim.contractId) }
+        $match: { contractId: new mongoose.Types.ObjectId(checkClaim.contractId), claimFile: "completed" }
       },
       // Step 1: Add fields to extract year and month from the createdAt field
       {
@@ -1339,10 +1340,10 @@ exports.editClaimStatus = async (req, res) => {
 
 
 
+    let forCheckOnly;
 
     //Eligibility true when claim is completed and rejected
     if (updateBodyStatus.claimFile == 'completed') {
-      let forCheckOnly;
       if (checkContract.isMaxClaimAmount) {
         if (checkContract.productValue > claimTotal[0]?.amount) {
           const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
@@ -1398,6 +1399,13 @@ exports.editClaimStatus = async (req, res) => {
           }
         }
       }
+    }
+
+
+    if (updateBodyStatus.claimFile == 'rejected') {
+      let updatePrice = await claimService.updateClaim(criteria, { totalAmount: 0, customerClaimAmount: 0, getCoverClaimAmount: 0, customerOverAmount: 0, getcoverOverAmount: 0 }, { new: true })
+      const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
+      forCheckOnly = true
     }
 
     //Save logs
@@ -2183,7 +2191,7 @@ exports.saveBulkClaim = async (req, res) => {
           flatArray.push({
             email: email,
             response: existArray.data[servicerId]
-          });  
+          });
         }
         //send email to servicer      
         for (const item of flatArray) {
