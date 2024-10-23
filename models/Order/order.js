@@ -191,11 +191,11 @@ const orderSchema = new mongoose.Schema({
         },
         coverageStartDate: {
           type: Date,
-          default: new Date(),
+           default: () => Date.now(),
         },
         coverageStartDate1: {
           type: Date,
-          default: new Date(),
+           default: () => Date.now(),
         },
         coverageEndDate: {
           type: Date,
@@ -235,7 +235,7 @@ const orderSchema = new mongoose.Schema({
   },
   orderDate: {
     type: Date,
-    default: new Date(),
+    default: () => Date.now()
   },
   paidAmount: {
     type: Number,
