@@ -10,6 +10,7 @@ router.put('/editContract/:contractId', [verifyToken], contractController.editCo
 router.get('/getContractById/:contractId', [verifyToken], supportingFunction.checkObjectId,contractController.getContractById); // getContractById route
 router.get('/deleteOrdercontractbulk', [verifyToken], contractController.deleteOrdercontractbulk); // deleteOrdercontractbulk route
 router.get('/cronJobEligible', contractController.cronJobEligible); // cronJobEligible route
+router.get('/updateContract', contractController.updateContract); // cronJobEligible route
 
 
 module.exports = router;
