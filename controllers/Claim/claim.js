@@ -2179,30 +2179,31 @@ exports.saveBulkClaim = async (req, res) => {
             return values.join('');
           });
 
-           htmlContent = `<html>
-              <head>
-                  <style>
-                      table {
-                          border-collapse: collapse;
-                          width: 100%;
-                      }
-                      th, td {
-                          border: 1px solid #dddddd;
-                          text-align: left;
-                          padding: 8px;
-                      }
-                      th {
-                          background-color: #f2f2f2;
-                      }
-                  </style>
-              </head>         
-              <body>
-              <p></p>
-                  <table>
-                      <thead><tr>${header}</tr></thead>
-                      <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
-                  </table>
-              </body>
+          htmlContent = `
+          <html>
+            <head>
+                <style>
+                    table {
+                        border-collapse: collapse;
+                        width: 100%;
+                    }
+                    th, td {
+                        border: 1px solid #dddddd;
+                        text-align: left;
+                        padding: 8px;
+                    }
+                    th {
+                        background-color: #f2f2f2;
+                    }
+                </style>
+            </head>         
+            <body>
+                <p>Success Entries: ${count.falseCount}</p> <!-- Correct variable usage here -->
+                <table>
+                    <thead><tr>${header}</tr></thead>
+                    <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
+                </table>
+            </body>
           </html>`;
         }
 
@@ -2218,30 +2219,31 @@ exports.saveBulkClaim = async (req, res) => {
             return values.join('');
           });
 
-          htmlContent += `<html>
-              <head>
-                  <style>
-                      table {
-                          border-collapse: collapse;
-                          width: 100%;
-                      }
-                      th, td {
-                          border: 1px solid #dddddd;
-                          text-align: left;
-                          padding: 8px;
-                      }
-                      th {
-                          background-color: #f2f2f2;
-                      }
-                  </style>
-              </head>         
-              <body>
-              <p></p>
-                  <table>
-                      <thead><tr>${header}</tr></thead>
-                      <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
-                  </table>
-              </body>
+          htmlContent = `
+          <html>
+            <head>
+                <style>
+                    table {
+                        border-collapse: collapse;
+                        width: 100%;
+                    }
+                    th, td {
+                        border: 1px solid #dddddd;
+                        text-align: left;
+                        padding: 8px;
+                    }
+                    th {
+                        background-color: #f2f2f2;
+                    }
+                </style>
+            </head>         
+            <body>
+                <p>Success Entries: ${count.trueCount}</p> <!-- Correct variable usage here -->
+                <table>
+                    <thead><tr>${header}</tr></thead>
+                    <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
+                </table>
+            </body>
           </html>`;
         }
 
