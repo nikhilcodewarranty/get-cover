@@ -2032,7 +2032,7 @@ exports.saveBulkClaim = async (req, res) => {
 
             if (servicerId != undefined && !item.exit) {
               existArray.data[servicerId].push({
-                "Serial#": item.contractId ? item.contractId : "",
+                "Contract#/Serial#": item.contractId ? item.contractId : "",
                 "Loss Date": item.lossDate ? item.lossDate : '',
                 Diagnosis: item.diagnosis ? item.diagnosis : '',
                 Status: item.status ? item.status : '',
@@ -2041,7 +2041,7 @@ exports.saveBulkClaim = async (req, res) => {
 
           }
           return {
-            "Serial#": item.contractId ? item.contractId : "",
+            "Contract#/Serial#": item.contractId ? item.contractId : "",
             "Loss Date": item.lossDate ? item.lossDate : '',
             Diagnosis: item.diagnosis ? item.diagnosis : '',
             Status: item.status ? item.status : '',
@@ -2062,7 +2062,7 @@ exports.saveBulkClaim = async (req, res) => {
 
             if (servicerId != undefined && !item.exit) {
               existArray.data[servicerId].push({
-                "Serial#": item.contractId ? item.contractId : "",
+                "Contract#/Serial#": item.contractId ? item.contractId : "",
                 "Loss Date": item.lossDate ? item.lossDate : '',
                 Diagnosis: item.diagnosis ? item.diagnosis : '',
                 Status: item.status ? item.status : '',
@@ -2071,7 +2071,7 @@ exports.saveBulkClaim = async (req, res) => {
 
           }
           return {
-            "Serial#": item.contractId ? item.contractId : "",
+            "Contract#/Serial#": item.contractId ? item.contractId : "",
             "Loss Date": item.lossDate ? item.lossDate : '',
             Diagnosis: item.diagnosis ? item.diagnosis : '',
             Status: item.status ? item.status : '',
@@ -2093,7 +2093,7 @@ exports.saveBulkClaim = async (req, res) => {
 
             if (servicerId != undefined && !item.exit) {
               existArray.data[servicerId].push({
-                "Serial#": item.contractId ? item.contractId : "",
+                "Contract#/Serial#": item.contractId ? item.contractId : "",
                 "Loss Date": item.lossDate ? item.lossDate : '',
                 Diagnosis: item.diagnosis ? item.diagnosis : '',
                 Status: item.status ? item.status : '',
@@ -2102,7 +2102,7 @@ exports.saveBulkClaim = async (req, res) => {
 
           }
           return {
-            "Serial#": item.contractId ? item.contractId : "",
+            "Contract#/Serial#": item.contractId ? item.contractId : "",
             "Loss Date": item.lossDate ? item.lossDate : '',
             Diagnosis: item.diagnosis ? item.diagnosis : '',
             Status: item.status ? item.status : '',
@@ -2119,7 +2119,7 @@ exports.saveBulkClaim = async (req, res) => {
 
           if (servicerId != undefined && !item.exit) {
             existArray.data[servicerId].push({
-              "Serial#": item.contractId ? item.contractId : "",
+              "Contract#/Serial#": item.contractId ? item.contractId : "",
               "Loss Date": item.lossDate ? item.lossDate : '',
               Diagnosis: item.diagnosis ? item.diagnosis : '',
               Status: item.status ? item.status : '',
@@ -2127,7 +2127,7 @@ exports.saveBulkClaim = async (req, res) => {
           }
 
           return {
-            "Serial#": item.contractId ? item.contractId : "",
+            "Contract#/Serial#": item.contractId ? item.contractId : "",
             Servicer: item.servicerName || "",
             "Loss Date": item.lossDate ? item.lossDate : '',
             Diagnosis: item.diagnosis ? item.diagnosis : '',
