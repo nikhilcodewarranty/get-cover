@@ -1678,11 +1678,11 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
       const optionQuery = {
         value: {
           $elemMatch: {
-            value: { $in: coverageType }
+            value: { $in: checkDealer.coverageType }
           }
         }
       }
-      
+
       const dynamicOption = await userService.getOptions(optionQuery)
       const filteredOptions = dynamicOption.value
         .filter(item => !checkDealer.coverageType.includes(item))
