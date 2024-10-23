@@ -398,7 +398,6 @@ exports.addClaim = async (req, res, next) => {
       let startDateToCheck = new Date(checkContract.coverageStartDate)
       let coverageTypeDays = checkContract.adhDays
       let serviceCoverageType = checkContract.serviceCoverageType
-      let claimAmountTaken = getClaim.totalAmount
 
       let getDeductible = coverageTypeDays.filter(coverageType => coverageType.value == data.coverageType)
 
