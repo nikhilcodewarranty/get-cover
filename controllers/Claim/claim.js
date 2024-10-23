@@ -454,6 +454,7 @@ exports.addClaim = async (req, res, next) => {
     data.model = checkContract.model
     data.manufacture = checkContract.manufacture
     data.serialNumber = checkContract.serial
+    data.claimType = data.coverageType
 
     let claimResponse = await claimService.createClaim(data)
     if (!claimResponse) {
