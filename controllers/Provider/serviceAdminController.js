@@ -2017,7 +2017,7 @@ exports.getServicerClaims = async (req, res) => {
       {}
     );
 
-    const result_Array = resultFiter.map((item1) => {
+    let result_Array = resultFiter.map((item1) => {
       servicer = []
       let mergedData = []
       if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
@@ -2058,6 +2058,32 @@ exports.getServicerClaims = async (req, res) => {
       }
     })
     let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0
+    let getTheThresholdLimit = await userService.getUserById1({ roleId: process.env.super_admin, isPrimary: true })
+
+    result_Array = result_Array.map(claimObject => {
+      const { productValue, claimAmount } = claimObject.contracts;
+
+      // Calculate the threshold limit value
+      const thresholdLimitValue = (getTheThresholdLimit.threshHoldLimit.value / 100) * productValue;
+
+      // Check if claimAmount exceeds the threshold limit value
+      let overThreshold = claimAmount > thresholdLimitValue;
+      let threshHoldMessage = "Claim amount exceeds the allowed limit. This might lead to claim rejection. To proceed further with claim please contact admin."
+      if (!overThreshold) {
+        threshHoldMessage = ""
+      }
+      if (!getTheThresholdLimit.isThreshHoldLimit) {
+        overThreshold = false
+        threshHoldMessage = ""
+      }
+
+      // Return the updated object with the new key 'overThreshold'
+      return {
+        ...claimObject,
+        overThreshold,
+        threshHoldMessage
+      };
+    });
     res.send({
       code: constant.successCode,
       message: "Success",
@@ -2106,7 +2132,6 @@ exports.paidUnpaid = async (req, res) => {
 exports.paidUnpaidClaim = async (req, res) => {
   try {
     let data = req.body
-    console.log("sdfsssssssssssssssssssss", data)
     let dateQuery = {}
     if (data.noOfDays) {
       const end = moment().startOf('day')

@@ -428,7 +428,7 @@ exports.getAllClaims = async (req, res, next) => {
 
       // Check if claimAmount exceeds the threshold limit value
       let overThreshold = claimAmount > thresholdLimitValue;
-      let threshHoldMessage = "Claim amount exceeds the allowed limit"
+      let threshHoldMessage = "Claim amount exceeds the allowed limit. This might lead to claim rejection. To proceed further with claim please contact admin."
       if (!overThreshold) {
         threshHoldMessage = ""
       }
@@ -881,19 +881,51 @@ exports.getMessages = async (req, res) => {
 exports.getMaxClaimAmount = async (req, res) => {
   try {
     const query = { contractId: new mongoose.Types.ObjectId(req.params.contractId) }
+    const query1 = {
+      $and: [
+        { contractId: new mongoose.Types.ObjectId(req.params.contractId) },
+        { claimFile: "completed" }
+      ]
+    }
+    // const query1 = { contractId: new mongoose.Types.ObjectId(req.params.contractId), claimFile: "Completed" }
     let claimTotalQuery = [
-      { $match: query },
+      {
+        $match:query
+      },
+      { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
+
+    ]
+
+    let claimTotalQueryCompleted = [
+      { $match: query1 },
       { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
 
     ]
     let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
+    let claimTotalCompleted = await claimService.getClaimWithAggregate(claimTotalQueryCompleted);
     const contract = await contractService.getContractById({ _id: req.params.contractId }, { productValue: 1 })
     const claimAmount = claimTotal[0]?.amount ? claimTotal[0]?.amount : 0
+    const claimAmountCompleted = claimTotalCompleted[0]?.amount ? claimTotalCompleted[0]?.amount : 0
+    console.log(claimAmountCompleted, claimTotalCompleted[0],claimTotal[0], "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
     const product = contract ? contract.productValue : 0
+    let getTheThresholdLimit = await userService.getUserById1({ roleId: process.env.super_admin, isPrimary: true })
+    let thresholdLimitPercentage = getTheThresholdLimit.threshHoldLimit.value
+    const thresholdLimitValue = (thresholdLimitPercentage / 100) * Number(contract.productValue);
+    let remainingThreshHoldLimit = thresholdLimitValue - Number(claimAmount)
+    let remainingThreshHoldLimitPastClaim = thresholdLimitValue - Number(claimAmountCompleted)
+   
+    if (!getTheThresholdLimit.isThreshHoldLimit) {
+      remainingThreshHoldLimit = null
+      remainingThreshHoldLimitPastClaim = null
+    }
+
     res.send({
       code: constant.successCode,
       message: 'Success!',
-      result: product - claimAmount
+      result: product - claimAmount,
+      thresholdLimitValue: thresholdLimitValue,
+      remainingThreshHoldLimit: remainingThreshHoldLimit,
+      remainingThreshHoldLimitPastClaim: remainingThreshHoldLimitPastClaim
     })
   }
   catch (err) {
@@ -1249,6 +1281,55 @@ exports.updateContracts = async (req, res) => {
     res.send({
       code: updateContracts
     })
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.checkClaimThreshHold = async (req, res) => {
+  try {
+    let data = req.body
+    let getClaim = await claimService.getClaimById({ _id: req.params.claimId })
+    if (!getClaim) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid claim ID"
+      })
+      return;
+    }
+
+    let contractId = getClaim.contractId
+    let getContract = await contractService.getContractById({ _id: contractId })
+    let getTheThresholdLimit = await userService.getUserById1({ roleId: process.env.super_admin, isPrimary: true })
+    let claimAmountTaken = Number(getContract.claimAmount) + Number(data.claimAmount)
+    let productValue = getContract.productValue
+
+
+    let thresholdLimitPercentage = getTheThresholdLimit.threshHoldLimit.value
+    const thresholdLimitValue = (thresholdLimitPercentage / 100) * Number(productValue);
+    console.log(claimAmountTaken, thresholdLimitValue)
+    let overThreshold = claimAmountTaken > thresholdLimitValue;
+    console.log(claimAmountTaken, thresholdLimitValue, overThreshold, thresholdLimitPercentage)
+
+    let threshHoldMessage = "Claim amount exceeds the allowed limit. This might lead to claim rejection. To proceed further with claim please contact admin."
+    if (!overThreshold) {
+      threshHoldMessage = ""
+    }
+    if (!getTheThresholdLimit.isThreshHoldLimit) {
+      overThreshold = false
+      threshHoldMessage = ""
+    }
+
+    res.send({
+      code: constant.successCode,
+      message: threshHoldMessage,
+      overThreshold: overThreshold
+    })
+
+
   } catch (err) {
     res.send({
       code: constant.errorCode,

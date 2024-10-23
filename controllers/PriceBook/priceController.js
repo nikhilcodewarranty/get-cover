@@ -1505,7 +1505,9 @@ exports.uploadRegularPriceBook = async (req, res) => {
               const months = years * 12;             // Convert years to months
               return months;
             } else {
-              throw new Error("Invalid input format");
+              totalDataComing[c].inValid = true
+              totalDataComing[c].reason = "Invalid term"
+              console.log("term invalid ");
             }
           }
           let category = totalDataComing[c].category;
@@ -1525,6 +1527,11 @@ exports.uploadRegularPriceBook = async (req, res) => {
             totalDataComing[c].inValid = true
             totalDataComing[c].reason = "Product sku already exist"
           }
+          console.log("name check ----------------------",name)
+          if(!name){
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Product sku required"
+          }
           let checkTerms = await terms.findOne({ terms: term })
           if (!checkTerms) {
             totalDataComing[c].inValid = true
@@ -1543,11 +1550,11 @@ exports.uploadRegularPriceBook = async (req, res) => {
           if (checkCoverageType) {
             let mergedArray = coverageType.map(id => {
               // Find a match in array2 based on id
-              let match = checkCoverageType.value.find(item2 => item2.value === id);
+              let match = checkCoverageType.value.find(item2 => item2.label === id);
 
               // Return the match only if found
-              // return match ? match : { id }; // If no match, return the id object
-              return match ? { label: match.label, value: match.value } : { id }; // If no match, return the id object
+              // return match ? match :null; // If no match, return the id object
+              return match ? { label: match.label, value: match.value } : null; // If no match, return the id object
             });
             totalDataComing[c].coverageType = mergedArray
 
@@ -1555,11 +1562,30 @@ exports.uploadRegularPriceBook = async (req, res) => {
           totalDataComing[c].category = checkCategory ? checkCategory._id : ""
           totalDataComing[c].term = term
           totalDataComing[c].priceType = "Regular Pricing"
+          totalDataComing[c].frontingFee = totalDataComing[c].frontingFee ? totalDataComing[c].frontingFee : 0
+          totalDataComing[c].reinsuranceFee = totalDataComing[c].reinsuranceFee ? totalDataComing[c].reinsuranceFee : 0
+          totalDataComing[c].reserveFutureFee = totalDataComing[c].reserveFutureFee ? totalDataComing[c].reserveFutureFee : 0
+          totalDataComing[c].adminFee = totalDataComing[c].adminFee ? totalDataComing[c].adminFee : 0
+          // totalDataComing[c].inValid = totalDataComing[c].description != "" ? false : true
+          // console.log("sldfjshfljhdf",totalDataComing[c],"======",totalDataComing[c].description,"++++++++++++")
+          // totalDataComing[c].reason = totalDataComing[c].description != "" ? "" : "Description is required"
+          // totalDataComing[c].inValid = totalDataComing[c].pName != "" ? false : true
+          // totalDataComing[c].reason = totalDataComing[c].pName != "" ? "" : "Product name is required"
+          if (!totalDataComing[c].description || !totalDataComing[c].pName) {
+            totalDataComing[c].reason = "Product name and description both are required"
+            totalDataComing[c].inValid = true
+          }
 
           if (!totalDataComing[c].inValid) {
             let createCompanyPriceBook = await priceBookService.createPriceBook(totalDataComing[c])
           }
         }
+
+
+        //html code here
+
+
+
 
         res.send({
           code: constant.successCode,
@@ -1606,13 +1632,13 @@ exports.uploadRegularPriceBook = async (req, res) => {
               const months = years * 12;             // Convert years to months
               return months;
             } else {
-              throw new Error("Invalid input format");
+              totalDataComing[c].inValid = true
+              totalDataComing[c].reason = "Invalid term"
             }
           }
           let category = totalDataComing[c].category;
           let name = totalDataComing[c].name;
           let term = convertToMonths(totalDataComing[c].term);
-          console.log("term checking+++++++++++++", term)
           let coverageType = totalDataComing[c].coverageType;
           let catSearch = new RegExp(`^${category}$`, 'i');
           let priceNameSearch = new RegExp(`^${name}$`, 'i');
@@ -1626,13 +1652,17 @@ exports.uploadRegularPriceBook = async (req, res) => {
             totalDataComing[c].inValid = true
             totalDataComing[c].reason = "Product sku already exist"
           }
+          console.log("name check ----------------------",name)
+          if(!name){
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Product sku required"
+          }
           let checkTerms = await terms.findOne({ terms: term })
           if (!checkTerms) {
             totalDataComing[c].inValid = true
             totalDataComing[c].reason = "Invalid term"
           }
           coverageType = coverageType.split(',').map(type => type.trim());
-          console.log("check", coverageType)
           // coverageType = ["breakdown", "accidental", "liquid_damage"]
           let checkCoverageType = await options.findOne({ "value.label": { $all: coverageType }, "name": "coverage_type" })
 
@@ -1642,13 +1672,14 @@ exports.uploadRegularPriceBook = async (req, res) => {
           }
           totalDataComing[c].coverageType = coverageType
           if (checkCoverageType) {
+
             let mergedArray = coverageType.map(id => {
               // Find a match in array2 based on id
-              let match = checkCoverageType.value.find(item2 => item2.value === id);
+              let match = checkCoverageType.value.find(item2 => item2.label == id);
 
               // Return the match only if found
-              // return match ? match : { id }; // If no match, return the id object
-              return match ? { label: match.label, value: match.value } : { id }; // If no match, return the id object
+              // return match ? match :null; // If no match, return the id object
+              return match ? { label: match.label, value: match.value } : null; // If no match, return the id object
             });
             totalDataComing[c].coverageType = mergedArray
 
@@ -1664,6 +1695,19 @@ exports.uploadRegularPriceBook = async (req, res) => {
           totalDataComing[c].category = checkCategory ? checkCategory._id : ""
           totalDataComing[c].term = term
           totalDataComing[c].priceType = "Flat Pricing"
+          totalDataComing[c].frontingFee = totalDataComing[c].frontingFee ? totalDataComing[c].frontingFee : 0
+          totalDataComing[c].reinsuranceFee = totalDataComing[c].reinsuranceFee ? totalDataComing[c].reinsuranceFee : 0
+          totalDataComing[c].reserveFutureFee = totalDataComing[c].reserveFutureFee ? totalDataComing[c].reserveFutureFee : 0
+          totalDataComing[c].adminFee = totalDataComing[c].adminFee ? totalDataComing[c].adminFee : 0
+          // totalDataComing[c].inValid = totalDataComing[c].description != "" ? false : true
+          // console.log("sldfjshfljhdf",totalDataComing[c],"======",totalDataComing[c].description,"++++++++++++")
+          // totalDataComing[c].reason = totalDataComing[c].description != "" ? "" : "Description is required"
+          // totalDataComing[c].inValid = totalDataComing[c].pName != "" ? false : true
+          // totalDataComing[c].reason = totalDataComing[c].pName != "" ? "" : "Product name is required"
+          if (!totalDataComing[c].description || !totalDataComing[c].pName) {
+            totalDataComing[c].reason = "Product name and description both are required"
+            totalDataComing[c].inValid = true
+          }
 
           if (!totalDataComing[c].inValid) {
             let createCompanyPriceBook = await priceBookService.createPriceBook(totalDataComing[c])
@@ -1676,7 +1720,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
         })
 
       } else if (data.priceType == "Quantity Pricing") {
-        if (headers.length < 10) {
+        if (headers.length < 12) {
           res.send({
             code: constant.errorCode,
             message: "Invalid file format detected. The sheet should contain exactly three columns."
@@ -1699,7 +1743,6 @@ exports.uploadRegularPriceBook = async (req, res) => {
               });
             }
           }
-          console.log("checking the arrray++++++++++++++++", quantityPriceDetail)
           return {
             category: item[keys[0]],  // First key's value
             name: item[keys[1]],   // Second key's value
@@ -1731,7 +1774,8 @@ exports.uploadRegularPriceBook = async (req, res) => {
               const months = years * 12;             // Convert years to months
               return months;
             } else {
-              throw new Error("Invalid input format");
+              totalDataComing[c].inValid = true
+              totalDataComing[c].reason = "Invalid term"
             }
           }
 
@@ -1766,6 +1810,11 @@ exports.uploadRegularPriceBook = async (req, res) => {
             totalDataComing[c].inValid = true
             totalDataComing[c].reason = "Product sku already exist"
           }
+          console.log("name check ----------------------",name)
+          if(!name){
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Product sku required"
+          }
           let checkTerms = await terms.findOne({ terms: term })
           if (!checkTerms) {
             totalDataComing[c].inValid = true
@@ -1786,13 +1835,12 @@ exports.uploadRegularPriceBook = async (req, res) => {
               let match = checkCoverageType.value.find(item2 => item2.label === id);
 
               // Return the match only if found
-              // return match ? match : { id }; // If no match, return the id object
-              return match ? { label: match.label, value: match.value } : { id }; // If no match, return the id object
+              // return match ? match :null; // If no match, return the id object
+              return match ? { label: match.label, value: match.value } : null; // If no match, return the id object
             });
             totalDataComing[c].coverageType = mergedArray
 
           }
-          console.log("quantity item pricing ++++++++++++ start", validateQuantityPriceDetail(totalDataComing[c]))
           if (!validateQuantityPriceDetail(totalDataComing[c])) {
             totalDataComing[c].inValid = true
             totalDataComing[c].reason = "Invalid quantity price items"
@@ -1801,6 +1849,19 @@ exports.uploadRegularPriceBook = async (req, res) => {
           totalDataComing[c].category = checkCategory ? checkCategory._id : ""
           totalDataComing[c].term = term
           totalDataComing[c].priceType = "Quantity Pricing"
+          totalDataComing[c].frontingFee = totalDataComing[c].frontingFee ? totalDataComing[c].frontingFee : 0
+          totalDataComing[c].reinsuranceFee = totalDataComing[c].reinsuranceFee ? totalDataComing[c].reinsuranceFee : 0
+          totalDataComing[c].reserveFutureFee = totalDataComing[c].reserveFutureFee ? totalDataComing[c].reserveFutureFee : 0
+          totalDataComing[c].adminFee = totalDataComing[c].adminFee ? totalDataComing[c].adminFee : 0
+          // totalDataComing[c].inValid = totalDataComing[c].description != "" ? false : true
+          // console.log("sldfjshfljhdf",totalDataComing[c],"======",totalDataComing[c].description,"++++++++++++")
+          // totalDataComing[c].reason = totalDataComing[c].description != "" ? "" : "Description is required"
+          // totalDataComing[c].inValid = totalDataComing[c].pName != "" ? false : true
+          // totalDataComing[c].reason = totalDataComing[c].pName != "" ? "" : "Product name is required"
+          if (!totalDataComing[c].description || !totalDataComing[c].pName) {
+            totalDataComing[c].reason = "Product name and description both are required"
+            totalDataComing[c].inValid = true
+          }
 
           if (!totalDataComing[c].inValid) {
             let createCompanyPriceBook = await priceBookService.createPriceBook(totalDataComing[c])
@@ -1825,7 +1886,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
       message: err.message
     })
   }
-} 
+}
 
 exports.uploadCompanyPriceBook = async (req, res) => {
   try {
