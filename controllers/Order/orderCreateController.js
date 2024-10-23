@@ -2888,6 +2888,9 @@ exports.getOrderContract = async (req, res) => {
         let result1 = getContracts[0]?.data ? getContracts[0]?.data : []
         for (let e = 0; e < result1.length; e++) {
             result1[e].reason = " "
+            if (!result1[e].eligibilty) {
+                result1[e].reason = "Claims limit cross for this contract"
+              }
             if (result1[e].status != "Active") {
                 result1[e].reason = "Contract is not active"
             }
