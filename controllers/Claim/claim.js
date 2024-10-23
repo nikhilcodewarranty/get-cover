@@ -2563,19 +2563,19 @@ exports.saveBulkClaim = async (req, res) => {
 
             if (servicerId != undefined) {
               existArray.data[servicerId].push({
-                contractId: item.contractId ? item.contractId : "",
-                lossDate: item.lossDate ? item.lossDate : '',
-                diagnosis: item.diagnosis ? item.diagnosis : '',
-                status: item.status ? item.status : '',
+                "Serial#": item.contractId ? item.contractId : "",
+                "Loss Date": item.lossDate ? item.lossDate : '',
+                "Diagnosis": item.diagnosis ? item.diagnosis : '',
+                Status: item.status ? item.status : '',
               });
             }
 
           }
           return {
-            contractId: item.contractId || "",
-            lossDate: item.lossDate || '',
-            diagnosis: item.diagnosis || '',
-            status: item.status || '',
+            "Serial#": item.contractId || "",
+            "Loss Date": item.lossDate || '',
+            "Diagnosis": item.diagnosis || '',
+            Status: item.status || '',
           };
         }
         // Build bulk csv for Reseller only
@@ -2592,19 +2592,19 @@ exports.saveBulkClaim = async (req, res) => {
 
             if (servicerId != undefined) {
               existArray.data[servicerId].push({
-                contractId: item.contractId ? item.contractId : "",
-                lossDate: item.lossDate ? item.lossDate : '',
-                diagnosis: item.diagnosis ? item.diagnosis : '',
-                status: item.status ? item.status : '',
+                "Serial#": item.contractId ? item.contractId : "",
+                "Loss Date": item.lossDate ? item.lossDate : '',
+                "Diagnosis": item.diagnosis ? item.diagnosis : '',
+                Status: item.status ? item.status : '',
               });
             }
 
           }
           return {
-            contractId: item.contractId || "",
-            lossDate: item.lossDate || '',
-            diagnosis: item.diagnosis || '',
-            status: item.status || '',
+            "Serial#": item.contractId || "",
+            "Loss Date": item.lossDate || '',
+            Diagnosis: item.diagnosis || '',
+            Status: item.status || '',
           };
         }
         // Build bulk csv for Customer only
@@ -2622,19 +2622,19 @@ exports.saveBulkClaim = async (req, res) => {
 
             if (servicerId != undefined) {
               existArray.data[servicerId].push({
-                contractId: item.contractId ? item.contractId : "",
-                lossDate: item.lossDate ? item.lossDate : '',
-                diagnosis: item.diagnosis ? item.diagnosis : '',
-                status: item.status ? item.status : '',
+                "Serial#": item.contractId ? item.contractId : "",
+                "Loss Date": item.lossDate ? item.lossDate : '',
+                Diagnosis: item.diagnosis ? item.diagnosis : '',
+                Status: item.status ? item.status : '',
               });
             }
 
           }
           return {
-            contractId: item.contractId || "",
-            lossDate: item.lossDate || '',
-            diagnosis: item.diagnosis || '',
-            status: item.status || '',
+            "Serial#": item.contractId || "",
+            "Loss Date": item.lossDate || '',
+            Diagnosis: item.diagnosis || '',
+            Status: item.status || '',
           };
         } else {
           toMail = new_admin_array;
@@ -2647,19 +2647,19 @@ exports.saveBulkClaim = async (req, res) => {
 
           if (servicerId != undefined) {
             existArray.data[servicerId].push({
-              contractId: item.contractId ? item.contractId : "",
-              lossDate: item.lossDate ? item.lossDate : '',
-              diagnosis: item.diagnosis ? item.diagnosis : '',
-              status: item.status ? item.status : '',
+              "Serial#": item.contractId ? item.contractId : "",
+              "Loss Date": item.lossDate ? item.lossDate : '',
+              Diagnosis: item.diagnosis ? item.diagnosis : '',
+              Status: item.status ? item.status : '',
             });
           }
 
           return {
-            contractId: item.contractId || "",
-            servicerName: item.servicerName || "",
-            lossDate: item.lossDate || '',
-            diagnosis: item.diagnosis || '',
-            status: item.status || '',
+            "Serial#": item.contractId || "",
+            Servicer: item.servicerName || "",
+            "Loss Date": item.lossDate || '',
+            Diagnosis: item.diagnosis || '',
+            Status: item.status || '',
           };
         }
       }));
@@ -2667,38 +2667,38 @@ exports.saveBulkClaim = async (req, res) => {
 
       //get email of all servicer
 
-    const emailServicer = await userService.findUserforCustomer1([
-      {
+      const emailServicer = await userService.findUserforCustomer1([
+        {
           $match: {
-              $and: [
-                  {
-                      $or: [
-                          { metaData: { $elemMatch: { metaId: { $in: emailServicerId }, isPrimary: true } } },
-                      ]
-                  }
-              ]
+            $and: [
+              {
+                $or: [
+                  { metaData: { $elemMatch: { metaId: { $in: emailServicerId }, isPrimary: true } } },
+                ]
+              }
+            ]
           }
-      },
-      {
+        },
+        {
           $project: {
-              email: 1,
-              'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
-              'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
-              'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
-              'position': { $arrayElemAt: ["$metaData.position", 0] },
-              'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
-              'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
-              'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
-              'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
-              'status': { $arrayElemAt: ["$metaData.status", 0] },
-              resetPasswordCode: 1,
-              isResetPassword: 1,
-              approvedStatus: 1,
-              createdAt: 1,
-              updatedAt: 1
+            email: 1,
+            'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+            'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+            'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+            'position': { $arrayElemAt: ["$metaData.position", 0] },
+            'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+            'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+            'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+            'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+            'status': { $arrayElemAt: ["$metaData.status", 0] },
+            resetPasswordCode: 1,
+            isResetPassword: 1,
+            approvedStatus: 1,
+            createdAt: 1,
+            updatedAt: 1
           }
-      }
-  ]);
+        }
+      ]);
 
       // If you need to convert existArray.data to a flat array format
       if (emailServicer.length > 0) {
@@ -2712,8 +2712,6 @@ exports.saveBulkClaim = async (req, res) => {
             response: existArray.data[servicerId]
           });
         }
-
-
         //send email to servicer      
         for (const item of flatArray) {
           if (item.email != '') {
