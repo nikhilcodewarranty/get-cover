@@ -7,6 +7,7 @@ const orderService = require("../../services/Order/orderService");
 const userService = require("../../services/User/userService");
 const contractService = require("../../services/Contract/contractService");
 const servicerService = require("../../services/Provider/providerService");
+const optionService = require("../../services/User/optionsService");
 const priceBookService = require("../../services/PriceBook/priceBookService");
 const customerService = require("../../services/Customer/customerService");
 const providerService = require("../../services/Provider/providerService");
@@ -321,8 +322,16 @@ exports.uploadCommentImage = async (req, res, next) => {
 exports.addClaim = async (req, res, next) => {
   try {
     let data = req.body;
-
+    console.log("data+++++++++++++++++++++++", data)
     let checkContract = await contractService.getContractById({ _id: data.contractId })
+
+    if (new Date(data.lossDate) > new Date()) {
+      res.send({
+        code: constant.errorCode,
+        message: "Future date is not allowed"
+      })
+      return
+    }
 
     if (!checkContract) {
       res.send({
@@ -350,8 +359,9 @@ exports.addClaim = async (req, res, next) => {
         return;
       }
     }
-
-    if (new Date(checkContract.coverageStartDate) > new Date(data.lossDate)) {
+    console.log("new Date(data.lossDate)", new Date(data.lossDate))
+    let checkCoverageStartDate = new Date(checkContract.coverageStartDate).setHours(0, 0, 0, 0)
+    if (new Date(checkCoverageStartDate) > new Date(data.lossDate)) {
       res.send({
         code: constant.errorCode,
         message: 'Loss date should be in between coverage start date and present date!'
@@ -386,13 +396,42 @@ exports.addClaim = async (req, res, next) => {
 
     let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
     let remainingPrice = checkContract.productValue - claimTotal[0]?.amount
-    // if (checkContract.productValue <= claimTotal[0]?.amount) {
-    //   res.send({
-    //     code: constant.errorCode,
-    //     message: 'Claim Amount Exceeds Contract Retail Price'
-    //   });
-    //   return;
-    // }
+    if (data.coverageType != "") {
+      let checkCoverageTypeForContract = checkContract.coverageType.find(item => item.value == data.coverageType)
+      if (!checkCoverageTypeForContract) {
+        res.send({
+          code: constant.errorCode,
+          message: 'Coverage type is not available for this contract!'
+        })
+        return;
+      }
+      let startDateToCheck = new Date(checkContract.coverageStartDate)
+      let coverageTypeDays = checkContract.adhDays
+      let serviceCoverageType = checkContract.serviceCoverageType
+
+      let getDeductible = coverageTypeDays.filter(coverageType => coverageType.value == data.coverageType)
+
+      let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0].waitingDays))
+
+      let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
+      console.log("getCoverageTypeFromOption", getCoverageTypeFromOption)
+      const result = getCoverageTypeFromOption.value.filter(item => item.value === data.coverageType).map(item => item.label);
+      console.log(new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0));
+      checkCoverageTypeDate = new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0)
+      data.lossDate = new Date(data.lossDate).setHours(0, 0, 0, 0)
+      if (new Date(checkCoverageTypeDate) > new Date(data.lossDate)) {
+        // claim not allowed for that coverageType
+        res.send({
+          code: 403,
+          tittle: `Claim not eligible for ${result[0]}.`,
+          // message: `Your selected ${result[0]} is currently not eligible for the claim. You can file the claim for ${result[0]} on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}. Do you wish to proceed in rejecting this claim?`
+          message: `Your claim for ${result[0]} cannot be filed because it is not eligible based on the loss date. You will be able to file this claim starting on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}. Would you like to proceed with rejecting the claim now?`
+        })
+        return
+
+      }
+
+    }
 
     data.receiptImage = data.file
     data.servicerId = data.servicerId ? data.servicerId : null
@@ -2238,7 +2277,7 @@ exports.saveBulkClaim = async (req, res) => {
             </head>         
             <body>
                 <p>Total Entries: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</p>
-                <p>Failure Entries: ${counts.trueCount }</p>
+                <p>Failure Entries: ${counts.trueCount}</p>
                 <p>Successfull Entries: ${counts.falseCount}</p>
                 <table>
                     <thead><tr>${header}</tr></thead>

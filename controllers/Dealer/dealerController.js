@@ -1684,56 +1684,67 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
       }
 
       const dynamicOption = await userService.getOptions(optionQuery)
-      console.log("dynamis option++++++++++++++++++++++++++++", checkDealer[0].coverageType,dynamicOption)
       const filteredOptions = dynamicOption.value
         .filter(item => !checkDealer[0].coverageType.includes(item.value))
         .map(item => item.value);
 
-        console.log(filteredOptions,"=================================")
       for (let s = 0; s < totalDataComing.length; s++) {
         let currentData = totalDataComing[s]
         // if (currentData.isExist) {
+
         let checkPriceBook = await priceBookService.findByName1({
-          name: currentData.productSku, coverageType: { $elemMatch: { value: { $in: checkDealer[0].coverageType } } }, "coverageType.value": {
+          name: { '$regex': new RegExp(`^${currentData.productSku.trim()}$`, 'i') }, coverageType: { $elemMatch: { value: { $in: checkDealer[0].coverageType } } }, "coverageType.value": {
             $nin: filteredOptions
           }
         })
+        console.log("checking the dealer price book-----------", checkPriceBook)
+
         if (checkPriceBook) {
           let wholeSalePrice = Number(checkPriceBook.frontingFee) + Number(checkPriceBook.reserveFutureFee) + Number(checkPriceBook.reinsuranceFee) + Number(checkPriceBook.adminFee)
           let checkDealerSku = await dealerPriceService.getDealerPriceById({ priceBook: checkPriceBook._id, dealerId: data.dealerId })
           if (checkDealerSku) {
-            let checkDealerSku1 = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, dealerSku: currentData.dealerSku })
-            if (checkDealerSku1) {
-              if (checkDealerSku1.priceBook.toString() == checkPriceBook._id.toString()) {
-                let updateDealerPriceBook = await dealerPriceService.updateDealerPrice({ _id: checkDealerSku._id }, { retailPrice: currentData.retailPrice, dealerSku: currentData.dealerSku }, { new: true })
-                currentData.message = "Updated successfully"
+            if (!currentData.retailPrice) {
+
+              currentData.message = "Retail price is missing"
+            } else {
+              let checkDealerSku1 = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, dealerSku: currentData.dealerSku.trim() })
+              if (checkDealerSku1) {
+                if (checkDealerSku1.priceBook.toString() == checkPriceBook._id.toString()) {
+                  let updateDealerPriceBook = await dealerPriceService.updateDealerPrice({ _id: checkDealerSku._id }, { retailPrice: currentData.retailPrice, brokerFee: brokerFee, dealerSku: currentData.dealerSku.trim() }, { new: true })
+                  currentData.message = "Updated successfully"
+                } else {
+                  currentData.message = "Dealer sku already exist"
+                }
               } else {
-                currentData.message = "Dealer sku already exist"
+                let brokerFee = currentData.retailPrice - wholeSalePrice
+                let updateDealerPriceBook = await dealerPriceService.updateDealerPrice({ _id: checkDealerSku._id }, { retailPrice: currentData.retailPrice, brokerFee: brokerFee, dealerSku: currentData.dealerSku.trim() }, { new: true })
+                currentData.message = "Updated successfully"
               }
-            } else {
-              let updateDealerPriceBook = await dealerPriceService.updateDealerPrice({ _id: checkDealerSku._id }, { retailPrice: currentData.retailPrice, dealerSku: currentData.dealerSku }, { new: true })
-              currentData.message = "Updated successfully"
             }
-
           } else {
-            let checkDealerSku1 = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, dealerSku: currentData.dealerSku })
-            if (checkDealerSku1) {
-              currentData.message = "Dealer sku already exist"
+            if (!currentData.retailPrice) {
 
+              currentData.message = "Retail price is missing"
             } else {
+              let checkDealerSku1 = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, dealerSku: currentData.dealerSku.trim() })
+              if (checkDealerSku1) {
+                currentData.message = "Dealer sku already exist"
+              } else {
+                console.log("else condition---------1111111111", currentData.retailPrice, wholeSalePrice)
+                let brokerFee = currentData.retailPrice - wholeSalePrice
+                let updateAdh = checkPriceBook.coverageType.map(item1 => {
+                  // Find a match in array2
+                  let match = adhDays.find(item2 => item2.value === item1.value);
 
-              let brokerFee = wholeSalePrice - currentData.retailPrice
-              let updateAdh = checkPriceBook.coverageType.map(item1 => {
-                // Find a match in array2
-                let match = adhDays.find(item2 => item2.value === item1.value);
-
-                // Return the merged object only if there's a match
-                return match ? { ...item1, ...match } : item1;
-              });
-              let createDealerPriceBook = await dealerPriceService.createDealerPrice({ priceBook: checkPriceBook._id, dealerSku: currentData.dealerSku, retailPrice: currentData.retailPrice, status: true, dealerId: data.dealerId, brokerFee: brokerFee, wholesalePrice: wholeSalePrice, adhDays: updateAdh, noOfClaim: noOfClaim, noOfClaimPerPeriod: noOfClaimPerPeriod, isMaxClaimAmount: isMaxClaimAmount, isManufacturerWarranty: isManufacturerWarranty })
-              // code to be added here
-              currentData.message = "created successfully"
+                  // Return the merged object only if there's a match
+                  return match ? { ...item1, ...match } : item1;
+                });
+                let createDealerPriceBook = await dealerPriceService.createDealerPrice({ priceBook: checkPriceBook._id, dealerSku: currentData.dealerSku.trim(), retailPrice: currentData.retailPrice, status: true, dealerId: data.dealerId, brokerFee: brokerFee, wholesalePrice: wholeSalePrice, adhDays: updateAdh, noOfClaim: noOfClaim, noOfClaimPerPeriod: noOfClaimPerPeriod, isMaxClaimAmount: isMaxClaimAmount, isManufacturerWarranty: isManufacturerWarranty })
+                // code to be added here
+                currentData.message = "created successfully"
+              }
             }
+
           }
         } else {
           currentData.message = "Product sku does not exist"
@@ -1824,7 +1835,6 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
     })
   }
 }
-
 
 //Get File data from S3 bucket
 const getObjectFromS3 = (bucketReadUrl) => {
