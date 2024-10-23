@@ -233,7 +233,9 @@ exports.getContracts = async (req, res) => {
 
     for (let e = 0; e < result1.length; e++) {
       result1[e].reason = " "
-
+      if (!result1[e].eligibilty) {
+        result1[e].reason = "Claims limit cross for this contract"
+      }
       if (result1[e].status != "Active") {
         result1[e].reason = "Contract is not active"
       }
@@ -248,9 +250,7 @@ exports.getContracts = async (req, res) => {
         result1[e].reason = "Contract will be eligible on " + " " + formattedDate
       }
 
-      if(!result1[e].eligibilty){
-        result1[e].reason = "Claims limit cross for this contract"
-      }
+
 
       let claimQuery = [
         {
@@ -698,8 +698,8 @@ exports.updateContract = async (req, res) => {
         coverageEndDate1: getOrder.productsArray[0].coverageEndDate
       }
     }
-    console.log("contractObject==============",contractObject)
-    let updateMany = await contractService.updateManyContract({orderId:getOrder._id},contractObject,{new:true})
+    console.log("contractObject==============", contractObject)
+    let updateMany = await contractService.updateManyContract({ orderId: getOrder._id }, contractObject, { new: true })
     res.send({
       updateMany
     })
