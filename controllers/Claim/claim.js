@@ -350,8 +350,8 @@ exports.addClaim = async (req, res, next) => {
         return;
       }
     }
-
-    if (new Date(checkContract.coverageStartDate) > new Date(data.lossDate)) {
+    console.log("new Date(data.lossDate)", new Date(data.lossDate))
+    if (new Date(checkContract.coverageStartDate) >= new Date(data.lossDate)) {
       res.send({
         code: constant.errorCode,
         message: 'Loss date should be in between coverage start date and present date!'
@@ -409,8 +409,8 @@ exports.addClaim = async (req, res, next) => {
       const result = getCoverageTypeFromOption.value.filter(item => item.value === data.coverageType).map(item => item.label);
       console.log(new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0));
       checkCoverageTypeDate = new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0)
-      getClaim.lossDate = new Date(getClaim.lossDate).setHours(0, 0, 0, 0)
-      if (new Date(checkCoverageTypeDate) > new Date(getClaim.lossDate)) {
+      data.lossDate = new Date(data.lossDate).setHours(0, 0, 0, 0)
+      if (new Date(checkCoverageTypeDate) > new Date(data.lossDate)) {
         // claim not allowed for that coverageType
         res.send({
           code: 403,
