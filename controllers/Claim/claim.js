@@ -321,7 +321,7 @@ exports.uploadCommentImage = async (req, res, next) => {
 exports.addClaim = async (req, res, next) => {
   try {
     let data = req.body;
-
+    console.log("data+++++++++++++++++++++++",data)
     let checkContract = await contractService.getContractById({ _id: data.contractId })
 
     if (!checkContract) {
