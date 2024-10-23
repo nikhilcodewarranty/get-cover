@@ -248,6 +248,10 @@ exports.getContracts = async (req, res) => {
         result1[e].reason = "Contract will be eligible on " + " " + formattedDate
       }
 
+      if(!result1[e].eligibilty){
+        result1[e].reason = "Claims limit cross for this contract"
+      }
+
       let claimQuery = [
         {
           $match: { contractId: new mongoose.Types.ObjectId(result1[e]._id) }
