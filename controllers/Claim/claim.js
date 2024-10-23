@@ -1969,7 +1969,7 @@ exports.saveBulkClaim = async (req, res) => {
         let resellerData = await userService.getUserById1({ metaId: userId, isPrimary: true }, {});
         // Get dealer info
         let dealerData = await userService.getUserById1({ metaId: dealer._id, isPrimary: true }, {});
-        new_admin_array.push(dealerData.email);
+        new_admin_array.push(dealerData?.email);
         IDs.push(req.teammateId);
         IDs.push(dealerData._id);
       }
@@ -1981,8 +1981,8 @@ exports.saveBulkClaim = async (req, res) => {
           // Get Reseller by id
           const reseller = await resellerService.getReseller({ _id: customer.resellerId }, {});
           var resellerData = await userService.getUserById1({ metaId: reseller._id, isPrimary: true }, {});
-          new_admin_array.push(resellerData.email);
-          IDs.push(resellerData._id);
+          new_admin_array.push(resellerData?.email);
+          IDs.push(resellerData?._id);
         }
         // Get dealer by customer
         const dealer = await dealerService.getDealerById(customer.dealerId, {});
@@ -2020,19 +2020,19 @@ exports.saveBulkClaim = async (req, res) => {
 
             if (servicerId != undefined) {
               existArray.data[servicerId].push({
-                contractId: item.contractId ? item.contractId : "",
-                lossDate: item.lossDate ? item.lossDate : '',
-                diagnosis: item.diagnosis ? item.diagnosis : '',
-                status: item.status ? item.status : '',
+                "Serial#": item.contractId ? item.contractId : "",
+                "Loss Date": item.lossDate ? item.lossDate : '',
+                Diagnosis: item.diagnosis ? item.diagnosis : '',
+                Status: item.status ? item.status : '',
               });
             }
 
           }
           return {
-            contractId: item.contractId || "",
-            lossDate: item.lossDate || '',
-            diagnosis: item.diagnosis || '',
-            status: item.status || '',
+            "Serial#": item.contractId ? item.contractId : "",
+            "Loss Date": item.lossDate ? item.lossDate : '',
+            Diagnosis: item.diagnosis ? item.diagnosis : '',
+            Status: item.status ? item.status : '',
           };
         }
         // Build bulk csv for Reseller only
@@ -2049,19 +2049,19 @@ exports.saveBulkClaim = async (req, res) => {
 
             if (servicerId != undefined) {
               existArray.data[servicerId].push({
-                contractId: item.contractId ? item.contractId : "",
-                lossDate: item.lossDate ? item.lossDate : '',
-                diagnosis: item.diagnosis ? item.diagnosis : '',
-                status: item.status ? item.status : '',
+                "Serial#": item.contractId ? item.contractId : "",
+                "Loss Date": item.lossDate ? item.lossDate : '',
+                Diagnosis: item.diagnosis ? item.diagnosis : '',
+                Status: item.status ? item.status : '',
               });
             }
 
           }
           return {
-            contractId: item.contractId || "",
-            lossDate: item.lossDate || '',
-            diagnosis: item.diagnosis || '',
-            status: item.status || '',
+            "Serial#": item.contractId ? item.contractId : "",
+            "Loss Date": item.lossDate ? item.lossDate : '',
+            Diagnosis: item.diagnosis ? item.diagnosis : '',
+            Status: item.status ? item.status : '',
           };
         }
         // Build bulk csv for Customer only
@@ -2079,19 +2079,19 @@ exports.saveBulkClaim = async (req, res) => {
 
             if (servicerId != undefined) {
               existArray.data[servicerId].push({
-                contractId: item.contractId ? item.contractId : "",
-                lossDate: item.lossDate ? item.lossDate : '',
-                diagnosis: item.diagnosis ? item.diagnosis : '',
-                status: item.status ? item.status : '',
+                "Serial#": item.contractId ? item.contractId : "",
+                "Loss Date": item.lossDate ? item.lossDate : '',
+                Diagnosis: item.diagnosis ? item.diagnosis : '',
+                Status: item.status ? item.status : '',
               });
             }
 
           }
           return {
-            contractId: item.contractId || "",
-            lossDate: item.lossDate || '',
-            diagnosis: item.diagnosis || '',
-            status: item.status || '',
+            "Serial#": item.contractId ? item.contractId : "",
+            "Loss Date": item.lossDate ? item.lossDate : '',
+            Diagnosis: item.diagnosis ? item.diagnosis : '',
+            Status: item.status ? item.status : '',
           };
         } else {
           toMail = new_admin_array;
@@ -2104,19 +2104,19 @@ exports.saveBulkClaim = async (req, res) => {
 
           if (servicerId != undefined) {
             existArray.data[servicerId].push({
-              contractId: item.contractId ? item.contractId : "",
-              lossDate: item.lossDate ? item.lossDate : '',
-              diagnosis: item.diagnosis ? item.diagnosis : '',
-              status: item.status ? item.status : '',
+              "Serial#": item.contractId ? item.contractId : "",
+              "Loss Date": item.lossDate ? item.lossDate : '',
+              Diagnosis: item.diagnosis ? item.diagnosis : '',
+              Status: item.status ? item.status : '',
             });
           }
 
           return {
-            contractId: item.contractId || "",
-            servicerName: item.servicerName || "",
-            lossDate: item.lossDate || '',
-            diagnosis: item.diagnosis || '',
-            status: item.status || '',
+            "Serial#": item.contractId ? item.contractId : "",
+            Servicer: item.servicerName || "",
+            "Loss Date": item.lossDate ? item.lossDate : '',
+            Diagnosis: item.diagnosis ? item.diagnosis : '',
+            Status: item.status ? item.status : '',
           };
         }
       }));
@@ -2187,8 +2187,6 @@ exports.saveBulkClaim = async (req, res) => {
 
       const htmlTableString = convertArrayToHTMLTable(csvArray);
       //send Email to admin
-      console.log("toMail---------------------------", toMail)
-      console.log("ccMail---------------------------", ccMail)
       let mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
 
       if (saveBulkClaim.length > 0) {
