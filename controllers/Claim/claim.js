@@ -351,7 +351,7 @@ exports.addClaim = async (req, res, next) => {
       }
     }
     console.log("new Date(data.lossDate)", new Date(data.lossDate))
-    if (new Date(checkContract.coverageStartDate) >= new Date(data.lossDate)) {
+    if (new Date(checkContract.coverageStartDate) > new Date(data.lossDate)) {
       res.send({
         code: constant.errorCode,
         message: 'Loss date should be in between coverage start date and present date!'
