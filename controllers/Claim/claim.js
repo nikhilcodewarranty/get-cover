@@ -2045,8 +2045,6 @@ exports.saveBulkClaim = async (req, res) => {
         return acc;
       }, { trueCount: 0, falseCount: 0 });
 
-      console.log(counts);
-
       const csvArray = await Promise.all(totalDataComing.map(async (item, i) => {
         // Build bulk csv for dealer only
         let servicerId = item.servicerData?._id
@@ -2074,7 +2072,6 @@ exports.saveBulkClaim = async (req, res) => {
                 "Contract#/Serial#": item.contractId ? item.contractId : "",
                 "Loss Date": item.lossDate ? item.lossDate : '',
                 Diagnosis: item.diagnosis ? item.diagnosis : '',
-                Status: item.status ? item.status : '',
               });
             }
 
@@ -2104,7 +2101,6 @@ exports.saveBulkClaim = async (req, res) => {
                 "Contract#/Serial#": item.contractId ? item.contractId : "",
                 "Loss Date": item.lossDate ? item.lossDate : '',
                 Diagnosis: item.diagnosis ? item.diagnosis : '',
-                Status: item.status ? item.status : '',
               });
             }
 
@@ -2135,7 +2131,6 @@ exports.saveBulkClaim = async (req, res) => {
                 "Contract#/Serial#": item.contractId ? item.contractId : "",
                 "Loss Date": item.lossDate ? item.lossDate : '',
                 Diagnosis: item.diagnosis ? item.diagnosis : '',
-                Status: item.status ? item.status : '',
               });
             }
 
@@ -2161,7 +2156,6 @@ exports.saveBulkClaim = async (req, res) => {
               "Contract#/Serial#": item.contractId ? item.contractId : "",
               "Loss Date": item.lossDate ? item.lossDate : '',
               Diagnosis: item.diagnosis ? item.diagnosis : '',
-              Status: item.status ? item.status : '',
             });
           }
 
@@ -2191,8 +2185,6 @@ exports.saveBulkClaim = async (req, res) => {
             response: existArray.data[servicerId]
           });  
         }
-
-
         //send email to servicer      
         for (const item of flatArray) {
           if (item.email != '') {
@@ -2236,7 +2228,6 @@ exports.saveBulkClaim = async (req, res) => {
                 </style>
             </head>         
             <body>
-                <p>Success Entries: ${counts.falseCount}</p> <!-- Correct variable usage here -->
                 <table>
                     <thead><tr>${header}</tr></thead>
                     <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
