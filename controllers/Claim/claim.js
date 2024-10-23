@@ -2150,7 +2150,7 @@ exports.saveBulkClaim = async (req, res) => {
           flatArray.push({
             email: email,
             response: existArray.data[servicerId]
-          });
+          });  
         }
 
 
