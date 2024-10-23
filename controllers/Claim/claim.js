@@ -2169,12 +2169,11 @@ exports.saveBulkClaim = async (req, res) => {
         var htmlContent = '';
         if (array.length > 0) {
           const header = Object.keys(array[0]).filter(key => key !== 'exit').map(key => `<th>${key}</th>`).join('');
-
           const rows = array.map(obj => {
             const values = Object.entries(obj)
               .filter(([key]) => key !== 'exit')  // Exclude 'exit' key
               .map(([, value]) => `<td>${value}</td>`);
-              
+
             values[2] = `${values[2]}`; // Keep this line if you have specific logic for this index
             return values.join('');
           });
@@ -2214,7 +2213,7 @@ exports.saveBulkClaim = async (req, res) => {
             const values = Object.entries(obj)
               .filter(([key]) => key !== 'exit')  // Exclude 'exit' key
               .map(([, value]) => `<td>${value}</td>`);
-              
+
             values[2] = `${values[2]}`; // Keep this line if you have specific logic for this index
             return values.join('');
           });
@@ -2238,7 +2237,9 @@ exports.saveBulkClaim = async (req, res) => {
                 </style>
             </head>         
             <body>
-                <p>Failure  Entries: ${counts.trueCount}</p> <!-- Correct variable usage here -->
+                <p>Total Entries: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</p>
+                <p>Failure Entries: ${counts.trueCount }</p>
+                <p>Successfull Entries: ${counts.falseCount}</p>
                 <table>
                     <thead><tr>${header}</tr></thead>
                     <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
@@ -2247,14 +2248,14 @@ exports.saveBulkClaim = async (req, res) => {
           </html>`;
         }
 
-        return htmlContent; 
+        return htmlContent;
 
       }
 
       //Get Failure Claims 
-      const successEntries  = csvArray.filter(entry => entry.exit === false);
-      const failureEntries  = csvArray.filter(entry => entry.exit === true);
-      const htmlTableString = convertArrayToHTMLTable(successEntries, failureEntries);
+      const successEntries = csvArray.filter(entry => entry.exit === false);
+      const failureEntries = csvArray.filter(entry => entry.exit === true);
+      const htmlTableString = convertArrayToHTMLTable([], failureEntries);
       //send Email to admin
       let mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
 
