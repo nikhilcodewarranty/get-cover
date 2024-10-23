@@ -1342,15 +1342,15 @@ exports.editClaimStatus = async (req, res) => {
         console.log("check the unlimited---------------------------------", checkThePeriod.value)
         if (checkThePeriod.value != -1) {
           if (checkThePeriod.period == "Monthly") {
-            let eligibility = checkNoOfClaims.monthlyCount >= checkThePeriod.value ? false : true
-            console.log("monthly check --------------------------------", checkNoOfClaims.monthlyCount, checkThePeriod.value, eligibility)
+            let eligibility = checkNoOfClaims[0].monthlyCount >= checkThePeriod.value ? false : true
+            console.log("monthly check --------------------------------", checkNoOfClaims[0].monthlyCount, checkThePeriod.value, eligibility)
             if (eligibility) {
               eligibility = noOfTotalClaims >= checkContract.noOfClaimPerPeriod ? false : true
             }
             const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: eligibility }, { new: true })
           } else {
-            let eligibility = checkNoOfClaims.yearlyCount >= checkThePeriod.value ? false : true
-            console.log("yearly check --------------------------------", checkNoOfClaims.yearlyCount, checkThePeriod.value, eligibility)
+            let eligibility = checkNoOfClaims[0].yearlyCount >= checkThePeriod.value ? false : true
+            console.log("yearly check --------------------------------", checkNoOfClaims[0].yearlyCount, checkThePeriod.value, eligibility)
 
             if (eligibility) {
               eligibility = noOfTotalClaims >= checkContract.noOfClaimPerPeriod ? false : true
