@@ -1693,7 +1693,7 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
       for (let s = 0; s < totalDataComing.length; s++) {
         let currentData = totalDataComing[s]
         // if (currentData.isExist) {
-          console.log("checking the dealer price book-----------", currentData.productSku,checkDealer[0].coverageType,filteredOptions)
+        console.log("checking the dealer price book-----------", currentData.productSku, checkDealer[0].coverageType, filteredOptions)
 
         let checkPriceBook = await priceBookService.findByName1({
           name: { '$regex': new RegExp(`^${currentData.productSku.trim()}$`, 'i') }, coverageType: { $elemMatch: { value: { $in: checkDealer[0].coverageType } } }, "coverageType.value": {
@@ -1719,24 +1719,27 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
             }
 
           } else {
-            let checkDealerSku1 = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, dealerSku: currentData.dealerSku.trim() })
-            if (checkDealerSku1) {
-              currentData.message = "Dealer sku already exist"
-
+            if (!currentData.retailPrice || currentData.retailPrice == "") {
+              currentData.message = "Retail price is missing"
             } else {
+              let checkDealerSku1 = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, dealerSku: currentData.dealerSku.trim() })
+              if (checkDealerSku1) {
+                currentData.message = "Dealer sku already exist"
+              } else {
+                let brokerFee = wholeSalePrice - currentData.retailPrice
+                let updateAdh = checkPriceBook.coverageType.map(item1 => {
+                  // Find a match in array2
+                  let match = adhDays.find(item2 => item2.value === item1.value);
 
-              let brokerFee = wholeSalePrice - currentData.retailPrice
-              let updateAdh = checkPriceBook.coverageType.map(item1 => {
-                // Find a match in array2
-                let match = adhDays.find(item2 => item2.value === item1.value);
-
-                // Return the merged object only if there's a match
-                return match ? { ...item1, ...match } : item1;
-              });
-              let createDealerPriceBook = await dealerPriceService.createDealerPrice({ priceBook: checkPriceBook._id, dealerSku: currentData.dealerSku.trim(), retailPrice: currentData.retailPrice, status: true, dealerId: data.dealerId, brokerFee: brokerFee, wholesalePrice: wholeSalePrice, adhDays: updateAdh, noOfClaim: noOfClaim, noOfClaimPerPeriod: noOfClaimPerPeriod, isMaxClaimAmount: isMaxClaimAmount, isManufacturerWarranty: isManufacturerWarranty })
-              // code to be added here
-              currentData.message = "created successfully"
+                  // Return the merged object only if there's a match
+                  return match ? { ...item1, ...match } : item1;
+                });
+                let createDealerPriceBook = await dealerPriceService.createDealerPrice({ priceBook: checkPriceBook._id, dealerSku: currentData.dealerSku.trim(), retailPrice: currentData.retailPrice, status: true, dealerId: data.dealerId, brokerFee: brokerFee, wholesalePrice: wholeSalePrice, adhDays: updateAdh, noOfClaim: noOfClaim, noOfClaimPerPeriod: noOfClaimPerPeriod, isMaxClaimAmount: isMaxClaimAmount, isManufacturerWarranty: isManufacturerWarranty })
+                // code to be added here
+                currentData.message = "created successfully"
+              }
             }
+
           }
         } else {
           currentData.message = "Product sku does not exist"
@@ -1827,7 +1830,6 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
     })
   }
 }
-
 
 //Get File data from S3 bucket
 const getObjectFromS3 = (bucketReadUrl) => {
