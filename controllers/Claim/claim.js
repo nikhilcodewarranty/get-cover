@@ -2245,6 +2245,8 @@ exports.saveBulkClaim = async (req, res) => {
       //Get Failure Claims
       const successEntries = csvArray.map(successItem => successItem.exit)
       const failureEntries = csvArray.map(successItem => !successItem.exit)
+      console.log("csvArray=======================",csvArray)
+
       console.log("successEntries=======================",successEntries)
       console.log("failureEntries=======================",failureEntries)
       const htmlTableString = convertArrayToHTMLTable(successEntries, failureEntries);
