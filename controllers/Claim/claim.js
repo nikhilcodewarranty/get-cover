@@ -2238,7 +2238,7 @@ exports.saveBulkClaim = async (req, res) => {
                 </style>
             </head>         
             <body>
-                <p>Success Entries: ${count.trueCount}</p> <!-- Correct variable usage here -->
+                <p>Failure  Entries: ${count.trueCount}</p> <!-- Correct variable usage here -->
                 <table>
                     <thead><tr>${header}</tr></thead>
                     <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
