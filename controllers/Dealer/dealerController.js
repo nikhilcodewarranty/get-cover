@@ -1686,8 +1686,10 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
       const dynamicOption = await userService.getOptions(optionQuery)
       console.log("dynamis option++++++++++++++++++++++++++++", checkDealer[0].coverageType,dynamicOption)
       const filteredOptions = dynamicOption.value
-        .filter(item => !checkDealer[0].coverageType.includes(item))
-        .map(item => item);
+        .filter(item => !checkDealer[0].coverageType.includes(item.value))
+        .map(item => item.value);
+
+        console.log(filteredOptions,"=================================")
       for (let s = 0; s < totalDataComing.length; s++) {
         let currentData = totalDataComing[s]
         // if (currentData.isExist) {
