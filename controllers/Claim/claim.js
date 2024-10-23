@@ -2166,15 +2166,18 @@ exports.saveBulkClaim = async (req, res) => {
 
       //Convert Array to HTML table
       function convertArrayToHTMLTable(array, array1) {
-        var htmlContent;
+        var htmlContent = '';
         if (array.length > 0) {
-          const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');
+          const header = Object.keys(array[0]).filter(key => key !== 'exit').map(key => `<th>${key}</th>`).join('');
+
           const rows = array.map(obj => {
-            const values = Object.values(obj).map(value => `<td>${value}</td>`);
-            values[2] = `${values[2]}`;
+            const values = Object.entries(obj)
+              .filter(([key]) => key !== 'exit')  // Exclude 'exit' key
+              .map(([, value]) => `<td>${value}</td>`);
+              
+            values[2] = `${values[2]}`; // Keep this line if you have specific logic for this index
             return values.join('');
           });
-
 
            htmlContent = `<html>
               <head>
@@ -2245,15 +2248,8 @@ exports.saveBulkClaim = async (req, res) => {
       //Get Failure Claims
       const successEntries  = csvArray.filter(entry => entry.exit === false);
       const failureEntries  = csvArray.filter(entry => entry.exit === true);
-      console.log("csvArray=======================",csvArray)
-
-      console.log("successEntries=======================",successEntries)
-      console.log("failureEntries=======================",failureEntries)
       const htmlTableString = convertArrayToHTMLTable(successEntries, failureEntries);
       //send Email to admin
-      console.log("htmlTableString=======================",htmlTableString)
-      console.log("toMail=======================",toMail)
-      console.log("ccMail=======================",ccMail)
       let mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
 
       if (saveBulkClaim.length > 0) {
