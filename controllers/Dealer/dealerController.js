@@ -1700,26 +1700,36 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
             $nin: filteredOptions
           }
         })
-        console.log("checking the dealer price book-----------", checkPriceBook?.name)
+        console.log("checking the dealer price book-----------", currentData.retailPrice)
+
         if (checkPriceBook) {
           let wholeSalePrice = Number(checkPriceBook.frontingFee) + Number(checkPriceBook.reserveFutureFee) + Number(checkPriceBook.reinsuranceFee) + Number(checkPriceBook.adminFee)
           let checkDealerSku = await dealerPriceService.getDealerPriceById({ priceBook: checkPriceBook._id, dealerId: data.dealerId })
           if (checkDealerSku) {
-            let checkDealerSku1 = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, dealerSku: currentData.dealerSku.trim() })
-            if (checkDealerSku1) {
-              if (checkDealerSku1.priceBook.toString() == checkPriceBook._id.toString()) {
+            console.log("checking the dealer price book----11111-------", currentData.retailPrice)
+            if (!currentData.retailPrice) {
+              console.log("checking the dealer price book------22222-----", currentData.retailPrice)
+
+              currentData.message = "Retail price is missing"
+            } else {
+              let checkDealerSku1 = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, dealerSku: currentData.dealerSku.trim() })
+              if (checkDealerSku1) {
+                if (checkDealerSku1.priceBook.toString() == checkPriceBook._id.toString()) {
+                  let updateDealerPriceBook = await dealerPriceService.updateDealerPrice({ _id: checkDealerSku._id }, { retailPrice: currentData.retailPrice, dealerSku: currentData.dealerSku.trim() }, { new: true })
+                  currentData.message = "Updated successfully"
+                } else {
+                  currentData.message = "Dealer sku already exist"
+                }
+              } else {
                 let updateDealerPriceBook = await dealerPriceService.updateDealerPrice({ _id: checkDealerSku._id }, { retailPrice: currentData.retailPrice, dealerSku: currentData.dealerSku.trim() }, { new: true })
                 currentData.message = "Updated successfully"
-              } else {
-                currentData.message = "Dealer sku already exist"
               }
-            } else {
-              let updateDealerPriceBook = await dealerPriceService.updateDealerPrice({ _id: checkDealerSku._id }, { retailPrice: currentData.retailPrice, dealerSku: currentData.dealerSku.trim() }, { new: true })
-              currentData.message = "Updated successfully"
             }
-
           } else {
-            if (!currentData.retailPrice || currentData.retailPrice == "") {
+            console.log("checking the dealer price book----11111-------", currentData.retailPrice)
+            if (!currentData.retailPrice) {
+              console.log("checking the dealer price book-----------", currentData.retailPrice)
+
               currentData.message = "Retail price is missing"
             } else {
               let checkDealerSku1 = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, dealerSku: currentData.dealerSku.trim() })
