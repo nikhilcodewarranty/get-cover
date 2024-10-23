@@ -325,7 +325,7 @@ exports.addClaim = async (req, res, next) => {
     console.log("data+++++++++++++++++++++++", data)
     let checkContract = await contractService.getContractById({ _id: data.contractId })
 
-    if (data.lossDate > new Date()) {
+    if (new Date(data.lossDate) > new Date()) {
       res.send({
         code: constant.errorCode,
         message: "Future date is not allowed"
