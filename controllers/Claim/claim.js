@@ -1298,13 +1298,7 @@ exports.editClaimStatus = async (req, res) => {
       }
     ]
 
-    let checkNoOfClaims = await claimService.getClaimWithAggregate(getNoOfClaimQuery)
-    if (checkNoOfClaims.length == 0) {
-      checkNoOfClaims = {
-        "monthlyCount": 0,
-        "yearlyCount": 0
-      }
-    }
+
 
 
     //Eligibility true when claim is completed and rejected
@@ -1334,6 +1328,14 @@ exports.editClaimStatus = async (req, res) => {
 
 
       if (forCheckOnly) {
+        let checkNoOfClaims = await claimService.getClaimWithAggregate(getNoOfClaimQuery)
+        console.log("checking the data +++++++++++++++++++", checkNoOfClaims)
+        if (checkNoOfClaims.length == 0) {
+          checkNoOfClaims = {
+            "monthlyCount": 0,
+            "yearlyCount": 0
+          }
+        }
         let checkThePeriod = checkContract.noOfClaim
         let getTotalClaim = await claimService.getClaims({ contractId: checkClaim.contractId, claimFile: "completed" })
         let noOfTotalClaims = getTotalClaim.length
@@ -1341,14 +1343,14 @@ exports.editClaimStatus = async (req, res) => {
         if (checkThePeriod.value != -1) {
           if (checkThePeriod.period == "Monthly") {
             let eligibility = checkNoOfClaims.monthlyCount >= checkThePeriod.value ? false : true
-            console.log("monthly check --------------------------------", checkNoOfClaims.monthlyCount, checkThePeriod.value,eligibility)
+            console.log("monthly check --------------------------------", checkNoOfClaims.monthlyCount, checkThePeriod.value, eligibility)
             if (eligibility) {
               eligibility = noOfTotalClaims >= checkContract.noOfClaimPerPeriod ? false : true
             }
             const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: eligibility }, { new: true })
           } else {
             let eligibility = checkNoOfClaims.yearlyCount >= checkThePeriod.value ? false : true
-            console.log("yearly check --------------------------------", checkNoOfClaims.yearlyCount, checkThePeriod.value,eligibility)
+            console.log("yearly check --------------------------------", checkNoOfClaims.yearlyCount, checkThePeriod.value, eligibility)
 
             if (eligibility) {
               eligibility = noOfTotalClaims >= checkContract.noOfClaimPerPeriod ? false : true

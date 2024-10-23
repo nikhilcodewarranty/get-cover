@@ -684,3 +684,26 @@ exports.cronJobEligible = async (req, res) => {
   }
 };
 
+// have to do
+exports.updateContract = async (req, res) => {
+  try {
+    let getOrder = await orderService.getOrder({ _id: "66fa6ffe1d16062766365aae" })
+    let contractObject = {
+      $set: {
+        coverageStartDate1: getOrder.productsArray[0].coverageStartDate,
+        coverageEndDate1: getOrder.productsArray[0].coverageEndDate
+      }
+    }
+    console.log("contractObject==============",contractObject)
+    let updateMany = await contractService.updateManyContract({orderId:getOrder._id},contractObject,{new:true})
+    res.send({
+      updateMany
+    })
+  } catch (err) {
+    res.send({
+      code: 401,
+      message: err.statck
+    })
+  }
+}
+
