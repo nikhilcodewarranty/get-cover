@@ -2207,10 +2207,14 @@ exports.saveBulkClaim = async (req, res) => {
         }
 
         if (array1.length > 0) {
-          const header = Object.keys(array1[0]).map(key => `<th>${key}</th>`).join('');
+          const header = Object.keys(array1[0]).filter(key => key !== 'exit').map(key => `<th>${key}</th>`).join('');
+
           const rows = array1.map(obj => {
-            const values = Object.values(obj).map(value => `<td>${value}</td>`);
-            values[2] = `${values[2]}`;
+            const values = Object.entries(obj)
+              .filter(([key]) => key !== 'exit')  // Exclude 'exit' key
+              .map(([, value]) => `<td>${value}</td>`);
+              
+            values[2] = `${values[2]}`; // Keep this line if you have specific logic for this index
             return values.join('');
           });
 
