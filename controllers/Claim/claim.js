@@ -2166,6 +2166,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       //Convert Array to HTML table
       function convertArrayToHTMLTable(array, array1) {
+        var htmlContent;
         if (array.length > 0) {
           const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');
           const rows = array.map(obj => {
@@ -2175,7 +2176,7 @@ exports.saveBulkClaim = async (req, res) => {
           });
 
 
-          var htmlContent = `<html>
+           htmlContent = `<html>
               <head>
                   <style>
                       table {
@@ -2246,6 +2247,9 @@ exports.saveBulkClaim = async (req, res) => {
       const failureEntries = csvArray.map(successItem => !successItem.exit)
       const htmlTableString = convertArrayToHTMLTable(successEntries, failureEntries);
       //send Email to admin
+      console.log("htmlTableString=======================",htmlTableString)
+      console.log("toMail=======================",toMail)
+      console.log("ccMail=======================",ccMail)
       let mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
 
       if (saveBulkClaim.length > 0) {
