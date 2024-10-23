@@ -2245,11 +2245,11 @@ exports.saveBulkClaim = async (req, res) => {
           </html>`;
         }
 
-        return htmlContent;
+        return htmlContent; 
 
       }
 
-      //Get Failure Claims
+      //Get Failure Claims 
       const successEntries  = csvArray.filter(entry => entry.exit === false);
       const failureEntries  = csvArray.filter(entry => entry.exit === true);
       const htmlTableString = convertArrayToHTMLTable(successEntries, failureEntries);
