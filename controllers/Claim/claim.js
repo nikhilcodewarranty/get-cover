@@ -2179,7 +2179,7 @@ exports.saveBulkClaim = async (req, res) => {
             return values.join('');
           });
 
-          htmlContent = `
+          htmlContent += `
           <html>
             <head>
                 <style>
@@ -2219,7 +2219,7 @@ exports.saveBulkClaim = async (req, res) => {
             return values.join('');
           });
 
-          htmlContent = `
+          htmlContent += `
           <html>
             <head>
                 <style>
