@@ -1682,6 +1682,7 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
           }
         }
       }
+      
       const dynamicOption = await userService.getOptions(optionQuery)
       const filteredOptions = dynamicOption.value
         .filter(item => !checkDealer.coverageType.includes(item))
