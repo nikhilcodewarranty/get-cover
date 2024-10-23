@@ -1522,7 +1522,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
             totalDataComing[c].inValid = true
             totalDataComing[c].reason = "Invalid category"
           }
-          let checkPriceBook = await priceBookService.findByName1({ name: name })
+          let checkPriceBook = await priceBookService.findByName1({ name: { '$regex': new RegExp(`^${name}$`, 'i') } })
           if (checkPriceBook) {
             totalDataComing[c].inValid = true
             totalDataComing[c].reason = "Product sku already exist"

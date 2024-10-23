@@ -1684,39 +1684,42 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
       }
 
       const dynamicOption = await userService.getOptions(optionQuery)
-      console.log("dynamis option++++++++++++++++++++++++++++", checkDealer[0].coverageType,dynamicOption)
+      console.log("dynamis option++++++++++++++++++++++++++++", checkDealer[0].coverageType, dynamicOption)
       const filteredOptions = dynamicOption.value
         .filter(item => !checkDealer[0].coverageType.includes(item.value))
         .map(item => item.value);
 
-        console.log(filteredOptions,"=================================")
+      console.log(filteredOptions, "=================================")
       for (let s = 0; s < totalDataComing.length; s++) {
         let currentData = totalDataComing[s]
         // if (currentData.isExist) {
+          console.log("checking the dealer price book-----------", currentData.productSku,checkDealer[0].coverageType,filteredOptions)
+
         let checkPriceBook = await priceBookService.findByName1({
-          name: currentData.productSku, coverageType: { $elemMatch: { value: { $in: checkDealer[0].coverageType } } }, "coverageType.value": {
+          name: { '$regex': new RegExp(`^${currentData.productSku.trim()}$`, 'i') }, coverageType: { $elemMatch: { value: { $in: checkDealer[0].coverageType } } }, "coverageType.value": {
             $nin: filteredOptions
           }
         })
+        console.log("checking the dealer price book-----------", checkPriceBook?.name)
         if (checkPriceBook) {
           let wholeSalePrice = Number(checkPriceBook.frontingFee) + Number(checkPriceBook.reserveFutureFee) + Number(checkPriceBook.reinsuranceFee) + Number(checkPriceBook.adminFee)
           let checkDealerSku = await dealerPriceService.getDealerPriceById({ priceBook: checkPriceBook._id, dealerId: data.dealerId })
           if (checkDealerSku) {
-            let checkDealerSku1 = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, dealerSku: currentData.dealerSku })
+            let checkDealerSku1 = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, dealerSku: currentData.dealerSku.trim() })
             if (checkDealerSku1) {
               if (checkDealerSku1.priceBook.toString() == checkPriceBook._id.toString()) {
-                let updateDealerPriceBook = await dealerPriceService.updateDealerPrice({ _id: checkDealerSku._id }, { retailPrice: currentData.retailPrice, dealerSku: currentData.dealerSku }, { new: true })
+                let updateDealerPriceBook = await dealerPriceService.updateDealerPrice({ _id: checkDealerSku._id }, { retailPrice: currentData.retailPrice, dealerSku: currentData.dealerSku.trim() }, { new: true })
                 currentData.message = "Updated successfully"
               } else {
                 currentData.message = "Dealer sku already exist"
               }
             } else {
-              let updateDealerPriceBook = await dealerPriceService.updateDealerPrice({ _id: checkDealerSku._id }, { retailPrice: currentData.retailPrice, dealerSku: currentData.dealerSku }, { new: true })
+              let updateDealerPriceBook = await dealerPriceService.updateDealerPrice({ _id: checkDealerSku._id }, { retailPrice: currentData.retailPrice, dealerSku: currentData.dealerSku.trim() }, { new: true })
               currentData.message = "Updated successfully"
             }
 
           } else {
-            let checkDealerSku1 = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, dealerSku: currentData.dealerSku })
+            let checkDealerSku1 = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, dealerSku: currentData.dealerSku.trim() })
             if (checkDealerSku1) {
               currentData.message = "Dealer sku already exist"
 
@@ -1730,7 +1733,7 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
                 // Return the merged object only if there's a match
                 return match ? { ...item1, ...match } : item1;
               });
-              let createDealerPriceBook = await dealerPriceService.createDealerPrice({ priceBook: checkPriceBook._id, dealerSku: currentData.dealerSku, retailPrice: currentData.retailPrice, status: true, dealerId: data.dealerId, brokerFee: brokerFee, wholesalePrice: wholeSalePrice, adhDays: updateAdh, noOfClaim: noOfClaim, noOfClaimPerPeriod: noOfClaimPerPeriod, isMaxClaimAmount: isMaxClaimAmount, isManufacturerWarranty: isManufacturerWarranty })
+              let createDealerPriceBook = await dealerPriceService.createDealerPrice({ priceBook: checkPriceBook._id, dealerSku: currentData.dealerSku.trim(), retailPrice: currentData.retailPrice, status: true, dealerId: data.dealerId, brokerFee: brokerFee, wholesalePrice: wholeSalePrice, adhDays: updateAdh, noOfClaim: noOfClaim, noOfClaimPerPeriod: noOfClaimPerPeriod, isMaxClaimAmount: isMaxClaimAmount, isManufacturerWarranty: isManufacturerWarranty })
               // code to be added here
               currentData.message = "created successfully"
             }
