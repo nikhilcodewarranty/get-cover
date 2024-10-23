@@ -1995,6 +1995,19 @@ exports.saveBulkClaim = async (req, res) => {
         IDs.push(dealerData._id);
       }
 
+      //Get Fail and Passes Entries
+      const counts = totalDataComing.reduce((acc, obj) => {
+        // Increment the count of true or false based on the value of exit
+        if (obj.exit) {
+          acc.trueCount += 1;
+        } else {
+          acc.falseCount += 1;
+        }
+        return acc;
+      }, { trueCount: 0, falseCount: 0 });
+
+      console.log(counts);
+
       const csvArray = await Promise.all(totalDataComing.map(async (item, i) => {
         // Build bulk csv for dealer only
         let servicerId = item.servicerData?._id
@@ -2012,13 +2025,12 @@ exports.saveBulkClaim = async (req, res) => {
           toMail = userData.email;
           if (req.userId.toString() === item.orderData?.order?.dealerId?.toString()) {
             // For servicer
-
-            if (!existArray.data[servicerId] && servicerId != undefined) {
+            if (!existArray.data[servicerId] && servicerId != undefined && !item.exit) {
               emailServicerId.push(servicerId);
               existArray.data[servicerId] = [];
             }
 
-            if (servicerId != undefined) {
+            if (servicerId != undefined && !item.exit) {
               existArray.data[servicerId].push({
                 "Serial#": item.contractId ? item.contractId : "",
                 "Loss Date": item.lossDate ? item.lossDate : '',
@@ -2033,6 +2045,7 @@ exports.saveBulkClaim = async (req, res) => {
             "Loss Date": item.lossDate ? item.lossDate : '',
             Diagnosis: item.diagnosis ? item.diagnosis : '',
             Status: item.status ? item.status : '',
+            exit: item.exit
           };
         }
         // Build bulk csv for Reseller only
@@ -2042,12 +2055,12 @@ exports.saveBulkClaim = async (req, res) => {
           ccMail = new_admin_array;
           if (req.userId.toString() === item.orderData?.order?.resellerId?.toString()) {
             // For servicer
-            if (!existArray.data[servicerId] && servicerId != undefined) {
+            if (!existArray.data[servicerId] && servicerId != undefined && !item.exit) {
               emailServicerId.push(servicerId);
               existArray.data[servicerId] = [];
             }
 
-            if (servicerId != undefined) {
+            if (servicerId != undefined && !item.exit) {
               existArray.data[servicerId].push({
                 "Serial#": item.contractId ? item.contractId : "",
                 "Loss Date": item.lossDate ? item.lossDate : '',
@@ -2062,6 +2075,7 @@ exports.saveBulkClaim = async (req, res) => {
             "Loss Date": item.lossDate ? item.lossDate : '',
             Diagnosis: item.diagnosis ? item.diagnosis : '',
             Status: item.status ? item.status : '',
+            exit: item.exit
           };
         }
         // Build bulk csv for Customer only
@@ -2072,12 +2086,12 @@ exports.saveBulkClaim = async (req, res) => {
 
           if (req.userId.toString() === item.orderData?.order?.customerId?.toString()) {
             // For servicer
-            if (!existArray.data[servicerId] && servicerId != undefined) {
+            if (!existArray.data[servicerId] && servicerId != undefined && !item.exit) {
               emailServicerId.push(servicerId);
               existArray.data[servicerId] = [];
             }
 
-            if (servicerId != undefined) {
+            if (servicerId != undefined && !item.exit) {
               existArray.data[servicerId].push({
                 "Serial#": item.contractId ? item.contractId : "",
                 "Loss Date": item.lossDate ? item.lossDate : '',
@@ -2092,17 +2106,18 @@ exports.saveBulkClaim = async (req, res) => {
             "Loss Date": item.lossDate ? item.lossDate : '',
             Diagnosis: item.diagnosis ? item.diagnosis : '',
             Status: item.status ? item.status : '',
+            exit: item.exit
           };
         } else {
           toMail = new_admin_array;
           ccMail = ["noreply@getcover.com"];
           // For servicer
-          if (!existArray.data[servicerId] && servicerId != undefined) {
+          if (!existArray.data[servicerId] && servicerId != undefined && !item.exit) {
             emailServicerId.push(servicerId);
             existArray.data[servicerId] = [];
           }
 
-          if (servicerId != undefined) {
+          if (servicerId != undefined && !item.exit) {
             existArray.data[servicerId].push({
               "Serial#": item.contractId ? item.contractId : "",
               "Loss Date": item.lossDate ? item.lossDate : '',
@@ -2117,6 +2132,7 @@ exports.saveBulkClaim = async (req, res) => {
             "Loss Date": item.lossDate ? item.lossDate : '',
             Diagnosis: item.diagnosis ? item.diagnosis : '',
             Status: item.status ? item.status : '',
+            exit: item.exit
           };
         }
       }));
@@ -2141,7 +2157,7 @@ exports.saveBulkClaim = async (req, res) => {
         //send email to servicer      
         for (const item of flatArray) {
           if (item.email != '') {
-            const htmlTableString = convertArrayToHTMLTable(item.response);
+            const htmlTableString = convertArrayToHTMLTable(item.response, []);
             let mailing_servicer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
           }
 
@@ -2149,44 +2165,95 @@ exports.saveBulkClaim = async (req, res) => {
       }
 
       //Convert Array to HTML table
-      function convertArrayToHTMLTable(array) {
-        const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');
-        const rows = array.map(obj => {
-          const values = Object.values(obj).map(value => `<td>${value}</td>`);
-          values[2] = `${values[2]}`;
-          return values.join('');
-        });
+      function convertArrayToHTMLTable(array, array1) {
+        var htmlContent;
+        if (array.length > 0) {
+          const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');
+          const rows = array.map(obj => {
+            const values = Object.values(obj).map(value => `<td>${value}</td>`);
+            values[2] = `${values[2]}`;
+            return values.join('');
+          });
 
-        const htmlContent = `<html>
-            <head>
-                <style>
-                    table {
-                        border-collapse: collapse;
-                        width: 100%;
-                    }
-                    th, td {
-                        border: 1px solid #dddddd;
-                        text-align: left;
-                        padding: 8px;
-                    }
-                    th {
-                        background-color: #f2f2f2;
-                    }
-                </style>
-            </head>
-            <body>
-                <table>
-                    <thead><tr>${header}</tr></thead>
-                    <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
-                </table>
-            </body>
-        </html>`;
+
+           htmlContent = `<html>
+              <head>
+                  <style>
+                      table {
+                          border-collapse: collapse;
+                          width: 100%;
+                      }
+                      th, td {
+                          border: 1px solid #dddddd;
+                          text-align: left;
+                          padding: 8px;
+                      }
+                      th {
+                          background-color: #f2f2f2;
+                      }
+                  </style>
+              </head>         
+              <body>
+              <p></p>
+                  <table>
+                      <thead><tr>${header}</tr></thead>
+                      <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
+                  </table>
+              </body>
+          </html>`;
+        }
+
+        if (array1.length > 0) {
+          const header = Object.keys(array1[0]).map(key => `<th>${key}</th>`).join('');
+          const rows = array1.map(obj => {
+            const values = Object.values(obj).map(value => `<td>${value}</td>`);
+            values[2] = `${values[2]}`;
+            return values.join('');
+          });
+
+          htmlContent += `<html>
+              <head>
+                  <style>
+                      table {
+                          border-collapse: collapse;
+                          width: 100%;
+                      }
+                      th, td {
+                          border: 1px solid #dddddd;
+                          text-align: left;
+                          padding: 8px;
+                      }
+                      th {
+                          background-color: #f2f2f2;
+                      }
+                  </style>
+              </head>         
+              <body>
+              <p></p>
+                  <table>
+                      <thead><tr>${header}</tr></thead>
+                      <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
+                  </table>
+              </body>
+          </html>`;
+        }
 
         return htmlContent;
+
       }
 
-      const htmlTableString = convertArrayToHTMLTable(csvArray);
+      //Get Failure Claims
+      const successEntries = csvArray.map(successItem => successItem.exit)
+      const failureEntries = csvArray.map(successItem => !successItem.exit)
+      console.log("csvArray=======================",csvArray)
+
+      console.log("successEntries=======================",successEntries)
+      console.log("failureEntries=======================",failureEntries)
+      const htmlTableString = convertArrayToHTMLTable(successEntries, failureEntries);
       //send Email to admin
+      console.log("htmlTableString=======================",htmlTableString)
+      console.log("toMail=======================",toMail)
+      console.log("ccMail=======================",ccMail)
       let mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
 
       if (saveBulkClaim.length > 0) {
