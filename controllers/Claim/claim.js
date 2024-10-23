@@ -322,7 +322,6 @@ exports.uploadCommentImage = async (req, res, next) => {
 exports.addClaim = async (req, res, next) => {
   try {
     let data = req.body;
-    console.log("data+++++++++++++++++++++++", data)
     let checkContract = await contractService.getContractById({ _id: data.contractId })
 
     if (new Date(data.lossDate) > new Date()) {
@@ -1719,7 +1718,7 @@ exports.saveBulkClaim = async (req, res) => {
       totalDataComing.forEach((data, i) => {
         if (!data.exit) {
           if (cache[data.contractId?.toLowerCase()]) {
-            data.status = "Duplicate contract id"
+            data.status = "Duplicate contract id/serial number"
             data.exit = true;
           } else {
             cache[data.contractId?.toLowerCase()] = true;
@@ -1882,7 +1881,7 @@ exports.saveBulkClaim = async (req, res) => {
       totalDataComing.forEach((item, i) => {
         if (!item.exit) {
           const contractData = contractArray[i];
-          const servicerData = servicerArray == undefined ? {} : servicerArray[i]
+          const servicerData = servicerArray == undefined ? item.order.servicer : servicerArray[i]
           const allDataArray = contractAllDataArray[i];
           const claimData = claimArray;
           let flag;
@@ -1894,10 +1893,12 @@ exports.saveBulkClaim = async (req, res) => {
             item.status = "Contract not found"
             item.exit = true;
           }
-          if (contractData && new Date(contractData?.coverageStartDate) > new Date(item.lossDate)) {
+          let checkCoverageStartDate = new Date(contractData?.coverageStartDate).setHours(0, 0, 0, 0)
+          if (contractData && new Date(checkCoverageStartDate) > new Date(item.lossDate)) {
             item.status = "Loss date should be in between coverage start date and present date!"
             item.exit = true;
           }
+      
           // if (allDataArray.length == 0 && item.contractId != '') {
           //   const filter = claimData.filter(claim => claim.contractId?.toString() === item.contractData._id?.toString())
           //   if (filter.length > 0) {
