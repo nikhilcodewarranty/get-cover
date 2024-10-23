@@ -1303,7 +1303,7 @@ exports.editClaimStatus = async (req, res) => {
 
     let getNoOfClaimQuery = [
       {
-        $match: { contractId: new mongoose.Types.ObjectId(checkClaim.contractId) }
+        $match: { contractId: new mongoose.Types.ObjectId(checkClaim.contractId), claimFile: "completed" }
       },
       // Step 1: Add fields to extract year and month from the createdAt field
       {
@@ -1340,10 +1340,10 @@ exports.editClaimStatus = async (req, res) => {
 
 
 
+    let forCheckOnly;
 
     //Eligibility true when claim is completed and rejected
     if (updateBodyStatus.claimFile == 'completed') {
-      let forCheckOnly;
       if (checkContract.isMaxClaimAmount) {
         if (checkContract.productValue > claimTotal[0]?.amount) {
           const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
@@ -1399,6 +1399,13 @@ exports.editClaimStatus = async (req, res) => {
           }
         }
       }
+    }
+
+
+    if (updateBodyStatus.claimFile == 'rejected') {
+      let updatePrice = await claimService.updateClaim(criteria, { totalAmount: 0, customerClaimAmount: 0, getCoverClaimAmount: 0, customerOverAmount: 0, getcoverOverAmount: 0 }, { new: true })
+      const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
+      forCheckOnly = true
     }
 
     //Save logs
