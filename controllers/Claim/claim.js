@@ -2243,8 +2243,8 @@ exports.saveBulkClaim = async (req, res) => {
       }
 
       //Get Failure Claims
-      const successEntries = csvArray.map(successItem => successItem.exit)
-      const failureEntries = csvArray.map(successItem => !successItem.exit)
+      const failureEntries  = csvArray.filter(entry => entry.exit === false);
+      const successEntries  = csvArray.filter(entry => entry.exit === true);
       console.log("csvArray=======================",csvArray)
 
       console.log("successEntries=======================",successEntries)
