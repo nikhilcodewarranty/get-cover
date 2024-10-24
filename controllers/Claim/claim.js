@@ -1957,6 +1957,9 @@ exports.saveBulkClaim = async (req, res) => {
         data: {}
       };
       let emailServicerId = [];
+
+      console.log("sdsdfdsfsdfdsfsddfsd",totalDataComing);
+      return;
       totalDataComing.map((data, index) => {
         let servicerId = data.servicerData?._id
         if (data.servicerData?.dealerId) {
