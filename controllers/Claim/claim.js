@@ -2270,7 +2270,7 @@ exports.saveBulkClaim = async (req, res) => {
                 </table>
             </body>
           </html>`;
-        }
+        }   
 
         if (array1.length > 0) {
           const header = Object.keys(array1[0]).filter(key => key !== 'exit').map(key => `<th>${key}</th>`).join('');
@@ -2281,7 +2281,7 @@ exports.saveBulkClaim = async (req, res) => {
               .map(([, value]) => `<td>${value}</td>`);
 
             values[2] = `${values[2]}`; // Keep this line if you have specific logic for this index
-            return values.join('');
+            return values.join(''); 
           });
 
           htmlContent += `
