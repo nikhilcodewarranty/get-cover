@@ -1660,7 +1660,7 @@ exports.saveBulkClaim = async (req, res) => {
         return;
       }
 
-      totalDataComing = totalDataComing.map(async (item, index) => {
+      totalDataComing = await totalDataComing.map(async (item, index) => {
         if (item.servicerName == '' || item.servicerName == null || !item.hasOwnProperty("servicerName")) {
           let checkContract = await contractService.getContractById({
             $and: [
@@ -1704,7 +1704,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       });
 
-      totalDataComing.forEach(data => {
+     await totalDataComing.forEach(data => {
         if (!data.contractId || data.contractId == "") {
           data.status = "Serial number/Asset ID/Contract number cannot be empty"
           data.exit = true
@@ -1733,7 +1733,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       let cache = {};
 
-      totalDataComing.forEach((data, i) => {
+      await totalDataComing.forEach((data, i) => {
         if (!data.exit) {
           if (cache[data.contractId?.toLowerCase()]) {
             data.status = "Duplicate contract id/serial number"
@@ -1745,7 +1745,7 @@ exports.saveBulkClaim = async (req, res) => {
       })
 
       //Check contract is exist or not using contract id
-      const contractArrayPromise = totalDataComing.map(item => {
+      const contractArrayPromise = await totalDataComing.map(item => {
         if (!item.exit) return contractService.getContractById({
           $and: [
             {
