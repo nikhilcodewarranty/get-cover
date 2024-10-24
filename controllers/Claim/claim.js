@@ -1879,8 +1879,7 @@ exports.saveBulkClaim = async (req, res) => {
           const contractData = contractArray[i];
           const allDataArray = contractAllDataArray[i];
           const claimData = claimArray;
-          console.log(" --------------", servicerArray)
-          const servicerData = servicerArray == undefined ? allDataArray[0]?.order?.servicer : servicerArray[i]
+          const servicerData = servicerArray == undefined || servicerArray == null ? allDataArray[0]?.order?.servicer : servicerArray[i]
           console.log("servicerData?-----------------------", servicerData)
 
 
@@ -1949,7 +1948,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       //Update eligibility when contract is open
 
-      console.log("sdsdfdsfsdfdsfsddfsd",totalDataComing);
+      console.log("sdsdfdsfsdfdsfsddfsd", totalDataComing);
       return;
 
       const updateArrayPromise = totalDataComing.map(item => {
@@ -1964,7 +1963,7 @@ exports.saveBulkClaim = async (req, res) => {
       };
       let emailServicerId = [];
 
-   
+
       totalDataComing.map((data, index) => {
         let servicerId = data.servicerData?._id
         if (data.servicerData?.dealerId) {
