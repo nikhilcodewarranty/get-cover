@@ -1876,10 +1876,10 @@ exports.saveBulkClaim = async (req, res) => {
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {
         if (!item.exit) {
-          console.log("item.order-----------------", item.order)
           const contractData = contractArray[i];
           const allDataArray = contractAllDataArray[i];
           const claimData = claimArray;
+          console.log(" allDataArray[0]?.order?.servicer-----------------------", allDataArray[0]?.order)
           const servicerData = servicerArray == undefined ? allDataArray[0]?.order?.servicer : servicerArray[i]
 
           let flag;
@@ -1958,6 +1958,9 @@ exports.saveBulkClaim = async (req, res) => {
         data: {}
       };
       let emailServicerId = [];
+
+      console.log("sdsdfdsfsdfdsfsddfsd",totalDataComing);
+      return;
       totalDataComing.map((data, index) => {
         let servicerId = data.servicerData?._id
         if (data.servicerData?.dealerId) {
@@ -2274,9 +2277,15 @@ exports.saveBulkClaim = async (req, res) => {
                 </style>
             </head>         
             <body>
-                <p>Total Entries: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</p>
-                <p>Failure Entries: ${counts.trueCount}</p>
-                <p>Successful Entries: ${counts.falseCount}</p>
+                <table>
+                <tr>
+                <td colspan="2" style="text-align:center">Total Entries: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</td>
+                </tr>
+                <tr>
+                    <td span="1" style="text-align:center">Failure Entries: ${counts.trueCount}</td>
+                    <td span="1" style="text-align:center">Successful Entries: ${counts.falseCount}</td>
+                </tr>
+                </table>
                 <table>
                     <thead><tr>${header}</tr></thead>
                     <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
@@ -2296,29 +2305,59 @@ exports.saveBulkClaim = async (req, res) => {
       let htmlTableString;
       // Send Email notification for all roles user
       if (req.role == "Dealer") {
-        htmlTableString = convertArrayToHTMLTable(successEntries, []);
-        mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
         htmlTableString = convertArrayToHTMLTable([], failureEntries);
-        mailing = sgMail.send(emailConstant.sendCsvFile(ccMail, [], htmlTableString));
-
-
+        mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
       }
       if (req.role == "Reseller") {
-        htmlTableString = convertArrayToHTMLTable(successEntries, []);
-        mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
         htmlTableString = convertArrayToHTMLTable([], failureEntries);
-        mailing = sgMail.send(emailConstant.sendCsvFile(ccMail, [], htmlTableString));
+        mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
       }
       if (req.role == "Customer") {
-        htmlTableString = convertArrayToHTMLTable(successEntries, []);
-        mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
         htmlTableString = convertArrayToHTMLTable([], failureEntries);
-        mailing = sgMail.send(emailConstant.sendCsvFile(ccMail, [], htmlTableString));
+        mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
       }
       //send Email to admin
       if (req.role == "Super Admin") {
-        htmlTableString = convertArrayToHTMLTable([], failureEntries);
-        mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
+        if (failureEntries > 0) {
+          htmlTableString = convertArrayToHTMLTable([], failureEntries);
+          mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
+        }
+
+        else {
+          let htmlContent = `
+          <html>
+            <head>
+                <style>
+                    table {
+                        border-collapse: collapse;
+                        width: 100%;
+                    }
+                    th, td {
+                        border: 1px solid #dddddd;
+                        text-align: left;
+                        padding: 8px;
+                    }
+                    th {
+                        background-color: #f2f2f2;
+                    }
+                </style>
+            </head>         
+            <body>
+                <table>
+                <tr>
+                <td colspan="2" style="text-align:center">Total Entries: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</td>
+                </tr>
+                <tr>
+                    <td span="1" style="text-align:center">Failure Entries: ${counts.trueCount}</td>
+                    <td span="1" style="text-align:center">Successful Entries: ${counts.falseCount}</td>
+                </tr>
+                </table>
+            </body>
+          </html>`;
+          //htmlTableString = convertArrayToHTMLTable([], failureEntries);
+          mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlContent));
+        }
+
 
       }
       if (saveBulkClaim.length > 0) {
