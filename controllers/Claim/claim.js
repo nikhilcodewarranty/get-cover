@@ -323,14 +323,11 @@ exports.addClaim = async (req, res, next) => {
   try {
     let data = req.body;
     let checkContract = await contractService.getContractById({ _id: data.contractId })
+    console.log("data+++++", new Date(data.lossDate))
+
     data.lossDate = new Date(data.lossDate).setDate(new Date(data.lossDate).getDate() + 1)
-    if (new Date(data.lossDate) > new Date()) {
-      res.send({
-        code: constant.errorCode,
-        message: "Future date is not allowed"
-      })
-      return
-    }
+    data.lossDate = new Date(data.lossDate)
+    console.log("data+++++", data)
 
     if (!checkContract) {
       res.send({
@@ -3425,3 +3422,51 @@ exports.getCoverageType = async (req, res) => {
 }
 
 
+
+
+exports.updateClaimDate = async (req, res) => {
+  try {
+    let updateObject = {
+      $set: {
+        customerStatus: [
+          {
+            status: "request_submitted",
+            date: "2024-10-23T17:31:03.140+00:00"
+          }
+        ],
+        trackStatus: [
+          {
+            status: "open",
+            date: "2024-10-23T17:31:03.140+00:00"
+          },
+          {
+            status: "request_submitted",
+            date: "2024-10-23T17:31:03.140+00:00"
+          },
+          {
+            status: "request_sent",
+            date: "2024-10-23T17:31:03.140+00:00"
+          }
+        ],
+        claimStatus: [
+          {
+            status: "open",
+            date: "2024-10-23T17:31:03.140+00:00"
+          },
+        ],
+        repairStatus: [
+          {
+            status: "request_sent",
+            date: "2024-10-23T17:31:03.140+00:00"
+          }
+        ]
+      }
+    }
+    let updateClaim = await claimService.markAsPaid({ orderId: "GC-2024-100003" }, updateObject, { new: true })
+
+  } catch (err) {
+    res.send({
+      code: err.stack
+    })
+  }
+}
