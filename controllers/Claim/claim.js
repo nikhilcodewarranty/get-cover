@@ -1792,7 +1792,7 @@ exports.saveBulkClaim = async (req, res) => {
       });
 
 
-      console.log("ddsfsffdsfdfsdfsdfsdfdsfs",totalDataComing)
+      console.log("ddsfsffdsfdfsdfsdfsdfdsfs",totalDataComing[0]);
       // Get Contract with dealer, customer, reseller
       const contractAllDataPromise = totalDataComing.map(async (item, index) => {
         if (!item.exit) {
