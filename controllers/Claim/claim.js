@@ -2274,10 +2274,14 @@ exports.saveBulkClaim = async (req, res) => {
                 </style>
             </head>         
             <body>
-                <p>Total Entries: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</p>
-                <p>Failure Entries: ${counts.trueCount}</p>
-                <p>Successful Entries: ${counts.falseCount}</p>
                 <table>
+                <tr>
+                <td span="4" style="text-align:center">Total Entries: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</td>
+                </tr>
+                <tr>
+                    <td span="2" style="text-align:center">Failure Entries: ${counts.trueCount}</td>
+                    <td span="2" style="text-align:center">Successful Entries: ${counts.falseCount}</td>
+                </tr>
                     <thead><tr>${header}</tr></thead>
                     <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
                 </table>
