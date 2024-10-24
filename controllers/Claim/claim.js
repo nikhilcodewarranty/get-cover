@@ -1974,9 +1974,6 @@ exports.saveBulkClaim = async (req, res) => {
 
       //Update eligibility when contract is open
 
-      console.log("sdsdfdsfsdfdsfsddfsd", totalDataComing, totalDataComing[0]?.exit);
-      return;
-
       const updateArrayPromise = totalDataComing.map(item => {
         if (!item.exit && item.contractData) return contractService.updateContract({ _id: item.contractData._id }, { eligibilty: false }, { new: true });
         else {
