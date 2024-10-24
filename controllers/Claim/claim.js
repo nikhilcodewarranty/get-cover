@@ -1881,7 +1881,7 @@ exports.saveBulkClaim = async (req, res) => {
           const claimData = claimArray;
           console.log(" allDataArray[0]?.order?-----------------------", allDataArray[0]?.order)
           const servicerData = servicerArray == undefined ? allDataArray[0]?.order?.servicer : servicerArray[i]
-          console.log("ervicerData?-----------------------", servicerData)
+          console.log("servicerData?-----------------------", servicerData)
 
 
           let flag;
@@ -1949,6 +1949,9 @@ exports.saveBulkClaim = async (req, res) => {
 
       //Update eligibility when contract is open
 
+      console.log("sdsdfdsfsdfdsfsddfsd",totalDataComing);
+      return;
+
       const updateArrayPromise = totalDataComing.map(item => {
         if (!item.exit && item.contractData) return contractService.updateContract({ _id: item.contractData._id }, { eligibilty: false }, { new: true });
         else {
@@ -1961,8 +1964,7 @@ exports.saveBulkClaim = async (req, res) => {
       };
       let emailServicerId = [];
 
-      console.log("sdsdfdsfsdfdsfsddfsd",totalDataComing);
-      return;
+   
       totalDataComing.map((data, index) => {
         let servicerId = data.servicerData?._id
         if (data.servicerData?.dealerId) {
