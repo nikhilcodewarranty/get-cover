@@ -436,6 +436,9 @@ exports.getAllClaims = async (req, res, next) => {
       if (claimObject.claimStatus.status == "rejected") {
         threshHoldMessage = ""
       }
+      // if (claimObject.claimStatus.status == "rejected") {
+      //   threshHoldMessage = ""
+      // }
       if (!getTheThresholdLimit.isThreshHoldLimit) {
         overThreshold = false
         threshHoldMessage = ""
@@ -1214,7 +1217,8 @@ exports.checkCoverageTypeDate = async (req, res) => {
           code: 403,
           tittle: `Claim not eligible for ${result[0]}.`,
           // message: `Your selected ${result[0]} is currently not eligible for the claim. You can file the claim for ${result[0]} on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}. Do you wish to proceed in rejecting this claim?`
-          message: `Your claim for ${result[0]} cannot be filed because it is not eligible based on the loss date. You will be able to file this claim starting on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}. Would you like to proceed with rejecting the claim now?`
+          message: `Your claim for ${result[0]} cannot be filed because it is not eligible based on the loss date. You will be able to file this claim starting on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}. Would you like to proceed with rejecting the claim now?`,
+          message1: `Your claim for ${result[0]} cannot be filed because it is not eligible based on the loss date. You will be able to file this claim starting on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}`
         })
         return
 
