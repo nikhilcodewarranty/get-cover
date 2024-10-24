@@ -2079,7 +2079,7 @@ exports.saveBulkClaim = async (req, res) => {
 
             if (servicerId != undefined && !item.exit) {
               existArray.data[servicerId].push({
-                "Contract#/Serial#": item.contractId ? item.contractId : "",
+                "Contract# / Serial#": item.contractId ? item.contractId : "",
                 "Loss Date": item.lossDate ? item.lossDate : '',
                 Diagnosis: item.diagnosis ? item.diagnosis : '',
               });
@@ -2108,7 +2108,7 @@ exports.saveBulkClaim = async (req, res) => {
 
             if (servicerId != undefined && !item.exit) {
               existArray.data[servicerId].push({
-                "Contract#/Serial#": item.contractId ? item.contractId : "",
+                "Contract# / Serial#": item.contractId ? item.contractId : "",
                 "Loss Date": item.lossDate ? item.lossDate : '',
                 Diagnosis: item.diagnosis ? item.diagnosis : '',
               });
@@ -2116,7 +2116,7 @@ exports.saveBulkClaim = async (req, res) => {
 
           }
           return {
-            "Contract#/Serial#": item.contractId ? item.contractId : "",
+            "Contract# / Serial#": item.contractId ? item.contractId : "",
             "Loss Date": item.lossDate ? item.lossDate : '',
             Diagnosis: item.diagnosis ? item.diagnosis : '',
             Status: item.status ? item.status : '',
@@ -2138,7 +2138,7 @@ exports.saveBulkClaim = async (req, res) => {
 
             if (servicerId != undefined && !item.exit) {
               existArray.data[servicerId].push({
-                "Contract#/Serial#": item.contractId ? item.contractId : "",
+                "Contract# / Serial#": item.contractId ? item.contractId : "",
                 "Loss Date": item.lossDate ? item.lossDate : '',
                 Diagnosis: item.diagnosis ? item.diagnosis : '',
               });
@@ -2146,7 +2146,7 @@ exports.saveBulkClaim = async (req, res) => {
 
           }
           return {
-            "Contract#/Serial#": item.contractId ? item.contractId : "",
+            "Contract# / Serial#": item.contractId ? item.contractId : "",
             "Loss Date": item.lossDate ? item.lossDate : '',
             Diagnosis: item.diagnosis ? item.diagnosis : '',
             Status: item.status ? item.status : '',
@@ -2163,14 +2163,14 @@ exports.saveBulkClaim = async (req, res) => {
 
           if (servicerId != undefined && !item.exit) {
             existArray.data[servicerId].push({
-              "Contract#/Serial#": item.contractId ? item.contractId : "",
+              "Contract# / Serial#": item.contractId ? item.contractId : "",
               "Loss Date": item.lossDate ? item.lossDate : '',
               Diagnosis: item.diagnosis ? item.diagnosis : '',
             });
           }
 
           return {
-            "Contract#/Serial#": item.contractId ? item.contractId : "",
+            "Contract# / Serial#": item.contractId ? item.contractId : "",
             Servicer: item.servicerName || "",
             "Loss Date": item.lossDate ? item.lossDate : '',
             Diagnosis: item.diagnosis ? item.diagnosis : '',
@@ -2279,7 +2279,7 @@ exports.saveBulkClaim = async (req, res) => {
             <body>
                 <p>Total Entries: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</p>
                 <p>Failure Entries: ${counts.trueCount}</p>
-                <p>Successfull Entries: ${counts.falseCount}</p>
+                <p>Successful Entries: ${counts.falseCount}</p>
                 <table>
                     <thead><tr>${header}</tr></thead>
                     <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
