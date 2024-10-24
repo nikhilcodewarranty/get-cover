@@ -259,6 +259,13 @@ exports.checkFileValidation = async (req, res) => {
                 if (err) {
                     console.log(err);
                 } else {
+                    if (!Buffer.isBuffer(data.Body)) {
+                        res.send({
+                            code: constant.errorCode,
+                            message: `Invalid file detected ${file.key}`
+                        })
+                        return
+                    }
                     // Parse the buffer as an Excel file
                     const wb = XLSX.read(data.Body, { type: 'buffer' });
                     // Extract the data from the first sheet
@@ -2890,7 +2897,7 @@ exports.getOrderContract = async (req, res) => {
             result1[e].reason = " "
             if (!result1[e].eligibilty) {
                 result1[e].reason = "Claims limit cross for this contract"
-              }
+            }
             if (result1[e].status != "Active") {
                 result1[e].reason = "Contract is not active"
             }
