@@ -1660,7 +1660,28 @@ exports.saveBulkClaim = async (req, res) => {
         return;
       }
 
-      totalDataComing = totalDataComing.map((item, i) => {
+      totalDataComing = totalDataComing.map(async (item, index) => {
+        if (item.servicerName == '' || item.servicerName == null || !item.hasOwnProperty("servicerName")) {
+          let checkContract = await contractService.getContractById({
+            $and: [
+              {
+                $or: [
+                  { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
+                  { 'serial': { '$regex': item.contractId ? item.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                ],
+
+              },
+              { eligibilty: true }
+            ],
+          })
+          let checkOrder = await orderService.getOrder({ _id: checkContract?.orderId })
+          if (checkOrder?.servicerId != null) {
+            let checkServicer = await servicerService.getServiceProviderById({ _id: checkOrder?.servicerId })
+            // totalDataComing[index]. =
+            totalDataComing[index].servicerName = checkServicer.name
+          }
+        }
+
         if (item.hasOwnProperty("servicerName")) {
           return {
             contractId: item.contractId?.toString().replace(/\s+/g, ' ').trim(),
@@ -1770,9 +1791,12 @@ exports.saveBulkClaim = async (req, res) => {
         claimFile: 'open'
       });
 
+
+      console.log("ddsfsffdsfdfsdfsdfsdfdsfs",totalDataComing)
       // Get Contract with dealer, customer, reseller
-      const contractAllDataPromise = totalDataComing.map(item => {
+      const contractAllDataPromise = totalDataComing.map(async (item, index) => {
         if (!item.exit) {
+
           let query = [
             {
               $match: {
@@ -1879,7 +1903,6 @@ exports.saveBulkClaim = async (req, res) => {
           const contractData = contractArray[i];
           const allDataArray = contractAllDataArray[i];
           const claimData = claimArray;
-          console.log("servicerArray-------------------------",servicerArray);
           const servicerData = servicerArray == undefined || servicerArray == null ? allDataArray[0]?.order?.servicer : servicerArray[i]
           let flag;
           item.contractData = contractData;
@@ -1945,9 +1968,8 @@ exports.saveBulkClaim = async (req, res) => {
       let unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
 
       //Update eligibility when contract is open
-      console.log("totalDataComing======================",totalDataComing);
-      return;
 
+      return;
       const updateArrayPromise = totalDataComing.map(item => {
         if (!item.exit && item.contractData) return contractService.updateContract({ _id: item.contractData._id }, { eligibilty: false }, { new: true });
         else {
