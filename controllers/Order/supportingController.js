@@ -803,7 +803,12 @@ ${term}
                 const mergedPdf = await mergePDFs(termPathBucket, orderPathBucket, `/tmp/merged_${mergeFileName}`);
                 // Upload merged PDF to S3
                 const mergedKey = `mergedFile/${mergeFileName}`;
+                console.log("bucketNameewrewrwerwer----------------------------------", bucketName)
+                console.log("mergedKey----------------------------------", mergedKey)
+
                 await uploadToS3(`/tmp/merged_${mergeFileName}`, bucketName, mergedKey);
+                console.log("termPath----------------------------------", termPath)
+
                 const params = {
                     Bucket: bucketName,
                     Key: `mergedFile/${mergeFileName}`
