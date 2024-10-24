@@ -495,6 +495,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             let labourWarranty = fileData.labourWarranty.toString().replace(/\s+/g, ' ').trim()
                             let purchaseDate = fileData.purchaseDate.toString().replace(/\s+/g, ' ').trim()
                             let model = fileData.model.toString().replace(/\s+/g, ' ').trim()
+                            console.log("checking the value++++++++",brand,serial,condition,retailValue,model)
 
                             if (brand == '' || serial == '' || condition == '' || retailValue == '' || model == '' || partsWarranty == '' || labourWarranty == '' || purchaseDate == "") {
                                 message.push({
