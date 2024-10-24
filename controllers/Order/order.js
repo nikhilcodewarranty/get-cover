@@ -2426,7 +2426,7 @@ async function generateTC(orderData) {
             const s3Key = `pdfs/${mergeFileName}`;
             //Upload to S3 bucket
             await uploadToS3(orderFile, bucketName, s3Key);
-            const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : "file-1723185474819.pdf"
+            const termConditionFile =  checkOrder.termCondition.fileName 
             const termPath = termConditionFile
             //Download from S3 bucket 
             const termPathBucket = await downloadFromS3(bucketName, termPath);
