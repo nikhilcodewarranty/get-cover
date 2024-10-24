@@ -752,6 +752,8 @@ ${term}
 </tr >
 
 </table > `;
+
+        console.log("exist----------------------------------", mergeFileName)
         const checkFileExist = await checkFileExistsInS3(process.env.bucket_name, `mergedFile/${mergeFileName}`)
         if (checkFileExist) {
             // link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
@@ -762,6 +764,8 @@ ${term}
                 result: response
             })
         } else {
+            console.log("sdfsdfdsfdssdfsd----------------------------------", mergeFileName)
+
             pdf.create(html, options).toFile(orderFile, async (err, result) => {
                 if (err) return console.log(err);
                 const { PDFDocument, rgb } = require('pdf-lib');
