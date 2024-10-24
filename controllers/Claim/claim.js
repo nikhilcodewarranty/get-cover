@@ -395,7 +395,7 @@ exports.addClaim = async (req, res, next) => {
 
     let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
     let remainingPrice = checkContract.productValue - claimTotal[0]?.amount
-    if (!data.coverageType || data.coverageType != "") {
+    if ( data.coverageType != "") {
       let checkCoverageTypeForContract = checkContract.coverageType.find(item => item.value == data.coverageType)
       if (!checkCoverageTypeForContract) {
         res.send({
