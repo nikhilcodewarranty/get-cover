@@ -1660,6 +1660,35 @@ exports.saveBulkClaim = async (req, res) => {
         return;
       }
 
+      for (let u = 0; u < totalDataComing.length; u++) {
+        let objectToCheck = totalDataComing[u]
+        let getContractDetail = await contractService.getContractById({
+          $and: [
+            {
+              $or: [
+                { unique_key: { '$regex': objectToCheck.contractId ? objectToCheck.contractId : '', '$options': 'i' } },
+                { 'serial': { '$regex': objectToCheck.contractId ? objectToCheck.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+              ],
+
+            },
+            { eligibilty: true }
+          ],
+
+        });
+        let getOrderDetail = await orderService.getOrder({ _id: getContractDetail?.orderId })
+        if (getOrderDetail?.servicerId != null) {
+          let getServiceData = await servicerService.getServicerByName({
+            $or: [
+              { _id: getOrderDetail.servicerId },
+              { dealerId: getOrderDetail.servicerId },
+              { resellerId: getOrderDetail.servicerId },
+            ]
+          })
+          totalDataComing[u].servicerName = getServiceData.name
+        }
+      }
+
+
       totalDataComing = totalDataComing.map((item, i) => {
         if (item.hasOwnProperty("servicerName")) {
           return {
@@ -1879,9 +1908,7 @@ exports.saveBulkClaim = async (req, res) => {
           const contractData = contractArray[i];
           const allDataArray = contractAllDataArray[i];
           const claimData = claimArray;
-          console.log(" allDataArray[0]?.order?.servicer-----------------------", allDataArray[0]?.order)
-          const servicerData = servicerArray == undefined ? allDataArray[0]?.order?.servicer : servicerArray[i]
-
+          const servicerData = servicerArray == undefined || servicerArray == null ? allDataArray[0]?.order?.servicer : servicerArray[i]
           let flag;
           item.contractData = contractData;
           item.servicerData = servicerData;
@@ -1959,8 +1986,7 @@ exports.saveBulkClaim = async (req, res) => {
       };
       let emailServicerId = [];
 
-      console.log("sdsdfdsfsdfdsfsddfsd",totalDataComing);
-      return;
+
       totalDataComing.map((data, index) => {
         let servicerId = data.servicerData?._id
         if (data.servicerData?.dealerId) {
@@ -2318,7 +2344,9 @@ exports.saveBulkClaim = async (req, res) => {
       }
       //send Email to admin
       if (req.role == "Super Admin") {
-        if (failureEntries > 0) {
+        console.log("failureEntries------------------",failureEntries)
+        if (failureEntries.length > 0) {
+          console.log("sdadasdasdasd")
           htmlTableString = convertArrayToHTMLTable([], failureEntries);
           mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
         }
