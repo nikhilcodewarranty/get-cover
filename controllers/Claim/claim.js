@@ -1666,8 +1666,8 @@ exports.saveBulkClaim = async (req, res) => {
           $and: [
             {
               $or: [
-                { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
-                { 'serial': { '$regex': item.contractId ? item.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { unique_key: { '$regex': objectToCheck.contractId ? objectToCheck.contractId : '', '$options': 'i' } },
+                { 'serial': { '$regex': objectToCheck.contractId ? objectToCheck.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
               ],
 
             },
