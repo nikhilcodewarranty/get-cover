@@ -1660,6 +1660,35 @@ exports.saveBulkClaim = async (req, res) => {
         return;
       }
 
+      for (let u = 0; u < totalDataComing.length; u++) {
+        let objectToCheck = totalDataComing[u]
+        let getContractDetail = await contractService.getContractById({
+          $and: [
+            {
+              $or: [
+                { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
+                { 'serial': { '$regex': item.contractId ? item.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+              ],
+
+            },
+            { eligibilty: true }
+          ],
+
+        });
+        let getOrderDetail = await orderService.getOrder({ _id: getContractDetail?.orderId })
+        if (getOrderDetail?.servicerId != null) {
+          let getServiceData = await servicerService.getServicerByName({
+            $or: [
+              { _id: getOrderDetail.servicerId },
+              { dealerId: getOrderDetail.servicerId },
+              { resellerId: getOrderDetail.servicerId },
+            ]
+          })
+          totalDataComing[u].servicerName = getServiceData.name
+        }
+      }
+
+
       totalDataComing = totalDataComing.map((item, i) => {
         if (item.hasOwnProperty("servicerName")) {
           return {
@@ -1945,7 +1974,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       //Update eligibility when contract is open
 
-      console.log("sdsdfdsfsdfdsfsddfsd", totalDataComing,totalDataComing[0]?.exit);
+      console.log("sdsdfdsfsdfdsfsddfsd", totalDataComing, totalDataComing[0]?.exit);
       return;
 
       const updateArrayPromise = totalDataComing.map(item => {
