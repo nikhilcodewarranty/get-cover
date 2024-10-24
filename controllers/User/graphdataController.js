@@ -218,7 +218,7 @@ exports.getDashboardInfo = async (req, res) => {
       $match: {
         dealerId: null,
         resellerId: null,
-        status: true
+        accountStatus: "Approved"
       }
     },
     {
