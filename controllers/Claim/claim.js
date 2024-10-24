@@ -1945,7 +1945,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       //Update eligibility when contract is open
 
-      console.log("sdsdfdsfsdfdsfsddfsd", totalDataComing);
+      console.log("sdsdfdsfsdfdsfsddfsd", totalDataComing,totalDataComing[0]?.exit);
       return;
 
       const updateArrayPromise = totalDataComing.map(item => {
