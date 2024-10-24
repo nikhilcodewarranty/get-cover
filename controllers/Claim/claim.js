@@ -2299,24 +2299,16 @@ exports.saveBulkClaim = async (req, res) => {
       let htmlTableString;
       // Send Email notification for all roles user
       if (req.role == "Dealer") {
-        htmlTableString = convertArrayToHTMLTable(successEntries, []);
-        mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
         htmlTableString = convertArrayToHTMLTable([], failureEntries);
-        mailing = sgMail.send(emailConstant.sendCsvFile(ccMail, [], htmlTableString));
-
-
+        mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
       }
       if (req.role == "Reseller") {
-        htmlTableString = convertArrayToHTMLTable(successEntries, []);
+        htmlTableString = convertArrayToHTMLTable([],failureEntries);
         mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
-        htmlTableString = convertArrayToHTMLTable([], failureEntries);
-        mailing = sgMail.send(emailConstant.sendCsvFile(ccMail, [], htmlTableString));
       }
       if (req.role == "Customer") {
-        htmlTableString = convertArrayToHTMLTable(successEntries, []);
-        mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
         htmlTableString = convertArrayToHTMLTable([], failureEntries);
-        mailing = sgMail.send(emailConstant.sendCsvFile(ccMail, [], htmlTableString));
+        mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
       }
       //send Email to admin
       if (req.role == "Super Admin") {
