@@ -2346,6 +2346,7 @@ exports.saveBulkClaim = async (req, res) => {
       if (req.role == "Super Admin") {
         console.log("failureEntries------------------",failureEntries)
         if (failureEntries > 0) {
+          console.log("sdadasdasdasd")
           htmlTableString = convertArrayToHTMLTable([], failureEntries);
           mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
         }
