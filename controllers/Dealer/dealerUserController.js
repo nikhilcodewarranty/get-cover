@@ -1760,12 +1760,10 @@ async function generateTC(orderData) {
         let otherInfo = []
         //Check contract is exist or not using contract id
         const contractArrayPromise = checkOrder?.productsArray.map(item => {
-            if (!item.exit) return contractService.getContractById({
+            return contractService.getContractById({
                 orderProductId: item._id
             });
-            else {
-                return null;
-            }
+
         })
         const contractArray = await Promise.all(contractArrayPromise);
 

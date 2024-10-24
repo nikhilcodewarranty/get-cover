@@ -391,12 +391,10 @@ async function generateTC(orderData) {
         let otherInfo = []
         //Check contract is exist or not using contract id
         const contractArrayPromise = checkOrder?.productsArray.map(item => {
-            if (!item.exit) return contractService.getContractById({
+            return contractService.getContractById({
                 orderProductId: item._id
             });
-            else {
-                return null;
-            }
+         
         })
         const contractArray = await Promise.all(contractArrayPromise);
 
@@ -617,14 +615,13 @@ exports.generateHtmltopdf = async (req, res) => {
         let otherInfo = []
         //Check contract is exist or not using contract id
         const contractArrayPromise = checkOrder?.productsArray.map(item => {
-            if (!item.exit) return contractService.getContractById({
+            return contractService.getContractById({
                 orderProductId: item._id
             });
-            else {
-                return null;
-            }
+
         })
         const contractArray = await Promise.all(contractArrayPromise);
+
 
         for (let i = 0; i < checkOrder?.productsArray.length; i++) {
             let anotherObj = {
