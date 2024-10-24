@@ -394,7 +394,7 @@ async function generateTC(orderData) {
             return contractService.getContractById({
                 orderProductId: item._id
             });
-         
+
         })
         const contractArray = await Promise.all(contractArrayPromise);
 
@@ -772,8 +772,13 @@ ${term}
                 const s3Key = `pdfs/${mergeFileName}`;
                 //Upload to S3 bucket
                 await uploadToS3(orderFile, bucketName, s3Key);
+                console.log("sdfsdfdsfdssdfsd----------------------------------", orderFile)
+                console.log("bucketName----------------------------------", bucketName)
+                console.log("s3Key----------------------------------", s3Key)
+
                 const termConditionFile = checkOrder.termCondition.fileName
                 const termPath = termConditionFile
+                console.log("termPath----------------------------------", termPath)
                 //Download from S3 bucket 
                 const termPathBucket = await downloadFromS3(bucketName, termPath);
                 const orderPathBucket = await downloadFromS3(bucketName, s3Key);
