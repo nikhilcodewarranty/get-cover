@@ -323,7 +323,7 @@ exports.addClaim = async (req, res, next) => {
   try {
     let data = req.body;
     let checkContract = await contractService.getContractById({ _id: data.contractId })
-
+    data.lossDate = new Date(data.lossDate).setDate(new Date(data.lossDate).getDate() + 1)
     if (new Date(data.lossDate) > new Date()) {
       res.send({
         code: constant.errorCode,
@@ -395,7 +395,7 @@ exports.addClaim = async (req, res, next) => {
 
     let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
     let remainingPrice = checkContract.productValue - claimTotal[0]?.amount
-    if ( data.coverageType != "") {
+    if (data.coverageType != "") {
       let checkCoverageTypeForContract = checkContract.coverageType.find(item => item.value == data.coverageType)
       if (!checkCoverageTypeForContract) {
         res.send({
