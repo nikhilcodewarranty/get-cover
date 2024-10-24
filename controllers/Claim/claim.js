@@ -1660,28 +1660,7 @@ exports.saveBulkClaim = async (req, res) => {
         return;
       }
 
-      totalDataComing = await totalDataComing.map(async (item, index) => {
-        if (item.servicerName == '' || item.servicerName == null || !item.hasOwnProperty("servicerName")) {
-          let checkContract = await contractService.getContractById({
-            $and: [
-              {
-                $or: [
-                  { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
-                  { 'serial': { '$regex': item.contractId ? item.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                ],
-
-              },
-              { eligibilty: true }
-            ],
-          })
-          let checkOrder = await orderService.getOrder({ _id: checkContract?.orderId })
-          if (checkOrder?.servicerId != null) {
-            let checkServicer = await servicerService.getServiceProviderById({ _id: checkOrder?.servicerId })
-            // totalDataComing[index]. =
-            totalDataComing[index].servicerName = checkServicer.name
-          }
-        }
-
+      totalDataComing = totalDataComing.map((item, i) => {
         if (item.hasOwnProperty("servicerName")) {
           return {
             contractId: item.contractId?.toString().replace(/\s+/g, ' ').trim(),
@@ -1704,7 +1683,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       });
 
-     await totalDataComing.forEach(data => {
+      totalDataComing.forEach(data => {
         if (!data.contractId || data.contractId == "") {
           data.status = "Serial number/Asset ID/Contract number cannot be empty"
           data.exit = true
@@ -1733,7 +1712,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       let cache = {};
 
-      await totalDataComing.forEach((data, i) => {
+      totalDataComing.forEach((data, i) => {
         if (!data.exit) {
           if (cache[data.contractId?.toLowerCase()]) {
             data.status = "Duplicate contract id/serial number"
@@ -1745,7 +1724,7 @@ exports.saveBulkClaim = async (req, res) => {
       })
 
       //Check contract is exist or not using contract id
-      const contractArrayPromise = await totalDataComing.map(item => {
+      const contractArrayPromise = totalDataComing.map(item => {
         if (!item.exit) return contractService.getContractById({
           $and: [
             {
@@ -1791,12 +1770,9 @@ exports.saveBulkClaim = async (req, res) => {
         claimFile: 'open'
       });
 
-
-      console.log("ddsfsffdsfdfsdfsdfsdfdsfs",totalDataComing[0]);
       // Get Contract with dealer, customer, reseller
-      const contractAllDataPromise = totalDataComing.map(async (item, index) => {
+      const contractAllDataPromise = totalDataComing.map(item => {
         if (!item.exit) {
-
           let query = [
             {
               $match: {
@@ -1969,7 +1945,9 @@ exports.saveBulkClaim = async (req, res) => {
 
       //Update eligibility when contract is open
 
+      console.log("sdsdfdsfsdfdsfsddfsd", totalDataComing);
       return;
+
       const updateArrayPromise = totalDataComing.map(item => {
         if (!item.exit && item.contractData) return contractService.updateContract({ _id: item.contractData._id }, { eligibilty: false }, { new: true });
         else {
@@ -2109,7 +2087,7 @@ exports.saveBulkClaim = async (req, res) => {
 
           }
           return {
-            "Contract# / Serial#": item.contractId ? item.contractId : "",
+            "Contract#/Serial#": item.contractId ? item.contractId : "",
             "Loss Date": item.lossDate ? item.lossDate : '',
             Diagnosis: item.diagnosis ? item.diagnosis : '',
             Status: item.status ? item.status : '',
