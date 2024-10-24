@@ -752,15 +752,16 @@ ${term}
 
         console.log("exist----------------------------------", mergeFileName)
         const checkFileExist = await checkFileExistsInS3(process.env.bucket_name, `mergedFile/${mergeFileName}`)
-        if (checkFileExist) {
-            // link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
-            response = { link: link, fileName: mergeFileName, bucketName: process.env.bucket_name, key: "mergedFile" }
-            res.send({
-                code: constant.successCode,
-                message: 'Success!',
-                result: response
-            })
-        } else {
+        // if (checkFileExist) {
+        //     // link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
+        //     response = { link: link, fileName: mergeFileName, bucketName: process.env.bucket_name, key: "mergedFile" }
+        //     res.send({
+        //         code: constant.successCode,
+        //         message: 'Success!',
+        //         result: response
+        //     })
+        // } 
+        //else {
             console.log("sdfsdfdsfdssdfsd----------------------------------", mergeFileName)
 
             pdf.create(html, options).toFile(orderFile, async (err, result) => {
@@ -771,10 +772,7 @@ ${term}
                 const bucketName = process.env.bucket_name
                 const s3Key = `pdfs/${mergeFileName}`;
                 //Upload to S3 bucket
-                await uploadToS3(orderFile, bucketName, s3Key);
-                console.log("sdfsdfdsfdssdfsd----------------------------------", orderFile)
-                console.log("bucketName----------------------------------", bucketName)
-                console.log("s3Key----------------------------------", s3Key)
+                await uploadToS3(orderFile, bucketName, s3Key);     
 
                 const termConditionFile = checkOrder.termCondition.fileName
                 const termPath = termConditionFile
@@ -803,7 +801,9 @@ ${term}
                 const mergedPdf = await mergePDFs(termPathBucket, orderPathBucket, `/tmp/merged_${mergeFileName}`);
                 // Upload merged PDF to S3
                 const mergedKey = `mergedFile/${mergeFileName}`;
+
                 await uploadToS3(`/tmp/merged_${mergeFileName}`, bucketName, mergedKey);
+
                 const params = {
                     Bucket: bucketName,
                     Key: `mergedFile/${mergeFileName}`
@@ -828,13 +828,14 @@ ${term}
                     subject: 'Order Term and Condition-' + checkOrder.unique_key,
                 }
                 let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
+                response = { link: link, fileName: mergeFileName, bucketName: process.env.bucket_name, key: "mergedFile" }
                 res.send({
                     code: constant.successCode,
                     message: 'Success!',
                     result: response
                 })
             })
-        }
+        
 
     }
     catch (err) {
