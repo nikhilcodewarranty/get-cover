@@ -1796,6 +1796,7 @@ exports.editFileCase = async (req, res) => {
                             let partsWarranty = fileData.model.toString().replace(/\s+/g, ' ').trim()
                             let labourWarranty = fileData.model.toString().replace(/\s+/g, ' ').trim()
                             let purchaseDate = fileData.model.toString().replace(/\s+/g, ' ').trim()
+                            console.log("checking the value++++++++",brand,serial,condition,retailValue,model)
                             if (brand == '' || serial == '' || condition == '' || retailValue == '' || model == '' || partsWarranty == '' || labourWarranty == '' || purchaseDate == '') {
                                 message.push({
                                     code: constant.errorCode,
