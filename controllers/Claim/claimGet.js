@@ -164,6 +164,7 @@ exports.getAllClaims = async (req, res, next) => {
               "contracts.orders.dealers.accountStatus": 1,
               "contracts.orders.dealers._id": 1,
               "contracts.orders.customer.username": 1,
+              "contracts.orders.customer._id": 1,
               "contracts.orders.dealers.dealerServicer": {
                 $map: {
                   input: "$contracts.orders.dealers.dealerServicer",
