@@ -1879,7 +1879,7 @@ exports.saveBulkClaim = async (req, res) => {
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {
         if (!item.exit) {
-          console.log("item.order-----------------",item.order)
+          console.log("item.order-----------------", item.order)
           const contractData = contractArray[i];
           const allDataArray = contractAllDataArray[i];
           const claimData = claimArray;
@@ -1899,7 +1899,7 @@ exports.saveBulkClaim = async (req, res) => {
             item.status = "Loss date should be in between coverage start date and present date!"
             item.exit = true;
           }
-      
+
           // if (allDataArray.length == 0 && item.contractId != '') {
           //   const filter = claimData.filter(claim => claim.contractId?.toString() === item.contractData._id?.toString())
           //   if (filter.length > 0) {
@@ -2295,10 +2295,35 @@ exports.saveBulkClaim = async (req, res) => {
       //Get Failure Claims 
       const successEntries = csvArray.filter(entry => entry.exit === false);
       const failureEntries = csvArray.filter(entry => entry.exit === true);
-      const htmlTableString = convertArrayToHTMLTable([], failureEntries);
-      //send Email to admin
-      let mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
+      let mailing;
+      let htmlTableString;
+      // Send Email notification for all roles user
+      if (req.role == "Dealer") {
+        htmlTableString = convertArrayToHTMLTable(successEntries, []);
+        mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
+        htmlTableString = convertArrayToHTMLTable([], failureEntries);
+        mailing = sgMail.send(emailConstant.sendCsvFile(ccMail, [], htmlTableString));
 
+
+      }
+      if (req.role == "Reseller") {
+        htmlTableString = convertArrayToHTMLTable(successEntries, []);
+        mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
+        htmlTableString = convertArrayToHTMLTable([], failureEntries);
+        mailing = sgMail.send(emailConstant.sendCsvFile(ccMail, [], htmlTableString));
+      }
+      if (req.role == "Customer") {
+        htmlTableString = convertArrayToHTMLTable(successEntries, []);
+        mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
+        htmlTableString = convertArrayToHTMLTable([], failureEntries);
+        mailing = sgMail.send(emailConstant.sendCsvFile(ccMail, [], htmlTableString));
+      }
+      //send Email to admin
+      if (req.role == "Super Admin") {
+        htmlTableString = convertArrayToHTMLTable([], failureEntries);
+        mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
+
+      }
       if (saveBulkClaim.length > 0) {
         let notificationData1 = {
           title: "Bulk Report",
