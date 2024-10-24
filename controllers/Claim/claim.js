@@ -322,7 +322,6 @@ exports.uploadCommentImage = async (req, res, next) => {
 exports.addClaim = async (req, res, next) => {
   try {
     let data = req.body;
-    console.log("data+++++++++++++++++++++++", data)
     let checkContract = await contractService.getContractById({ _id: data.contractId })
 
     if (new Date(data.lossDate) > new Date()) {
@@ -1719,7 +1718,7 @@ exports.saveBulkClaim = async (req, res) => {
       totalDataComing.forEach((data, i) => {
         if (!data.exit) {
           if (cache[data.contractId?.toLowerCase()]) {
-            data.status = "Duplicate contract id"
+            data.status = "Duplicate contract id/serial number"
             data.exit = true;
           } else {
             cache[data.contractId?.toLowerCase()] = true;
@@ -1877,14 +1876,15 @@ exports.saveBulkClaim = async (req, res) => {
       })
 
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
-
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {
         if (!item.exit) {
+          console.log("item.order-----------------",item.order)
           const contractData = contractArray[i];
-          const servicerData = servicerArray == undefined ? {} : servicerArray[i]
           const allDataArray = contractAllDataArray[i];
           const claimData = claimArray;
+          const servicerData = servicerArray == undefined ? allDataArray[0]?.order?.servicer : servicerArray[i]
+
           let flag;
           item.contractData = contractData;
           item.servicerData = servicerData;
@@ -1894,10 +1894,12 @@ exports.saveBulkClaim = async (req, res) => {
             item.status = "Contract not found"
             item.exit = true;
           }
-          if (contractData && new Date(contractData?.coverageStartDate) > new Date(item.lossDate)) {
+          let checkCoverageStartDate = new Date(contractData?.coverageStartDate).setHours(0, 0, 0, 0)
+          if (contractData && new Date(checkCoverageStartDate) > new Date(item.lossDate)) {
             item.status = "Loss date should be in between coverage start date and present date!"
             item.exit = true;
           }
+      
           // if (allDataArray.length == 0 && item.contractId != '') {
           //   const filter = claimData.filter(claim => claim.contractId?.toString() === item.contractData._id?.toString())
           //   if (filter.length > 0) {
@@ -2053,8 +2055,6 @@ exports.saveBulkClaim = async (req, res) => {
         return acc;
       }, { trueCount: 0, falseCount: 0 });
 
-      console.log(counts);
-
       const csvArray = await Promise.all(totalDataComing.map(async (item, i) => {
         // Build bulk csv for dealer only
         let servicerId = item.servicerData?._id
@@ -2082,7 +2082,6 @@ exports.saveBulkClaim = async (req, res) => {
                 "Contract#/Serial#": item.contractId ? item.contractId : "",
                 "Loss Date": item.lossDate ? item.lossDate : '',
                 Diagnosis: item.diagnosis ? item.diagnosis : '',
-                Status: item.status ? item.status : '',
               });
             }
 
@@ -2112,7 +2111,6 @@ exports.saveBulkClaim = async (req, res) => {
                 "Contract#/Serial#": item.contractId ? item.contractId : "",
                 "Loss Date": item.lossDate ? item.lossDate : '',
                 Diagnosis: item.diagnosis ? item.diagnosis : '',
-                Status: item.status ? item.status : '',
               });
             }
 
@@ -2143,7 +2141,6 @@ exports.saveBulkClaim = async (req, res) => {
                 "Contract#/Serial#": item.contractId ? item.contractId : "",
                 "Loss Date": item.lossDate ? item.lossDate : '',
                 Diagnosis: item.diagnosis ? item.diagnosis : '',
-                Status: item.status ? item.status : '',
               });
             }
 
@@ -2169,7 +2166,6 @@ exports.saveBulkClaim = async (req, res) => {
               "Contract#/Serial#": item.contractId ? item.contractId : "",
               "Loss Date": item.lossDate ? item.lossDate : '',
               Diagnosis: item.diagnosis ? item.diagnosis : '',
-              Status: item.status ? item.status : '',
             });
           }
 
@@ -2199,8 +2195,6 @@ exports.saveBulkClaim = async (req, res) => {
             response: existArray.data[servicerId]
           });
         }
-
-
         //send email to servicer      
         for (const item of flatArray) {
           if (item.email != '') {
@@ -2244,7 +2238,6 @@ exports.saveBulkClaim = async (req, res) => {
                 </style>
             </head>         
             <body>
-                <p>Success Entries: ${counts.falseCount}</p> <!-- Correct variable usage here -->
                 <table>
                     <thead><tr>${header}</tr></thead>
                     <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
