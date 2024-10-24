@@ -1974,6 +1974,8 @@ exports.saveBulkClaim = async (req, res) => {
 
       //Update eligibility when contract is open
 
+      console.log("totalDataComing-------------------------",totalDataComing);
+      return;
       const updateArrayPromise = totalDataComing.map(item => {
         if (!item.exit && item.contractData) return contractService.updateContract({ _id: item.contractData._id }, { eligibilty: false }, { new: true });
         else {
@@ -2305,11 +2307,11 @@ exports.saveBulkClaim = async (req, res) => {
             <body>
                 <table>
                 <tr>
-                <td colspan="2" style="text-align:center">Total Entries: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</td>
+                <td colspan="2" style="text-align:center">Total claims: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</td>
                 </tr>
                 <tr>
-                    <td span="1" style="text-align:center">Failure Entries: ${counts.trueCount}</td>
-                    <td span="1" style="text-align:center">Successful Entries: ${counts.falseCount}</td>
+                    <td span="1" style="text-align:center">Failure claims: ${counts.trueCount}</td>
+                    <td span="1" style="text-align:center">Successful added claims: ${counts.falseCount}</td>
                 </tr>
                 </table>
                 <table>
@@ -2344,7 +2346,6 @@ exports.saveBulkClaim = async (req, res) => {
       }
       //send Email to admin
       if (req.role == "Super Admin") {
-        console.log("failureEntries------------------",failureEntries)
         if (failureEntries.length > 0) {
           console.log("sdadasdasdasd")
           htmlTableString = convertArrayToHTMLTable([], failureEntries);
@@ -2373,11 +2374,11 @@ exports.saveBulkClaim = async (req, res) => {
             <body>
                 <table>
                 <tr>
-                <td colspan="2" style="text-align:center">Total Entries: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</td>
+                <td colspan="2" style="text-align:center">Total filed claims: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</td>
                 </tr>
                 <tr>
-                    <td span="1" style="text-align:center">Failure Entries: ${counts.trueCount}</td>
-                    <td span="1" style="text-align:center">Successful Entries: ${counts.falseCount}</td>
+                    <td span="1" style="text-align:center">Failure claims: ${counts.trueCount}</td>
+                    <td span="1" style="text-align:center">Successful added claims: ${counts.falseCount}</td>
                 </tr>
                 </table>
             </body>
