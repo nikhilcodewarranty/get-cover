@@ -94,6 +94,154 @@ const kkkk = new AWS.S3({
     }// Your AWS region
 });
 
+// //check file validation for orders
+// exports.checkFileValidation = async (req, res) => {
+//     try {
+//         uploadP(req, res, async (err) => {
+//             let data = req.body;
+//             let file = req.file;
+//             let csvName = file.key;
+//             let originalName = file.originalname;
+//             let size = file.size;
+//             let totalDataComing1 = [];
+//             let message = [];
+//             let ws;
+//             //S3 Bucket Read Code
+//             var params = { Bucket: process.env.bucket_name, Key: file.key };
+//             S3Bucket.getObject(params, function (err, data) {
+//                 if (err) {
+//                     console.log(err);
+//                 } else {
+//                     // Parse the buffer as an Excel file
+//                     const wb = XLSX.read(data.Body, { type: 'buffer' });
+//                     // Extract the data from the first sheet
+//                     const sheetName = wb.SheetNames[0];
+//                     ws = wb.Sheets[sheetName];
+//                     totalDataComing1 = XLSX.utils.sheet_to_json(ws);
+//                     const headers = [];
+//                     for (let cell in ws) {
+//                         // Check if the cell is in the first row and has a non-empty value
+//                         if (
+//                             /^[A-Z]1$/.test(cell) &&
+//                             ws[cell].v !== undefined &&
+//                             ws[cell].v !== null &&
+//                             ws[cell].v.trim() !== ""
+//                         ) {
+//                             headers.push(ws[cell].v);
+//                         }
+//                     }
+
+//                     if (headers.length !== 8) {
+//                         // fs.unlink('../../uploads/orderFile/' + req.file.filename)
+//                         res.send({
+//                             code: constant.successCode,
+//                             message:
+//                                 "Invalid file format detected. The sheet should contain exactly eight columns.",
+//                             orderFile: {
+//                                 fileName: csvName,
+//                                 name: originalName,
+//                                 size: file.size,
+//                             },
+//                         });
+//                         return;
+//                     }
+
+//                     const isValidLength = totalDataComing1.every(
+//                         (obj) => Object.keys(obj).length === 8
+//                     );
+//                     if (!isValidLength) {
+//                         res.send({
+//                             code: constant.successCode,
+//                             message: "Invalid fields value",
+//                             orderFile: {
+//                                 fileName: csvName,
+//                                 name: originalName,
+//                                 size: size,
+//                             },
+//                         });
+//                         return;
+//                     }
+//                     const totalDataComing = totalDataComing1.map((item) => {
+//                         const keys = Object.keys(item);
+//                         return {
+//                             retailValue: item[keys[4]],
+//                         };
+//                     });
+
+//                     const serialNumberArray = totalDataComing1.map((item) => {
+//                         const keys = Object.keys(item);
+//                         return {
+//                             serial: item[keys[2]].toString().toLowerCase(),
+//                         };
+//                     });
+
+//                     const serialNumbers = serialNumberArray.map(number => number.serial);
+//                     const duplicateSerials = serialNumbers.filter((serial, index) => serialNumbers.indexOf(serial) !== index);
+
+//                     if (duplicateSerials.length > 0) {
+//                         res.send({
+//                             code: constant.successCode,
+//                             message: "Serial numbers are not unique for this product",
+//                             orderFile: {
+//                                 fileName: csvName,
+//                                 name: originalName,
+//                                 size: size,
+//                             },
+//                         })
+//                         return
+//                     }
+
+//                     // Check retail price is in between rangeStart and rangeEnd
+//                     const isValidRetailPrice = totalDataComing.map((obj) => {
+//                         // Check if 'noOfProducts' matches the length of 'data'
+//                         if (
+//                             obj.retailValue < Number(data.rangeStart) ||
+//                             obj.retailValue > Number(data.rangeEnd)
+//                         ) {
+//                             message.push({
+//                                 code: constant.successCode,
+//                                 retailPrice: obj.retailValue,
+//                                 message: "Invalid Retail Price!",
+//                                 fileName: csvName,
+//                                 name: originalName,
+//                                 orderFile: {
+//                                     fileName: csvName,
+//                                     name: originalName,
+//                                     size: size,
+//                                 },
+//                             });
+//                         }
+//                     });
+
+//                     if (message.length > 0) {
+//                         res.send({
+//                             data: message,
+
+//                         });
+//                         return;
+//                     }
+
+//                     res.send({
+//                         code: constant.successCode,
+//                         message: "Verified",
+//                         orderFile: {
+//                             fileName: csvName,
+//                             name: originalName,
+//                             size: size,
+//                         },
+//                     });
+//                 }
+//             })
+
+//         });
+//     } catch (err) {
+//         res.send({
+//             code: constant.errorCode,
+//             message: err.message,
+//         });
+//     }
+// }
+
 //check file validation for orders
 exports.checkFileValidation = async (req, res) => {
     try {
@@ -104,7 +252,6 @@ exports.checkFileValidation = async (req, res) => {
             let originalName = file.originalname;
             let size = file.size;
             let totalDataComing1 = [];
-            let message = [];
             let ws;
             //S3 Bucket Read Code
             var params = { Bucket: process.env.bucket_name, Key: file.key };
@@ -112,159 +259,8 @@ exports.checkFileValidation = async (req, res) => {
                 if (err) {
                     console.log(err);
                 } else {
-                    // Parse the buffer as an Excel file
-                    const wb = XLSX.read(data.Body, { type: 'buffer' });
-                    // Extract the data from the first sheet
-                    const sheetName = wb.SheetNames[0];
-                    ws = wb.Sheets[sheetName];
-                    totalDataComing1 = XLSX.utils.sheet_to_json(ws);
-                    const headers = [];
-                    for (let cell in ws) {
-                        // Check if the cell is in the first row and has a non-empty value
-                        if (
-                            /^[A-Z]1$/.test(cell) &&
-                            ws[cell].v !== undefined &&
-                            ws[cell].v !== null &&
-                            ws[cell].v.trim() !== ""
-                        ) {
-                            headers.push(ws[cell].v);
-                        }
-                    }
-
-                    if (headers.length !== 8) {
-                        // fs.unlink('../../uploads/orderFile/' + req.file.filename)
-                        res.send({
-                            code: constant.successCode,
-                            message:
-                                "Invalid file format detected. The sheet should contain exactly eight columns.",
-                            orderFile: {
-                                fileName: csvName,
-                                name: originalName,
-                                size: file.size,
-                            },
-                        });
-                        return;
-                    }
-
-                    const isValidLength = totalDataComing1.every(
-                        (obj) => Object.keys(obj).length === 8
-                    );
-                    if (!isValidLength) {
-                        res.send({
-                            code: constant.successCode,
-                            message: "Invalid fields value",
-                            orderFile: {
-                                fileName: csvName,
-                                name: originalName,
-                                size: size,
-                            },
-                        });
-                        return;
-                    }
-                    const totalDataComing = totalDataComing1.map((item) => {
-                        const keys = Object.keys(item);
-                        return {
-                            retailValue: item[keys[4]],
-                        };
-                    });
-
-                    const serialNumberArray = totalDataComing1.map((item) => {
-                        const keys = Object.keys(item);
-                        return {
-                            serial: item[keys[2]].toString().toLowerCase(),
-                        };
-                    });
-
-                    const serialNumbers = serialNumberArray.map(number => number.serial);
-                    const duplicateSerials = serialNumbers.filter((serial, index) => serialNumbers.indexOf(serial) !== index);
-
-                    if (duplicateSerials.length > 0) {
-                        res.send({
-                            code: constant.successCode,
-                            message: "Serial numbers are not unique for this product",
-                            orderFile: {
-                                fileName: csvName,
-                                name: originalName,
-                                size: size,
-                            },
-                        })
-                        return
-                    }
-
-                    // Check retail price is in between rangeStart and rangeEnd
-                    const isValidRetailPrice = totalDataComing.map((obj) => {
-                        // Check if 'noOfProducts' matches the length of 'data'
-                        if (
-                            obj.retailValue < Number(data.rangeStart) ||
-                            obj.retailValue > Number(data.rangeEnd)
-                        ) {
-                            message.push({
-                                code: constant.successCode,
-                                retailPrice: obj.retailValue,
-                                message: "Invalid Retail Price!",
-                                fileName: csvName,
-                                name: originalName,
-                                orderFile: {
-                                    fileName: csvName,
-                                    name: originalName,
-                                    size: size,
-                                },
-                            });
-                        }
-                    });
-
-                    if (message.length > 0) {
-                        res.send({
-                            data: message,
-
-                        });
-                        return;
-                    }
-
-                    res.send({
-                        code: constant.successCode,
-                        message: "Verified",
-                        orderFile: {
-                            fileName: csvName,
-                            name: originalName,
-                            size: size,
-                        },
-                    });
-                }
-            })
-
-        });
-    } catch (err) {
-        res.send({
-            code: constant.errorCode,
-            message: err.message,
-        });
-    }
-}
-
-//check file validation for orders
-exports.checkFileValidation = async (req, res) => {
-    try {
-        uploadP(req, res, async (err) => {
-            let data = req.body;
-            let file = req.file;
-            let csvName = file.key;
-            let originalName = file.originalname;
-            let size = file.size;
-            let totalDataComing1 = [];
-            let ws;
-            //S3 Bucket Read Code
-            var params = { Bucket: process.env.bucket_name, Key: file.key };
-            S3Bucket.getObject(params, function (err, data) {
-                if (err) {
-                    console.log(err);
-                } else {
-                    if (!Buffer.isBuffer(data.Body)) {
-                        res.send({
-                            code: constant.errorCode,
-                            message: `Invalid file detected ${file.key}`
-                        })
-                        return
+                    if (!Buffer.isBuffer(data.Body)){
+                        resse
                     }
                     // Parse the buffer as an Excel file
                     const wb = XLSX.read(data.Body, { type: 'buffer' });
@@ -495,7 +491,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             let labourWarranty = fileData.labourWarranty.toString().replace(/\s+/g, ' ').trim()
                             let purchaseDate = fileData.purchaseDate.toString().replace(/\s+/g, ' ').trim()
                             let model = fileData.model.toString().replace(/\s+/g, ' ').trim()
-                            console.log("checking the value++++++++",brand,serial,condition,retailValue,model)
 
                             if (brand == '' || serial == '' || condition == '' || retailValue == '' || model == '' || partsWarranty == '' || labourWarranty == '' || purchaseDate == "") {
                                 message.push({
@@ -1797,7 +1792,6 @@ exports.editFileCase = async (req, res) => {
                             let partsWarranty = fileData.model.toString().replace(/\s+/g, ' ').trim()
                             let labourWarranty = fileData.model.toString().replace(/\s+/g, ' ').trim()
                             let purchaseDate = fileData.model.toString().replace(/\s+/g, ' ').trim()
-                            console.log("checking the value++++++++",brand,serial,condition,retailValue,model)
                             if (brand == '' || serial == '' || condition == '' || retailValue == '' || model == '' || partsWarranty == '' || labourWarranty == '' || purchaseDate == '') {
                                 message.push({
                                     code: constant.errorCode,
@@ -2899,7 +2893,7 @@ exports.getOrderContract = async (req, res) => {
             result1[e].reason = " "
             if (!result1[e].eligibilty) {
                 result1[e].reason = "Claims limit cross for this contract"
-            }
+              }
             if (result1[e].status != "Active") {
                 result1[e].reason = "Contract is not active"
             }
