@@ -1880,9 +1880,6 @@ exports.saveBulkClaim = async (req, res) => {
           const allDataArray = contractAllDataArray[i];
           const claimData = claimArray;
           const servicerData = servicerArray == undefined || servicerArray == null ? allDataArray[0]?.order?.servicer : servicerArray[i]
-          console.log("servicerData?-----------------------", servicerData)
-
-
           let flag;
           item.contractData = contractData;
           item.servicerData = servicerData;
@@ -1947,9 +1944,6 @@ exports.saveBulkClaim = async (req, res) => {
       let unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
 
       //Update eligibility when contract is open
-
-      console.log("sdsdfdsfsdfdsfsddfsd", totalDataComing);
-      return;
 
       const updateArrayPromise = totalDataComing.map(item => {
         if (!item.exit && item.contractData) return contractService.updateContract({ _id: item.contractData._id }, { eligibilty: false }, { new: true });
