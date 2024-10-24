@@ -1879,8 +1879,10 @@ exports.saveBulkClaim = async (req, res) => {
           const contractData = contractArray[i];
           const allDataArray = contractAllDataArray[i];
           const claimData = claimArray;
-          console.log(" allDataArray[0]?.order?.servicer-----------------------", allDataArray[0]?.order)
+          console.log(" allDataArray[0]?.order?-----------------------", allDataArray[0]?.order)
           const servicerData = servicerArray == undefined ? allDataArray[0]?.order?.servicer : servicerArray[i]
+          console.log("ervicerData?-----------------------", servicerData)
+
 
           let flag;
           item.contractData = contractData;
