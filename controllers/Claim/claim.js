@@ -3433,3 +3433,51 @@ exports.getCoverageType = async (req, res) => {
 }
 
 
+
+
+exports.updateClaimDate = async (req, res) => {
+  try {
+    let updateObject = {
+      $set: {
+        customerStatus: [
+          {
+            status: "request_submitted",
+            date: "2024-10-22T17:31:03.140+00:00"
+          }
+        ],
+        trackStatus: [
+          {
+            status: "open",
+            date: "2024-10-22T17:31:03.140+00:00"
+          },
+          {
+            status: "request_submitted",
+            date: "2024-10-22T17:31:03.140+00:00"
+          },
+          {
+            status: "request_sent",
+            date: "2024-10-22T17:31:03.140+00:00"
+          }
+        ],
+        claimStatus: [
+          {
+            status: "open",
+            date: "2024-10-22T17:31:03.140+00:00"
+          },
+        ],
+        repairStatus: [
+          {
+            status: "request_sent",
+            date: "2024-10-22T17:31:03.140+00:00"
+          }
+        ]
+      }
+    }
+    let updateClaim = await claimService.markAsPaid({ orderId: "GC-2024-100003" }, updateObject, { new: true })
+
+  } catch (err) {
+    res.send({
+      code: err.stack
+    })
+  }
+}
