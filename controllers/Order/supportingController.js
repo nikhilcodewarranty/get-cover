@@ -391,12 +391,10 @@ async function generateTC(orderData) {
         let otherInfo = []
         //Check contract is exist or not using contract id
         const contractArrayPromise = checkOrder?.productsArray.map(item => {
-            if (!item.exit) return contractService.getContractById({
+            return contractService.getContractById({
                 orderProductId: item._id
             });
-            else {
-                return null;
-            }
+
         })
         const contractArray = await Promise.all(contractArrayPromise);
 
@@ -435,15 +433,15 @@ async function generateTC(orderData) {
 
 `).join('');
 
-const coverageStartDates = otherInfo.map((product, index) => `
+        const coverageStartDates = otherInfo.map((product, index) => `
 <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageStartDate).format("MM/DD/YYYY")}</p>
 `).join('');
 
-const coverageEndDates = otherInfo.map((product, index) => `
+        const coverageEndDates = otherInfo.map((product, index) => `
 <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageEndDate).format("MM/DD/YYYY")}</p>
 `).join('');
 
-const term = otherInfo.map((product, index) => `
+        const term = otherInfo.map((product, index) => `
 <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${product.term / 12} ${product.term / 12 === 1 ? 'Year' : 'Years'}</p>
 `).join('');
 
@@ -468,7 +466,7 @@ const term = otherInfo.map((product, index) => `
                 },
             }
         }
-        let mergeFileName = checkOrder.unique_key + '.pdf'
+        let mergeFileName = checkOrder.unique_key + '_' + Date.now() + '.pdf'
         //  const orderFile = 'pdfs/' + mergeFileName;
         const orderFile = `/tmp/${mergeFileName}`; // Temporary local storage
         const html = `<head>
@@ -532,7 +530,7 @@ const term = otherInfo.map((product, index) => `
             const s3Key = `pdfs/${mergeFileName}`;
             //Upload to S3 bucket
             await uploadToS3(orderFile, bucketName, s3Key);
-            const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : "file-1723185474819.pdf"
+            const termConditionFile = checkOrder.termCondition.fileName
             const termPath = termConditionFile
             const termPathBucket = await downloadFromS3(bucketName, termPath);
             const orderPathBucket = await downloadFromS3(bucketName, s3Key);
@@ -589,7 +587,9 @@ const term = otherInfo.map((product, index) => `
     }
 }
 
+
 //Generate HTML to PDF
+
 exports.generateHtmltopdf = async (req, res) => {
     try {
         let response;
@@ -610,26 +610,37 @@ exports.generateHtmltopdf = async (req, res) => {
         //Get reseller primary info
         const resellerUser = await userService.getUserById1({ metaId: checkOrder.resellerId, isPrimary: true }, { isDeleted: false })
         //Get contract info of the order
+        //Get contract info of the order
         let productCoveredArray = []
+        let otherInfo = []
         //Check contract is exist or not using contract id
         const contractArrayPromise = checkOrder?.productsArray.map(item => {
-            if (!item.exit) return contractService.getContractById({
+            return contractService.getContractById({
                 orderProductId: item._id
             });
-            else {
-                return null;
-            }
+
         })
         const contractArray = await Promise.all(contractArrayPromise);
+
+
         for (let i = 0; i < checkOrder?.productsArray.length; i++) {
+            let anotherObj = {
+                coverageStartDate: checkOrder?.productsArray[i]?.coverageStartDate,
+                coverageEndDate: checkOrder?.productsArray[i]?.coverageEndDate,
+                term: checkOrder?.productsArray[i]?.term
+            }
+            otherInfo.push(anotherObj)
             if (checkOrder?.productsArray[i].priceType == 'Quantity Pricing') {
                 for (let j = 0; j < checkOrder?.productsArray[i].QuantityPricing.length; j++) {
                     let quanitityProduct = checkOrder?.productsArray[i].QuantityPricing[j];
                     let obj = {
-                        productName: quanitityProduct.name,
-                        noOfProducts: quanitityProduct.enterQuantity
+                        productName: checkOrder?.productsArray[i]?.dealerSku,
+                        noOfProducts: quanitityProduct.enterQuantity,
+
                     }
                     productCoveredArray.push(obj)
+
+
                 }
 
             }
@@ -637,8 +648,9 @@ exports.generateHtmltopdf = async (req, res) => {
                 let findContract = contractArray.find(contract => contract.orderProductId.toString() === checkOrder?.productsArray[i]._id.toString())
 
                 let obj = {
-                    productName: findContract.productName,
-                    noOfProducts: checkOrder?.productsArray[i].noOfProducts
+                    productName: findContract?.dealerSku,
+                    noOfProducts: checkOrder?.productsArray[i].noOfProducts,
+
                 }
                 productCoveredArray.push(obj)
             }
@@ -646,9 +658,22 @@ exports.generateHtmltopdf = async (req, res) => {
         }
         // res.json(productCoveredArray);
         // return;
+        // return;
         const tableRows = productCoveredArray.map(product => `
         <p style="font-size:13px;">${product.productName} : ${product.noOfProducts}</p>
 
+`).join('');
+
+        const coverageStartDates = otherInfo.map((product, index) => `
+<p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageStartDate).format("MM/DD/YYYY")}</p>
+`).join('');
+
+        const coverageEndDates = otherInfo.map((product, index) => `
+<p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageEndDate).format("MM/DD/YYYY")}</p>
+`).join('');
+
+        const term = otherInfo.map((product, index) => `
+<p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${product.term / 12} ${product.term / 12 === 1 ? 'Year' : 'Years'}</p>
 `).join('');
 
         const checkServicer = await servicerService.getServiceProviderById({
@@ -659,7 +684,9 @@ exports.generateHtmltopdf = async (req, res) => {
             ]
         }, { isDeleted: false })
 
+
         const servicerUser = await userService.getUserById1({ metaId: checkOrder.servicerId, isPrimary: true }, { isDeleted: false })
+        //res.json(checkDealer);return
         const options = {
             format: 'A4',
             orientation: 'portrait',
@@ -670,58 +697,60 @@ exports.generateHtmltopdf = async (req, res) => {
                 },
             }
         }
-        let mergeFileName = checkOrder.unique_key + '.pdf'
+        // let mergeFileName = checkOrder.unique_key + '.pdf'
+        let mergeFileName = checkOrder.unique_key + '_' + Date.now() + '.pdf'
         //  const orderFile = 'pdfs/' + mergeFileName;
         const orderFile = `/tmp/${mergeFileName}`; // Temporary local storage
         const html = `<head>
         <link rel="stylesheet" href="https://gistcdn.githack.com/mfd/09b70eb47474836f25a21660282ce0fd/raw/e06a670afcb2b861ed2ac4a1ef752d062ef6b46b/Gilroy.css"></link>
         </head>
         <table border='1' border-collapse='collapse' style=" border-collapse: collapse; font-size:13px;font-family:  'Gilroy', sans-serif;">
-                            <tr>
-                                <td style="width:50%; font-size:13px;padding:15px;">  GET COVER service contract number:</td>
-                                <td style="font-size:13px;">${checkOrder.unique_key}</td>
-                            </tr>
-                            <tr>
-                                <td style="font-size:13px;padding:15px;">${checkReseller ? "Reseller Name" : "Dealer Name"}:</td>
-                                <td style="font-size:13px;"> 
-                                    <p><b>Attention –</b> ${checkReseller ? checkReseller.name : checkDealer.name}</p>
-                                    <p> <b>Email Address – </b>${resellerUser ? resellerUser?.email : DealerUser.email}</p>
-                                    <p><b>Telephone :</b> +1 ${resellerUser ? resellerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : DealerUser.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3")}</p>
-                                </td>
-                            </tr>
-                        <tr>
-                            <td style="font-size:13px;padding:15px;">GET COVER service contract holder name:</td>
-                            <td style="font-size:13px;">
-                            <p> <b>Attention –</b>${checkCustomer ? checkCustomer?.username : ''}</p>
-                            <p> <b>Email Address –</b>${checkCustomer ? customerUser?.email : ''}</p>
-                            <p><b>Telephone :</b> +1${checkCustomer ? customerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''}</p>
-                            </td>
-                        </tr>
-                    <tr>
-                        <td style="font-size:13px;padding:15px;">Address of GET COVER service contract holder:</td>
-                        <td style="font-size:13px;">${checkCustomer ? checkCustomer?.street : ''},${checkCustomer ? checkCustomer?.city : ''},${checkCustomer ? checkCustomer?.state : ''}</td>
-                   </tr>
-                <tr>
-                    <td style="font-size:13px;padding:15px;">Coverage Start Date:</td>
-                    <td style="font-size:13px;"> ${moment(coverageStartDate).format("MM/DD/YYYY")}</td>
-                </tr>
-            <tr>
-                <td style="font-size:13px;padding:15px;">GET COVER service contract period:</td>
-                <td style="font-size:13px;">
-                ${checkOrder.productsArray[0]?.term / 12} 
-                ${checkOrder.productsArray[0]?.term / 12 === 1 ? 'Year' : 'Years'}
-                </td>
-            </tr>
-            <tr>
-            <td style="font-size:13px;padding:15px;">Coverage End Date:</td>
-            <td style="font-size:13px;">${moment(coverageEndDate).format("MM/DD/YYYY")}</td>
-          </tr>
-            <tr>
-                <td style="font-size:13px;padding:15px;">Number of covered components:</td>
-               <td> ${tableRows}   </td>                 
-            </tr >
-            
-        </table > `;
+        <tr>
+            <td style="width:50%; font-size:13px;padding:15px;">  GET COVER service contract number:</td>
+            <td style="font-size:13px;">${checkOrder.unique_key}</td>
+        </tr>
+        <tr>
+            <td style="font-size:13px;padding:15px;">${checkReseller ? "Reseller Name" : "Dealer Name"}:</td>
+            <td style="font-size:13px;"> 
+                <p><b>Attention –</b> ${checkReseller ? checkReseller.name : checkDealer.name}</p>
+                <p> <b>Email Address – </b>${resellerUser ? resellerUser?.email : DealerUser.email}</p>
+                <p><b>Telephone :</b> +1 ${resellerUser ? resellerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : DealerUser.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3")}</p>
+            </td>
+        </tr>
+    <tr>
+        <td style="font-size:13px;padding:15px;">GET COVER service contract holder name:</td>
+        <td style="font-size:13px;">
+        <p> <b>Attention –</b>${checkCustomer ? checkCustomer?.username : ''}</p>
+        <p> <b>Email Address –</b>${checkCustomer ? customerUser?.email : ''}</p>
+        <p><b>Telephone :</b> +1${checkCustomer ? customerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''}</p>
+        </td>
+    </tr>
+<tr>
+    <td style="font-size:13px;padding:15px;">Address of GET COVER service contract holder:</td>
+    <td style="font-size:13px;">${checkCustomer ? checkCustomer?.street : ''}, ${checkCustomer ? checkCustomer?.city : ''}, ${checkCustomer ? checkCustomer?.state : ''}, ${checkCustomer ? checkCustomer?.country : ''}</td>
+</tr>
+<tr>
+<td style="font-size:13px;padding:15px;">Coverage Start Date:</td>
+<td style="font-size:13px;"> ${coverageStartDates}</td>
+</tr>
+<tr>
+<td style="font-size:13px;padding:15px;">GET COVER service contract period:</td>
+<td style="font-size:13px;">
+${term} 
+</td>
+</tr>
+<tr>
+<td style="font-size:13px;padding:15px;">Coverage End Date:</td>
+<td style="font-size:13px;">${coverageEndDates}</td >
+</tr >
+<tr>
+<td style="font-size:13px;padding:15px;">Number of covered components:</td>
+<td> ${tableRows}   </td>                 
+</tr >
+
+</table > `;
+
+        console.log("exist----------------------------------", mergeFileName)
         const checkFileExist = await checkFileExistsInS3(process.env.bucket_name, `mergedFile/${mergeFileName}`)
         if (checkFileExist) {
             // link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
@@ -732,6 +761,8 @@ exports.generateHtmltopdf = async (req, res) => {
                 result: response
             })
         } else {
+            console.log("sdfsdfdsfdssdfsd----------------------------------", mergeFileName)
+
             pdf.create(html, options).toFile(orderFile, async (err, result) => {
                 if (err) return console.log(err);
                 const { PDFDocument, rgb } = require('pdf-lib');
@@ -739,9 +770,16 @@ exports.generateHtmltopdf = async (req, res) => {
                 const fileContent = await fs.readFile(orderFile);
                 const bucketName = process.env.bucket_name
                 const s3Key = `pdfs/${mergeFileName}`;
+                //Upload to S3 bucket
                 await uploadToS3(orderFile, bucketName, s3Key);
-                const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : "file-1723185474819.pdf"
+                console.log("sdfsdfdsfdssdfsd----------------------------------", orderFile)
+                console.log("bucketName----------------------------------", bucketName)
+                console.log("s3Key----------------------------------", s3Key)
+
+                const termConditionFile = checkOrder.termCondition.fileName
                 const termPath = termConditionFile
+                console.log("termPath----------------------------------", termPath)
+                //Download from S3 bucket 
                 const termPathBucket = await downloadFromS3(bucketName, termPath);
                 const orderPathBucket = await downloadFromS3(bucketName, s3Key);
                 async function mergePDFs(pdfBytes1, pdfBytes2, outputPath) {
@@ -766,15 +804,36 @@ exports.generateHtmltopdf = async (req, res) => {
                 // Upload merged PDF to S3
                 const mergedKey = `mergedFile/${mergeFileName}`;
                 await uploadToS3(`/tmp/merged_${mergeFileName}`, bucketName, mergedKey);
-                response = { link: link, fileName: mergeFileName, bucketName: process.env.bucket_name, key: "mergedFile" }
+                const params = {
+                    Bucket: bucketName,
+                    Key: `mergedFile/${mergeFileName}`
+                };
+                //Read from the s3 bucket
+                const data = await S3.getObject(params).promise();
+                let attachment = data.Body.toString('base64');
 
+                //sendTermAndCondition
+                // Send Email code here
+                let notificationEmails = await supportingFunction.getUserEmails();
+                notificationEmails.push(DealerUser.email)
+                notificationEmails.push(resellerUser?.email)
+                let settingData = await userService.getSetting({});
+                let emailData = {
+                    darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                    lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                    address: settingData[0]?.address,
+                    websiteSetting: settingData[0],
+                    senderName: customerUser.firstName,
+                    content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
+                    subject: 'Order Term and Condition-' + checkOrder.unique_key,
+                }
+                let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
                 res.send({
                     code: constant.successCode,
                     message: 'Success!',
                     result: response
                 })
-
-            });
+            })
         }
 
     }
