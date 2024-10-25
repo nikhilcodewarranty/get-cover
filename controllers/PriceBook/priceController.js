@@ -1491,7 +1491,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
             term: item[keys[9]],   // Second key's value
           };
         });
-
+        let totalDataOriginal = totalDataComing
         for (let c = 0; c < totalDataComing.length; c++) {
 
           totalDataComing[c].inValid = false
@@ -1591,7 +1591,64 @@ exports.uploadRegularPriceBook = async (req, res) => {
         //html code here
 
 
+        function convertArrayToHTMLTable(array) {
+          const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');
+          const rows = array.map(obj => {
+            const values = Object.values(obj).map(value => `<td>${value}</td>`);
+            values[2] = `${values[2]}`;
+            return values.join('');
+          });
 
+          const htmlContent = `<html>
+              <head>
+                  <style>
+                      table {
+                          border-collapse: collapse;
+                          width: 100%; 
+                      }
+                      th, td {
+                          border: 1px solid #dddddd;
+                          text-align: left;
+                          padding: 8px;
+                      }
+                      th {
+                          background-color: #f2f2f2;
+                      }
+                  </style>
+              </head>
+              <body>
+                  <table>
+                      <thead><tr>${header}</tr></thead>
+                      <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
+                  </table>
+              </body>
+          </html>`;
+
+          return htmlContent;
+        }
+        totalDataOriginal = totalDataOriginal.map((item) => {
+          let match = totalDataComing.find((secondItem) => secondItem.name === item.name);
+        
+          if (match) {
+            // If match is found, add reason and status
+            return {
+              ...item,
+              reason: match.reason,
+              status: match.inValid ? 'success' : 'unsuccessful'
+            };
+          }
+          //  else {
+          //   // If no match is found, add default reason and status
+          //   return {
+          //     ...item,
+          //     reason: 'No matching reason',
+          //     status: 'unsuccessful'
+          //   };
+          // }
+        });
+        const htmlTableString = convertArrayToHTMLTable(totalDataOriginal);
+
+        const mailing = sgMail.send(emailConstant.sendCsvFile(("anil@codenomad.net"), ["noreply@getcover.com"], htmlTableString));
 
         res.send({
           code: constant.successCode,
