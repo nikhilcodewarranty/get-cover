@@ -1527,8 +1527,8 @@ exports.uploadRegularPriceBook = async (req, res) => {
             totalDataComing[c].inValid = true
             totalDataComing[c].reason = "Product sku already exist"
           }
-          console.log("name check ----------------------",name)
-          if(!name){
+          console.log("name check ----------------------", name)
+          if (!name) {
             totalDataComing[c].inValid = true
             totalDataComing[c].reason = "Product sku required"
           }
@@ -1541,10 +1541,16 @@ exports.uploadRegularPriceBook = async (req, res) => {
           console.log("check", coverageType)
           // coverageType = ["breakdown", "accidental", "liquid_damage"]
           let checkCoverageType = await options.findOne({ "value.label": { $all: coverageType }, "name": "coverage_type" })
+          let hasDuplicates = new Set(coverageType).size !== coverageType.length;
+
 
           if (!checkCoverageType) {
             totalDataComing[c].inValid = true
             totalDataComing[c].reason = "Invalid coverage type"
+          }
+          if (hasDuplicates) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Repeated coverage type "
           }
           totalDataComing[c].coverageType = coverageType
           if (checkCoverageType) {
@@ -1652,8 +1658,8 @@ exports.uploadRegularPriceBook = async (req, res) => {
             totalDataComing[c].inValid = true
             totalDataComing[c].reason = "Product sku already exist"
           }
-          console.log("name check ----------------------",name)
-          if(!name){
+          console.log("name check ----------------------", name)
+          if (!name) {
             totalDataComing[c].inValid = true
             totalDataComing[c].reason = "Product sku required"
           }
@@ -1810,8 +1816,8 @@ exports.uploadRegularPriceBook = async (req, res) => {
             totalDataComing[c].inValid = true
             totalDataComing[c].reason = "Product sku already exist"
           }
-          console.log("name check ----------------------",name)
-          if(!name){
+          console.log("name check ----------------------", name)
+          if (!name) {
             totalDataComing[c].inValid = true
             totalDataComing[c].reason = "Product sku required"
           }
