@@ -1710,6 +1710,7 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
               let checkDealerSku1 = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, dealerSku: currentData.dealerSku.trim() })
               if (checkDealerSku1) {
                 if (checkDealerSku1.priceBook.toString() == checkPriceBook._id.toString()) {
+                let brokerFee = currentData.retailPrice - wholeSalePrice
                   let updateDealerPriceBook = await dealerPriceService.updateDealerPrice({ _id: checkDealerSku._id }, { retailPrice: currentData.retailPrice, brokerFee: brokerFee, dealerSku: currentData.dealerSku.trim() }, { new: true })
                   currentData.message = "Updated successfully"
                 } else {
