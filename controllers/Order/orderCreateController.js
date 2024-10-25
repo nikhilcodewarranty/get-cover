@@ -1200,6 +1200,7 @@ exports.createOrder1 = async (req, res) => {
                 data.productsArray[A].coverageEndDate1 = addOneDay2
                 data.productsArray[A].coverageStartDate = addOneDay1.setDate(addOneDay1.getDate() + 1);
                 data.productsArray[A].coverageEndDate = addOneDay3.setDate(addOneDay3.getDate() + 1);
+                data.productsArray[A].coverageStartDate1 = new Date(data.productsArray[A].coverageStartDate1).setHours(0, 0, 0, 0)
                 // data.productsArray[A].coverageStartDate1
                 // data.productsArray[A].coverageStartDate.setHours(0, 0, 0, 0)
                 // data.productsArray[A].coverageEndDate1.setHours(0, 0, 0, 0)
