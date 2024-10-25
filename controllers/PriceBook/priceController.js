@@ -1657,7 +1657,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
           }
         });
         const htmlTableString = convertArrayToHTMLTable(totalDataOriginal1);
-        const mailing = sgMail.send(emailConstant.sendPriceBookFile(("anil@codenomad.net"), ["noreply@getcover.com"], htmlTableString));
+        const mailing = sgMail.send(emailConstant.sendPriceBookFile(("yashasvi@codenomad.net"), ["noreply@getcover.com"], htmlTableString));
 
         res.send({
           code: constant.successCode,
@@ -1855,7 +1855,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
           }
         });
         const htmlTableString = convertArrayToHTMLTable(totalDataOriginal1);
-        const mailing = sgMail.send(emailConstant.sendPriceBookFile(("anil@codenomad.net"), ["noreply@getcover.com"], htmlTableString));
+        const mailing = sgMail.send(emailConstant.sendPriceBookFile(("yashasvi@codenomad.net"), ["noreply@getcover.com"], htmlTableString));
 
 
         res.send({
@@ -2088,7 +2088,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
           }
         });
         const htmlTableString = convertArrayToHTMLTable(totalDataOriginal1);
-        const mailing = sgMail.send(emailConstant.sendPriceBookFile(("anil@codenomad.net"), ["noreply@getcover.com"], htmlTableString));
+        const mailing = sgMail.send(emailConstant.sendPriceBookFile(("yashasvi@codenomad.net"), ["noreply@getcover.com"], htmlTableString));
 
         res.send({
           code: constant.successCode,
