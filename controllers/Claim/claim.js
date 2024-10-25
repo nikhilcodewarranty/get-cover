@@ -1662,30 +1662,33 @@ exports.saveBulkClaim = async (req, res) => {
 
       for (let u = 0; u < totalDataComing.length; u++) {
         let objectToCheck = totalDataComing[u]
-        let getContractDetail = await contractService.getContractById({
-          $and: [
-            {
+        if (objectToCheck.servicerName != '' || objectToCheck.servicerName != null) {
+          let getContractDetail = await contractService.getContractById({
+            $and: [
+              {
+                $or: [
+                  { unique_key: { '$regex': objectToCheck.contractId ? objectToCheck.contractId : '', '$options': 'i' } },
+                  { 'serial': { '$regex': objectToCheck.contractId ? objectToCheck.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                ],
+
+              },
+              { eligibilty: true }
+            ],
+
+          });
+          let getOrderDetail = await orderService.getOrder({ _id: getContractDetail?.orderId })
+          if (getOrderDetail?.servicerId != null) {
+            let getServiceData = await servicerService.getServicerByName({
               $or: [
-                { unique_key: { '$regex': objectToCheck.contractId ? objectToCheck.contractId : '', '$options': 'i' } },
-                { 'serial': { '$regex': objectToCheck.contractId ? objectToCheck.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-              ],
-
-            },
-            { eligibilty: true }
-          ],
-
-        });
-        let getOrderDetail = await orderService.getOrder({ _id: getContractDetail?.orderId })
-        if (getOrderDetail?.servicerId != null) {
-          let getServiceData = await servicerService.getServicerByName({
-            $or: [
-              { _id: getOrderDetail.servicerId },
-              { dealerId: getOrderDetail.servicerId },
-              { resellerId: getOrderDetail.servicerId },
-            ]
-          })
-          totalDataComing[u].servicerName = getServiceData.name
+                { _id: getOrderDetail.servicerId },
+                { dealerId: getOrderDetail.servicerId },
+                { resellerId: getOrderDetail.servicerId },
+              ]
+            })
+            totalDataComing[u].servicerName = getServiceData.name
+          }
         }
+
       }
 
 
@@ -1974,6 +1977,8 @@ exports.saveBulkClaim = async (req, res) => {
 
       //Update eligibility when contract is open
 
+      // console.log("totalDataComing-------------------------", totalDataComing);
+      // return;
       const updateArrayPromise = totalDataComing.map(item => {
         if (!item.exit && item.contractData) return contractService.updateContract({ _id: item.contractData._id }, { eligibilty: false }, { new: true });
         else {
@@ -2270,7 +2275,7 @@ exports.saveBulkClaim = async (req, res) => {
                 </table>
             </body>
           </html>`;
-        }   
+        }
 
         if (array1.length > 0) {
           const header = Object.keys(array1[0]).filter(key => key !== 'exit').map(key => `<th>${key}</th>`).join('');
@@ -2281,7 +2286,7 @@ exports.saveBulkClaim = async (req, res) => {
               .map(([, value]) => `<td>${value}</td>`);
 
             values[2] = `${values[2]}`; // Keep this line if you have specific logic for this index
-            return values.join(''); 
+            return values.join('');
           });
 
           htmlContent += `
@@ -2305,11 +2310,11 @@ exports.saveBulkClaim = async (req, res) => {
             <body>
                 <table>
                 <tr>
-                <td colspan="2" style="text-align:center">Total Entries: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</td>
+                <td colspan="2" style="text-align:center">Total claims: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</td>
                 </tr>
                 <tr>
-                    <td span="1" style="text-align:center">Failure Entries: ${counts.trueCount}</td>
-                    <td span="1" style="text-align:center">Successful Entries: ${counts.falseCount}</td>
+                    <td span="1" style="text-align:center">Failure claims: ${counts.trueCount}</td>
+                    <td span="1" style="text-align:center">Successful added claims: ${counts.falseCount}</td>
                 </tr>
                 </table>
                 <table>
@@ -2344,7 +2349,6 @@ exports.saveBulkClaim = async (req, res) => {
       }
       //send Email to admin
       if (req.role == "Super Admin") {
-        console.log("failureEntries------------------",failureEntries)
         if (failureEntries.length > 0) {
           console.log("sdadasdasdasd")
           htmlTableString = convertArrayToHTMLTable([], failureEntries);
@@ -2373,11 +2377,11 @@ exports.saveBulkClaim = async (req, res) => {
             <body>
                 <table>
                 <tr>
-                <td colspan="2" style="text-align:center">Total Entries: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</td>
+                <td colspan="2" style="text-align:center">Total filed claims: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</td>
                 </tr>
                 <tr>
-                    <td span="1" style="text-align:center">Failure Entries: ${counts.trueCount}</td>
-                    <td span="1" style="text-align:center">Successful Entries: ${counts.falseCount}</td>
+                    <td span="1" style="text-align:center">Failure claims: ${counts.trueCount}</td>
+                    <td span="1" style="text-align:center">Successful added claims: ${counts.falseCount}</td>
                 </tr>
                 </table>
             </body>
