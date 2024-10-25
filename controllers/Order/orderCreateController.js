@@ -1196,14 +1196,14 @@ exports.createOrder1 = async (req, res) => {
                 addOneDay3.setMonth(addOneDay3.getMonth() + getChoosedProducts[A].term)
                 addOneDay3.setDate(addOneDay3.getDate() - 1)
 
-                data.productsArray[A].coverageStartDate1 = addOneDay
-                data.productsArray[A].coverageEndDate1 = addOneDay2
-                data.productsArray[A].coverageStartDate = addOneDay1.setDate(addOneDay1.getDate() + 1);
-                data.productsArray[A].coverageEndDate = addOneDay3.setDate(addOneDay3.getDate() + 1);
-                data.productsArray[A].coverageStartDate1.setHours(0, 0, 0, 0)
-                data.productsArray[A].coverageStartDate.setHours(0, 0, 0, 0)
-                data.productsArray[A].coverageEndDate1.setHours(0, 0, 0, 0)
-                data.productsArray[A].coverageEndDate.setHours(0, 0, 0, 0)
+                data.productsArray[A].coverageStartDate1 = addOneDay.setHours(0, 0, 0, 0)
+                data.productsArray[A].coverageEndDate1 = addOneDay2.setHours(0, 0, 0, 0)
+                data.productsArray[A].coverageStartDate = addOneDay1.setDate(addOneDay1.getDate() + 1).setHours(0, 0, 0, 0);
+                data.productsArray[A].coverageEndDate = addOneDay3.setDate(addOneDay3.getDate() + 1).setHours(0, 0, 0, 0);
+                // data.productsArray[A].coverageStartDate1.setHours(0, 0, 0, 0)
+                // data.productsArray[A].coverageStartDate.setHours(0, 0, 0, 0)
+                // data.productsArray[A].coverageEndDate1.setHours(0, 0, 0, 0)
+                // data.productsArray[A].coverageEndDate.setHours(0, 0, 0, 0)
 
             }
             if (!getChoosedProducts[A].adhDays) {
