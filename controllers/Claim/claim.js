@@ -2547,7 +2547,7 @@ exports.sendMessages = async (req, res) => {
       subject: "New message for claim # :" + checkClaim.unique_key + ""
     }
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(emailTo ? emailTo?.email : process.env.servicerEmail, notificationEmails, emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate("amit@codenomad.net", notificationEmails, emailData))
     res.send({
       code: constant.successCode,
       messages: 'Message Sent!',
