@@ -2533,8 +2533,7 @@ exports.sendMessages = async (req, res) => {
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
 
-    console.log("notificationEmails----------------",notificationEmails)
-    console.log("emailTo----------------",emailTo)
+    console.log("emailTo----------------", emailTo)
 
     // notificationEmails.push(emailTo.email);
     let emailData = {
@@ -2547,7 +2546,7 @@ exports.sendMessages = async (req, res) => {
       subject: "New message for claim # :" + checkClaim.unique_key + ""
     }
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate("amit@codenomad.net", notificationEmails, emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(emailTo?.email, notificationEmails, emailData))
     res.send({
       code: constant.successCode,
       messages: 'Message Sent!',
