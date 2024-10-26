@@ -323,11 +323,9 @@ exports.addClaim = async (req, res, next) => {
   try {
     let data = req.body;
     let checkContract = await contractService.getContractById({ _id: data.contractId })
-    console.log("data+++++", new Date(data.lossDate))
 
     data.lossDate = new Date(data.lossDate).setDate(new Date(data.lossDate).getDate() + 1)
     data.lossDate = new Date(data.lossDate)
-    console.log("data+++++", data)
 
     if (!checkContract) {
       res.send({
@@ -355,7 +353,6 @@ exports.addClaim = async (req, res, next) => {
         return;
       }
     }
-    console.log("new Date(data.lossDate)", new Date(data.lossDate))
     let checkCoverageStartDate = new Date(checkContract.coverageStartDate).setHours(0, 0, 0, 0)
     if (new Date(checkCoverageStartDate) > new Date(data.lossDate)) {
       res.send({
@@ -2536,6 +2533,9 @@ exports.sendMessages = async (req, res) => {
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
 
+    console.log("notificationEmails----------------",notificationEmails)
+    console.log("emailTo----------------",emailTo)
+
     // notificationEmails.push(emailTo.email);
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -2544,7 +2544,7 @@ exports.sendMessages = async (req, res) => {
       websiteSetting: settingData[0],
       senderName: emailTo?.firstName,
       content: "The new message for " + checkClaim.unique_key + " claim",
-      subject: "New Message"
+      subject: "New message for claim # :" + checkClaim.unique_key + ""
     }
 
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(emailTo ? emailTo?.email : process.env.servicerEmail, notificationEmails, emailData))
