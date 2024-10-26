@@ -18,6 +18,16 @@ module.exports = {
         html: data
       };
     },
+
+    sendPriceBookFile: (toEmail, ccMail, data) => {
+      return {
+        to: toEmail,
+        cc: ccMail,
+        from: process.env.from_email,
+        subject: `Price Book Report`,
+        html: data
+      };
+    },
   
     sendEmailTemplate: (toEmail, ccEmail, data) => {
       return {

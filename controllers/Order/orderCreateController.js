@@ -1190,12 +1190,9 @@ exports.createOrder1 = async (req, res) => {
                 let addOneDay = new Date(getChoosedProducts[A].coverageStartDate)
                 let addOneDay1 = new Date(getChoosedProducts[A].coverageStartDate)
                 let addOneDay2 = new Date(getChoosedProducts[A].coverageStartDate)
-                console.log("checking the date+++++++++++++++++++++++", addOneDay2)
                 addOneDay2.setMonth(addOneDay2.getMonth() + getChoosedProducts[A].term)
                 addOneDay2.setDate(addOneDay2.getDate() - 1)
-                console.log("checking the date+++++++++++++++++++++++", addOneDay2)
                 let addOneDay3 = new Date(getChoosedProducts[A].coverageStartDate)
-                console.log("checking the date+++++++++++++++++++++++", addOneDay3)
                 addOneDay3.setMonth(addOneDay3.getMonth() + getChoosedProducts[A].term)
                 addOneDay3.setDate(addOneDay3.getDate() - 1)
 
@@ -1203,6 +1200,14 @@ exports.createOrder1 = async (req, res) => {
                 data.productsArray[A].coverageEndDate1 = addOneDay2
                 data.productsArray[A].coverageStartDate = addOneDay1.setDate(addOneDay1.getDate() + 1);
                 data.productsArray[A].coverageEndDate = addOneDay3.setDate(addOneDay3.getDate() + 1);
+
+                // need for sethours to 0 0 0 0
+
+                // data.productsArray[A].coverageStartDate1 = new Date(data.productsArray[A].coverageStartDate1).setHours(0, 0, 0, 0)
+                // data.productsArray[A].coverageStartDate = new Date(data.productsArray[A].coverageStartDate).setHours(0, 0, 0, 0)
+                // data.productsArray[A].coverageEndDate1 = new Date(data.productsArray[A].coverageEndDate1).setHours(0, 0, 0, 0)
+                // data.productsArray[A].coverageEndDate = new Date(data.productsArray[A].coverageEndDate).setHours(0, 0, 0, 0)
+               
 
             }
             if (!getChoosedProducts[A].adhDays) {
