@@ -392,42 +392,42 @@ exports.addClaim = async (req, res, next) => {
 
     let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
     let remainingPrice = checkContract.productValue - claimTotal[0]?.amount
-    // if (data.coverageType != "") {
-    //   let checkCoverageTypeForContract = checkContract.coverageType.find(item => item.value == data.coverageType)
-    //   if (!checkCoverageTypeForContract) {
-    //     res.send({
-    //       code: constant.errorCode,
-    //       message: 'Coverage type is not available for this contract!'
-    //     })
-    //     return;
-    //   }
-    //   let startDateToCheck = new Date(checkContract.coverageStartDate)
-    //   let coverageTypeDays = checkContract.adhDays
-    //   let serviceCoverageType = checkContract.serviceCoverageType
+    if (data.coverageType != "") {
+      let checkCoverageTypeForContract = checkContract.coverageType.find(item => item.value == data.coverageType)
+      if (!checkCoverageTypeForContract) {
+        res.send({
+          code: constant.errorCode,
+          message: 'Coverage type is not available for this contract!'
+        })
+        return;
+      }
+      let startDateToCheck = new Date(checkContract.coverageStartDate)
+      let coverageTypeDays = checkContract.adhDays
+      let serviceCoverageType = checkContract.serviceCoverageType
 
-    //   let getDeductible = coverageTypeDays.filter(coverageType => coverageType.value == data.coverageType)
+      let getDeductible = coverageTypeDays.filter(coverageType => coverageType.value == data.coverageType)
 
-    //   let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0].waitingDays))
+      let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0].waitingDays))
 
-    //   let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
-    //   console.log("getCoverageTypeFromOption", getCoverageTypeFromOption)
-    //   const result = getCoverageTypeFromOption.value.filter(item => item.value === data.coverageType).map(item => item.label);
-    //   console.log(new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0));
-    //   checkCoverageTypeDate = new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0)
-    //   data.lossDate = new Date(data.lossDate).setHours(0, 0, 0, 0)
-    //   if (new Date(checkCoverageTypeDate) > new Date(data.lossDate)) {
-    //     // claim not allowed for that coverageType
-    //     res.send({
-    //       code: 403,
-    //       tittle: `Claim not eligible for ${result[0]}.`,
-    //       // message: `Your selected ${result[0]} is currently not eligible for the claim. You can file the claim for ${result[0]} on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}. Do you wish to proceed in rejecting this claim?`
-    //       message: `Your claim for ${result[0]} cannot be filed because it is not eligible based on the loss date. You will be able to file this claim starting on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}. Would you like to proceed with rejecting the claim now?`
-    //     })
-    //     return
+      let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
+      console.log("getCoverageTypeFromOption", getCoverageTypeFromOption)
+      const result = getCoverageTypeFromOption.value.filter(item => item.value === data.coverageType).map(item => item.label);
+      console.log(new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0));
+      checkCoverageTypeDate = new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0)
+      data.lossDate = new Date(data.lossDate).setHours(0, 0, 0, 0)
+      if (new Date(checkCoverageTypeDate) > new Date(data.lossDate)) {
+        // claim not allowed for that coverageType
+        res.send({
+          code: 403,
+          tittle: `Claim not eligible for ${result[0]}.`,
+          // message: `Your selected ${result[0]} is currently not eligible for the claim. You can file the claim for ${result[0]} on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}. Do you wish to proceed in rejecting this claim?`
+          message: `Your claim for ${result[0]} cannot be filed because it is not eligible based on the loss date. You will be able to file this claim starting on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}. Would you like to proceed with rejecting the claim now?`
+        })
+        return
 
-    //   }
+      }
 
-    // }
+    }
 
     data.receiptImage = data.file
     data.servicerId = data.servicerId ? data.servicerId : null
@@ -1334,8 +1334,6 @@ exports.editClaimStatus = async (req, res) => {
       }
     ]
 
-
-
     let forCheckOnly;
 
     //Eligibility true when claim is completed and rejected
@@ -1362,10 +1360,8 @@ exports.editClaimStatus = async (req, res) => {
         forCheckOnly = true
       }
 
-
       if (forCheckOnly) {
         let checkNoOfClaims = await claimService.getClaimWithAggregate(getNoOfClaimQuery)
-        console.log("checking the data +++++++++++++++++++", checkNoOfClaims)
         if (checkNoOfClaims.length == 0) {
           checkNoOfClaims = {
             "monthlyCount": 0,
@@ -1375,18 +1371,15 @@ exports.editClaimStatus = async (req, res) => {
         let checkThePeriod = checkContract.noOfClaim
         let getTotalClaim = await claimService.getClaims({ contractId: checkClaim.contractId, claimFile: "completed" })
         let noOfTotalClaims = getTotalClaim.length
-        console.log("check the unlimited---------------------------------", checkThePeriod.value)
         if (checkThePeriod.value != -1) {
           if (checkThePeriod.period == "Monthly") {
             let eligibility = checkNoOfClaims[0].monthlyCount >= checkThePeriod.value ? false : true
-            console.log("monthly check --------------------------------", checkNoOfClaims[0].monthlyCount, checkThePeriod.value, eligibility)
             if (eligibility) {
               eligibility = noOfTotalClaims >= checkContract.noOfClaimPerPeriod ? false : true
             }
             const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: eligibility }, { new: true })
           } else {
             let eligibility = checkNoOfClaims[0].yearlyCount >= checkThePeriod.value ? false : true
-            console.log("yearly check --------------------------------", checkNoOfClaims[0].yearlyCount, checkThePeriod.value, eligibility)
 
             if (eligibility) {
               eligibility = noOfTotalClaims >= checkContract.noOfClaimPerPeriod ? false : true
@@ -2547,7 +2540,7 @@ exports.sendMessages = async (req, res) => {
       subject: "New Message"
     }
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(emailTo ? emailTo?.email : process.env.servicerEmail, notificationEmails, emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(emailTo?.email, notificationEmails, emailData))
     res.send({
       code: constant.successCode,
       messages: 'Message Sent!',
@@ -3505,43 +3498,56 @@ exports.getCoverageType = async (req, res) => {
 
 exports.updateClaimDate = async (req, res) => {
   try {
-    let updateObject = {
-      $set: {
-        customerStatus: [
-          {
-            status: "request_submitted",
-            date: "2024-10-22T17:31:03.140+00:00"
-          }
-        ],
-        trackStatus: [
-          {
-            status: "open",
-            date: "2024-10-22T17:31:03.140+00:00"
-          },
-          {
-            status: "request_submitted",
-            date: "2024-10-22T17:31:03.140+00:00"
-          },
-          {
-            status: "request_sent",
-            date: "2024-10-22T17:31:03.140+00:00"
-          }
-        ],
-        claimStatus: [
-          {
-            status: "open",
-            date: "2024-10-22T17:31:03.140+00:00"
-          },
-        ],
-        repairStatus: [
-          {
-            status: "request_sent",
-            date: "2024-10-22T17:31:03.140+00:00"
-          }
-        ]
-      }
+    let emailData = {
+      // darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + "settingData[0]?.logoDark.fileName",
+      // lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: "settingData[0]?.address",
+      websiteSetting: "settingData[0]",
+      senderName: "emailTo?.firstName",
+      content: "The new message for " + "checkClaim.unique_key" + " claim",
+      subject: "New Message"
     }
-    let updateClaim = await claimService.markAsPaid({ orderId: "GC-2024-100003" }, updateObject, { new: true })
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate("anil@codenomad.net", ["amit@codenomad.net"], "emailData"))
+    res.send({
+      mailing
+    })
+    // let updateObject = {
+    //   $set: {
+    //     customerStatus: [
+    //       {
+    //         status: "request_submitted",
+    //         date: "2024-10-22T17:31:03.140+00:00"
+    //       }
+    //     ],
+    //     trackStatus: [
+    //       {
+    //         status: "open",
+    //         date: "2024-10-22T17:31:03.140+00:00"
+    //       },
+    //       {
+    //         status: "request_submitted",
+    //         date: "2024-10-22T17:31:03.140+00:00"
+    //       },
+    //       {
+    //         status: "request_sent",
+    //         date: "2024-10-22T17:31:03.140+00:00"
+    //       }
+    //     ],
+    //     claimStatus: [
+    //       {
+    //         status: "open",
+    //         date: "2024-10-22T17:31:03.140+00:00"
+    //       },
+    //     ],
+    //     repairStatus: [
+    //       {
+    //         status: "request_sent",
+    //         date: "2024-10-22T17:31:03.140+00:00"
+    //       }
+    //     ]
+    //   }
+    // }
+    // let updateClaim = await claimService.markAsPaid({ orderId: "GC-2024-100003" }, updateObject, { new: true })
 
   } catch (err) {
     res.send({
