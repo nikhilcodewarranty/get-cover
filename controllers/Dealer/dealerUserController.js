@@ -1394,7 +1394,7 @@ exports.editOrderDetail = async (req, res) => {
         IDs.push(dealerPrimary._id)
         let notificationData = {
             title: "Order update",
-            description: "The order " + checkOrder.unique_key + " has been updated",
+            description: "Your order " + checkOrder.unique_key + " has been updated in our system. The order is still pending, as there is some data missing.",
             userId: req.teammateId,
             contentId: checkOrder._id,
             flag: 'order',
@@ -1412,7 +1412,7 @@ exports.editOrderDetail = async (req, res) => {
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
             senderName: dealerPrimary.firstName,
-            content: "The  order " + checkOrder.unique_key + " has been updated",
+            content: "Your order " + checkOrder.unique_key + " has been updated in our system. The order is still pending, as there is some data missing.Please update the data using the link here",
             subject: "Order Updated"
         }
         if (req.body.sendNotification) {

@@ -1181,7 +1181,8 @@ exports.registerServiceProvider = async (req, res) => {
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
       senderName: admin.firstName,
-      content: "A new servicer " + ServicerMeta.name + " has been registered",
+      redirectLink: process.env.SITE_URL + "servicerRequestList/",
+      content: ServicerMeta.name + " " + "has finished registering as a new servicer. For the onboarding process to proceed more quickly. To Approve or Disapprove the Servicer, please click the foollowing link.",
       subject: 'New Servicer Registration'
     }
     mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmail, ["noreply@getcover.com"], emailData))

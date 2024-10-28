@@ -757,10 +757,10 @@ async function generateTC(orderData) {
         let otherInfo = []
         //Check contract is exist or not using contract id
         const contractArrayPromise = checkOrder?.productsArray.map(item => {
-           return contractService.getContractById({
+            return contractService.getContractById({
                 orderProductId: item._id
             });
-            
+
         })
         const contractArray = await Promise.all(contractArrayPromise);
 
@@ -903,7 +903,7 @@ async function generateTC(orderData) {
             const s3Key = `pdfs/${mergeFileName}`;
             //Upload to S3 bucket
             await uploadToS3(orderFile, bucketName, s3Key);
-            const termConditionFile = checkOrder.termCondition.fileName 
+            const termConditionFile = checkOrder.termCondition.fileName
             const termPath = termConditionFile
             //Download from S3 bucket 
             const termPathBucket = await downloadFromS3(bucketName, termPath);
@@ -1283,6 +1283,7 @@ exports.createOrder1 = async (req, res) => {
         let notificationData = {
             title: "New order created",
             description: "The new order " + savedResponse.unique_key + " has been created",
+            description: "A new order " + savedResponse.unique_key + " has been created. The order is still in the pending state.",
             userId: req.teammateId,
             contentId: null,
             flag: 'order',
@@ -2291,7 +2292,7 @@ exports.editOrderDetail = async (req, res) => {
         IDs.push(dealerPrimary._id)
         let notificationData = {
             title: "Order update",
-            description: "The order " + savedResponse.unique_key + " has been updated",
+            description: "Your order " + savedResponse.unique_key + " has been updated in our system. The order is still pending, as there is some data missing.",
             userId: req.teammateId,
             contentId: checkOrder._id,
             flag: 'order',
@@ -2310,7 +2311,7 @@ exports.editOrderDetail = async (req, res) => {
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
             senderName: dealerPrimary.firstName,
-            content: "The  order " + savedResponse.unique_key + " has been updated",
+            content: "Your order " + savedResponse.unique_key + " has been updated in our system. The order is still pending, as there is somedata missing.Please update the data using the link here",
             subject: "Order Update"
         }
         if (data.sendNotification) {
