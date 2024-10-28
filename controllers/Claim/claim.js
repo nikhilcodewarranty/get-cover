@@ -2533,8 +2533,6 @@ exports.sendMessages = async (req, res) => {
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
 
-    console.log("emailTo----------------", emailTo)
-
     // notificationEmails.push(emailTo.email);
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -2576,7 +2574,6 @@ exports.sendMessages = async (req, res) => {
 //Automatic completed when servicer shipped after 7 days cron job
 exports.statusClaim = async (req, res) => {
   try {
-
     const result = await claimService.getClaims({
       'repairStatus.status': 'servicer_shipped',
     });
