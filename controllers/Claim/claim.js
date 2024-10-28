@@ -1372,14 +1372,20 @@ exports.editClaimStatus = async (req, res) => {
           if (checkThePeriod.period == "Monthly") {
             let eligibility = checkNoOfClaims[0].monthlyCount >= checkThePeriod.value ? false : true
             if (eligibility) {
-              eligibility = noOfTotalClaims >= checkContract.noOfClaimPerPeriod ? false : true
+              if (checkContract.noOfClaimPerPeriod != -1) {
+                eligibility = noOfTotalClaims >= checkContract.noOfClaimPerPeriod ? false : true
+
+              }
             }
             const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: eligibility }, { new: true })
           } else {
             let eligibility = checkNoOfClaims[0].yearlyCount >= checkThePeriod.value ? false : true
 
             if (eligibility) {
-              eligibility = noOfTotalClaims >= checkContract.noOfClaimPerPeriod ? false : true
+              if (checkContract.noOfClaimPerPeriod != -1) {
+
+                eligibility = noOfTotalClaims >= checkContract.noOfClaimPerPeriod ? false : true
+              }
             }
             const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: eligibility }, { new: true })
           }
@@ -2526,8 +2532,8 @@ exports.sendMessages = async (req, res) => {
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
 
-    console.log("notificationEmails----------------",notificationEmails)
-    console.log("emailTo----------------",emailTo)
+    console.log("notificationEmails----------------", notificationEmails)
+    console.log("emailTo----------------", emailTo)
 
     // notificationEmails.push(emailTo.email);
     let emailData = {
@@ -3492,9 +3498,6 @@ exports.getCoverageType = async (req, res) => {
     })
   }
 }
-
-
-
 
 exports.updateClaimDate = async (req, res) => {
   try {
