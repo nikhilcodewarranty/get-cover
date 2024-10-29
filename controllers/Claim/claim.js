@@ -1912,6 +1912,7 @@ exports.saveBulkClaim = async (req, res) => {
           const servicerData = servicerArray == undefined || servicerArray == null ? allDataArray[0]?.order?.servicer : servicerArray[i]
           let flag;
           item.contractData = contractData;
+          item.claimType = ''
           item.servicerData = servicerData;
           item.orderData = allDataArray[0]
 
@@ -1939,6 +1940,8 @@ exports.saveBulkClaim = async (req, res) => {
               item.status = `Claim not eligible for ${result[0]}.`
               item.exit = true;
             }
+            item.claimType = checkCoverageValue[0]
+
           }
           let checkCoverageStartDate = new Date(contractData?.coverageStartDate).setHours(0, 0, 0, 0)
           if (contractData && new Date(checkCoverageStartDate) > new Date(item.lossDate)) {
@@ -2026,6 +2029,7 @@ exports.saveBulkClaim = async (req, res) => {
             servicerId: servicerId,
             orderId: data.orderData?.order?.unique_key,
             dealerId: data.orderData?.order?.dealerId,
+            claimType: data?.claimType,
             resellerId: data.orderData?.order?.resellerId,
             dealerSku: data.contractData?.dealerSku,
             customerId: data.orderData?.order?.customerId,
@@ -2132,6 +2136,7 @@ exports.saveBulkClaim = async (req, res) => {
                 "Contract# / Serial#": item.contractId ? item.contractId : "",
                 "Loss Date": item.lossDate ? item.lossDate : '',
                 Diagnosis: item.diagnosis ? item.diagnosis : '',
+                "Coverage Type": item.coverageType ? item.coverageType : '',
               });
             }
 
@@ -2140,7 +2145,9 @@ exports.saveBulkClaim = async (req, res) => {
             "Contract#/Serial#": item.contractId ? item.contractId : "",
             "Loss Date": item.lossDate ? item.lossDate : '',
             Diagnosis: item.diagnosis ? item.diagnosis : '',
+            "Coverage Type": item.coverageType ? item.coverageType : '',
             Status: item.status ? item.status : '',
+
             exit: item.exit
           };
         }
@@ -2161,6 +2168,8 @@ exports.saveBulkClaim = async (req, res) => {
                 "Contract# / Serial#": item.contractId ? item.contractId : "",
                 "Loss Date": item.lossDate ? item.lossDate : '',
                 Diagnosis: item.diagnosis ? item.diagnosis : '',
+                "Coverage Type": item.coverageType ? item.coverageType : '',
+
               });
             }
 
@@ -2169,6 +2178,7 @@ exports.saveBulkClaim = async (req, res) => {
             "Contract# / Serial#": item.contractId ? item.contractId : "",
             "Loss Date": item.lossDate ? item.lossDate : '',
             Diagnosis: item.diagnosis ? item.diagnosis : '',
+            "Coverage Type": item.coverageType ? item.coverageType : '',
             Status: item.status ? item.status : '',
             exit: item.exit
           };
@@ -2191,6 +2201,8 @@ exports.saveBulkClaim = async (req, res) => {
                 "Contract# / Serial#": item.contractId ? item.contractId : "",
                 "Loss Date": item.lossDate ? item.lossDate : '',
                 Diagnosis: item.diagnosis ? item.diagnosis : '',
+                "Coverage Type": item.coverageType ? item.coverageType : '',
+
               });
             }
 
@@ -2198,7 +2210,8 @@ exports.saveBulkClaim = async (req, res) => {
           return {
             "Contract# / Serial#": item.contractId ? item.contractId : "",
             "Loss Date": item.lossDate ? item.lossDate : '',
-            Diagnosis: item.diagnosis ? item.diagnosis : '',
+             Diagnosis: item.diagnosis ? item.diagnosis : '',
+            "Coverage Type": item.coverageType ? item.coverageType : '',
             Status: item.status ? item.status : '',
             exit: item.exit
           };
@@ -2216,6 +2229,8 @@ exports.saveBulkClaim = async (req, res) => {
               "Contract# / Serial#": item.contractId ? item.contractId : "",
               "Loss Date": item.lossDate ? item.lossDate : '',
               Diagnosis: item.diagnosis ? item.diagnosis : '',
+              "Coverage Type": item.coverageType ? item.coverageType : '',
+
             });
           }
 
@@ -2224,6 +2239,7 @@ exports.saveBulkClaim = async (req, res) => {
             Servicer: item.servicerName || "",
             "Loss Date": item.lossDate ? item.lossDate : '',
             Diagnosis: item.diagnosis ? item.diagnosis : '',
+            "Coverage Type": item.coverageType ? item.coverageType : '',
             Status: item.status ? item.status : '',
             exit: item.exit
           };
