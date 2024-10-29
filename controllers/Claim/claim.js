@@ -1934,13 +1934,13 @@ exports.saveBulkClaim = async (req, res) => {
             }
             const checkCoverageValue = getCoverageTypeFromOption.value.filter(option => option.label === item.coverageType).map(item1 => item1.value);
             let startDateToCheck = new Date(contractData.coverageStartDate)
-            let coverageTypeDays = contractData.adhDays
-            let getDeductible = coverageTypeDays.filter(coverageType => coverageType.value == checkCoverageValue[0])
+            let coverageTypeDays = contractData?.adhDays
+            let getDeductible = coverageTypeDays?.filter(coverageType => coverageType.value == checkCoverageValue[0])
 
-            let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0].waitingDays))
+            let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0]?.waitingDays))
             checkCoverageTypeDate = new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0)
             let checkLossDate = new Date(item.lossDate).setHours(0, 0, 0, 0)
-            const result = getCoverageTypeFromOption.value.filter(option => option.label === item.coverageType).map(item1 => item1.label);
+            const result = getCoverageTypeFromOption?.value.filter(option => option.label === item.coverageType).map(item1 => item1.label);
 
             if (new Date(checkCoverageTypeDate) > new Date(checkLossDate)) {
               item.status = `Claim not eligible for ${result[0]}.`
