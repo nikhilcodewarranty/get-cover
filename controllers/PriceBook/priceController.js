@@ -1446,6 +1446,7 @@ const getObjectFromS3 = (bucketReadUrl) => {
   });
 };
 
+//upload  price book
 exports.uploadRegularPriceBook = async (req, res) => {
   try {
     uploadP(req, res, async (err) => {
@@ -1494,26 +1495,21 @@ exports.uploadRegularPriceBook = async (req, res) => {
         const totalDataOriginal = responseData.map(item => {
           let keys = Object.keys(item);
           return {
-            category: item[keys[0]],  // First key's value
-            name: item[keys[1]],   // Second key's value
-            pName: item[keys[2]],  // Third key's value
-            description: item[keys[3]],   // Second key's value
-            frontingFee: item[keys[4]],   // Second key's value
-            reinsuranceFee: item[keys[5]],   // Second key's value
-            reserveFutureFee: item[keys[6]],   // Second key's value
-            adminFee: item[keys[7]],   // Second key's value
-            coverageType: item[keys[8]],   // Second key's value
-            term: item[keys[9]],   // Second key's value
+            Category: item[keys[0]],  // First key's value
+            "Product Sku": item[keys[1]],   // Second key's value
+            "Product Name": item[keys[2]],  // Third key's value
+            Description: item[keys[3]],   // Second key's value
+            "Fronting Fee": item[keys[4]],   // Second key's value
+            "Reinsaurance Fee": item[keys[5]],   // Second key's value
+            "Reserve Future Fee": item[keys[6]],   // Second key's value
+            "Admin Fee": item[keys[7]],   // Second key's value
+            "Coverage Type": item[keys[8]],   // Second key's value
+            Term: item[keys[9]],    // Second key's value
           };
         });
 
         console.log("checking ak -------------+++++--------", totalDataOriginal[0])
 
-
-        // res.send({
-        //   data:totalDataOriginal
-        // })
-        // return
         for (let c = 0; c < totalDataComing.length; c++) {
 
           totalDataComing[c].inValid = false
@@ -1606,10 +1602,6 @@ exports.uploadRegularPriceBook = async (req, res) => {
           }
         }
 
-
-        //html code here
-
-
         function convertArrayToHTMLTable(array) {
           const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');
           const rows = array.map(obj => {
@@ -1646,7 +1638,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
           return htmlContent;
         }
         let totalDataOriginal1 = totalDataOriginal.map((item) => {
-          let match = totalDataComing.find((secondItem) => secondItem.name === item.name);
+          let match = totalDataComing.find((secondItem) => secondItem.name === item["Product Sku"]);
           if (match) {
             // If match is found, add reason and status
             return {
@@ -1657,7 +1649,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
           }
         });
         const htmlTableString = convertArrayToHTMLTable(totalDataOriginal1);
-        const mailing = sgMail.send(emailConstant.sendPriceBookFile(("yashasvi@codenomad.net"), ["noreply@getcover.com"], htmlTableString));
+        const mailing = sgMail.send(emailConstant.sendPriceBookFile(("yashasvi@codenomad.net"), ["anil@codenomad.net"], htmlTableString));
 
         res.send({
           code: constant.successCode,
@@ -1694,18 +1686,18 @@ exports.uploadRegularPriceBook = async (req, res) => {
         let totalDataOriginal = responseData.map(item => {
           let keys = Object.keys(item);
           return {
-            category: item[keys[0]],  // First key's value
-            name: item[keys[1]],   // Second key's value
-            pName: item[keys[2]],  // Third key's value
-            description: item[keys[3]],   // Second key's value
-            frontingFee: item[keys[4]],   // Second key's value
-            reinsuranceFee: item[keys[5]],   // Second key's value
-            reserveFutureFee: item[keys[6]],   // Second key's value
-            adminFee: item[keys[7]],   // Second key's value
-            coverageType: item[keys[8]],   // Second key's value
-            term: item[keys[9]],   // Second key's value
-            rangeStart: item[keys[10]],   // Second key's value
-            rangeEnd: item[keys[11]],   // Second key's value
+            Category: item[keys[0]],  // First key's value
+            "Product Sku": item[keys[1]],   // Second key's value
+            "Product Name": item[keys[2]],  // Third key's value
+            Description: item[keys[3]],   // Second key's value
+            "Fronting Fee": item[keys[4]],   // Second key's value
+            "Reinsaurance Fee": item[keys[5]],   // Second key's value
+            "Reserve Future Fee": item[keys[6]],   // Second key's value
+            "Admin Fee": item[keys[7]],   // Second key's value
+            "Coverage Type": item[keys[8]],   // Second key's value
+            Term: item[keys[9]],   // Second key's value
+            "Range Start": item[keys[10]],   // Second key's value
+            "Range End": item[keys[11]],   // Second key's value
           };
         });
 
@@ -1844,7 +1836,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
           return htmlContent;
         }
         let totalDataOriginal1 = totalDataOriginal.map((item) => {
-          let match = totalDataComing.find((secondItem) => secondItem.name === item.name);
+          let match = totalDataComing.find((secondItem) => secondItem.name === item["Product Sku"]);
           if (match) {
             // If match is found, add reason and status
             return {
@@ -1916,20 +1908,31 @@ exports.uploadRegularPriceBook = async (req, res) => {
             }
           }
           return {
-            category: item[keys[0]],  // First key's value
-            name: item[keys[1]],   // Second key's value
-            pName: item[keys[2]],  // Third key's value
-            description: item[keys[3]],   // Second key's value
-            frontingFee: item[keys[4]],   // Second key's value
-            reinsuranceFee: item[keys[5]],   // Second key's value
-            reserveFutureFee: item[keys[6]],   // Second key's value
-            adminFee: item[keys[7]],   // Second key's value
-            coverageType: item[keys[8]],   // Second key's value
-            term: item[keys[9]],   // Second key's value
-            quantityPriceDetail: quantityPriceDetail
+            Category: item[keys[0]],  // First key's value
+            "Product Sku": item[keys[1]],   // Second key's value
+            "Product Name": item[keys[2]],  // Third key's value
+            Description: item[keys[3]],   // Second key's value
+            "Fronting Fee": item[keys[4]],   // Second key's value
+            "Reinsaurance Fee": item[keys[5]],   // Second key's value
+            "Reserve Future Fee": item[keys[6]],   // Second key's value
+            "Admin Fee": item[keys[7]],   // Second key's value
+            "Coverage Type": item[keys[8]],   // Second key's value
+            Term: item[keys[9]],   // Second key's value
+            "Name 1": item[keys[10]],   // Second key's value
+            "Max Quantity 1": item[keys[11]],   // Second key's value
+            "Name 2": item[keys[12]],   // Second key's value
+            "Max Quantity 2": item[keys[13]],   // Second key's value
+            "Name 3": item[keys[14]],   // Second key's value
+            "Max Quantity 3": item[keys[15]],   // Second key's value
+            "Name 4": item[keys[16]],   // Second key's value
+            "Max Quantity 4": item[keys[17]],   // Second key's value
+            "Name 5": item[keys[18]],   // Second key's value
+            "Max Quantity 5": item[keys[19]],   // Second key's value
+            "Name 6": item[keys[20]],   // Second key's value
+            "Max Quantity 6": item[keys[21]],   // Second key's value
+            // quantityPriceDetail: quantityPriceDetail
           };
         });
-
 
         for (let c = 0; c < totalDataComing.length; c++) {
 
@@ -2040,7 +2043,6 @@ exports.uploadRegularPriceBook = async (req, res) => {
           }
         }
 
-
         function convertArrayToHTMLTable(array) {
           const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');
           const rows = array.map(obj => {
@@ -2077,7 +2079,8 @@ exports.uploadRegularPriceBook = async (req, res) => {
           return htmlContent;
         }
         let totalDataOriginal1 = totalDataOriginal.map((item) => {
-          let match = totalDataComing.find((secondItem) => secondItem.name === item.name);
+          console.log("item check ++++++++++++++++++++++++", item)
+          let match = totalDataComing.find((secondItem) => secondItem.name === item["Product Sku"]);
           if (match) {
             // If match is found, add reason and status
             return {
@@ -2088,7 +2091,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
           }
         });
         const htmlTableString = convertArrayToHTMLTable(totalDataOriginal1);
-        const mailing = sgMail.send(emailConstant.sendPriceBookFile(("yashasvi@codenomad.net"), ["noreply@getcover.com"], htmlTableString));
+        const mailing = sgMail.send(emailConstant.sendPriceBookFile(("yashasvi@codenomad.net"), ["anil@codenomad.net"], htmlTableString));
 
         res.send({
           code: constant.successCode,
@@ -2110,6 +2113,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
   }
 }
 
+//not using 
 exports.uploadCompanyPriceBook = async (req, res) => {
   try {
     let data = req.body
