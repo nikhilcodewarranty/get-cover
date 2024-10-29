@@ -143,9 +143,22 @@ exports.createCustomer = async (req, res, next) => {
     let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
     let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkReseller?._id, isPrimary: true } } })
     IDs.push(resellerPrimary?._id)
+    //Merge Start SingleServer
+    // let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
+    // let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkReseller?._id, isPrimary: true })
 
-    notificationEmails.push(getPrimary.email)
-    notificationEmails.push(resellerPrimary?.email)
+    if (checkReseller?.isAccountCreate) {
+      IDs.push(resellerPrimary?._id)
+      notificationEmails.push(resellerPrimary?.email)
+    }
+    if (checkDealer.isAccountCreate) {
+      IDs.push(getPrimary?._id)
+      notificationEmails.push(getPrimary.email)
+    }
+    //Merg end
+
+
+
     //SEND EMAIL
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -185,7 +198,6 @@ exports.createCustomer = async (req, res, next) => {
     }
 
     //Send Notification to customer,admin,reseller,dealer 
-    IDs.push(getPrimary._id)
     let notificationData = {
       title: "New Customer Created",
       description: data.accountName + " " + "customer account has been created successfully!",
@@ -476,6 +488,7 @@ exports.getResellerCustomers = async (req, res) => {
     let data = req.body;
     let query = { isDeleted: false, resellerId: req.params.resellerId }
     let projection = { __v: 0, firstName: 0, lastName: 0, email: 0, password: 0 }
+    console.log("query++++++++++++++++++++++++++", query)
     const customers = await customerService.getAllCustomers(query, projection);
     if (!customers) {
       res.send({
@@ -484,6 +497,8 @@ exports.getResellerCustomers = async (req, res) => {
       });
       return;
     };
+    console.log("query++++++++++++++++++++++++++", customers)
+
     const customersId = customers.map(obj => obj._id);
     const orderCustomerIds = customers.map(obj => obj._id);
     const queryUser = { metaId: { $in: customersId }, isPrimary: true };
@@ -639,6 +654,30 @@ exports.editCustomer = async (req, res) => {
     IDs.push(customerPrimary._id)
     IDs.push(dealerPrimary._id)
     IDs.push(resellerPrimary?._id)
+    //Merge start Singleserver
+    // let notificationEmails = await supportingFunction.getUserEmails();
+    // let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
+    // let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer.dealerId, isPrimary: true })
+    // let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer.resellerId, isPrimary: true })
+
+    const dealerCheck = await dealerService.getDealerById(checkDealer.dealerId)
+
+    const checkReseller = await resellerService.getReseller({ _id: checkDealer.resellerId }, { isDeleted: false })
+
+    if (dealerCheck.isAccountCreate) {
+      IDs.push(dealerPrimary._id)
+      notificationEmails.push(dealerPrimary.email);
+    }
+
+    if (checkReseller?.isAccountCreate) {
+      IDs.push(resellerPrimary?._id)
+      notificationEmails.push(resellerPrimary?.email);
+    }
+
+    if (checkDealer.isAccountCreate) {
+      IDs.push(customerPrimary._id)
+    }
+    //Merge end
     let notificationData = {
       title: "Customer Detail Update",
       description: "The customer information has been changed!",
@@ -650,11 +689,8 @@ exports.editCustomer = async (req, res) => {
 
     let createNotification = await userService.createNotification(notificationData);
 
-
     // Send Email code here
-    let notificationEmails = await supportingFunction.getUserEmails();
-    notificationEmails.push(resellerPrimary?.email);
-    notificationEmails.push(dealerPrimary.email);
+
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -664,8 +700,14 @@ exports.editCustomer = async (req, res) => {
       content: "The customer " + checkDealer.username + "" + " " + "has been updated successfully.",
       subject: "Customer Update"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationEmails, emailData))
+    if (checkDealer.isAccountCreate) {
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationEmails, emailData))
 
+    }
+    else {
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+
+    }
     //Save Logs editCustomer
     let logData = {
       userId: req.userId,
@@ -752,6 +794,7 @@ exports.changePrimaryUser = async (req, res) => {
       return;
     };
 
+
     let updatePrimary = await userService.updateSingleUser(
       { _id: checkUser._id, 'metaData.metaId': checkUser.metaData[0]?.metaId },
       {
@@ -768,6 +811,19 @@ exports.changePrimaryUser = async (req, res) => {
     // return;
 
     // let updatePrimary = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true })
+    //Merge start singleServer
+    // let updatePrimary = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true })
+
+
+    // const checkDealer = await dealerService.getDealerById(updatePrimary.metaId)
+
+    const checkReseller = await resellerService.getReseller({ _id: updatePrimary.metaId }, { isDeleted: false })
+
+    const checkCustomer = await customerService.getCustomerById({ _id: updatePrimary.metaId })
+
+    const checkServicer = await servicerService.getServiceProviderById({ _id: updatePrimary.metaId })
+    //Merge end
+
     //Get role by id
     const checkRole = await userService.getRoleById({ _id: checkUser.metaData[0]?.roleId }, {});
 
@@ -818,7 +874,17 @@ exports.changePrimaryUser = async (req, res) => {
         content: "The primary user for your account has been changed from " + updateLastPrimary.metaData[0]?.firstName + " to " + updatePrimary.metaData[0]?.firstName + ".",
         subject: "Primary User change"
       };
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(updatePrimary.email, updateLastPrimary.email, emailData))
+
+
+
+
+
+      if (checkServicer?.isAccountCreate || checkReseller?.isAccountCreate || checkDealer?.isAccountCreate || checkCustomer?.isAccountCreate) {
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(updatePrimary.email, updateLastPrimary.email, emailData))
+      }
+      else {
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+      }
       //Save Logs changePrimaryUser
       let logData = {
         endpoint: "changePrimaryUser",
@@ -1248,6 +1314,8 @@ exports.customerOrders = async (req, res) => {
       createdAt: 1,
       venderOrder: 1,
       orderAmount: 1,
+      paidAmount: 1,
+      dueAmount: 1,
       contract: "$contract"
     };
 
@@ -1499,6 +1567,8 @@ exports.getCustomerContract = async (req, res) => {
   try {
     let data = req.body
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+    let getTheThresholdLimir = await userService.getUserById1({ roleId: process.env.super_admin, isPrimary: true })
+
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
     let dealerIds = [];
@@ -1666,6 +1736,9 @@ exports.getCustomerContract = async (req, res) => {
     let result1 = getContracts[0]?.data ? getContracts[0]?.data : []
     for (let e = 0; e < result1.length; e++) {
       result1[e].reason = " "
+      if (!result1[e].eligibilty) {
+        result1[e].reason = "Claims limit cross for this contract"
+      }
       if (result1[e].status != "Active") {
         result1[e].reason = "Contract is not active"
       }
@@ -1709,6 +1782,20 @@ exports.getCustomerContract = async (req, res) => {
           result1[e].reason = "Claim value exceed the product value limit"
         }
       }
+
+      let thresholdLimitPercentage = getTheThresholdLimir.threshHoldLimit.value
+      const thresholdLimitValue = (thresholdLimitPercentage / 100) * Number(result1[e].productValue);
+      let overThreshold = result1[e].claimAmount > thresholdLimitValue;
+      let threshHoldMessage = "This claim amount surpasses the maximum allowed threshold."
+      if (!overThreshold) {
+        threshHoldMessage = ""
+      }
+      if (!thresholdLimitPercentage.isThreshHoldLimit) {
+        overThreshold = false
+        threshHoldMessage = ""
+      }
+      result1[e].threshHoldMessage = threshHoldMessage
+      result1[e].overThreshold = overThreshold
     }
     res.send({
       code: constant.successCode,
@@ -1824,7 +1911,12 @@ exports.customerClaims = async (req, res) => {
               "unique_key": 1,
               note: 1,
               dealerSku: 1,
+              claimType: 1,
               totalAmount: 1,
+              getcoverOverAmount: 1,
+              customerOverAmount: 1,
+              customerClaimAmount: 1,
+              getCoverClaimAmount: 1,
               servicerId: 1,
               customerStatus: 1,
               trackingNumber: 1,
@@ -1838,6 +1930,7 @@ exports.customerClaims = async (req, res) => {
               "contracts.productName": 1,
               "contracts.model": 1,
               "contracts.manufacture": 1,
+              "contracts.coverageType": 1,
               "contracts.serial": 1,
               "contracts.pName": 1,
               "contracts.orders.dealerId": 1,
@@ -2015,8 +2108,16 @@ exports.customerClaims = async (req, res) => {
       { _id: { $in: allServicerIds }, status: true },
       {}
     );
+    const dynamicOption = await userService.getOptions({ name: 'coverage_type' })
+
     const result_Array = resultFiter.map((item1) => {
       servicer = []
+      let mergedData = []
+      if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
+        mergedData = dynamicOption.value.filter(contract =>
+          item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
+        );
+      }
       let servicerName = '';
       let selfServicer = false;
       let selfResellerServicer = false;
@@ -2047,7 +2148,8 @@ exports.customerClaims = async (req, res) => {
         selfServicer: selfServicer,
         contracts: {
           ...item1.contracts,
-          allServicer: servicer
+          allServicer: servicer,
+          mergedData: mergedData
         }
       }
     })

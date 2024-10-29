@@ -597,11 +597,90 @@ exports.getCustomerInOrder = async (req, res) => {
         let data = req.body;
         let query;
         if (data.resellerId != "" && data.resellerId != undefined) {
-            query = { dealerId: data.dealerId, resellerId: data.resellerId };
+            // query = { dealerId: data.dealerId, resellerId: data.resellerId };
+            query = [
+                {
+                    $match: {
+                        $and: [
+                            {
+                                dealerId: new mongoose.Types.ObjectId(data.dealerId)
+                            },
+                            {
+                                resellerId1: new mongoose.Types.ObjectId(data.resellerId)
+                            }
+                        ]
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "resellers",
+                        localField: 'resellerId1',
+                        foreignField: '_id',
+                        as: "resellerData"
+                    }
+                },
+                {
+                    $project: {
+                        _id: 1,
+                        username: 1,
+                        street: 1,
+                        city: 1,
+                        zip: 1,
+                        unique_key: 1,
+                        state: 1,
+                        country: 1,
+                        dealerId: 1,
+                        isAccountCreate: 1,
+                        resellerId: 1,
+                        resellerId1: 1,
+                        dealerName: 1,
+                        status: 1,
+                        accountStatus: 1,
+                        isDeleted: 1,
+                        'resellerStatus': { $arrayElemAt: ["$resellerData.status", 0] },
+
+                    }
+                }
+            ]
         } else {
-            query = { dealerId: data.dealerId };
+            // query = { dealerId: data.dealerId };
+            query = [
+                {
+                    $match: { dealerId: new mongoose.Types.ObjectId(data.dealerId) }
+                },
+                {
+                    $lookup: {
+                        from: "resellers",
+                        localField: 'resellerId1',
+                        foreignField: '_id',
+                        as: "resellerData"
+                    }
+                },
+                {
+                    $project: {
+                        _id: 1,
+                        username: 1,
+                        street: 1,
+                        city: 1,
+                        zip: 1,
+                        unique_key: 1,
+                        state: 1,
+                        country: 1,
+                        dealerId: 1,
+                        isAccountCreate: 1,
+                        resellerId: 1,
+                        resellerId1: 1,
+                        dealerName: 1,
+                        status: 1,
+                        accountStatus: 1,
+                        isDeleted: 1,
+                        'resellerStatus': { $arrayElemAt: ["$resellerData.status", 0] },
+
+                    }
+                }
+            ]
         }
-        let getCustomers = await customerService.getAllCustomers(query, {});
+        let getCustomers = await customerService.getCustomerByAggregate(query, {});
 
         if (!getCustomers) {
             res.send({
@@ -645,7 +724,7 @@ exports.getCustomerInOrder = async (req, res) => {
             const matchingItem = getCustomers.find(item2 => item2._id.toString() === item1.metaId.toString());
             if (matchingItem) {
                 return {
-                    ...matchingItem.toObject(),
+                    ...matchingItem,
                     email: item1.email  // Use toObject() to convert Mongoose document to plain JavaScript object
                 };
             } else {
@@ -1129,7 +1208,6 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
     }
 };
 
-
 //Get Price Book in Order
 exports.getPriceBooksInOrder = async (req, res) => {
     try {
@@ -1294,7 +1372,7 @@ exports.archiveOrder = async (req, res) => {
         if (checkOrder.status == "Active") {
             res.send({
                 code: constant.errorCode,
-                message: "Order is already active",
+                message: "Order is already active, please refresh the page",
             });
 
             return;
@@ -1360,7 +1438,9 @@ exports.archiveOrder = async (req, res) => {
             content: "The order " + checkOrder.unique_key + " has been archeived!.",
             subject: "Archeive Order"
         }
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+        if (checkOrder.sendNotification) {
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+        }
         emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -1370,7 +1450,9 @@ exports.archiveOrder = async (req, res) => {
             content: "The order " + checkOrder.unique_key + " has been archeived!.",
             subject: "Archeive Order"
         }
-        mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
+        if (checkOrder.sendNotification) {
+            mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
+        }
         //  }
         res.send({
             code: constant.successCode,
@@ -1770,6 +1852,8 @@ exports.markAsPaid = async (req, res) => {
             let orderProductId = product._id;
             let coverageStartDate = product.coverageStartDate;
             let coverageEndDate = product.coverageEndDate;
+            let coverageStartDate1 = product.coverageStartDate1;
+            let coverageEndDate1 = product.coverageEndDate1;
             let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
             let projection = { isDeleted: 0 };
             let priceBook = await priceBookService.getPriceBookById(
@@ -1879,32 +1963,39 @@ exports.markAsPaid = async (req, res) => {
                 let minDate1 = futureDate.setDate(futureDate.getDate() + adhDaysArray[0].waitingDays);
 
                 if (!product.isManufacturerWarranty) {
-                    let minDate2
-                    if (orderServiceCoverageType = "Parts") {
-
-                        minDate2 = partsWarrantyDate1
-                    } else if (orderServiceCoverageType = "Labour") {
-
-                        minDate2 = labourWarrantyDate1
-                    } else {
-
-                        if (partsWarrantyDate1 > labourWarrantyDate1) {
-                            minDate2 = labourWarrantyDate1
+                    if (adhDaysArray.length == 1) {
+                        const hasBreakdown = adhDaysArray.some(item => item.value === 'breakdown');
+                        if (hasBreakdown) {
+                            let minDate2
+                            if (orderServiceCoverageType == "Parts") {
+                                minDate2 = partsWarrantyDate1
+                            } else if (orderServiceCoverageType == "Labour" || orderServiceCoverageType == "Labor") {
+                                minDate2 = labourWarrantyDate1
+                            } else {
+                                if (partsWarrantyDate1 > labourWarrantyDate1) {
+                                    minDate2 = labourWarrantyDate1
+                                } else {
+                                    minDate2 = partsWarrantyDate1
+                                }
+                            }
+                            if (minDate1 > minDate2) {
+                                minDate = minDate1
+                            }
+                            if (minDate1 < minDate2) {
+                                minDate = minDate2
+                            }
                         } else {
-                            minDate2 = partsWarrantyDate1
+                            minDate = minDate1
                         }
                     }
-                    if (minDate1 > minDate2) {
+                    else {
                         minDate = minDate1
-                    }
-                    if (minDate1 < minDate2) {
-                        minDate = minDate2
                     }
 
                 } else {
                     minDate = minDate1
                 }
-
+                minDate = new Date(minDate).setHours(0, 0, 0, 0)
                 let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
                 let serviceCoverage;
                 if (checkOrder.serviceCoverageType == "Labour") {
@@ -1919,9 +2010,11 @@ exports.markAsPaid = async (req, res) => {
                     orderUniqueKey: savedResponse.unique_key,
                     venderOrder: savedResponse.venderOrder,
                     orderProductId: orderProductId,
-                    minDate: minDate,
+                    minDate: new Date(minDate),
                     dealerSku: dealerPriceBook.dealerSku,
                     coverageStartDate: coverageStartDate,
+                    coverageStartDate1: coverageStartDate1,
+                    coverageEndDate1: coverageEndDate1,
                     coverageEndDate: coverageEndDate,
                     serviceCoverageType: serviceCoverage,
                     coverageType: checkOrder.coverageType,
@@ -2008,8 +2101,9 @@ exports.markAsPaid = async (req, res) => {
                     content: "The  order " + savedResponse.unique_key + " has been paid",
                     subject: "Mark as paid"
                 }
-
-                let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+                if (checkOrder.sendNotification) {
+                    let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+                }
                 //Email to Reseller 
                 emailData = {
                     darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -2020,8 +2114,10 @@ exports.markAsPaid = async (req, res) => {
                     content: "The  order " + savedResponse.unique_key + " has been paid",
                     subject: "Mark As paid"
                 }
+                if (checkOrder.sendNotification) {
 
-                mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
+                    mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
+                }
                 //Email to customer code here........
                 if (index == checkLength) {
 
@@ -2072,6 +2168,7 @@ exports.markAsPaid = async (req, res) => {
         })
     }
 };
+
 //Get File data from S3 bucket
 const getObjectFromS3 = (bucketReadUrl) => {
     return new Promise((resolve, reject) => {
@@ -2111,6 +2208,7 @@ const getObjectFromS3 = (bucketReadUrl) => {
         });
     });
 };
+
 // get the pdf file with order ID
 exports.getOrderPdf = async (req, res) => {
     try {
@@ -2393,12 +2491,10 @@ async function generateTC(orderData) {
 
         //Check contract is exist or not using contract id
         const contractArrayPromise = checkOrder?.productsArray.map(item => {
-            if (!item.exit) return contractService.getContractById({
+            return contractService.getContractById({
                 orderProductId: item._id
             });
-            else {
-                return null;
-            }
+         
         })
         const contractArray = await Promise.all(contractArrayPromise);
 
@@ -2444,11 +2540,11 @@ async function generateTC(orderData) {
 
 
         const coverageStartDates = otherInfo.map((product, index) => `
-    <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageStartDate).add(1, 'days').format("MM/DD/YYYY")}</p>
+    <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageStartDate).format("MM/DD/YYYY")}</p>
 `).join('');
 
         const coverageEndDates = otherInfo.map((product, index) => `
-    <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageEndDate).add(1, 'days').format("MM/DD/YYYY")}</p>
+    <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageEndDate).format("MM/DD/YYYY")}</p>
 `).join('');
 
         const term = otherInfo.map((product, index) => `
@@ -2540,7 +2636,7 @@ async function generateTC(orderData) {
             const s3Key = `pdfs/${mergeFileName}`;
             //Upload to S3 bucket
             await uploadToS3(orderFile, bucketName, s3Key);
-            const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : "file-1723185474819.pdf"
+            const termConditionFile =  checkOrder.termCondition.fileName 
             const termPath = termConditionFile
             //Download from S3 bucket 
             const termPathBucket = await downloadFromS3(bucketName, termPath);
@@ -2592,7 +2688,9 @@ async function generateTC(orderData) {
                 content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
                 subject: 'Order Term and Condition-' + checkOrder.unique_key,
             }
-            let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
+            if (checkOrder.sendNotification) {
+                let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
+            }
         })
         return 1
 
@@ -2605,7 +2703,6 @@ async function generateTC(orderData) {
         }
     }
 }
-
 
 //Upload to S3
 const uploadToS3 = async (filePath, bucketName, key) => {

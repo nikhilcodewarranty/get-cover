@@ -114,6 +114,13 @@ exports.createReseller = async (req, res) => {
         let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
         notificationEmails.push(getPrimary.email)
         IDs.push(getPrimary._id)
+        //Merge start singleServer
+        // let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
+        if (checkDealer.isAccountCreate) {
+            IDs.push(getPrimary._id)
+            notificationEmails.push(getPrimary.email)
+        }
+        //Merge end
         let notificationData = {
             title: "Reseller Account Creation",
             description: data.accountName + " " + "reseller account has been created successfully!",
@@ -725,7 +732,8 @@ exports.getResellerPriceBook = async (req, res) => {
         query = {
             $and: [
                 { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-                { 'priceBooks.coverageType': { $elemMatch: { value: { $in: coverageType } } } },
+                { 'priceBooks.coverageType.value': { $all: coverageType } },
+                { 'priceBooks.coverageType': { $size: coverageType.length } },
                 { 'priceBooks.category._id': { $in: catIdsArray } },
                 { 'status': true },
                 { 'dealerSku': { '$regex': dealerSku, '$options': 'i' } },
@@ -900,7 +908,14 @@ exports.editResellers = async (req, res) => {
             street: data.street,
             zip: data.zip
         }
+        // check dealer for existing 
+        let checkDealer = await dealerService.getDealerByName({ _id: checkReseller.dealerId }, {});
         const updateServicerMeta = await providerService.updateServiceProvider({ resellerId: req.params.resellerId }, servicerMeta)
+
+        let IDs = await supportingFunction.getUserIds()
+        // let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkReseller.dealerId, isPrimary: true })
+        // let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkReseller._id, isPrimary: true })
+        let notificationEmails = await supportingFunction.getUserEmails();
 
         if (data.isServicer) {
             const checkServicer = await providerService.getServiceProviderById({ resellerId: req.params.resellerId })
@@ -949,11 +964,15 @@ exports.editResellers = async (req, res) => {
                 }
             }
         }
+        if (checkDealer.isAccountCreate) {
+            IDs.push(dealerPrimary._id)
+            notificationEmails.push(dealerPrimary.email);
+        }
 
         const changeResellerUser = await userService.updateUser(resellerUserCreateria, newValue, { new: true });
         //Send notification to admin,dealer,reseller
 
-        let IDs = await supportingFunction.getUserIds()
+        // let IDs = await supportingFunction.getUserIds()
         let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkReseller.dealerId, isPrimary: true } } })
 
         let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkReseller._id, isPrimary: true } } })
@@ -970,10 +989,8 @@ exports.editResellers = async (req, res) => {
         // save notification
         let createNotification = await userService.createNotification(notificationData);
         // Send Email code here
-        let notificationEmails = await supportingFunction.getUserEmails();
         let settingData = await userService.getSetting({});
         //notificationEmails.push(resellerPrimary.email);
-        notificationEmails.push(dealerPrimary.email);
         let emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -984,7 +1001,13 @@ exports.editResellers = async (req, res) => {
             subject: "Update Info"
         }
 
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary.email, notificationEmails, emailData))
+        if (checkReseller.isAccountCreate || data.isAccountCreate) {
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary.email, notificationEmails, emailData))
+        }
+        else {
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+
+        }
         //Save Logs update reseller
         let logData = {
             userId: req.userId,
@@ -1403,6 +1426,8 @@ exports.getResellerOrders = async (req, res) => {
             createdAt: 1,
             venderOrder: 1,
             orderAmount: 1,
+            paidAmount: 1,
+            dueAmount: 1,
             contract: "$contract"
         };
 
@@ -1667,6 +1692,8 @@ exports.getResellerContract = async (req, res) => {
     try {
         let data = req.body
         let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+        let getTheThresholdLimir = await userService.getUserById1({ roleId: process.env.super_admin, isPrimary: true })
+
         let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
         let limitData = Number(pageLimit)
         let dealerIds = [];
@@ -1856,6 +1883,9 @@ exports.getResellerContract = async (req, res) => {
         let result1 = getContracts[0]?.data ? getContracts[0]?.data : []
         for (let e = 0; e < result1.length; e++) {
             result1[e].reason = " "
+            if (!result1[e].eligibilty) {
+                result1[e].reason = "Claims limit cross for this contract"
+              }
             if (result1[e].status != "Active") {
                 result1[e].reason = "Contract is not active"
             }
@@ -1902,6 +1932,19 @@ exports.getResellerContract = async (req, res) => {
                     result1[e].reason = "Claim value exceed the product value limit"
                 }
             }
+            let thresholdLimitPercentage = getTheThresholdLimir.threshHoldLimit.value
+            const thresholdLimitValue = (thresholdLimitPercentage / 100) * Number(result1[e].productValue);
+            let overThreshold = result1[e].claimAmount > thresholdLimitValue;
+            let threshHoldMessage = "This claim amount surpasses the maximum allowed threshold."
+            if (!overThreshold) {
+                threshHoldMessage = ""
+            }
+            if (!thresholdLimitPercentage.isThreshHoldLimit) {
+                overThreshold = false
+                threshHoldMessage = ""
+            }
+            result1[e].threshHoldMessage = threshHoldMessage
+            result1[e].overThreshold = overThreshold
         }
         res.send({
             code: constant.successCode,
@@ -1922,6 +1965,18 @@ exports.getResellerContract = async (req, res) => {
 exports.changeResellerStatus = async (req, res) => {
     try {
         const singleReseller = await resellerService.getReseller({ _id: req.params.resellerId });
+        let IDs = await supportingFunction.getUserIds()
+        let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: singleReseller.dealerId, isPrimary: true })
+        let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.resellerId, isPrimary: true })
+        let notificationEmails = await supportingFunction.getUserEmails();
+        //check Reseller dealer
+        let checkDealer = await dealerService.getDealerByName({ _id: singleReseller.dealerId }, {})
+        if (checkDealer.isAccountCreate) {
+            IDs.push(dealerPrimary._id)
+            notificationEmails.push(dealerPrimary.email);
+        }
+        let toEmail = notificationEmails;
+        let ccEmail = "noreply@getcover.com";
         if (!singleReseller) {
             res.send({
                 code: constant.errorCode,
@@ -1929,6 +1984,7 @@ exports.changeResellerStatus = async (req, res) => {
             })
             return;
         }
+
         //Update Reseller User Status if inactive
         if (!req.body.status) {
             let resellerUserCreateria = { metaData: { $elemMatch: { metaId: req.params.resellerId } } }
@@ -1983,9 +2039,7 @@ exports.changeResellerStatus = async (req, res) => {
             let createNotification = await userService.createNotification(notificationData);
 
             // Send Email code here
-            let notificationEmails = await supportingFunction.getUserEmails();
             let settingData = await userService.getSetting({});
-            notificationEmails.push(dealerPrimary.email);
             const status_content = req.body.status ? 'Active' : 'Inactive';
             let emailData = {
                 darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -1996,8 +2050,23 @@ exports.changeResellerStatus = async (req, res) => {
                 content: "Status has been changed to " + status_content + " " + ", effective immediately.",
                 subject: "Update Status"
             }
+            if (singleReseller.isAccountCreate) {
+                toEmail = getPrimary.email
+                ccEmail = notificationEmails
+                IDs.push(getPrimary._id)
+            }
+            //Send notification to reseller,dealer and admin
+            // let notificationData = {
+            //     title: "Reseller status update",
+            //     description: singleReseller.name + " , " + "your status has been updated",
+            //     userId: req.teammateId,
+            //     flag: 'reseller',
+            //     notificationFor: IDs
+            // };
 
-            let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+            // let createNotification = await userService.createNotification(notificationData);
+
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(toEmail, ccEmail, emailData))
             //Save Logs change reseller status
             let logData = {
                 userId: req.userId,

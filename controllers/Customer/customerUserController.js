@@ -506,6 +506,7 @@ exports.getCustomerContract = async (req, res) => {
   try {
     let data = req.body
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+    let getTheThresholdLimir = await userService.getUserById1({ roleId: process.env.super_admin, isPrimary: true })
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
     let dealerIds = [];
@@ -673,6 +674,9 @@ exports.getCustomerContract = async (req, res) => {
     let result1 = getContracts[0]?.data ? getContracts[0]?.data : []
     for (let e = 0; e < result1.length; e++) {
       result1[e].reason = " "
+      if (!result1[e].eligibilty) {
+        result1[e].reason = "Claims limit cross for this contract"
+      }
       if (result1[e].status != "Active") {
         result1[e].reason = "Contract is not active"
       }
@@ -716,6 +720,21 @@ exports.getCustomerContract = async (req, res) => {
           result1[e].reason = "Claim value exceed the product value limit"
         }
       }
+
+
+      let thresholdLimitPercentage = getTheThresholdLimir.threshHoldLimit.value
+      const thresholdLimitValue = (thresholdLimitPercentage / 100) * Number(result1[e].productValue);
+      let overThreshold = result1[e].claimAmount > thresholdLimitValue;
+      let threshHoldMessage = "This claim amount surpasses the maximum allowed threshold."
+      if (!overThreshold) {
+        threshHoldMessage = ""
+      }
+      if (!thresholdLimitPercentage.isThreshHoldLimit) {
+        overThreshold = false
+        threshHoldMessage = ""
+      }
+      result1[e].threshHoldMessage = threshHoldMessage
+      result1[e].overThreshold = overThreshold
     }
     res.send({
       code: constant.successCode,
@@ -1820,7 +1839,9 @@ exports.getDashboardInfo = async (req, res) => {
 
       }
     },
-    { $sort: { unique_key_number: -1 } },
+    {
+      $sort: { updatedAt: -1 }
+    },
     {
       $limit: 5
     },
@@ -1841,7 +1862,7 @@ exports.getDashboardInfo = async (req, res) => {
     },
     {
       $sort: {
-        unique_key_number: -1
+        updatedAt: -1
       }
     },
     {

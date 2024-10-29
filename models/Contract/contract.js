@@ -88,7 +88,7 @@ const contractSchema = new mongoose.Schema({
   },
   regDate: {
     type: Date,
-    default: Date.now()
+    default: () => Date.now()
   },
   condition: {
     type: String,
@@ -112,9 +112,17 @@ const contractSchema = new mongoose.Schema({
   },
   coverageStartDate: {
     type: Date,
-    default: Date.now(),
+    default: () => Date.now(),
   },
   coverageEndDate: {
+    type: Date,
+    default: '',
+  },
+  coverageStartDate1: {
+    type: Date,
+    default: () => Date.now(),
+  },
+  coverageEndDate1: {
     type: Date,
     default: '',
   },

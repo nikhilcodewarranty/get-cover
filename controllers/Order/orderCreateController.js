@@ -112,6 +112,13 @@ exports.checkFileValidation = async (req, res) => {
                 if (err) {
                     console.log(err);
                 } else {
+                    if (!Buffer.isBuffer(data.Body)) {
+                        res.send({
+                            code: constant.errorCode,
+                            message: "Unable to buffer try again"
+                        })
+                        return
+                    }
                     // Parse the buffer as an Excel file
                     const wb = XLSX.read(data.Body, { type: 'buffer' });
                     // Extract the data from the first sheet
@@ -243,151 +250,154 @@ exports.checkFileValidation = async (req, res) => {
 }
 
 //check file validation for orders
-exports.checkFileValidation = async (req, res) => {
-    try {
-        uploadP(req, res, async (err) => {
-            let data = req.body;
-            let file = req.file;
-            let csvName = file.key;
-            let originalName = file.originalname;
-            let size = file.size;
-            let totalDataComing1 = [];
-            let ws;
-            //S3 Bucket Read Code
-            var params = { Bucket: process.env.bucket_name, Key: file.key };
-            S3Bucket.getObject(params, function (err, data) {
-                if (err) {
-                    console.log(err);
-                } else {
-                    // Parse the buffer as an Excel file
-                    const wb = XLSX.read(data.Body, { type: 'buffer' });
-                    // Extract the data from the first sheet
-                    const sheetName = wb.SheetNames[0];
-                    ws = wb.Sheets[sheetName];
-                    totalDataComing1 = XLSX.utils.sheet_to_json(ws);
-                    const headers = [];
-                    for (let cell in ws) {
-                        // Check if the cell is in the first row and has a non-empty value
-                        if (
-                            /^[A-Z]1$/.test(cell) &&
-                            ws[cell].v !== undefined &&
-                            ws[cell].v !== null &&
-                            ws[cell].v.trim() !== ""
-                        ) {
-                            headers.push(ws[cell].v);
-                        }
-                    }
+// exports.checkFileValidation = async (req, res) => {
+//     try {
+//         uploadP(req, res, async (err) => {
+//             let data = req.body;
+//             let file = req.file;
+//             let csvName = file.key;
+//             let originalName = file.originalname;
+//             let size = file.size;
+//             let totalDataComing1 = [];
+//             let ws;
+//             //S3 Bucket Read Code
+//             var params = { Bucket: process.env.bucket_name, Key: file.key };
+//             S3Bucket.getObject(params, function (err, data) {
+//                 if (err) {
+//                     console.log(err);
+//                 } else {
+//                     if (!Buffer.isBuffer(data.Body)){
+//                         resse
+//                     }
+//                     // Parse the buffer as an Excel file
+//                     const wb = XLSX.read(data.Body, { type: 'buffer' });
+//                     // Extract the data from the first sheet
+//                     const sheetName = wb.SheetNames[0];
+//                     ws = wb.Sheets[sheetName];
+//                     totalDataComing1 = XLSX.utils.sheet_to_json(ws);
+//                     const headers = [];
+//                     for (let cell in ws) {
+//                         // Check if the cell is in the first row and has a non-empty value
+//                         if (
+//                             /^[A-Z]1$/.test(cell) &&
+//                             ws[cell].v !== undefined &&
+//                             ws[cell].v !== null &&
+//                             ws[cell].v.trim() !== ""
+//                         ) {
+//                             headers.push(ws[cell].v);
+//                         }
+//                     }
 
-                    if (headers.length !== 8) {
-                        // fs.unlink('../../uploads/orderFile/' + req.file.filename)
-                        res.send({
-                            code: constant.successCode,
-                            message:
-                                "Invalid file format detected. The sheet should contain exactly eight columns.",
-                            orderFile: {
-                                fileName: csvName,
-                                name: originalName,
-                                size: file.size,
-                            },
-                        });
-                        return;
-                    }
+//                     if (headers.length !== 8) {
+//                         // fs.unlink('../../uploads/orderFile/' + req.file.filename)
+//                         res.send({
+//                             code: constant.successCode,
+//                             message:
+//                                 "Invalid file format detected. The sheet should contain exactly eight columns.",
+//                             orderFile: {
+//                                 fileName: csvName,
+//                                 name: originalName,
+//                                 size: file.size,
+//                             },
+//                         });
+//                         return;
+//                     }
 
-                    const isValidLength = totalDataComing1.every(
-                        (obj) => Object.keys(obj).length === 5
-                    );
-                    if (!isValidLength) {
-                        res.send({
-                            code: constant.successCode,
-                            message: "Invalid fields value",
-                            orderFile: {
-                                fileName: csvName,
-                                name: originalName,
-                                size: size,
-                            },
-                        });
-                        return;
-                    }
-                    const totalDataComing = totalDataComing1.map((item) => {
-                        const keys = Object.keys(item);
-                        return {
-                            retailValue: item[keys[4]],
-                        };
-                    });
+//                     const isValidLength = totalDataComing1.every(
+//                         (obj) => Object.keys(obj).length === 5
+//                     );
+//                     if (!isValidLength) {
+//                         res.send({
+//                             code: constant.successCode,
+//                             message: "Invalid fields value",
+//                             orderFile: {
+//                                 fileName: csvName,
+//                                 name: originalName,
+//                                 size: size,
+//                             },
+//                         });
+//                         return;
+//                     }
+//                     const totalDataComing = totalDataComing1.map((item) => {
+//                         const keys = Object.keys(item);
+//                         return {
+//                             retailValue: item[keys[4]],
+//                         };
+//                     });
 
-                    const serialNumberArray = totalDataComing1.map((item) => {
-                        const keys = Object.keys(item);
-                        return {
-                            serial: item[keys[2]].toString().toLowerCase(),
-                        };
-                    });
+//                     const serialNumberArray = totalDataComing1.map((item) => {
+//                         const keys = Object.keys(item);
+//                         return {
+//                             serial: item[keys[2]].toString().toLowerCase(),
+//                         };
+//                     });
 
-                    const serialNumbers = serialNumberArray.map(number => number.serial);
-                    const duplicateSerials = serialNumbers.filter((serial, index) => serialNumbers.indexOf(serial) !== index);
+//                     const serialNumbers = serialNumberArray.map(number => number.serial);
+//                     const duplicateSerials = serialNumbers.filter((serial, index) => serialNumbers.indexOf(serial) !== index);
 
-                    if (duplicateSerials.length > 0) {
-                        res.send({
-                            code: constant.successCode,
-                            message: "Serial numbers are not unique for this product",
-                            orderFile: {
-                                fileName: csvName,
-                                name: originalName,
-                                size: size,
-                            },
-                        })
-                        return
-                    }
+//                     if (duplicateSerials.length > 0) {
+//                         res.send({
+//                             code: constant.successCode,
+//                             message: "Serial numbers are not unique for this product",
+//                             orderFile: {
+//                                 fileName: csvName,
+//                                 name: originalName,
+//                                 size: size,
+//                             },
+//                         })
+//                         return
+//                     }
 
-                    // Check retail price is in between rangeStart and rangeEnd
-                    const isValidRetailPrice = totalDataComing.map((obj) => {
-                        // Check if 'noOfProducts' matches the length of 'data'
-                        if (
-                            obj.retailValue < Number(data.rangeStart) ||
-                            obj.retailValue > Number(data.rangeEnd)
-                        ) {
-                            message.push({
-                                code: constant.successCode,
-                                retailPrice: obj.retailValue,
-                                message: "Invalid Retail Price!",
-                                fileName: csvName,
-                                name: originalName,
-                                orderFile: {
-                                    fileName: csvName,
-                                    name: originalName,
-                                    size: size,
-                                },
-                            });
-                        }
-                    });
+//                     // Check retail price is in between rangeStart and rangeEnd
+//                     const isValidRetailPrice = totalDataComing.map((obj) => {
+//                         // Check if 'noOfProducts' matches the length of 'data'
+//                         if (
+//                             obj.retailValue < Number(data.rangeStart) ||
+//                             obj.retailValue > Number(data.rangeEnd)
+//                         ) {
+//                             message.push({
+//                                 code: constant.successCode,
+//                                 retailPrice: obj.retailValue,
+//                                 message: "Invalid Retail Price!",
+//                                 fileName: csvName,
+//                                 name: originalName,
+//                                 orderFile: {
+//                                     fileName: csvName,
+//                                     name: originalName,
+//                                     size: size,
+//                                 },
+//                             });
+//                         }
+//                     });
 
-                    if (message.length > 0) {
-                        res.send({
-                            data: message,
+//                     if (message.length > 0) {
+//                         res.send({
+//                             data: message,
 
-                        });
-                        return;
-                    }
+//                         });
+//                         return;
+//                     }
 
-                    res.send({
-                        code: constant.successCode,
-                        message: "Verified",
-                        orderFile: {
-                            fileName: csvName,
-                            name: originalName,
-                            size: size,
-                        },
-                    });
-                }
-            })
+//                     res.send({
+//                         code: constant.successCode,
+//                         message: "Verified",
+//                         orderFile: {
+//                             fileName: csvName,
+//                             name: originalName,
+//                             size: size,
+//                         },
+//                     });
+//                 }
+//             })
 
-        });
-    } catch (err) {
-        res.send({
-            code: constant.errorCode,
-            message: err.message,
-        });
-    }
-};
+//         });
+//     } catch (err) {
+//         res.send({
+//             code: constant.errorCode,
+//             message: err.message,
+//         });
+//     }
+// };
 
 //checking uploaded file is valid
 exports.checkMultipleFileValidation = async (req, res) => {
@@ -747,12 +757,10 @@ async function generateTC(orderData) {
         let otherInfo = []
         //Check contract is exist or not using contract id
         const contractArrayPromise = checkOrder?.productsArray.map(item => {
-            if (!item.exit) return contractService.getContractById({
+            return contractService.getContractById({
                 orderProductId: item._id
             });
-            else {
-                return null;
-            }
+
         })
         const contractArray = await Promise.all(contractArrayPromise);
 
@@ -801,11 +809,11 @@ async function generateTC(orderData) {
 
 
         const coverageStartDates = otherInfo.map((product, index) => `
-    <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageStartDate).add(1, 'days').format("MM/DD/YYYY")}</p>
+    <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageStartDate).format("MM/DD/YYYY")}</p>
 `).join('');
 
         const coverageEndDates = otherInfo.map((product, index) => `
-    <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageEndDate).add(1, 'days').format("MM/DD/YYYY")}</p>
+    <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageEndDate).format("MM/DD/YYYY")}</p>
 `).join('');
 
         const term = otherInfo.map((product, index) => `
@@ -895,7 +903,7 @@ async function generateTC(orderData) {
             const s3Key = `pdfs/${mergeFileName}`;
             //Upload to S3 bucket
             await uploadToS3(orderFile, bucketName, s3Key);
-            const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : "file-1723185474819.pdf"
+            const termConditionFile = checkOrder.termCondition.fileName
             const termPath = termConditionFile
             //Download from S3 bucket 
             const termPathBucket = await downloadFromS3(bucketName, termPath);
@@ -1175,6 +1183,33 @@ exports.createOrder1 = async (req, res) => {
 
         let getChoosedProducts = data.productsArray
         for (let A = 0; A < getChoosedProducts.length; A++) {
+            if (getChoosedProducts[A].coverageStartDate != "") {
+
+
+
+                let addOneDay = new Date(getChoosedProducts[A].coverageStartDate)
+                let addOneDay1 = new Date(getChoosedProducts[A].coverageStartDate)
+                let addOneDay2 = new Date(getChoosedProducts[A].coverageStartDate)
+                addOneDay2.setMonth(addOneDay2.getMonth() + getChoosedProducts[A].term)
+                addOneDay2.setDate(addOneDay2.getDate() - 1)
+                let addOneDay3 = new Date(getChoosedProducts[A].coverageStartDate)
+                addOneDay3.setMonth(addOneDay3.getMonth() + getChoosedProducts[A].term)
+                addOneDay3.setDate(addOneDay3.getDate() - 1)
+
+                data.productsArray[A].coverageStartDate1 = addOneDay
+                data.productsArray[A].coverageEndDate1 = addOneDay2
+                data.productsArray[A].coverageStartDate = addOneDay1.setDate(addOneDay1.getDate() + 1);
+                data.productsArray[A].coverageEndDate = addOneDay3.setDate(addOneDay3.getDate() + 1);
+
+                // need for sethours to 0 0 0 0
+
+                // data.productsArray[A].coverageStartDate1 = new Date(data.productsArray[A].coverageStartDate1).setHours(0, 0, 0, 0)
+                // data.productsArray[A].coverageStartDate = new Date(data.productsArray[A].coverageStartDate).setHours(0, 0, 0, 0)
+                // data.productsArray[A].coverageEndDate1 = new Date(data.productsArray[A].coverageEndDate1).setHours(0, 0, 0, 0)
+                // data.productsArray[A].coverageEndDate = new Date(data.productsArray[A].coverageEndDate).setHours(0, 0, 0, 0)
+               
+
+            }
             if (!getChoosedProducts[A].adhDays) {
                 res.send({
                     code: constant.errorCode,
@@ -1249,6 +1284,7 @@ exports.createOrder1 = async (req, res) => {
         let notificationData = {
             title: "New order created",
             description: "The new order " + savedResponse.unique_key + " has been created",
+            description: "A new order " + savedResponse.unique_key + " has been created. The order is still in the pending state.",
             userId: req.teammateId,
             contentId: null,
             flag: 'order',
@@ -1271,7 +1307,10 @@ exports.createOrder1 = async (req, res) => {
             subject: "New Order"
         }
 
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+
+        if (data.sendNotification) {
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+        }
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
             let paidDate = {
                 name: "processOrder",
@@ -1342,7 +1381,9 @@ exports.createOrder1 = async (req, res) => {
                 }
                 let priceBookId = product.priceBookId;
                 let coverageStartDate = product.coverageStartDate;
+                let coverageStartDate1 = product.coverageStartDate1;
                 let coverageEndDate = product.coverageEndDate;
+                let coverageEndDate1 = product.coverageEndDate1;
                 let orderProductId = product._id;
 
                 let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
@@ -1421,50 +1462,59 @@ exports.createOrder1 = async (req, res) => {
                     // Find the minimum date
                     let minDate;
 
-
                     let adhDaysArray = product.adhDays
-
                     adhDaysArray.sort((a, b) => a.waitingDays - b.waitingDays);
                     const futureDate = new Date(product.coverageStartDate);
                     let minDate1 = futureDate.setDate(futureDate.getDate() + adhDaysArray[0].waitingDays);
                     if (!product.isManufacturerWarranty) {
-                        let minDate2
-                        if (orderServiceCoverageType == "Parts") {
-                            minDate2 = partsWarrantyDate1
-                        } else if (orderServiceCoverageType == "Labour" || orderServiceCoverageType == "Labor") {
-                            minDate2 = labourWarrantyDate1
-                        } else {
-                            if (partsWarrantyDate1 > labourWarrantyDate1) {
-                                minDate2 = labourWarrantyDate1
+                        if (adhDaysArray.length == 1) {
+                            const hasBreakdown = adhDaysArray.some(item => item.value === 'breakdown');
+                            if (hasBreakdown) {
+                                let minDate2
+                                if (orderServiceCoverageType == "Parts") {
+                                    minDate2 = partsWarrantyDate1
+                                } else if (orderServiceCoverageType == "Labour" || orderServiceCoverageType == "Labor") {
+                                    minDate2 = labourWarrantyDate1
+                                } else {
+                                    if (partsWarrantyDate1 > labourWarrantyDate1) {
+                                        minDate2 = labourWarrantyDate1
+                                    } else {
+                                        minDate2 = partsWarrantyDate1
+                                    }
+                                }
+                                if (minDate1 > minDate2) {
+                                    minDate = minDate1
+                                }
+                                if (minDate1 < minDate2) {
+                                    minDate = minDate2
+                                }
                             } else {
-                                minDate2 = partsWarrantyDate1
+                                minDate = minDate1
                             }
                         }
-                        if (minDate1 > minDate2) {
+                        else {
                             minDate = minDate1
-                        }
-                        if (minDate1 < minDate2) {
-                            minDate = minDate2
                         }
 
                     } else {
                         minDate = minDate1
 
                     }
-
                     // let eligibilty = new Date(dateCheck) < new Date() ? true : false
+                    minDate = new Date(minDate).setHours(0, 0, 0, 0)
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
-
                     //reporting codes 
                     let contractObject = {
                         orderId: savedResponse._id,
                         orderUniqueKey: savedResponse.unique_key,
-                        minDate: minDate,
+                        minDate: new Date(minDate),
                         venderOrder: savedResponse.venderOrder,
                         orderProductId: orderProductId,
                         coverageStartDate: coverageStartDate,
+                        coverageStartDate1: coverageStartDate1,
                         dealerSku: dealerPriceBook.dealerSku,
                         coverageEndDate: coverageEndDate,
+                        coverageEndDate1: coverageEndDate1,
                         productName: priceBook[0]?.name,
                         pName: priceBook[0]?.pName,
                         manufacture: data.brand,
@@ -2149,6 +2199,28 @@ exports.editOrderDetail = async (req, res) => {
 
         let getChoosedProducts = data.productsArray
         for (let A = 0; A < getChoosedProducts.length; A++) {
+            if (getChoosedProducts[A].coverageStartDate != "") {
+                let addOneDay = new Date(getChoosedProducts[A].coverageStartDate)
+                let addOneDay1 = new Date(getChoosedProducts[A].coverageStartDate)
+                let addOneDay2 = new Date(getChoosedProducts[A].coverageStartDate)
+                console.log("checking the date+++++++++++++++++++++++", addOneDay2)
+                addOneDay2.setMonth(addOneDay2.getMonth() + getChoosedProducts[A].term)
+                addOneDay2.setDate(addOneDay2.getDate() - 1)
+                console.log("checking the date+++++++++++++++++++++++", addOneDay2)
+                let addOneDay3 = new Date(getChoosedProducts[A].coverageStartDate)
+                console.log("checking the date+++++++++++++++++++++++", addOneDay3)
+                addOneDay3.setMonth(addOneDay3.getMonth() + getChoosedProducts[A].term)
+                addOneDay3.setDate(addOneDay3.getDate() - 1)
+
+                console.log("checking the date+++++++++++++++++++++++", addOneDay3)
+
+                data.productsArray[A].coverageStartDate1 = addOneDay
+                data.productsArray[A].coverageEndDate1 = addOneDay2
+                data.productsArray[A].coverageStartDate = addOneDay1.setDate(addOneDay1.getDate() + 1);
+                data.productsArray[A].coverageEndDate = addOneDay3.setDate(addOneDay3.getDate() + 1);
+
+            }
+
             if (!getChoosedProducts[A].adhDays) {
                 res.send({
                     code: constant.errorCode,
@@ -2223,7 +2295,7 @@ exports.editOrderDetail = async (req, res) => {
         IDs.push(dealerPrimary._id)
         let notificationData = {
             title: "Order update",
-            description: "The order " + savedResponse.unique_key + " has been updated",
+            description: "Your order " + savedResponse.unique_key + " has been updated in our system. The order is still pending, as there is some data missing.",
             userId: req.teammateId,
             contentId: checkOrder._id,
             flag: 'order',
@@ -2245,8 +2317,9 @@ exports.editOrderDetail = async (req, res) => {
             content: "The  order " + savedResponse.unique_key + " has been updated",
             subject: "Order Update"
         }
-
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+        if (data.sendNotification) {
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+        }
 
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
 
@@ -2300,7 +2373,9 @@ exports.editOrderDetail = async (req, res) => {
                 let priceBookId = product.priceBookId;
                 let orderProductId = product._id;
                 let coverageStartDate = product.coverageStartDate;
+                let coverageStartDate1 = product.coverageStartDate1;
                 let coverageEndDate = product.coverageEndDate;
+                let coverageEndDate1 = product.coverageEndDate1;
                 let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
                 let projection = { isDeleted: 0 };
 
@@ -2396,30 +2471,39 @@ exports.editOrderDetail = async (req, res) => {
 
                     let minDate1 = futureDate.setDate(futureDate.getDate() + adhDaysArray[0].waitingDays);
                     if (!product.isManufacturerWarranty) {
-                        let minDate2
-                        if (orderServiceCoverageType.serviceCoverageType == "Parts") {
-                            minDate2 = partsWarrantyDate1
-                        } else if (orderServiceCoverageType.serviceCoverageType == "Labor" || orderServiceCoverageType.serviceCoverageType == "Labour") {
-                            minDate2 = labourWarrantyDate1
-                        } else {
-                            if (partsWarrantyDate1 > labourWarrantyDate1) {
-                                minDate2 = labourWarrantyDate1
+                        if (adhDaysArray.length == 1) {
+                            const hasBreakdown = adhDaysArray.some(item => item.value === 'breakdown');
+                            if (hasBreakdown) {
+                                let minDate2
+                                if (orderServiceCoverageType == "Parts") {
+                                    minDate2 = partsWarrantyDate1
+                                } else if (orderServiceCoverageType == "Labour" || orderServiceCoverageType == "Labor") {
+                                    minDate2 = labourWarrantyDate1
+                                } else {
+                                    if (partsWarrantyDate1 > labourWarrantyDate1) {
+                                        minDate2 = labourWarrantyDate1
+                                    } else {
+                                        minDate2 = partsWarrantyDate1
+                                    }
+                                }
+                                if (minDate1 > minDate2) {
+                                    minDate = minDate1
+                                }
+                                if (minDate1 < minDate2) {
+                                    minDate = minDate2
+                                }
                             } else {
-                                minDate2 = partsWarrantyDate1
+                                minDate = minDate1
                             }
                         }
-                        if (minDate1 > minDate2) {
+                        else {
                             minDate = minDate1
-                        }
-                        if (minDate1 < minDate2) {
-                            minDate = minDate2
                         }
 
                     } else {
                         minDate = minDate1
-
                     }
-
+                    minDate = new Date(minDate).setHours(0, 0, 0, 0)
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
                     let serviceCoverage;
                     if (orderServiceCoverageType == "Labour") {
@@ -2434,8 +2518,10 @@ exports.editOrderDetail = async (req, res) => {
                         orderUniqueKey: savedResponse.unique_key,
                         venderOrder: savedResponse.venderOrder,
                         orderProductId: orderProductId,
-                        minDate: minDate,
+                        minDate: new Date(minDate),
                         coverageStartDate: coverageStartDate,
+                        coverageStartDate1: coverageStartDate1,
+                        coverageEndDate1: coverageEndDate1,
                         coverageEndDate: coverageEndDate,
                         dealerSku: dealerPriceBook.dealerSku,
                         serviceCoverageType: serviceCoverage,
@@ -2625,6 +2711,8 @@ exports.getOrderContract = async (req, res) => {
     try {
         let data = req.body
         let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+        let getTheThresholdLimir = await userService.getUserById1({ roleId: process.env.super_admin, isPrimary: true })
+
         let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
         let limitData = Number(pageLimit)
         let dealerIds = [];
@@ -2820,6 +2908,9 @@ exports.getOrderContract = async (req, res) => {
         let result1 = getContracts[0]?.data ? getContracts[0]?.data : []
         for (let e = 0; e < result1.length; e++) {
             result1[e].reason = " "
+            if (!result1[e].eligibilty) {
+                result1[e].reason = "Claims limit cross for this contract"
+            }
             if (result1[e].status != "Active") {
                 result1[e].reason = "Contract is not active"
             }
@@ -2864,6 +2955,21 @@ exports.getOrderContract = async (req, res) => {
                     result1[e].reason = "Claim value exceed the product value limit"
                 }
             }
+
+
+            let thresholdLimitPercentage = getTheThresholdLimir.threshHoldLimit.value
+            const thresholdLimitValue = (thresholdLimitPercentage / 100) * Number(result1[e].productValue);
+            let overThreshold = result1[e].claimAmount > thresholdLimitValue;
+            let threshHoldMessage = "This claim amount surpasses the maximum allowed threshold."
+            if (!overThreshold) {
+                threshHoldMessage = ""
+            }
+            if (!thresholdLimitPercentage.isThreshHoldLimit) {
+                overThreshold = false
+                threshHoldMessage = ""
+            }
+            result1[e].threshHoldMessage = threshHoldMessage
+            result1[e].overThreshold = overThreshold
         }
         if (!checkOrder[0]) {
             res.send({

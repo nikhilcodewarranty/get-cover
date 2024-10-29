@@ -152,8 +152,6 @@ exports.createServiceProvider = async (req, res, next) => {
       }
       let IDs = await supportingFunction.getUserIds()
       //Send Notification to ,admin,,servicer 
-      IDs.push(createServiceProvider._id)
-
       let notificationData = {
         title: "Servicer Account Creation",
         description: data.accountName + " " + "servicer account has been created successfully!",
@@ -333,8 +331,6 @@ exports.createServiceProvider = async (req, res, next) => {
 
       let IDs = await supportingFunction.getUserIds()
       //Send Notification to ,admin,,servicer 
-      IDs.push(data.providerId)
-
       let notificationData = {
         title: "Servicer Account Approved",
         description: data.accountName + " " + "servicer account has been approved successfully!",
@@ -689,6 +685,15 @@ exports.rejectServicer = async (req, res) => {
     let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.params.servicerId, isPrimary: true } } })
 
     IDs.push(getPrimary._id)
+    let notificationEmails = await supportingFunction.getUserEmails();
+    // let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.servicerId, isPrimary: true })
+    let toEmail = notificationEmails;
+    let ccEmail = "noreply@getcover.com";
+    if (getServicer.isAccountCreate) {
+      toEmail = getPrimary.email
+      ccEmail = notificationEmails
+      IDs.push(getPrimary._id)
+    }
 
     if (!checkServicer) {
       res.send({
@@ -708,8 +713,6 @@ exports.rejectServicer = async (req, res) => {
     };
 
     let createNotification = await userService.createNotification(notificationData);
-    // Primary User Welcoime email
-    let notificationEmails = await supportingFunction.getUserEmails();
     let settingData = await userService.getSetting({});
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -721,7 +724,7 @@ exports.rejectServicer = async (req, res) => {
       subject: "Rejection Account"
     }
     // Send Email code here
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(toEmail, ccEmail, emailData))
     res.send({
       code: constant.successCode,
       message: "Deleted Successfully!"
@@ -826,6 +829,16 @@ exports.editServicerDetail = async (req, res) => {
     let IDs = await supportingFunction.getUserIds()
     let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.params.servicerId, isPrimary: true } } })
     IDs.push(getPrimary._id)
+    let notificationEmails = await supportingFunction.getUserEmails();
+    // let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.servicerId, isPrimary: true })
+    let toEmail = notificationEmails;
+    let ccEmail = "noreply@getcover.com"
+    if (updateData.isAccountCreate) {
+      toEmail = getPrimary.email
+      ccEmail = notificationEmails
+      IDs.push(getPrimary._id)
+
+    }
     let notificationData = {
       title: "Servicer Detail Update",
       description: "The servicer information has been changed!",
@@ -836,7 +849,7 @@ exports.editServicerDetail = async (req, res) => {
 
     let createNotification = await userService.createNotification(notificationData);
     // Send Email code here
-    let notificationEmails = await supportingFunction.getUserEmails();
+
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -846,7 +859,7 @@ exports.editServicerDetail = async (req, res) => {
       content: "Information has been updated successfully! effective immediately.",
       subject: "Update Info"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(toEmail, ccEmail, emailData))
     //Save Logs
     let logData = {
       userId: req.userId,
@@ -959,6 +972,11 @@ exports.updateStatus = async (req, res) => {
         let IDs = await supportingFunction.getUserIds()
         let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.params.servicerId, isPrimary: true } } })
         IDs.push(getPrimary._id)
+        // let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.servicerId, isPrimary: true })
+        if (updateData.isAccountCreate) {
+          IDs.push(getPrimary._id)
+
+        }
         let notificationData = {
           title: "Servicer status update",
           description: checkServicer.name + " , " + "your status has been updated",
@@ -991,7 +1009,9 @@ exports.updateStatus = async (req, res) => {
       }
     } else {
       let IDs = await supportingFunction.getUserIds()
-      IDs.push(getPrimary._id)
+      if (updateData.isAccountCreate) {
+        IDs.push(getPrimary._id)
+      }
       let notificationData = {
         title: "Servicer status update",
         description: checkServicer.name + " , " + "your status has been updated",
@@ -1042,7 +1062,13 @@ exports.updateStatus = async (req, res) => {
       subject: "Update Status"
     }
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary?.email, notificationEmails, emailData))
+
+    if (updateData.isAccountCreate) {
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary?.email, notificationEmails, emailData))
+    }
+    else {
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, 'noreply@getcover.com', emailData))
+    }
     //Save Logs
     let logData = {
       userId: req.userId,
@@ -2007,6 +2033,10 @@ exports.getServicerClaims = async (req, res) => {
               reason: 1,
               "unique_key": 1,
               totalAmount: 1,
+              getCoverClaimAmount: 1,
+              customerClaimAmount: 1,
+              getcoverOverAmount: 1,
+              customerOverAmount: 1,
               servicerId: 1,
               dealerSku: 1,
               customerStatus: 1,
@@ -2199,7 +2229,7 @@ exports.getServicerClaims = async (req, res) => {
       {}
     );
 
-    const result_Array = resultFiter.map((item1) => {
+    let result_Array = resultFiter.map((item1) => {
       servicer = []
       let mergedData = []
       if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
@@ -2240,6 +2270,32 @@ exports.getServicerClaims = async (req, res) => {
       }
     })
     let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0
+    let getTheThresholdLimit = await userService.getUserById1({ roleId: process.env.super_admin, isPrimary: true })
+
+    result_Array = result_Array.map(claimObject => {
+      const { productValue, claimAmount } = claimObject.contracts;
+
+      // Calculate the threshold limit value
+      const thresholdLimitValue = (getTheThresholdLimit.threshHoldLimit.value / 100) * productValue;
+
+      // Check if claimAmount exceeds the threshold limit value
+      let overThreshold = claimAmount > thresholdLimitValue;
+      let threshHoldMessage = "Claim amount exceeds the allowed limit. This might lead to claim rejection. To proceed further with claim please contact admin."
+      if (!overThreshold) {
+        threshHoldMessage = ""
+      }
+      if (!getTheThresholdLimit.isThreshHoldLimit) {
+        overThreshold = false
+        threshHoldMessage = ""
+      }
+
+      // Return the updated object with the new key 'overThreshold'
+      return {
+        ...claimObject,
+        overThreshold,
+        threshHoldMessage
+      };
+    });
     res.send({
       code: constant.successCode,
       message: "Success",
@@ -2355,9 +2411,11 @@ exports.paidUnpaidClaim = async (req, res) => {
               "contractId": 1,
               "claimFile": 1,
               "lossDate": 1,
+              "claimType": 1,
               "receiptImage": 1,
               reason: 1,
               "unique_key": 1,
+              ClaimType: 1,
               note: 1,
               totalAmount: 1,
               servicerId: 1,
@@ -2377,6 +2435,7 @@ exports.paidUnpaidClaim = async (req, res) => {
               "contracts.unique_key": 1,
               "contracts.productName": 1,
               "contracts.pName": 1,
+              "contracts.coverageType": 1,
               "contracts.model": 1,
               "contracts.coverageType": 1,
               "contracts.manufacture": 1,
@@ -2459,7 +2518,14 @@ exports.paidUnpaidClaim = async (req, res) => {
             { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { 'customerStatus.status': { '$regex': data.customerStatusValue ? data.customerStatusValue : '', '$options': 'i' } },
             { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
-            { 'claimStatus.status': 'Completed' },
+            {
+              $or: [
+                { 'claimStatus.status': 'Completed' },
+                { 'claimStatus.status': 'completed' },
+
+              ]
+            },
+
             { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { 'productName': { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { claimPaymentStatus: flag },
@@ -2561,6 +2627,7 @@ exports.paidUnpaidClaim = async (req, res) => {
     if (newQuery.length > 0) {
       lookupQuery = lookupQuery.concat(newQuery);
     }
+
     let allClaims = await claimService.getClaimWithAggregate(lookupQuery);
     let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
 
