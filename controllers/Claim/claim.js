@@ -1591,20 +1591,20 @@ exports.saveBulkClaim = async (req, res) => {
       // // Parse the email field
       const emailArray = JSON.parse(emailField);
 
-      let length = 4;
+      let length = 5;
       let match = {}
       if (req.role == 'Dealer') {
-        length = 3;
+        length = 4;
         match = { "order.dealer._id": new mongoose.Types.ObjectId(req.userId) }
       }
 
       if (req.role == 'Reseller') {
-        length = 3;
+        length = 4;
         match = { "order.reseller._id": new mongoose.Types.ObjectId(req.userId) }
       }
 
       if (req.role == 'Customer') {
-        length = 3;
+        length = 4;
         match = { "order.customers._id": new mongoose.Types.ObjectId(req.userId) }
       }
 
@@ -1623,6 +1623,8 @@ exports.saveBulkClaim = async (req, res) => {
       let totalDataComing = totalDataComing1.map((item, i) => {
         const keys = Object.keys(item);
         let dateLoss = item[keys[2]]
+        let coverageType = item[keys[4]]
+
         // Check if the "servicerName" header exists    
         if (keys.length > 3) {
           let dateLoss = item[keys[2]]
@@ -1631,6 +1633,7 @@ exports.saveBulkClaim = async (req, res) => {
             servicerName: item[keys[1]],
             lossDate: dateLoss.toString(),
             diagnosis: item[keys[3]],
+            coverageType: coverageType,
             duplicate: false,
             exit: false
           };
@@ -1641,6 +1644,7 @@ exports.saveBulkClaim = async (req, res) => {
             contractId: item[keys[0]],
             lossDate: dateLoss.toString(),
             diagnosis: item[keys[2]],  // Assuming diagnosis is now at index 2
+            coverageType: coverageType,
             duplicate: false,
             exit: false
           };
@@ -1693,6 +1697,7 @@ exports.saveBulkClaim = async (req, res) => {
           return {
             contractId: item.contractId?.toString().replace(/\s+/g, ' ').trim(),
             servicerName: item.servicerName?.toString().replace(/\s+/g, ' ').trim(),
+            coverageType: item.coverageType?.toString().replace(/\s+/g, ' ').trim(),
             lossDate: item.lossDate?.toString().replace(/\s+/g, ' ').trim(),
             diagnosis: item.diagnosis?.toString().replace(/\s+/g, ' ').trim(),
             duplicate: false,
@@ -1703,6 +1708,7 @@ exports.saveBulkClaim = async (req, res) => {
           return {
             contractId: item.contractId?.toString().replace(/\s+/g, ' ').trim(),
             lossDate: item.lossDate?.toString().replace(/\s+/g, ' ').trim(),
+            coverageType: item.coverageType?.toString().replace(/\s+/g, ' ').trim(),
             diagnosis: item.diagnosis?.toString().replace(/\s+/g, ' ').trim(),
             duplicate: false,
             exit: false
