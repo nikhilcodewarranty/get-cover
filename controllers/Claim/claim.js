@@ -1584,7 +1584,7 @@ exports.saveBulkClaim = async (req, res) => {
     try {
       let data = req.body
       let headerLength;
-      console.log("resssssss", req.file)
+      console.log("resssssss",req.file)
       const bucketReadUrl = { Bucket: process.env.bucket_name, Key: req.file.key };
       // Await the getObjectFromS3 function to complete
       const result = await getObjectFromS3(bucketReadUrl);
@@ -1592,7 +1592,7 @@ exports.saveBulkClaim = async (req, res) => {
       const emailField = req.body.email;
 
       // // Parse the email field
-      const emailArray = JSON.parse(emailField);
+      // const emailArray = JSON.parse(emailField);
 
       let length = 5;
       let match = {}
@@ -1654,7 +1654,8 @@ exports.saveBulkClaim = async (req, res) => {
         }
       });
 
-
+      console.log("totalDataComing-----------------------------",totalDataComing)
+      return;
 
       if (totalDataComing.length === 0) {
         res.send({
@@ -1663,9 +1664,10 @@ exports.saveBulkClaim = async (req, res) => {
         });
         return;
       }
+
       for (let u = 0; u < totalDataComing.length; u++) {
         let objectToCheck = totalDataComing[u]
-        if (objectToCheck.servicerName == '' || objectToCheck.servicerName == null) {
+        if (objectToCheck.servicerName != '' || objectToCheck.servicerName != null) {
           let getContractDetail = await contractService.getContractById({
             $and: [
               {
@@ -1790,7 +1792,6 @@ exports.saveBulkClaim = async (req, res) => {
       if (req.role == "Super Admin") {
         const servicerArrayPromise = totalDataComing.map(item => {
           if (!item.exit && item.servicerName != '') {
-            console.log("sdfsdfsdfsdfsdfsd", item.servicerName)
             const thename = item.servicerName;
             return servicerService.getServiceProviderById({
               "name":
@@ -1920,7 +1921,6 @@ exports.saveBulkClaim = async (req, res) => {
           const allDataArray = contractAllDataArray[i];
           const claimData = claimArray;
           const servicerData = servicerArray == undefined || servicerArray == null ? allDataArray[0]?.order?.servicer : servicerArray[i]
-          console.log("servicerData======================", servicerData)
           let flag;
           item.contractData = contractData;
           item.claimType = ''
@@ -1932,29 +1932,26 @@ exports.saveBulkClaim = async (req, res) => {
             item.exit = true;
           }
           if (item.coverageType || item.coverageType != "") {
-            if (contractData) {
-              let checkCoverageTypeForContract = contractData?.coverageType.find(item1 => item1.label == item?.coverageType)
-              if (!checkCoverageTypeForContract) {
-                item.status = "Coverage type is not available for this contract!";
-                item.exit = true;
-              }
-              const checkCoverageValue = getCoverageTypeFromOption.value.filter(option => option.label === item?.coverageType).map(item1 => item1.value);
-              let startDateToCheck = new Date(contractData.coverageStartDate)
-              let coverageTypeDays = contractData?.adhDays
-              let getDeductible = coverageTypeDays?.filter(coverageType => coverageType.value == checkCoverageValue[0])
-
-              let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0]?.waitingDays))
-              checkCoverageTypeDate = new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0)
-              let checkLossDate = new Date(item.lossDate).setHours(0, 0, 0, 0)
-              const result = getCoverageTypeFromOption?.value.filter(option => option.label === item?.coverageType).map(item1 => item1.label);
-
-              if (new Date(checkCoverageTypeDate) > new Date(checkLossDate)) {
-                item.status = `Claim not eligible for ${result[0]}.`
-                item.exit = true;
-              }
-              item.claimType = checkCoverageValue[0]
+            let checkCoverageTypeForContract = contractData.coverageType.find(item1 => item1.label == item.coverageType)
+            if (!checkCoverageTypeForContract) {
+              item.status = "Coverage type is not available for this contract!";
+              item.exit = true;
             }
+            const checkCoverageValue = getCoverageTypeFromOption.value.filter(option => option.label === item.coverageType).map(item1 => item1.value);
+            let startDateToCheck = new Date(contractData.coverageStartDate)
+            let coverageTypeDays = contractData?.adhDays
+            let getDeductible = coverageTypeDays?.filter(coverageType => coverageType.value == checkCoverageValue[0])
 
+            let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0]?.waitingDays))
+            checkCoverageTypeDate = new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0)
+            let checkLossDate = new Date(item.lossDate).setHours(0, 0, 0, 0)
+            const result = getCoverageTypeFromOption?.value.filter(option => option.label === item.coverageType).map(item1 => item1.label);
+
+            if (new Date(checkCoverageTypeDate) > new Date(checkLossDate)) {
+              item.status = `Claim not eligible for ${result[0]}.`
+              item.exit = true;
+            }
+            item.claimType = checkCoverageValue[0]
 
           }
           let checkCoverageStartDate = new Date(contractData?.coverageStartDate).setHours(0, 0, 0, 0)
@@ -1972,27 +1969,20 @@ exports.saveBulkClaim = async (req, res) => {
           // }
 
           if (allDataArray.length > 0 && servicerData) {
-
             flag = false;
             if (allDataArray[0]?.order.dealer.dealerServicer.length > 0) {
               //Find Servicer with dealer Servicer
               const servicerCheck = allDataArray[0]?.order.dealer.dealerServicer.find(item => item.servicerId?.toString() === servicerData._id?.toString())
               if (servicerCheck) {
-                console.log("22222222222222222222222",)
-
                 flag = true
               }
             }
             //Check dealer itself servicer
             if (allDataArray[0]?.order.dealer?.isServicer && allDataArray[0]?.order.dealer?.accountStatus && allDataArray[0]?.order.dealer._id?.toString() === servicerData.dealerId?.toString()) {
-              console.log("32423423423432",)
-              
               flag = true
             }
 
             if (allDataArray[0]?.order.reseller?.isServicer && allDataArray[0]?.order.reseller?.status && allDataArray[0]?.order.reseller?._id.toString() === servicerData.resellerId?.toString()) {
-              console.log("4234324234324234",)
-            
               flag = true
             }
           }
@@ -2020,7 +2010,8 @@ exports.saveBulkClaim = async (req, res) => {
 
       //Update eligibility when contract is open
 
-      console.log("totalDataComing-----------------------------------------", totalDataComing);
+      // console.log("totalDataComing-------------------------", totalDataComing);
+      // return;
       const updateArrayPromise = totalDataComing.map(item => {
         if (!item.exit && item.contractData) return contractService.updateContract({ _id: item.contractData._id }, { eligibilty: false }, { new: true });
         else {
@@ -2033,6 +2024,9 @@ exports.saveBulkClaim = async (req, res) => {
       };
       let emailServicerId = [];
 
+      console.log("totalDataComing-----------------------------------------",totalDataComing)
+
+      return;
 
       totalDataComing.map((data, index) => {
         let servicerId = data.servicerData?._id
@@ -2230,7 +2224,7 @@ exports.saveBulkClaim = async (req, res) => {
           return {
             "Contract# / Serial#": item.contractId ? item.contractId : "",
             "Loss Date": item.lossDate ? item.lossDate : '',
-            Diagnosis: item.diagnosis ? item.diagnosis : '',
+             Diagnosis: item.diagnosis ? item.diagnosis : '',
             "Coverage Type": item.coverageType ? item.coverageType : '',
             Status: item.status ? item.status : '',
             exit: item.exit
