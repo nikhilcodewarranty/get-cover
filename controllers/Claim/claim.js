@@ -1663,10 +1663,10 @@ exports.saveBulkClaim = async (req, res) => {
         });
         return;
       }
-
+      console.log("totalDataComing------------------------",totalDataComing)
       for (let u = 0; u < totalDataComing.length; u++) {
         let objectToCheck = totalDataComing[u]
-        if (objectToCheck.servicerName != '' || objectToCheck.servicerName != null) {
+        if (objectToCheck.servicerName == '' || objectToCheck.servicerName == null) {
           let getContractDetail = await contractService.getContractById({
             $and: [
               {
