@@ -1594,20 +1594,20 @@ exports.saveBulkClaim = async (req, res) => {
       // // Parse the email field
       const emailArray = JSON.parse(emailField);
 
-      let length = 4;
+      let length = 5;
       let match = {}
       if (req.role == 'Dealer') {
-        length = 3;
+        length = 4;
         match = { "order.dealer._id": new mongoose.Types.ObjectId(req.userId) }
       }
 
       if (req.role == 'Reseller') {
-        length = 3;
+        length = 4;
         match = { "order.reseller._id": new mongoose.Types.ObjectId(req.userId) }
       }
 
       if (req.role == 'Customer') {
-        length = 3;
+        length = 4;
         match = { "order.customers._id": new mongoose.Types.ObjectId(req.userId) }
       }
 
@@ -1626,6 +1626,8 @@ exports.saveBulkClaim = async (req, res) => {
       let totalDataComing = totalDataComing1.map((item, i) => {
         const keys = Object.keys(item);
         let dateLoss = item[keys[2]]
+        let coverageType = item[keys[4]]
+
         // Check if the "servicerName" header exists    
         if (keys.length > 3) {
           let dateLoss = item[keys[2]]
@@ -1634,6 +1636,7 @@ exports.saveBulkClaim = async (req, res) => {
             servicerName: item[keys[1]],
             lossDate: dateLoss.toString(),
             diagnosis: item[keys[3]],
+            coverageType: coverageType,
             duplicate: false,
             exit: false
           };
@@ -1644,6 +1647,7 @@ exports.saveBulkClaim = async (req, res) => {
             contractId: item[keys[0]],
             lossDate: dateLoss.toString(),
             diagnosis: item[keys[2]],  // Assuming diagnosis is now at index 2
+            coverageType: coverageType,
             duplicate: false,
             exit: false
           };
@@ -1696,6 +1700,7 @@ exports.saveBulkClaim = async (req, res) => {
           return {
             contractId: item.contractId?.toString().replace(/\s+/g, ' ').trim(),
             servicerName: item.servicerName?.toString().replace(/\s+/g, ' ').trim(),
+            coverageType: item.coverageType?.toString().replace(/\s+/g, ' ').trim(),
             lossDate: item.lossDate?.toString().replace(/\s+/g, ' ').trim(),
             diagnosis: item.diagnosis?.toString().replace(/\s+/g, ' ').trim(),
             duplicate: false,
@@ -1706,6 +1711,7 @@ exports.saveBulkClaim = async (req, res) => {
           return {
             contractId: item.contractId?.toString().replace(/\s+/g, ' ').trim(),
             lossDate: item.lossDate?.toString().replace(/\s+/g, ' ').trim(),
+            coverageType: item.coverageType?.toString().replace(/\s+/g, ' ').trim(),
             diagnosis: item.diagnosis?.toString().replace(/\s+/g, ' ').trim(),
             duplicate: false,
             exit: false
@@ -1904,6 +1910,8 @@ exports.saveBulkClaim = async (req, res) => {
       })
 
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
+      let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
+
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {
         if (!item.exit) {
@@ -1913,12 +1921,36 @@ exports.saveBulkClaim = async (req, res) => {
           const servicerData = servicerArray == undefined || servicerArray == null ? allDataArray[0]?.order?.servicer : servicerArray[i]
           let flag;
           item.contractData = contractData;
+          item.claimType = ''
           item.servicerData = servicerData;
           item.orderData = allDataArray[0]
 
           if (!contractData || allDataArray.length == 0) {
             item.status = "Contract not found"
             item.exit = true;
+          }
+          if (item.coverageType || item.coverageType != "") {
+            let checkCoverageTypeForContract = contractData.coverageType.find(item1 => item1.label == item.coverageType)
+            if (!checkCoverageTypeForContract) {
+              item.status = "Coverage type is not available for this contract!";
+              item.exit = true;
+            }
+            const checkCoverageValue = getCoverageTypeFromOption.value.filter(option => option.label === item.coverageType).map(item1 => item1.value);
+            let startDateToCheck = new Date(contractData.coverageStartDate)
+            let coverageTypeDays = contractData?.adhDays
+            let getDeductible = coverageTypeDays?.filter(coverageType => coverageType.value == checkCoverageValue[0])
+
+            let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0]?.waitingDays))
+            checkCoverageTypeDate = new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0)
+            let checkLossDate = new Date(item.lossDate).setHours(0, 0, 0, 0)
+            const result = getCoverageTypeFromOption?.value.filter(option => option.label === item.coverageType).map(item1 => item1.label);
+
+            if (new Date(checkCoverageTypeDate) > new Date(checkLossDate)) {
+              item.status = `Claim not eligible for ${result[0]}.`
+              item.exit = true;
+            }
+            item.claimType = checkCoverageValue[0]
+
           }
           let checkCoverageStartDate = new Date(contractData?.coverageStartDate).setHours(0, 0, 0, 0)
           if (contractData && new Date(checkCoverageStartDate) > new Date(item.lossDate)) {
@@ -2006,6 +2038,7 @@ exports.saveBulkClaim = async (req, res) => {
             servicerId: servicerId,
             orderId: data.orderData?.order?.unique_key,
             dealerId: data.orderData?.order?.dealerId,
+            claimType: data?.claimType,
             resellerId: data.orderData?.order?.resellerId,
             dealerSku: data.contractData?.dealerSku,
             customerId: data.orderData?.order?.customerId,
@@ -2112,6 +2145,7 @@ exports.saveBulkClaim = async (req, res) => {
                 "Contract# / Serial#": item.contractId ? item.contractId : "",
                 "Loss Date": item.lossDate ? item.lossDate : '',
                 Diagnosis: item.diagnosis ? item.diagnosis : '',
+                "Coverage Type": item.coverageType ? item.coverageType : '',
               });
             }
 
@@ -2120,7 +2154,9 @@ exports.saveBulkClaim = async (req, res) => {
             "Contract#/Serial#": item.contractId ? item.contractId : "",
             "Loss Date": item.lossDate ? item.lossDate : '',
             Diagnosis: item.diagnosis ? item.diagnosis : '',
+            "Coverage Type": item.coverageType ? item.coverageType : '',
             Status: item.status ? item.status : '',
+
             exit: item.exit
           };
         }
@@ -2141,6 +2177,8 @@ exports.saveBulkClaim = async (req, res) => {
                 "Contract# / Serial#": item.contractId ? item.contractId : "",
                 "Loss Date": item.lossDate ? item.lossDate : '',
                 Diagnosis: item.diagnosis ? item.diagnosis : '',
+                "Coverage Type": item.coverageType ? item.coverageType : '',
+
               });
             }
 
@@ -2149,6 +2187,7 @@ exports.saveBulkClaim = async (req, res) => {
             "Contract# / Serial#": item.contractId ? item.contractId : "",
             "Loss Date": item.lossDate ? item.lossDate : '',
             Diagnosis: item.diagnosis ? item.diagnosis : '',
+            "Coverage Type": item.coverageType ? item.coverageType : '',
             Status: item.status ? item.status : '',
             exit: item.exit
           };
@@ -2171,6 +2210,8 @@ exports.saveBulkClaim = async (req, res) => {
                 "Contract# / Serial#": item.contractId ? item.contractId : "",
                 "Loss Date": item.lossDate ? item.lossDate : '',
                 Diagnosis: item.diagnosis ? item.diagnosis : '',
+                "Coverage Type": item.coverageType ? item.coverageType : '',
+
               });
             }
 
@@ -2178,7 +2219,8 @@ exports.saveBulkClaim = async (req, res) => {
           return {
             "Contract# / Serial#": item.contractId ? item.contractId : "",
             "Loss Date": item.lossDate ? item.lossDate : '',
-            Diagnosis: item.diagnosis ? item.diagnosis : '',
+             Diagnosis: item.diagnosis ? item.diagnosis : '',
+            "Coverage Type": item.coverageType ? item.coverageType : '',
             Status: item.status ? item.status : '',
             exit: item.exit
           };
@@ -2196,6 +2238,8 @@ exports.saveBulkClaim = async (req, res) => {
               "Contract# / Serial#": item.contractId ? item.contractId : "",
               "Loss Date": item.lossDate ? item.lossDate : '',
               Diagnosis: item.diagnosis ? item.diagnosis : '',
+              "Coverage Type": item.coverageType ? item.coverageType : '',
+
             });
           }
 
@@ -2204,6 +2248,7 @@ exports.saveBulkClaim = async (req, res) => {
             Servicer: item.servicerName || "",
             "Loss Date": item.lossDate ? item.lossDate : '',
             Diagnosis: item.diagnosis ? item.diagnosis : '',
+            "Coverage Type": item.coverageType ? item.coverageType : '',
             Status: item.status ? item.status : '',
             exit: item.exit
           };
@@ -2535,9 +2580,6 @@ exports.sendMessages = async (req, res) => {
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
 
-    console.log("notificationEmails----------------", notificationEmails)
-    console.log("emailTo----------------", emailTo)
-
     // notificationEmails.push(emailTo.email);
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -2579,7 +2621,6 @@ exports.sendMessages = async (req, res) => {
 //Automatic completed when servicer shipped after 7 days cron job
 exports.statusClaim = async (req, res) => {
   try {
-
     const result = await claimService.getClaims({
       'repairStatus.status': 'servicer_shipped',
     });
