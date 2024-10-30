@@ -2022,6 +2022,9 @@ exports.saveBulkClaim = async (req, res) => {
       };
       let emailServicerId = [];
 
+      console.log("totalDataComing-----------------------------------------",totalDataComing)
+
+      return;
 
       totalDataComing.map((data, index) => {
         let servicerId = data.servicerData?._id
@@ -2257,6 +2260,7 @@ exports.saveBulkClaim = async (req, res) => {
 
 
       //get email of all servicer
+      console.log("emailServicerId------------------------",)
       const emailServicer = await userService.getMembers({ metaId: { $in: emailServicerId }, isPrimary: true }, {})
       // If you need to convert existArray.data to a flat array format
       if (emailServicer.length > 0) {
