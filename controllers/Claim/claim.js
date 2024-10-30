@@ -1977,20 +1977,17 @@ exports.saveBulkClaim = async (req, res) => {
               //Find Servicer with dealer Servicer
               const servicerCheck = allDataArray[0]?.order.dealer.dealerServicer.find(item => item.servicerId?.toString() === servicerData._id?.toString())
               if (servicerCheck) {
-                console.log("22222222222222222222222",)
 
                 flag = true
               }
             }
             //Check dealer itself servicer
             if (allDataArray[0]?.order.dealer?.isServicer && allDataArray[0]?.order.dealer?.accountStatus && allDataArray[0]?.order.dealer._id?.toString() === servicerData.dealerId?.toString()) {
-              console.log("32423423423432",)
               
               flag = true
             }
 
             if (allDataArray[0]?.order.reseller?.isServicer && allDataArray[0]?.order.reseller?.status && allDataArray[0]?.order.reseller?._id.toString() === servicerData.resellerId?.toString()) {
-              console.log("4234324234324234",)
             
               flag = true
             }
@@ -2019,7 +2016,6 @@ exports.saveBulkClaim = async (req, res) => {
 
       //Update eligibility when contract is open
 
-      console.log("totalDataComing-----------------------------------------", totalDataComing);
       const updateArrayPromise = totalDataComing.map(item => {
         if (!item.exit && item.contractData) return contractService.updateContract({ _id: item.contractData._id }, { eligibilty: false }, { new: true });
         else {
@@ -2130,6 +2126,12 @@ exports.saveBulkClaim = async (req, res) => {
 
       const csvArray = await Promise.all(totalDataComing.map(async (item, i) => {
         // Build bulk csv for dealer only
+        let localDateString = item.lossDate
+        let formattedDate  = localDateString.toLocaleDateString("en-US", {
+          month: "2-digit",
+          day: "2-digit",
+          year: "numeric"
+        })
         let servicerId = item.servicerData?._id
         if (item.servicerData?.dealerId) {
           servicerId = item.servicerData?.dealerId
@@ -2153,7 +2155,7 @@ exports.saveBulkClaim = async (req, res) => {
             if (servicerId != undefined && !item.exit) {
               existArray.data[servicerId].push({
                 "Contract# / Serial#": item.contractId ? item.contractId : "",
-                "Loss Date": item.lossDate ? item.lossDate : '',
+                "Loss Date": item.lossDate ? formattedDate : '',
                 Diagnosis: item.diagnosis ? item.diagnosis : '',
                 "Coverage Type": item.coverageType ? item.coverageType : '',
               });
@@ -2162,7 +2164,7 @@ exports.saveBulkClaim = async (req, res) => {
           }
           return {
             "Contract#/Serial#": item.contractId ? item.contractId : "",
-            "Loss Date": item.lossDate ? item.lossDate : '',
+            "Loss Date": item.lossDate ? formattedDate : '',
             Diagnosis: item.diagnosis ? item.diagnosis : '',
             "Coverage Type": item.coverageType ? item.coverageType : '',
             Status: item.status ? item.status : '',
@@ -2185,7 +2187,7 @@ exports.saveBulkClaim = async (req, res) => {
             if (servicerId != undefined && !item.exit) {
               existArray.data[servicerId].push({
                 "Contract# / Serial#": item.contractId ? item.contractId : "",
-                "Loss Date": item.lossDate ? item.lossDate : '',
+                "Loss Date": item.lossDate ? formattedDate : '',
                 Diagnosis: item.diagnosis ? item.diagnosis : '',
                 "Coverage Type": item.coverageType ? item.coverageType : '',
 
@@ -2195,7 +2197,7 @@ exports.saveBulkClaim = async (req, res) => {
           }
           return {
             "Contract# / Serial#": item.contractId ? item.contractId : "",
-            "Loss Date": item.lossDate ? item.lossDate : '',
+            "Loss Date": item.lossDate ? formattedDate : '',
             Diagnosis: item.diagnosis ? item.diagnosis : '',
             "Coverage Type": item.coverageType ? item.coverageType : '',
             Status: item.status ? item.status : '',
@@ -2218,7 +2220,7 @@ exports.saveBulkClaim = async (req, res) => {
             if (servicerId != undefined && !item.exit) {
               existArray.data[servicerId].push({
                 "Contract# / Serial#": item.contractId ? item.contractId : "",
-                "Loss Date": item.lossDate ? item.lossDate : '',
+                "Loss Date": item.lossDate ? formattedDate : '',
                 Diagnosis: item.diagnosis ? item.diagnosis : '',
                 "Coverage Type": item.coverageType ? item.coverageType : '',
 
@@ -2228,7 +2230,7 @@ exports.saveBulkClaim = async (req, res) => {
           }
           return {
             "Contract# / Serial#": item.contractId ? item.contractId : "",
-            "Loss Date": item.lossDate ? item.lossDate : '',
+            "Loss Date": item.lossDate ? formattedDate : '',
             Diagnosis: item.diagnosis ? item.diagnosis : '',
             "Coverage Type": item.coverageType ? item.coverageType : '',
             Status: item.status ? item.status : '',
@@ -2246,7 +2248,7 @@ exports.saveBulkClaim = async (req, res) => {
           if (servicerId != undefined && !item.exit) {
             existArray.data[servicerId].push({
               "Contract# / Serial#": item.contractId ? item.contractId : "",
-              "Loss Date": item.lossDate ? item.lossDate : '',
+              "Loss Date": item.lossDate ? formattedDate : '',
               Diagnosis: item.diagnosis ? item.diagnosis : '',
               "Coverage Type": item.coverageType ? item.coverageType : '',
 
@@ -2256,7 +2258,7 @@ exports.saveBulkClaim = async (req, res) => {
           return {
             "Contract# / Serial#": item.contractId ? item.contractId : "",
             Servicer: item.servicerName || "",
-            "Loss Date": item.lossDate ? item.lossDate : '',
+            "Loss Date": item.lossDate ? formattedDate : '',
             Diagnosis: item.diagnosis ? item.diagnosis : '',
             "Coverage Type": item.coverageType ? item.coverageType : '',
             Status: item.status ? item.status : '',
@@ -2267,7 +2269,6 @@ exports.saveBulkClaim = async (req, res) => {
 
 
       //get email of all servicer
-      console.log("emailServicerId------------------------",)
       const emailServicer = await userService.getMembers({ metaId: { $in: emailServicerId }, isPrimary: true }, {})
       // If you need to convert existArray.data to a flat array format
       if (emailServicer.length > 0) {
