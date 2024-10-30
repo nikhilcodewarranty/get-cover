@@ -1652,8 +1652,6 @@ exports.saveBulkClaim = async (req, res) => {
           };
         }
       });
-
-      console.log("totalDataComing============================",totalDataComing);
       
 
       if (totalDataComing.length === 0) {
@@ -2141,7 +2139,6 @@ exports.saveBulkClaim = async (req, res) => {
           servicerId = item.servicerData?.resellerId
         }
         if (req.role === 'Dealer') {
-          console.log("itemData--------------------------",item)
           const userId = req.userId;
           ccMail = new_admin_array;
           IDs.push(req.teammateId);
@@ -2149,12 +2146,12 @@ exports.saveBulkClaim = async (req, res) => {
           toMail = userData.email;
           if (req.userId.toString() === item.orderData?.order?.dealerId?.toString()) {
             // For servicer
-            if (!existArray.data[servicerId] && servicerId != undefined && !item.exit) {
+            if (!existArray.data[servicerId] && servicerId != undefined && !item.exit && item?.claimType != "theft_and_lost") {
               emailServicerId.push(servicerId);
               existArray.data[servicerId] = [];
             }
 
-            if (servicerId != undefined && !item.exit) {
+            if (servicerId != undefined && !item.exit && item?.claimType != "theft_and_lost" ) {
               existArray.data[servicerId].push({
                 "Contract# / Serial#": item.contractId ? item.contractId : "",
                 "Loss Date": item.lossDate ? formattedDate : '',
@@ -2180,12 +2177,12 @@ exports.saveBulkClaim = async (req, res) => {
           ccMail = new_admin_array;
           if (req.userId.toString() === item.orderData?.order?.resellerId?.toString()) {
             // For servicer
-            if (!existArray.data[servicerId] && servicerId != undefined && !item.exit) {
+            if (!existArray.data[servicerId] && servicerId != undefined && !item.exit && item?.claimType != "theft_and_lost") {
               emailServicerId.push(servicerId);
               existArray.data[servicerId] = [];
             }
 
-            if (servicerId != undefined && !item.exit) {
+            if (servicerId != undefined && !item.exit && item?.claimType != "theft_and_lost") {
               existArray.data[servicerId].push({
                 "Contract# / Serial#": item.contractId ? item.contractId : "",
                 "Loss Date": item.lossDate ? formattedDate : '',
@@ -2213,12 +2210,12 @@ exports.saveBulkClaim = async (req, res) => {
 
           if (req.userId.toString() === item.orderData?.order?.customerId?.toString()) {
             // For servicer
-            if (!existArray.data[servicerId] && servicerId != undefined && !item.exit) {
+            if (!existArray.data[servicerId] && servicerId != undefined && !item.exit && item?.claimType != "theft_and_lost") {
               emailServicerId.push(servicerId);
               existArray.data[servicerId] = [];
             }
 
-            if (servicerId != undefined && !item.exit) {
+            if (servicerId != undefined && !item.exit && item?.claimType != "theft_and_lost") {
               existArray.data[servicerId].push({
                 "Contract# / Serial#": item.contractId ? item.contractId : "",
                 "Loss Date": item.lossDate ? formattedDate : '',
@@ -2241,12 +2238,12 @@ exports.saveBulkClaim = async (req, res) => {
           toMail = new_admin_array;
           ccMail = ["noreply@getcover.com"];
           // For servicer
-          if (!existArray.data[servicerId] && servicerId != undefined && !item.exit) {
+          if (!existArray.data[servicerId] && servicerId != undefined && !item.exit && item?.claimType != "theft_and_lost") {
             emailServicerId.push(servicerId);
             existArray.data[servicerId] = [];
           }
 
-          if (servicerId != undefined && !item.exit) {
+          if (servicerId != undefined && !item.exit && item?.claimType != "theft_and_lost") {
             existArray.data[servicerId].push({
               "Contract# / Serial#": item.contractId ? item.contractId : "",
               "Loss Date": item.lossDate ? formattedDate : '',
@@ -2283,7 +2280,6 @@ exports.saveBulkClaim = async (req, res) => {
             response: existArray.data[servicerId]
           });
         }
-        console.log("flatarray---------------------------",flatArray)
         //send email to servicer      
         for (const item of flatArray) {
           if (item.email != '') {
@@ -2390,8 +2386,6 @@ exports.saveBulkClaim = async (req, res) => {
       //Get Failure Claims 
       const successEntries = csvArray.filter(entry => entry.exit === false);
       const failureEntries = csvArray.filter(entry => entry.exit === true);
-      console.log("successEntries---------------------------",successEntries)
-      console.log("failureEntries---------------------------",failureEntries)
 
       let mailing;
       let htmlTableString;
