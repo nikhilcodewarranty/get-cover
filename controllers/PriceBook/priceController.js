@@ -1554,19 +1554,15 @@ exports.uploadRegularPriceBook = async (req, res) => {
             totalDataComing[c].reason = "Invalid term"
           }
           coverageType = coverageType.split(',').map(type => type.trim());
+          coverageType = [...new Set(coverageType)]
           // coverageType = ["breakdown", "accidental", "liquid_damage"]
           let checkCoverageType = await options.findOne({ "value.label": { $all: coverageType }, "name": "coverage_type" })
-          let hasDuplicates = new Set(coverageType).size !== coverageType.length;
-
 
           if (!checkCoverageType) {
             totalDataComing[c].inValid = true
             totalDataComing[c].reason = "Invalid coverage type"
           }
-          if (hasDuplicates) {
-            totalDataComing[c].inValid = true
-            totalDataComing[c].reason = "Repeated coverage type "
-          }
+
           totalDataComing[c].coverageType = coverageType
           if (checkCoverageType) {
             let mergedArray = coverageType.map(id => {
@@ -1748,6 +1744,8 @@ exports.uploadRegularPriceBook = async (req, res) => {
             totalDataComing[c].reason = "Invalid term"
           }
           coverageType = coverageType.split(',').map(type => type.trim());
+          coverageType = [...new Set(coverageType)]
+
           // coverageType = ["breakdown", "accidental", "liquid_damage"]
           let checkCoverageType = await options.findOne({ "value.label": { $all: coverageType }, "name": "coverage_type" })
 
@@ -1996,6 +1994,8 @@ exports.uploadRegularPriceBook = async (req, res) => {
             totalDataComing[c].reason = "Invalid term"
           }
           coverageType = coverageType.split(',').map(type => type.trim());
+          coverageType = [...new Set(coverageType)]
+
           // coverageType = ["breakdown", "accidental", "liquid_damage"]
           let checkCoverageType = await options.findOne({ "value.label": { $all: coverageType }, "name": "coverage_type" })
 
