@@ -2126,7 +2126,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       const csvArray = await Promise.all(totalDataComing.map(async (item, i) => {
         // Build bulk csv for dealer only
-        let localDateString = item.lossDate
+        let localDateString = new Date(item.lossDate)
         let formattedDate  = localDateString.toLocaleDateString("en-US", {
           month: "2-digit",
           day: "2-digit",
