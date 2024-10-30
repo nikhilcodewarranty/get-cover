@@ -2041,8 +2041,8 @@ exports.saveBulkClaim = async (req, res) => {
         if (!data.exit) {
           let obj = {
             contractId: data.contractData._id,
-            servicerId: servicerId,
             orderId: data.orderData?.order?.unique_key,
+            servicerId: data?.claimType == "theft_and_lost" ? null : servicerId,
             dealerId: data.orderData?.order?.dealerId,
             claimType: data?.claimType,
             resellerId: data.orderData?.order?.resellerId,
