@@ -799,7 +799,7 @@ exports.editClaimType = async (req, res) => {
 
     if (checkClaim.claimFile == 'open') {
       if (data.claimType == "theft_and_lost") {
-        data.servicerId = ""
+        data.servicerId = null
       }
       let option = { new: true }
 
