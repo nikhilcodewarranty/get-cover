@@ -2014,8 +2014,8 @@ exports.saveBulkClaim = async (req, res) => {
 
       //Update eligibility when contract is open
 
-      // console.log("totalDataComing-------------------------", totalDataComing);
-      // return;
+      console.log("totalDataComing-----------------------------------------", totalDataComing);
+      return
       const updateArrayPromise = totalDataComing.map(item => {
         if (!item.exit && item.contractData) return contractService.updateContract({ _id: item.contractData._id }, { eligibilty: false }, { new: true });
         else {
@@ -2028,8 +2028,7 @@ exports.saveBulkClaim = async (req, res) => {
       };
       let emailServicerId = [];
 
-      console.log("totalDataComing-----------------------------------------", totalDataComing);
-      return
+   
       totalDataComing.map((data, index) => {
         let servicerId = data.servicerData?._id
         if (data.servicerData?.dealerId) {
