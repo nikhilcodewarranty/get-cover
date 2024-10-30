@@ -1712,6 +1712,7 @@ exports.saveBulkClaim = async (req, res) => {
           return {
             contractId: item.contractId?.toString().replace(/\s+/g, ' ').trim(),
             lossDate: item.lossDate?.toString().replace(/\s+/g, ' ').trim(),
+            servicerName: item.servicerName?.toString().replace(/\s+/g, ' ').trim(),
             coverageType: item.coverageType?.toString().replace(/\s+/g, ' ').trim(),
             diagnosis: item.diagnosis?.toString().replace(/\s+/g, ' ').trim(),
             duplicate: false,
@@ -2393,6 +2394,7 @@ exports.saveBulkClaim = async (req, res) => {
       let htmlTableString;
       // Send Email notification for all roles user
       if (req.role == "Dealer") {
+        console.log("failureEntries----------------------------",failureEntries)
         htmlTableString = convertArrayToHTMLTable([], failureEntries);
         mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
       }
