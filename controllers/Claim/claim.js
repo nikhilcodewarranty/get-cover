@@ -1663,7 +1663,6 @@ exports.saveBulkClaim = async (req, res) => {
         });
         return;
       }
-      console.log("totalDataComing------------------------",totalDataComing)
       for (let u = 0; u < totalDataComing.length; u++) {
         let objectToCheck = totalDataComing[u]
         if (objectToCheck.servicerName == '' || objectToCheck.servicerName == null) {
@@ -1920,7 +1919,6 @@ exports.saveBulkClaim = async (req, res) => {
           const contractData = contractArray[i];
           const allDataArray = contractAllDataArray[i];
           const claimData = claimArray;
-          console.log("servicerArray----------------------------",servicerArray);
           const servicerData = servicerArray == undefined || servicerArray == null ? allDataArray[0]?.order?.servicer : servicerArray[i]
           let flag;
           item.contractData = contractData;
@@ -1982,8 +1980,6 @@ exports.saveBulkClaim = async (req, res) => {
               }
             }
             //Check dealer itself servicer
-            console.log("checkDealeras servicer",allDataArray[0]?.order)
-            console.log("servicerData--------------------",servicerData)
             if (allDataArray[0]?.order.dealer?.isServicer && allDataArray[0]?.order.dealer?.accountStatus && allDataArray[0]?.order.dealer._id?.toString() === servicerData.dealerId?.toString()) {
               flag = true
             }
@@ -2017,7 +2013,6 @@ exports.saveBulkClaim = async (req, res) => {
       //Update eligibility when contract is open
 
       console.log("totalDataComing-----------------------------------------", totalDataComing);
-      return
       const updateArrayPromise = totalDataComing.map(item => {
         if (!item.exit && item.contractData) return contractService.updateContract({ _id: item.contractData._id }, { eligibilty: false }, { new: true });
         else {
