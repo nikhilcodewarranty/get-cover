@@ -1645,7 +1645,7 @@ exports.saveBulkClaim = async (req, res) => {
           // If "servicerName" does not exist, shift the second item to "lossDate"
           return {
             contractId: item[keys[0]],
-            servicerName: '',
+            // servicerName: '',
             lossDate: dateLoss.toString(),
             diagnosis: item[keys[2]],  // Assuming diagnosis is now at index 2
             coverageType: coverageType,
@@ -2142,6 +2142,7 @@ exports.saveBulkClaim = async (req, res) => {
           servicerId = item.servicerData?.resellerId
         }
         if (req.role === 'Dealer') {
+          console.log("------------------------------------------------1",formattedDate)
           const userId = req.userId;
           ccMail = new_admin_array;
           IDs.push(req.teammateId);
@@ -2387,6 +2388,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       }
 
+      console.log("csvArray-----------------------------",csvArray);
       //Get Failure Claims 
       const successEntries = csvArray.filter(entry => entry.exit === false);
       const failureEntries = csvArray.filter(entry => entry.exit === true);
