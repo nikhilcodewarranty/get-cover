@@ -1654,7 +1654,8 @@ exports.saveBulkClaim = async (req, res) => {
         }
       });
 
-
+      console.log("totalDataComing============================",totalDataComing);
+      
 
       if (totalDataComing.length === 0) {
         res.send({
@@ -1721,7 +1722,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       });
 
-      console.log("totalDataComing============================",totalDataComing);
+      console.log("totalDataComing11111111============================",totalDataComing1);
       return;
       totalDataComing.forEach(data => {
         if (!data.contractId || data.contractId == "") {
