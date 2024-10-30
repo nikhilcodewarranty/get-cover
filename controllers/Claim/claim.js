@@ -1624,11 +1624,8 @@ exports.saveBulkClaim = async (req, res) => {
 
       let totalDataComing = totalDataComing1.map((item, i) => {
         const keys = Object.keys(item);
-        console.log("keyssssssssssssssss",keys)
         // Check if the "servicerName" header exists    
-        if (keys.length > 3) {
-          console.log("423423423424332");
-
+        if (keys.length > 4) {
           let coverageType = item[keys[4]]
           let dateLoss1 = item[keys[2]]
           return {
@@ -1641,7 +1638,6 @@ exports.saveBulkClaim = async (req, res) => {
             exit: false
           };
         } else {
-          console.log("sfsfsdfsdfsdfdsfdsf");
           let coverageType = item[keys[3]]
           let dateLoss2 = item[keys[1]]
           // If "servicerName" does not exist, shift the second item to "lossDate"
