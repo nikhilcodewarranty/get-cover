@@ -2566,7 +2566,7 @@ exports.sendMessages = async (req, res) => {
     IDs.push(dealerPrimary._id)
 
     let notificationData1 = {
-      title: "Message sent",
+      title: "New message for claim # :" + checkClaim.unique_key + "",
       description: "The one new message for " + checkClaim.unique_key + "",
       userId: req.teammateId,
       contentId: checkClaim._id,
