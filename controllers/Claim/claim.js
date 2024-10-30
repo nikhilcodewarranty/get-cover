@@ -1625,7 +1625,6 @@ exports.saveBulkClaim = async (req, res) => {
       let totalDataComing = totalDataComing1.map((item, i) => {
         const keys = Object.keys(item);
         let dateLoss = item[keys[2]]
-
         // Check if the "servicerName" header exists    
         if (keys.length > 3) {
           let coverageType = item[keys[4]]
@@ -1645,7 +1644,7 @@ exports.saveBulkClaim = async (req, res) => {
           // If "servicerName" does not exist, shift the second item to "lossDate"
           return {
             contractId: item[keys[0]],
-            // servicerName: '',
+            servicerName: '',
             lossDate: dateLoss.toString(),
             diagnosis: item[keys[2]],  // Assuming diagnosis is now at index 2
             coverageType: coverageType,
@@ -1712,7 +1711,7 @@ exports.saveBulkClaim = async (req, res) => {
           return {
             contractId: item.contractId?.toString().replace(/\s+/g, ' ').trim(),
             lossDate: item.lossDate?.toString().replace(/\s+/g, ' ').trim(),
-            // servicerName: item.servicerName?.toString().replace(/\s+/g, ' ').trim(),
+            servicerName: item.servicerName?.toString().replace(/\s+/g, ' ').trim(),
             coverageType: item.coverageType?.toString().replace(/\s+/g, ' ').trim(),
             diagnosis: item.diagnosis?.toString().replace(/\s+/g, ' ').trim(),
             duplicate: false,
@@ -2142,7 +2141,7 @@ exports.saveBulkClaim = async (req, res) => {
           servicerId = item.servicerData?.resellerId
         }
         if (req.role === 'Dealer') {
-          console.log("------------------------------------------------1",formattedDate)
+          console.log("itemData--------------------------",item)
           const userId = req.userId;
           ccMail = new_admin_array;
           IDs.push(req.teammateId);
@@ -2158,20 +2157,19 @@ exports.saveBulkClaim = async (req, res) => {
             if (servicerId != undefined && !item.exit) {
               existArray.data[servicerId].push({
                 "Contract# / Serial#": item.contractId ? item.contractId : "",
-                "Loss Date": item.lossDate ? item.lossDate : '',
+                "Loss Date": item.lossDate ? formattedDate : '',
                 Diagnosis: item.diagnosis ? item.diagnosis : '',
                 "Coverage Type": item.coverageType ? item.coverageType : '',
               });
             }
 
-          } 
+          }
           return {
             "Contract#/Serial#": item.contractId ? item.contractId : "",
             "Loss Date": item.lossDate ? formattedDate : '',
             Diagnosis: item.diagnosis ? item.diagnosis : '',
             "Coverage Type": item.coverageType ? item.coverageType : '',
             Status: item.status ? item.status : '',
-
             exit: item.exit
           };
         }
@@ -2285,6 +2283,7 @@ exports.saveBulkClaim = async (req, res) => {
             response: existArray.data[servicerId]
           });
         }
+        console.log("flatarray---------------------------",flatArray)
         //send email to servicer      
         for (const item of flatArray) {
           if (item.email != '') {
@@ -2388,15 +2387,16 @@ exports.saveBulkClaim = async (req, res) => {
 
       }
 
-      console.log("csvArray-----------------------------",csvArray);
       //Get Failure Claims 
       const successEntries = csvArray.filter(entry => entry.exit === false);
       const failureEntries = csvArray.filter(entry => entry.exit === true);
+      console.log("successEntries---------------------------",successEntries)
+      console.log("failureEntries---------------------------",failureEntries)
+
       let mailing;
       let htmlTableString;
       // Send Email notification for all roles user
       if (req.role == "Dealer") {
-        console.log("failureEntries----------------------------",failureEntries)
         htmlTableString = convertArrayToHTMLTable([], failureEntries);
         mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
       }
