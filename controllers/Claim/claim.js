@@ -1624,7 +1624,6 @@ exports.saveBulkClaim = async (req, res) => {
       const totalDataComing1 = result.data;
 
       let totalDataComing = totalDataComing1.map((item, i) => {
-        console.log("check the data++++++++++++++++++++++++++++++++++++++++", item)
         const keys = Object.keys(item);
         let dateLoss = item[keys[2]]
         let coverageType = item[keys[4]]
@@ -1655,7 +1654,6 @@ exports.saveBulkClaim = async (req, res) => {
         }
       });
 
-      console.log("totalDataComing-----------------------------", totalDataComing)
 
 
       if (totalDataComing.length === 0) {
@@ -2029,7 +2027,8 @@ exports.saveBulkClaim = async (req, res) => {
       };
       let emailServicerId = [];
 
-      console.log("totalDataComing-----------------------------------------", totalDataComing)
+      console.log("totalDataComing-----------------------------------------", totalDataComing);
+      return
       totalDataComing.map((data, index) => {
         let servicerId = data.servicerData?._id
         if (data.servicerData?.dealerId) {
