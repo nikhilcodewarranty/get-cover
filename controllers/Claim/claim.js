@@ -1624,6 +1624,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       let totalDataComing = totalDataComing1.map((item, i) => {
         const keys = Object.keys(item);
+        console.log("keyssssssssssssssss",keys)
         // Check if the "servicerName" header exists    
         if (keys.length > 3) {
           console.log("423423423424332");
