@@ -798,6 +798,9 @@ exports.editClaimType = async (req, res) => {
     }
 
     if (checkClaim.claimFile == 'open') {
+      if (data.claimType == "theft_and_lost") {
+        data.servicerId = ""
+      }
       let option = { new: true }
 
       let updateData = await claimService.updateClaim(criteria, data, option)
