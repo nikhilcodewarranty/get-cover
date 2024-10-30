@@ -1791,6 +1791,7 @@ exports.saveBulkClaim = async (req, res) => {
       if (req.role == "Super Admin") {
         const servicerArrayPromise = totalDataComing.map(item => {
           if (!item.exit && item.servicerName != '') {
+            console.log("sdfsdfsdfsdfsdfsd",item.servicerName)
             const thename = item.servicerName;
             return servicerService.getServiceProviderById({
               "name":
