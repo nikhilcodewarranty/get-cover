@@ -1712,7 +1712,7 @@ exports.saveBulkClaim = async (req, res) => {
           return {
             contractId: item.contractId?.toString().replace(/\s+/g, ' ').trim(),
             lossDate: item.lossDate?.toString().replace(/\s+/g, ' ').trim(),
-            servicerName: item.servicerName?.toString().replace(/\s+/g, ' ').trim(),
+            // servicerName: item.servicerName?.toString().replace(/\s+/g, ' ').trim(),
             coverageType: item.coverageType?.toString().replace(/\s+/g, ' ').trim(),
             diagnosis: item.diagnosis?.toString().replace(/\s+/g, ' ').trim(),
             duplicate: false,
@@ -2158,7 +2158,7 @@ exports.saveBulkClaim = async (req, res) => {
             if (servicerId != undefined && !item.exit) {
               existArray.data[servicerId].push({
                 "Contract# / Serial#": item.contractId ? item.contractId : "",
-                "Loss Date": item.lossDate ? formattedDate : '',
+                "Loss Date": item.lossDate ? item.lossDate : '',
                 Diagnosis: item.diagnosis ? item.diagnosis : '',
                 "Coverage Type": item.coverageType ? item.coverageType : '',
               });
