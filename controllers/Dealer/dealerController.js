@@ -1163,7 +1163,6 @@ exports.updateDealerMeta = async (req, res) => {
 exports.updateDealerSetting = async (req, res) => {
   try {
     let data = req.body
-    console.log("dsfddsdsfsdfsdfds",data)
     let checkDealerId = await dealerService.getDealerByName({ _id: req.params.dealerId })
     if (!checkDealerId) {
       res.send({
