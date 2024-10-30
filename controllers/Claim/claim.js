@@ -2162,7 +2162,7 @@ exports.saveBulkClaim = async (req, res) => {
               });
             }
 
-          }
+          } 
           return {
             "Contract#/Serial#": item.contractId ? item.contractId : "",
             "Loss Date": item.lossDate ? formattedDate : '',
