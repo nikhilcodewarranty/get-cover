@@ -1626,25 +1626,28 @@ exports.saveBulkClaim = async (req, res) => {
         const keys = Object.keys(item);
         // Check if the "servicerName" header exists    
         if (keys.length > 3) {
+          console.log("423423423424332");
+
           let coverageType = item[keys[4]]
-          let dateLoss = item[keys[2]]
+          let dateLoss1 = item[keys[2]]
           return {
             contractId: item[keys[0]],
             servicerName: item[keys[1]],
-            lossDate: dateLoss.toString(),
+            lossDate: dateLoss1.toString(),
             diagnosis: item[keys[3]],
             coverageType: coverageType,
             duplicate: false,
             exit: false
           };
         } else {
+          console.log("sfsfsdfsdfsdfdsfdsf");
           let coverageType = item[keys[3]]
-          let dateLoss = item[keys[1]]
+          let dateLoss2 = item[keys[1]]
           // If "servicerName" does not exist, shift the second item to "lossDate"
           return {
             contractId: item[keys[0]],
             servicerName: '',
-            lossDate: dateLoss.toString(),
+            lossDate: dateLoss2.toString(),
             diagnosis: item[keys[2]],  // Assuming diagnosis is now at index 2
             coverageType: coverageType,
             duplicate: false,
