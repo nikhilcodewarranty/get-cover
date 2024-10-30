@@ -1624,7 +1624,6 @@ exports.saveBulkClaim = async (req, res) => {
 
       let totalDataComing = totalDataComing1.map((item, i) => {
         const keys = Object.keys(item);
-        let dateLoss = item[keys[2]]
         // Check if the "servicerName" header exists    
         if (keys.length > 3) {
           let coverageType = item[keys[4]]
