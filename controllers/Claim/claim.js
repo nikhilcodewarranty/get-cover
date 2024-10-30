@@ -1625,10 +1625,10 @@ exports.saveBulkClaim = async (req, res) => {
       let totalDataComing = totalDataComing1.map((item, i) => {
         const keys = Object.keys(item);
         let dateLoss = item[keys[2]]
-        let coverageType = item[keys[4]]
 
         // Check if the "servicerName" header exists    
         if (keys.length > 3) {
+          let coverageType = item[keys[4]]
           let dateLoss = item[keys[2]]
           return {
             contractId: item[keys[0]],
@@ -1640,6 +1640,7 @@ exports.saveBulkClaim = async (req, res) => {
             exit: false
           };
         } else {
+          let coverageType = item[keys[3]]
           let dateLoss = item[keys[1]]
           // If "servicerName" does not exist, shift the second item to "lossDate"
           return {
@@ -1983,12 +1984,12 @@ exports.saveBulkClaim = async (req, res) => {
             }
             //Check dealer itself servicer
             if (allDataArray[0]?.order.dealer?.isServicer && allDataArray[0]?.order.dealer?.accountStatus && allDataArray[0]?.order.dealer._id?.toString() === servicerData.dealerId?.toString()) {
-              
+
               flag = true
             }
 
             if (allDataArray[0]?.order.reseller?.isServicer && allDataArray[0]?.order.reseller?.status && allDataArray[0]?.order.reseller?._id.toString() === servicerData.resellerId?.toString()) {
-            
+
               flag = true
             }
           }
@@ -2127,7 +2128,7 @@ exports.saveBulkClaim = async (req, res) => {
       const csvArray = await Promise.all(totalDataComing.map(async (item, i) => {
         // Build bulk csv for dealer only
         let localDateString = new Date(item.lossDate)
-        let formattedDate  = localDateString.toLocaleDateString("en-US", {
+        let formattedDate = localDateString.toLocaleDateString("en-US", {
           month: "2-digit",
           day: "2-digit",
           year: "numeric"
