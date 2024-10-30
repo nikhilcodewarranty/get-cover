@@ -1645,7 +1645,6 @@ exports.saveBulkClaim = async (req, res) => {
           return {
             contractId: item[keys[0]],
             servicerName: '',
-
             lossDate: dateLoss.toString(),
             diagnosis: item[keys[2]],  // Assuming diagnosis is now at index 2
             coverageType: coverageType,
