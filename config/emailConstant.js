@@ -35,7 +35,7 @@ module.exports = {
         cc: ccEmail,
         from: process.env.from_email,
         templateId: process.env.update_status,
-        // dynamic_template_data: data,
+        dynamic_template_data: data,
       };
     },
 
