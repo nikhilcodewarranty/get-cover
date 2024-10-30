@@ -1592,7 +1592,7 @@ exports.saveBulkClaim = async (req, res) => {
       const emailField = req.body.email;
 
       // // Parse the email field
-       const emailArray = JSON.parse(emailField);
+      const emailArray = JSON.parse(emailField);
 
       let length = 5;
       let match = {}
@@ -1624,7 +1624,6 @@ exports.saveBulkClaim = async (req, res) => {
       const totalDataComing1 = result.data;
 
       let totalDataComing = totalDataComing1.map((item, i) => {
-        console.log("check the data++++++++++++++++++++++++++++++++++++++++", item)
         const keys = Object.keys(item);
         let dateLoss = item[keys[2]]
         let coverageType = item[keys[4]]
@@ -1655,7 +1654,6 @@ exports.saveBulkClaim = async (req, res) => {
         }
       });
 
-      console.log("totalDataComing-----------------------------", totalDataComing)
 
 
       if (totalDataComing.length === 0) {
@@ -1665,10 +1663,9 @@ exports.saveBulkClaim = async (req, res) => {
         });
         return;
       }
-
       for (let u = 0; u < totalDataComing.length; u++) {
         let objectToCheck = totalDataComing[u]
-        if (objectToCheck.servicerName != '' || objectToCheck.servicerName != null) {
+        if (objectToCheck.servicerName == '' || objectToCheck.servicerName == null) {
           let getContractDetail = await contractService.getContractById({
             $and: [
               {
@@ -1793,6 +1790,7 @@ exports.saveBulkClaim = async (req, res) => {
       if (req.role == "Super Admin") {
         const servicerArrayPromise = totalDataComing.map(item => {
           if (!item.exit && item.servicerName != '') {
+            console.log("sdfsdfsdfsdfsdfsd", item.servicerName)
             const thename = item.servicerName;
             return servicerService.getServiceProviderById({
               "name":
@@ -1922,6 +1920,7 @@ exports.saveBulkClaim = async (req, res) => {
           const allDataArray = contractAllDataArray[i];
           const claimData = claimArray;
           const servicerData = servicerArray == undefined || servicerArray == null ? allDataArray[0]?.order?.servicer : servicerArray[i]
+          console.log("servicerData======================", servicerData)
           let flag;
           item.contractData = contractData;
           item.claimType = ''
@@ -1934,7 +1933,6 @@ exports.saveBulkClaim = async (req, res) => {
           }
           if (item.coverageType || item.coverageType != "") {
             if (contractData) {
-              console.log("check ++++++++++++++++++++++++++++++++++++++++++++++=", contractData)
               let checkCoverageTypeForContract = contractData?.coverageType.find(item1 => item1.label == item?.coverageType)
               if (!checkCoverageTypeForContract) {
                 item.status = "Coverage type is not available for this contract!";
@@ -1974,20 +1972,27 @@ exports.saveBulkClaim = async (req, res) => {
           // }
 
           if (allDataArray.length > 0 && servicerData) {
+
             flag = false;
             if (allDataArray[0]?.order.dealer.dealerServicer.length > 0) {
               //Find Servicer with dealer Servicer
               const servicerCheck = allDataArray[0]?.order.dealer.dealerServicer.find(item => item.servicerId?.toString() === servicerData._id?.toString())
               if (servicerCheck) {
+                console.log("22222222222222222222222",)
+
                 flag = true
               }
             }
             //Check dealer itself servicer
             if (allDataArray[0]?.order.dealer?.isServicer && allDataArray[0]?.order.dealer?.accountStatus && allDataArray[0]?.order.dealer._id?.toString() === servicerData.dealerId?.toString()) {
+              console.log("32423423423432",)
+              
               flag = true
             }
 
             if (allDataArray[0]?.order.reseller?.isServicer && allDataArray[0]?.order.reseller?.status && allDataArray[0]?.order.reseller?._id.toString() === servicerData.resellerId?.toString()) {
+              console.log("4234324234324234",)
+            
               flag = true
             }
           }
@@ -2015,8 +2020,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       //Update eligibility when contract is open
 
-      // console.log("totalDataComing-------------------------", totalDataComing);
-      // return;
+      console.log("totalDataComing-----------------------------------------", totalDataComing);
       const updateArrayPromise = totalDataComing.map(item => {
         if (!item.exit && item.contractData) return contractService.updateContract({ _id: item.contractData._id }, { eligibilty: false }, { new: true });
         else {
@@ -2029,7 +2033,7 @@ exports.saveBulkClaim = async (req, res) => {
       };
       let emailServicerId = [];
 
-      console.log("totalDataComing-----------------------------------------", totalDataComing)
+
       totalDataComing.map((data, index) => {
         let servicerId = data.servicerData?._id
         if (data.servicerData?.dealerId) {
