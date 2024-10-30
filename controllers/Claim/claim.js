@@ -1790,7 +1790,6 @@ exports.saveBulkClaim = async (req, res) => {
       if (req.role == "Super Admin") {
         const servicerArrayPromise = totalDataComing.map(item => {
           if (!item.exit && item.servicerName != '') {
-            console.log("sdfsdfsdfsdfsdfsd", item.servicerName)
             const thename = item.servicerName;
             return servicerService.getServiceProviderById({
               "name":
@@ -1910,7 +1909,6 @@ exports.saveBulkClaim = async (req, res) => {
         }
       })
 
-      console.log("servicerArray------------------------------",servicerArray)
 
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
       let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
@@ -1922,7 +1920,6 @@ exports.saveBulkClaim = async (req, res) => {
           const allDataArray = contractAllDataArray[i];
           const claimData = claimArray;
           const servicerData = servicerArray == undefined || servicerArray == null ? allDataArray[0]?.order?.servicer : servicerArray[i]
-          console.log("servicerData======================", servicerData)
           let flag;
           item.contractData = contractData;
           item.claimType = ''
