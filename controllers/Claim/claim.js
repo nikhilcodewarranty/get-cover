@@ -1980,7 +1980,7 @@ exports.saveBulkClaim = async (req, res) => {
               }
             }
             //Check dealer itself servicer
-            console.log("checkDealeras servicer",allDataArray[0]?.order.dealer)
+            console.log("checkDealeras servicer",allDataArray[0]?.order)
             console.log("servicerData--------------------",servicerData)
             if (allDataArray[0]?.order.dealer?.isServicer && allDataArray[0]?.order.dealer?.accountStatus && allDataArray[0]?.order.dealer._id?.toString() === servicerData.dealerId?.toString()) {
               flag = true
