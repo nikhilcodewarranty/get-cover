@@ -1123,7 +1123,6 @@ exports.updateDealerMeta = async (req, res) => {
     }
     else {
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-
     }
     //Save Logs update dealer
     let logData = {
