@@ -1911,6 +1911,7 @@ exports.saveBulkClaim = async (req, res) => {
         }
       })
 
+
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
       let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
 

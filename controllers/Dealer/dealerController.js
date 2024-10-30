@@ -1163,7 +1163,7 @@ exports.updateDealerMeta = async (req, res) => {
 exports.updateDealerSetting = async (req, res) => {
   try {
     let data = req.body
-
+    console.log("dsfddsdsfsdfsdfds",data)
     let checkDealerId = await dealerService.getDealerByName({ _id: req.params.dealerId })
     if (!checkDealerId) {
       res.send({
@@ -1188,6 +1188,40 @@ exports.updateDealerSetting = async (req, res) => {
     if (!data.isAccountCreate) {
       await userService.updateUser({ metaId: req.params.dealerId }, { status: false }, { new: true })
     }
+    //Update Meta in servicer also     
+    if (data.isServicer) {
+      const checkServicer = await servicerService.getServiceProviderById({ dealerId: checkDealerId._id })
+      if (!checkServicer) {
+        const CountServicer = await servicerService.getServicerCount();
+        let servicerObject = {
+          name: checkDealerId.name,
+          street: checkDealerId.street,
+          city: checkDealerId.city,
+          zip: checkDealerId.zip,
+          dealerId: checkDealerId._id,
+          state: checkDealerId.state,
+          country: checkDealerId.country,
+          status: checkDealerId.status,
+          accountStatus: "Approved",
+          unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
+        }
+        let createData = await servicerService.createServiceProvider(servicerObject)
+      }
+
+      else {
+        let criteria = { dealerId: checkDealerId._id }
+        let option = { new: true }
+        const servicerMeta = {
+          name: checkDealerId.name,
+          city: checkDealerId.city,
+          country: checkDealerId.country,
+          street: checkDealerId.street,
+          zip: checkDealerId.zip
+        }
+        const updateServicerMeta = await servicerService.updateServiceProvider(criteria, servicerMeta)
+      }
+    }
+
     let updateSettingData = await eligibilityService.updateEligibility({ userId: req.params.dealerId }, data, { new: true })
     if (!updateSettingData) {
       res.send({
@@ -1706,7 +1740,7 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
               let checkDealerSku1 = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, dealerSku: currentData.dealerSku.trim() })
               if (checkDealerSku1) {
                 if (checkDealerSku1.priceBook.toString() == checkPriceBook._id.toString()) {
-                let brokerFee = currentData.retailPrice - wholeSalePrice
+                  let brokerFee = currentData.retailPrice - wholeSalePrice
                   let updateDealerPriceBook = await dealerPriceService.updateDealerPrice({ _id: checkDealerSku._id }, { retailPrice: currentData.retailPrice, brokerFee: brokerFee, dealerSku: currentData.dealerSku.trim() }, { new: true })
                   currentData.message = "Updated successfully"
                 } else {
