@@ -1932,7 +1932,6 @@ exports.saveBulkClaim = async (req, res) => {
           }
           if (item.coverageType || item.coverageType != "") {
             if (contractData) {
-              console.log("check ++++++++++++++++++++++++++++++++++++++++++++++=", contractData)
               let checkCoverageTypeForContract = contractData?.coverageType.find(item1 => item1.label == item?.coverageType)
               if (!checkCoverageTypeForContract) {
                 item.status = "Coverage type is not available for this contract!";
@@ -1981,6 +1980,8 @@ exports.saveBulkClaim = async (req, res) => {
               }
             }
             //Check dealer itself servicer
+            console.log("checkDealeras servicer",allDataArray[0]?.order.dealer)
+            console.log("servicerData--------------------",servicerData)
             if (allDataArray[0]?.order.dealer?.isServicer && allDataArray[0]?.order.dealer?.accountStatus && allDataArray[0]?.order.dealer._id?.toString() === servicerData.dealerId?.toString()) {
               flag = true
             }
