@@ -998,10 +998,7 @@ exports.rejectDealer = async (req, res) => {
 exports.updateDealerMeta = async (req, res) => {
   try {
     let data = req.body
-
-
     let checkDealer = await dealerService.getDealerById(data.dealerId, {})
-
     let coverageType = data.coverageType
 
     // data.coverageType = coverageType.map(types => types.value);
@@ -1054,44 +1051,44 @@ exports.updateDealerMeta = async (req, res) => {
       let updateResellerDealer = await resellerService.updateMeta(criteria, { dealerName: data.accountName }, option)
 
       //Update Meta in servicer also     
-      if (data.isServicer) {
-        const checkServicer = await servicerService.getServiceProviderById({ dealerId: checkDealer._id })
-        if (!checkServicer) {
-          const CountServicer = await servicerService.getServicerCount();
-          let servicerObject = {
-            name: data.accountName,
-            street: data.street,
-            city: data.city,
-            zip: data.zip,
-            dealerId: checkDealer._id,
-            state: data.state,
-            country: data.country,
-            status: data.status,
-            accountStatus: "Approved",
-            unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
-          }
-          let createData = await servicerService.createServiceProvider(servicerObject)
-        }
+      // if (data.isServicer) {
+      //   const checkServicer = await servicerService.getServiceProviderById({ dealerId: checkDealer._id })
+      //   if (!checkServicer) {
+      //     const CountServicer = await servicerService.getServicerCount();
+      //     let servicerObject = {
+      //       name: data.accountName,
+      //       street: data.street,
+      //       city: data.city,
+      //       zip: data.zip,
+      //       dealerId: checkDealer._id,
+      //       state: data.state,
+      //       country: data.country,
+      //       status: data.status,
+      //       accountStatus: "Approved",
+      //       unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
+      //     }
+      //     let createData = await servicerService.createServiceProvider(servicerObject)
+      //   }
 
-        else {
-          const servicerMeta = {
-            name: data.accountName,
-            city: data.city,
-            country: data.country,
-            street: data.street,
-            zip: data.zip
-          }
-          const updateServicerMeta = await servicerService.updateServiceProvider(criteria, servicerMeta)
-        }
-      }
+      //   else {
+      //     const servicerMeta = {
+      //       name: data.accountName,
+      //       city: data.city,
+      //       country: data.country,
+      //       street: data.street,
+      //       zip: data.zip
+      //     }
+      //     const updateServicerMeta = await servicerService.updateServiceProvider(criteria, servicerMeta)
+      //   }
+      // }
     }
     //update primary user to true by default
-    if (data.isAccountCreate && checkDealer.accountStatus) {
+    if (checkDealer.accountStatus) {
       await userService.updateSingleUser({ metaId: checkDealer._id, isPrimary: true }, { status: true }, { new: true })
     }
-    if (!data.isAccountCreate) {
-      await userService.updateUser({ metaId: checkDealer._id }, { status: false }, { new: true })
-    }
+    // if (!data.isAccountCreate) {
+    //   await userService.updateUser({ metaId: checkDealer._id }, { status: false }, { new: true })
+    // }
     let IDs = await supportingFunction.getUserIds()
     let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
     let settingData = await userService.getSetting({});
