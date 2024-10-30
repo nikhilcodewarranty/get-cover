@@ -72,7 +72,7 @@ var uploadP = multer({
   limits: {
     fileSize: 500 * 1024 * 1024, // 500 MB limit
   },
-}).array("file", 100);
+}).single("file");
 
 // search claim api  -- not using
 exports.searchClaim = async (req, res, next) => {
@@ -1584,15 +1584,15 @@ exports.saveBulkClaim = async (req, res) => {
     try {
       let data = req.body
       let headerLength;
-
-      const bucketReadUrl = { Bucket: process.env.bucket_name, Key: req.files[0].key };
+      console.log("resssssss",req.file)
+      const bucketReadUrl = { Bucket: process.env.bucket_name, Key: req.file.key };
       // Await the getObjectFromS3 function to complete
       const result = await getObjectFromS3(bucketReadUrl);
 
       const emailField = req.body.email;
 
       // // Parse the email field
-      const emailArray = JSON.parse(emailField);
+      // const emailArray = JSON.parse(emailField);
 
       let length = 5;
       let match = {}
@@ -1654,6 +1654,8 @@ exports.saveBulkClaim = async (req, res) => {
         }
       });
 
+      console.log("totalDataComing-----------------------------",totalDataComing)
+      return;
 
       if (totalDataComing.length === 0) {
         res.send({
