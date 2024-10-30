@@ -1584,7 +1584,7 @@ exports.saveBulkClaim = async (req, res) => {
     try {
       let data = req.body
       let headerLength;
-      console.log("resssssss",req.file)
+      console.log("resssssss", req.file)
       const bucketReadUrl = { Bucket: process.env.bucket_name, Key: req.file.key };
       // Await the getObjectFromS3 function to complete
       const result = await getObjectFromS3(bucketReadUrl);
@@ -1592,7 +1592,7 @@ exports.saveBulkClaim = async (req, res) => {
       const emailField = req.body.email;
 
       // // Parse the email field
-      // const emailArray = JSON.parse(emailField);
+       const emailArray = JSON.parse(emailField);
 
       let length = 5;
       let match = {}
@@ -1624,6 +1624,7 @@ exports.saveBulkClaim = async (req, res) => {
       const totalDataComing1 = result.data;
 
       let totalDataComing = totalDataComing1.map((item, i) => {
+        console.log("check the data++++++++++++++++++++++++++++++++++++++++", item)
         const keys = Object.keys(item);
         let dateLoss = item[keys[2]]
         let coverageType = item[keys[4]]
@@ -1654,8 +1655,8 @@ exports.saveBulkClaim = async (req, res) => {
         }
       });
 
-      console.log("totalDataComing-----------------------------",totalDataComing)
-      return;
+      console.log("totalDataComing-----------------------------", totalDataComing)
+
 
       if (totalDataComing.length === 0) {
         res.send({
@@ -1932,26 +1933,30 @@ exports.saveBulkClaim = async (req, res) => {
             item.exit = true;
           }
           if (item.coverageType || item.coverageType != "") {
-            let checkCoverageTypeForContract = contractData.coverageType.find(item1 => item1.label == item.coverageType)
-            if (!checkCoverageTypeForContract) {
-              item.status = "Coverage type is not available for this contract!";
-              item.exit = true;
-            }
-            const checkCoverageValue = getCoverageTypeFromOption.value.filter(option => option.label === item.coverageType).map(item1 => item1.value);
-            let startDateToCheck = new Date(contractData.coverageStartDate)
-            let coverageTypeDays = contractData?.adhDays
-            let getDeductible = coverageTypeDays?.filter(coverageType => coverageType.value == checkCoverageValue[0])
+            if (contractData) {
+              console.log("check ++++++++++++++++++++++++++++++++++++++++++++++=", contractData)
+              let checkCoverageTypeForContract = contractData?.coverageType.find(item1 => item1.label == item?.coverageType)
+              if (!checkCoverageTypeForContract) {
+                item.status = "Coverage type is not available for this contract!";
+                item.exit = true;
+              }
+              const checkCoverageValue = getCoverageTypeFromOption.value.filter(option => option.label === item?.coverageType).map(item1 => item1.value);
+              let startDateToCheck = new Date(contractData.coverageStartDate)
+              let coverageTypeDays = contractData?.adhDays
+              let getDeductible = coverageTypeDays?.filter(coverageType => coverageType.value == checkCoverageValue[0])
 
-            let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0]?.waitingDays))
-            checkCoverageTypeDate = new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0)
-            let checkLossDate = new Date(item.lossDate).setHours(0, 0, 0, 0)
-            const result = getCoverageTypeFromOption?.value.filter(option => option.label === item.coverageType).map(item1 => item1.label);
+              let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0]?.waitingDays))
+              checkCoverageTypeDate = new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0)
+              let checkLossDate = new Date(item.lossDate).setHours(0, 0, 0, 0)
+              const result = getCoverageTypeFromOption?.value.filter(option => option.label === item?.coverageType).map(item1 => item1.label);
 
-            if (new Date(checkCoverageTypeDate) > new Date(checkLossDate)) {
-              item.status = `Claim not eligible for ${result[0]}.`
-              item.exit = true;
+              if (new Date(checkCoverageTypeDate) > new Date(checkLossDate)) {
+                item.status = `Claim not eligible for ${result[0]}.`
+                item.exit = true;
+              }
+              item.claimType = checkCoverageValue[0]
             }
-            item.claimType = checkCoverageValue[0]
+
 
           }
           let checkCoverageStartDate = new Date(contractData?.coverageStartDate).setHours(0, 0, 0, 0)
@@ -2024,10 +2029,7 @@ exports.saveBulkClaim = async (req, res) => {
       };
       let emailServicerId = [];
 
-      console.log("totalDataComing-----------------------------------------",totalDataComing)
-
-      return;
-
+      console.log("totalDataComing-----------------------------------------", totalDataComing)
       totalDataComing.map((data, index) => {
         let servicerId = data.servicerData?._id
         if (data.servicerData?.dealerId) {
@@ -2224,7 +2226,7 @@ exports.saveBulkClaim = async (req, res) => {
           return {
             "Contract# / Serial#": item.contractId ? item.contractId : "",
             "Loss Date": item.lossDate ? item.lossDate : '',
-             Diagnosis: item.diagnosis ? item.diagnosis : '',
+            Diagnosis: item.diagnosis ? item.diagnosis : '',
             "Coverage Type": item.coverageType ? item.coverageType : '',
             Status: item.status ? item.status : '',
             exit: item.exit
