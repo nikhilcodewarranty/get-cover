@@ -1721,7 +1721,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       });
 
-      console.log("totalDataComing11111111============================",totalDataComing1);
+      console.log("totalDataComing11111111============================",totalDataComing);
       return;
       totalDataComing.forEach(data => {
         if (!data.contractId || data.contractId == "") {
