@@ -1407,8 +1407,15 @@ exports.getDashboardData = async (req, res) => {
     let claimQueryCompleted = [
       {
         $match: {
-          customerId: new mongoose.Types.ObjectId(req.userId),
-          claimFile: "completed"
+          $and: [
+            { customerId: new mongoose.Types.ObjectId(req.userId) },
+            {
+              $or: [
+                { claimFile: "completed" },
+                { claimFile: "rejected" },
+              ]
+            }
+          ]
         }
       },
 
