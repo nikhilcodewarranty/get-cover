@@ -1272,7 +1272,8 @@ exports.getContractById = async (req, res) => {
 // get dashboard data 
 exports.getDashboardData = async (req, res) => {
   try {
-    let data = req.body;
+    let data = req.body
+
     let project = {
       productsArray: 1,
       dealerId: 1,
@@ -1289,12 +1290,12 @@ exports.getDashboardData = async (req, res) => {
     };
 
     let query = { status: 'Active', customerId: new mongoose.Types.ObjectId(req.userId) };
-    const claimQuery = { claimFile: 'completed' }
+    const claimQuery1 = { claimFile: 'completed' }
     var checkOrders_ = await orderService.getDashboardData(query, project);
     //Get claims data
     let lookupQuery = [
       {
-        $match: claimQuery
+        $match: claimQuery1
       },
       {
         $lookup: {
@@ -1345,7 +1346,7 @@ exports.getDashboardData = async (req, res) => {
     //Get number of claims
     let numberOfCompleletedClaims = [
       {
-        $match: claimQuery
+        $match: claimQuery1
       },
       {
         $lookup: {
@@ -1399,12 +1400,56 @@ exports.getDashboardData = async (req, res) => {
       })
       return;
     }
+
+
+
+
+    let claimQueryCompleted = [
+      {
+        $match: {
+          customerId: new mongoose.Types.ObjectId(req.userId),
+          claimFile: "completed"
+        }
+      },
+
+    ]
+
+    let claimQuery = [
+      {
+        $match: {
+          customerId: new mongoose.Types.ObjectId(req.userId),
+        }
+      },
+
+    ]
+
+    let getOrderId = await orderService.getOrders({ customerId: req.userId })
+    let orderIds = getOrderId.map((orderId) => orderId._id)
+    let getCompletedClaim = await claimService.getClaimWithAggregate(claimQueryCompleted)
+    let getClaim = await claimService.getClaimWithAggregate(claimQuery)
+    let getContracts = await contractService.findContracts2({ orderId: { $in: orderIds } })
+
+    // res.send({
+    //   code: constant.successCode,
+    //   message: "Success",
+    //   result: {
+    //     numberOfDevices: getContracts.length,
+    //     numberOfSubmittedClaims: getClaim.length,
+    //     numberOfCompletedClaims: getCompletedClaim.length
+    //   }
+    // })
+
+
+
     res.send({
       code: constant.successCode,
       message: "Success",
       result: {
         claimData: claimData,
-        orderData: checkOrders_[0]
+        orderData: checkOrders_[0],
+        numberOfDevices: getContracts.length,
+        numberOfSubmittedClaims: getClaim.length,
+        numberOfCompletedClaims: getCompletedClaim.length
       }
     })
   } catch (err) {
@@ -1414,6 +1459,53 @@ exports.getDashboardData = async (req, res) => {
     })
   }
 };
+
+exports.getDashboardData1 = async (req, res) => {
+  try {
+    let data = req.body
+
+    let claimQueryCompleted = [
+      {
+        $match: {
+          customerId: new mongoose.Types.ObjectId(req.userId),
+          claimFile: "completed"
+        }
+      },
+
+    ]
+
+    let claimQuery = [
+      {
+        $match: {
+          customerId: new mongoose.Types.ObjectId(req.userId),
+        }
+      },
+
+    ]
+
+    let getOrderId = await orderService.getOrders({ customerId: req.userId })
+    let orderIds = getOrderId.map((orderId) => orderId._id)
+    let getCompletedClaim = await claimService.getClaimWithAggregate(claimQueryCompleted)
+    let getClaim = await claimService.getClaimWithAggregate(claimQuery)
+    let getContracts = await contractService.findContracts2({ orderId: { $in: orderIds } })
+
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: {
+        numberOfDevices: getContracts.length,
+        numberOfSubmittedClaims: getClaim.length,
+        numberOfCompletedClaims: getCompletedClaim.length
+      }
+    })
+
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
 
 // get custiner details
 exports.getCustomerDetails = async (req, res) => {
