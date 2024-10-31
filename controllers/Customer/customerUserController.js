@@ -1452,8 +1452,8 @@ exports.getDashboardData = async (req, res) => {
       code: constant.successCode,
       message: "Success",
       result: {
-        claimData: claimData,
-        orderData: checkOrders_[0],
+        // claimData: claimData,
+        // orderData: checkOrders_[0],
         numberOfDevices: getContracts.length,
         numberOfSubmittedClaims: getClaim.length,
         numberOfCompletedClaims: getCompletedClaim.length
