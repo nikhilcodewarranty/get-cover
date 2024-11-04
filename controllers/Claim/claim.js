@@ -2654,7 +2654,7 @@ exports.statusClaim = async (req, res) => {
       if (new Date() === sevenDaysAfterShippedDate || new Date() > sevenDaysAfterShippedDate) {
         // Update status for track status
         messageData.trackStatus = [
-          {
+          { 
             status: 'completed',
             date: new Date()
           }
