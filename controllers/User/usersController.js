@@ -634,7 +634,7 @@ exports.updateUserData = async (req, res) => {
 
       }
     }
-    let criteria = { metaData: { $elemMatch: { metaId:checkUserId1[0].metaId } },_id: req.params.userId  }
+    let criteria = { metaData: { $elemMatch: { metaId: checkUserId1[0].metaId } }, _id: req.params.userId }
     const updateUser = await userService.updateSingleUser(criteria, updateData, option);
     console.log("fdfgdgdfgd", updateUser)
     if (!updateUser) {
@@ -2249,7 +2249,7 @@ exports.editOption = async (req, res) => {
 exports.updateThreshHoldLimit = async (req, res) => {
   try {
     let data = req.body
-    let updateAdmin = await userService.updateUser({ roleId: process.env.super_admin, isPrimary: true }, { $set: { threshHoldLimit: data.threshHoldLimit, isThreshHoldLimit: data.isThreshHoldLimit } }, { new: true })
+    let updateAdmin = await userService.updateUser({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } }, { $set: { threshHoldLimit: data.threshHoldLimit, isThreshHoldLimit: data.isThreshHoldLimit } }, { new: true })
     if (!updateAdmin) {
       res.send({
         code: constant.errorCode,
