@@ -1562,6 +1562,7 @@ exports.getMembers = async (req, res) => {
           'status': { $arrayElemAt: ["$metaData.status", 0] },
           resetPasswordCode: 1,
           isResetPassword: 1,
+          notificationTo:1,
           approvedStatus: 1,
           createdAt: 1,
           updatedAt: 1
