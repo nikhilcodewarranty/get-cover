@@ -1071,41 +1071,9 @@ exports.updateDealerMeta = async (req, res) => {
       let updatedCustomer = await customerService.updateDealerName(criteria, { dealerName: data.accountName }, option)
       //Update dealer name in reseller
       let updateResellerDealer = await resellerService.updateMeta(criteria, { dealerName: data.accountName }, option)
-
-      //Update Meta in servicer also     
-      if (data.isServicer) {
-        const checkServicer = await servicerService.getServiceProviderById({ dealerId: checkDealer._id })
-        if (!checkServicer) {
-          const CountServicer = await servicerService.getServicerCount();
-          let servicerObject = {
-            name: data.accountName,
-            street: data.street,
-            city: data.city,
-            zip: data.zip,
-            dealerId: checkDealer._id,
-            state: data.state,
-            country: data.country,
-            status: data.status,
-            accountStatus: "Approved",
-            unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
-          }
-          let createData = await servicerService.createServiceProvider(servicerObject)
-        }
-
-        else {
-          const servicerMeta = {
-            name: data.accountName,
-            city: data.city,
-            country: data.country,
-            street: data.street,
-            zip: data.zip
-          }
-          const updateServicerMeta = await servicerService.updateServiceProvider(criteria, servicerMeta)
-        }
-      }
     }
     //update primary user to true by default
-    if (data.isAccountCreate && checkDealer.accountStatus) {
+    if (checkDealer.accountStatus) {
       let criteria1 = { metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } }
 
       let updateMetaData = await userService.updateSingleUser(criteria1, {
@@ -1115,18 +1083,8 @@ exports.updateDealerMeta = async (req, res) => {
       }, { new: true })
 
     }
-    // if (!data.isAccountCreate) {
-    //   let criteria1 = { metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } }
-
-    //   let updateMetaData = await userService.updateUser(criteria1, {
-    //     $set: {
-    //       'metaData.$.status': false,
-    //     }
-    //   }, { new: true })
-
-    // }
     let IDs = await supportingFunction.getUserIds()
-    let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
+    let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
     let settingData = await userService.getSetting({});
     if (updatedData.isAccountCreate) {
       IDs.push(getPrimary._id)
@@ -1149,7 +1107,7 @@ exports.updateDealerMeta = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: checkDealer.metaData[0]?.name,
+      senderName: checkDealer.name,
       content: "The information has been updated successfully! effective immediately.",
       subject: "Update Info"
     }
@@ -1226,39 +1184,39 @@ exports.updateDealerSetting = async (req, res) => {
       await userService.updateUser({ metaData: { $elemMatch: { metaId: req.params.dealerId } } }, { status: false }, { new: true })
     }
 
-       //Update Meta in servicer also     
-       if (data.isServicer) {
-        const checkServicer = await servicerService.getServiceProviderById({ dealerId: checkDealerId._id })
-        if (!checkServicer) {
-          const CountServicer = await servicerService.getServicerCount();
-          let servicerObject = {
-            name: checkDealerId.name,
-            street: checkDealerId.street,
-            city: checkDealerId.city,
-            zip: checkDealerId.zip,
-            dealerId: checkDealerId._id,
-            state: checkDealerId.state,
-            country: checkDealerId.country,
-            status: checkDealerId.status,
-            accountStatus: "Approved",
-            unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
-          }
-          let createData = await servicerService.createServiceProvider(servicerObject)
+    //Update Meta in servicer also     
+    if (data.isServicer) {
+      const checkServicer = await servicerService.getServiceProviderById({ dealerId: checkDealerId._id })
+      if (!checkServicer) {
+        const CountServicer = await servicerService.getServicerCount();
+        let servicerObject = {
+          name: checkDealerId.name,
+          street: checkDealerId.street,
+          city: checkDealerId.city,
+          zip: checkDealerId.zip,
+          dealerId: checkDealerId._id,
+          state: checkDealerId.state,
+          country: checkDealerId.country,
+          status: checkDealerId.status,
+          accountStatus: "Approved",
+          unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
         }
-  
-        else {
-          let criteria = { dealerId: checkDealerId._id }
-          let option = { new: true }
-          const servicerMeta = {
-            name: checkDealerId.name,
-            city: checkDealerId.city,
-            country: checkDealerId.country,
-            street: checkDealerId.street,
-            zip: checkDealerId.zip
-          }
-          const updateServicerMeta = await servicerService.updateServiceProvider(criteria, servicerMeta)
-        }
+        let createData = await servicerService.createServiceProvider(servicerObject)
       }
+
+      else {
+        let criteria = { dealerId: checkDealerId._id }
+        let option = { new: true }
+        const servicerMeta = {
+          name: checkDealerId.name,
+          city: checkDealerId.city,
+          country: checkDealerId.country,
+          street: checkDealerId.street,
+          zip: checkDealerId.zip
+        }
+        const updateServicerMeta = await servicerService.updateServiceProvider(criteria, servicerMeta)
+      }
+    }
 
     let updateSettingData = await eligibilityService.updateEligibility({ userId: req.params.dealerId }, data, { new: true })
     if (!updateSettingData) {
@@ -1268,7 +1226,7 @@ exports.updateDealerSetting = async (req, res) => {
       })
     } else {
       res.send({
-        code: constant.successCode, 
+        code: constant.successCode,
         message: "Updated successfully"
       })
     }
