@@ -1220,11 +1220,13 @@ exports.updateDealerSetting = async (req, res) => {
     }
     //update primary user to true by default
     if (data.isAccountCreate && checkDealerId.accountStatus) {
-      await userService.updateSingleUser({ metaId: req.params.dealerId, isPrimary: true }, { status: true }, { new: true })
+      await userService.updateSingleUser({ metaData: { $elemMatch: { metaId: req.params.dealerId, isPrimary: true } } }, { status: true }, { new: true })
     }
     if (!data.isAccountCreate) {
-      await userService.updateUser({ metaId: req.params.dealerId }, { status: false }, { new: true })
+      await userService.updateUser({ metaData: { $elemMatch: { metaId: req.params.dealerId } } }, { status: false }, { new: true })
     }
+
+
     let updateSettingData = await eligibilityService.updateEligibility({ userId: req.params.dealerId }, data, { new: true })
     if (!updateSettingData) {
       res.send({
@@ -1233,7 +1235,7 @@ exports.updateDealerSetting = async (req, res) => {
       })
     } else {
       res.send({
-        code: constant.successCode,
+        code: constant.successCode, 
         message: "Updated successfully"
       })
     }
