@@ -1205,7 +1205,7 @@ exports.createOrder1 = async (req, res) => {
                 // data.productsArray[A].coverageStartDate = new Date(data.productsArray[A].coverageStartDate).setHours(0, 0, 0, 0)
                 // data.productsArray[A].coverageEndDate1 = new Date(data.productsArray[A].coverageEndDate1).setHours(0, 0, 0, 0)
                 // data.productsArray[A].coverageEndDate = new Date(data.productsArray[A].coverageEndDate).setHours(0, 0, 0, 0)
-               
+
 
             }
 
@@ -1215,7 +1215,7 @@ exports.createOrder1 = async (req, res) => {
                 data.productsArray[A].coverageStartDate = null
                 data.productsArray[A].coverageEndDate = null
             }
-            
+
             if (!getChoosedProducts[A].adhDays) {
                 res.send({
                     code: constant.errorCode,
@@ -2226,7 +2226,12 @@ exports.editOrderDetail = async (req, res) => {
                 data.productsArray[A].coverageEndDate = addOneDay3.setDate(addOneDay3.getDate() + 1);
 
             }
-
+            if (getChoosedProducts[A].coverageStartDate == "") {
+                data.productsArray[A].coverageStartDate1 = null
+                data.productsArray[A].coverageEndDate1 = null
+                data.productsArray[A].coverageStartDate = null
+                data.productsArray[A].coverageEndDate = null
+            }
             if (!getChoosedProducts[A].adhDays) {
                 res.send({
                     code: constant.errorCode,
@@ -2583,7 +2588,7 @@ exports.editOrderDetail = async (req, res) => {
                         const tcResponse = await generateTC(savedResponse);
                     }
                     // send notification to dealer,admin, customer
-                    let IDs = await supportingFunction.getUserIds()           
+                    let IDs = await supportingFunction.getUserIds()
 
                     let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } })
                     let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } })
