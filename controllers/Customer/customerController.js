@@ -815,7 +815,7 @@ exports.changePrimaryUser = async (req, res) => {
     // let updatePrimary = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true })
 
 
-    // const checkDealer = await dealerService.getDealerById(updatePrimary.metaId)
+     const checkDealer = await dealerService.getDealerById(updatePrimary.metaId)
 
     const checkReseller = await resellerService.getReseller({ _id: updatePrimary.metaId }, { isDeleted: false })
 
@@ -874,10 +874,6 @@ exports.changePrimaryUser = async (req, res) => {
         content: "The primary user for your account has been changed from " + updateLastPrimary.metaData[0]?.firstName + " to " + updatePrimary.metaData[0]?.firstName + ".",
         subject: "Primary User change"
       };
-
-
-
-
 
       if (checkServicer?.isAccountCreate || checkReseller?.isAccountCreate || checkDealer?.isAccountCreate || checkCustomer?.isAccountCreate) {
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(updatePrimary.email, updateLastPrimary.email, emailData))
