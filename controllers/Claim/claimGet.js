@@ -419,7 +419,7 @@ exports.getAllClaims = async (req, res, next) => {
     })
 
     let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0 // getting the total count 
-    let getTheThresholdLimit = await userService.getUserById1({ roleId: process.env.super_admin, isPrimary: true })
+    let getTheThresholdLimit = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
 
     result_Array = result_Array.map(claimObject => {
       const { productValue, claimAmount } = claimObject.contracts;
@@ -435,7 +435,7 @@ exports.getAllClaims = async (req, res, next) => {
       }
       if (claimObject.claimStatus.status == "rejected") {
         threshHoldMessage = ""
-      } 
+      }
       // if (claimObject.claimStatus.status == "rejected") {
       //   threshHoldMessage = ""
       // }
@@ -858,7 +858,7 @@ exports.getMessages = async (req, res) => {
         'commentTo.lastName': { $arrayElemAt: ["$commentTo.metaData.lastName", 0] },
         'commentBy.lastName': { $arrayElemAt: ["$commentBy.metaData.lastName", 0] },
         'commentBy.firstName': { $arrayElemAt: ["$commentBy.metaData.firstName", 0] },
-        "commentBy.roles":1
+        "commentBy.roles": 1
 
       }
     },
