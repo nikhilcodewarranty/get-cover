@@ -1185,8 +1185,6 @@ exports.createOrder1 = async (req, res) => {
         for (let A = 0; A < getChoosedProducts.length; A++) {
             if (getChoosedProducts[A].coverageStartDate != "") {
 
-
-
                 let addOneDay = new Date(getChoosedProducts[A].coverageStartDate)
                 let addOneDay1 = new Date(getChoosedProducts[A].coverageStartDate)
                 let addOneDay2 = new Date(getChoosedProducts[A].coverageStartDate)
@@ -1210,6 +1208,14 @@ exports.createOrder1 = async (req, res) => {
                
 
             }
+
+            if (getChoosedProducts[A].coverageStartDate == "") {
+                data.productsArray[A].coverageStartDate1 = null
+                data.productsArray[A].coverageEndDate1 = null
+                data.productsArray[A].coverageStartDate = null
+                data.productsArray[A].coverageEndDate = null
+            }
+            
             if (!getChoosedProducts[A].adhDays) {
                 res.send({
                     code: constant.errorCode,
