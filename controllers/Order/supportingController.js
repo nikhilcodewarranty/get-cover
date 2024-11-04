@@ -761,7 +761,6 @@ ${term}
         //     })
         // } 
         //else {
-            console.log("sdfsdfdsfdssdfsd----------------------------------", mergeFileName)
 
             pdf.create(html, options).toFile(orderFile, async (err, result) => {
                 if (err) return console.log(err);
@@ -775,7 +774,6 @@ ${term}
 
                 const termConditionFile = checkOrder.termCondition.fileName
                 const termPath = termConditionFile
-                console.log("termPath----------------------------------", termPath)
                 //Download from S3 bucket 
                 const termPathBucket = await downloadFromS3(bucketName, termPath);
                 const orderPathBucket = await downloadFromS3(bucketName, s3Key);
