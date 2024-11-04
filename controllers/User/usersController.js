@@ -1563,6 +1563,8 @@ exports.getMembers = async (req, res) => {
           resetPasswordCode: 1,
           isResetPassword: 1,
           notificationTo:1,
+          threshHoldLimit:1,
+          isThreshHoldLimit:1,
           approvedStatus: 1,
           createdAt: 1,
           updatedAt: 1
@@ -1590,6 +1592,9 @@ exports.getMembers = async (req, res) => {
           resetPasswordCode: 1,
           isResetPassword: 1,
           approvedStatus: 1,
+          notificationTo:1,
+          threshHoldLimit:1,
+          isThreshHoldLimit:1,
           createdAt: 1,
           updatedAt: 1
         }
