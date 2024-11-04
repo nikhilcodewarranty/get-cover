@@ -470,6 +470,7 @@ exports.addClaim = async (req, res, next) => {
       return
     }
 
+    console.log("-------------------------------------------1")
     // Eligibility false when claim open
     const updateContract = await contractService.updateContract({ _id: data.contractId }, { eligibilty: false }, { new: true })
 
@@ -484,6 +485,8 @@ exports.addClaim = async (req, res, next) => {
         result: claimResponse
       }
     }
+    console.log("-------------------------------------------2")
+
     await LOG(logData).save()
 
     //Send notification to all
@@ -492,12 +495,14 @@ exports.addClaim = async (req, res, next) => {
     let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } })
     let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } })
     let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data?.servicerId, isPrimary: true } } })
+    console.log("-------------------------------------------3")
 
     //Get Dealer,reseller, customer status
     const checkDealer = await dealerService.getDealerById(checkOrder.dealerId)
     const checkReseller = await resellerService.getReseller({ _id: checkOrder?.resellerId }, {})
     const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
     const checkServicer = await servicerService.getServiceProviderById({ $or: [{ _id: data?.servicerId }, { dealerId: data?.servicerId }, { resellerId: data?.servicerId }] })
+    console.log("-------------------------------------------4")
 
     if (resellerPrimary && checkReseller?.isAccountCreate) {
       IDs.push(resellerPrimary._id)
@@ -513,6 +518,8 @@ exports.addClaim = async (req, res, next) => {
       IDs.push(customerPrimary._id)
 
     }
+    console.log("-------------------------------------------5")
+
     let notificationData1 = {
       title: "Add Claim",
       description: "The claim has been added",
@@ -537,6 +544,8 @@ exports.addClaim = async (req, res, next) => {
       notificationCC.push(resellerPrimary.email);
 
     }
+    console.log("-------------------------------------------6")
+
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
