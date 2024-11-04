@@ -505,16 +505,23 @@ exports.addClaim = async (req, res, next) => {
     console.log("-------------------------------------------4")
 
     if (resellerPrimary && checkReseller?.isAccountCreate) {
+      console.log("sdfsdfsdfsdfsdfsd");
       IDs.push(resellerPrimary._id)
     }
     if (servicerPrimary && checkServicer?.isAccountCreate) {
+      console.log("23423423423");
+
       IDs.push(servicerPrimary._id)
     }
     if (checkDealer.isAccountCreate) {
+      console.log("534534534534");
+
       IDs.push(dealerPrimary._id)
 
     }
     if (checkCustomer.isAccountCreate) {
+      console.log("23423232111111");
+
       IDs.push(customerPrimary._id)
 
     }
