@@ -1863,7 +1863,7 @@ exports.getServicerDealers1 = async (req, res) => {
               $lookup: {
                 from: "users",
                 localField: "_id",
-                foreignField: "metaId",
+                foreignField: "metaData.metaId",
                 as: "userData",
                 pipeline: [
                   {
@@ -1917,6 +1917,7 @@ exports.getServicerDealers1 = async (req, res) => {
       },
 
     ]
+
     let filteredData = await dealerRelationService.getDealerRelationsAggregate(query)
     res.send({
       code: constant.successCode,
