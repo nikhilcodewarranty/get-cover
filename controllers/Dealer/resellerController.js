@@ -113,11 +113,10 @@ exports.createReseller = async (req, res) => {
         let notificationEmails = await supportingFunction.getUserEmails();
 
         let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
-        notificationEmails.push(getPrimary.email)
         IDs.push(getPrimary._id)
         //Merge start singleServer
         // let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
-        if (checkDealer.isAccountCreate) {
+        if (checkDealer .isAccountCreate) {
             IDs.push(getPrimary._id)
             notificationEmails.push(getPrimary.email)
         }
@@ -142,8 +141,7 @@ exports.createReseller = async (req, res) => {
             subject: "Reseller Account Created - " + createdReseler.name
         }
 
-        console.log("notificationEmails------------------",notificationEmails)
-        
+
         // Send Email code here
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
 
