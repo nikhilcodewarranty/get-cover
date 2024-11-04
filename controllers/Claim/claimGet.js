@@ -435,7 +435,7 @@ exports.getAllClaims = async (req, res, next) => {
       }
       if (claimObject.claimStatus.status == "rejected") {
         threshHoldMessage = ""
-      }
+      } 
       // if (claimObject.claimStatus.status == "rejected") {
       //   threshHoldMessage = ""
       // }
