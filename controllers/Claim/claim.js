@@ -495,14 +495,12 @@ exports.addClaim = async (req, res, next) => {
     let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } })
     let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } })
     let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data?.servicerId, isPrimary: true } } })
-    console.log("-------------------------------------------3")
 
     //Get Dealer,reseller, customer status
     const checkDealer = await dealerService.getDealerById(checkOrder.dealerId)
     const checkReseller = await resellerService.getReseller({ _id: checkOrder?.resellerId }, {})
     const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
     const checkServicer = await servicerService.getServiceProviderById({ $or: [{ _id: data?.servicerId }, { dealerId: data?.servicerId }, { resellerId: data?.servicerId }] })
-    console.log("-------------------------------------------4")
 
     if (resellerPrimary && checkReseller?.isAccountCreate) {
       console.log("sdfsdfsdfsdfsdfsd");
