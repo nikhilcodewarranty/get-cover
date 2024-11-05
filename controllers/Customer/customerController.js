@@ -655,10 +655,7 @@ exports.editCustomer = async (req, res) => {
     IDs.push(dealerPrimary._id)
     IDs.push(resellerPrimary?._id)
     //Merge start Singleserver
-    // let notificationEmails = await supportingFunction.getUserEmails();
-    // let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
-    // let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer.dealerId, isPrimary: true })
-    // let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer.resellerId, isPrimary: true })
+    let notificationEmails = await supportingFunction.getUserEmails();
 
     const dealerCheck = await dealerService.getDealerById(checkDealer.dealerId)
 
