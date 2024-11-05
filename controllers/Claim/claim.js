@@ -732,7 +732,7 @@ exports.editClaim = async (req, res) => {
         websiteSetting: settingData[0],
         senderName: servicerPrimary ? servicerPrimary.firstName : '',
         redirectId: base_url,
-        content: `The Repair Status has been updated on the Claim # - ${checkClaim.unique_key} to be ${lastElement[0].serviceType}. Please review the information at following link`,
+        content: `The Repair Status has been updated on the Claim # - ${checkClaim.unique_key} to be ${lastElement.serviceType}. Please review the information at following link`,
         subject: `Repair Status Updated for ${checkClaim.unique_key}`
       }
 
