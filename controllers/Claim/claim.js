@@ -1295,61 +1295,24 @@ exports.editClaimStatus = async (req, res) => {
       return;
     }
 
-    const currentDate = new Date();
-    const currentYear = currentDate.getFullYear();
-    const currentMonth = currentDate.getMonth() + 1; // 
 
-    // let getNoOfClaimQuery = [
-    //   {
-    //     $match: { contractId: new mongoose.Types.ObjectId(checkClaim.contractId), claimFile: "completed" }
-    //   },
-    //   // Step 1: Add fields to extract year and month from the createdAt field
-    //   {
-    //     $addFields: {
-    //       year: { $year: '$createdAt' },
-    //       month: { $month: '$createdAt' }
-    //     }
-    //   },
-    //   // Step 2: Group the results to get counts for both year and month
-    //   {
-    //     $group: {
-    //       _id: null,
-    //       monthlyCount: {
-    //         $sum: {
-    //           $cond: [
-    //             { $and: [{ $eq: ['$year', currentYear] }, { $eq: ['$month', currentMonth] }] },
-    //             1,
-    //             0
-    //           ]
-    //         }
-    //       },
-    //       yearlyCount: {
-    //         $sum: {
-    //           $cond: [
-    //             { $eq: ['$year', currentYear] },
-    //             1,
-    //             0
-    //           ]
-    //         }
-    //       }
-    //     }
-    //   }
-    // ]
-
-    const baseDate = new Date('2024-07-12');
-
-    const dayOfMonth = baseDate.getDate(); // Get the day (12)
+    let baseDate = new Date(checkContract.coverageStartDate);
+    let newDateToCheck = new Date()
+    const newDayOfMonth = newDateToCheck.getDate();
+    const dayOfMonth = baseDate.getDate();
 
     // Get the current year and month
     const currentYear1 = new Date().getFullYear();
     const currentMonth1 = new Date().getMonth(); // Note: 0 = January, so this is the current month index
 
     // Create a new date with the current year, current month, and the day from baseDate
-    const newDateWithSameDay = new Date(currentYear1, currentMonth1, dayOfMonth);
+    let newDateWithSameDay = new Date(currentYear1, currentMonth1, dayOfMonth);
+    if (Number(newDayOfMonth) > Number(dayOfMonth)) {
+      newDateWithSameDay = new Date(new Date(newDateWithSameDay).setMonth(newDateWithSameDay.getMonth() - 1));
+    }
 
-    const monthlyEndDate = new Date(new Date(baseDate).setMonth(baseDate.getMonth() + 1)); // Ends on August 11, 2024
-    const yearlyEndDate = new Date(new Date(baseDate).setFullYear(baseDate.getFullYear() + 1)); // Ends on July 11, 2025
-
+    const monthlyEndDate = new Date(new Date(newDateWithSameDay).setMonth(newDateWithSameDay.getMonth() + 1)); // Ends on August 11, 2024
+    const yearlyEndDate = new Date(new Date(newDateWithSameDay).setFullYear(newDateWithSameDay.getFullYear() + 1)); // Ends on July 11, 2025
 
 
     let getNoOfClaimQuery = [
@@ -1393,6 +1356,54 @@ exports.editClaimStatus = async (req, res) => {
         }
       }
     ];
+
+
+    let checkNoOfClaims = await claimService.getClaimWithAggregate(getNoOfClaimQuery)
+
+
+
+
+    // let getNoOfClaimQuery = [
+    //   {
+    //     $match: {
+    //       contractId: new mongoose.Types.ObjectId(checkClaim.contractId),
+    //       claimFile: "completed"
+    //     }
+    //   },
+    //   {
+    //     $group: {
+    //       _id: null,
+    //       monthlyCount: {
+    //         $sum: {
+    //           $cond: [
+    //             {
+    //               $and: [
+    //                 { $gte: ['$createdAt', newDateWithSameDay] },
+    //                 { $lt: ['$createdAt', monthlyEndDate] }
+    //               ]
+    //             },
+    //             1,
+    //             0
+    //           ]
+    //         }
+    //       },
+    //       yearlyCount: {
+    //         $sum: {
+    //           $cond: [
+    //             {
+    //               $and: [
+    //                 { $gte: ['$createdAt', newDateWithSameDay] },
+    //                 { $lt: ['$createdAt', yearlyEndDate] }
+    //               ]
+    //             },
+    //             1,
+    //             0
+    //           ]
+    //         }
+    //       }
+    //     }
+    //   }
+    // ];
 
 
     let forCheckOnly;
@@ -3619,19 +3630,20 @@ exports.getCoverageType = async (req, res) => {
 exports.updateClaimDate = async (req, res) => {
   try {
 
-    const baseDate = new Date('2024-07-08');
+    let baseDate = new Date('2024-07-03');
     let newDateToCheck = new Date()
-    const newDayOfMonth = baseDate.getDate(); // Get the day (12)
-
-
-    const dayOfMonth = baseDate.getDate(); // Get the day (12)
+    const newDayOfMonth = newDateToCheck.getDate();
+    const dayOfMonth = baseDate.getDate();
 
     // Get the current year and month
     const currentYear1 = new Date().getFullYear();
     const currentMonth1 = new Date().getMonth(); // Note: 0 = January, so this is the current month index
 
     // Create a new date with the current year, current month, and the day from baseDate
-    const newDateWithSameDay = new Date(currentYear1, currentMonth1, dayOfMonth);
+    let newDateWithSameDay = new Date(currentYear1, currentMonth1, dayOfMonth);
+    if (Number(newDayOfMonth) > Number(dayOfMonth)) {
+      newDateWithSameDay = new Date(new Date(newDateWithSameDay).setMonth(newDateWithSameDay.getMonth() - 1));
+    }
 
     const monthlyEndDate = new Date(new Date(newDateWithSameDay).setMonth(newDateWithSameDay.getMonth() + 1)); // Ends on August 11, 2024
     const yearlyEndDate = new Date(new Date(newDateWithSameDay).setFullYear(newDateWithSameDay.getFullYear() + 1)); // Ends on July 11, 2025
