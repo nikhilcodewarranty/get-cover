@@ -72,7 +72,7 @@ var uploadP = multer({
   limits: {
     fileSize: 500 * 1024 * 1024, // 500 MB limit
   },
-}).array("file", 100);
+}).single("file");
 
 // search claim api  -- not using
 exports.searchClaim = async (req, res, next) => {
