@@ -60,11 +60,11 @@ const customerSchema = new mongoose.Schema({
   },
   resellerId: {
     type: String,
-    default:''
+    default: ''
   },
   resellerId1: {
     type: mongoose.Schema.Types.ObjectId,
-    ref:"resellers",
+    ref: "resellers",
   },
   dealerName: {
     type: String,
@@ -83,6 +83,10 @@ const customerSchema = new mongoose.Schema({
   isDeleted: {
     type: Boolean,
     default: false
+  },
+  addresses: {
+    type: Array,
+    default: []
   },
   token: {
     type: String,
