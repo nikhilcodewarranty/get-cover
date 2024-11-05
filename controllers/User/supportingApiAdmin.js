@@ -320,6 +320,8 @@ exports.createDealer = async (req, res) => {
                 res.send({
                     code: constant.successCode,
                     message: 'New Dealer Created Successfully',
+                    result: dealerStatus
+
                 });
                 return;
             }
