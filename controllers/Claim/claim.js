@@ -1009,8 +1009,7 @@ exports.editClaimStatus = async (req, res) => {
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
       const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
-      console.log("notificationEmails------------------",notificationEmails)
-      console.log("base_url------------------",base_url)
+  
       if(checkDealer.isAccountCreate){
         notificationEmails.push(dealerPrimary.email) 
       }
@@ -1028,13 +1027,10 @@ exports.editClaimStatus = async (req, res) => {
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
         senderName: customerPrimary?.firstName,
-        content: `The Customer Status has been updated on the claim # ${checkClaim.unique_key} to be ${data.customerStatus}. Please review the information on the following url`,
+        content: `The Customer Status has been updated on the claim # ${checkClaim.unique_key} to be ${data.customerStatus}. Please review the information on the following url.`,
         subject: `Customer Status Updated for ${checkClaim.unique_key}`,
         redirectId:base_url
       }
-
-      console.log("notificationEmails------------------",notificationEmails)
-
       mailing = checkCustomer.isAccountCreate ? sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
     
     }
