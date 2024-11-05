@@ -1230,6 +1230,14 @@ exports.checkPurchaseOrder = async (req, res) => {
     try {
         let checkPurchaseOrder;
         let data = req.body;
+        let dealerIdToCheck;
+        if (req.role == "Dealer") {
+            dealerIdToCheck = req.userId
+        }
+        if (req.role == "Reseller") {
+            let getResellerData = await resellerService.getReseller({ _id: req.userId })
+            dealerIdToCheck = getResellerData.dealerId
+        }
         if (
             data.oldDealerPurchaseOrder != "" &&
             data.oldDealerPurchaseOrder != data.dealerPurchaseOrder
@@ -1237,7 +1245,7 @@ exports.checkPurchaseOrder = async (req, res) => {
             checkPurchaseOrder = await orderService.getOrder(
                 {
                     venderOrder: req.body.dealerPurchaseOrder,
-                    dealerId: req.body.dealerId ? req.body.dealerId : req.userId,
+                    dealerId: req.body.dealerId ? req.body.dealerId : dealerIdToCheck,
                 },
                 { isDeleted: 0 }
             );
@@ -1245,7 +1253,7 @@ exports.checkPurchaseOrder = async (req, res) => {
             checkPurchaseOrder = await orderService.getOrder(
                 {
                     venderOrder: req.body.dealerPurchaseOrder,
-                    dealerId: req.body.dealerId ? req.body.dealerId : req.userId,
+                    dealerId: req.body.dealerId ? req.body.dealerId : dealerIdToCheck,
                 },
                 { isDeleted: 0 }
             );
@@ -2283,7 +2291,7 @@ async function generateTC(orderData) {
             return contractService.getContractById({
                 orderProductId: item._id
             });
-         
+
         })
         const contractArray = await Promise.all(contractArrayPromise);
 
@@ -2424,7 +2432,7 @@ async function generateTC(orderData) {
             const s3Key = `pdfs/${mergeFileName}`;
             //Upload to S3 bucket
             await uploadToS3(orderFile, bucketName, s3Key);
-            const termConditionFile =  checkOrder.termCondition.fileName 
+            const termConditionFile = checkOrder.termCondition.fileName
             const termPath = termConditionFile
             //Download from S3 bucket 
             const termPathBucket = await downloadFromS3(bucketName, termPath);

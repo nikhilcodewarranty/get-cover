@@ -707,7 +707,9 @@ exports.editClaim = async (req, res) => {
       let notificationEmails = await supportingFunction.getUserEmails();
       let settingData = await userService.getSetting({});
       //notificationEmails.push(servicerPrimary?.email);
-      const servicerEmail = servicerPrimary ? servicerPrimary?.email : process.env.servicerEmail
+      let servicerEmail = servicerPrimary ? servicerPrimary?.email : process.env.servicerEmail
+      servicerEmail = checkServicer?.isAccountCreate ? servicerPrimary?.email : process.env.servicerEmail
+      // checkServicer?.isAccountCreate
       let emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -717,7 +719,8 @@ exports.editClaim = async (req, res) => {
         content: "The  repair part update for " + checkClaim.unique_key + " claim",
         subject: "Repair Part Update"
       }
-      // let mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, notificationEmails, emailData))
+
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, notificationEmails, emailData))
       let totalClaimQuery1 = [
         {
           $match: {
@@ -733,7 +736,6 @@ exports.editClaim = async (req, res) => {
       ]
       let getClaims = await claimService.getClaimWithAggregate(totalClaimQuery1)
       let updateTheContract = await contractService.updateContract({ _id: checkClaim.contractId }, { claimAmount: getClaims[0] ? getClaims[0].totalAmount : 0 }, { new: true })
-      console.log("updated contract ak------", getClaims, updateTheContract.claimAmount)
       res.send({
         code: constant.successCode,
         message: "Updated successfully"
@@ -1421,7 +1423,7 @@ exports.editClaimStatus = async (req, res) => {
 
       if (forCheckOnly) {
         let checkNoOfClaims = await claimService.getClaimWithAggregate(getNoOfClaimQuery)
-        console.log(checkNoOfClaims,"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+        console.log(checkNoOfClaims, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
         if (checkNoOfClaims.length == 0) {
           checkNoOfClaims = [{
             "monthlyCount": 0,
@@ -3616,19 +3618,102 @@ exports.getCoverageType = async (req, res) => {
 
 exports.updateClaimDate = async (req, res) => {
   try {
-    let emailData = {
-      // darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + "settingData[0]?.logoDark.fileName",
-      // lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-      address: "settingData[0]?.address",
-      websiteSetting: "settingData[0]",
-      senderName: "emailTo?.firstName",
-      content: "The new message for " + "checkClaim.unique_key" + " claim",
-      subject: "New Message"
-    }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate("anil@codenomad.net", ["amit@codenomad.net"], "emailData"))
+
+    const baseDate = new Date('2024-07-08');
+    let newDateToCheck = new Date()
+    const newDayOfMonth = baseDate.getDate(); // Get the day (12)
+
+
+    const dayOfMonth = baseDate.getDate(); // Get the day (12)
+
+    // Get the current year and month
+    const currentYear1 = new Date().getFullYear();
+    const currentMonth1 = new Date().getMonth(); // Note: 0 = January, so this is the current month index
+
+    // Create a new date with the current year, current month, and the day from baseDate
+    const newDateWithSameDay = new Date(currentYear1, currentMonth1, dayOfMonth);
+
+    const monthlyEndDate = new Date(new Date(newDateWithSameDay).setMonth(newDateWithSameDay.getMonth() + 1)); // Ends on August 11, 2024
+    const yearlyEndDate = new Date(new Date(newDateWithSameDay).setFullYear(newDateWithSameDay.getFullYear() + 1)); // Ends on July 11, 2025
+
+
+    let getNoOfClaimQuery = [
+      {
+        $match: {
+          contractId: new mongoose.Types.ObjectId("6712381331a2529f6e009d85"),
+          claimFile: "completed"
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          monthlyCount: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $gte: ['$createdAt', newDateWithSameDay] },
+                    { $lt: ['$createdAt', monthlyEndDate] }
+                  ]
+                },
+                1,
+                0
+              ]
+            }
+          },
+          yearlyCount: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $gte: ['$createdAt', newDateWithSameDay] },
+                    { $lt: ['$createdAt', yearlyEndDate] }
+                  ]
+                },
+                1,
+                0
+              ]
+            }
+          }
+        }
+      }
+    ];
+
+
+    let checkNoOfClaims = await claimService.getClaimWithAggregate(getNoOfClaimQuery)
+
     res.send({
-      mailing
+      checkNoOfClaims, getNoOfClaimQuery
     })
+
+
+
+
+
+    // let emailData = {
+    //   // darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + "settingData[0]?.logoDark.fileName",
+    //   // lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+    //   address: "settingData[0]?.address",
+    //   websiteSetting: "settingData[0]",
+    //   senderName: "emailTo?.firstName",
+    //   content: "The new message for " + "checkClaim.unique_key" + " claim",
+    //   subject: "New Message"
+    // }
+    // let mailing = sgMail.send(emailConstant.sendEmailTemplate("anil@codenomad.net", ["amit@codenomad.net"], "emailData"))
+    // res.send({
+    //   mailing
+    // })
+
+
+
+
+
+
+
+
+
+
+
     // let updateObject = {
     //   $set: {
     //     customerStatus: [
