@@ -1024,6 +1024,8 @@ exports.editClaimStatus = async (req, res) => {
         redirectId:base_url
       }
 
+      console.log("notificationEmails------------------",notificationEmails)
+
       mailing = checkCustomer.isAccountCreate ? sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
     
     }
