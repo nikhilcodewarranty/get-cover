@@ -1297,25 +1297,78 @@ exports.editClaimStatus = async (req, res) => {
     const currentYear = currentDate.getFullYear();
     const currentMonth = currentDate.getMonth() + 1; // 
 
+    // let getNoOfClaimQuery = [
+    //   {
+    //     $match: { contractId: new mongoose.Types.ObjectId(checkClaim.contractId), claimFile: "completed" }
+    //   },
+    //   // Step 1: Add fields to extract year and month from the createdAt field
+    //   {
+    //     $addFields: {
+    //       year: { $year: '$createdAt' },
+    //       month: { $month: '$createdAt' }
+    //     }
+    //   },
+    //   // Step 2: Group the results to get counts for both year and month
+    //   {
+    //     $group: {
+    //       _id: null,
+    //       monthlyCount: {
+    //         $sum: {
+    //           $cond: [
+    //             { $and: [{ $eq: ['$year', currentYear] }, { $eq: ['$month', currentMonth] }] },
+    //             1,
+    //             0
+    //           ]
+    //         }
+    //       },
+    //       yearlyCount: {
+    //         $sum: {
+    //           $cond: [
+    //             { $eq: ['$year', currentYear] },
+    //             1,
+    //             0
+    //           ]
+    //         }
+    //       }
+    //     }
+    //   }
+    // ]
+
+    const baseDate = new Date('2024-07-12');
+
+    const dayOfMonth = baseDate.getDate(); // Get the day (12)
+
+    // Get the current year and month
+    const currentYear1 = new Date().getFullYear();
+    const currentMonth1 = new Date().getMonth(); // Note: 0 = January, so this is the current month index
+
+    // Create a new date with the current year, current month, and the day from baseDate
+    const newDateWithSameDay = new Date(currentYear1, currentMonth1, dayOfMonth);
+
+    const monthlyEndDate = new Date(new Date(baseDate).setMonth(baseDate.getMonth() + 1)); // Ends on August 11, 2024
+    const yearlyEndDate = new Date(new Date(baseDate).setFullYear(baseDate.getFullYear() + 1)); // Ends on July 11, 2025
+
+
+
     let getNoOfClaimQuery = [
       {
-        $match: { contractId: new mongoose.Types.ObjectId(checkClaim.contractId), claimFile: "completed" }
-      },
-      // Step 1: Add fields to extract year and month from the createdAt field
-      {
-        $addFields: {
-          year: { $year: '$createdAt' },
-          month: { $month: '$createdAt' }
+        $match: {
+          contractId: new mongoose.Types.ObjectId(checkClaim.contractId),
+          claimFile: "completed"
         }
       },
-      // Step 2: Group the results to get counts for both year and month
       {
         $group: {
           _id: null,
           monthlyCount: {
             $sum: {
               $cond: [
-                { $and: [{ $eq: ['$year', currentYear] }, { $eq: ['$month', currentMonth] }] },
+                {
+                  $and: [
+                    { $gte: ['$createdAt', newDateWithSameDay] },
+                    { $lt: ['$createdAt', monthlyEndDate] }
+                  ]
+                },
                 1,
                 0
               ]
@@ -1324,7 +1377,12 @@ exports.editClaimStatus = async (req, res) => {
           yearlyCount: {
             $sum: {
               $cond: [
-                { $eq: ['$year', currentYear] },
+                {
+                  $and: [
+                    { $gte: ['$createdAt', newDateWithSameDay] },
+                    { $lt: ['$createdAt', yearlyEndDate] }
+                  ]
+                },
                 1,
                 0
               ]
@@ -1332,7 +1390,8 @@ exports.editClaimStatus = async (req, res) => {
           }
         }
       }
-    ]
+    ];
+
 
     let forCheckOnly;
 
@@ -1362,11 +1421,12 @@ exports.editClaimStatus = async (req, res) => {
 
       if (forCheckOnly) {
         let checkNoOfClaims = await claimService.getClaimWithAggregate(getNoOfClaimQuery)
+        console.log(checkNoOfClaims,"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
         if (checkNoOfClaims.length == 0) {
-          checkNoOfClaims = {
+          checkNoOfClaims = [{
             "monthlyCount": 0,
             "yearlyCount": 0
-          }
+          }]
         }
         let checkThePeriod = checkContract.noOfClaim
         let getTotalClaim = await claimService.getClaims({ contractId: checkClaim.contractId, claimFile: "completed" })
@@ -1652,7 +1712,7 @@ exports.saveBulkClaim = async (req, res) => {
           };
         }
       });
-      
+
 
       if (totalDataComing.length === 0) {
         res.send({
@@ -2151,7 +2211,7 @@ exports.saveBulkClaim = async (req, res) => {
               existArray.data[servicerId] = [];
             }
 
-            if (servicerId != undefined && !item.exit && item?.claimType != "theft_and_lost" ) {
+            if (servicerId != undefined && !item.exit && item?.claimType != "theft_and_lost") {
               existArray.data[servicerId].push({
                 "Contract# / Serial#": item.contractId ? item.contractId : "",
                 "Loss Date": item.lossDate ? formattedDate : '',
@@ -2654,7 +2714,7 @@ exports.statusClaim = async (req, res) => {
       if (new Date() === sevenDaysAfterShippedDate || new Date() > sevenDaysAfterShippedDate) {
         // Update status for track status
         messageData.trackStatus = [
-          { 
+          {
             status: 'completed',
             date: new Date()
           }
