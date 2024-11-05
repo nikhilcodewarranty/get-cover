@@ -1642,7 +1642,7 @@ exports.createOrder1 = async (req, res) => {
                         userId: req.userId,
                         response: {
                             code: constant.successCode,
-                            message: "Success",
+                            message: "Success2",
                             saveContracts
                         }
                     }
@@ -1669,7 +1669,7 @@ exports.createOrder1 = async (req, res) => {
 
             res.send({
                 code: constant.successCode,
-                message: "Success",
+                message: "Success1",
             });
             return
 
@@ -1686,7 +1686,7 @@ exports.createOrder1 = async (req, res) => {
             await LOG(logData).save()
             res.send({
                 code: constant.successCode,
-                message: "Success",
+                message: "Success3",
             });
         }
     } catch (err) {

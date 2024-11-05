@@ -2255,3 +2255,65 @@ exports.addCustomerAddress = async (req, res) => {
   }
 }
 
+exports.addAddress = async (req, res) => {
+  try {
+    let data = req.body
+    let checkCustomer = await customerService.getCustomerById({ _id: req.params.customerId })
+    if (!checkCustomer) {
+      res.send({
+        code: constant.errorCode,
+        message: err.message
+      })
+      return
+    }
+    let customerAddresses = checkCustomer.addresses ? checkCustomer.addresses : []
+    customerAddresses = customerAddresses.pull(data.address)
+    let udpateCustomer = await customerService.updateCustomer({ _id: req.params.customerId }, { addresses: customerAddresses }, { new: true })
+    if (udpateCustomer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to add customer address"
+      })
+    } else {
+      res.send({
+        code: constant.successCode,
+        message: "Customer address added successfully"
+      })
+    }
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.editaddress = async (req, res) => {
+  try {
+    let data = req.body
+    const customerId = data.customerId;
+    const addressId = data.addressId;
+
+
+    let updateCustomer = await customerService.updateCustomer(
+      { _id: customerId, 'addresses.addressId': addressId }, // Match the customer and specific address
+      {
+        $set: {
+          'addresses.$.street': updatedAddress.street,
+          'addresses.$.city': updatedAddress.city
+        }
+      },
+      { new: true }
+    );
+    res.send({
+      code: constant.successCode,
+      message: updateCustomer
+    })
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
