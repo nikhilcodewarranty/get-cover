@@ -2234,7 +2234,7 @@ exports.addCustomerAddress = async (req, res) => {
         addresses: data.addresses
       }
     }
-    let updateAddress = await customerService.updateCustomer({ _id: req.parans.customerId }, updateData, { new: true })
+    let updateAddress = await customerService.updateCustomer({ _id: req.params.customerId }, updateData, { new: true })
     if (!updateAddress) {
       res.send({
         code: constant.errorCode,
