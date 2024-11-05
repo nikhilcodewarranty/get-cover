@@ -1605,10 +1605,10 @@ exports.saveBulkClaim = async (req, res) => {
       // Await the getObjectFromS3 function to complete
       const result = await getObjectFromS3(bucketReadUrl);
 
-      // const emailField = req.body.email;
+      const emailField = req.body.email;
 
-      // // // Parse the email field
-      // const emailArray = JSON.parse(emailField);
+      // // Parse the email field
+      const emailArray = JSON.parse(emailField);
 
 
       let length = 5;
