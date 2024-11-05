@@ -723,7 +723,6 @@ exports.editClaim = async (req, res) => {
       servicerEmail = checkServicer?.isAccountCreate ? servicerPrimary?.email : notificationEmails
       notificationEmails = checkServicer?.isAccountCreate ? notificationEmails : []
       const lastElement = data.repairParts.pop();
-      console.log("lastElement-----------------",lastElement);
       // checkServicer?.isAccountCreate
       let emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
