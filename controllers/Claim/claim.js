@@ -1610,6 +1610,7 @@ exports.saveBulkClaim = async (req, res) => {
       // // Parse the email field
       const emailArray = JSON.parse(emailField);
 
+
       let length = 5;
       let match = {}
       if (req.role == 'Dealer') {
@@ -1637,29 +1638,34 @@ exports.saveBulkClaim = async (req, res) => {
         return
       }
 
+    
       const totalDataComing1 = result.data;
 
       let totalDataComing = totalDataComing1.map((item, i) => {
         const keys = Object.keys(item);
-        let dateLoss = item[keys[2]]
         // Check if the "servicerName" header exists    
-        if (keys.length > 3) {
-          let dateLoss = item[keys[2]]
+        if (keys.length > 4) {
+          let coverageType = item[keys[4]]
+          let dateLoss1 = item[keys[2]]
           return {
             contractId: item[keys[0]],
             servicerName: item[keys[1]],
-            lossDate: dateLoss.toString(),
+            lossDate: dateLoss1.toString(),
             diagnosis: item[keys[3]],
+            coverageType: coverageType,
             duplicate: false,
             exit: false
           };
         } else {
-          let dateLoss = item[keys[1]]
+          let coverageType = item[keys[3]]
+          let dateLoss2 = item[keys[1]]
           // If "servicerName" does not exist, shift the second item to "lossDate"
           return {
             contractId: item[keys[0]],
-            lossDate: dateLoss.toString(),
+            servicerName: '',
+            lossDate: dateLoss2.toString(),
             diagnosis: item[keys[2]],  // Assuming diagnosis is now at index 2
+            coverageType: coverageType,
             duplicate: false,
             exit: false
           };
@@ -1674,10 +1680,9 @@ exports.saveBulkClaim = async (req, res) => {
         });
         return;
       }
-
       for (let u = 0; u < totalDataComing.length; u++) {
         let objectToCheck = totalDataComing[u]
-        if (objectToCheck.servicerName != '' || objectToCheck.servicerName != null) {
+        if (objectToCheck.servicerName == '' || objectToCheck.servicerName == null) {
           let getContractDetail = await contractService.getContractById({
             $and: [
               {
@@ -1712,6 +1717,7 @@ exports.saveBulkClaim = async (req, res) => {
           return {
             contractId: item.contractId?.toString().replace(/\s+/g, ' ').trim(),
             servicerName: item.servicerName?.toString().replace(/\s+/g, ' ').trim(),
+            coverageType: item.coverageType?.toString().replace(/\s+/g, ' ').trim(),
             lossDate: item.lossDate?.toString().replace(/\s+/g, ' ').trim(),
             diagnosis: item.diagnosis?.toString().replace(/\s+/g, ' ').trim(),
             duplicate: false,
@@ -1722,6 +1728,8 @@ exports.saveBulkClaim = async (req, res) => {
           return {
             contractId: item.contractId?.toString().replace(/\s+/g, ' ').trim(),
             lossDate: item.lossDate?.toString().replace(/\s+/g, ' ').trim(),
+            servicerName: item.servicerName?.toString().replace(/\s+/g, ' ').trim(),
+            coverageType: item.coverageType?.toString().replace(/\s+/g, ' ').trim(),
             diagnosis: item.diagnosis?.toString().replace(/\s+/g, ' ').trim(),
             duplicate: false,
             exit: false
@@ -1920,6 +1928,8 @@ exports.saveBulkClaim = async (req, res) => {
       })
 
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
+      let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
+
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {
         if (!item.exit) {
@@ -1931,24 +1941,42 @@ exports.saveBulkClaim = async (req, res) => {
           item.contractData = contractData;
           item.servicerData = servicerData;
           item.orderData = allDataArray[0]
-
+          item.claimType = ''
           if (!contractData || allDataArray.length == 0) {
             item.status = "Contract not found"
             item.exit = true;
+          }
+          if (item.coverageType || item.coverageType != "") {
+            if (contractData) {
+              let checkCoverageTypeForContract = contractData?.coverageType.find(item1 => item1.label == item?.coverageType)
+              if (!checkCoverageTypeForContract) {
+                item.status = "Coverage type is not available for this contract!";
+                item.exit = true;
+              }
+              const checkCoverageValue = getCoverageTypeFromOption.value.filter(option => option.label === item?.coverageType).map(item1 => item1.value);
+              let startDateToCheck = new Date(contractData.coverageStartDate)
+              let coverageTypeDays = contractData?.adhDays
+              let getDeductible = coverageTypeDays?.filter(coverageType => coverageType.value == checkCoverageValue[0])
+
+              let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0]?.waitingDays))
+              checkCoverageTypeDate = new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0)
+              let checkLossDate = new Date(item.lossDate).setHours(0, 0, 0, 0)
+              const result = getCoverageTypeFromOption?.value.filter(option => option.label === item?.coverageType).map(item1 => item1.label);
+
+              if (new Date(checkCoverageTypeDate) > new Date(checkLossDate)) {
+                item.status = `Claim not eligible for ${result[0]}.`
+                item.exit = true;
+              }
+              item.claimType = checkCoverageValue[0]
+            }
+
+
           }
           let checkCoverageStartDate = new Date(contractData?.coverageStartDate).setHours(0, 0, 0, 0)
           if (contractData && new Date(checkCoverageStartDate) > new Date(item.lossDate)) {
             item.status = "Loss date should be in between coverage start date and present date!"
             item.exit = true;
           }
-
-          // if (allDataArray.length == 0 && item.contractId != '') {
-          //   const filter = claimData.filter(claim => claim.contractId?.toString() === item.contractData._id?.toString())
-          //   if (filter.length > 0) {
-          //     item.status = "Claim is already open of this contract"
-          //     item.exit = true;
-          //   }
-          // }
 
           if (allDataArray.length > 0 && servicerData) {
             flag = false;
@@ -2006,7 +2034,6 @@ exports.saveBulkClaim = async (req, res) => {
       };
       let emailServicerId = [];
 
-
       totalDataComing.map((data, index) => {
         let servicerId = data.servicerData?._id
         if (data.servicerData?.dealerId) {
@@ -2019,9 +2046,10 @@ exports.saveBulkClaim = async (req, res) => {
         if (!data.exit) {
           let obj = {
             contractId: data.contractData._id,
-            servicerId: servicerId,
             orderId: data.orderData?.order?.unique_key,
+            servicerId: data?.claimType == "theft_and_lost" ? null : servicerId,
             dealerId: data.orderData?.order?.dealerId,
+            claimType: data?.claimType,
             resellerId: data.orderData?.order?.resellerId,
             dealerSku: data.contractData?.dealerSku,
             customerId: data.orderData?.order?.customerId,
