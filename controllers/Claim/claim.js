@@ -1009,6 +1009,8 @@ exports.editClaimStatus = async (req, res) => {
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
       const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
+      console.log("notificationEmails------------------",notificationEmails)
+      console.log("base_url------------------",base_url)
       notificationEmails = checkDealer.isAccountCreate ? notificationEmails.push(dealerPrimary.email) : notificationEmails
       notificationEmails = checkReseller?.isAccountCreate ? notificationEmails.push(resellerPrimary?.email) : notificationEmails
       notificationEmails = checkServicer?.isAccountCreate ? notificationEmails.push(servicerPrimary?.email) : notificationEmails
