@@ -528,6 +528,9 @@ exports.addClaim = async (req, res, next) => {
     let notificationCC = await supportingFunction.getUserEmails();
     let settingData = await userService.getSetting({});
     let adminCC = await supportingFunction.getUserEmails();
+    const base_url = `${process.env.SITE_URL}claimList/${claimResponse.unique_key}`
+
+
     //let cc = notificationEmails;
     if (checkDealer.isAccountCreate) {
       notificationCC.push(dealerPrimary.email);
@@ -547,12 +550,12 @@ exports.addClaim = async (req, res, next) => {
     let mailing;
     if (checkCustomer.isAccountCreate) {
       emailData.subject = `Claim Received - ${claimResponse.unique_key}`
-      emailData.content = `The Claim # - ${claimResponse.unique_key} has been successfully filed for the Contract # - ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here : http://54.176.118.28/`
+      emailData.content = `The Claim # - ${claimResponse.unique_key} has been successfully filed for the Contract # - ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here :${base_url}`
       mailing = sgMail.send(emailConstant.sendEmailTemplate("amit@codenomad.net", notificationCC, emailData))
     }
     else {
       emailData.subject = `Claim Received - ${claimResponse.unique_key}`
-      emailData.content = `The Claim # - ${claimResponse.unique_key} has been successfully filed for the Contract # - ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here : {}`
+      emailData.content = `The Claim # - ${claimResponse.unique_key} has been successfully filed for the Contract # - ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here : ${base_url}`
       mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationCC, ["noreply@getcover.com"], emailData))
     }
 
@@ -568,12 +571,12 @@ exports.addClaim = async (req, res, next) => {
       }
       if (checkServicer?.isAccountCreate) {
         emailData.subject = `New Device Received for Repair # - ${claimResponse.unique_key}`
-        emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please check the following link : {claim_url}`
+        emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please check the following link : ${base_url}`
         mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary?.email, notificationCC, emailData))
       }
       else {
         emailData.subject = `New Device Received for Repair # - ${claimResponse.unique_key}`
-        emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please check the following link : {claim_url}`
+        emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please check the following link : ${base_url}`
 
         mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationCC, ["noreply@getcover.com"], emailData))
       }
