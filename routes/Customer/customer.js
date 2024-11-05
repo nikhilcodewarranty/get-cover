@@ -18,6 +18,7 @@ router.post('/getCustomerContract/:customerId', [verifyToken], customerControlle
 //PUT Routes
 router.put('/editCustomer/:customerId', [verifyToken], customerController.editCustomer); //editCustomer route
 router.put('/addCustomerAddress/:customerId', [verifyToken], customerController.addCustomerAddress); //editCustomer route
+router.put('/editAddress',  customerController.editaddress); //editCustomer route
 //GET Routes
 router.get('/changePrimaryUser/:userId', [verifyToken], customerController.changePrimaryUser); //changePrimaryUser route
 router.get('/getCustomerById/:customerId', [verifyToken], supportingFunction.checkObjectId,customerController.getCustomerById); //getCustomerById route

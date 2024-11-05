@@ -15,7 +15,7 @@ const resellerService = require("../../services/Dealer/resellerService");
 const dealerService = require("../../services/Dealer/dealerService");
 const supportingFunction = require('../../config/supportingFunction')
 let dealerController = require("../../controllers/Dealer/dealerController")
-
+const jwt = require("jsonwebtoken");
 const emailConstant = require('../../config/emailConstant');
 const constant = require("../../config/constant");
 const sgMail = require('@sendgrid/mail');
@@ -524,11 +524,18 @@ exports.addClaim = async (req, res, next) => {
     };
 
     let createNotification = await userService.createNotification(notificationData1);
+
+    // const token = jwt.sign(
+    //   { claimId: claimResponse.unique_key },
+    //   process.env.JWT_ID_SECRET, // Replace with your secret key
+    //   { expiresIn: "1d" }
+    // );
+
     // Send Email code here
     let notificationCC = await supportingFunction.getUserEmails();
     let settingData = await userService.getSetting({});
     let adminCC = await supportingFunction.getUserEmails();
-    const base_url = `${process.env.SITE_URL}claimList/${claimResponse.unique_key}`
+    const base_url = `${process.env.SITE_URL}claim-listing/${claimResponse.unique_key }`
 
 
     //let cc = notificationEmails;
