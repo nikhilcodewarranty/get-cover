@@ -548,7 +548,7 @@ exports.addClaim = async (req, res, next) => {
     if (checkCustomer.isAccountCreate) {
       emailData.subject = `Claim Received - ${claimResponse.unique_key}`
       emailData.content = `The Claim # - ${claimResponse.unique_key} has been successfully filed for the Contract # - ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here : `
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationCC, emailData))
+      mailing = sgMail.send(emailConstant.sendEmailTemplate('amit@codenomad.net', notificationCC, emailData))
     }
     else {
       emailData.subject = `Claim Received - ${claimResponse.unique_key}`
@@ -569,7 +569,7 @@ exports.addClaim = async (req, res, next) => {
       if (checkServicer?.isAccountCreate) {
         emailData.subject = `New Device Received for Repair # - ${claimResponse.unique_key}`
         emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please check the following link : {claim_url}`
-        mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary?.email, notificationCC, emailData))
+        mailing = sgMail.send(emailConstant.sendEmailTemplate("anil@codenomad.net", notificationCC, emailData))
       }
       else {
         emailData.subject = `New Device Received for Repair # - ${claimResponse.unique_key}`
