@@ -390,42 +390,42 @@ exports.addClaim = async (req, res, next) => {
 
     let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
     let remainingPrice = checkContract.productValue - claimTotal[0]?.amount
-    // if (data.coverageType != "") {
-    //   let checkCoverageTypeForContract = checkContract.coverageType.find(item => item.value == data.coverageType)
-    //   if (!checkCoverageTypeForContract) {
-    //     res.send({
-    //       code: constant.errorCode,
-    //       message: 'Coverage type is not available for this contract!'
-    //     })
-    //     return;
-    //   }
-    //   let startDateToCheck = new Date(checkContract.coverageStartDate)
-    //   let coverageTypeDays = checkContract.adhDays
-    //   let serviceCoverageType = checkContract.serviceCoverageType
+    if (data.coverageType != "") {
+      let checkCoverageTypeForContract = checkContract.coverageType.find(item => item.value == data.coverageType)
+      if (!checkCoverageTypeForContract) {
+        res.send({
+          code: constant.errorCode,
+          message: 'Coverage type is not available for this contract!'
+        })
+        return;
+      }
+      let startDateToCheck = new Date(checkContract.coverageStartDate)
+      let coverageTypeDays = checkContract.adhDays
+      let serviceCoverageType = checkContract.serviceCoverageType
 
-    //   let getDeductible = coverageTypeDays.filter(coverageType => coverageType.value == data.coverageType)
+      let getDeductible = coverageTypeDays.filter(coverageType => coverageType.value == data.coverageType)
 
-    //   let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0].waitingDays))
+      let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0].waitingDays))
 
-    //   let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
-    //   console.log("getCoverageTypeFromOption", getCoverageTypeFromOption)
-    //   const result = getCoverageTypeFromOption.value.filter(item => item.value === data.coverageType).map(item => item.label);
-    //   console.log(new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0));
-    //   checkCoverageTypeDate = new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0)
-    //   data.lossDate = new Date(data.lossDate).setHours(0, 0, 0, 0)
-    //   if (new Date(checkCoverageTypeDate) > new Date(data.lossDate)) {
-    //     // claim not allowed for that coverageType
-    //     res.send({
-    //       code: 403,
-    //       tittle: `Claim not eligible for ${result[0]}.`,
-    //       // message: `Your selected ${result[0]} is currently not eligible for the claim. You can file the claim for ${result[0]} on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}. Do you wish to proceed in rejecting this claim?`
-    //       message: `Your claim for ${result[0]} cannot be filed because it is not eligible based on the loss date. You will be able to file this claim starting on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}. Would you like to proceed with rejecting the claim now?`
-    //     })
-    //     return
+      let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
+      console.log("getCoverageTypeFromOption", getCoverageTypeFromOption)
+      const result = getCoverageTypeFromOption.value.filter(item => item.value === data.coverageType).map(item => item.label);
+      console.log(new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0));
+      checkCoverageTypeDate = new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0)
+      data.lossDate = new Date(data.lossDate).setHours(0, 0, 0, 0)
+      if (new Date(checkCoverageTypeDate) > new Date(data.lossDate)) {
+        // claim not allowed for that coverageType
+        res.send({
+          code: 403,
+          tittle: `Claim not eligible for ${result[0]}.`,
+          // message: `Your selected ${result[0]} is currently not eligible for the claim. You can file the claim for ${result[0]} on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}. Do you wish to proceed in rejecting this claim?`
+          message: `Your claim for ${result[0]} cannot be filed because it is not eligible based on the loss date. You will be able to file this claim starting on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}. Would you like to proceed with rejecting the claim now?`
+        })
+        return
 
-    //   }
+      }
 
-    // }
+    }
 
     data.receiptImage = data.file
     data.servicerId = data.servicerId ? data.servicerId : null
@@ -470,7 +470,6 @@ exports.addClaim = async (req, res, next) => {
       return
     }
 
-    console.log("-------------------------------------------1")
     // Eligibility false when claim open
     const updateContract = await contractService.updateContract({ _id: data.contractId }, { eligibilty: false }, { new: true })
 
@@ -485,7 +484,6 @@ exports.addClaim = async (req, res, next) => {
         result: claimResponse
       }
     }
-    console.log("-------------------------------------------2")
 
     await LOG(logData).save()
 
@@ -503,27 +501,22 @@ exports.addClaim = async (req, res, next) => {
     const checkServicer = await servicerService.getServiceProviderById({ $or: [{ _id: data?.servicerId }, { dealerId: data?.servicerId }, { resellerId: data?.servicerId }] })
 
     if (resellerPrimary && checkReseller?.isAccountCreate) {
-      console.log("sdfsdfsdfsdfsdfsd");
       IDs.push(resellerPrimary._id)
     }
     if (servicerPrimary && checkServicer?.isAccountCreate) {
-      console.log("23423423423");
 
       IDs.push(servicerPrimary._id)
     }
     if (checkDealer.isAccountCreate) {
-      console.log("534534534534");
 
-      IDs.push(dealerPrimary._id) 
+      IDs.push(dealerPrimary._id)
 
     }
     if (checkCustomer.isAccountCreate) {
-      console.log("23423232111111");
 
       IDs.push(customerPrimary._id)
 
     }
-    console.log("-------------------------------------------5")
 
     let notificationData1 = {
       title: "Add Claim",
@@ -549,8 +542,6 @@ exports.addClaim = async (req, res, next) => {
       notificationCC.push(resellerPrimary.email);
 
     }
-    console.log("-------------------------------------------6")
-
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -622,7 +613,6 @@ exports.editClaim = async (req, res) => {
     let criteria = { _id: req.params.claimId }
 
     let checkClaim = await claimService.getClaimById(criteria)
-    console.log("claim amount++++++++++++++", criteria, checkClaim.totalAmount)
     if (!checkClaim) {
       res.send({
         code: constant.errorCode,
@@ -680,17 +670,15 @@ exports.editClaim = async (req, res) => {
         })
         return;
       }
-      console.log("checking ak ++++++++++++++++++++++++++", req.header)
       let udpateclaimAmount = await axios.get(process.env.API_ENDPOINT + "api-v1/claim/checkClaimAmount/" + updateData._id, {
         headers: {
           "x-access-token": req.header["x-access-token"],  // Include the token in the Authorization header
         }
       });
-      console.log("updated data +++++++++++++++++++++++++++++++++++", udpateclaimAmount)
 
       //Send notification to all
       let IDs = await supportingFunction.getUserIds()
-      let servicerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkClaim?.servicerId, isPrimary: true })
+      let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkClaim?.servicerId, isPrimary: true } } })
 
       if (servicerPrimary && checkServicer?.isAccountCreate) {
         IDs.push(servicerPrimary._id)
@@ -2078,7 +2066,7 @@ exports.saveBulkClaim = async (req, res) => {
         if (customer?.resellerId) {
           // Get Reseller by id
           const reseller = await resellerService.getReseller({ _id: customer.resellerId }, {});
-        let resellerData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: reseller._id, isPrimary: true } } }, {});
+          let resellerData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: reseller._id, isPrimary: true } } }, {});
 
           new_admin_array.push(resellerData?.email);
           IDs.push(resellerData?._id);
@@ -2120,7 +2108,7 @@ exports.saveBulkClaim = async (req, res) => {
           const userId = req.userId;
           ccMail = new_admin_array;
           IDs.push(req.teammateId);
-        let userData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: userId, isPrimary: true } } }, {});
+          let userData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: userId, isPrimary: true } } }, {});
 
           toMail = userData.email;
           if (req.userId.toString() === item.orderData?.order?.dealerId?.toString()) {
