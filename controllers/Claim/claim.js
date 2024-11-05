@@ -2080,6 +2080,9 @@ exports.saveBulkClaim = async (req, res) => {
         }
 
       })
+
+      console.log("-----------------------------------------------------8")
+
       //save bulk claim
       const saveBulkClaim = await claimService.saveBulkClaim(finalArray)
 
@@ -2130,6 +2133,9 @@ exports.saveBulkClaim = async (req, res) => {
         IDs.push(req.teammateId);
         IDs.push(dealerData._id);
       }
+
+      console.log("-----------------------------------------------------9")
+
 
       //Get Fail and Passes Entries
       const counts = totalDataComing.reduce((acc, obj) => {
@@ -2268,6 +2274,7 @@ exports.saveBulkClaim = async (req, res) => {
         }
       }));
 
+      console.log("-----------------------------------------------------10")
 
       //get email of all servicer
       let emailServicer = await userService.getUserById1({ metaData: { $elemMatch: { metaId: { $in: emailServicerId }, isPrimary: true } } }, {});
@@ -2293,6 +2300,7 @@ exports.saveBulkClaim = async (req, res) => {
 
         }
       }
+      console.log("----------------------------------dssdfdsfsdfsdffs-------------------7")
 
       //Convert Array to HTML table
       function convertArrayToHTMLTable(array, array1) {
@@ -2386,6 +2394,9 @@ exports.saveBulkClaim = async (req, res) => {
         return htmlContent;
 
       }
+
+      console.log("-----------------------------------------------------11")
+
 
       //Get Failure Claims 
       const successEntries = csvArray.filter(entry => entry.exit === false);
