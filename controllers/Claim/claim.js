@@ -1011,9 +1011,16 @@ exports.editClaimStatus = async (req, res) => {
       const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
       console.log("notificationEmails------------------",notificationEmails)
       console.log("base_url------------------",base_url)
-      notificationEmails = checkDealer.isAccountCreate ? notificationEmails.push(dealerPrimary.email) : notificationEmails
-      notificationEmails = checkReseller?.isAccountCreate ? notificationEmails.push(resellerPrimary?.email) : notificationEmails
-      notificationEmails = checkServicer?.isAccountCreate ? notificationEmails.push(servicerPrimary?.email) : notificationEmails
+      if(checkDealer.isAccountCreate){
+        notificationEmails.push(dealerPrimary.email) 
+      }
+      if(checkReseller?.isAccountCreate){
+        notificationEmails.push(resellerPrimary.email) 
+      }
+      if(checkServicer?.isAccountCreate){
+        notificationEmails.push(servicerPrimary.email) 
+      }
+
       //Email to customer
       let emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
