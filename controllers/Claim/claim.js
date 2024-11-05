@@ -607,7 +607,6 @@ exports.editClaim = async (req, res) => {
     let criteria = { _id: req.params.claimId }
 
     let checkClaim = await claimService.getClaimById(criteria)
-    console.log("claim amount++++++++++++++", criteria, checkClaim.totalAmount)
     if (!checkClaim) {
       res.send({
         code: constant.errorCode,
