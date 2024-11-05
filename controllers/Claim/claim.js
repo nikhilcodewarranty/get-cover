@@ -525,17 +525,17 @@ exports.addClaim = async (req, res, next) => {
 
     let createNotification = await userService.createNotification(notificationData1);
 
-    const token = jwt.sign(
-      { claimId: claimResponse.unique_key },
-      process.env.JWT_ID_SECRET, // Replace with your secret key
-      { expiresIn: "1d" }
-    );
+    // const token = jwt.sign(
+    //   { claimId: claimResponse.unique_key },
+    //   process.env.JWT_ID_SECRET, // Replace with your secret key
+    //   { expiresIn: "1d" }
+    // );
 
     // Send Email code here
     let notificationCC = await supportingFunction.getUserEmails();
     let settingData = await userService.getSetting({});
     let adminCC = await supportingFunction.getUserEmails();
-    const base_url = `${process.env.SITE_URL}claimList/${token}`
+    const base_url = `${process.env.SITE_URL}claim-listing/${claimResponse.unique_key }`
 
 
     //let cc = notificationEmails;
