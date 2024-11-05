@@ -531,8 +531,9 @@ exports.addClaim = async (req, res, next) => {
     let notificationCC = await supportingFunction.getUserEmails();
     let settingData = await userService.getSetting({});
     let adminCC = await supportingFunction.getUserEmails();
-    const base_url = `${process.env.SITE_URL}claimList/${claimResponse.unique_key}`
-
+    // const base_url = `${process.env.SITE_URL}claimList/${claimResponse.unique_key}`
+    const base_url = `${process.env.SITE_URL}claim-listing/${claimResponse.unique_key}`
+    
     //let cc = notificationEmails;
     if (checkDealer.isAccountCreate) {
       notificationCC.push(dealerPrimary.email);
@@ -715,7 +716,7 @@ exports.editClaim = async (req, res) => {
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
       let settingData = await userService.getSetting({});
-      const base_url = `${process.env.SITE_URL}claimList/${checkClaim.unique_key}`
+      const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
       //notificationEmails.push(servicerPrimary?.email);
       let servicerEmail = servicerPrimary ? servicerPrimary?.email : process.env.servicerEmail
       servicerEmail = checkServicer?.isAccountCreate ? servicerPrimary?.email : notificationEmails
