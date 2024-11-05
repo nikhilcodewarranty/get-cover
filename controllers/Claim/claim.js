@@ -1638,7 +1638,7 @@ exports.saveBulkClaim = async (req, res) => {
         return
       }
 
-    
+    console.log("-----------------------------------------------------1")
       const totalDataComing1 = result.data;
 
       let totalDataComing = totalDataComing1.map((item, i) => {
@@ -1671,6 +1671,7 @@ exports.saveBulkClaim = async (req, res) => {
           };
         }
       });
+      console.log("-----------------------------------------------------2")
 
 
       if (totalDataComing.length === 0) {
@@ -1738,6 +1739,8 @@ exports.saveBulkClaim = async (req, res) => {
 
       });
 
+      console.log("-----------------------------------------------------3")
+
       totalDataComing.forEach(data => {
         if (!data.contractId || data.contractId == "") {
           data.status = "Serial number/Asset ID/Contract number cannot be empty"
@@ -1765,6 +1768,8 @@ exports.saveBulkClaim = async (req, res) => {
 
       })
 
+      console.log("-----------------------------------------------------4")
+
       let cache = {};
 
       totalDataComing.forEach((data, i) => {
@@ -1777,6 +1782,7 @@ exports.saveBulkClaim = async (req, res) => {
           }
         }
       })
+      console.log("-----------------------------------------------------5")
 
       //Check contract is exist or not using contract id
       const contractArrayPromise = totalDataComing.map(item => {
@@ -1797,6 +1803,7 @@ exports.saveBulkClaim = async (req, res) => {
           return null;
         }
       })
+      console.log("-----------------------------------------------------6")
 
 
       // get contract with dealer,reseller, servicer
@@ -2012,6 +2019,7 @@ exports.saveBulkClaim = async (req, res) => {
           item.servicerData = null
         }
       })
+      console.log("-----------------------------------------------------7")
 
       let finalArray = []
       //Save bulk claim
