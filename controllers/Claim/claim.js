@@ -1610,20 +1610,20 @@ exports.saveBulkClaim = async (req, res) => {
       // // Parse the email field
       const emailArray = JSON.parse(emailField);
 
-      let length = 4;
+      let length = 5;
       let match = {}
       if (req.role == 'Dealer') {
-        length = 3;
+        length = 4;
         match = { "order.dealer._id": new mongoose.Types.ObjectId(req.userId) }
       }
 
       if (req.role == 'Reseller') {
-        length = 3;
+        length = 4;
         match = { "order.reseller._id": new mongoose.Types.ObjectId(req.userId) }
       }
 
       if (req.role == 'Customer') {
-        length = 3;
+        length = 4;
         match = { "order.customers._id": new mongoose.Types.ObjectId(req.userId) }
       }
 
@@ -2372,7 +2372,6 @@ exports.saveBulkClaim = async (req, res) => {
       //send Email to admin
       if (req.role == "Super Admin") {
         if (failureEntries.length > 0) {
-          console.log("sdadasdasdasd")
           htmlTableString = convertArrayToHTMLTable([], failureEntries);
           mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
         }
