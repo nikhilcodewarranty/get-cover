@@ -513,9 +513,7 @@ exports.addClaim = async (req, res, next) => {
 
     }
     if (checkCustomer.isAccountCreate) {
-
       IDs.push(customerPrimary._id)
-
     }
 
     let notificationData1 = {
@@ -533,6 +531,8 @@ exports.addClaim = async (req, res, next) => {
     let notificationCC = await supportingFunction.getUserEmails();
     let settingData = await userService.getSetting({});
     let adminCC = await supportingFunction.getUserEmails();
+    const base_url = `${process.env.SITE_URL}claimList/${claimResponse.unique_key}`
+
     //let cc = notificationEmails;
     if (checkDealer.isAccountCreate) {
       notificationCC.push(dealerPrimary.email);
@@ -548,14 +548,17 @@ exports.addClaim = async (req, res, next) => {
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
       senderName: customerPrimary.metaData[0]?.firstName,
-      content: "The claim " + claimResponse.unique_key + " has been filed for the " + checkContract.unique_key + " contract!.",
-      subject: 'Add Claim'
+      redirectId: base_url
     }
     let mailing;
     if (checkCustomer.isAccountCreate) {
+      emailData.subject = `Claim Received - ${claimResponse.unique_key}`
+      emailData.content = `The Claim # - ${claimResponse.unique_key} has been successfully filed for the Contract # - ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here :`
       mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationCC, emailData))
     }
     else {
+      emailData.subject = `Claim Received - ${claimResponse.unique_key}`
+      emailData.content = `The Claim # - ${claimResponse.unique_key} has been successfully filed for the Contract # - ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here :`
       mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationCC, ["noreply@getcover.com"], emailData))
     }
 
@@ -567,13 +570,16 @@ exports.addClaim = async (req, res, next) => {
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
         senderName: servicerPrimary?.metaData[0]?.firstName,
-        content: "The claim " + claimResponse.unique_key + " has been filed for the " + checkContract.unique_key + " contract!.",
-        subject: 'Add Claim'
+        redirectId: base_url
       }
       if (checkServicer?.isAccountCreate) {
+        emailData.subject = `New Device Received for Repair # - ${claimResponse.unique_key}`
+        emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please check the following link :`
         mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary?.email, notificationCC, emailData))
       }
       else {
+        emailData.subject = `New Device Received for Repair # - ${claimResponse.unique_key}`
+        emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please check the following link :`
         mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationCC, ["noreply@getcover.com"], emailData))
       }
     }
@@ -709,16 +715,21 @@ exports.editClaim = async (req, res) => {
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
       let settingData = await userService.getSetting({});
+      const base_url = `${process.env.SITE_URL}claimList/${checkClaim.unique_key}`
       //notificationEmails.push(servicerPrimary?.email);
-      const servicerEmail = servicerPrimary ? servicerPrimary?.email : process.env.servicerEmail
+      let servicerEmail = servicerPrimary ? servicerPrimary?.email : process.env.servicerEmail
+      servicerEmail = checkServicer?.isAccountCreate ? servicerPrimary?.email : notificationEmails
+      notificationEmails = checkServicer?.isAccountCreate ? notificationEmails : []
+      const lastElement = data.repairParts.pop();
       let emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
         senderName: servicerPrimary ? servicerPrimary.metaData[0]?.firstName : '',
-        content: "The  repair part update for " + checkClaim.unique_key + " claim",
-        subject: "Repair Part Update"
+        redirectId: base_url,
+        content: `The Repair Status has been updated on the Claim # - ${checkClaim.unique_key} to be ${lastElement.serviceType}. Please review the information at following link`,
+        subject: `Repair Status Updated for ${checkClaim.unique_key}`
       }
       // let mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, notificationEmails, emailData))
       let totalClaimQuery1 = [
