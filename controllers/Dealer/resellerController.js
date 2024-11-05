@@ -116,7 +116,7 @@ exports.createReseller = async (req, res) => {
         IDs.push(getPrimary._id)
         //Merge start singleServer
         // let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
-        if (checkDealer .isAccountCreate) {
+        if (checkDealer.isAccountCreate) {
             IDs.push(getPrimary._id)
             notificationEmails.push(getPrimary.email)
         }
@@ -481,7 +481,7 @@ exports.getResellerById = async (req, res) => {
         let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project, "$resellerId");
         //Get Claim Result 
         const claimQuery = { claimFile: 'completed' }
-        
+
         let lookupQuery = [
             {
                 $match: claimQuery
@@ -914,8 +914,9 @@ exports.editResellers = async (req, res) => {
         const updateServicerMeta = await providerService.updateServiceProvider({ resellerId: req.params.resellerId }, servicerMeta)
 
         let IDs = await supportingFunction.getUserIds()
-        // let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkReseller.dealerId, isPrimary: true })
-        // let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkReseller._id, isPrimary: true })
+        let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkReseller.dealerId, isPrimary: true } } })
+
+        let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkReseller._id, isPrimary: true } } })
         let notificationEmails = await supportingFunction.getUserEmails();
 
         if (data.isServicer) {
@@ -972,12 +973,6 @@ exports.editResellers = async (req, res) => {
 
         const changeResellerUser = await userService.updateUser(resellerUserCreateria, newValue, { new: true });
         //Send notification to admin,dealer,reseller
-
-        // let IDs = await supportingFunction.getUserIds()
-        let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkReseller.dealerId, isPrimary: true } } })
-
-        let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkReseller._id, isPrimary: true } } })
-
         IDs.push(dealerPrimary?._id)
         IDs.push(resellerPrimary?._id)
         let notificationData = {
@@ -1887,7 +1882,7 @@ exports.getResellerContract = async (req, res) => {
             result1[e].reason = " "
             if (!result1[e].eligibilty) {
                 result1[e].reason = "Claims limit cross for this contract"
-              }
+            }
             if (result1[e].status != "Active") {
                 result1[e].reason = "Contract is not active"
             }
@@ -1993,7 +1988,7 @@ exports.changeResellerStatus = async (req, res) => {
             let newValue = {
                 $set: {
                     'metaData.$.status': req.body.status,
-                  }
+                }
             };
             let option = { new: true };
             const changeResellerUser = await userService.updateUser(resellerUserCreateria, newValue, option);
@@ -2006,7 +2001,7 @@ exports.changeResellerStatus = async (req, res) => {
             let newValue = {
                 $set: {
                     'metaData.$.status': req.body.status,
-                  }
+                }
             };
             let option = { new: true };
             const changeResellerUser = await userService.updateUser(resellerUserCreateria, newValue, option);
