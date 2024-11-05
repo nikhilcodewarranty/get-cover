@@ -322,8 +322,8 @@ exports.uploadCommentImage = async (req, res, next) => {
 exports.addClaim = async (req, res, next) => {
   try {
     let data = req.body;
-    let checkContract = await contractService.getContractById({ _id: data.contractId })
 
+    let checkContract = await contractService.getContractById({ _id: data.contractId })
     data.lossDate = new Date(data.lossDate).setDate(new Date(data.lossDate).getDate() + 1)
     data.lossDate = new Date(data.lossDate)
 
@@ -353,6 +353,7 @@ exports.addClaim = async (req, res, next) => {
         return;
       }
     }
+
     let checkCoverageStartDate = new Date(checkContract.coverageStartDate).setHours(0, 0, 0, 0)
     if (new Date(checkCoverageStartDate) > new Date(data.lossDate)) {
       res.send({
@@ -542,14 +543,16 @@ exports.addClaim = async (req, res, next) => {
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
       senderName: customerPrimary.firstName,
-      content: "The claim " + claimResponse.unique_key + " has been filed for the " + checkContract.unique_key + " contract!.",
-      subject: 'Add Claim'
     }
     let mailing;
     if (checkCustomer.isAccountCreate) {
+      emailData.subject = `Claim Received - ${claimResponse.unique_key}`
+      emailData.content = `The Claim # - ${claimResponse.unique_key} has been successfully filed for the Contract # - ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here : `
       mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationCC, emailData))
     }
     else {
+      emailData.subject = `Claim Received - ${claimResponse.unique_key}`
+      emailData.content = `The Claim # - ${claimResponse.unique_key} has been successfully filed for the Contract # - ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here : `
       mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationCC, ["noreply@getcover.com"], emailData))
     }
 
@@ -561,13 +564,17 @@ exports.addClaim = async (req, res, next) => {
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
         senderName: servicerPrimary?.firstName,
-        content: "The claim " + claimResponse.unique_key + " has been filed for the " + checkContract.unique_key + " contract!.",
-        subject: 'Add Claim'
+
       }
       if (checkServicer?.isAccountCreate) {
+        emailData.subject = `New Device Received for Repair # - ${claimResponse.unique_key}`
+        emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please check the following link : {claim_url}`
         mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary?.email, notificationCC, emailData))
       }
       else {
+        emailData.subject = `New Device Received for Repair # - ${claimResponse.unique_key}`
+        emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please check the following link : {claim_url}`
+
         mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationCC, ["noreply@getcover.com"], emailData))
       }
     }
