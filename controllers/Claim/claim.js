@@ -1313,6 +1313,10 @@ exports.editClaimStatus = async (req, res) => {
     const monthlyEndDate = new Date(new Date(newDateWithSameDay).setMonth(newDateWithSameDay.getMonth() + 1)); // Ends on August 11, 2024
     const yearlyEndDate = new Date(new Date(newDateWithSameDay).setFullYear(newDateWithSameDay.getFullYear() + 1)); // Ends on July 11, 2025
 
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0); // Start of today (00:00)
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999); // End of today (23:59)
 
     let getNoOfClaimQuery = [
       {
@@ -1357,7 +1361,6 @@ exports.editClaimStatus = async (req, res) => {
     ];
 
 
-    let checkNoOfClaims = await claimService.getClaimWithAggregate(getNoOfClaimQuery)
 
 
 
@@ -3646,7 +3649,10 @@ exports.updateClaimDate = async (req, res) => {
 
     const monthlyEndDate = new Date(new Date(newDateWithSameDay).setMonth(newDateWithSameDay.getMonth() + 1)); // Ends on August 11, 2024
     const yearlyEndDate = new Date(new Date(newDateWithSameDay).setFullYear(newDateWithSameDay.getFullYear() + 1)); // Ends on July 11, 2025
-
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0); // Start of today (00:00)
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999); // End of today (23:59)
 
     let getNoOfClaimQuery = [
       {
@@ -3679,6 +3685,26 @@ exports.updateClaimDate = async (req, res) => {
                   $and: [
                     { $gte: ['$createdAt', newDateWithSameDay] },
                     { $lt: ['$createdAt', yearlyEndDate] }
+                  ]
+                },
+                1,
+                0
+              ]
+            }
+          },
+          todayCount: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    {
+                      $gte: ['$createdAt', startOfToday
+                      ]
+                    },
+                    {
+                      $lt: ['$createdAt', endOfToday
+                      ]
+                    }
                   ]
                 },
                 1,
@@ -3769,3 +3795,4 @@ exports.updateClaimDate = async (req, res) => {
     })
   }
 }
+

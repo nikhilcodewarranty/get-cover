@@ -2226,4 +2226,32 @@ exports.getAllCustomersNew = async (req, res, next) => {
   }
 };
 
+exports.addCustomerAddress = async (req, res) => {
+  try {
+    let data = req.body
+    let updateData = {
+      $set: {
+        addresses: data.addresses
+      }
+    }
+    let updateAddress = await customerService.updateCustomer({ _id: req.parans.customerId }, updateData, { new: true })
+    if (!updateAddress) {
+      res.send({
+        code: constant.errorCode,
+        message: "unable to process the addresses"
+      })
+    } else {
+      res.send({
+        code: constant.successCode,
+        message: "Updated successfully",
+        result: updateAddress
+      })
+    }
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
 
