@@ -723,7 +723,7 @@ exports.editClaim = async (req, res) => {
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
       let settingData = await userService.getSetting({});
-      const base_url = `${process.env.SITE_URL}claimList/${checkClaim.unique_key}`
+      const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key }`
 
       //notificationEmails.push(servicerPrimary?.email);
       let servicerEmail = servicerPrimary ? servicerPrimary?.email : process.env.servicerEmail
