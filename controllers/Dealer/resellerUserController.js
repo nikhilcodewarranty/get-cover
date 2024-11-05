@@ -34,6 +34,9 @@ aws.config.update({
     secretAccessKey: process.env.aws_secret_access_key,
 });
 const S3Bucket = new aws.S3();
+
+
+
 //Create Reseller
 exports.createReseller = async (req, res) => {
     try {
@@ -391,6 +394,12 @@ exports.createOrder = async (req, res) => {
                 data.productsArray[A].coverageStartDate = addOneDay1.setDate(addOneDay1.getDate() + 1);
                 data.productsArray[A].coverageEndDate = addOneDay3.setDate(addOneDay3.getDate() + 1);
 
+            }
+            if (getChoosedProducts[A].coverageStartDate == "") {
+                data.productsArray[A].coverageStartDate1 = null
+                data.productsArray[A].coverageEndDate1 = null
+                data.productsArray[A].coverageStartDate = null
+                data.productsArray[A].coverageEndDate = null
             }
             if (!getChoosedProducts[A].adhDays) {
                 res.send({
@@ -942,6 +951,12 @@ exports.editOrderDetail = async (req, res) => {
                 data.productsArray[A].coverageStartDate = addOneDay1.setDate(addOneDay1.getDate() + 1);
                 data.productsArray[A].coverageEndDate = addOneDay3.setDate(addOneDay3.getDate() + 1);
 
+            }
+            if (getChoosedProducts[A].coverageStartDate == "") {
+                data.productsArray[A].coverageStartDate1 = null
+                data.productsArray[A].coverageEndDate1 = null
+                data.productsArray[A].coverageStartDate = null
+                data.productsArray[A].coverageEndDate = null
             }
             if (!getChoosedProducts[A].adhDays) {
                 res.send({
@@ -1963,6 +1978,7 @@ exports.editOrderDetail = async (req, res) => {
 // };
 
 //Edit reseller
+
 exports.editResellers = async (req, res) => {
     try {
         let data = req.body
