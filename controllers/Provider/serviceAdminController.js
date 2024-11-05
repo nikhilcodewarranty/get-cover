@@ -1870,7 +1870,12 @@ exports.getServicerDealers1 = async (req, res) => {
                     $match: {
                       metaData: { $elemMatch: { isPrimary: true } },
                       "email": { '$regex': data.email ? data.email : '', '$options': 'i' },
-                      metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } }
+                    }
+                  },
+                  {
+                    $project:{
+                      email:1,
+                      'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
                     }
                   }
                 ]
@@ -1915,10 +1920,19 @@ exports.getServicerDealers1 = async (req, res) => {
       {
         $unwind: "$dealerData"
       },
+      {
+        $match:{
+          // metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } }
+          "dealerData.userData.phoneNumber":{ '$regex': data.phoneNumber ? data.phoneNumber.replace(/\s+/g, ' ').trim() : '', '$options': 'i' }
+
+        }
+      }
 
     ]
 
     let filteredData = await dealerRelationService.getDealerRelationsAggregate(query)
+
+    console.log("filteredData----------------------",filteredData);
     res.send({
       code: constant.successCode,
       data: filteredData
