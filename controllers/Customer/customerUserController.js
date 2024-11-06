@@ -870,12 +870,7 @@ exports.getCustomerUsers = async (req, res) => {
             { metaData: { $elemMatch: { lastName: { '$regex': data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
             { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
             { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            {
-              $or: [
-                { metaData: { $elemMatch: { metaId: req.userId, isDeleted: false } } },
-              ]
-            },
-
+            { metaData: { $elemMatch: { metaId: req.userId, isDeleted: false } } }
           ]
         }
       },
