@@ -1014,13 +1014,13 @@ exports.editClaimStatus = async (req, res) => {
       let notificationEmails = await supportingFunction.getUserEmails();
 
       if (checkDealer.isAccountCreate) {
-        notificationEmails.push(dealerPrimary.email)
+        notificationEmails.push(dealerPrimary?.email)
       }
       if (checkReseller?.isAccountCreate) {
-        notificationEmails.push(resellerPrimary.email)
+        notificationEmails.push(resellerPrimary?.email)
       }
       if (checkServicer?.isAccountCreate) {
-        notificationEmails.push(servicerPrimary.email)
+        notificationEmails.push(servicerPrimary?.email)
       }
 
       //Email to customer
@@ -1324,54 +1324,6 @@ exports.editClaimStatus = async (req, res) => {
       }
     ];
 
-
-
-
-
-
-    // let getNoOfClaimQuery = [
-    //   {
-    //     $match: {
-    //       contractId: new mongoose.Types.ObjectId(checkClaim.contractId),
-    //       claimFile: "completed"
-    //     }
-    //   },
-    //   {
-    //     $group: {
-    //       _id: null,
-    //       monthlyCount: {
-    //         $sum: {
-    //           $cond: [
-    //             {
-    //               $and: [
-    //                 { $gte: ['$createdAt', newDateWithSameDay] },
-    //                 { $lt: ['$createdAt', monthlyEndDate] }
-    //               ]
-    //             },
-    //             1,
-    //             0
-    //           ]
-    //         }
-    //       },
-    //       yearlyCount: {
-    //         $sum: {
-    //           $cond: [
-    //             {
-    //               $and: [
-    //                 { $gte: ['$createdAt', newDateWithSameDay] },
-    //                 { $lt: ['$createdAt', yearlyEndDate] }
-    //               ]
-    //             },
-    //             1,
-    //             0
-    //           ]
-    //         }
-    //       }
-    //     }
-    //   }
-    // ];
-
-
     let forCheckOnly;
 
     //Eligibility true when claim is completed and rejected
@@ -1468,14 +1420,16 @@ exports.editClaimStatus = async (req, res) => {
       body: req.body ? req.body : { "type": "Catch Error" },
       response: {
         code: constant.errorCode,
-        result: err.message
+        result: err.message,
+        stack: err.stack
       }
     }
     await LOG(logData).save()
 
     res.send({
       code: constant.errorCode,
-      message: err.message
+      message: err.message,
+      stack: err.stack
     })
   }
 }
