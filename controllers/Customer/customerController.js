@@ -2267,7 +2267,7 @@ exports.addAddress = async (req, res) => {
       return
     }
     let customerAddresses = checkCustomer.addresses ? checkCustomer.addresses : []
-    customerAddresses = customerAddresses.push(data.addresses)
+    customerAddresses = customerAddresses.push(data.address)
     let udpateCustomer = await customerService.updateCustomer({ _id: req.params.customerId }, { addresses: customerAddresses }, { new: true })
     if (!udpateCustomer) {
       res.send({
