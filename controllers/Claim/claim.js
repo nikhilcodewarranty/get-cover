@@ -2012,8 +2012,8 @@ exports.saveBulkClaim = async (req, res) => {
             item.status = "Contract not found"
             item.exit = true;
           }
-          console.log("item.coverageType----------------------",item.coverageType)
           if (item.coverageType != null || item.coverageType != "") {
+            console.log("I am hereeeeeee")
             if (contractData) {
               let checkCoverageTypeForContract = contractData?.coverageType.find(item1 => item1.label == item?.coverageType)
               if (!checkCoverageTypeForContract) {
