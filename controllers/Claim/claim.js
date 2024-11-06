@@ -1711,7 +1711,7 @@ exports.saveBulkClaim = async (req, res) => {
         }
 
       });
-
+      let cache = {};
       totalDataComing.forEach(data => {
         if (!data.contractId || data.contractId == "") {
           data.status = "Serial number/Asset ID/Contract number cannot be empty"
@@ -1739,8 +1739,8 @@ exports.saveBulkClaim = async (req, res) => {
 
       })
 
-      let cache = {};
-
+  
+      //check duplicasy of the contract id
       totalDataComing.forEach((data, i) => {
         if (!data.exit) {
           if (cache[data.contractId?.toLowerCase()]) {
@@ -1953,15 +1953,6 @@ exports.saveBulkClaim = async (req, res) => {
             item.status = "Loss date should be in between coverage start date and present date!"
             item.exit = true;
           }
-
-          // if (allDataArray.length == 0 && item.contractId != '') {
-          //   const filter = claimData.filter(claim => claim.contractId?.toString() === item.contractData._id?.toString())
-          //   if (filter.length > 0) {
-          //     item.status = "Claim is already open of this contract"
-          //     item.exit = true;
-          //   }
-          // }
-
           if (allDataArray.length > 0 && servicerData) {
 
             flag = false;
@@ -1987,7 +1978,6 @@ exports.saveBulkClaim = async (req, res) => {
           if ((item.servicerName != '' && !servicerData)) {
             flag = false
           }
-
           if ((!flag && flag != undefined && item.hasOwnProperty("servicerName"))) {
             item.status = "Servicer not found"
           }
@@ -1995,6 +1985,7 @@ exports.saveBulkClaim = async (req, res) => {
             item.status = "Contract is not active";
             item.exit = true;
           }
+          
         } else {
           item.contractData = null
           item.servicerData = null
