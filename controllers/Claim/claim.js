@@ -1444,7 +1444,7 @@ exports.editServicer = async (req, res) => {
     let checkContract = await contractService.getContractById({ _id: checkClaim.contractId })
     const checkOrder = await orderService.getOrder({ _id: checkContract.orderId }, { isDeleted: false })
     const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
-    const base_url = `${process.env.SITE_URL}claim-listing/${claimResponse.unique_key}`
+    const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
 
     if (!checkClaim) {
       res.send({
