@@ -1103,6 +1103,13 @@ exports.getDashboardInfo = async (req, res) => {
                         $match: {
                             metaData: { $elemMatch: { isPrimary: true } }
                         }
+                    },
+                    {
+                        $project: {
+                            // metaData:1,
+                            metaData: { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                            // metaData1: { $arrayElemAt: ["$email",0] }
+                        }
                     }
                 ]
             }
@@ -1182,8 +1189,7 @@ exports.getDashboardInfo = async (req, res) => {
                         else: 0
                     }
                 },
-                'phone1': { $arrayElemAt: ["$users.metaData.0.phoneNumber", 0] },
-                'phone': "$phone1",
+                'phone': { $arrayElemAt: ["$users.metaData", 0] },
 
 
             }
