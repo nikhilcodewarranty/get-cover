@@ -1705,9 +1705,9 @@ exports.saveBulkClaim = async (req, res) => {
             lossDate: dateLoss1.toString(),
             diagnosis: item[keys[3]],
             coverageType: coverageType,
-            issue:item[keys[5]],
-            userEmail:item[keys[6]],
-            shippingTo:item[keys[7]],
+            issue: item[keys[5]],
+            userEmail: item[keys[6]],
+            shippingTo: item[keys[7]],
             duplicate: false,
             exit: false
           };
@@ -1721,9 +1721,9 @@ exports.saveBulkClaim = async (req, res) => {
             lossDate: dateLoss2.toString(),
             diagnosis: item[keys[2]],  // Assuming diagnosis is now at index 2
             coverageType: coverageType,
-            issue:item[keys[4]],
-            userEmail:item[keys[5]],
-            shippingTo:item[keys[6]],
+            issue: item[keys[4]],
+            userEmail: item[keys[5]],
+            shippingTo: item[keys[6]],
             duplicate: false,
             exit: false
           };
@@ -1973,6 +1973,7 @@ exports.saveBulkClaim = async (req, res) => {
                 "order.servicerId": 1,
                 "order.resellerId": 1,
                 "order.dealer": 1,
+                "order.customers": 1,
                 "order.reseller": 1,
                 "order.servicer": 1
               }
@@ -1994,9 +1995,6 @@ exports.saveBulkClaim = async (req, res) => {
 
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
       let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
-
-      res.json(totalDataComing);
-      return;
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {
         if (!item.exit) {
@@ -2048,6 +2046,19 @@ exports.saveBulkClaim = async (req, res) => {
             }
           }
           // check Shipping address
+          if (item.shippingTo != '' || item.shippingTo != null) {
+            if (allDataArray[0]?.order.customers) {
+              let shipingAddress = item.shippingTo.split(',');   // Split the string by commas
+              let userZip = shipingAddress[shipingAddress.length - 1];
+              let addresses = allDataArray[0]?.order.customers.addresses
+              item.shippingTo.split
+              const validAddress = addresses.find(address => address.zip != userZip)
+              if (!validAddress) {
+                item.status = "Invalid user address!"
+                item.exit = true;
+              }
+            }
+          }
           let checkCoverageStartDate = new Date(contractData?.coverageStartDate).setHours(0, 0, 0, 0)
           if (contractData && new Date(checkCoverageStartDate) > new Date(item.lossDate)) {
             item.status = "Loss date should be in between coverage start date and present date!"
@@ -2094,6 +2105,8 @@ exports.saveBulkClaim = async (req, res) => {
         }
       })
 
+      console.log("totalDataComing----------------------",totalDataComing);
+      return
       let finalArray = []
       //Save bulk claim
       let count = await claimService.getClaimCount();
