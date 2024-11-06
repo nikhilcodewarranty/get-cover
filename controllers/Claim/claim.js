@@ -533,7 +533,7 @@ exports.addClaim = async (req, res, next) => {
     let adminCC = await supportingFunction.getUserEmails();
     // const base_url = `${process.env.SITE_URL}claimList/${claimResponse.unique_key}`
     const base_url = `${process.env.SITE_URL}claim-listing/${claimResponse.unique_key}`
-    
+
     //let cc = notificationEmails;
     if (checkDealer.isAccountCreate) {
       notificationCC.push(dealerPrimary.email);
@@ -1000,15 +1000,15 @@ exports.editClaimStatus = async (req, res) => {
       let notificationEmails = await supportingFunction.getUserEmails();
 
       const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
-  
-      if(checkDealer.isAccountCreate){
-        notificationEmails.push(dealerPrimary.email) 
+
+      if (checkDealer.isAccountCreate) {
+        notificationEmails.push(dealerPrimary.email)
       }
-      if(checkReseller?.isAccountCreate){
-        notificationEmails.push(resellerPrimary.email) 
+      if (checkReseller?.isAccountCreate) {
+        notificationEmails.push(resellerPrimary.email)
       }
-      if(checkServicer?.isAccountCreate){
-        notificationEmails.push(servicerPrimary.email) 
+      if (checkServicer?.isAccountCreate) {
+        notificationEmails.push(servicerPrimary.email)
       }
 
       //Email to customer
@@ -1020,7 +1020,7 @@ exports.editClaimStatus = async (req, res) => {
         senderName: customerPrimary?.firstName,
         content: `The Customer Status has been updated on the claim # ${checkClaim.unique_key} to be ${data.customerStatus}. Please review the information on the following url.`,
         subject: `Customer Status Updated for ${checkClaim.unique_key}`,
-        redirectId:base_url
+        redirectId: base_url
       }
       let mailing;
 
@@ -1586,20 +1586,20 @@ exports.saveBulkClaim = async (req, res) => {
       // // Parse the email field
       const emailArray = JSON.parse(emailField);
 
-      let length = 5;
+      let length = 8;
       let match = {}
       if (req.role == 'Dealer') {
-        length = 4;
+        length = 7;
         match = { "order.dealer._id": new mongoose.Types.ObjectId(req.userId) }
       }
 
       if (req.role == 'Reseller') {
-        length = 4;
+        length = 7;
         match = { "order.reseller._id": new mongoose.Types.ObjectId(req.userId) }
       }
 
       if (req.role == 'Customer') {
-        length = 4;
+        length = 7;
         match = { "order.customers._id": new mongoose.Types.ObjectId(req.userId) }
       }
 
@@ -1739,7 +1739,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       })
 
-  
+
       //check duplicasy of the contract id
       totalDataComing.forEach((data, i) => {
         if (!data.exit) {
@@ -1985,7 +1985,7 @@ exports.saveBulkClaim = async (req, res) => {
             item.status = "Contract is not active";
             item.exit = true;
           }
-          
+
         } else {
           item.contractData = null
           item.servicerData = null
@@ -2128,7 +2128,7 @@ exports.saveBulkClaim = async (req, res) => {
           const userId = req.userId;
           ccMail = new_admin_array;
           IDs.push(req.teammateId);
-        let userData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: userId, isPrimary: true } } }, {});
+          let userData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: userId, isPrimary: true } } }, {});
           toMail = userData.email;
           if (req.userId.toString() === item.orderData?.order?.dealerId?.toString()) {
             // For servicer

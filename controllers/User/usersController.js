@@ -561,7 +561,7 @@ exports.getUserById = async (req, res) => {
   } catch (error) {
     res.send({
       code: constant.errorCode,
-      message: err.message
+      message: error.message
     })
   }
 };
