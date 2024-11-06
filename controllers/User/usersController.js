@@ -546,7 +546,7 @@ exports.getUserById = async (req, res) => {
       return;
     };
     let mainStatus;
-    let criteria = { _id: singleUser[0].metaData[0]?.metaId }
+    let criteria = { _id: singleUser[0].metaId }
     let checkStatus = await providerService.getServiceProviderById(criteria)
     let checkDealer = await dealerService.getDealerById(criteria)
     let checkReseller = await resellerService.getReseller(criteria, {})
