@@ -916,7 +916,7 @@ exports.getMaxClaimAmount = async (req, res) => {
     const claimAmountCompleted = claimTotalCompleted[0]?.amount ? claimTotalCompleted[0]?.amount : 0
     console.log(claimAmountCompleted, claimTotalCompleted[0], claimTotal[0], "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
     const product = contract ? contract.productValue : 0
-    let getTheThresholdLimit = await userService.getUserById1({ roleId: process.env.super_admin, isPrimary: true })
+    let getTheThresholdLimit = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
     let thresholdLimitPercentage = getTheThresholdLimit.threshHoldLimit.value
     const thresholdLimitValue = (thresholdLimitPercentage / 100) * Number(contract.productValue);
     let remainingThreshHoldLimit = thresholdLimitValue - Number(claimAmount)
