@@ -2010,9 +2010,6 @@ exports.saveBulkClaim = async (req, res) => {
               let userZip = shipingAddress[shipingAddress.length - 1];
               let addresses = allDataArray[0]?.order.customers.addresses
               const validAddress = addresses.find(address => address.zip != userZip)
-              console.log("validAddress--------------------", addresses)
-              console.log("validAddress--------------------", userZip)
-              console.log("validAddress--------------------", validAddress)
               if (!validAddress) {
                 item.status = "Invalid user address!"
                 item.exit = true;
