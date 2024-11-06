@@ -2625,7 +2625,7 @@ exports.sendMessages = async (req, res) => {
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
       commentBy: "Amit",
-      date: new Date(),
+      date: new Date().toLocaleDateString("en-US"),
       senderName: emailTo?.firstName,
       comment: data.content,
       content: `A new comment has been added to Claim #-${checkClaim.unique_key}. Here are the details:`,
@@ -2633,9 +2633,7 @@ exports.sendMessages = async (req, res) => {
       redirectId:base_url
     }
 
-    console.log("emailData---------------",emailData)
-    console.log("emailData---------------",notificationEmails)
-    let mailing = sgMail.send(emailConstant.sendCommentNotification("amit@codenomad.net", notificationEmails, emailData))
+    let mailing = sgMail.send(emailConstant.sendCommentNotification(emailTo?.email, notificationEmails, emailData))
     res.send({
       code: constant.successCode,
       messages: 'Message Sent!',
