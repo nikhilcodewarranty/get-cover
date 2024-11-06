@@ -1409,13 +1409,13 @@ exports.statusUpdate = async (req, res) => {
         message: "Updated Successfully",
       })
     } else {
-      let criteria1 = { metaData: { $elemMatch: { metaId: updatedResult._id, isPrimary: true } }  }
+      let criteria1 = { metaData: { $elemMatch: { metaId: updatedResult._id, isPrimary: true } } }
       let option = { new: true }
       let updateUsers = await userService.updateUser(criteria1, {
         $set: {
-            'metaData.$.status': req.body.status,
-          }
-    }, option)
+          'metaData.$.status': req.body.status,
+        }
+      }, option)
       if (!updateUsers) {
         res.send({
           code: constant.errorCode,
@@ -1714,34 +1714,34 @@ exports.getServicerDealers = async (req, res) => {
 
     const dealarUser = await userService.findUserforCustomer1([
       {
-          $match: {
-              $and: [
-                  { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
-                  { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                  { metaData: { $elemMatch: { metaId: { $in: ids }, isPrimary: true } } }
-              ]
-          }
+        $match: {
+          $and: [
+            { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+            { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { metaData: { $elemMatch: { metaId: { $in: ids }, isPrimary: true } } }
+          ]
+        }
       },
       {
-          $project: {
-              email: 1,
-              'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
-              'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
-              'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
-              'position': { $arrayElemAt: ["$metaData.position", 0] },
-              'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
-              'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
-              'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
-              'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
-              'status': { $arrayElemAt: ["$metaData.status", 0] },
-              resetPasswordCode: 1,
-              isResetPassword: 1,
-              approvedStatus: 1,
-              createdAt: 1,
-              updatedAt: 1
-          }
+        $project: {
+          email: 1,
+          'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+          'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+          'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+          'position': { $arrayElemAt: ["$metaData.position", 0] },
+          'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+          'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+          'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+          'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+          'status': { $arrayElemAt: ["$metaData.status", 0] },
+          resetPasswordCode: 1,
+          isResetPassword: 1,
+          approvedStatus: 1,
+          createdAt: 1,
+          updatedAt: 1
+        }
       }
-  ]);
+    ]);
 
     let orderQuery = { dealerId: { $in: ids }, status: "Active" };
     let project = {
@@ -1818,7 +1818,7 @@ exports.getServicerDealers = async (req, res) => {
 
     const filteredData = result_Array.filter(entry => {
       return (
-        nameRegex.test(entry.dealerData.name) 
+        nameRegex.test(entry.dealerData.name)
       );
     });
 
@@ -1873,8 +1873,8 @@ exports.getServicerDealers1 = async (req, res) => {
                     }
                   },
                   {
-                    $project:{
-                      email:1,
+                    $project: {
+                      email: 1,
                       'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
                     }
                   }
@@ -1921,9 +1921,9 @@ exports.getServicerDealers1 = async (req, res) => {
         $unwind: "$dealerData"
       },
       {
-        $match:{
+        $match: {
           // metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } }
-          "dealerData.userData.phoneNumber":{ '$regex': data.phoneNumber ? data.phoneNumber.replace(/\s+/g, ' ').trim() : '', '$options': 'i' }
+          "dealerData.userData.phoneNumber": { '$regex': data.phoneNumber ? data.phoneNumber.replace(/\s+/g, ' ').trim() : '', '$options': 'i' }
 
         }
       }
@@ -1932,7 +1932,7 @@ exports.getServicerDealers1 = async (req, res) => {
 
     let filteredData = await dealerRelationService.getDealerRelationsAggregate(query)
 
-    console.log("filteredData----------------------",filteredData);
+    console.log("filteredData----------------------", filteredData);
     res.send({
       code: constant.successCode,
       data: filteredData
@@ -2285,7 +2285,7 @@ exports.getServicerClaims = async (req, res) => {
       }
     })
     let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0
-    let getTheThresholdLimit = await userService.getUserById1({ roleId: process.env.super_admin, isPrimary: true })
+    let getTheThresholdLimit = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
 
     result_Array = result_Array.map(claimObject => {
       const { productValue, claimAmount } = claimObject.contracts;
