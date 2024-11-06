@@ -1972,6 +1972,7 @@ exports.saveBulkClaim = async (req, res) => {
                 "order.unique_key": 1,
                 "order.servicerId": 1,
                 "order.resellerId": 1,
+                "order.customers": 1,
                 "order.dealer": 1,
                 "order.customers": 1,
                 "order.reseller": 1,

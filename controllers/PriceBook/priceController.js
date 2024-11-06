@@ -1481,9 +1481,9 @@ exports.uploadRegularPriceBook = async (req, res) => {
           let keys = Object.keys(item);
           return {
             category: item[keys[0]],  // First key's value
-            name: item[keys[1]],   // Second key's value
-            pName: item[keys[2]],  // Third key's value
-            description: item[keys[3]],   // Second key's value
+            name: item[keys[1]].trim().replace(/\s+/g, ' '),   // Second key's value
+            pName: item[keys[2]].trim().replace(/\s+/g, ' '),  // Third key's value
+            description: item[keys[3]].trim().replace(/\s+/g, ' '),   // Second key's value
             frontingFee: item[keys[4]],   // Second key's value
             reinsuranceFee: item[keys[5]],   // Second key's value
             reserveFutureFee: item[keys[6]],   // Second key's value
