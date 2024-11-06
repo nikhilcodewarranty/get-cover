@@ -2059,7 +2059,7 @@ exports.saveBulkClaim = async (req, res) => {
               console.log("validAddress--------------------",addresses)
               console.log("validAddress--------------------",userZip)
               console.log("validAddress--------------------",validAddress)
-              if (validAddress) {
+              if (!validAddress) {
                 item.status = "Invalid user address!"
                 item.exit = true;
               }
