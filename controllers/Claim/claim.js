@@ -1013,13 +1013,13 @@ exports.editClaimStatus = async (req, res) => {
       const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
 
       if (checkDealer.isAccountCreate) {
-        notificationEmails.push(dealerPrimary.email)
+        notificationEmails.push(dealerPrimary?.email)
       }
       if (checkReseller?.isAccountCreate) {
-        notificationEmails.push(resellerPrimary.email)
+        notificationEmails.push(resellerPrimary?.email)
       }
       if (checkServicer?.isAccountCreate) {
-        notificationEmails.push(servicerPrimary.email)
+        notificationEmails.push(servicerPrimary?.email)
       }
 
       //Email to customer
@@ -1460,7 +1460,8 @@ exports.editClaimStatus = async (req, res) => {
 
     res.send({
       code: constant.errorCode,
-      message: err.message
+      message: err.message,
+      stack: err.stack
     })
   }
 }
