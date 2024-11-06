@@ -1106,7 +1106,7 @@ exports.editClaimStatus = async (req, res) => {
         subject: `Repair Status Updated for Claim # - ${checkClaim.unique_key}`,
         redirectId: base_url
       }
-     let mailing = checkCustomer.isAccountCreate ? sgMail.send(emailConstant.sendEmailTemplate(customerPrimary?.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+      let mailing = checkCustomer.isAccountCreate ? sgMail.send(emailConstant.sendEmailTemplate(customerPrimary?.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
 
     }
     if (data.hasOwnProperty("claimStatus")) {
@@ -2617,19 +2617,23 @@ exports.sendMessages = async (req, res) => {
 
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
-
+    const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
     // notificationEmails.push(emailTo.email);
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
+      commentBy: "Amit",
+      date: new Date(),
       senderName: emailTo?.firstName,
-      content: "The new message for " + checkClaim.unique_key + " claim",
-      subject: "New message for claim # :" + checkClaim.unique_key + ""
+      comment: data.content,
+      content: `A new comment has been added to Claim #-${checkClaim.unique_key}. Here are the details:`,
+      subject: "New message for claim # :" + checkClaim.unique_key + "",
+      redirectId:base_url
     }
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(emailTo?.email, notificationEmails, emailData))
+    let mailing = sgMail.send(emailConstant.sendCommentNotification("amit@codenomad.net", notificationEmails, emailData))
     res.send({
       code: constant.successCode,
       messages: 'Message Sent!',
