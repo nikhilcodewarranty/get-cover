@@ -748,7 +748,6 @@ exports.editClaim = async (req, res) => {
       ]
       let getClaims = await claimService.getClaimWithAggregate(totalClaimQuery1)
       let updateTheContract = await contractService.updateContract({ _id: checkClaim.contractId }, { claimAmount: getClaims[0] ? getClaims[0].totalAmount : 0 }, { new: true })
-      console.log("updated contract ak------", getClaims, updateTheContract.claimAmount)
       res.send({
         code: constant.successCode,
         message: "Updated successfully"
