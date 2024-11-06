@@ -33,14 +33,14 @@ exports.getServicerDetail = async (req, res) => {
         };
         servicerObject = {
             ...getMetaData.toObject(),
-            firstName:getMetaData.metaData[0].firstName,
-            phoneNumber:getMetaData.metaData[0].phoneNumber,
-            status:getMetaData.metaData[0].status,
-            lastName:getMetaData.metaData[0].lastName,
-            dialCode:getMetaData.metaData[0].dialCode,
-            isPrimary:getMetaData.metaData[0].isPrimary
+            firstName: getMetaData.metaData[0].firstName,
+            phoneNumber: getMetaData.metaData[0].phoneNumber,
+            status: getMetaData.metaData[0].status,
+            lastName: getMetaData.metaData[0].lastName,
+            dialCode: getMetaData.metaData[0].dialCode,
+            isPrimary: getMetaData.metaData[0].isPrimary
         }
-        getMetaData.firstName =  getMetaData.metaData[0].firstName
+        getMetaData.firstName = getMetaData.metaData[0].firstName
         const singleServiceProvider = await providerService.getServiceProviderById({ _id: getMetaData.metaData[0].metaId });
         if (!singleServiceProvider) {
             res.send({
@@ -379,33 +379,33 @@ exports.getServicerDealers = async (req, res) => {
                                 localField: "_id",
                                 foreignField: "metaData.metaId",
                                 as: "userData",
-                                pipeline: [ 
+                                pipeline: [
                                     {
                                         $match: {
-                                          "metaData": {
-                                            $elemMatch: {
-                                              isPrimary: true,
-                                              phoneNumber: { '$regex': data.phoneNumber ? data.phoneNumber : '', '$options': 'i' },
-                                            }
-                                          },
-                                          email: { '$regex': data.email ? data.email : '', '$options': 'i' }
+                                            "metaData": {
+                                                $elemMatch: {
+                                                    isPrimary: true,
+                                                    phoneNumber: { '$regex': data.phoneNumber ? data.phoneNumber : '', '$options': 'i' },
+                                                }
+                                            },
+                                            email: { '$regex': data.email ? data.email : '', '$options': 'i' }
 
                                         }
-                                      },
-                                      
+                                    },
+
                                     {
-                                        $project:{
-                                            "firstName":{ $arrayElemAt: ["$metaData.firstName", 0] },
-                                            "lastName":{ $arrayElemAt: ["$metaData.firstName", 0] },
-                                            "email":{ $arrayElemAt: ["$metaData.email", 0] },
-                                            "phoneNumber":{ $arrayElemAt: ["$metaData.phoneNumber", 0] },
-                                            "dialCode":{ $arrayElemAt: ["$metaData.dialCode", 0] },
-                                            "roleId":{ $arrayElemAt: ["$metaData.roleId", 0] },
-                                            "isPrimary":{ $arrayElemAt: ["$metaData.isPrimary", 0] },
-                                            "status":{ $arrayElemAt: ["$metaData.status", 0] },
-                                            "metaId":{ $arrayElemAt: ["$metaData.metaId", 0] },
-                                            "approvedStatus":1,
-                                            "email":1,
+                                        $project: {
+                                            "firstName": { $arrayElemAt: ["$metaData.firstName", 0] },
+                                            "lastName": { $arrayElemAt: ["$metaData.firstName", 0] },
+                                            "email": { $arrayElemAt: ["$metaData.email", 0] },
+                                            "phoneNumber": { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                                            "dialCode": { $arrayElemAt: ["$metaData.dialCode", 0] },
+                                            "roleId": { $arrayElemAt: ["$metaData.roleId", 0] },
+                                            "isPrimary": { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                                            "status": { $arrayElemAt: ["$metaData.status", 0] },
+                                            "metaId": { $arrayElemAt: ["$metaData.metaId", 0] },
+                                            "approvedStatus": 1,
+                                            "email": 1,
                                         }
                                     }
                                 ]
@@ -451,12 +451,12 @@ exports.getServicerDealers = async (req, res) => {
             },
 
             {
-                $project:{
-                    _id:1,
-                    servicerId:1,
-                    dealerId:1,
-                    status:1,
-                    dealerData:1,
+                $project: {
+                    _id: 1,
+                    servicerId: 1,
+                    dealerId: 1,
+                    status: 1,
+                    dealerData: 1,
                 }
             }
         ]
@@ -1087,6 +1087,7 @@ exports.getDashboardInfo = async (req, res) => {
         },
     ]
     const getLastNumberOfClaims = await claimService.getClaimWithAggregate(claimQuery, {})
+
     let lookupQuery = [
         {
             $match: { _id: { $in: dealerIds } }
@@ -1095,12 +1096,12 @@ exports.getDashboardInfo = async (req, res) => {
             $lookup: {
                 from: "users",
                 localField: "_id",
-                foreignField: "metaId",
+                foreignField: "metaData.metaId",
                 as: "users",
                 pipeline: [
                     {
                         $match: {
-                            isPrimary: true
+                            metaData: { $elemMatch: { isPrimary: true } }
                         }
                     }
                 ]
@@ -1181,7 +1182,9 @@ exports.getDashboardInfo = async (req, res) => {
                         else: 0
                     }
                 },
-                'phone': { $arrayElemAt: ["$users.phoneNumber", 0] },
+                'phone1': { $arrayElemAt: ["$users.metaData.0.phoneNumber", 0] },
+                'phone': "$phone1",
+
 
             }
         },
