@@ -2298,7 +2298,7 @@ exports.deleteAddress = async (req, res) => {
     if (!checkCustomer) {
       res.send({
         code: constant.errorCode,
-        message: err.message
+        message: "customer not found",
       })
       return
     }
