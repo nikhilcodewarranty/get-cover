@@ -1042,7 +1042,7 @@ exports.editClaimStatus = async (req, res) => {
 
     if (data.hasOwnProperty("repairStatus")) {
       const checkRepairStatus = await optionService.getOption({ name: "repair_status" })
-      const matchedData = checkRepairStatus?.value.find(status => status.value == data.customerStatus)
+      const matchedData = checkRepairStatus?.value.find(status => status.value == data.repairStatus)
       status.trackStatus = [
         {
           status: data.repairStatus,
