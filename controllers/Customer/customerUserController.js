@@ -862,22 +862,21 @@ exports.getCustomerUsers = async (req, res) => {
 
     // let getCustomerUsers = await userService.findUser({ metaData: { $elemMatch: { metaId: req.userId, isDeleted: false } } }, { isPrimary: -1 })
 
-    let getCustomerUsers = await userService.findUserforCustomer1([
+    const getCustomerUsers = await userService.findUserforCustomer1([
       {
         $match: {
           $and: [
+            { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
             { metaData: { $elemMatch: { firstName: { '$regex': data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
             { metaData: { $elemMatch: { lastName: { '$regex': data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
-            { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
             { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { metaData: { $elemMatch: { metaId: req.userId, isDeleted: false } } }
+            { metaData: { $elemMatch: { metaId: new mongoose.Types.ObjectId(req.userId) } } }
           ]
         }
       },
       {
         $project: {
           email: 1,
-          password: 1,
           'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
           'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
           'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
@@ -889,15 +888,12 @@ exports.getCustomerUsers = async (req, res) => {
           'status': { $arrayElemAt: ["$metaData.status", 0] },
           resetPasswordCode: 1,
           isResetPassword: 1,
-          notificationTo:1,
-          threshHoldLimit:1,
-          isThreshHoldLimit:1,
           approvedStatus: 1,
           createdAt: 1,
           updatedAt: 1
         }
       }
-    ])
+    ]);
 
     if (!getCustomerUsers) {
       res.send({
