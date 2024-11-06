@@ -35,6 +35,7 @@ aws.config.update({
   accessKeyId: process.env.aws_access_key_id,
   secretAccessKey: process.env.aws_secret_access_key,
 });
+
 const S3Bucket = new aws.S3();
 // s3 bucket connections
 const s3 = new S3Client({
@@ -51,6 +52,7 @@ const StorageP = multerS3({
   s3: s3,
   bucket: process.env.bucket_name,
   metadata: (req, file, cb) => {
+    console.log(" process.env.bucket_name", process.env.bucket_name)
     cb(null, { fieldName: file.fieldname });
   },
   key: (req, file, cb) => {
@@ -1009,15 +1011,15 @@ exports.editClaimStatus = async (req, res) => {
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
       const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
-  
-      if(checkDealer.isAccountCreate){
-        notificationEmails.push(dealerPrimary.email) 
+
+      if (checkDealer.isAccountCreate) {
+        notificationEmails.push(dealerPrimary.email)
       }
-      if(checkReseller?.isAccountCreate){
-        notificationEmails.push(resellerPrimary.email) 
+      if (checkReseller?.isAccountCreate) {
+        notificationEmails.push(resellerPrimary.email)
       }
-      if(checkServicer?.isAccountCreate){
-        notificationEmails.push(servicerPrimary.email) 
+      if (checkServicer?.isAccountCreate) {
+        notificationEmails.push(servicerPrimary.email)
       }
 
       //Email to customer
@@ -1029,10 +1031,10 @@ exports.editClaimStatus = async (req, res) => {
         senderName: customerPrimary?.firstName,
         content: `The Customer Status has been updated on the claim # ${checkClaim.unique_key} to be ${data.customerStatus}. Please review the information on the following url.`,
         subject: `Customer Status Updated for ${checkClaim.unique_key}`,
-        redirectId:base_url
+        redirectId: base_url
       }
       mailing = checkCustomer.isAccountCreate ? sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-    
+
     }
 
     if (data.hasOwnProperty("repairStatus")) {
@@ -1653,6 +1655,7 @@ exports.saveBulkClaim = async (req, res) => {
     try {
       let data = req.body
       let headerLength;
+      console.log(req.file)
       const bucketReadUrl = { Bucket: process.env.bucket_name, Key: req.file.key };
       // Await the getObjectFromS3 function to complete
       const result = await getObjectFromS3(bucketReadUrl);
@@ -1662,20 +1665,20 @@ exports.saveBulkClaim = async (req, res) => {
       // // Parse the email field
       const emailArray = JSON.parse(emailField);
 
-      let length = 5;
+      let length = 8;
       let match = {}
       if (req.role == 'Dealer') {
-        length = 4;
+        length = 7;
         match = { "order.dealer._id": new mongoose.Types.ObjectId(req.userId) }
       }
 
       if (req.role == 'Reseller') {
-        length = 4;
+        length = 7;
         match = { "order.reseller._id": new mongoose.Types.ObjectId(req.userId) }
       }
 
       if (req.role == 'Customer') {
-        length = 4;
+        length = 7;
         match = { "order.customers._id": new mongoose.Types.ObjectId(req.userId) }
       }
 
@@ -1694,7 +1697,7 @@ exports.saveBulkClaim = async (req, res) => {
       let totalDataComing = totalDataComing1.map((item, i) => {
         const keys = Object.keys(item);
         // Check if the "servicerName" header exists    
-        if (keys.length > 4) {
+        if (keys.length == 8) {
           let coverageType = item[keys[4]]
           let dateLoss1 = item[keys[2]]
           return {
@@ -1703,6 +1706,9 @@ exports.saveBulkClaim = async (req, res) => {
             lossDate: dateLoss1.toString(),
             diagnosis: item[keys[3]],
             coverageType: coverageType,
+            issue:item[keys[5]],
+            userEmail:item[keys[6]],
+            shippingTo:item[keys[7]],
             duplicate: false,
             exit: false
           };
@@ -1716,6 +1722,9 @@ exports.saveBulkClaim = async (req, res) => {
             lossDate: dateLoss2.toString(),
             diagnosis: item[keys[2]],  // Assuming diagnosis is now at index 2
             coverageType: coverageType,
+            issue:item[keys[4]],
+            userEmail:item[keys[5]],
+            shippingTo:item[keys[6]],
             duplicate: false,
             exit: false
           };
@@ -1770,6 +1779,9 @@ exports.saveBulkClaim = async (req, res) => {
             coverageType: item.coverageType?.toString().replace(/\s+/g, ' ').trim(),
             lossDate: item.lossDate?.toString().replace(/\s+/g, ' ').trim(),
             diagnosis: item.diagnosis?.toString().replace(/\s+/g, ' ').trim(),
+            issue: item.issue?.toString().replace(/\s+/g, ' ').trim(),
+            userEmail: item.userEmail?.toString().replace(/\s+/g, ' ').trim(),
+            shippingTo: item.shippingTo?.toString().replace(/\s+/g, ' ').trim(),
             duplicate: false,
             exit: false
           };
@@ -1781,6 +1793,9 @@ exports.saveBulkClaim = async (req, res) => {
             servicerName: item.servicerName?.toString().replace(/\s+/g, ' ').trim(),
             coverageType: item.coverageType?.toString().replace(/\s+/g, ' ').trim(),
             diagnosis: item.diagnosis?.toString().replace(/\s+/g, ' ').trim(),
+            issue: item.issue?.toString().replace(/\s+/g, ' ').trim(),
+            userEmail: item.userEmail?.toString().replace(/\s+/g, ' ').trim(),
+            shippingTo: item.shippingTo?.toString().replace(/\s+/g, ' ').trim(),
             duplicate: false,
             exit: false
           };
@@ -1981,6 +1996,8 @@ exports.saveBulkClaim = async (req, res) => {
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
       let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
 
+      res.json(totalDataComing);
+      return;
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {
         if (!item.exit) {
@@ -1998,7 +2015,7 @@ exports.saveBulkClaim = async (req, res) => {
             item.status = "Contract not found"
             item.exit = true;
           }
-          if (item.coverageType || item.coverageType != "") {
+          if (item.coverageType != null || item.coverageType != "") {
             if (contractData) {
               let checkCoverageTypeForContract = contractData?.coverageType.find(item1 => item1.label == item?.coverageType)
               if (!checkCoverageTypeForContract) {
@@ -2024,19 +2041,20 @@ exports.saveBulkClaim = async (req, res) => {
 
 
           }
+          // check login email
+          if (item.userEmail != '' || item.userEmail != null) {
+            if (item.userEmail != req.email) {
+              item.status = "Invalid Email"
+              item.exit = true;
+            }
+          }
+          // check Shipping address
           let checkCoverageStartDate = new Date(contractData?.coverageStartDate).setHours(0, 0, 0, 0)
           if (contractData && new Date(checkCoverageStartDate) > new Date(item.lossDate)) {
             item.status = "Loss date should be in between coverage start date and present date!"
             item.exit = true;
           }
 
-          // if (allDataArray.length == 0 && item.contractId != '') {
-          //   const filter = claimData.filter(claim => claim.contractId?.toString() === item.contractData._id?.toString())
-          //   if (filter.length > 0) {
-          //     item.status = "Claim is already open of this contract"
-          //     item.exit = true;
-          //   }
-          // }
 
           if (allDataArray.length > 0 && servicerData) {
 
