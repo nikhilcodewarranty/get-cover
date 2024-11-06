@@ -23,6 +23,7 @@ const mongoose = require('mongoose');
 exports.getServicerDetail = async (req, res) => {
     try {
         let getMetaData = await userService.findOneUser({ _id: req.teammateId })
+        let servicerObject = {}
         if (!getMetaData) {
             res.send({
                 code: constant.errorCode,
@@ -30,7 +31,17 @@ exports.getServicerDetail = async (req, res) => {
             })
             return;
         };
-        const singleServiceProvider = await providerService.getServiceProviderById({ _id: getMetaData.metaId });
+        servicerObject = {
+            ...getMetaData.toObject(),
+            firstName:getMetaData.metaData[0].firstName,
+            phoneNumber:getMetaData.metaData[0].phoneNumber,
+            status:getMetaData.metaData[0].status,
+            lastName:getMetaData.metaData[0].lastName,
+            dialCode:getMetaData.metaData[0].dialCode,
+            isPrimary:getMetaData.metaData[0].isPrimary
+        }
+        getMetaData.firstName =  getMetaData.metaData[0].firstName
+        const singleServiceProvider = await providerService.getServiceProviderById({ _id: getMetaData.metaData[0].metaId });
         if (!singleServiceProvider) {
             res.send({
                 code: constant.errorCode,
@@ -38,7 +49,7 @@ exports.getServicerDetail = async (req, res) => {
             })
             return;
         };
-        let resultUser = getMetaData.toObject()
+        let resultUser = servicerObject
         resultUser.meta = singleServiceProvider
         res.send({
             code: constant.successCode,
@@ -47,7 +58,7 @@ exports.getServicerDetail = async (req, res) => {
     } catch (error) {
         res.send({
             code: constant.errorCode,
-            message: err.message
+            message: error.message
         })
     }
 }
