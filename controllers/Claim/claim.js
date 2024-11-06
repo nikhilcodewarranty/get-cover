@@ -2107,9 +2107,6 @@ exports.saveBulkClaim = async (req, res) => {
           item.servicerData = null
         }
       })
-
-      console.log("totalDataComing----------------------", totalDataComing);
-      return
       let finalArray = []
       //Save bulk claim
       let count = await claimService.getClaimCount();
