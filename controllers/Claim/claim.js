@@ -2051,17 +2051,20 @@ exports.saveBulkClaim = async (req, res) => {
           }
           // check Shipping address
           if (item.shippingTo != '') {
-            item.shippingTo = item.shippingTo
             if (allDataArray[0]?.order.customers) {
               let shipingAddress = item.shippingTo.split(',');   // Split the string by commas
               let userZip = shipingAddress[shipingAddress.length - 1];
               let addresses = allDataArray[0]?.order.customers.addresses
               const validAddress = addresses.find(address => address.zip != userZip)
+              console.log("validAddress--------------------",addresses)
+              console.log("validAddress--------------------",userZip)
+              console.log("validAddress--------------------",validAddress)
               if (validAddress) {
                 item.status = "Invalid user address!"
                 item.exit = true;
               }
             }
+            item.shippingTo = item.shippingTo
           }
           let checkCoverageStartDate = new Date(contractData?.coverageStartDate).setHours(0, 0, 0, 0)
           if (contractData && new Date(checkCoverageStartDate) > new Date(item.lossDate)) {
