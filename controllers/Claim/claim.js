@@ -2633,6 +2633,8 @@ exports.sendMessages = async (req, res) => {
       redirectId:base_url
     }
 
+    console.log("emailData---------------",emailData)
+    console.log("emailData---------------",notificationEmails)
     let mailing = sgMail.send(emailConstant.sendCommentNotification("amit@codenomad.net", notificationEmails, emailData))
     res.send({
       code: constant.successCode,
