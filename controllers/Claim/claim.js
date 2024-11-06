@@ -1615,10 +1615,11 @@ exports.saveBulkClaim = async (req, res) => {
 
       const totalDataComing1 = result.data;
 
+
       let totalDataComing = totalDataComing1.map((item, i) => {
         const keys = Object.keys(item);
         // Check if the "servicerName" header exists    
-        if (keys.length > 4) {
+        if (keys.length == 8) {
           let coverageType = item[keys[4]]
           let dateLoss1 = item[keys[2]]
           return {
@@ -1627,6 +1628,9 @@ exports.saveBulkClaim = async (req, res) => {
             lossDate: dateLoss1.toString(),
             diagnosis: item[keys[3]],
             coverageType: coverageType,
+            issue: item[keys[5]],
+            userEmail: item[keys[6]],
+            shippingTo: item[keys[7]],
             duplicate: false,
             exit: false
           };
@@ -1640,6 +1644,9 @@ exports.saveBulkClaim = async (req, res) => {
             lossDate: dateLoss2.toString(),
             diagnosis: item[keys[2]],  // Assuming diagnosis is now at index 2
             coverageType: coverageType,
+            issue: item[keys[4]],
+            userEmail: item[keys[5]],
+            shippingTo: item[keys[6]],
             duplicate: false,
             exit: false
           };
@@ -1694,6 +1701,9 @@ exports.saveBulkClaim = async (req, res) => {
             coverageType: item.coverageType?.toString().replace(/\s+/g, ' ').trim(),
             lossDate: item.lossDate?.toString().replace(/\s+/g, ' ').trim(),
             diagnosis: item.diagnosis?.toString().replace(/\s+/g, ' ').trim(),
+            issue: item.issue?.toString().replace(/\s+/g, ' ').trim(),
+            userEmail: item.userEmail?.toString().replace(/\s+/g, ' ').trim(),
+            shippingTo: item.shippingTo?.toString().replace(/\s+/g, ' ').trim(),
             duplicate: false,
             exit: false
           };
@@ -1705,12 +1715,16 @@ exports.saveBulkClaim = async (req, res) => {
             servicerName: item.servicerName?.toString().replace(/\s+/g, ' ').trim(),
             coverageType: item.coverageType?.toString().replace(/\s+/g, ' ').trim(),
             diagnosis: item.diagnosis?.toString().replace(/\s+/g, ' ').trim(),
+            issue: item.issue?.toString().replace(/\s+/g, ' ').trim(),
+            userEmail: item.userEmail?.toString().replace(/\s+/g, ' ').trim(),
+            shippingTo: item.shippingTo?.toString().replace(/\s+/g, ' ').trim(),
             duplicate: false,
             exit: false
           };
         }
 
       });
+
       let cache = {};
       totalDataComing.forEach(data => {
         if (!data.contractId || data.contractId == "") {
@@ -1922,31 +1936,55 @@ exports.saveBulkClaim = async (req, res) => {
             item.status = "Contract not found"
             item.exit = true;
           }
-          if (item.coverageType || item.coverageType != "") {
-            if (contractData) {
-              let checkCoverageTypeForContract = contractData?.coverageType.find(item1 => item1.label == item?.coverageType)
-              if (!checkCoverageTypeForContract) {
-                item.status = "Coverage type is not available for this contract!";
-                item.exit = true;
-              }
-              const checkCoverageValue = getCoverageTypeFromOption.value.filter(option => option.label === item?.coverageType).map(item1 => item1.value);
-              let startDateToCheck = new Date(contractData.coverageStartDate)
-              let coverageTypeDays = contractData?.adhDays
-              let getDeductible = coverageTypeDays?.filter(coverageType => coverageType.value == checkCoverageValue[0])
+          if (item.coverageType) {
+            if (item.coverageType != null || item.coverageType != "") {
+              if (contractData) {
+                let checkCoverageTypeForContract = contractData?.coverageType.find(item1 => item1.label == item?.coverageType)
+                if (!checkCoverageTypeForContract) {
+                  item.status = "Coverage type is not available for this contract!";
+                  item.exit = true;
+                }
+                const checkCoverageValue = getCoverageTypeFromOption.value.filter(option => option.label === item?.coverageType).map(item1 => item1.value);
+                let startDateToCheck = new Date(contractData.coverageStartDate)
+                let coverageTypeDays = contractData?.adhDays
+                let getDeductible = coverageTypeDays?.filter(coverageType => coverageType.value == checkCoverageValue[0])
 
-              let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0]?.waitingDays))
-              checkCoverageTypeDate = new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0)
-              let checkLossDate = new Date(item.lossDate).setHours(0, 0, 0, 0)
-              const result = getCoverageTypeFromOption?.value.filter(option => option.label === item?.coverageType).map(item1 => item1.label);
+                let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0]?.waitingDays))
+                checkCoverageTypeDate = new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0)
+                let checkLossDate = new Date(item.lossDate).setHours(0, 0, 0, 0)
+                const result = getCoverageTypeFromOption?.value.filter(option => option.label === item?.coverageType).map(item1 => item1.label);
 
-              if (new Date(checkCoverageTypeDate) > new Date(checkLossDate)) {
-                item.status = `Claim not eligible for ${result[0]}.`
-                item.exit = true;
+                if (new Date(checkCoverageTypeDate) > new Date(checkLossDate)) {
+                  item.status = `Claim not eligible for ${result[0]}.`
+                  item.exit = true;
+                }
+                item.claimType = checkCoverageValue[0]
               }
-              item.claimType = checkCoverageValue[0]
+
+
             }
-
-
+          }
+          // check login email
+          if (item.userEmail != '') {
+            item.submittedBy = item.userEmail
+            if (item.userEmail != req.email) {
+              item.status = "Invalid Email"
+              item.exit = true;
+            }
+          }
+          // check Shipping address
+          if (item.shippingTo != '') {
+            if (allDataArray[0]?.order.customers) {
+              let shipingAddress = item.shippingTo.split(',');   // Split the string by commas
+              let userZip = shipingAddress[shipingAddress.length - 1];
+              let addresses = allDataArray[0]?.order.customers.addresses
+              const validAddress = addresses.find(address => address.zip != userZip)
+              if (!validAddress) {
+                item.status = "Invalid user address!"
+                item.exit = true;
+              }
+            }
+            item.shippingTo = item.shippingTo
           }
           let checkCoverageStartDate = new Date(contractData?.coverageStartDate).setHours(0, 0, 0, 0)
           if (contractData && new Date(checkCoverageStartDate) > new Date(item.lossDate)) {
@@ -2030,6 +2068,8 @@ exports.saveBulkClaim = async (req, res) => {
             claimType: data?.claimType,
             resellerId: data.orderData?.order?.resellerId,
             dealerSku: data.contractData?.dealerSku,
+            submittedBy: data?.submittedBy,
+            shippingTo: data?.shippingTo,
             customerId: data.orderData?.order?.customerId,
             venderOrder: data.contractData.venderOrder,
             serial: data.contractData.serial,

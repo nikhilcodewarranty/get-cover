@@ -21,6 +21,14 @@ const claimSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  submittedBy: {
+    type: String,
+    default: ''
+  },
+  shippingTo: {
+    type: String,
+    default: ''
+  },
   serial: {
     type: String,
     default: ''
