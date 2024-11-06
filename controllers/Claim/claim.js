@@ -686,6 +686,8 @@ exports.editClaim = async (req, res) => {
       //Send notification to all
       let IDs = await supportingFunction.getUserIds()
       let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkClaim?.servicerId, isPrimary: true } } })
+      //chek servicer status
+      const checkServicer = await servicerService.getServiceProviderById({ $or: [{ _id: checkClaim?.servicerId }, { dealerId: checkClaim?.servicerId }, { resellerId: checkClaim?.servicerId }] })
 
       if (servicerPrimary && checkServicer?.isAccountCreate) {
         IDs.push(servicerPrimary._id)
