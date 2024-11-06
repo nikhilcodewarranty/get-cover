@@ -986,12 +986,12 @@ exports.getResellerDetails = async (req, res) => {
         let resellerObject = {}
         resellerObject = {
             ...getUser.toObject(),
-            firstName:getMetaData.metaData[0].firstName,
-            phoneNumber:getMetaData.metaData[0].phoneNumber,
-            status:getMetaData.metaData[0].status,
-            lastName:getMetaData.metaData[0].lastName,
-            dialCode:getMetaData.metaData[0].dialCode,
-            isPrimary:getMetaData.metaData[0].isPrimary
+            firstName:getUser.metaData[0].firstName,
+            phoneNumber:getUser.metaData[0].phoneNumber,
+            status:getUser.metaData[0].status,
+            lastName:getUser.metaData[0].lastName,
+            dialCode:getUser.metaData[0].dialCode,
+            isPrimary:getUser.metaData[0].isPrimary
         }
         let mid = new mongoose.Types.ObjectId(req.userId)
         let query = [
