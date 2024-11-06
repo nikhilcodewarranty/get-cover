@@ -2269,7 +2269,7 @@ exports.addAddress = async (req, res) => {
     let customerAddresses = checkCustomer.addresses ? checkCustomer.addresses : []
     customerAddresses = customerAddresses.push(data.addresses)
     let udpateCustomer = await customerService.updateCustomer({ _id: req.params.customerId }, { addresses: customerAddresses }, { new: true })
-    if (udpateCustomer) {
+    if (!udpateCustomer) {
       res.send({
         code: constant.errorCode,
         message: "Unable to add customer address"
