@@ -945,6 +945,8 @@ exports.editClaimStatus = async (req, res) => {
 
 
     if (data.hasOwnProperty("customerStatus")) {
+      const checkCustomerStatus = await optionService.getOption({ name: "customer_status" })
+      const matchedData = checkCustomerStatus?.value.find(status => status.value == data.customerStatus)
       if (data.customerStatus == 'product_received') {
         let option = { new: true }
         let claimStatus = await claimService.updateClaim(criteria, { claimFile: 'completed', claimDate: new Date() }, option)
@@ -1030,7 +1032,7 @@ exports.editClaimStatus = async (req, res) => {
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
         senderName: customerPrimary?.firstName,
-        content: `The Customer Status has been updated on the claim # ${checkClaim.unique_key} to be ${data.customerStatus}. Please review the information on the following url.`,
+        content: `The Customer Status has been updated on the claim # ${checkClaim.unique_key} to be ${matchedData.label}. Please review the information on the following url.`,
         subject: `Customer Status Updated for ${checkClaim.unique_key}`,
         redirectId: base_url
       }
@@ -1039,6 +1041,8 @@ exports.editClaimStatus = async (req, res) => {
     }
 
     if (data.hasOwnProperty("repairStatus")) {
+      const checkRepairStatus = await optionService.getOption({ name: "repair_status" })
+      const matchedData = checkRepairStatus?.value.find(status => status.value == data.customerStatus)
       status.trackStatus = [
         {
           status: data.repairStatus,
@@ -1102,7 +1106,7 @@ exports.editClaimStatus = async (req, res) => {
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
         senderName: customerPrimary?.firstName,
-        content: `The Repair Status has been updated on the claim # - ${checkClaim.unique_key} to be ${data.repairStatus} .Please review the information on following url`,
+        content: `The Repair Status has been updated on the claim # - ${checkClaim.unique_key} to be ${matchedData.label} .Please review the information on following url`,
         subject: `Repair Status Updated for Claim # - ${checkClaim.unique_key}`,
         redirectId: base_url
       }
