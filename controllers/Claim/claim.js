@@ -1972,6 +1972,7 @@ exports.saveBulkClaim = async (req, res) => {
                 "order.unique_key": 1,
                 "order.servicerId": 1,
                 "order.resellerId": 1,
+                "order.customers": 1,
                 "order.dealer": 1,
                 "order.reseller": 1,
                 "order.servicer": 1
@@ -1995,7 +1996,7 @@ exports.saveBulkClaim = async (req, res) => {
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
       let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
 
-      res.json(totalDataComing);
+      res.json(contractAllDataArray);
       return;
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {
