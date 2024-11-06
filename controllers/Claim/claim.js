@@ -2043,7 +2043,6 @@ exports.saveBulkClaim = async (req, res) => {
           }
           // check login email
           if (item.userEmail != '') {
-            console.log("I am hereeeeeee",item.userEmail)
             if (item.userEmail != req.email) {
               item.status = "Invalid Email"
               item.exit = true;
@@ -2107,6 +2106,8 @@ exports.saveBulkClaim = async (req, res) => {
           item.servicerData = null
         }
       })
+
+
       let finalArray = []
       //Save bulk claim
       let count = await claimService.getClaimCount();
