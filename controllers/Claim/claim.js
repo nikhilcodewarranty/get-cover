@@ -2051,16 +2051,12 @@ exports.saveBulkClaim = async (req, res) => {
           }
           // check Shipping address
           if (item.shippingTo != '') {
-            console.log("I am 2342342342432",item.shippingTo)
             if (allDataArray[0]?.order.customers) {
               let shipingAddress = item.shippingTo.split(',');   // Split the string by commas
               let userZip = shipingAddress[shipingAddress.length - 1];
-              console.log("I am shipingAddress",shipingAddress)
-              console.log("I am userZip",userZip)
               let addresses = allDataArray[0]?.order.customers.addresses
-              console.log("I am addresses",addresses)
               const validAddress = addresses.find(address => address.zip != userZip)
-              if (!validAddress) {
+              if (validAddress) {
                 item.status = "Invalid user address!"
                 item.exit = true;
               }
