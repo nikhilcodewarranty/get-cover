@@ -33,6 +33,14 @@ const claimSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  shippingTo:{
+    type: String,
+    default: ''
+  },
+  submittedBy:{
+    type: String,
+    default: ''
+  },
   model: {
     type: String,
     default: ''

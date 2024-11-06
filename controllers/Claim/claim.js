@@ -2014,7 +2014,7 @@ exports.saveBulkClaim = async (req, res) => {
           }
           if (item.coverageType) {
             if (item.coverageType != null || item.coverageType != "") {
-        
+
               if (contractData) {
                 let checkCoverageTypeForContract = contractData?.coverageType.find(item1 => item1.label == item?.coverageType)
                 if (!checkCoverageTypeForContract) {
@@ -2043,6 +2043,7 @@ exports.saveBulkClaim = async (req, res) => {
           }
           // check login email
           if (item.userEmail != '') {
+            item.submittedBy = item.userEmail
             if (item.userEmail != req.email) {
               item.status = "Invalid Email"
               item.exit = true;
@@ -2050,6 +2051,7 @@ exports.saveBulkClaim = async (req, res) => {
           }
           // check Shipping address
           if (item.shippingTo != '') {
+            item.shippingTo = item.shippingTo
             if (allDataArray[0]?.order.customers) {
               let shipingAddress = item.shippingTo.split(',');   // Split the string by commas
               let userZip = shipingAddress[shipingAddress.length - 1];
@@ -2146,6 +2148,8 @@ exports.saveBulkClaim = async (req, res) => {
             claimType: data?.claimType,
             resellerId: data.orderData?.order?.resellerId,
             dealerSku: data.contractData?.dealerSku,
+            submittedBy: data?.submittedBy,
+            shippingTo: data?.shippingTo,
             customerId: data.orderData?.order?.customerId,
             venderOrder: data.contractData.venderOrder,
             serial: data.contractData.serial,
