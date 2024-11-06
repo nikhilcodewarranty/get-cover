@@ -1441,6 +1441,11 @@ exports.editServicer = async (req, res) => {
     let criteria = { _id: req.params.claimId }
     let settingData = await userService.getSetting({});
     let checkClaim = await claimService.getClaimById(criteria)
+    let checkContract = await contractService.getContractById({ _id: checkClaim.contractId })
+    const checkOrder = await orderService.getOrder({ _id: checkContract.orderId }, { isDeleted: false })
+    const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
+    const base_url = `${process.env.SITE_URL}claim-listing/${claimResponse.unique_key}`
+
     if (!checkClaim) {
       res.send({
         code: constant.errorCode,
@@ -1535,11 +1540,13 @@ exports.editServicer = async (req, res) => {
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
       senderName: getPrimary ? getPrimary.firstName : "",
-      content: "The servicer has been updated for the claim " + checkClaim.unique_key + "",
-      subject: "Servicer Update"
+      subject: `New Device Received for Repair # - ${checkClaim.unique_key}`,
+      redirectId: base_url,
+      content: `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please check the following link :`
+
     }
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary ? getPrimary.email : process.env.servicerEmail, notificationEmails, emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary?.email, notificationEmails, emailData))
     res.send({
       code: constant.successCode,
       message: 'Success!',
@@ -2630,7 +2637,7 @@ exports.sendMessages = async (req, res) => {
       comment: data.content,
       content: `A new comment has been added to Claim #-${checkClaim.unique_key}. Here are the details:`,
       subject: "New message for claim # :" + checkClaim.unique_key + "",
-      redirectId:base_url
+      redirectId: base_url
     }
 
     let mailing = sgMail.send(emailConstant.sendCommentNotification(emailTo?.email, notificationEmails, emailData))
