@@ -85,7 +85,22 @@ const customerSchema = new mongoose.Schema({
     default: false
   },
   addresses: {
-    type: Array,
+    type: [
+      {
+        address: {
+          type: String
+        },
+        zip: {
+          type: Number
+        },
+        city: {
+          type: String
+        },
+        state: {
+          type: String
+        }
+      }
+    ],
     default: []
   },
   token: {
