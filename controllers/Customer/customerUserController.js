@@ -1274,135 +1274,6 @@ exports.getDashboardData = async (req, res) => {
   try {
     let data = req.body
 
-    let project = {
-      productsArray: 1,
-      dealerId: 1,
-      unique_key: 1,
-      unique_key_number: 1,
-      unique_key_search: 1,
-      servicerId: 1,
-      customerId: 1,
-      resellerId: 1,
-      paymentStatus: 1,
-      status: 1,
-      venderOrder: 1,
-      orderAmount: 1,
-    };
-
-    let query = { status: 'Active', customerId: new mongoose.Types.ObjectId(req.userId) };
-    const claimQuery1 = { claimFile: 'completed' }
-    var checkOrders_ = await orderService.getDashboardData(query, project);
-    //Get claims data
-    let lookupQuery = [
-      {
-        $match: claimQuery1
-      },
-      {
-        $lookup: {
-          from: "contracts",
-          localField: "contractId",
-          foreignField: "_id",
-          as: "contracts",
-        }
-      },
-      {
-        $unwind: "$contracts"
-      },
-      {
-        $lookup: {
-          from: "orders",
-          localField: "contracts.orderId",
-          foreignField: "_id",
-          as: "contracts.orders",
-        },
-
-      },
-      {
-        $unwind: "$contracts.orders"
-      },
-      {
-        $match:
-        {
-          $and: [
-            { "contracts.orders.customerId": new mongoose.Types.ObjectId(req.userId) },
-          ]
-        },
-      },
-      {
-        "$group": {
-          "_id": "",
-          "totalAmount": {
-            "$sum": {
-              "$sum": "$totalAmount"
-            }
-          },
-        },
-
-      },
-    ]
-    let valueClaim = await claimService.getClaimWithAggregate(lookupQuery);
-
-    const rejectedQuery = { claimFile: { $ne: "rejected" } }
-    //Get number of claims
-    let numberOfCompleletedClaims = [
-      {
-        $match: claimQuery1
-      },
-      {
-        $lookup: {
-          from: "contracts",
-          localField: "contractId",
-          foreignField: "_id",
-          as: "contracts",
-        }
-      },
-      {
-        $unwind: "$contracts"
-      },
-      {
-        $lookup: {
-          from: "orders",
-          localField: "contracts.orderId",
-          foreignField: "_id",
-          as: "contracts.orders",
-        },
-
-      },
-      {
-        $unwind: "$contracts.orders"
-      },
-      {
-        $match:
-        {
-          $and: [
-            { "contracts.orders.customerId": new mongoose.Types.ObjectId(req.userId) },
-          ]
-        },
-      },
-    ]
-    let numberOfClaims = await claimService.getClaimWithAggregate(numberOfCompleletedClaims);
-    const claimData = {
-      numberOfClaims: numberOfClaims.length,
-      valueClaim: valueClaim.length > 0 ? valueClaim[0]?.totalAmount : 0
-    }
-    if (!checkOrders_[0] && numberOfClaims.length == 0 && valueClaim.length == 0) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to fetch order data",
-        result: {
-          claimData: claimData,
-          orderData: {
-            "_id": "",
-            "totalAmount": 0,
-            "totalOrder": 0
-          }
-        }
-      })
-      return;
-    }
-
-
-
 
     let claimQueryCompleted = [
       {
@@ -1436,24 +1307,11 @@ exports.getDashboardData = async (req, res) => {
     let getClaim = await claimService.getClaimWithAggregate(claimQuery)
     let getContracts = await contractService.findContracts2({ orderId: { $in: orderIds } })
 
-    // res.send({
-    //   code: constant.successCode,
-    //   message: "Success",
-    //   result: {
-    //     numberOfDevices: getContracts.length,
-    //     numberOfSubmittedClaims: getClaim.length,
-    //     numberOfCompletedClaims: getCompletedClaim.length
-    //   }
-    // })
-
-
-
+    
     res.send({
       code: constant.successCode,
       message: "Success",
       result: {
-        // claimData: claimData,
-        // orderData: checkOrders_[0],
         numberOfDevices: getContracts.length,
         numberOfSubmittedClaims: getClaim.length,
         numberOfCompletedClaims: getCompletedClaim.length

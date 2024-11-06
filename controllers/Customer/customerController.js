@@ -2267,9 +2267,49 @@ exports.addAddress = async (req, res) => {
       return
     }
     let customerAddresses = checkCustomer.addresses ? checkCustomer.addresses : []
-    customerAddresses = customerAddresses.pull(data.address)
+    console.log(customerAddresses)
+    customerAddresses.push(data.address)
+    console.log("----------------------------------------------", data, customerAddresses)
+
     let udpateCustomer = await customerService.updateCustomer({ _id: req.params.customerId }, { addresses: customerAddresses }, { new: true })
-    if (udpateCustomer) {
+    if (!udpateCustomer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to add customer address"
+      })
+    } else {
+      res.send({
+        code: constant.successCode,
+        message: "Customer address added successfully"
+      })
+    }
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.deleteAddress = async (req, res) => {
+  try {
+    let data = req.body
+    let checkCustomer = await customerService.getCustomerById({ _id: req.params.customerId })
+    if (!checkCustomer) {
+      res.send({
+        code: constant.errorCode,
+        message: "customer not found",
+      })
+      return
+    }
+    let customerAddresses = checkCustomer.addresses ? checkCustomer.addresses : []
+    console.log(customerAddresses)
+    let newArray = customerAddresses.filter(obj => obj._id.toString() !== data.addressId.toString())
+    customerAddresses.push(data.address)
+    console.log("----------------------------------------------", data, customerAddresses)
+
+    let udpateCustomer = await customerService.updateCustomer({ _id: req.params.customerId }, { addresses: newArray }, { new: true })
+    if (!udpateCustomer) {
       res.send({
         code: constant.errorCode,
         message: "Unable to add customer address"
@@ -2294,13 +2334,14 @@ exports.editaddress = async (req, res) => {
     const customerId = data.customerId;
     const addressId = data.addressId;
 
-
     let updateCustomer = await customerService.updateCustomer(
-      { _id: customerId, 'addresses.addressId': addressId }, // Match the customer and specific address
+      { _id: customerId, 'addresses._id': addressId }, // Match the customer and specific address
       {
         $set: {
-          'addresses.$.street': updatedAddress.street,
-          'addresses.$.city': updatedAddress.city
+          'addresses.$.address': data.street,
+          'addresses.$.city': data.city,
+          'addresses.$.zip': data.zip,
+          'addresses.$.state': data.state,
         }
       },
       { new: true }
