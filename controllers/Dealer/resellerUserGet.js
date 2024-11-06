@@ -983,6 +983,16 @@ exports.getResellerDetails = async (req, res) => {
         }
         let data = req.body
         let getUser = await userService.getUserById1({ _id: req.teammateId })
+        let resellerObject = {}
+        resellerObject = {
+            ...getUser.toObject(),
+            firstName:getMetaData.metaData[0].firstName,
+            phoneNumber:getMetaData.metaData[0].phoneNumber,
+            status:getMetaData.metaData[0].status,
+            lastName:getMetaData.metaData[0].lastName,
+            dialCode:getMetaData.metaData[0].dialCode,
+            isPrimary:getMetaData.metaData[0].isPrimary
+        }
         let mid = new mongoose.Types.ObjectId(req.userId)
         let query = [
             {
@@ -1033,7 +1043,7 @@ exports.getResellerDetails = async (req, res) => {
             code: constant.successCode,
             message: "Successfully fetched user details.",
             result: getCustomer[0],
-            loginMember: getUser
+            loginMember: resellerObject
         })
     } catch (err) {
         res.send({
