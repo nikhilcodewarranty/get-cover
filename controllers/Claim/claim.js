@@ -2012,33 +2012,36 @@ exports.saveBulkClaim = async (req, res) => {
             item.status = "Contract not found"
             item.exit = true;
           }
-          if (item.coverageType != null || item.coverageType != "") {
-            console.log("I am hereeeeeee")
-            if (contractData) {
-              let checkCoverageTypeForContract = contractData?.coverageType.find(item1 => item1.label == item?.coverageType)
-              if (!checkCoverageTypeForContract) {
-                item.status = "Coverage type is not available for this contract!";
-                item.exit = true;
-              }
-              const checkCoverageValue = getCoverageTypeFromOption.value.filter(option => option.label === item?.coverageType).map(item1 => item1.value);
-              let startDateToCheck = new Date(contractData.coverageStartDate)
-              let coverageTypeDays = contractData?.adhDays
-              let getDeductible = coverageTypeDays?.filter(coverageType => coverageType.value == checkCoverageValue[0])
+          if (item.coverageType) {
+            if (item.coverageType != null || item.coverageType != "") {
+              console.log("I am hereeeeeee")
+              if (contractData) {
+                let checkCoverageTypeForContract = contractData?.coverageType.find(item1 => item1.label == item?.coverageType)
+                if (!checkCoverageTypeForContract) {
+                  item.status = "Coverage type is not available for this contract!";
+                  item.exit = true;
+                }
+                const checkCoverageValue = getCoverageTypeFromOption.value.filter(option => option.label === item?.coverageType).map(item1 => item1.value);
+                let startDateToCheck = new Date(contractData.coverageStartDate)
+                let coverageTypeDays = contractData?.adhDays
+                let getDeductible = coverageTypeDays?.filter(coverageType => coverageType.value == checkCoverageValue[0])
 
-              let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0]?.waitingDays))
-              checkCoverageTypeDate = new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0)
-              let checkLossDate = new Date(item.lossDate).setHours(0, 0, 0, 0)
-              const result = getCoverageTypeFromOption?.value.filter(option => option.label === item?.coverageType).map(item1 => item1.label);
+                let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0]?.waitingDays))
+                checkCoverageTypeDate = new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0)
+                let checkLossDate = new Date(item.lossDate).setHours(0, 0, 0, 0)
+                const result = getCoverageTypeFromOption?.value.filter(option => option.label === item?.coverageType).map(item1 => item1.label);
 
-              if (new Date(checkCoverageTypeDate) > new Date(checkLossDate)) {
-                item.status = `Claim not eligible for ${result[0]}.`
-                item.exit = true;
+                if (new Date(checkCoverageTypeDate) > new Date(checkLossDate)) {
+                  item.status = `Claim not eligible for ${result[0]}.`
+                  item.exit = true;
+                }
+                item.claimType = checkCoverageValue[0]
               }
-              item.claimType = checkCoverageValue[0]
+
+
             }
-
-
           }
+
           // check login email
           if (item.userEmail != '' || item.userEmail != null) {
             if (item.userEmail != req.email) {
@@ -2106,7 +2109,7 @@ exports.saveBulkClaim = async (req, res) => {
         }
       })
 
-      console.log("totalDataComing----------------------",totalDataComing);
+      console.log("totalDataComing----------------------", totalDataComing);
       return
       let finalArray = []
       //Save bulk claim
