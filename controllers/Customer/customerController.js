@@ -2335,11 +2335,13 @@ exports.editaddress = async (req, res) => {
     const addressId = data.addressId;
 
     let updateCustomer = await customerService.updateCustomer(
-      { _id: customerId, 'addresses.addressId': addressId }, // Match the customer and specific address
+      { _id: customerId, 'addresses._id': addressId }, // Match the customer and specific address
       {
         $set: {
-          'addresses.$.street': updatedAddress.street,
-          'addresses.$.city': updatedAddress.city
+          'addresses.$.address': data.street,
+          'addresses.$.city': data.city,
+          'addresses.$.zip': data.zip,
+          'addresses.$.state': data.state,
         }
       },
       { new: true }
