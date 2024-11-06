@@ -551,6 +551,7 @@ exports.getUserById = async (req, res) => {
     let checkDealer = await dealerService.getDealerById(criteria)
     let checkReseller = await resellerService.getReseller(criteria, {})
     let checkCustomer = await customerService.getCustomerByName(criteria)
+    console.log(checkCustomer,"checking the customer dta-------------------")
     mainStatus = checkStatus ? checkStatus.status : checkDealer ? checkDealer.accountStatus : checkReseller ? checkReseller.status : checkCustomer ? checkCustomer.status : false
     res.send({
       code: constant.successCode,
