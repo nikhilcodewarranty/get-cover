@@ -1356,54 +1356,6 @@ exports.editClaimStatus = async (req, res) => {
       }
     ];
 
-
-
-
-
-
-    // let getNoOfClaimQuery = [
-    //   {
-    //     $match: {
-    //       contractId: new mongoose.Types.ObjectId(checkClaim.contractId),
-    //       claimFile: "completed"
-    //     }
-    //   },
-    //   {
-    //     $group: {
-    //       _id: null,
-    //       monthlyCount: {
-    //         $sum: {
-    //           $cond: [
-    //             {
-    //               $and: [
-    //                 { $gte: ['$createdAt', newDateWithSameDay] },
-    //                 { $lt: ['$createdAt', monthlyEndDate] }
-    //               ]
-    //             },
-    //             1,
-    //             0
-    //           ]
-    //         }
-    //       },
-    //       yearlyCount: {
-    //         $sum: {
-    //           $cond: [
-    //             {
-    //               $and: [
-    //                 { $gte: ['$createdAt', newDateWithSameDay] },
-    //                 { $lt: ['$createdAt', yearlyEndDate] }
-    //               ]
-    //             },
-    //             1,
-    //             0
-    //           ]
-    //         }
-    //       }
-    //     }
-    //   }
-    // ];
-
-
     let forCheckOnly;
 
     //Eligibility true when claim is completed and rejected
@@ -1500,7 +1452,8 @@ exports.editClaimStatus = async (req, res) => {
       body: req.body ? req.body : { "type": "Catch Error" },
       response: {
         code: constant.errorCode,
-        result: err.message
+        result: err.message,
+        stack: err.stack
       }
     }
     await LOG(logData).save()
@@ -2057,9 +2010,9 @@ exports.saveBulkClaim = async (req, res) => {
               let userZip = shipingAddress[shipingAddress.length - 1];
               let addresses = allDataArray[0]?.order.customers.addresses
               const validAddress = addresses.find(address => address.zip != userZip)
-              console.log("validAddress--------------------",addresses)
-              console.log("validAddress--------------------",userZip)
-              console.log("validAddress--------------------",validAddress)
+              console.log("validAddress--------------------", addresses)
+              console.log("validAddress--------------------", userZip)
+              console.log("validAddress--------------------", validAddress)
               if (!validAddress) {
                 item.status = "Invalid user address!"
                 item.exit = true;
