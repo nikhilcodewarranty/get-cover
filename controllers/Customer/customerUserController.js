@@ -1385,21 +1385,21 @@ exports.getDashboardData = async (req, res) => {
       numberOfClaims: numberOfClaims.length,
       valueClaim: valueClaim.length > 0 ? valueClaim[0]?.totalAmount : 0
     }
-    if (!checkOrders_[0] && numberOfClaims.length == 0 && valueClaim.length == 0) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to fetch order data",
-        result: {
-          claimData: claimData,
-          orderData: {
-            "_id": "",
-            "totalAmount": 0,
-            "totalOrder": 0
-          }
-        }
-      })
-      return;
-    }
+    // if (!checkOrders_[0] && numberOfClaims.length == 0 && valueClaim.length == 0) {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Unable to fetch order data",
+    //     result: {
+    //       claimData: claimData,
+    //       orderData: {
+    //         "_id": "",
+    //         "totalAmount": 0,
+    //         "totalOrder": 0
+    //       }
+    //     }
+    //   })
+    //   return;
+    // }
 
 
 
