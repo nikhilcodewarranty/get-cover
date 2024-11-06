@@ -2043,7 +2043,7 @@ exports.saveBulkClaim = async (req, res) => {
           }
           // check login email
           if (item.userEmail != '') {
-            console.log("I am hereeeeeee")
+            console.log("I am hereeeeeee",item.userEmail)
             if (item.userEmail != req.email) {
               item.status = "Invalid Email"
               item.exit = true;
@@ -2051,7 +2051,7 @@ exports.saveBulkClaim = async (req, res) => {
           }
           // check Shipping address
           if (item.shippingTo != '') {
-            console.log("I am 2342342342432")
+            console.log("I am 2342342342432",item.shippingTo)
 
             if (allDataArray[0]?.order.customers) {
               let shipingAddress = item.shippingTo.split(',');   // Split the string by commas
