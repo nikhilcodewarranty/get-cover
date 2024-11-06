@@ -2014,7 +2014,7 @@ exports.saveBulkClaim = async (req, res) => {
           }
           if (item.coverageType) {
             if (item.coverageType != null || item.coverageType != "") {
-              console.log("I am hereeeeeee")
+        
               if (contractData) {
                 let checkCoverageTypeForContract = contractData?.coverageType.find(item1 => item1.label == item?.coverageType)
                 if (!checkCoverageTypeForContract) {
@@ -2041,16 +2041,18 @@ exports.saveBulkClaim = async (req, res) => {
 
             }
           }
-
           // check login email
-          if (item.userEmail != '' || item.userEmail != null) {
+          if (item.userEmail != '') {
+            console.log("I am hereeeeeee")
             if (item.userEmail != req.email) {
               item.status = "Invalid Email"
               item.exit = true;
             }
           }
           // check Shipping address
-          if (item.shippingTo != '' || item.shippingTo != null) {
+          if (item.shippingTo != '') {
+            console.log("I am 2342342342432")
+
             if (allDataArray[0]?.order.customers) {
               let shipingAddress = item.shippingTo.split(',');   // Split the string by commas
               let userZip = shipingAddress[shipingAddress.length - 1];
