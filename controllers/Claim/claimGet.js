@@ -28,6 +28,8 @@ const { S3Client } = require('@aws-sdk/client-s3');
 const { Upload } = require('@aws-sdk/lib-storage');
 const multerS3 = require('multer-s3');
 const { default: axios } = require("axios");
+const { constants } = require("buffer");
+const { message } = require("../../validators/Dealer/update_dealer_price");
 
 // s3 bucket connections
 const s3 = new S3Client({
@@ -1360,12 +1362,43 @@ exports.getcustomerDetail = async (req, res) => {
           from: 'customers',
           localField: 'customerId',
           foreignField: '_id',
-          as: 'customer'
+          as: 'customer',
+          pipeline: [
+            {
+              $lookup: {
+                from: 'users',
+                localField: '_id',
+                foreignField: 'metaId',
+                as: 'customer_user',
+                pipeline: [
+                  { $match: { isPrimary: true } }
+                ]
+              }
+            },
+            {$unwind:'$customer_user'}
+          ]
         }
-      }
+      },
       { $unwind: '$customer' }
     ]
-    let getClaim = await claimService.getClaimWithAggregate()
+    let getClaim = await claimService.getClaimWithAggregate(claimQuery)
+    if (!getClaim[0]) {
+      res.send({
+        code: constants.errorCode,
+        message: "Unable to get the detail"
+      })
+      return
+    }
+    let customerDetail = getClaim[0].customer
+    customerDetail.shippingTo = getClaim[0].shippingTo != "" ? getClaim[0].shippingTo : customerDetail.street + " " + customerDetail.city + " " + customerDetail.state + " " + customerDetail.country + " " + customerDetail.zip
+
+
+    res.send({
+      code: constants.successCode,
+      message: "Success",
+      result: customerDetail
+    })
+
   } catch (err) {
     res.send({
       code: constant.errorCode,
