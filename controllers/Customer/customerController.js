@@ -331,16 +331,18 @@ exports.getAllCustomers = async (req, res, next) => {
       }
 
     }).filter(item => item !== undefined);
+    let emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
     let nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
+    let phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
     let dealerRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
     let resellerRegex = new RegExp(data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', 'i')
-    
-
     let filteredData = result_Array.filter(entry => {
       return (
         nameRegex.test(entry.customerData.username) &&
+        emailRegex.test(entry.email) &&
         dealerRegex.test(entry.customerData.dealerName) &&
-        resellerRegex.test(entry.reseller?.name)
+        resellerRegex.test(entry.reseller?.name) &&
+        phoneRegex.test(entry.phoneNumber)
       );
     });
     res.send({
@@ -814,7 +816,7 @@ exports.changePrimaryUser = async (req, res) => {
     // let updatePrimary = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true })
 
 
-     const checkDealer = await dealerService.getDealerById(updatePrimary.metaId)
+    const checkDealer = await dealerService.getDealerById(updatePrimary.metaId)
 
     const checkReseller = await resellerService.getReseller({ _id: updatePrimary.metaId }, { isDeleted: false })
 
