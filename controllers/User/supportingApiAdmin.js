@@ -458,7 +458,7 @@ exports.createDealer = async (req, res) => {
 
                     let createData = await providerService.createServiceProvider(servicerObject)
                 }
-        
+
                 let allUsersData = allUserData.map((obj, index) => ({
                     ...obj,
                     approvedStatus: 'Approved',
@@ -570,13 +570,13 @@ const getObjectFromS3 = (bucketReadUrl) => {
                 };
 
                 resolve(result);
-            } 
+            }
         });
     });
 };
 
 //Create new service provider By SA
-exports.createServiceProvider = async (req, res) => { 
+exports.createServiceProvider = async (req, res) => {
     try {
         const data = req.body;
         const providerUserArray = data.providers;
@@ -659,3 +659,38 @@ exports.createServiceProvider = async (req, res) => {
         });
     }
 };
+
+
+exports.updateData = async (req, res) => {
+    try {
+        let findUser = await userService.findUser()
+        for (let u = 0; u < findUser.length; u++) {
+            let dataToUpdate = {
+                $set: {
+                    metaData: [{
+                        metaId: findUser[0].metaId,
+                        status: findUser[0].status,
+                        roleId: findUser[0].roleId,
+                        firstName: findUser[0].firstName,
+                        lastName: findUser[0].lastName,
+                        phoneNumber: findUser[0].phoneNumber,
+                        position: findUser[0].position,
+                        isPrimary: findUser[0].isPrimary,
+                        isDeleted: findUser[0].isDeleted,
+                        dialCode: findUser[0].dialCode
+                    }]
+                }
+            }
+            let updateUser = await userService.updateUser(dataToUpdate)
+            console.log(updateUser, "==============================================================")
+        }
+        res.send({
+            code: 200
+        })
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message,
+        })
+    }
+}
