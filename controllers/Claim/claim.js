@@ -1230,7 +1230,7 @@ exports.editClaimStatus = async (req, res) => {
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
-            senderName: admin?.firstName,
+            senderName: 'Admin',
             content: `This is to notify you that the claim rejection process for Claim ID: ${checkClaim.unique_key} has been completed successfully. The claim has been marked as rejected, and the customer has been notified with the reason provided`,
             subject: "Action Notification – Claim Rejection Completed"
           }
@@ -1301,7 +1301,7 @@ exports.editClaimStatus = async (req, res) => {
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
-            senderName: admin?.firstName,
+            senderName: "Admin",
             content: `This is to inform you that the completion process for Claim ID: ${checkClaim.unique_key} has been successfully carried out. All steps have been finalized, and the customer has been notified of the claim completion`,
             content2: '',
             content1: '',
