@@ -391,6 +391,7 @@ exports.addClaim = async (req, res, next) => {
 
 
     let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
+
     let remainingPrice = checkContract.productValue - claimTotal[0]?.amount
     if (data.coverageType != "") {
       let checkCoverageTypeForContract = checkContract.coverageType.find(item => item.value == data.coverageType)
@@ -410,9 +411,8 @@ exports.addClaim = async (req, res, next) => {
       let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0].waitingDays))
 
       let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
-      console.log("getCoverageTypeFromOption", getCoverageTypeFromOption)
+
       const result = getCoverageTypeFromOption.value.filter(item => item.value === data.coverageType).map(item => item.label);
-      console.log(new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0));
       checkCoverageTypeDate = new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0)
       data.lossDate = new Date(data.lossDate).setHours(0, 0, 0, 0)
       if (new Date(checkCoverageTypeDate) > new Date(data.lossDate)) {
@@ -429,7 +429,7 @@ exports.addClaim = async (req, res, next) => {
 
     }
 
-    data.receiptImage = data.file
+    data.receiptImage = data.file    
     data.servicerId = data.servicerId ? data.servicerId : null
 
     const checkOrder = await orderService.getOrder({ _id: checkContract.orderId }, { isDeleted: false })
@@ -559,13 +559,13 @@ exports.addClaim = async (req, res, next) => {
     }
     let mailing;
     if (checkCustomer.isAccountCreate) {
-      emailData.subject = `Claim Received - ${claimResponse.unique_key}`
-      emailData.content = `The Claim # - ${claimResponse.unique_key} has been successfully filed for the Contract # - ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here :`
+      emailData.subject = `Claim Received -${claimResponse.unique_key}`
+      emailData.content = `The Claim # ${claimResponse.unique_key} has been successfully filed for the Contract # ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here :`
       mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary?.email, notificationCC, emailData))
     }
     else {
       emailData.subject = `Claim Received - ${claimResponse.unique_key}`
-      emailData.content = `The Claim # - ${claimResponse.unique_key} has been successfully filed for the Contract # - ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here :`
+      emailData.content = `The Claim # ${claimResponse.unique_key} has been successfully filed for the Contract #  ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here :`
       mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationCC, ["noreply@getcover.com"], emailData))
     }
 
@@ -581,12 +581,12 @@ exports.addClaim = async (req, res, next) => {
 
       }
       if (checkServicer?.isAccountCreate) {
-        emailData.subject = `New Device Received for Repair # - ${claimResponse.unique_key}`
+        emailData.subject = `New Device Received for Repair - ID: ${claimResponse.unique_key}`
         emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please check the following link :`
         mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary?.email, notificationCC, emailData))
       }
       else {
-        emailData.subject = `New Device Received for Repair # - ${claimResponse.unique_key}`
+        emailData.subject = `New Device Received for Repair - ID: ${claimResponse.unique_key}`
         emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please check the following link :`
         mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationCC, ["noreply@getcover.com"], emailData))
       }
@@ -740,8 +740,8 @@ exports.editClaim = async (req, res) => {
         websiteSetting: settingData[0],
         senderName: servicerPrimary ? servicerPrimary.firstName : '',
         redirectId: base_url,
-        content: `We would like to inform you that the repair information for Claim # - ${checkClaim.unique_key} has been successfully updated in our system. Please review the updated details and proceed accordingly.`,
-        subject: `Update on Repair Information for Claim ID # - ${checkClaim.unique_key}`
+        content: `We would like to inform you that the repair information for Claim #  ${checkClaim.unique_key} has been successfully updated in our system. Please review the updated details and proceed accordingly.`,
+        subject: `Update on Repair Information for Claim  # ${checkClaim.unique_key}`
       }
 
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, notificationEmails, emailData))
@@ -1107,7 +1107,7 @@ exports.editClaimStatus = async (req, res) => {
         websiteSetting: settingData[0],
         senderName: customerPrimary?.firstName,
         content: `The Repair Status has been updated on the claim # - ${checkClaim.unique_key} to be ${matchedData.label} .Please review the information on following url`,
-        subject: `Repair Status Updated for Claim # - ${checkClaim.unique_key}`,
+        subject: `Repair Status Updated for Claim #  ${checkClaim.unique_key}`,
         redirectId: base_url
       }
       let mailing = checkCustomer.isAccountCreate ? sgMail.send(emailConstant.sendEmailTemplate(customerPrimary?.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
@@ -1177,7 +1177,7 @@ exports.editClaimStatus = async (req, res) => {
           content: `We regret to inform you that your claim ${checkClaim.unique_key} has been reviewed and, unfortunately, does not meet the criteria for approval. After careful assessment, the claim has been rejected due to the following reason:`,
           content1: `Reason for Rejection : ${data.reason}`,
           content2: `If you believe there has been an error or if you would like further clarification, please feel free to reach out to our support team at support@getcover.com. Our team is here to assist you with any questions you may have.`,
-          subject: `Claim Rejection Notice - Claim # - ${checkClaim.unique_key}`
+          subject: `Claim Rejection Notice -Claim #  ${checkClaim.unique_key}`
         }
         let mailing = checkDealer.isAccountCreate ? sgMail.send(emailConstant.sendClaimStatusNotification(dealerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendClaimStatusNotification(notificationEmails, ["noreply@getcover.com"], emailData))
         //Email to Reseller
@@ -1191,7 +1191,7 @@ exports.editClaimStatus = async (req, res) => {
             content: `We regret to inform you that your claim ${checkClaim.unique_key} has been reviewed and, unfortunately, does not meet the criteria for approval. After careful assessment, the claim has been rejected due to the following reason:`,
             content1: `Reason for Rejection : ${data.reason}`,
             content2: `If you believe there has been an error or if you would like further clarification, please feel free to reach out to our support team at support@getcover.com. Our team is here to assist you with any questions you may have.`,
-            subject: `Claim Rejection Notice - Claim # - ${checkClaim.unique_key}`
+            subject: `Claim Rejection Notice -Claim #  ${checkClaim.unique_key}`
           }
           mailing = checkReseller.isAccountCreate ? sgMail.send(emailConstant.sendClaimStatusNotification(resellerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendClaimStatusNotification(notificationEmails, ["noreply@getcover.com"], emailData))
 
@@ -1247,7 +1247,7 @@ exports.editClaimStatus = async (req, res) => {
           content: `We are pleased to inform you that your claim # - ${checkClaim.unique_key} has been successfully completed. All necessary repairs or services associated with your claim have been finalized`,
           content1: `If you have any further questions or require additional support, please feel free to contact us at support@getcover.com.`,
           content2: '',
-          subject: `Claim Completion Notification – Claim # : ${checkClaim.unique_key}`
+          subject: `Claim Completion Notification – Claim #  ${checkClaim.unique_key}`
         }
         let mailing = checkDealer.isAccountCreate ? sgMail.send(emailConstant.sendClaimStatusNotification(dealerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendClaimStatusNotification(notificationEmails, ["noreply@getcover.com"], emailData))
         //Email to Reseller
@@ -1261,7 +1261,7 @@ exports.editClaimStatus = async (req, res) => {
             content: `We are pleased to inform you that your claim # - ${checkClaim.unique_key} has been successfully completed. All necessary repairs or services associated with your claim have been finalized`,
             content1: `If you have any further questions or require additional support, please feel free to contact us at support@getcover.com.`,
             content2: '',
-            subject: `Claim Completion Notification – Claim # : ${checkClaim.unique_key}`
+            subject: `Claim Completion Notification – Claim #  ${checkClaim.unique_key}`
           }
           mailing = checkReseller.isAccountCreate ? sgMail.send(emailConstant.sendClaimStatusNotification(resellerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendClaimStatusNotification(notificationEmails, ["noreply@getcover.com"], emailData))
 
@@ -1275,7 +1275,7 @@ exports.editClaimStatus = async (req, res) => {
             content: `We are pleased to inform you that your claim # - ${checkClaim.unique_key} has been successfully completed. All necessary repairs or services associated with your claim have been finalized`,
             content1: `If you have any further questions or require additional support, please feel free to contact us at support@getcover.com.`,
             content2: '',
-            subject: `Claim Completion Notification – Claim # : ${checkClaim.unique_key}`
+            subject: `Claim Completion Notification – Claim #  ${checkClaim.unique_key}`
           }
           mailing = checkCustomer.isAccountCreate ? sgMail.send(emailConstant.sendClaimStatusNotification(customerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendClaimStatusNotification(notificationEmails, ["noreply@getcover.com"], emailData))
 
