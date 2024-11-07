@@ -1017,10 +1017,7 @@ exports.rejectDealer = async (req, res) => {
 exports.updateDealerMeta = async (req, res) => {
   try {
     let data = req.body
-
-
     let checkDealer = await dealerService.getDealerById(data.dealerId, {})
-
     let coverageType = data.coverageType
 
     // data.coverageType = coverageType.map(types => types.value);
@@ -1117,7 +1114,6 @@ exports.updateDealerMeta = async (req, res) => {
     }
     else {
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-
     }
     //Save Logs update dealer
     let logData = {
@@ -1158,7 +1154,6 @@ exports.updateDealerMeta = async (req, res) => {
 exports.updateDealerSetting = async (req, res) => {
   try {
     let data = req.body
-
     let checkDealerId = await dealerService.getDealerByName({ _id: req.params.dealerId })
     if (!checkDealerId) {
       res.send({
@@ -1183,7 +1178,6 @@ exports.updateDealerSetting = async (req, res) => {
     if (!data.isAccountCreate) {
       await userService.updateUser({ metaData: { $elemMatch: { metaId: req.params.dealerId } } }, { status: false }, { new: true })
     }
-
     //Update Meta in servicer also     
     if (data.isServicer) {
       const checkServicer = await servicerService.getServiceProviderById({ dealerId: checkDealerId._id })

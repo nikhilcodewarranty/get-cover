@@ -328,13 +328,15 @@ exports.createDealer = async (req, res) => {
                     body: req.body,
                     response: {
                         code: constant.successCode,
-                        message: 'Successfully Created',
+                        message: 'New Dealer Created Successfully',
                     }
                 }
                 await logs(logData).save()
                 res.send({
                     code: constant.successCode,
-                    message: 'Successfully Created',
+                    message: 'New Dealer Created Successfully',
+                    result: dealerStatus
+
                 });
                 return;
             }
@@ -421,7 +423,7 @@ exports.createDealer = async (req, res) => {
                     body: req.body,
                     response: {
                         code: constant.errorCode,
-                        message: "Created Successfully"
+                        message: "New Dealer Created Successfully"
                     }
                 }
                 await logs(logData).save()
@@ -511,7 +513,7 @@ exports.createDealer = async (req, res) => {
                 }
                 res.send({
                     code: constant.successCode,
-                    message: 'Successfully Created',
+                    message: 'New Dealer Created Successfully',
                     result: createMetaData
                 });
                 return;

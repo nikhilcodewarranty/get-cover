@@ -1041,14 +1041,12 @@ exports.createOrder = async (req, res) => {
                 data.productsArray[A].coverageEndDate = addOneDay3.setDate(addOneDay3.getDate() + 1);
 
             }
-            
             if (getChoosedProducts[A].coverageStartDate == "") {
                 data.productsArray[A].coverageStartDate1 = null
                 data.productsArray[A].coverageEndDate1 = null
                 data.productsArray[A].coverageStartDate = null
                 data.productsArray[A].coverageEndDate = null
             }
-            
             if (!getChoosedProducts[A].adhDays) {
                 res.send({
                     code: constant.errorCode,

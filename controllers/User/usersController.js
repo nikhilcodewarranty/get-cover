@@ -1788,8 +1788,32 @@ exports.resetSetting = async (req, res) => {
     let response;
     const getData = await userService.getSetting({});
     let defaultResetColor = [];
+    let defaultPaymentDetail = '';
+    let defaultLightLogo = {};
+    let defaultDarkLogo = {};
+    let defaultFavIcon = {};
+    let defaultAddress = '';
+    let defaultTitle = '';
     if (getData[0]?.defaultColor.length > 0) {
       defaultResetColor = getData[0]?.defaultColor
+      defaultPaymentDetail = getData[0]?.defaultPaymentDetail
+      defaultLightLogo = {
+        fileName: getData[0].defaultLightLogo.fileName,
+        name: getData[0].defaultLightLogo.name,
+        size: getData[0].defaultLightLogo.size
+      }
+      defaultDarkLogo = {
+        fileName: getData[0].defaultDarkLogo.fileName,
+        name: getData[0].defaultDarkLogo.name,
+        size: getData[0].defaultDarkLogo.size
+      }
+      defaultFavIcon = {
+        fileName: getData[0].defaultFavIcon.fileName,
+        name: getData[0].defaultFavIcon.name,
+        size: getData[0].defaultFavIcon.size
+      }
+      defaultAddress = getData[0]?.defaultAddress
+      defaultTitle = getData[0]?.defaultTitle
     }
     else {
       defaultResetColor = [
@@ -1847,7 +1871,16 @@ exports.resetSetting = async (req, res) => {
         }
       ];
     }
-    response = await userService.updateSetting({ _id: getData[0]?._id }, { colorScheme: defaultResetColor, setDefault: 1 }, { new: true })
+    response = await userService.updateSetting({ _id: getData[0]?._id }, {
+      colorScheme: defaultResetColor,
+      logoLight:defaultLightLogo,
+      logoDark:defaultDarkLogo,
+      favIcon:defaultFavIcon,
+      title:defaultTitle,
+      address:defaultAddress,
+      paymentDetail:defaultPaymentDetail,
+      setDefault: 1
+    }, { new: true })
     res.send({
       code: constant.successCode,
       message: "Reset Successfully!!",
@@ -1877,7 +1910,17 @@ exports.setDefault = async (req, res) => {
     let response;
     const getData = await userService.getSetting({});
 
-    response = await userService.updateSetting({ _id: getData[0]?._id }, { defaultColor: getData[0].colorScheme, setDefault: 1 }, { new: true })
+    response = await userService.updateSetting({ _id: getData[0]?._id },
+      {
+        defaultColor: getData[0].colorScheme,
+        setDefault: 1,
+        defaultAddress: getData[0].address,
+        defaultLightLogo: getData[0].logoLight,
+        defaultTitle: getData[0].title,
+        defaultDarkLogo: getData[0].logoDark,
+        defaultPaymentDetail: getData[0].paymentDetail,
+      },
+      { new: true })
 
     res.send({
       code: constant.successCode,

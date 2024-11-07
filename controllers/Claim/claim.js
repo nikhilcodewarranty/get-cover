@@ -15,7 +15,7 @@ const resellerService = require("../../services/Dealer/resellerService");
 const dealerService = require("../../services/Dealer/dealerService");
 const supportingFunction = require('../../config/supportingFunction')
 let dealerController = require("../../controllers/Dealer/dealerController")
-
+const jwt = require("jsonwebtoken");
 const emailConstant = require('../../config/emailConstant');
 const constant = require("../../config/constant");
 const sgMail = require('@sendgrid/mail');
@@ -35,6 +35,7 @@ aws.config.update({
   accessKeyId: process.env.aws_access_key_id,
   secretAccessKey: process.env.aws_secret_access_key,
 });
+
 const S3Bucket = new aws.S3();
 // s3 bucket connections
 const s3 = new S3Client({
@@ -51,6 +52,7 @@ const StorageP = multerS3({
   s3: s3,
   bucket: process.env.bucket_name,
   metadata: (req, file, cb) => {
+    console.log(" process.env.bucket_name", process.env.bucket_name)
     cb(null, { fieldName: file.fieldname });
   },
   key: (req, file, cb) => {
@@ -323,8 +325,8 @@ exports.uploadCommentImage = async (req, res, next) => {
 exports.addClaim = async (req, res, next) => {
   try {
     let data = req.body;
-    let checkContract = await contractService.getContractById({ _id: data.contractId })
 
+    let checkContract = await contractService.getContractById({ _id: data.contractId })
     data.lossDate = new Date(data.lossDate).setDate(new Date(data.lossDate).getDate() + 1)
     data.lossDate = new Date(data.lossDate)
 
@@ -354,6 +356,7 @@ exports.addClaim = async (req, res, next) => {
         return;
       }
     }
+
     let checkCoverageStartDate = new Date(checkContract.coverageStartDate).setHours(0, 0, 0, 0)
     if (new Date(checkCoverageStartDate) > new Date(data.lossDate)) {
       res.send({
@@ -389,6 +392,7 @@ exports.addClaim = async (req, res, next) => {
 
 
     let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
+
     let remainingPrice = checkContract.productValue - claimTotal[0]?.amount
     if (data.coverageType != "") {
       let checkCoverageTypeForContract = checkContract.coverageType.find(item => item.value == data.coverageType)
@@ -408,9 +412,8 @@ exports.addClaim = async (req, res, next) => {
       let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0].waitingDays))
 
       let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
-      console.log("getCoverageTypeFromOption", getCoverageTypeFromOption)
+
       const result = getCoverageTypeFromOption.value.filter(item => item.value === data.coverageType).map(item => item.label);
-      console.log(new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0));
       checkCoverageTypeDate = new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0)
       data.lossDate = new Date(data.lossDate).setHours(0, 0, 0, 0)
       if (new Date(checkCoverageTypeDate) > new Date(data.lossDate)) {
@@ -419,7 +422,7 @@ exports.addClaim = async (req, res, next) => {
           code: 403,
           tittle: `Claim not eligible for ${result[0]}.`,
           // message: `Your selected ${result[0]} is currently not eligible for the claim. You can file the claim for ${result[0]} on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}. Do you wish to proceed in rejecting this claim?`
-          message: `Your claim for ${result[0]} cannot be filed because it is not eligible based on the loss date. You will be able to file this claim starting on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}. Would you like to proceed with rejecting the claim now?`
+          message: `Your claim for ${result[0]} cannot be filed because it is not eligible based on the loss date. You will be able to file this claim starting on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}`
         })
         return
 
@@ -427,7 +430,7 @@ exports.addClaim = async (req, res, next) => {
 
     }
 
-    data.receiptImage = data.file
+    data.receiptImage = data.file    
     data.servicerId = data.servicerId ? data.servicerId : null
 
     const checkOrder = await orderService.getOrder({ _id: checkContract.orderId }, { isDeleted: false })
@@ -527,12 +530,19 @@ exports.addClaim = async (req, res, next) => {
     };
 
     let createNotification = await userService.createNotification(notificationData1);
+
+    // const token = jwt.sign(
+    //   { claimId: claimResponse.unique_key },
+    //   process.env.JWT_ID_SECRET, // Replace with your secret key
+    //   { expiresIn: "1d" }
+    // );
+
     // Send Email code here
     let notificationCC = await supportingFunction.getUserEmails();
     let settingData = await userService.getSetting({});
     let adminCC = await supportingFunction.getUserEmails();
-    // const base_url = `${process.env.SITE_URL}claimList/${claimResponse.unique_key}`
     const base_url = `${process.env.SITE_URL}claim-listing/${claimResponse.unique_key}`
+
 
     //let cc = notificationEmails;
     if (checkDealer.isAccountCreate) {
@@ -553,13 +563,13 @@ exports.addClaim = async (req, res, next) => {
     }
     let mailing;
     if (checkCustomer.isAccountCreate) {
-      emailData.subject = `Claim Received - ${claimResponse.unique_key}`
-      emailData.content = `The Claim # - ${claimResponse.unique_key} has been successfully filed for the Contract # - ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here :`
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationCC, emailData))
+      emailData.subject = `Claim Received -${claimResponse.unique_key}`
+      emailData.content = `The Claim # ${claimResponse.unique_key} has been successfully filed for the Contract # ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here :`
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary?.email, notificationCC, emailData))
     }
     else {
       emailData.subject = `Claim Received - ${claimResponse.unique_key}`
-      emailData.content = `The Claim # - ${claimResponse.unique_key} has been successfully filed for the Contract # - ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here :`
+      emailData.content = `The Claim # ${claimResponse.unique_key} has been successfully filed for the Contract #  ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here :`
       mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationCC, ["noreply@getcover.com"], emailData))
     }
 
@@ -574,12 +584,12 @@ exports.addClaim = async (req, res, next) => {
         redirectId: base_url
       }
       if (checkServicer?.isAccountCreate) {
-        emailData.subject = `New Device Received for Repair # - ${claimResponse.unique_key}`
+        emailData.subject = `New Device Received for Repair - ID ${claimResponse.unique_key}`
         emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please check the following link :`
         mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary?.email, notificationCC, emailData))
       }
       else {
-        emailData.subject = `New Device Received for Repair # - ${claimResponse.unique_key}`
+        emailData.subject = `New Device Received for Repair - ID  ${claimResponse.unique_key}`
         emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please check the following link :`
         mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationCC, ["noreply@getcover.com"], emailData))
       }
@@ -731,10 +741,11 @@ exports.editClaim = async (req, res) => {
         websiteSetting: settingData[0],
         senderName: servicerPrimary ? servicerPrimary.metaData[0]?.firstName : '',
         redirectId: base_url,
-        content: `The Repair Status has been updated on the Claim # - ${checkClaim.unique_key} to be ${lastElement.serviceType}. Please review the information at following link`,
-        subject: `Repair Status Updated for ${checkClaim.unique_key}`
+        content: `We would like to inform you that the repair information for Claim #  ${checkClaim.unique_key} has been successfully updated in our system. Please review the updated details and proceed accordingly.`,
+        subject: `Update on Repair Information for Claim  # ${checkClaim.unique_key}`
       }
-      // let mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, notificationEmails, emailData))
+
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, notificationEmails, emailData))
       let totalClaimQuery1 = [
         {
           $match: {
@@ -814,6 +825,9 @@ exports.editClaimType = async (req, res) => {
     }
 
     if (checkClaim.claimFile == 'open') {
+      if (data.claimType == "theft_and_lost") {
+        data.servicerId = null
+      }
       let option = { new: true }
 
       let updateData = await claimService.updateClaim(criteria, data, option)
@@ -900,6 +914,7 @@ exports.editClaimStatus = async (req, res) => {
     let data = req.body
     let criteria = { _id: req.params.claimId }
     let settingData = await userService.getSetting({});
+
     let checkClaim = await claimService.getClaimById(criteria)
     if (!checkClaim) {
       res.send({
@@ -908,6 +923,7 @@ exports.editClaimStatus = async (req, res) => {
       })
       return
     }
+    const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
 
     const query = { contractId: new mongoose.Types.ObjectId(checkClaim.contractId) }
     let checkContract = await contractService.getContractById({ _id: checkClaim.contractId })
@@ -930,6 +946,8 @@ exports.editClaimStatus = async (req, res) => {
 
 
     if (data.hasOwnProperty("customerStatus")) {
+      const checkCustomerStatus = await optionService.getOption({ name: "customer_status" })
+      const matchedData = checkCustomerStatus?.value.find(status => status.value == data.customerStatus)
       if (data.customerStatus == 'product_received') {
         let option = { new: true }
         let claimStatus = await claimService.updateClaim(criteria, { claimFile: 'completed', claimDate: new Date() }, option)
@@ -998,17 +1016,15 @@ exports.editClaimStatus = async (req, res) => {
       let createNotification = await userService.createNotification(notificationData1);
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
-
       const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
-
       if (checkDealer.isAccountCreate) {
-        notificationEmails.push(dealerPrimary.email)
+        notificationEmails.push(dealerPrimary?.email)
       }
       if (checkReseller?.isAccountCreate) {
-        notificationEmails.push(resellerPrimary.email)
+        notificationEmails.push(resellerPrimary?.email)
       }
       if (checkServicer?.isAccountCreate) {
-        notificationEmails.push(servicerPrimary.email)
+        notificationEmails.push(servicerPrimary?.email)
       }
 
       //Email to customer
@@ -1017,19 +1033,18 @@ exports.editClaimStatus = async (req, res) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: customerPrimary?.firstName,
-        content: `The Customer Status has been updated on the claim # ${checkClaim.unique_key} to be ${data.customerStatus}. Please review the information on the following url.`,
+        senderName: customerPrimary?.metaData[0].firstName,
+        content: `The Customer Status has been updated on the claim # ${checkClaim.unique_key} to be ${matchedData.label}. Please review the information on the following url.`,
         subject: `Customer Status Updated for ${checkClaim.unique_key}`,
         redirectId: base_url
       }
-      let mailing;
-
-      mailing = checkCustomer.isAccountCreate ? sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-
+      let mailing = checkCustomer.isAccountCreate ? sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
 
     }
 
     if (data.hasOwnProperty("repairStatus")) {
+      const checkRepairStatus = await optionService.getOption({ name: "repair_status" })
+      const matchedData = checkRepairStatus?.value.find(status => status.value == data.repairStatus)
       status.trackStatus = [
         {
           status: data.repairStatus,
@@ -1079,61 +1094,28 @@ exports.editClaimStatus = async (req, res) => {
       let createNotification = await userService.createNotification(notificationData1);
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
-      let toEmail = []
-
-      //Email to dealer
+      if (checkDealer.isAccountCreate) {
+        notificationEmails.push(dealerPrimary.email)
+      }
+      if (checkReseller?.isAccountCreate) {
+        notificationEmails.push(resellerPrimary?.email)
+      }
+      if (checkServicer?.isAccountCreate) {
+        notificationEmails.push(servicerPrimary?.email)
+      }
+      // Email to Customer
       let emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: dealerPrimary.metaData[0]?.firstName,
-        content: "The claim repair status has been updated for " + checkClaim.unique_key + "",
-        subject: "Repair Status Update"
+        senderName: customerPrimary?.metaData[0].firstName,
+        content: `The Repair Status has been updated on the claim # - ${checkClaim.unique_key} to be ${matchedData.label} .Please review the information on following url`,
+        subject: `Repair Status Updated for Claim #  ${checkClaim.unique_key}`,
+        redirectId: base_url
       }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
-      // Email to Customer
-      emailData = {
-        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        address: settingData[0]?.address,
-        websiteSetting: settingData[0],
-        senderName: customerPrimary?.metaData[0]?.firstName,
-        content: "The claim repair status has been updated for " + checkClaim.unique_key + "",
-        subject: "Repair Status Update"
-      }
-      mailing = checkCustomer.isAccountCreate ? sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+      let mailing = checkCustomer.isAccountCreate ? sgMail.send(emailConstant.sendEmailTemplate(customerPrimary?.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
 
-      // Email to Reseller
-      if (resellerPrimary) {
-        emailData = {
-          darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-          lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-          address: settingData[0]?.address,
-          websiteSetting: settingData[0],
-          senderName: resellerPrimary?.metaData[0]?.firstName,
-          content: "The claim repair status has been updated for " + checkClaim.unique_key + "",
-          subject: "Repair Status Update"
-        }
-        mailing = checkReseller.isAccountCreate ? sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-
-      }
-      //email to servicer
-      if (servicerPrimary) {
-        emailData = {
-          darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-          lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-          address: settingData[0]?.address,
-          websiteSetting: settingData[0],
-          senderName: servicerPrimary?.metaData[0]?.firstName,
-          content: "The claim repair status has been updated for " + checkClaim.unique_key + "",
-          subject: "Repair Status Update"
-        }
-        const servicerEmail = servicerPrimary ? servicerPrimary?.email : process.env.servicerEmail
-
-        mailing = checkServicer.isAccountCreate ? sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, notificationEmails, emailData)) : sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-
-      }
     }
     if (data.hasOwnProperty("claimStatus")) {
       let claimStatus = await claimService.updateClaim(criteria, { claimFile: data.claimStatus, reason: data.reason ? data.reason : '' }, { new: true })
@@ -1189,71 +1171,150 @@ exports.editClaimStatus = async (req, res) => {
       let createNotification = await userService.createNotification(notificationData1);
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
-      //Email to dealer
-
-      let emailData = {
-        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        address: settingData[0]?.address,
-        websiteSetting: settingData[0],
-        senderName: dealerPrimary.metaData[0]?.firstName,
-        content: "The claim status has been updated for " + checkClaim.unique_key + "",
-        subject: "Claim Status Update"
-      }
-      let mailing = checkDealer.isAccountCreate ? sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-
-      //Email to Reseller
-      if (resellerPrimary) {
-        emailData = {
+      if (data.claimStatus == 'rejected') {
+        //Email to dealer
+        let emailData = {
           darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
           lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
           address: settingData[0]?.address,
           websiteSetting: settingData[0],
-          senderName: resellerPrimary?.metaData[0]?.firstName,
-          content: "The claim status has been updated for " + checkClaim.unique_key + "",
-          subject: "Claim Status Update"
+          senderName: dealerPrimary.metaData[0].firstName,
+          content: `We regret to inform you that your claim ${checkClaim.unique_key} has been reviewed and, unfortunately, does not meet the criteria for approval. After careful assessment, the claim has been rejected due to the following reason:`,
+          content1: `Reason for Rejection : ${data.reason}`,
+          content2: `If you believe there has been an error or if you would like further clarification, please feel free to reach out to our support team at support@getcover.com. Our team is here to assist you with any questions you may have.`,
+          subject: `Claim Rejection Notice -Claim #  ${checkClaim.unique_key}`
         }
-        mailing = checkReseller.isAccountCreate ? sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+        let mailing = checkDealer.isAccountCreate ? sgMail.send(emailConstant.sendClaimStatusNotification(dealerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendClaimStatusNotification(notificationEmails, ["noreply@getcover.com"], emailData))
+        //Email to Reseller
+        if (resellerPrimary) {
+          emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
+            senderName: resellerPrimary?.metaData[0].firstName,
+            content: `We regret to inform you that your claim ${checkClaim.unique_key} has been reviewed and, unfortunately, does not meet the criteria for approval. After careful assessment, the claim has been rejected due to the following reason:`,
+            content1: `Reason for Rejection : ${data.reason}`,
+            content2: `If you believe there has been an error or if you would like further clarification, please feel free to reach out to our support team at support@getcover.com. Our team is here to assist you with any questions you may have.`,
+            subject: `Claim Rejection Notice -Claim #  ${checkClaim.unique_key}`
+          }
+          mailing = checkReseller.isAccountCreate ? sgMail.send(emailConstant.sendClaimStatusNotification(resellerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendClaimStatusNotification(notificationEmails, ["noreply@getcover.com"], emailData))
 
+          //Email to customer
+          emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
+            senderName: customerPrimary.metaData[0].firstName,
+            content: `We regret to inform you that your claim ${checkClaim.unique_key} has been reviewed and, unfortunately, does not meet the criteria for approval. After careful assessment, the claim has been rejected due to the following reason:`,
+            content1: `Reason for Rejection : ${data.reason}`,
+            content2: `If you believe there has been an error or if you would like further clarification, please feel free to reach out to our support team at support@getcover.com. Our team is here to assist you with any questions you may have.`,
+            subject: `Claim Rejection Notice - Claim # ${checkClaim.unique_key}`
+          }
+          mailing = checkCustomer.isAccountCreate ? sgMail.send(emailConstant.sendClaimStatusNotification(customerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendClaimStatusNotification(notificationEmails, ["noreply@getcover.com"], emailData))
+
+          //Email to Servicer
+          if (servicerPrimary) {
+            emailData = {
+              darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+              lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+              address: settingData[0]?.address,
+              websiteSetting: settingData[0],
+              senderName: servicerPrimary?.metaData[0].firstName,
+              content: `We would like to inform you that Claim # - ${checkClaim.unique_key} has been rejected, and no further action is needed on your part for this claim. Please halt any ongoing repair work related to this claim immediately`,
+              content1: `If you have any questions or require clarification, feel free to contact us`,
+              subject: "Claim Update - No Further Action Required"
+            }
+            mailing = checkServicer.isAccountCreate ? sgMail.send(emailConstant.sendClaimStatusNotification(servicerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendClaimStatusNotification(notificationEmails, ["noreply@getcover.com"], emailData))
+
+          }
+          //Email to admin
+          emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
+            senderName: admin?.metaData[0].firstName,
+            content: `This is to notify you that the claim rejection process for Claim # - ${checkClaim.unique_key} has been completed successfully. The claim has been marked as rejected, and the customer has been notified with the reason provided`,
+            subject: "Action Notification – Claim Rejection Completed"
+          }
+          mailing = sgMail.send(emailConstant.sendClaimStatusNotification(notificationEmails, ['noreply@getcover.com'], emailData))
+        }
       }
-
-      //Email to customer
-      emailData = {
-        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        address: settingData[0]?.address,
-        websiteSetting: settingData[0],
-        senderName: customerPrimary.metaData[0]?.firstName,
-        content: "The claim status has been updated for " + checkClaim.unique_key + "",
-        subject: "Claim Status Update"
-      }
-      mailing = checkCustomer.isAccountCreate ? sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-
-      //Email to Servicer
-      if (servicerPrimary) {
-        emailData = {
+      if (data.claimStatus == 'completed') {
+        let emailData = {
           darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
           lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
           address: settingData[0]?.address,
           websiteSetting: settingData[0],
-          senderName: servicerPrimary?.metaData[0]?.firstName,
-          content: "The claim status has been updated for " + checkClaim.unique_key + "",
-          subject: "Claim Status Update"
+          senderName: dealerPrimary.metaData[0].firstName,
+          content: `We are pleased to inform you that your claim # - ${checkClaim.unique_key} has been successfully completed. All necessary repairs or services associated with your claim have been finalized`,
+          content1: `If you have any further questions or require additional support, please feel free to contact us at support@getcover.com.`,
+          content2: '',
+          subject: `Claim Completion Notification – Claim #  ${checkClaim.unique_key}`
         }
-        mailing = checkServicer.isAccountCreate ? sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+        let mailing = checkDealer.isAccountCreate ? sgMail.send(emailConstant.sendClaimStatusNotification(dealerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendClaimStatusNotification(notificationEmails, ["noreply@getcover.com"], emailData))
+        //Email to Reseller
+        if (resellerPrimary) {
+          emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
+            senderName: resellerPrimary?.metaData[0].firstName,
+            content: `We are pleased to inform you that your claim # - ${checkClaim.unique_key} has been successfully completed. All necessary repairs or services associated with your claim have been finalized`,
+            content1: `If you have any further questions or require additional support, please feel free to contact us at support@getcover.com.`,
+            content2: '',
+            subject: `Claim Completion Notification – Claim #  ${checkClaim.unique_key}`
+          }
+          mailing = checkReseller.isAccountCreate ? sgMail.send(emailConstant.sendClaimStatusNotification(resellerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendClaimStatusNotification(notificationEmails, ["noreply@getcover.com"], emailData))
 
+          //Email to customer
+          emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
+            senderName: customerPrimary.metaData[0].firstName,
+            content: `We are pleased to inform you that your claim # - ${checkClaim.unique_key} has been successfully completed. All necessary repairs or services associated with your claim have been finalized`,
+            content1: `If you have any further questions or require additional support, please feel free to contact us at support@getcover.com.`,
+            content2: '',
+            subject: `Claim Completion Notification – Claim #  ${checkClaim.unique_key}`
+          }
+          mailing = checkCustomer.isAccountCreate ? sgMail.send(emailConstant.sendClaimStatusNotification(customerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendClaimStatusNotification(notificationEmails, ["noreply@getcover.com"], emailData))
+
+          //Email to Servicer
+          if (servicerPrimary) {
+            emailData = {
+              darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+              lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+              address: settingData[0]?.address,
+              websiteSetting: settingData[0],
+              senderName: servicerPrimary?.metaData[0].firstName,
+              content: `We are pleased to inform you that Claim # - ${checkClaim.unique_key} has been successfully completed. Thank you for your prompt and professional service in handling this claim. Your efforts have been invaluable in ensuring a smooth process for our customer.`,
+              content1: `Should you have any questions or require additional information, please do not hesitate to reach out.`,
+              content2: '',
+              subject: "Claim Update – Service Completion Confirmed"
+            }
+            mailing = checkServicer.isAccountCreate ? sgMail.send(emailConstant.sendClaimStatusNotification(servicerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendClaimStatusNotification(notificationEmails, ["noreply@getcover.com"], emailData))
+
+          }
+          //Email to admin
+          emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
+            senderName: admin?.metaData[0].firstName,
+            content: `This is to inform you that the completion process for Claim ID: [Claim ID Number] has been successfully carried out. All steps have been finalized, and the customer has been notified of the claim completion`,
+            content2: '',
+            content1: '',
+            subject: "Action Notification – Claim Completion Processed"
+          }
+          mailing = sgMail.send(emailConstant.sendClaimStatusNotification(notificationEmails, ['noreply@getcover.com'], emailData))
+        }
       }
-      //Email to admin
-      emailData = {
-        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        address: settingData[0]?.address,
-        websiteSetting: settingData[0],
-        senderName: admin?.metaData[0]?.firstName,
-        content: "The claim status has been updated for " + checkClaim.unique_key + "",
-        subject: "Claim Status Update"
-      }
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
     }
 
     if (data.hasOwnProperty("claimType")) {
@@ -1285,29 +1346,49 @@ exports.editClaimStatus = async (req, res) => {
       return;
     }
 
-    const currentDate = new Date();
-    const currentYear = currentDate.getFullYear();
-    const currentMonth = currentDate.getMonth() + 1; // 
+
+    let baseDate = new Date(checkContract.coverageStartDate);
+    let newDateToCheck = new Date()
+    const newDayOfMonth = newDateToCheck.getDate();
+    const dayOfMonth = baseDate.getDate();
+
+    // Get the current year and month
+    const currentYear1 = new Date().getFullYear();
+    const currentMonth1 = new Date().getMonth(); // Note: 0 = January, so this is the current month index
+
+    // Create a new date with the current year, current month, and the day from baseDate
+    let newDateWithSameDay = new Date(currentYear1, currentMonth1, dayOfMonth);
+    if (Number(newDayOfMonth) > Number(dayOfMonth)) {
+      newDateWithSameDay = new Date(new Date(newDateWithSameDay).setMonth(newDateWithSameDay.getMonth() - 1));
+    }
+
+    const monthlyEndDate = new Date(new Date(newDateWithSameDay).setMonth(newDateWithSameDay.getMonth() + 1)); // Ends on August 11, 2024
+    const yearlyEndDate = new Date(new Date(newDateWithSameDay).setFullYear(newDateWithSameDay.getFullYear() + 1)); // Ends on July 11, 2025
+
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0); // Start of today (00:00)
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999); // End of today (23:59)
 
     let getNoOfClaimQuery = [
       {
-        $match: { contractId: new mongoose.Types.ObjectId(checkClaim.contractId), claimFile: "completed" }
-      },
-      // Step 1: Add fields to extract year and month from the createdAt field
-      {
-        $addFields: {
-          year: { $year: '$createdAt' },
-          month: { $month: '$createdAt' }
+        $match: {
+          contractId: new mongoose.Types.ObjectId(checkClaim.contractId),
+          claimFile: "completed"
         }
       },
-      // Step 2: Group the results to get counts for both year and month
       {
         $group: {
           _id: null,
           monthlyCount: {
             $sum: {
               $cond: [
-                { $and: [{ $eq: ['$year', currentYear] }, { $eq: ['$month', currentMonth] }] },
+                {
+                  $and: [
+                    { $gte: ['$createdAt', newDateWithSameDay] },
+                    { $lt: ['$createdAt', monthlyEndDate] }
+                  ]
+                },
                 1,
                 0
               ]
@@ -1316,7 +1397,12 @@ exports.editClaimStatus = async (req, res) => {
           yearlyCount: {
             $sum: {
               $cond: [
-                { $eq: ['$year', currentYear] },
+                {
+                  $and: [
+                    { $gte: ['$createdAt', newDateWithSameDay] },
+                    { $lt: ['$createdAt', yearlyEndDate] }
+                  ]
+                },
                 1,
                 0
               ]
@@ -1324,9 +1410,7 @@ exports.editClaimStatus = async (req, res) => {
           }
         }
       }
-    ]
-
-
+    ];
 
     let forCheckOnly;
 
@@ -1354,34 +1438,36 @@ exports.editClaimStatus = async (req, res) => {
         forCheckOnly = true
       }
 
-
       if (forCheckOnly) {
         let checkNoOfClaims = await claimService.getClaimWithAggregate(getNoOfClaimQuery)
-        console.log("checking the data +++++++++++++++++++", checkNoOfClaims)
+        console.log(checkNoOfClaims, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
         if (checkNoOfClaims.length == 0) {
-          checkNoOfClaims = {
+          checkNoOfClaims = [{
             "monthlyCount": 0,
             "yearlyCount": 0
-          }
+          }]
         }
         let checkThePeriod = checkContract.noOfClaim
         let getTotalClaim = await claimService.getClaims({ contractId: checkClaim.contractId, claimFile: "completed" })
         let noOfTotalClaims = getTotalClaim.length
-        console.log("check the unlimited---------------------------------", checkThePeriod.value)
         if (checkThePeriod.value != -1) {
           if (checkThePeriod.period == "Monthly") {
             let eligibility = checkNoOfClaims[0].monthlyCount >= checkThePeriod.value ? false : true
-            console.log("monthly check --------------------------------", checkNoOfClaims[0].monthlyCount, checkThePeriod.value, eligibility)
             if (eligibility) {
-              eligibility = noOfTotalClaims >= checkContract.noOfClaimPerPeriod ? false : true
+              if (checkContract.noOfClaimPerPeriod != -1) {
+                eligibility = noOfTotalClaims >= checkContract.noOfClaimPerPeriod ? false : true
+
+              }
             }
             const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: eligibility }, { new: true })
           } else {
             let eligibility = checkNoOfClaims[0].yearlyCount >= checkThePeriod.value ? false : true
-            console.log("yearly check --------------------------------", checkNoOfClaims[0].yearlyCount, checkThePeriod.value, eligibility)
 
             if (eligibility) {
-              eligibility = noOfTotalClaims >= checkContract.noOfClaimPerPeriod ? false : true
+              if (checkContract.noOfClaimPerPeriod != -1) {
+
+                eligibility = noOfTotalClaims >= checkContract.noOfClaimPerPeriod ? false : true
+              }
             }
             const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: eligibility }, { new: true })
           }
@@ -1422,14 +1508,16 @@ exports.editClaimStatus = async (req, res) => {
       body: req.body ? req.body : { "type": "Catch Error" },
       response: {
         code: constant.errorCode,
-        result: err.message
+        result: err.message,
+        stack: err.stack
       }
     }
     await LOG(logData).save()
 
     res.send({
       code: constant.errorCode,
-      message: err.message
+      message: err.message,
+      stack: err.stack
     })
   }
 }
@@ -1441,6 +1529,11 @@ exports.editServicer = async (req, res) => {
     let criteria = { _id: req.params.claimId }
     let settingData = await userService.getSetting({});
     let checkClaim = await claimService.getClaimById(criteria)
+    let checkContract = await contractService.getContractById({ _id: checkClaim.contractId })
+    const checkOrder = await orderService.getOrder({ _id: checkContract.orderId }, { isDeleted: false })
+    const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
+    const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
+
     if (!checkClaim) {
       res.send({
         code: constant.errorCode,
@@ -1534,12 +1627,14 @@ exports.editServicer = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: getPrimary ? getPrimary.metaData[0]?.firstName : "",
-      content: "The servicer has been updated for the claim " + checkClaim.unique_key + "",
-      subject: "Servicer Update"
+      senderName: getPrimary ? getPrimary.metaData[0].firstName : "",
+      subject: `New Device Received for Repair # - ${checkClaim.unique_key}`,
+      redirectId: base_url,
+      content: `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please check the following link :`
+
     }
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary ? getPrimary.email : process.env.servicerEmail, notificationEmails, emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary?.email, notificationEmails, emailData))
     res.send({
       code: constant.successCode,
       message: 'Success!',
@@ -1896,7 +1991,9 @@ exports.saveBulkClaim = async (req, res) => {
                 "order.unique_key": 1,
                 "order.servicerId": 1,
                 "order.resellerId": 1,
+                "order.customers": 1,
                 "order.dealer": 1,
+                "order.customers": 1,
                 "order.reseller": 1,
                 "order.servicer": 1
               }
@@ -1918,7 +2015,6 @@ exports.saveBulkClaim = async (req, res) => {
 
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
       let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
-
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {
         if (!item.exit) {
@@ -1991,6 +2087,8 @@ exports.saveBulkClaim = async (req, res) => {
             item.status = "Loss date should be in between coverage start date and present date!"
             item.exit = true;
           }
+
+
           if (allDataArray.length > 0 && servicerData) {
 
             flag = false;
@@ -2029,6 +2127,7 @@ exports.saveBulkClaim = async (req, res) => {
           item.servicerData = null
         }
       })
+
 
       let finalArray = []
       //Save bulk claim
@@ -2606,7 +2705,7 @@ exports.sendMessages = async (req, res) => {
     IDs.push(dealerPrimary._id)
 
     let notificationData1 = {
-      title: "Message sent",
+      title: "New message for claim # :" + checkClaim.unique_key + "",
       description: "The one new message for " + checkClaim.unique_key + "",
       userId: req.teammateId,
       contentId: checkClaim._id,
@@ -2619,19 +2718,23 @@ exports.sendMessages = async (req, res) => {
 
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
-
+    const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
     // notificationEmails.push(emailTo.email);
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: emailTo?.metaData[0]?.firstName,
-      content: "The new message for " + checkClaim.unique_key + " claim",
-      subject: "New message for claim # :" + checkClaim.unique_key + ""
+      commentBy: "Amit",
+      date: new Date().toLocaleDateString("en-US"),
+      senderName: emailTo?.metaData[0].firstName,
+      comment: data.content,
+      content: `A new comment has been added to Claim #-${checkClaim.unique_key}. Here are the details:`,
+      subject: "New message for claim # :" + checkClaim.unique_key + "",
+      redirectId: base_url
     }
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(emailTo?.email, notificationEmails, emailData))
+    let mailing = sgMail.send(emailConstant.sendCommentNotification(emailTo?.email, notificationEmails, emailData))
     res.send({
       code: constant.successCode,
       messages: 'Message Sent!',
@@ -2679,7 +2782,7 @@ exports.statusClaim = async (req, res) => {
       const customerLastResponseDate = customerStatus[0]?.date
       const latestServicerShippedDate = new Date(latestServicerShipped);
       const sevenDaysAfterShippedDate = new Date(latestServicerShippedDate);
-      sevenDaysAfterShippedDate.setDate(sevenDaysAfterShippedDate.getDate() + 7);
+      sevenDaysAfterShippedDate.setDate(sevenDaysAfterShippedDate.getDate() + 1);
       if (new Date() === sevenDaysAfterShippedDate || new Date() > sevenDaysAfterShippedDate) {
         // Update status for track status
         messageData.trackStatus = [
@@ -3583,48 +3686,165 @@ exports.getCoverageType = async (req, res) => {
   }
 }
 
-
-
-
 exports.updateClaimDate = async (req, res) => {
   try {
-    let updateObject = {
-      $set: {
-        customerStatus: [
-          {
-            status: "request_submitted",
-            date: "2024-10-22T17:31:03.140+00:00"
-          }
-        ],
-        trackStatus: [
-          {
-            status: "open",
-            date: "2024-10-22T17:31:03.140+00:00"
-          },
-          {
-            status: "request_submitted",
-            date: "2024-10-22T17:31:03.140+00:00"
-          },
-          {
-            status: "request_sent",
-            date: "2024-10-22T17:31:03.140+00:00"
-          }
-        ],
-        claimStatus: [
-          {
-            status: "open",
-            date: "2024-10-22T17:31:03.140+00:00"
-          },
-        ],
-        repairStatus: [
-          {
-            status: "request_sent",
-            date: "2024-10-22T17:31:03.140+00:00"
-          }
-        ]
-      }
+
+    let baseDate = new Date('2024-07-03');
+    let newDateToCheck = new Date()
+    const newDayOfMonth = newDateToCheck.getDate();
+    const dayOfMonth = baseDate.getDate();
+
+    // Get the current year and month
+    const currentYear1 = new Date().getFullYear();
+    const currentMonth1 = new Date().getMonth(); // Note: 0 = January, so this is the current month index
+
+    // Create a new date with the current year, current month, and the day from baseDate
+    let newDateWithSameDay = new Date(currentYear1, currentMonth1, dayOfMonth);
+    if (Number(newDayOfMonth) > Number(dayOfMonth)) {
+      newDateWithSameDay = new Date(new Date(newDateWithSameDay).setMonth(newDateWithSameDay.getMonth() - 1));
     }
-    let updateClaim = await claimService.markAsPaid({ orderId: "GC-2024-100003" }, updateObject, { new: true })
+
+    const monthlyEndDate = new Date(new Date(newDateWithSameDay).setMonth(newDateWithSameDay.getMonth() + 1)); // Ends on August 11, 2024
+    const yearlyEndDate = new Date(new Date(newDateWithSameDay).setFullYear(newDateWithSameDay.getFullYear() + 1)); // Ends on July 11, 2025
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0); // Start of today (00:00)
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999); // End of today (23:59)
+
+    let getNoOfClaimQuery = [
+      {
+        $match: {
+          contractId: new mongoose.Types.ObjectId("6712381331a2529f6e009d85"),
+          claimFile: "completed"
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          monthlyCount: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $gte: ['$createdAt', newDateWithSameDay] },
+                    { $lt: ['$createdAt', monthlyEndDate] }
+                  ]
+                },
+                1,
+                0
+              ]
+            }
+          },
+          yearlyCount: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $gte: ['$createdAt', newDateWithSameDay] },
+                    { $lt: ['$createdAt', yearlyEndDate] }
+                  ]
+                },
+                1,
+                0
+              ]
+            }
+          },
+          todayCount: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    {
+                      $gte: ['$createdAt', startOfToday
+                      ]
+                    },
+                    {
+                      $lt: ['$createdAt', endOfToday
+                      ]
+                    }
+                  ]
+                },
+                1,
+                0
+              ]
+            }
+          }
+        }
+      }
+    ];
+
+
+    let checkNoOfClaims = await claimService.getClaimWithAggregate(getNoOfClaimQuery)
+
+    res.send({
+      checkNoOfClaims, getNoOfClaimQuery
+    })
+
+
+
+
+
+    // let emailData = {
+    //   // darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + "settingData[0]?.logoDark.fileName",
+    //   // lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+    //   address: "settingData[0]?.address",
+    //   websiteSetting: "settingData[0]",
+    //   senderName: "emailTo?.firstName",
+    //   content: "The new message for " + "checkClaim.unique_key" + " claim",
+    //   subject: "New Message"
+    // }
+    // let mailing = sgMail.send(emailConstant.sendEmailTemplate("anil@codenomad.net", ["amit@codenomad.net"], "emailData"))
+    // res.send({
+    //   mailing
+    // })
+
+
+
+
+
+
+
+
+
+
+
+    // let updateObject = {
+    //   $set: {
+    //     customerStatus: [
+    //       {
+    //         status: "request_submitted",
+    //         date: "2024-10-22T17:31:03.140+00:00"
+    //       }
+    //     ],
+    //     trackStatus: [
+    //       {
+    //         status: "open",
+    //         date: "2024-10-22T17:31:03.140+00:00"
+    //       },
+    //       {
+    //         status: "request_submitted",
+    //         date: "2024-10-22T17:31:03.140+00:00"
+    //       },
+    //       {
+    //         status: "request_sent",
+    //         date: "2024-10-22T17:31:03.140+00:00"
+    //       }
+    //     ],
+    //     claimStatus: [
+    //       {
+    //         status: "open",
+    //         date: "2024-10-22T17:31:03.140+00:00"
+    //       },
+    //     ],
+    //     repairStatus: [
+    //       {
+    //         status: "request_sent",
+    //         date: "2024-10-22T17:31:03.140+00:00"
+    //       }
+    //     ]
+    //   }
+    // }
+    // let updateClaim = await claimService.markAsPaid({ orderId: "GC-2024-100003" }, updateObject, { new: true })
 
   } catch (err) {
     res.send({
@@ -3632,3 +3852,4 @@ exports.updateClaimDate = async (req, res) => {
     })
   }
 }
+

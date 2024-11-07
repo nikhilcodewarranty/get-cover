@@ -34,6 +34,9 @@ aws.config.update({
     secretAccessKey: process.env.aws_secret_access_key,
 });
 const S3Bucket = new aws.S3();
+
+
+
 //Create Reseller
 exports.createReseller = async (req, res) => {
     try {
@@ -1996,6 +1999,7 @@ exports.editOrderDetail = async (req, res) => {
 // };
 
 //Edit reseller
+
 exports.editResellers = async (req, res) => {
     try {
         let data = req.body

@@ -14,7 +14,8 @@ const dealerBookSchema = new mongoose.Schema({
   },
   dealerSku: {
     type: String,
-    default: ''
+    default: '',
+    trim: true
   },
   status: {
     type: Boolean,
@@ -27,7 +28,8 @@ const dealerBookSchema = new mongoose.Schema({
   },
   description: {
     type: String,
-    default: ''
+    default: '',
+    trim: true
   },
   isDeleted: {
     type: Boolean,
