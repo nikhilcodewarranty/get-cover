@@ -9,6 +9,7 @@ const customerService = require("../../services/Customer/customerService");
 const dealerPriceService = require("../../services/Dealer/dealerPriceService");
 const priceBookService = require("../../services/PriceBook/priceBookService");
 const LOG = require('../../models/User/logs')
+const optionService = require("../../services/User/optionsService");
 const userService = require("../../services/User/userService");
 const constant = require('../../config/constant')
 const emailConstant = require('../../config/emailConstant');
@@ -526,6 +527,7 @@ exports.createCustomer = async (req, res, next) => {
             dealerId: checkDealer._id,
             isAccountCreate: !checkDealer.userAccount ? false : data.status,
             resellerId: checkReseller ? checkReseller._id : null,
+            resellerId1: checkReseller ? checkReseller._id : null,
             zip: data.zip,
             state: data.state,
             country: data.country,
@@ -568,23 +570,23 @@ exports.createCustomer = async (req, res, next) => {
         teamMembers = teamMembers.map(member => ({
             ...member,
             metaData:
-              [
-                {
-                  firstName: member.firstName,
-                  lastName: member.lastName,
-                  phoneNumber: member.phoneNumber,
-                  metaId: createdCustomer._id,
-                  roleId: process.env.customer,
-                  position: member.position,
-                  dialCode: member?.dialCode,
-                  status: !data.status ? false : member.status,
-                  isPrimary: member.isPrimary
-                }
-              ],
+                [
+                    {
+                        firstName: member.firstName,
+                        lastName: member.lastName,
+                        phoneNumber: member.phoneNumber,
+                        metaId: createdCustomer._id,
+                        roleId: process.env.customer,
+                        position: member.position,
+                        dialCode: member?.dialCode,
+                        status: !data.status ? false : member.status,
+                        isPrimary: member.isPrimary
+                    }
+                ],
             approvedStatus: "Approved",
-      
-          })
-          );
+
+        })
+        );
         // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
         // Primary User Welcoime email
@@ -592,16 +594,28 @@ exports.createCustomer = async (req, res, next) => {
         let settingData = await userService.getSetting({});
 
         let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
-        let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkReseller?._id, isPrimary: true } }  })
+        let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkReseller?._id, isPrimary: true } } })
 
         notificationEmails.push(getPrimary.email)
         notificationEmails.push(resellerPrimary?.email)
+        //Merge start singleServer
+        // let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
+        // let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkReseller?._id, isPrimary: true })
+        if (checkDealer.isAccountCreate) {
+            IDs.push(getPrimary._id)
+            notificationEmails.push(getPrimary.email)
+        }
+        if (checkReseller.isAccountCreate) {
+            IDs.push(resellerPrimary?._id)
+            notificationEmails.push(resellerPrimary.email)
+        }
+        //Merge end
         let emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
-            senderName: getPrimary.firstName,
+            senderName: getPrimary.metaData[0]?.firstName,
             content: "We are delighted to inform you that the customer account for " + createdCustomer.username + " has been created.",
             subject: "Customer Account Created - " + createdCustomer.username
         }
@@ -635,8 +649,7 @@ exports.createCustomer = async (req, res, next) => {
             }
         }
         //Send Notification to customer,admin,reseller,dealer 
-        IDs.push(getPrimary._id)
-        IDs.push(resellerPrimary?._id)
+
         let notificationData = {
             title: "New Customer Created",
             description: data.accountName + " " + "customer account has been created successfully!",
@@ -794,7 +807,7 @@ exports.createReseller = async (req, res) => {
         // Primary User Welcoime email
         let notificationEmails = await supportingFunction.getUserEmails();
         let settingData = await userService.getSetting({});
-        let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
+        let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } }  })
         notificationEmails.push(getPrimary.email)
         let emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -802,7 +815,7 @@ exports.createReseller = async (req, res) => {
             address: settingData[0]?.address,
             title: settingData[0]?.title,
             websiteSetting: settingData[0],
-            senderName: getPrimary.firstName,
+            senderName: getPrimary.metaData[0]?.firstName,
             content: "We are delighted to inform you that the reseller account for " + createdReseler.name + " has been created.",
             subject: "Reseller Account Created - " + createdReseler.name
         }
@@ -883,10 +896,7 @@ exports.createOrder = async (req, res) => {
             req.userId,
             projection
         );
-
         const orderTermCondition = data.termCondition != null ? data.termCondition : {}
-
-
         if (!checkDealer) {
             res.send({
                 code: constant.errorCode,
@@ -1015,6 +1025,28 @@ exports.createOrder = async (req, res) => {
 
         let getChoosedProducts = data.productsArray
         for (let A = 0; A < getChoosedProducts.length; A++) {
+            if (getChoosedProducts[A].coverageStartDate != "") {
+                let addOneDay = new Date(getChoosedProducts[A].coverageStartDate)
+                let addOneDay1 = new Date(getChoosedProducts[A].coverageStartDate)
+                let addOneDay2 = new Date(getChoosedProducts[A].coverageStartDate)
+                addOneDay2.setMonth(addOneDay2.getMonth() + getChoosedProducts[A].term)
+                addOneDay2.setDate(addOneDay2.getDate() - 1)
+                let addOneDay3 = new Date(getChoosedProducts[A].coverageStartDate)
+                addOneDay3.setMonth(addOneDay3.getMonth() + getChoosedProducts[A].term)
+                addOneDay3.setDate(addOneDay3.getDate() - 1)
+
+                data.productsArray[A].coverageStartDate1 = addOneDay
+                data.productsArray[A].coverageEndDate1 = addOneDay2
+                data.productsArray[A].coverageStartDate = addOneDay1.setDate(addOneDay1.getDate() + 1);
+                data.productsArray[A].coverageEndDate = addOneDay3.setDate(addOneDay3.getDate() + 1);
+
+            }
+            if (getChoosedProducts[A].coverageStartDate == "") {
+                data.productsArray[A].coverageStartDate1 = null
+                data.productsArray[A].coverageEndDate1 = null
+                data.productsArray[A].coverageStartDate = null
+                data.productsArray[A].coverageEndDate = null
+            }
             if (!getChoosedProducts[A].adhDays) {
                 res.send({
                     code: constant.errorCode,
@@ -1103,9 +1135,10 @@ exports.createOrder = async (req, res) => {
             content: "The new order " + savedResponse.unique_key + "  has been created for " + getPrimary.firstName + "",
             subject: "New Order"
         }
+        if (req.body.sendNotification) {
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+        }
 
-
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
 
         res.send({
             code: constant.successCode,
@@ -1324,6 +1357,48 @@ exports.editOrderDetail = async (req, res) => {
             serviceCoverage = "Parts & Labor"
         }
         data.serviceCoverageType = serviceCoverage != '' ? serviceCoverage : req.body.serviceCoverageType
+
+        let getChoosedProducts = data.productsArray
+        for (let A = 0; A < getChoosedProducts.length; A++) {
+            if (getChoosedProducts[A].coverageStartDate != "") {
+                let addOneDay = new Date(getChoosedProducts[A].coverageStartDate)
+                let addOneDay1 = new Date(getChoosedProducts[A].coverageStartDate)
+                let addOneDay2 = new Date(getChoosedProducts[A].coverageStartDate)
+                console.log("checking the date+++++++++++++++++++++++", addOneDay2)
+                addOneDay2.setMonth(addOneDay2.getMonth() + getChoosedProducts[A].term)
+                addOneDay2.setDate(addOneDay2.getDate() - 1)
+                console.log("checking the date+++++++++++++++++++++++", addOneDay2)
+                let addOneDay3 = new Date(getChoosedProducts[A].coverageStartDate)
+                console.log("checking the date+++++++++++++++++++++++", addOneDay3)
+                addOneDay3.setMonth(addOneDay3.getMonth() + getChoosedProducts[A].term)
+                addOneDay3.setDate(addOneDay3.getDate() - 1)
+
+                data.productsArray[A].coverageStartDate1 = addOneDay
+                data.productsArray[A].coverageEndDate1 = addOneDay2
+                data.productsArray[A].coverageStartDate = addOneDay1.setDate(addOneDay1.getDate() + 1);
+                data.productsArray[A].coverageEndDate = addOneDay3.setDate(addOneDay3.getDate() + 1);
+
+            }
+            if (getChoosedProducts[A].coverageStartDate == "") {
+                data.productsArray[A].coverageStartDate1 = null
+                data.productsArray[A].coverageEndDate1 = null
+                data.productsArray[A].coverageStartDate = null
+                data.productsArray[A].coverageEndDate = null
+            }
+            if (!getChoosedProducts[A].adhDays) {
+                res.send({
+                    code: constant.errorCode,
+                    message: "Coverage type data for waiting days and deductible is not provided"
+                })
+                return;
+            }
+            if (getChoosedProducts[A].adhDays.length == 0) {
+                let dealerPriceBookId = getChoosedProducts[A].priceBookId
+                let getDealerPriceBookId = await dealerPriceService.getDealerPriceById({ dealerId: checkId.dealerId, priceBook: dealerPriceBookId })
+                data.productsArray[A].adhDays = getDealerPriceBookId.adhDays
+            }
+        }
+
         let savedResponse = await orderService.updateOrder(
             { _id: req.params.orderId },
             data,
@@ -1381,7 +1456,7 @@ exports.editOrderDetail = async (req, res) => {
         IDs.push(dealerPrimary._id)
         let notificationData = {
             title: "Order update",
-            description: "The order " + checkOrder.unique_key + " has been updated",
+            description: "Your order " + checkOrder.unique_key + " has been updated in our system. The order is still pending, as there is some data missing.",
             userId: req.teammateId,
             contentId: checkOrder._id,
             flag: 'order',
@@ -1399,11 +1474,13 @@ exports.editOrderDetail = async (req, res) => {
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
             senderName: dealerPrimary.metaData[0]?.firstName,
-            content: "The  order " + checkOrder.unique_key + " has been updated",
+            // senderName: dealerPrimary.firstName,
+            content: "Your order " + checkOrder.unique_key + " has been updated in our system. The order is still pending, as there is some data missing.Please update the data using the link here",
             subject: "Order Updated"
         }
-
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+        if (req.body.sendNotification) {
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+        }
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
             let savedResponse = await orderService.updateOrder(
                 { _id: req.params.orderId },
@@ -1425,7 +1502,9 @@ exports.editOrderDetail = async (req, res) => {
                 const result = await getObjectFromS3(bucketReadUrl);
                 let priceBookId = product.priceBookId;
                 let coverageStartDate = product.coverageStartDate;
+                let coverageStartDate1 = product.coverageStartDate1;
                 let coverageEndDate = product.coverageEndDate;
+                let coverageEndDate1 = product.coverageEndDate1;
                 let orderProductId = product._id;
                 let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
                 let projection = { isDeleted: 0 };
@@ -1528,36 +1607,47 @@ exports.editOrderDetail = async (req, res) => {
 
                     let minDate1 = futureDate.setDate(futureDate.getDate() + adhDaysArray[0].waitingDays);
                     if (!product.isManufacturerWarranty) {
-                        let minDate2
-                        if (orderServiceCoverageType.serviceCoverageType == "Parts") {
-                            minDate2 = partsWarrantyDate1
-                        } else if (orderServiceCoverageType.serviceCoverageType == "Labor" || orderServiceCoverageType.serviceCoverageType == "Labour") {
-                            minDate2 = labourWarrantyDate1
-                        } else {
-                            if (partsWarrantyDate1 > labourWarrantyDate1) {
-                                minDate2 = labourWarrantyDate1
+                        if (adhDaysArray.length == 1) {
+                            const hasBreakdown = adhDaysArray.some(item => item.value === 'breakdown');
+                            if (hasBreakdown) {
+                                let minDate2
+                                if (orderServiceCoverageType == "Parts") {
+                                    minDate2 = partsWarrantyDate1
+                                } else if (orderServiceCoverageType == "Labour" || orderServiceCoverageType == "Labor") {
+                                    minDate2 = labourWarrantyDate1
+                                } else {
+                                    if (partsWarrantyDate1 > labourWarrantyDate1) {
+                                        minDate2 = labourWarrantyDate1
+                                    } else {
+                                        minDate2 = partsWarrantyDate1
+                                    }
+                                }
+                                if (minDate1 > minDate2) {
+                                    minDate = minDate1
+                                }
+                                if (minDate1 < minDate2) {
+                                    minDate = minDate2
+                                }
                             } else {
-                                minDate2 = partsWarrantyDate1
+                                minDate = minDate1
                             }
                         }
-                        if (minDate1 > minDate2) {
+                        else {
                             minDate = minDate1
-                        }
-                        if (minDate1 < minDate2) {
-                            minDate = minDate2
                         }
 
                     } else {
                         minDate = minDate1
 
                     }
+                    minDate = new Date(minDate).setHours(0, 0, 0, 0)
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
                     let contractObject = {
                         orderId: savedResponse._id,
                         orderProductId: orderProductId,
                         productName: priceBook[0].name,
                         pName: priceBook[0]?.pName,
-                        minDate: minDate,
+                        minDate: new Date(minDate),
                         manufacture: data.brand,
                         model: data.model,
                         partsWarranty: partsWarrantyDate1,
@@ -1570,7 +1660,9 @@ exports.editOrderDetail = async (req, res) => {
                         orderUniqueKey: savedResponse.unique_key,
                         venderOrder: savedResponse.venderOrder,
                         coverageStartDate: coverageStartDate,
+                        coverageStartDate1: coverageStartDate1,
                         coverageEndDate: coverageEndDate,
+                        coverageEndDate1: coverageEndDate1,
                         status: claimStatus,
                         eligibilty: eligibilty,
                         productValue: data.retailValue,
@@ -1644,7 +1736,9 @@ exports.editOrderDetail = async (req, res) => {
                         content: "The  order " + savedResponse.unique_key + " has been updated and processed",
                         subject: "Process Order"
                     }
-                    let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+                    if (req.body.sendNotification) {
+                        let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+                    }
                     //Email to Reseller
                     emailData = {
                         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -1655,7 +1749,10 @@ exports.editOrderDetail = async (req, res) => {
                         content: "The  order " + savedResponse.unique_key + " has been updated and processed",
                         subject: "Process Order"
                     }
-                    mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
+                    if (req.body.sendNotification) {
+                        mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
+
+                    }
                     // Customer Email here with T and C
                     //generate T anc C
 
@@ -1727,12 +1824,10 @@ async function generateTC(orderData) {
         let otherInfo = []
         //Check contract is exist or not using contract id
         const contractArrayPromise = checkOrder?.productsArray.map(item => {
-            if (!item.exit) return contractService.getContractById({
+            return contractService.getContractById({
                 orderProductId: item._id
             });
-            else {
-                return null;
-            }
+
         })
         const contractArray = await Promise.all(contractArrayPromise);
 
@@ -1775,11 +1870,11 @@ async function generateTC(orderData) {
 
 
         const coverageStartDates = otherInfo.map((product, index) => `
-    <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageStartDate).add(1, 'days').format("MM/DD/YYYY")}</p>
+    <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageStartDate).format("MM/DD/YYYY")}</p>
 `).join('');
 
         const coverageEndDates = otherInfo.map((product, index) => `
-    <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageEndDate).add(1, 'days').format("MM/DD/YYYY")}</p>
+    <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageEndDate).format("MM/DD/YYYY")}</p>
 `).join('');
 
         const term = otherInfo.map((product, index) => `
@@ -1822,7 +1917,7 @@ async function generateTC(orderData) {
                                 <td style="font-size:13px;"> 
                                     <p><b>Attention –</b> ${checkReseller ? checkReseller.name : checkDealer.name}</p>
                                     <p> <b>Email Address – </b>${resellerUser ? resellerUser?.email : DealerUser.email}</p>
-                                    <p><b>Telephone :</b> +1 ${resellerUser ? resellerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : DealerUser.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3")}</p>
+                                    <p><b>Telephone :</b> +1 ${resellerUser ? resellerUser?.metaData[0]?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : DealerUser.metaData[0]?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3")}</p>
                                 </td>
                             </tr>
                         <tr>
@@ -1830,7 +1925,7 @@ async function generateTC(orderData) {
                             <td style="font-size:13px;">
                             <p> <b>Attention –</b>${checkCustomer ? checkCustomer?.username : ''}</p>
                             <p> <b>Email Address –</b>${checkCustomer ? customerUser?.email : ''}</p>
-                            <p><b>Telephone :</b> +1${checkCustomer ? customerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''}</p>
+                            <p><b>Telephone :</b> +1${checkCustomer ? customerUser?.metaData[0]?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''}</p>
                             </td>
                         </tr>
                     <tr>
@@ -1869,7 +1964,7 @@ async function generateTC(orderData) {
             const s3Key = `pdfs/${mergeFileName}`;
             //Upload to S3 bucket
             await uploadToS3(orderFile, bucketName, s3Key);
-            const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : "file-1723185474819.pdf"
+            const termConditionFile = checkOrder.termCondition.fileName
             const termPath = termConditionFile
             //Download from S3 bucket 
             const termPathBucket = await downloadFromS3(bucketName, termPath);
@@ -1987,6 +2082,9 @@ exports.addClaim = async (req, res, next) => {
             });
             return;
         }
+
+
+
         let checkClaim = await claimService.getClaimById({ contractId: data.contractId, claimFile: 'open' })
         if (checkClaim) {
             res.send({
@@ -1996,6 +2094,7 @@ exports.addClaim = async (req, res, next) => {
             return
         }
 
+
         const query = { contractId: new mongoose.Types.ObjectId(data.contractId) }
         let claimTotalQuery = [
             { $match: query },
@@ -2003,6 +2102,44 @@ exports.addClaim = async (req, res, next) => {
 
         ]
         let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
+
+        if (data.coverageType != "") {
+            let checkCoverageTypeForContract = checkContract.coverageType.find(item => item.value == data.coverageType)
+            if (!checkCoverageTypeForContract) {
+                res.send({
+                    code: constant.errorCode,
+                    message: 'Coverage type is not available for this contract!'
+                })
+                return;
+            }
+            let startDateToCheck = new Date(checkContract.coverageStartDate)
+            let coverageTypeDays = checkContract.adhDays
+            let serviceCoverageType = checkContract.serviceCoverageType
+
+            let getDeductible = coverageTypeDays.filter(coverageType => coverageType.value == data.coverageType)
+
+            let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0].waitingDays))
+
+            let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
+            console.log("getCoverageTypeFromOption", getCoverageTypeFromOption)
+            const result = getCoverageTypeFromOption.value.filter(item => item.value === data.coverageType).map(item => item.label);
+            console.log(new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0));
+            checkCoverageTypeDate = new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0)
+            data.lossDate = new Date(data.lossDate).setHours(0, 0, 0, 0)
+            if (new Date(checkCoverageTypeDate) > new Date(data.lossDate)) {
+                // claim not allowed for that coverageType
+                res.send({
+                    code: 403,
+                    tittle: `Claim not eligible for ${result[0]}.`,
+                    // message: `Your selected ${result[0]} is currently not eligible for the claim. You can file the claim for ${result[0]} on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}. Do you wish to proceed in rejecting this claim?`
+                    message: `Your claim for ${result[0]} cannot be filed because it is not eligible based on the loss date. You will be able to file this claim starting on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}. Would you like to proceed with rejecting the claim now?`
+                })
+                return
+
+            }
+
+        }
+
         // if (checkContract.productValue < claimTotal[0]?.amount) {
         //     res.send({
         //         code: consta.errorCode,

@@ -34,6 +34,9 @@ aws.config.update({
     secretAccessKey: process.env.aws_secret_access_key,
 });
 const S3Bucket = new aws.S3();
+
+
+
 //Create Reseller
 exports.createReseller = async (req, res) => {
     try {
@@ -394,6 +397,31 @@ exports.createOrder = async (req, res) => {
 
         let getChoosedProducts = data.productsArray
         for (let A = 0; A < getChoosedProducts.length; A++) {
+            if (getChoosedProducts[A].coverageStartDate != "") {
+                let addOneDay = new Date(getChoosedProducts[A].coverageStartDate)
+                let addOneDay1 = new Date(getChoosedProducts[A].coverageStartDate)
+                let addOneDay2 = new Date(getChoosedProducts[A].coverageStartDate)
+                console.log("checking the date+++++++++++++++++++++++", addOneDay2)
+                addOneDay2.setMonth(addOneDay2.getMonth() + getChoosedProducts[A].term)
+                addOneDay2.setDate(addOneDay2.getDate() - 1)
+                console.log("checking the date+++++++++++++++++++++++", addOneDay2)
+                let addOneDay3 = new Date(getChoosedProducts[A].coverageStartDate)
+                console.log("checking the date+++++++++++++++++++++++", addOneDay3)
+                addOneDay3.setMonth(addOneDay3.getMonth() + getChoosedProducts[A].term)
+                addOneDay3.setDate(addOneDay3.getDate() - 1)
+
+                data.productsArray[A].coverageStartDate1 = addOneDay
+                data.productsArray[A].coverageEndDate1 = addOneDay2
+                data.productsArray[A].coverageStartDate = addOneDay1.setDate(addOneDay1.getDate() + 1);
+                data.productsArray[A].coverageEndDate = addOneDay3.setDate(addOneDay3.getDate() + 1);
+
+            }
+            if (getChoosedProducts[A].coverageStartDate == "") {
+                data.productsArray[A].coverageStartDate1 = null
+                data.productsArray[A].coverageEndDate1 = null
+                data.productsArray[A].coverageStartDate = null
+                data.productsArray[A].coverageEndDate = null
+            }
             if (!getChoosedProducts[A].adhDays) {
                 res.send({
                     code: constant.errorCode,
@@ -496,8 +524,10 @@ exports.createOrder = async (req, res) => {
             content: "The new order " + checkOrder.unique_key + "  has been created for " + getPrimary.firstName + "",
             subject: "New Order"
         }
+        if (req.body.sendNotification) {
 
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+        }
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
             let savedResponse = await orderService.updateOrder(
                 { _id: checkOrder._id },
@@ -510,7 +540,9 @@ exports.createOrder = async (req, res) => {
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
                 let coverageStartDate = product.coverageStartDate;
+                let coverageStartDate1 = product.coverageStartDate1;
                 let coverageEndDate = product.coverageEndDate;
+                let coverageEndDate1 = product.coverageEndDate1;
                 let orderProductId = product._id;
                 let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
                 let projection = { isDeleted: 0 };
@@ -590,13 +622,14 @@ exports.createOrder = async (req, res) => {
                             minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
                         }
                     }
+                    minDate = new Date(minDate).setHours(0, 0, 0, 0)
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
                     let contractObject = {
                         orderId: savedResponse._id,
                         orderProductId: orderProductId,
                         productName: priceBook[0].name,
                         pName: priceBook[0]?.pName,
-                        minDate: minDate,
+                        minDate: new Date(minDate),
                         manufacture: data.brand,
                         model: data.model,
                         partsWarranty: partsWarrantyDate1,
@@ -607,7 +640,9 @@ exports.createOrder = async (req, res) => {
                         orderUniqueKey: savedResponse.unique_key,
                         venderOrder: savedResponse.venderOrder,
                         coverageStartDate: coverageStartDate,
+                        coverageStartDate1: coverageStartDate1,
                         coverageEndDate: coverageEndDate,
+                        coverageEndDate1: coverageEndDate1,
                         status: claimStatus,
                         eligibilty: eligibilty,
                         productValue: data.retailValue,
@@ -654,8 +689,10 @@ exports.createOrder = async (req, res) => {
                     content: "The order " + savedResponse.unique_key + " has been updated and processed",
                     subject: "Order Processed"
                 }
+                if (req.body.sendNotification) {
+                    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
 
-                let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+                }
 
             })
 
@@ -915,6 +952,48 @@ exports.editOrderDetail = async (req, res) => {
             serviceCoverage = "Parts & Labor"
         }
         data.serviceCoverageType = serviceCoverage != '' ? serviceCoverage : req.body.serviceCoverageType
+
+        let getChoosedProducts = data.productsArray
+        for (let A = 0; A < getChoosedProducts.length; A++) {
+            if (getChoosedProducts[A].coverageStartDate != "") {
+                let addOneDay = new Date(getChoosedProducts[A].coverageStartDate)
+                let addOneDay1 = new Date(getChoosedProducts[A].coverageStartDate)
+                let addOneDay2 = new Date(getChoosedProducts[A].coverageStartDate)
+                console.log("checking the date+++++++++++++++++++++++", addOneDay2)
+                addOneDay2.setMonth(addOneDay2.getMonth() + getChoosedProducts[A].term)
+                addOneDay2.setDate(addOneDay2.getDate() - 1)
+                console.log("checking the date+++++++++++++++++++++++", addOneDay2)
+                let addOneDay3 = new Date(getChoosedProducts[A].coverageStartDate)
+                console.log("checking the date+++++++++++++++++++++++", addOneDay3)
+                addOneDay3.setMonth(addOneDay3.getMonth() + getChoosedProducts[A].term)
+                addOneDay3.setDate(addOneDay3.getDate() - 1)
+
+                data.productsArray[A].coverageStartDate1 = addOneDay
+                data.productsArray[A].coverageEndDate1 = addOneDay2
+                data.productsArray[A].coverageStartDate = addOneDay1.setDate(addOneDay1.getDate() + 1);
+                data.productsArray[A].coverageEndDate = addOneDay3.setDate(addOneDay3.getDate() + 1);
+
+            }
+            if (getChoosedProducts[A].coverageStartDate == "") {
+                data.productsArray[A].coverageStartDate1 = null
+                data.productsArray[A].coverageEndDate1 = null
+                data.productsArray[A].coverageStartDate = null
+                data.productsArray[A].coverageEndDate = null
+            }
+            if (!getChoosedProducts[A].adhDays) {
+                res.send({
+                    code: constant.errorCode,
+                    message: "Coverage type data for waiting days and deductible is not provided"
+                })
+                return;
+            }
+            if (getChoosedProducts[A].adhDays.length == 0) {
+                let dealerPriceBookId = getChoosedProducts[A].priceBookId
+                let getDealerPriceBookId = await dealerPriceService.getDealerPriceById({ dealerId: checkId.dealerId, priceBook: dealerPriceBookId })
+                data.productsArray[A].adhDays = getDealerPriceBookId.adhDays
+            }
+        }
+
         let savedResponse = await orderService.updateOrder(
             { _id: req.params.orderId },
             data,
@@ -972,7 +1051,7 @@ exports.editOrderDetail = async (req, res) => {
         IDs.push(dealerPrimary._id)
         let notificationData = {
             title: "Order update",
-            description: "The order " + checkOrder.unique_key + " has been updated",
+            description: "Your order " + checkOrder.unique_key + " has been updated in our system. The order is still pending, as there is some data missing.",
             userId: req.teammateId,
             contentId: checkOrder._id,
             flag: 'order',
@@ -993,8 +1072,9 @@ exports.editOrderDetail = async (req, res) => {
             content: "The  order " + checkOrder.unique_key + " has been updated",
             subject: "Order Updated"
         }
-
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+        if (req.body.sendNotification) {
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+        }
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
             let savedResponse = await orderService.updateOrder(
                 { _id: req.params.orderId },
@@ -1016,7 +1096,9 @@ exports.editOrderDetail = async (req, res) => {
                 const result = await getObjectFromS3(bucketReadUrl);
                 let priceBookId = product.priceBookId;
                 let coverageStartDate = product.coverageStartDate;
+                let coverageStartDate1 = product.coverageStartDate1;
                 let coverageEndDate = product.coverageEndDate;
+                let coverageEndDate1 = product.coverageEndDate1;
                 let orderProductId = product._id;
                 let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
                 let projection = { isDeleted: 0 };
@@ -1119,36 +1201,47 @@ exports.editOrderDetail = async (req, res) => {
 
                     let minDate1 = futureDate.setDate(futureDate.getDate() + adhDaysArray[0].waitingDays);
                     if (!product.isManufacturerWarranty) {
-                        let minDate2
-                        if (orderServiceCoverageType.serviceCoverageType == "Parts") {
-                            minDate2 = partsWarrantyDate1
-                        } else if (orderServiceCoverageType.serviceCoverageType == "Labor" || orderServiceCoverageType.serviceCoverageType == "Labour") {
-                            minDate2 = labourWarrantyDate1
-                        } else {
-                            if (partsWarrantyDate1 > labourWarrantyDate1) {
-                                minDate2 = labourWarrantyDate1
+                        if (adhDaysArray.length == 1) {
+                            const hasBreakdown = adhDaysArray.some(item => item.value === 'breakdown');
+                            if (hasBreakdown) {
+                                let minDate2
+                                if (orderServiceCoverageType == "Parts") {
+                                    minDate2 = partsWarrantyDate1
+                                } else if (orderServiceCoverageType == "Labour" || orderServiceCoverageType == "Labor") {
+                                    minDate2 = labourWarrantyDate1
+                                } else {
+                                    if (partsWarrantyDate1 > labourWarrantyDate1) {
+                                        minDate2 = labourWarrantyDate1
+                                    } else {
+                                        minDate2 = partsWarrantyDate1
+                                    }
+                                }
+                                if (minDate1 > minDate2) {
+                                    minDate = minDate1
+                                }
+                                if (minDate1 < minDate2) {
+                                    minDate = minDate2
+                                }
                             } else {
-                                minDate2 = partsWarrantyDate1
+                                minDate = minDate1
                             }
                         }
-                        if (minDate1 > minDate2) {
+                        else {
                             minDate = minDate1
-                        }
-                        if (minDate1 < minDate2) {
-                            minDate = minDate2
                         }
 
                     } else {
                         minDate = minDate1
 
                     }
+                    minDate = new Date(minDate).setHours(0, 0, 0, 0)
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
                     let contractObject = {
                         orderId: savedResponse._id,
                         orderProductId: orderProductId,
                         productName: priceBook[0].name,
                         pName: priceBook[0]?.pName,
-                        minDate: minDate,
+                        minDate: new Date(minDate),
                         manufacture: data.brand,
                         model: data.model,
                         partsWarranty: partsWarrantyDate1,
@@ -1161,7 +1254,9 @@ exports.editOrderDetail = async (req, res) => {
                         orderUniqueKey: savedResponse.unique_key,
                         venderOrder: savedResponse.venderOrder,
                         coverageStartDate: coverageStartDate,
+                        coverageStartDate1: coverageStartDate1,
                         coverageEndDate: coverageEndDate,
+                        coverageEndDate1: coverageEndDate1,
                         status: claimStatus,
                         eligibilty: eligibilty,
                         productValue: data.retailValue,
@@ -1235,7 +1330,10 @@ exports.editOrderDetail = async (req, res) => {
                         content: "The  order " + savedResponse.unique_key + " has been updated and processed",
                         subject: "Process Order"
                     }
-                    let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+                    if (req.body.sendNotification) {
+
+                        let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+                    }
                     //Email to Reseller
                     emailData = {
                         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -1246,8 +1344,10 @@ exports.editOrderDetail = async (req, res) => {
                         content: "The  order " + savedResponse.unique_key + " has been updated and processed",
                         subject: "Process Order"
                     }
-                    mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
-                    // Customer Email here with T and C
+                    if (req.body.sendNotification) {
+
+                        mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
+                    }  // Customer Email here with T and C
                     //generate T anc C
 
                     if (index == checkLength) {
@@ -1899,6 +1999,7 @@ exports.editOrderDetail = async (req, res) => {
 // };
 
 //Edit reseller
+
 exports.editResellers = async (req, res) => {
     try {
         let data = req.body
@@ -2448,12 +2549,10 @@ async function generateTC(orderData) {
         let productCoveredArray = []
         //Check contract is exist or not using contract id
         const contractArrayPromise = checkOrder?.productsArray.map(item => {
-            if (!item.exit) return contractService.getContractById({
+         return contractService.getContractById({
                 orderProductId: item._id
             });
-            else {
-                return null;
-            }
+           
         })
         const contractArray = await Promise.all(contractArrayPromise);
 
@@ -2523,7 +2622,7 @@ async function generateTC(orderData) {
                                 <td style="font-size:13px;"> 
                                     <p><b>Attention –</b> ${checkReseller ? checkReseller.name : checkDealer.name}</p>
                                     <p> <b>Email Address – </b>${resellerUser ? resellerUser?.email : DealerUser.email}</p>
-                                    <p><b>Telephone :</b> +1 ${resellerUser ? resellerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : DealerUser.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3")}</p>
+                                    <p><b>Telephone :</b> +1 ${resellerUser ? resellerUser?.metaData[0]?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : DealerUser.metaData[0]?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3")}</p>
                                 </td>
                             </tr>
                         <tr>
@@ -2531,7 +2630,7 @@ async function generateTC(orderData) {
                             <td style="font-size:13px;">
                             <p> <b>Attention –</b>${checkCustomer ? checkCustomer?.username : ''}</p>
                             <p> <b>Email Address –</b>${checkCustomer ? customerUser?.email : ''}</p>
-                            <p><b>Telephone :</b> +1${checkCustomer ? customerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''}</p>
+                            <p><b>Telephone :</b> +1${checkCustomer ? customerUser?.metaData[0]?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''}</p>
                             </td>
                         </tr>
                     <tr>
@@ -2569,7 +2668,7 @@ async function generateTC(orderData) {
             const s3Key = `pdfs/${mergeFileName}`;
             //Upload to S3 bucket
             await uploadToS3(orderFile, bucketName, s3Key);
-            const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : "file-1723185474819.pdf"
+            const termConditionFile = checkOrder.termCondition.fileName
             const termPath = termConditionFile
             //Download from S3 bucket 
             const termPathBucket = await downloadFromS3(bucketName, termPath);
@@ -2619,18 +2718,20 @@ async function generateTC(orderData) {
                 content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
                 subject: 'Order Term and Condition-' + checkOrder.unique_key,
             }
-            let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
+            if (checkOrder.sendNotification) {
+                let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
+
+            }
 
         })
         return 1
 
     }
     catch (err) {
-        res.send({
+        return {
             code: constant.errorCode,
             message: err.message
-        })
-        return;
+        }
     }
 }
 

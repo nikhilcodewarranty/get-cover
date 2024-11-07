@@ -17,6 +17,7 @@ const { default: mongoose } = require("mongoose");
 exports.getContracts = async (req, res) => {
   try {
     let data = req.body
+    let getTheThresholdLimir = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
@@ -161,6 +162,7 @@ exports.getContracts = async (req, res) => {
                   serial: 1,
                   dealerSku: 1,
                   unique_key: 1,
+                  claimAmount: 1,
                   minDate: 1,
                   status: 1,
                   productValue: 1,
@@ -210,6 +212,7 @@ exports.getContracts = async (req, res) => {
                 unique_key: 1,
                 dealerSku: 1,
                 status: 1,
+                claimAmount: 1,
                 manufacture: 1,
                 productValue: 1,
                 eligibilty: 1,
@@ -230,7 +233,9 @@ exports.getContracts = async (req, res) => {
 
     for (let e = 0; e < result1.length; e++) {
       result1[e].reason = " "
-
+      if (!result1[e].eligibilty) {
+        result1[e].reason = "Claims limit cross for this contract"
+      }
       if (result1[e].status != "Active") {
         result1[e].reason = "Contract is not active"
       }
@@ -244,6 +249,8 @@ exports.getContracts = async (req, res) => {
         const formattedDate = new Date(result1[e].minDate).toLocaleDateString('en-US', options)
         result1[e].reason = "Contract will be eligible on " + " " + formattedDate
       }
+
+
 
       let claimQuery = [
         {
@@ -277,6 +284,20 @@ exports.getContracts = async (req, res) => {
           result1[e].reason = "Claim value exceed the product value limit"
         }
       }
+
+      let thresholdLimitPercentage = getTheThresholdLimir.threshHoldLimit.value
+      const thresholdLimitValue = (thresholdLimitPercentage / 100) * Number(result1[e].productValue);
+      let overThreshold = result1[e].claimAmount > thresholdLimitValue;
+      let threshHoldMessage = "This claim amount surpasses the maximum allowed threshold."
+      if (!overThreshold) {
+        threshHoldMessage = ""
+      }
+      if (!getTheThresholdLimir.isThreshHoldLimit) {
+        overThreshold = false
+        threshHoldMessage = ""
+      }
+      result1[e].threshHoldMessage = threshHoldMessage
+      result1[e].overThreshold = overThreshold
     }
 
     res.send({
@@ -503,14 +524,14 @@ exports.getContractById = async (req, res) => {
 
       if (matchedOption) {
         getData[0].mergedData.push({
-              label: matchedOption.label,
-              value: adhItem.value,
-              waitingDays: adhItem.waitingDays,
-              deductible: adhItem.deductible,
-              amountType: adhItem.amountType
-          });
+          label: matchedOption.label,
+          value: adhItem.value,
+          waitingDays: adhItem.waitingDays,
+          deductible: adhItem.deductible,
+          amountType: adhItem.amountType
+        });
       }
-  });
+    });
 
     if (!getData) {
       res.send({
@@ -666,4 +687,27 @@ exports.cronJobEligible = async (req, res) => {
     });
   }
 };
+
+// have to do
+exports.updateContract = async (req, res) => {
+  try {
+    let getOrder = await orderService.getOrder({ _id: "66fa6ffe1d16062766365aae" })
+    let contractObject = {
+      $set: {
+        coverageStartDate1: getOrder.productsArray[0].coverageStartDate,
+        coverageEndDate1: getOrder.productsArray[0].coverageEndDate
+      }
+    }
+    console.log("contractObject==============", contractObject)
+    let updateMany = await contractService.updateManyContract({ orderId: getOrder._id }, contractObject, { new: true })
+    res.send({
+      updateMany
+    })
+  } catch (err) {
+    res.send({
+      code: 401,
+      message: err.statck
+    })
+  }
+}
 

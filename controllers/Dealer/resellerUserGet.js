@@ -983,6 +983,16 @@ exports.getResellerDetails = async (req, res) => {
         }
         let data = req.body
         let getUser = await userService.getUserById1({ _id: req.teammateId })
+        let resellerObject = {}
+        resellerObject = {
+            ...getUser.toObject(),
+            firstName:getUser.metaData[0].firstName,
+            phoneNumber:getUser.metaData[0].phoneNumber,
+            status:getUser.metaData[0].status,
+            lastName:getUser.metaData[0].lastName,
+            dialCode:getUser.metaData[0].dialCode,
+            isPrimary:getUser.metaData[0].isPrimary
+        }
         let mid = new mongoose.Types.ObjectId(req.userId)
         let query = [
             {
@@ -1033,7 +1043,7 @@ exports.getResellerDetails = async (req, res) => {
             code: constant.successCode,
             message: "Successfully fetched user details.",
             result: getCustomer[0],
-            loginMember: getUser
+            loginMember: resellerObject
         })
     } catch (err) {
         res.send({
@@ -1066,7 +1076,7 @@ exports.getResellerCustomers = async (req, res) => {
             return;
         };
 
-        const customersId = customers.map(obj => obj._id);
+        const customersId = customers.map(obj => new mongoose.Types.ObjectId(obj._id));
         const orderCustomerIds = customers.map(obj => obj._id);
         const getPrimaryUser = await userService.findUserforCustomer1([
             {
@@ -1076,7 +1086,7 @@ exports.getResellerCustomers = async (req, res) => {
                         { metaData: { $elemMatch: { firstName: { '$regex': data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
                         { metaData: { $elemMatch: { lastName: { '$regex': data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
                         { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                        { metaData: { $elemMatch: { metaId: customersId, isPrimary: true } } }
+                        { metaData: { $elemMatch: { metaId: { $in: customersId }, isPrimary: true } } }
                     ]
                 }
             },
@@ -1145,7 +1155,7 @@ exports.getResellerCustomers = async (req, res) => {
         const dealerRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
         result_Array = result_Array.filter(entry => {
             return (
-                nameRegex.test(entry.customerData.username) &&
+               
                 dealerRegex.test(entry.customerData.dealerId)
             );
         });
@@ -1207,8 +1217,6 @@ exports.getResellerPriceBook = async (req, res) => {
 
 
     if (data.coverageType == "") {
-
-        console.log("sdfsdffffffffffff-------------------if")
         query = {
 
             $and: [
@@ -1228,12 +1236,12 @@ exports.getResellerPriceBook = async (req, res) => {
     }
 
     else {
-        console.log("sdfsdffffffffffff-------------------else")
 
         query = {
             $and: [
                 { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-                { 'priceBooks.coverageType': { $elemMatch: { value: { $in: coverageType } } } },
+                { 'priceBooks.coverageType.value': { $all: coverageType } },
+                { 'priceBooks.coverageType': { $size: coverageType.length } },
                 { 'priceBooks.category._id': { $in: catIdsArray } },
                 { 'status': true },
                 { 'dealerSku': { '$regex': dealerSku, '$options': 'i' } },
@@ -1641,7 +1649,7 @@ exports.getCustomerInOrder = async (req, res) => {
             const matchingItem = getCustomers.find(item2 => item2._id.toString() === item1.metaId.toString());
             if (matchingItem) {
                 return {
-                    ...matchingItem,
+                    ...matchingItem.toObject(),
                     email: item1.email  // Use toObject() to convert Mongoose document to plain JavaScript object
                 };
             } else {
@@ -1762,7 +1770,7 @@ exports.getServicerInOrders = async (req, res) => {
             (item2) => item2.metaId?.toString() === item1._id?.toString());
         if (matchingItem) {
             return {
-                ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
+                ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
                 servicerData: matchingItem,
             };
         } else {
@@ -2093,6 +2101,9 @@ exports.getResellerContract = async (req, res) => {
     try {
         let data = req.body
         let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+        // let getTheThresholdLimir = await userService.getUserById1({ roleId: process.env.super_admin, isPrimary: true })
+        let getTheThresholdLimir = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
+
         let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
         let limitData = Number(pageLimit)
         let dealerIds = [];
@@ -2274,6 +2285,9 @@ exports.getResellerContract = async (req, res) => {
         let result1 = getContracts[0]?.data ? getContracts[0]?.data : []
         for (let e = 0; e < result1.length; e++) {
             result1[e].reason = " "
+            if (!result1[e].eligibilty) {
+                result1[e].reason = "Claims limit cross for this contract"
+              }
             if (result1[e].status != "Active") {
                 result1[e].reason = "Contract is not active"
             }
@@ -2318,6 +2332,20 @@ exports.getResellerContract = async (req, res) => {
                     result1[e].reason = "Claim value exceed the product value limit"
                 }
             }
+
+            let thresholdLimitPercentage = getTheThresholdLimir.threshHoldLimit.value
+            const thresholdLimitValue = (thresholdLimitPercentage / 100) * Number(result1[e].productValue);
+            let overThreshold = result1[e].claimAmount > thresholdLimitValue;
+            let threshHoldMessage = "This claim amount surpasses the maximum allowed threshold."
+            if (!overThreshold) {
+                threshHoldMessage = ""
+            }
+            if (!thresholdLimitPercentage.isThreshHoldLimit) {
+                overThreshold = false
+                threshHoldMessage = ""
+            }
+            result1[e].threshHoldMessage = threshHoldMessage
+            result1[e].overThreshold = overThreshold
         }
 
         res.send({

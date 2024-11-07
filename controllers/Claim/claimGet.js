@@ -5,6 +5,7 @@ const { comments } = require("../../models/Claim/comment");
 const LOG = require('../../models/User/logs')
 const claimService = require("../../services/Claim/claimService");
 const orderService = require("../../services/Order/orderService");
+const optionService = require("../../services/User/optionsService");
 const userService = require("../../services/User/userService");
 const contractService = require("../../services/Contract/contractService");
 const servicerService = require("../../services/Provider/providerService");
@@ -26,6 +27,7 @@ const fs = require("fs");
 const { S3Client } = require('@aws-sdk/client-s3');
 const { Upload } = require('@aws-sdk/lib-storage');
 const multerS3 = require('multer-s3');
+const { default: axios } = require("axios");
 
 // s3 bucket connections
 const s3 = new S3Client({
@@ -142,6 +144,8 @@ exports.getAllClaims = async (req, res, next) => {
               repairStatus: 1,
               "contracts.unique_key": 1,
               "contracts.productName": 1,
+              "contracts.productValue": 1,
+              "contracts.claimAmount": 1,
               "contracts.coverageType": 1,
               "contracts.model": 1,
               "contracts.pName": 1,
@@ -160,6 +164,7 @@ exports.getAllClaims = async (req, res, next) => {
               "contracts.orders.dealers.accountStatus": 1,
               "contracts.orders.dealers._id": 1,
               "contracts.orders.customer.username": 1,
+              "contracts.orders.customer._id": 1,
               "contracts.orders.dealers.dealerServicer": {
                 $map: {
                   input: "$contracts.orders.dealers.dealerServicer",
@@ -363,14 +368,14 @@ exports.getAllClaims = async (req, res, next) => {
 
     const dynamicOption = await userService.getOptions({ name: 'coverage_type' })
 
-    const result_Array = resultFiter.map((item1) => {
+    let result_Array = resultFiter.map((item1) => {
       servicer = []
       let mergedData = []
-      if(Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType){
+      if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
         mergedData = dynamicOption.value.filter(contract =>
           item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
         );
-    }
+      }
 
       let servicerName = ''
       let selfServicer = false;
@@ -414,6 +419,38 @@ exports.getAllClaims = async (req, res, next) => {
     })
 
     let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0 // getting the total count 
+    let getTheThresholdLimit = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
+
+    result_Array = result_Array.map(claimObject => {
+      const { productValue, claimAmount } = claimObject.contracts;
+
+      // Calculate the threshold limit value
+      const thresholdLimitValue = (getTheThresholdLimit?.threshHoldLimit.value / 100) * productValue;
+
+      // Check if claimAmount exceeds the threshold limit value
+      let overThreshold = claimAmount > thresholdLimitValue;
+      let threshHoldMessage = "Claim amount exceeds the allowed limit. This might lead to claim rejection. To proceed further with claim please contact admin."
+      if (!overThreshold) {
+        threshHoldMessage = ""
+      }
+      if (claimObject.claimStatus.status == "rejected") {
+        threshHoldMessage = ""
+      }
+      // if (claimObject.claimStatus.status == "rejected") {
+      //   threshHoldMessage = ""
+      // }
+      if (!getTheThresholdLimit.isThreshHoldLimit) {
+        overThreshold = false
+        threshHoldMessage = ""
+      }
+
+      // Return the updated object with the new key 'overThreshold'
+      return {
+        ...claimObject,
+        overThreshold,
+        threshHoldMessage
+      };
+    });
 
     res.send({
       code: constant.successCode,
@@ -763,8 +800,7 @@ exports.getMessages = async (req, res) => {
 
   let lookupQuery = [
     {
-      $match:
-      {
+      $match: {
         $and: [
           { claimId: new mongoose.Types.ObjectId(req.params.claimId) }
         ]
@@ -774,26 +810,18 @@ exports.getMessages = async (req, res) => {
       $lookup: {
         from: "users",
         localField: "commentedTo",
-        foreignField: "metaId",
+        foreignField: "metaData.metaId",
         as: "commentTo",
         pipeline: [
           {
-            $match:
-            {
+            $match: {
               $and: [
-                { isPrimary: true },
-                { metaId: { $ne: null } }
+                // Matching the element in the metaData array with isPrimary and non-null metaId
+                { metaData: { $elemMatch: { isPrimary: true, metaId: { $ne: null } } } }
               ]
             },
           },
-          {
-            $project: {
-              firstName: 1,
-              lastName: 1,
-            }
-          }
         ]
-
       }
     },
     { $unwind: { path: "$commentTo", preserveNullAndEmptyArrays: true } },
@@ -807,7 +835,7 @@ exports.getMessages = async (req, res) => {
           {
             $lookup: {
               from: 'roles',
-              localField: 'roleId',
+              localField: 'metaData.roleId',
               foreignField: '_id',
               as: 'roles'
             }
@@ -815,13 +843,6 @@ exports.getMessages = async (req, res) => {
           {
             $unwind: "$roles"
           },
-          {
-            $project: {
-              firstName: 1,
-              lastName: 1,
-              "roles.role": 1,
-            }
-          }
         ]
       }
     },
@@ -833,13 +854,30 @@ exports.getMessages = async (req, res) => {
         type: 1,
         messageFile: 1,
         content: 1,
-        "commentBy": 1,
-        "commentTo": 1,
+        'commentTo.firstName': { $arrayElemAt: ["$commentTo.metaData.firstName", 0] },
+        'commentTo.lastName': { $arrayElemAt: ["$commentTo.metaData.lastName", 0] },
+        'commentBy.lastName': { $arrayElemAt: ["$commentBy.metaData.lastName", 0] },
+        'commentBy.firstName': { $arrayElemAt: ["$commentBy.metaData.firstName", 0] },
+        "commentBy.roles": 1
+
       }
-    }
+    },
+    // {
+    //   $project: {
+    //     _id: 1,
+    //     date: 1,
+    //     type: 1,
+    //     messageFile: 1,
+    //     content: 1,
+    //     "commentBy.metaData.firstName": 1,
+    //     "commentTo": 1,
+    //   }
+    // }
   ]
 
+
   let allMessages = await claimService.getAllMessages(lookupQuery);
+
   res.send({
     code: constant.successCode,
     messages: 'Success!',
@@ -851,19 +889,51 @@ exports.getMessages = async (req, res) => {
 exports.getMaxClaimAmount = async (req, res) => {
   try {
     const query = { contractId: new mongoose.Types.ObjectId(req.params.contractId) }
+    const query1 = {
+      $and: [
+        { contractId: new mongoose.Types.ObjectId(req.params.contractId) },
+        { claimFile: "completed" }
+      ]
+    }
+    // const query1 = { contractId: new mongoose.Types.ObjectId(req.params.contractId), claimFile: "Completed" }
     let claimTotalQuery = [
-      { $match: query },
+      {
+        $match: query
+      },
+      { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
+
+    ]
+
+    let claimTotalQueryCompleted = [
+      { $match: query1 },
       { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
 
     ]
     let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
+    let claimTotalCompleted = await claimService.getClaimWithAggregate(claimTotalQueryCompleted);
     const contract = await contractService.getContractById({ _id: req.params.contractId }, { productValue: 1 })
     const claimAmount = claimTotal[0]?.amount ? claimTotal[0]?.amount : 0
+    const claimAmountCompleted = claimTotalCompleted[0]?.amount ? claimTotalCompleted[0]?.amount : 0
+    console.log(claimAmountCompleted, claimTotalCompleted[0], claimTotal[0], "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
     const product = contract ? contract.productValue : 0
+    let getTheThresholdLimit = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
+    let thresholdLimitPercentage = getTheThresholdLimit.threshHoldLimit.value
+    const thresholdLimitValue = (thresholdLimitPercentage / 100) * Number(contract.productValue);
+    let remainingThreshHoldLimit = thresholdLimitValue - Number(claimAmount)
+    let remainingThreshHoldLimitPastClaim = thresholdLimitValue - Number(claimAmountCompleted)
+
+    if (!getTheThresholdLimit.isThreshHoldLimit) {
+      remainingThreshHoldLimit = null
+      remainingThreshHoldLimitPastClaim = null
+    }
+
     res.send({
       code: constant.successCode,
       message: 'Success!',
-      result: product - claimAmount
+      result: product - claimAmount,
+      thresholdLimitValue: thresholdLimitValue,
+      remainingThreshHoldLimit: remainingThreshHoldLimit,
+      remainingThreshHoldLimitPastClaim: remainingThreshHoldLimitPastClaim
     })
   }
   catch (err) {
@@ -908,17 +978,34 @@ exports.checkClaimAmount = async (req, res) => {
   try {
     let data = req.body
     let getClaim = await claimService.getClaimById({ _id: req.params.claimId })
+    if (!getClaim) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid claim ID"
+      })
+      return
+    }
     let getContractDetail = await contractService.getContractById({ _id: getClaim.contractId })
-    if (getClaim.claimType != ""&&getClaim.claimType != "New") {
 
+    const query = { contractId: new mongoose.Types.ObjectId(getClaim.contractId), claimFile: "completed" }
+    let claimTotalQuery = [
+      { $match: query },
+      { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
+
+    ]
+    let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
+    const contract = await contractService.getContractById({ _id: getClaim.contractId }, { productValue: 1 })
+    const claimAmount = claimTotal[0] ? claimTotal[0]?.amount : 0
+    const product = contract ? contract.productValue : 0
+    let claimAmountTaken = getClaim.totalAmount
+
+
+    if (getClaim.claimType != "" && getClaim.claimType != "New") {
+      console.log(")))))))))))))))))))))))))))))))))))))))))))))")
       let coverageTypeDays = getContractDetail.adhDays
       let getDeductible = coverageTypeDays.filter(coverageType => {
-        console.log("Checking value: ", coverageTypeDays, coverageType.value, getClaim.claimType);
         return coverageType.value === getClaim.claimType;
       });
-      if(getClaim.claimType != "" || getClaim.claimType != "New"){
-        
-      }
       if (!getDeductible[0]) {
         res.send({
           code: constant.errorCode,
@@ -927,52 +1014,85 @@ exports.checkClaimAmount = async (req, res) => {
         return
       }
       let deductableAmount;
-      let claimAmountTaken = getClaim.totalAmount
+      let checkClaimNumber = await claimService.getClaims({ contractId: getClaim.contractId })
+
+      let justToCheck = product - claimAmount
 
       if (getDeductible[0].amountType == "percentage") {
-        deductableAmount = (getDeductible[0].deductible / 100) * claimAmountTaken
+        if (getContractDetail.isMaxClaimAmount) {
+          if (justToCheck > getClaim.totalAmount) {
+            deductableAmount = (getDeductible[0].deductible / 100) * getClaim.totalAmount
+          } else {
+            deductableAmount = (getDeductible[0].deductible / 100) * justToCheck
+
+          }
+        } else {
+          deductableAmount = (getDeductible[0].deductible / 100) * getClaim.totalAmount
+        }
+
       } else {
         deductableAmount = getDeductible[0].deductible
       }
 
-      if (!getClaim) {
-        res.send({
-          code: constant.errorCode,
-          message: "Invalid claim ID"
-        })
-        return
-      }
 
-      if (getClaim.totalAmount > Number(getContractDetail.productValue)) {
+
+
+
+      if (getClaim.totalAmount > Number(justToCheck)) {
         console.log("over amount conditions ak ")
         let serviceCoverageType = getContractDetail.serviceCoverageType
-        if (getDeductible[0].amountType == "percentage") {
-          deductableAmount = (getDeductible[0].deductible / 100) * getContractDetail.productValue
-        } else {
-          deductableAmount = getDeductible[0].deductible
-        }
-
-
-
-        let customerClaimAmount = deductableAmount
-        let getCoverClaimAmount = getContractDetail.productValue - customerClaimAmount
+        // let customerClaimAmount = deductableAmount < justToCheck ? deductableAmount : justToCheck
+        // let getCoverClaimAmount = justToCheck - customerClaimAmount
+        let customerClaimAmount
         let customerOverAmount
         let getcoverOverAmount
+        let getCoverClaimAmount
+        console.log("++++++++++++++++++++++ condition +++++++++++++++++++++=", justToCheck, getClaim.totalAmount)
 
 
-        if (getClaim.totalAmount > Number(getContractDetail.productValue)) {
+        if (getClaim.totalAmount > Number(justToCheck)) {
           if (getContractDetail.isMaxClaimAmount) {
-            console.log("1st condition +++++++++++++++++++++=", getContractDetail.isMaxClaimAmount)
-            customerOverAmount = getClaim.totalAmount - Number(getContractDetail.productValue)
-            getcoverOverAmount = 0
-          } else {
-            console.log("2nd t condition +++++++++++++++++++++=", getContractDetail.isMaxClaimAmount)
+            console.log("1st condition +++++++++++++++++++++=", deductableAmount, getContractDetail.isMaxClaimAmount)
+            if (deductableAmount >= justToCheck) {
+              customerClaimAmount = deductableAmount > getClaim.totalAmount ? getClaim.totalAmount : deductableAmount
+              getCoverClaimAmount = 0
+              customerOverAmount = getClaim.totalAmount - (getCoverClaimAmount + customerClaimAmount)
+              getcoverOverAmount = 0
+            } else {
+              customerClaimAmount = deductableAmount > getClaim.totalAmount ? getClaim.totalAmount : deductableAmount
+              getCoverClaimAmount = justToCheck - customerClaimAmount
+              customerOverAmount = getClaim.totalAmount - (getCoverClaimAmount + customerClaimAmount)
+              getcoverOverAmount = 0
+            }
 
-            getcoverOverAmount = getClaim.totalAmount - Number(getContractDetail.productValue)
-            customerOverAmount = 0
+          } else {
+            console.log("++++++++++++++++++++++ condition +++++++++++++++++++++=", deductableAmount, justToCheck, getClaim.totalAmount)
+
+            if (deductableAmount >= justToCheck) {
+              customerClaimAmount = deductableAmount
+              customerOverAmount = 0
+              getCoverClaimAmount = 0
+              getcoverOverAmount = getClaim.totalAmount - (getCoverClaimAmount + customerClaimAmount)
+            } else {
+              customerClaimAmount = deductableAmount
+              customerOverAmount = 0
+              getCoverClaimAmount = justToCheck - deductableAmount
+              getcoverOverAmount = getClaim.totalAmount - (getCoverClaimAmount + customerClaimAmount)
+            }
+            console.log("2nd t condition +++++++++++++++++++++=", getContractDetail.isMaxClaimAmount)
+            // customerClaimAmount = deductableAmount > getClaim.totalAmount ? getClaim.totalAmount : deductableAmount
+            // customerOverAmount = 0
+            // getCoverClaimAmount = justToCheck > 0 ? getClaim.totalAmount >= justToCheck ? justToCheck : getClaim.totalAmount : 0
+            // getcoverOverAmount = getClaim.totalAmount - (getCoverClaimAmount + customerClaimAmount)
           }
           let updateContract = await contractService.updateContract({ _id: getContractDetail._id }, { eligibilty: false })
+        } else {
+          customerClaimAmount = deductableAmount > getClaim.totalAmount ? getClaim.totalAmount : deductableAmount
+          getCoverClaimAmount = justToCheck > 0 ? getClaim.totalAmount >= justToCheck ? justToCheck : getClaim.totalAmount : 0
+          customerOverAmount = getClaim.totalAmount - (getCoverClaimAmount + customerClaimAmount)
+          getcoverOverAmount = 0
         }
+        console.log("updatetheclaim+++++++++++++++++++++++", { customerClaimAmount, getCoverClaimAmount, customerOverAmount, getcoverOverAmount })
         let values = {
           $set: {
             customerClaimAmount: customerClaimAmount > 0 ? customerClaimAmount : 0,
@@ -982,9 +1102,9 @@ exports.checkClaimAmount = async (req, res) => {
 
           }
         }
+        console.log("updatetheclaim+++++++++++++++++++++++", values)
 
         let updateTheClaim = await claimService.updateClaim({ _id: getClaim._id }, values, { new: true })
-        console.log("updatetheclaim+++++++++++++++++++++++", values, updateTheClaim)
         if (!updateTheClaim) {
           res.send({
             code: constant.errorCode,
@@ -1006,7 +1126,6 @@ exports.checkClaimAmount = async (req, res) => {
         if (totalClaimAmount < deductableAmount) {
           customerClaimAmount = totalClaimAmount
           getCoverClaimAmount = 0
-
         } else {
           customerClaimAmount = deductableAmount
           getCoverClaimAmount = totalClaimAmount - customerClaimAmount
@@ -1038,12 +1157,14 @@ exports.checkClaimAmount = async (req, res) => {
 
 
     } else {
+      console.log("))))))))))))))))))))))))))))))))))))))))))--------)))", getClaim)
+
       let values = {
         $set: {
-          customerClaimAmount:  0,
-          getCoverClaimAmount:  0,
-          customerOverAmount:  0,
-          getcoverOverAmount:  0
+          customerClaimAmount: 0,
+          getCoverClaimAmount: 0,
+          customerOverAmount: 0,
+          getcoverOverAmount: 0
 
         }
       }
@@ -1054,26 +1175,6 @@ exports.checkClaimAmount = async (req, res) => {
         message: "Updated"
       })
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   } catch (err) {
     res.send({
@@ -1086,6 +1187,7 @@ exports.checkClaimAmount = async (req, res) => {
 exports.checkCoverageTypeDate = async (req, res) => {
   try {
     let data = req.body
+
     let getClaim = await claimService.getClaimById({ _id: data.claimId })
     if (!getClaim) {
       res.send({
@@ -1104,7 +1206,53 @@ exports.checkCoverageTypeDate = async (req, res) => {
 
       let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0].waitingDays))
 
-      if (checkCoverageTypeDate > getClaim.lossDate) {
+      let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
+      console.log("getCoverageTypeFromOption", getCoverageTypeFromOption)
+      const result = getCoverageTypeFromOption.value.filter(item => item.value === data.coverageType).map(item => item.label);
+      console.log(new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0));
+      checkCoverageTypeDate = new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0)
+      getClaim.lossDate = new Date(getClaim.lossDate).setHours(0, 0, 0, 0)
+      if (new Date(checkCoverageTypeDate) > new Date(getClaim.lossDate)) {
+        // claim not allowed for that coverageType
+        res.send({
+          code: 403,
+          tittle: `Claim not eligible for ${result[0]}.`,
+          // message: `Your selected ${result[0]} is currently not eligible for the claim. You can file the claim for ${result[0]} on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}. Do you wish to proceed in rejecting this claim?`
+          message: `Your claim for ${result[0]} cannot be filed because it is not eligible based on the loss date. You will be able to file this claim starting on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}. Would you like to proceed with rejecting the claim now?`,
+          message1: `Your claim for ${result[0]} cannot be filed because it is not eligible based on the loss date. You will be able to file this claim starting on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}`
+        })
+        return
+
+      }
+    }
+    res.send({
+      code: 200,
+      message: "Allowed"
+    })
+
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.checkCoverageTypeDateInContract = async (req, res) => {
+  try {
+    let data = req.body
+
+    let getContractDetail = await contractService.getContractById({ _id: data.contractId })
+    let startDateToCheck = new Date(getContractDetail.coverageStartDate)
+    let coverageTypeDays = getContractDetail.adhDays
+    let serviceCoverageType = getContractDetail.serviceCoverageType
+    let claimAmountTaken = getClaim.totalAmount
+    if (data.coverageType) {
+      let getDeductible = coverageTypeDays.filter(coverageType => coverageType.value == data.coverageType)
+
+      let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0].waitingDays))
+
+      if (checkCoverageTypeDate > data.lossDate) {
         // claim not allowed for that coverageType
         res.send({
           code: constant.errorCode,
@@ -1127,3 +1275,74 @@ exports.checkCoverageTypeDate = async (req, res) => {
   }
 }
 
+exports.updateContracts = async (req, res) => {
+  try {
+    let endDate = "2026-08-31"
+    let objectToUpdate = {
+      $set: {
+        coverageEndDate: endDate,
+        eligibilty: true,
+        status: "Active"
+      }
+    }
+    // let updateContracts = await contractService.updateManyContract({ orderId: "670d4ca5e7cbbc76c394ef51", orderProductId: "670d4ca5e7cbbc76c394ef53" }, objectToUpdate, { new: true })
+    let updateContracts = await contractService.deleteManyContract({ orderId: "orderID" })
+    res.send({
+      code: updateContracts
+    })
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.checkClaimThreshHold = async (req, res) => {
+  try {
+    let data = req.body
+    let getClaim = await claimService.getClaimById({ _id: req.params.claimId })
+    if (!getClaim) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid claim ID"
+      })
+      return;
+    }
+
+    let contractId = getClaim.contractId
+    let getContract = await contractService.getContractById({ _id: contractId })
+    let getTheThresholdLimit = await userService.getUserById1({ roleId: process.env.super_admin, isPrimary: true })
+    let claimAmountTaken = Number(getContract.claimAmount) + Number(data.claimAmount)
+    let productValue = getContract.productValue
+
+
+    let thresholdLimitPercentage = getTheThresholdLimit.threshHoldLimit.value
+    const thresholdLimitValue = (thresholdLimitPercentage / 100) * Number(productValue);
+    console.log(claimAmountTaken, thresholdLimitValue)
+    let overThreshold = claimAmountTaken > thresholdLimitValue;
+    console.log(claimAmountTaken, thresholdLimitValue, overThreshold, thresholdLimitPercentage)
+
+    let threshHoldMessage = "Claim amount exceeds the allowed limit. This might lead to claim rejection. To proceed further with claim please contact admin."
+    if (!overThreshold) {
+      threshHoldMessage = ""
+    }
+    if (!getTheThresholdLimit.isThreshHoldLimit) {
+      overThreshold = false
+      threshHoldMessage = ""
+    }
+
+    res.send({
+      code: constant.successCode,
+      message: threshHoldMessage,
+      overThreshold: overThreshold
+    })
+
+
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}

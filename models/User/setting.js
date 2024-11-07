@@ -58,6 +58,30 @@ const settingSchema = new mongoose.Schema({
     ],
     default: [] // Set the default value
   },
+  defaultLightLogo:{
+    type: {},
+    default: {}
+  },
+  defaultDarkLogo:{
+    type: {},
+    default: {}
+  },
+  defaultFavIcon:{
+    type: {},
+    default: {}
+  },
+  defaultTitle:{
+    type: String,
+    default: ''
+  },
+  defaultPaymentDetail:{
+    type: String,
+    default: ''
+  },
+  defaultAddress:{
+    type: String,
+    default: ''
+  },
   setDefault: {
     type: Number,
     default:0

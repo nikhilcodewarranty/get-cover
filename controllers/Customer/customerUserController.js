@@ -506,6 +506,9 @@ exports.getCustomerContract = async (req, res) => {
   try {
     let data = req.body
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+    // let getTheThresholdLimir = await userService.getUserById1({ roleId: process.env.super_admin, isPrimary: true })
+    let getTheThresholdLimir = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
+
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
     let dealerIds = [];
@@ -673,6 +676,9 @@ exports.getCustomerContract = async (req, res) => {
     let result1 = getContracts[0]?.data ? getContracts[0]?.data : []
     for (let e = 0; e < result1.length; e++) {
       result1[e].reason = " "
+      if (!result1[e].eligibilty) {
+        result1[e].reason = "Claims limit cross for this contract"
+      }
       if (result1[e].status != "Active") {
         result1[e].reason = "Contract is not active"
       }
@@ -716,6 +722,21 @@ exports.getCustomerContract = async (req, res) => {
           result1[e].reason = "Claim value exceed the product value limit"
         }
       }
+
+
+      let thresholdLimitPercentage = getTheThresholdLimir.threshHoldLimit.value
+      const thresholdLimitValue = (thresholdLimitPercentage / 100) * Number(result1[e].productValue);
+      let overThreshold = result1[e].claimAmount > thresholdLimitValue;
+      let threshHoldMessage = "This claim amount surpasses the maximum allowed threshold."
+      if (!overThreshold) {
+        threshHoldMessage = ""
+      }
+      if (!thresholdLimitPercentage.isThreshHoldLimit) {
+        overThreshold = false
+        threshHoldMessage = ""
+      }
+      result1[e].threshHoldMessage = threshHoldMessage
+      result1[e].overThreshold = overThreshold
     }
     res.send({
       code: constant.successCode,
@@ -839,7 +860,40 @@ exports.getCustomerUsers = async (req, res) => {
   try {
     let data = req.body
 
-    let getCustomerUsers = await userService.findUser({ metaData: { $elemMatch: { metaId: req.userId, isDeleted: false } } }, { isPrimary: -1 })
+    // let getCustomerUsers = await userService.findUser({ metaData: { $elemMatch: { metaId: req.userId, isDeleted: false } } }, { isPrimary: -1 })
+
+    const getCustomerUsers = await userService.findUserforCustomer1([
+      {
+        $match: {
+          $and: [
+            { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+            { metaData: { $elemMatch: { firstName: { '$regex': data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+            { metaData: { $elemMatch: { lastName: { '$regex': data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+            { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { metaData: { $elemMatch: { metaId: new mongoose.Types.ObjectId(req.userId) } } }
+          ]
+        }
+      },
+      {
+        $project: {
+          email: 1,
+          'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+          'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+          'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+          'position': { $arrayElemAt: ["$metaData.position", 0] },
+          'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+          'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+          'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+          'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+          'status': { $arrayElemAt: ["$metaData.status", 0] },
+          resetPasswordCode: 1,
+          isResetPassword: 1,
+          approvedStatus: 1,
+          createdAt: 1,
+          updatedAt: 1
+        }
+      }
+    ]);
 
     if (!getCustomerUsers) {
       res.send({
@@ -858,19 +912,6 @@ exports.getCustomerUsers = async (req, res) => {
       l_name: nameArray.slice(1).join(" ")  // Last name (if there are multiple parts)
     };
 
-    const firstNameRegex = new RegExp(data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', 'i')
-    const lastNameRegex = new RegExp(data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', 'i')
-    const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
-    const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
-
-    const filteredData = getCustomerUsers.filter(entry => {
-      return (
-        firstNameRegex.test(entry.firstName) &&
-        lastNameRegex.test(entry.lastName) &&
-        emailRegex.test(entry.email) &&
-        phoneRegex.test(entry.phoneNumber)
-      );
-    });
 
     let checkCustomer = await customerService.getCustomerByName({ _id: req.userId }, { status: 1 })
     if (!checkCustomer) {
@@ -885,7 +926,7 @@ exports.getCustomerUsers = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: "Success",
-      result: filteredData,
+      result: getCustomerUsers,
       customerStatus: checkCustomer.status,
       isAccountCreate: checkCustomer.isAccountCreate
     })
@@ -1382,139 +1423,49 @@ exports.getContractById = async (req, res) => {
 // get dashboard data 
 exports.getDashboardData = async (req, res) => {
   try {
-    let data = req.body;
-    let project = {
-      productsArray: 1,
-      dealerId: 1,
-      unique_key: 1,
-      unique_key_number: 1,
-      unique_key_search: 1,
-      servicerId: 1,
-      customerId: 1,
-      resellerId: 1,
-      paymentStatus: 1,
-      status: 1,
-      venderOrder: 1,
-      orderAmount: 1,
-    };
+    let data = req.body
 
-    let query = { status: 'Active', customerId: new mongoose.Types.ObjectId(req.userId) };
-    const claimQuery = { claimFile: 'completed' }
-    var checkOrders_ = await orderService.getDashboardData(query, project);
-    //Get claims data
-    let lookupQuery = [
-      {
-        $match: claimQuery
-      },
-      {
-        $lookup: {
-          from: "contracts",
-          localField: "contractId",
-          foreignField: "_id",
-          as: "contracts",
-        }
-      },
-      {
-        $unwind: "$contracts"
-      },
-      {
-        $lookup: {
-          from: "orders",
-          localField: "contracts.orderId",
-          foreignField: "_id",
-          as: "contracts.orders",
-        },
 
-      },
+    let claimQueryCompleted = [
       {
-        $unwind: "$contracts.orders"
-      },
-      {
-        $match:
-        {
+        $match: {
           $and: [
-            { "contracts.orders.customerId": new mongoose.Types.ObjectId(req.userId) },
-          ]
-        },
-      },
-      {
-        "$group": {
-          "_id": "",
-          "totalAmount": {
-            "$sum": {
-              "$sum": "$totalAmount"
+            { customerId: new mongoose.Types.ObjectId(req.userId) },
+            {
+              $or: [
+                { claimFile: "completed" },
+                { claimFile: "rejected" },
+              ]
             }
-          },
-        },
-
-      },
-    ]
-    let valueClaim = await claimService.getClaimWithAggregate(lookupQuery);
-
-    const rejectedQuery = { claimFile: { $ne: "rejected" } }
-    //Get number of claims
-    let numberOfCompleletedClaims = [
-      {
-        $match: claimQuery
-      },
-      {
-        $lookup: {
-          from: "contracts",
-          localField: "contractId",
-          foreignField: "_id",
-          as: "contracts",
-        }
-      },
-      {
-        $unwind: "$contracts"
-      },
-      {
-        $lookup: {
-          from: "orders",
-          localField: "contracts.orderId",
-          foreignField: "_id",
-          as: "contracts.orders",
-        },
-
-      },
-      {
-        $unwind: "$contracts.orders"
-      },
-      {
-        $match:
-        {
-          $and: [
-            { "contracts.orders.customerId": new mongoose.Types.ObjectId(req.userId) },
           ]
-        },
-      },
-    ]
-    let numberOfClaims = await claimService.getClaimWithAggregate(numberOfCompleletedClaims);
-    const claimData = {
-      numberOfClaims: numberOfClaims.length,
-      valueClaim: valueClaim.length > 0 ? valueClaim[0]?.totalAmount : 0
-    }
-    if (!checkOrders_[0] && numberOfClaims.length == 0 && valueClaim.length == 0) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to fetch order data",
-        result: {
-          claimData: claimData,
-          orderData: {
-            "_id": "",
-            "totalAmount": 0,
-            "totalOrder": 0
-          }
         }
-      })
-      return;
-    }
+      },
+
+    ]
+
+    let claimQuery = [
+      {
+        $match: {
+          customerId: new mongoose.Types.ObjectId(req.userId),
+        }
+      },
+
+    ]
+
+    let getOrderId = await orderService.getOrders({ customerId: req.userId })
+    let orderIds = getOrderId.map((orderId) => orderId._id)
+    let getCompletedClaim = await claimService.getClaimWithAggregate(claimQueryCompleted)
+    let getClaim = await claimService.getClaimWithAggregate(claimQuery)
+    let getContracts = await contractService.findContracts2({ orderId: { $in: orderIds } })
+
+    
     res.send({
       code: constant.successCode,
       message: "Success",
       result: {
-        claimData: claimData,
-        orderData: checkOrders_[0]
+        numberOfDevices: getContracts.length,
+        numberOfSubmittedClaims: getClaim.length,
+        numberOfCompletedClaims: getCompletedClaim.length
       }
     })
   } catch (err) {
@@ -1525,11 +1476,58 @@ exports.getDashboardData = async (req, res) => {
   }
 };
 
+exports.getDashboardData1 = async (req, res) => {
+  try {
+    let data = req.body
+
+    let claimQueryCompleted = [
+      {
+        $match: {
+          customerId: new mongoose.Types.ObjectId(req.userId),
+          claimFile: "completed"
+        }
+      },
+
+    ]
+
+    let claimQuery = [
+      {
+        $match: {
+          customerId: new mongoose.Types.ObjectId(req.userId),
+        }
+      },
+
+    ]
+
+    let getOrderId = await orderService.getOrders({ customerId: req.userId })
+    let orderIds = getOrderId.map((orderId) => orderId._id)
+    let getCompletedClaim = await claimService.getClaimWithAggregate(claimQueryCompleted)
+    let getClaim = await claimService.getClaimWithAggregate(claimQuery)
+    let getContracts = await contractService.findContracts2({ orderId: { $in: orderIds } })
+
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: {
+        numberOfDevices: getContracts.length,
+        numberOfSubmittedClaims: getClaim.length,
+        numberOfCompletedClaims: getCompletedClaim.length
+      }
+    })
+
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
 // get custiner details
 exports.getCustomerDetails = async (req, res) => {
   try {
     let data = req.body
-    let getUser = await userService.getUserById1({ _id: req.teammateId })
+    let getUser = await userService.getUserById1({ _id: req.teammateId }) 
     let mid = new mongoose.Types.ObjectId(req.userId)
     let query = [
       {
@@ -1820,7 +1818,9 @@ exports.getDashboardInfo = async (req, res) => {
 
       }
     },
-    { $sort: { unique_key_number: -1 } },
+    {
+      $sort: { updatedAt: -1 }
+    },
     {
       $limit: 5
     },
@@ -1841,7 +1841,7 @@ exports.getDashboardInfo = async (req, res) => {
     },
     {
       $sort: {
-        unique_key_number: -1
+        updatedAt: -1
       }
     },
     {

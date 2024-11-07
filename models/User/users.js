@@ -12,6 +12,19 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: process.env.DUMMY_PASSWORD
     },
+    threshHoldLimit: {
+        type: {
+          value: Number,
+          amountType: {
+            type: String,
+            default: "percentage"
+          }
+        }
+      },
+      isThreshHoldLimit: {
+        type: Boolean,
+        default: false
+      },
     notificationTo: {
         type: Array,
         default: []
@@ -69,6 +82,7 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    
     approvedStatus: {
         type: String,
         enum: ["Pending", "Approved", "Rejected"],

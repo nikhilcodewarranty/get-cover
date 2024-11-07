@@ -234,7 +234,7 @@ exports.getDashboardInfo = async (req, res) => {
 
             }
         },
-        { $sort: { unique_key_number: -1 } },
+        { $sort: { updatedAt: -1 } },
         {
             $limit: 5
         },
@@ -257,7 +257,7 @@ exports.getDashboardInfo = async (req, res) => {
         },
         {
             $sort: {
-                unique_key_number: -1
+                updatedAt: -1
             }
         },
         {
@@ -814,7 +814,8 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
                     { 'priceBooks.priceType': { '$regex': priceType, '$options': 'i' } },
                     { 'priceBooks.pName': { '$regex': searchPName, '$options': 'i' } },
                     { 'priceBooks.category._id': { $in: catIdsArray } },
-                    { 'priceBooks.coverageType': { $elemMatch: { value: { $in: data.coverageType } } } },
+                    { 'priceBooks.coverageType.value': { $all: data.coverageType } },
+                    { "priceBooks.coverageType": { $size: data.coverageType.length } },
                     { 'status': true },
                     { 'dealerSku': { '$regex': dealerSku, '$options': 'i' } },
                     { dealerId: new mongoose.Types.ObjectId(req.userId) }
@@ -1337,7 +1338,7 @@ exports.getDealerCustomers = async (req, res) => {
             let getResellers = await resellerService.getResellers({ name: { '$regex': req.body.resellerName, '$options': 'i' } })
             const resellerIds = getResellers.map(obj => obj._id.toString());
             if (resellerIds.length == 0) {
-                query = { isDeleted: false, dealerId: req.userId, resellerId1: { $in: ["1111121ccf9d400000000000"] } }
+                query = { isDeleted: false, dealerId: req.userId, resellerId1:   { $in: ["1111121ccf9d400000000000"] } }
 
             } else {
                 query = { isDeleted: false, dealerId: req.userId, resellerId1: { $in: resellerIds } }
@@ -1358,6 +1359,10 @@ exports.getDealerCustomers = async (req, res) => {
         const queryUser = { metaId: { $in: customersId }, isPrimary: true };
         //Get Customer Resellers
         let resellerData = await resellerService.getResellers({ _id: { $in: customersResellerId } }, {})
+        let name = data.firstName ? data.firstName : ""
+
+        let nameArray = name.split(" ");
+
         // Create new keys for first name and last name
         let newObj = {
             f_name: nameArray[0],  // First name
@@ -1435,8 +1440,6 @@ exports.getDealerCustomers = async (req, res) => {
             };
         })
 
-        let name = data.firstName ? data.firstName : ""
-        let nameArray = name.split(" ");
 
 
 
@@ -1464,14 +1467,99 @@ exports.getCustomerInOrder = async (req, res) => {
     try {
         let data = req.body;
         let query;
+        // if (data.resellerId != "") {
+        //     query = { dealerId: req.userId, resellerId: data.resellerId };
+        // }
+        // else {
+        //     query = { dealerId: req.userId };
+        // }
+
         if (data.resellerId != "") {
-            query = { dealerId: req.userId, resellerId: data.resellerId };
-        }
-        else {
-            query = { dealerId: req.userId };
+            // query = { dealerId: data.dealerId, resellerId: data.resellerId };
+            query = [
+                {
+                    $match: {
+                        $and: [
+                            {
+                                dealerId: new mongoose.Types.ObjectId(req.userId)
+                            },
+                            {
+                                resellerId1: new mongoose.Types.ObjectId(data.resellerId)
+                            }
+                        ]
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "resellers",
+                        localField: 'resellerId1',
+                        foreignField: '_id',
+                        as: "resellerData"
+                    }
+                },
+                {
+                    $project: {
+                        _id: 1,
+                        username: 1,
+                        street: 1,
+                        city: 1,
+                        zip: 1,
+                        unique_key: 1,
+                        state: 1,
+                        country: 1,
+                        dealerId: 1,
+                        isAccountCreate: 1,
+                        resellerId: 1,
+                        resellerId1: 1,
+                        dealerName: 1,
+                        status: 1,
+                        accountStatus: 1,
+                        isDeleted: 1,
+                        'resellerStatus': { $arrayElemAt: ["$resellerData.status", 0] },
+
+                    }
+                }
+            ]
+        } else {
+            // query = { dealerId: data.dealerId };
+            query = [
+                {
+                    $match: { dealerId: new mongoose.Types.ObjectId(req.userId) }
+                },
+                {
+                    $lookup: {
+                        from: "resellers",
+                        localField: 'resellerId1',
+                        foreignField: '_id',
+                        as: "resellerData"
+                    }
+                },
+                {
+                    $project: {
+                        _id: 1,
+                        username: 1,
+                        street: 1,
+                        city: 1,
+                        zip: 1,
+                        unique_key: 1,
+                        state: 1,
+                        country: 1,
+                        dealerId: 1,
+                        isAccountCreate: 1,
+                        resellerId: 1,
+                        resellerId1: 1,
+                        dealerName: 1,
+                        status: 1,
+                        accountStatus: 1,
+                        isDeleted: 1,
+                        'resellerStatus': { $arrayElemAt: ["$resellerData.status", 0] },
+
+                    }
+                }
+            ]
         }
 
-        let getCustomers = await customerService.getAllCustomers(query, {});
+        let getCustomers = await customerService.getCustomerByAggregate(query, {});
 
         if (!getCustomers) {
             res.send({
@@ -1654,18 +1742,18 @@ exports.getServicerInOrders = async (req, res) => {
 
     const result_Array = servicer.map((item1) => {
         const matchingItem = servicerUser.find(
-            (item2) => item2.metaId.toString() === item1?._id.toString());
+            (item2) => item2.metaId?.toString() === item1?._id.toString());
         let matchingItem2 = servicerUser.find(
-            (item2) => item2.metaId.toString() === item1?.resellerId?.toString() || item2.metaId.toString() === item1?.dealerId?.toString());
+            (item2) => item2.metaId?.toString() === item1?.resellerId?.toString() || item2?.metaId?.toString() === item1?.dealerId?.toString());
         if (matchingItem) {
             return {
                 ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-                servicerData: matchingItem.toObject(),
+                servicerData: matchingItem,
             };
         } else if (matchingItem2) {
             return {
                 ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-                servicerData: matchingItem2.toObject(),
+                servicerData: matchingItem2,
             };
         } else {
             return {}
@@ -2755,6 +2843,9 @@ exports.getAllContracts = async (req, res) => {
     try {
         let data = req.body
         let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+        // let getTheThresholdLimir = await userService.getUserById1({ roleId: process.env.super_admin, isPrimary: true })
+        let getTheThresholdLimir = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
+
         let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
         let limitData = Number(pageLimit)
         let dealerIds = [];
@@ -2947,6 +3038,9 @@ exports.getAllContracts = async (req, res) => {
         for (let e = 0; e < result1.length; e++) {
 
             result1[e].reason = " "
+            if (!result1[e].eligibilty) {
+                result1[e].reason = "Claims limit cross for this contract"
+              }
             if (result1[e].status != "Active") {
                 result1[e].reason = "Contract is not active"
             }
@@ -2993,6 +3087,19 @@ exports.getAllContracts = async (req, res) => {
                     result1[e].reason = "Claim value exceed the product value limit"
                 }
             }
+            let thresholdLimitPercentage = getTheThresholdLimir.threshHoldLimit.value
+            const thresholdLimitValue = (thresholdLimitPercentage / 100) * Number(result1[e].productValue);
+            let overThreshold = result1[e].claimAmount > thresholdLimitValue;
+            let threshHoldMessage = "This claim amount surpasses the maximum allowed threshold."
+            if (!overThreshold) {
+                threshHoldMessage = ""
+            }
+            if (!thresholdLimitPercentage.isThreshHoldLimit) {
+                overThreshold = false
+                threshHoldMessage = ""
+            }
+            result1[e].threshHoldMessage = threshHoldMessage
+            result1[e].overThreshold = overThreshold
         }
         res.send({
             code: constant.successCode,

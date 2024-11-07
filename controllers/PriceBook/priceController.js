@@ -14,6 +14,50 @@ const supportingFunction = require('../../config/supportingFunction')
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey('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 ');
 const emailConstant = require('../../config/emailConstant');
+const multer = require('multer');
+const path = require('path');
+
+//multer file upload 
+const { S3Client } = require('@aws-sdk/client-s3');
+const XLSX = require("xlsx");
+
+const aws = require('aws-sdk');
+const { Upload } = require('@aws-sdk/lib-storage');
+const multerS3 = require('multer-s3');
+const terms = require("../../models/User/terms");
+const options = require("../../models/User/options");
+aws.config.update({
+  accessKeyId: process.env.aws_access_key_id,
+  secretAccessKey: process.env.aws_secret_access_key,
+});
+const S3Bucket = new aws.S3();
+// s3 bucket connections
+const s3 = new S3Client({
+  region: process.env.region,
+  credentials: {
+    accessKeyId: process.env.aws_access_key_id,
+    secretAccessKey: process.env.aws_secret_access_key,
+  }
+});
+const folderName = 'companyPriceBook'; // Replace with your specific folder name
+const StorageP = multerS3({
+  s3: s3,
+  bucket: process.env.bucket_name,
+  metadata: (req, file, cb) => {
+    cb(null, { fieldName: file.fieldname });
+  },
+  key: (req, file, cb) => {
+    const fileName = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
+    const fullPath = `${folderName}/${fileName}`;
+    cb(null, fullPath);
+  }
+});
+var uploadP = multer({
+  storage: StorageP,
+  limits: {
+    fileSize: 500 * 1024 * 1024, // 500 MB limit
+  },
+}).single('companyPriceBook');
 //------------- price book api's------------------//
 
 //get all price books
@@ -44,7 +88,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
     }
 
     if (data.status != "all") {
-      if (data.coverageType != "") {
+      if (data.coverageType.length != "") {
         query = {
           $and: [
             { isDeleted: false },
@@ -73,7 +117,8 @@ exports.getAllPriceBooks = async (req, res, next) => {
         $and: [
           { isDeleted: false },
           { 'pName': { '$regex': searchName1, '$options': 'i' } },
-          { 'coverageType': { $elemMatch: { value: data.coverageType } } },
+          { "coverageType.value": { "$all": data.coverageType } },
+          { "coverageType": { "$size": data.coverageType.length } },
           { 'name': { '$regex': searchName, '$options': 'i' } },
           { 'category': { $in: catIdsArray } }
         ]
@@ -567,7 +612,7 @@ exports.updatePriceBookById = async (req, res, next) => {
         subject: "Update Status"
       }
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "", emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "noreply@getcover.com", emailData))
     let logData = {
       userId: req.teammateId,
       endpoint: "price/updatePriceBook",
@@ -711,7 +756,7 @@ exports.createPriceBookCat = async (req, res) => {
       content: "The category " + data.name + " created successfully! effective immediately.",
       subject: "New Category Added"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
 
     let logData = {
       userId: req.teammateId,
@@ -1005,7 +1050,7 @@ exports.updatePriceBookCat = async (req, res) => {
       content: "The category " + data.name + " updated successfully! effective immediately.",
       subject: "Update Category"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
     let logData = {
       userId: req.teammateId,
       endpoint: "price/updatePricebookCat",
@@ -1211,7 +1256,6 @@ exports.getPriceBookByCategoryId = async (req, res) => {
 }
 
 //Get coverage type by price book
-
 exports.getCoverageType = async (req, res) => {
   try {
     let data = req.body
@@ -1333,7 +1377,6 @@ exports.getCoverageTypeAndAdhDays = async (req, res) => {
   }
 }
 
-
 // get category bu price book name
 exports.getCategoryByPriceBook = async (req, res) => {
   try {
@@ -1370,4 +1413,725 @@ exports.getCategoryByPriceBook = async (req, res) => {
   }
 }
 
+//Get File data from S3 bucket
+const getObjectFromS3 = (bucketReadUrl) => {
+  return new Promise((resolve, reject) => {
+    S3Bucket.getObject(bucketReadUrl, (err, data) => {
+      if (err) {
+        reject(err);
+      } else {
+        const wb = XLSX.read(data.Body, { type: 'buffer' });
+        const sheetName = wb.SheetNames[0];
+        const sheet = wb.Sheets[sheetName];
+        let headers = [];
+
+        for (let cell in sheet) {
+          if (
+            /^[A-Z]1$/.test(cell) &&
+            sheet[cell].v !== undefined &&
+            sheet[cell].v !== null &&
+            sheet[cell].v.trim() !== ""
+          ) {
+            headers.push(sheet[cell].v);
+          }
+        }
+
+        const result = {
+          headers: headers,
+          data: XLSX.utils.sheet_to_json(sheet, { defval: "" }),
+        };
+
+        resolve(result);
+      }
+    });
+  });
+};
+
+//upload  price book
+exports.uploadRegularPriceBook = async (req, res) => {
+  try {
+    uploadP(req, res, async (err) => {
+      let file = req.file;
+      let data = req.body
+      if (!file || !data.priceType) {
+        res.send({
+          code: constant.errorCode,
+          message: "File and price type is required"
+        })
+        return
+      }
+      const bucketReadUrl = { Bucket: process.env.bucket_name, Key: file.key };
+      // Await the getObjectFromS3 function to complete
+      const result = await getObjectFromS3(bucketReadUrl);
+      let responseData = result.data;
+      const headers = result.headers
+      console.log("check the header length ++++++++++++++++++++++++++++++", headers.length)
+
+      if (data.priceType == "Regular Pricing") {
+        //check the header of file
+        if (headers.length !== 10) {
+          res.send({
+            code: constant.errorCode,
+            message: "Invalid file format detected. The sheet should contain exactly three columns."
+          })
+          return
+        }
+
+        // updating the key names 
+        let totalDataComing = responseData.map(item => {
+          let keys = Object.keys(item);
+          return {
+            category: item[keys[0]],  // First key's value
+            name: item[keys[1]].trim().replace(/\s+/g, ' '),   // Second key's value
+            pName: item[keys[2]].trim().replace(/\s+/g, ' '),  // Third key's value
+            description: item[keys[3]].trim().replace(/\s+/g, ' '),   // Second key's value
+            frontingFee: item[keys[4]],   // Second key's value
+            reinsuranceFee: item[keys[5]],   // Second key's value
+            reserveFutureFee: item[keys[6]],   // Second key's value
+            adminFee: item[keys[7]],   // Second key's value
+            coverageType: item[keys[8]],   // Second key's value
+            term: item[keys[9]],   // Second key's value
+          };
+        });
+        const totalDataOriginal = responseData.map(item => {
+          let keys = Object.keys(item);
+          return {
+            Category: item[keys[0]],  // First key's value
+            "Product Sku": item[keys[1]],   // Second key's value
+            "Product Name": item[keys[2]],  // Third key's value
+            Description: item[keys[3]],   // Second key's value
+            "Fronting Fee": item[keys[4]],   // Second key's value
+            "Reinsaurance Fee": item[keys[5]],   // Second key's value
+            "Reserve Future Fee": item[keys[6]],   // Second key's value
+            "Admin Fee": item[keys[7]],   // Second key's value
+            "Coverage Type": item[keys[8]],   // Second key's value
+            Term: item[keys[9]],    // Second key's value
+          };
+        });
+
+        console.log("checking ak -------------+++++--------", totalDataOriginal[0])
+
+        for (let c = 0; c < totalDataComing.length; c++) {
+
+          totalDataComing[c].inValid = false
+          totalDataComing[c].reason = "Success"
+          function convertToMonths(term) {
+            // Use a regular expression to extract the number and the unit (year/years)
+            const match = term.match(/(\d+)\s*(year|years)/i);
+
+            if (match) {
+              const years = parseInt(match[1], 10);  // Extract the number of years
+              const months = years * 12;             // Convert years to months
+              return months;
+            } else {
+              totalDataComing[c].inValid = true
+              totalDataComing[c].reason = "Invalid term"
+              console.log("term invalid ");
+            }
+          }
+          let category = totalDataComing[c].category;
+          let name = totalDataComing[c].name;
+          let term = convertToMonths(totalDataComing[c].term);
+          let coverageType = totalDataComing[c].coverageType;
+          let catSearch = new RegExp(`^${category}$`, 'i');
+          let priceNameSearch = new RegExp(`^${name}$`, 'i');
+          let checkCategory = await priceBookService.getPriceCatByName({ name: catSearch })
+          if (!checkCategory) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Invalid category"
+          }
+          let checkPriceBook = await priceBookService.findByName1({ name: { '$regex': new RegExp(`^${name}$`, 'i') } })
+          if (checkPriceBook) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Product sku already exist"
+          }
+          if (!name) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Product name required"
+          }
+          let checkTerms = await terms.findOne({ terms: term })
+          if (!checkTerms) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Invalid term"
+          }
+          coverageType = coverageType.split(',').map(type => type.trim());
+          coverageType = [...new Set(coverageType)]
+          // coverageType = ["breakdown", "accidental", "liquid_damage"]
+          let checkCoverageType = await options.findOne({ "value.label": { $all: coverageType }, "name": "coverage_type" })
+
+          if (!checkCoverageType) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Invalid coverage type"
+          }
+
+          totalDataComing[c].coverageType = coverageType
+          if (checkCoverageType) {
+            let mergedArray = coverageType.map(id => {
+              // Find a match in array2 based on id
+              let match = checkCoverageType.value.find(item2 => item2.label === id);
+
+              // Return the match only if found
+              // return match ? match :null; // If no match, return the id object
+              return match ? { label: match.label, value: match.value } : null; // If no match, return the id object
+            });
+            totalDataComing[c].coverageType = mergedArray
+
+          }
+          totalDataComing[c].category = checkCategory ? checkCategory._id : ""
+          totalDataComing[c].term = term
+          totalDataComing[c].priceType = "Regular Pricing"
+          totalDataComing[c].frontingFee = totalDataComing[c].frontingFee ? totalDataComing[c].frontingFee : 0
+          totalDataComing[c].reinsuranceFee = totalDataComing[c].reinsuranceFee ? totalDataComing[c].reinsuranceFee : 0
+          totalDataComing[c].reserveFutureFee = totalDataComing[c].reserveFutureFee ? totalDataComing[c].reserveFutureFee : 0
+          totalDataComing[c].adminFee = totalDataComing[c].adminFee ? totalDataComing[c].adminFee : 0
+          // totalDataComing[c].inValid = totalDataComing[c].description != "" ? false : true
+          // console.log("sldfjshfljhdf",totalDataComing[c],"======",totalDataComing[c].description,"++++++++++++")
+          // totalDataComing[c].reason = totalDataComing[c].description != "" ? "" : "Description is required"
+          // totalDataComing[c].inValid = totalDataComing[c].pName != "" ? false : true
+          // totalDataComing[c].reason = totalDataComing[c].pName != "" ? "" : "Product name is required"
+          if (!totalDataComing[c].description || !totalDataComing[c].pName) {
+            totalDataComing[c].reason = "Product name and description both are required"
+            totalDataComing[c].inValid = true
+          }
+
+          if (!totalDataComing[c].inValid) {
+            let createCompanyPriceBook = await priceBookService.createPriceBook(totalDataComing[c])
+          }
+        }
+
+        function convertArrayToHTMLTable(array) {
+          const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');
+          const rows = array.map(obj => {
+            const values = Object.values(obj).map(value => `<td>${value}</td>`);
+            values[2] = `${values[2]}`;
+            return values.join('');
+          });
+
+          const htmlContent = `<html>
+              <head>
+                  <style>
+                      table {
+                          border-collapse: collapse;
+                          width: 100%; 
+                      }
+                      th, td {
+                          border: 1px solid #dddddd;
+                          text-align: left;
+                          padding: 8px;
+                      }
+                      th {
+                          background-color: #f2f2f2;
+                      }
+                  </style>
+              </head>
+              <body>
+                  <table>
+                      <thead><tr>${header}</tr></thead>
+                      <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
+                  </table>
+              </body>
+          </html>`;
+
+          return htmlContent;
+        }
+        let totalDataOriginal1 = totalDataOriginal.map((item) => {
+          let match = totalDataComing.find((secondItem) => secondItem.name === item["Product Sku"]);
+          if (match) {
+            // If match is found, add reason and status
+            return {
+              ...item,
+              reason: match.reason,
+              status: match.inValid ? 'Unsuccessful' : 'Successful'
+            };
+          }
+        });
+        const htmlTableString = convertArrayToHTMLTable(totalDataOriginal1);
+        const mailing = sgMail.send(emailConstant.sendPriceBookFile(("yashasvi@codenomad.net"), ["anil@codenomad.net"], htmlTableString));
+
+        res.send({
+          code: constant.successCode,
+          data: totalDataComing
+        })
+      } else if (data.priceType == "Flat Pricing") {
+        if (headers.length !== 12) {
+          res.send({
+            code: constant.errorCode,
+            message: "Invalid file format detected. The sheet should contain exactly three columns."
+          })
+          return
+        }
+
+        // updating the key names 
+        let totalDataComing = responseData.map(item => {
+          let keys = Object.keys(item);
+          return {
+            category: item[keys[0]],  // First key's value
+            name: item[keys[1]],   // Second key's value
+            pName: item[keys[2]],  // Third key's value
+            description: item[keys[3]],   // Second key's value
+            frontingFee: item[keys[4]],   // Second key's value
+            reinsuranceFee: item[keys[5]],   // Second key's value
+            reserveFutureFee: item[keys[6]],   // Second key's value
+            adminFee: item[keys[7]],   // Second key's value
+            coverageType: item[keys[8]],   // Second key's value
+            term: item[keys[9]],   // Second key's value
+            rangeStart: item[keys[10]],   // Second key's value
+            rangeEnd: item[keys[11]],   // Second key's value
+          };
+        });
+
+        let totalDataOriginal = responseData.map(item => {
+          let keys = Object.keys(item);
+          return {
+            Category: item[keys[0]],  // First key's value
+            "Product Sku": item[keys[1]],   // Second key's value
+            "Product Name": item[keys[2]],  // Third key's value
+            Description: item[keys[3]],   // Second key's value
+            "Fronting Fee": item[keys[4]],   // Second key's value
+            "Reinsaurance Fee": item[keys[5]],   // Second key's value
+            "Reserve Future Fee": item[keys[6]],   // Second key's value
+            "Admin Fee": item[keys[7]],   // Second key's value
+            "Coverage Type": item[keys[8]],   // Second key's value
+            Term: item[keys[9]],   // Second key's value
+            "Range Start": item[keys[10]],   // Second key's value
+            "Range End": item[keys[11]],   // Second key's value
+          };
+        });
+
+
+
+
+        for (let c = 0; c < totalDataComing.length; c++) {
+
+          totalDataComing[c].inValid = false
+          totalDataComing[c].reason = "Success"
+          function convertToMonths(term) {
+            // Use a regular expression to extract the number and the unit (year/years)
+            const match = term.match(/(\d+)\s*(year|years)/i);
+
+            if (match) {
+              const years = parseInt(match[1], 10);  // Extract the number of years
+              const months = years * 12;             // Convert years to months
+              return months;
+            } else {
+              totalDataComing[c].inValid = true
+              totalDataComing[c].reason = "Invalid term"
+            }
+          }
+          let category = totalDataComing[c].category;
+          let name = totalDataComing[c].name;
+          let term = convertToMonths(totalDataComing[c].term);
+          let coverageType = totalDataComing[c].coverageType;
+          let catSearch = new RegExp(`^${category}$`, 'i');
+          let priceNameSearch = new RegExp(`^${name}$`, 'i');
+          let checkCategory = await priceBookService.getPriceCatByName({ name: catSearch })
+          if (!checkCategory) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Invalid category"
+          }
+          let checkPriceBook = await priceBookService.findByName1({ name: name })
+          if (checkPriceBook) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Product sku already exist"
+          }
+          console.log("name check ----------------------", name)
+          if (!name) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Product name required"
+          }
+          let checkTerms = await terms.findOne({ terms: term })
+          if (!checkTerms) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Invalid term"
+          }
+          coverageType = coverageType.split(',').map(type => type.trim());
+          coverageType = [...new Set(coverageType)]
+
+          // coverageType = ["breakdown", "accidental", "liquid_damage"]
+          let checkCoverageType = await options.findOne({ "value.label": { $all: coverageType }, "name": "coverage_type" })
+
+          if (!checkCoverageType) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Invalid coverage type"
+          }
+          totalDataComing[c].coverageType = coverageType
+          if (checkCoverageType) {
+
+            let mergedArray = coverageType.map(id => {
+              // Find a match in array2 based on id
+              let match = checkCoverageType.value.find(item2 => item2.label == id);
+
+              // Return the match only if found
+              // return match ? match :null; // If no match, return the id object
+              return match ? { label: match.label, value: match.value } : null; // If no match, return the id object
+            });
+            totalDataComing[c].coverageType = mergedArray
+
+          }
+          if (totalDataComing[c].rangeStart < 0 || !totalDataComing[c].rangeStart) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Invalid range start price"
+          }
+          if (totalDataComing[c].rangeEnd < 0 || !totalDataComing[c].rangeEnd || totalDataComing[c].rangeEnd < totalDataComing[c].rangeStart) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Invalid range end price"
+          }
+          totalDataComing[c].category = checkCategory ? checkCategory._id : ""
+          totalDataComing[c].term = term
+          totalDataComing[c].priceType = "Flat Pricing"
+          totalDataComing[c].frontingFee = totalDataComing[c].frontingFee ? totalDataComing[c].frontingFee : 0
+          totalDataComing[c].reinsuranceFee = totalDataComing[c].reinsuranceFee ? totalDataComing[c].reinsuranceFee : 0
+          totalDataComing[c].reserveFutureFee = totalDataComing[c].reserveFutureFee ? totalDataComing[c].reserveFutureFee : 0
+          totalDataComing[c].adminFee = totalDataComing[c].adminFee ? totalDataComing[c].adminFee : 0
+          // totalDataComing[c].inValid = totalDataComing[c].description != "" ? false : true
+          // console.log("sldfjshfljhdf",totalDataComing[c],"======",totalDataComing[c].description,"++++++++++++")
+          // totalDataComing[c].reason = totalDataComing[c].description != "" ? "" : "Description is required"
+          // totalDataComing[c].inValid = totalDataComing[c].pName != "" ? false : true
+          // totalDataComing[c].reason = totalDataComing[c].pName != "" ? "" : "Product name is required"
+          if (!totalDataComing[c].description || !totalDataComing[c].pName) {
+            totalDataComing[c].reason = "Product name and description both are required"
+            totalDataComing[c].inValid = true
+          }
+
+          if (!totalDataComing[c].inValid) {
+            let createCompanyPriceBook = await priceBookService.createPriceBook(totalDataComing[c])
+          }
+        }
+
+
+        function convertArrayToHTMLTable(array) {
+          const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');
+          const rows = array.map(obj => {
+            const values = Object.values(obj).map(value => `<td>${value}</td>`);
+            values[2] = `${values[2]}`;
+            return values.join('');
+          });
+
+          const htmlContent = `<html>
+              <head>
+                  <style>
+                      table {
+                          border-collapse: collapse;
+                          width: 100%; 
+                      }
+                      th, td {
+                          border: 1px solid #dddddd;
+                          text-align: left;
+                          padding: 8px;
+                      }
+                      th {
+                          background-color: #f2f2f2;
+                      }
+                  </style>
+              </head>
+              <body>
+                  <table>
+                      <thead><tr>${header}</tr></thead>
+                      <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
+                  </table>
+              </body>
+          </html>`;
+
+          return htmlContent;
+        }
+        let totalDataOriginal1 = totalDataOriginal.map((item) => {
+          let match = totalDataComing.find((secondItem) => secondItem.name === item["Product Sku"]);
+          if (match) {
+            // If match is found, add reason and status
+            return {
+              ...item,
+              reason: match.reason,
+              status: match.inValid ? 'Unsuccessful' : 'Successful'
+            };
+          }
+        });
+        const htmlTableString = convertArrayToHTMLTable(totalDataOriginal1);
+        const mailing = sgMail.send(emailConstant.sendPriceBookFile(("yashasvi@codenomad.net"), ["noreply@getcover.com"], htmlTableString));
+
+
+        res.send({
+          code: constant.successCode,
+          data: totalDataComing
+        })
+
+      } else if (data.priceType == "Quantity Pricing") {
+        if (headers.length < 12) {
+          res.send({
+            code: constant.errorCode,
+            message: "Invalid file format detected. The sheet should contain exactly three columns."
+          })
+          return
+        }
+
+        let quantityPriceDetail = []
+        // updating the key names 
+        let totalDataComing = responseData.map(item => {
+          quantityPriceDetail = []
+
+          let keys = Object.keys(item);
+          for (let i = 0; i < (headers.length - 10) / 2; i++) { // Loop for creating 6 entries
+            if (item[keys[10 + (2 * i)]] != "" || item[keys[11 + (2 * i)]] != "") {
+              console.log(i, '++++++++++', item[keys[10 + i]], "----------------------", item[keys[11 + i]])
+              quantityPriceDetail.push({
+                name: item[keys[10 + (2 * i)]],       // Set the name value from item
+                quantity: item[keys[11 + (2 * i)]]   // Set the quantity value from item
+              });
+            }
+          }
+          return {
+            category: item[keys[0]],  // First key's value
+            name: item[keys[1]],   // Second key's value
+            pName: item[keys[2]],  // Third key's value
+            description: item[keys[3]],   // Second key's value
+            frontingFee: item[keys[4]],   // Second key's value
+            reinsuranceFee: item[keys[5]],   // Second key's value
+            reserveFutureFee: item[keys[6]],   // Second key's value
+            adminFee: item[keys[7]],   // Second key's value
+            coverageType: item[keys[8]],   // Second key's value
+            term: item[keys[9]],   // Second key's value
+            quantityPriceDetail: quantityPriceDetail
+          };
+        });
+
+        let totalDataOriginal = responseData.map(item => {
+          quantityPriceDetail = []
+
+          let keys = Object.keys(item);
+          for (let i = 0; i < (headers.length - 10) / 2; i++) { // Loop for creating 6 entries
+            if (item[keys[10 + (2 * i)]] != "" || item[keys[11 + (2 * i)]] != "") {
+              console.log(i, '++++++++++', item[keys[10 + i]], "----------------------", item[keys[11 + i]])
+              quantityPriceDetail.push({
+                name: item[keys[10 + (2 * i)]],       // Set the name value from item
+                quantity: item[keys[11 + (2 * i)]]   // Set the quantity value from item
+              });
+            }
+          }
+          return {
+            Category: item[keys[0]],  // First key's value
+            "Product Sku": item[keys[1]],   // Second key's value
+            "Product Name": item[keys[2]],  // Third key's value
+            Description: item[keys[3]],   // Second key's value
+            "Fronting Fee": item[keys[4]],   // Second key's value
+            "Reinsaurance Fee": item[keys[5]],   // Second key's value
+            "Reserve Future Fee": item[keys[6]],   // Second key's value
+            "Admin Fee": item[keys[7]],   // Second key's value
+            "Coverage Type": item[keys[8]],   // Second key's value
+            Term: item[keys[9]],   // Second key's value
+            "Name 1": item[keys[10]],   // Second key's value
+            "Max Quantity 1": item[keys[11]],   // Second key's value
+            "Name 2": item[keys[12]],   // Second key's value
+            "Max Quantity 2": item[keys[13]],   // Second key's value
+            "Name 3": item[keys[14]],   // Second key's value
+            "Max Quantity 3": item[keys[15]],   // Second key's value
+            "Name 4": item[keys[16]],   // Second key's value
+            "Max Quantity 4": item[keys[17]],   // Second key's value
+            "Name 5": item[keys[18]],   // Second key's value
+            "Max Quantity 5": item[keys[19]],   // Second key's value
+            "Name 6": item[keys[20]],   // Second key's value
+            "Max Quantity 6": item[keys[21]],   // Second key's value
+            // quantityPriceDetail: quantityPriceDetail
+          };
+        });
+
+        for (let c = 0; c < totalDataComing.length; c++) {
+
+          totalDataComing[c].inValid = false
+          totalDataComing[c].reason = "Success"
+
+          // function to convert the year to months
+          function convertToMonths(term) {
+            // Use a regular expression to extract the number and the unit (year/years)
+            const match = term.match(/(\d+)\s*(year|years)/i);
+
+            if (match) {
+              const years = parseInt(match[1], 10);  // Extract the number of years
+              const months = years * 12;             // Convert years to months
+              return months;
+            } else {
+              totalDataComing[c].inValid = true
+              totalDataComing[c].reason = "Invalid term"
+            }
+          }
+
+          // function for quantity price item details
+          function validateQuantityPriceDetail(data) {
+            let invalidEntries = data.quantityPriceDetail.filter(item => {
+              return !item.name?.trim() || !item.quantity;
+            });
+
+            if (invalidEntries.length > 0) {
+              console.log("Error: Some entries have empty name or quantity values.");
+              return false;
+            }
+
+            console.log("All entries are valid.");
+            return true;
+          }
+
+          let category = totalDataComing[c].category;
+          let name = totalDataComing[c].name;
+          let term = convertToMonths(totalDataComing[c].term);
+          let coverageType = totalDataComing[c].coverageType;
+          let catSearch = new RegExp(`^${category}$`, 'i');
+          let priceNameSearch = new RegExp(`^${name}$`, 'i');
+          let checkCategory = await priceBookService.getPriceCatByName({ name: catSearch })
+          if (!checkCategory) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Invalid category"
+          }
+          let checkPriceBook = await priceBookService.findByName1({ name: name })
+          if (checkPriceBook) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Product sku already exist"
+          }
+          console.log("name check ----------------------", name)
+          if (!name) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Product name required"
+          }
+          let checkTerms = await terms.findOne({ terms: term })
+          if (!checkTerms) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Invalid term"
+          }
+          coverageType = coverageType.split(',').map(type => type.trim());
+          coverageType = [...new Set(coverageType)]
+
+          // coverageType = ["breakdown", "accidental", "liquid_damage"]
+          let checkCoverageType = await options.findOne({ "value.label": { $all: coverageType }, "name": "coverage_type" })
+
+          if (!checkCoverageType) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Invalid coverage type"
+          }
+          totalDataComing[c].coverageType = coverageType
+          if (checkCoverageType) {
+            let mergedArray = coverageType.map(id => {
+              // Find a match in array2 based on id
+              let match = checkCoverageType.value.find(item2 => item2.label === id);
+
+              // Return the match only if found
+              // return match ? match :null; // If no match, return the id object
+              return match ? { label: match.label, value: match.value } : null; // If no match, return the id object
+            });
+            totalDataComing[c].coverageType = mergedArray
+
+          }
+          if (!validateQuantityPriceDetail(totalDataComing[c])) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Invalid quantity price items"
+          }
+
+          totalDataComing[c].category = checkCategory ? checkCategory._id : ""
+          totalDataComing[c].term = term
+          totalDataComing[c].priceType = "Quantity Pricing"
+          totalDataComing[c].frontingFee = totalDataComing[c].frontingFee ? totalDataComing[c].frontingFee : 0
+          totalDataComing[c].reinsuranceFee = totalDataComing[c].reinsuranceFee ? totalDataComing[c].reinsuranceFee : 0
+          totalDataComing[c].reserveFutureFee = totalDataComing[c].reserveFutureFee ? totalDataComing[c].reserveFutureFee : 0
+          totalDataComing[c].adminFee = totalDataComing[c].adminFee ? totalDataComing[c].adminFee : 0
+          // totalDataComing[c].inValid = totalDataComing[c].description != "" ? false : true
+          // console.log("sldfjshfljhdf",totalDataComing[c],"======",totalDataComing[c].description,"++++++++++++")
+          // totalDataComing[c].reason = totalDataComing[c].description != "" ? "" : "Description is required"
+          // totalDataComing[c].inValid = totalDataComing[c].pName != "" ? false : true
+          // totalDataComing[c].reason = totalDataComing[c].pName != "" ? "" : "Product name is required"
+          if (!totalDataComing[c].description || !totalDataComing[c].pName) {
+            totalDataComing[c].reason = "Product name and description both are required"
+            totalDataComing[c].inValid = true
+          }
+
+          if (!totalDataComing[c].inValid) {
+            let createCompanyPriceBook = await priceBookService.createPriceBook(totalDataComing[c])
+          }
+        }
+
+        function convertArrayToHTMLTable(array) {
+          const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');
+          const rows = array.map(obj => {
+            const values = Object.values(obj).map(value => `<td>${value}</td>`);
+            values[2] = `${values[2]}`;
+            return values.join('');
+          });
+
+          const htmlContent = `<html>
+              <head>
+                  <style>
+                      table {
+                          border-collapse: collapse;
+                          width: 100%; 
+                      }
+                      th, td {
+                          border: 1px solid #dddddd;
+                          text-align: left;
+                          padding: 8px;
+                      }
+                      th {
+                          background-color: #f2f2f2;
+                      }
+                  </style>
+              </head>
+              <body>
+                  <table>
+                      <thead><tr>${header}</tr></thead>
+                      <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
+                  </table>
+              </body>
+          </html>`;
+
+          return htmlContent;
+        }
+        let totalDataOriginal1 = totalDataOriginal.map((item) => {
+          console.log("item check ++++++++++++++++++++++++", item)
+          let match = totalDataComing.find((secondItem) => secondItem.name === item["Product Sku"]);
+          if (match) {
+            // If match is found, add reason and status
+            return {
+              ...item,
+              reason: match.reason,
+              status: match.inValid ? 'Unsuccessful' : 'Successful'
+            };
+          }
+        });
+        const htmlTableString = convertArrayToHTMLTable(totalDataOriginal1);
+        const mailing = sgMail.send(emailConstant.sendPriceBookFile(("yashasvi@codenomad.net"), ["anil@codenomad.net"], htmlTableString));
+
+        res.send({
+          code: constant.successCode,
+          data: totalDataComing
+        })
+      } else {
+        res.send({
+          code: constant.errorCode,
+          message: "Invalid price type "
+        })
+      }
+
+    })
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+//not using 
+exports.uploadCompanyPriceBook = async (req, res) => {
+  try {
+    let data = req.body
+    console.log("called +++++++++++++++++++ regular", req)
+
+    if (data.priceType == "Regular Price") {
+      console.log("called +++++++++++++++++++ regular")
+      let callApi = await uploadRegularPriceBook(req, res)
+      res.send({
+        callApi
+      })
+    }
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
 

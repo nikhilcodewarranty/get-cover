@@ -551,7 +551,8 @@ exports.getUserById = async (req, res) => {
     let checkDealer = await dealerService.getDealerById(criteria)
     let checkReseller = await resellerService.getReseller(criteria, {})
     let checkCustomer = await customerService.getCustomerByName(criteria)
-    mainStatus = checkStatus ? checkStatus.status : checkDealer ? checkDealer.accountStatus : checkReseller ? checkReseller.status : checkCustomer ? checkCustomer.status : false
+    console.log(checkCustomer,"checking the customer dta-------------------")
+    mainStatus = checkStatus ? checkStatus.status : checkDealer ? checkDealer.accountStatus : checkReseller ? checkReseller.status : checkCustomer ? checkCustomer.isAccountCreate : false
     res.send({
       code: constant.successCode,
       message: "Success",
@@ -561,7 +562,7 @@ exports.getUserById = async (req, res) => {
   } catch (error) {
     res.send({
       code: constant.errorCode,
-      message: err.message
+      message: error.message
     })
   }
 };
@@ -595,7 +596,6 @@ exports.updateUser = async (req, res) => {
 exports.updateUserData = async (req, res) => {
   try {
     let data = req.body
-    let criteria = { _id: req.params.userId ? req.params.userId : req.teammateId };
     let option = { new: true };
     let checkUserId1 = await userService.findUserforCustomer1([
       {
@@ -624,21 +624,20 @@ exports.updateUserData = async (req, res) => {
     ])
     const settingData = await userService.getSetting({});
     let updateData = {
-      notificationTo: ["anil@codenomad.net"],
-      metaData: [
-        {
-          firstName: data.firstName,
-          lastName: data.lastName,
-          phoneNumber: data.phoneNumber,
-          position: data.position,
-          status: data.status,
-          metaId: checkUserId1[0].metaId,
-          roleId: checkUserId1[0].roleId
-        }
-      ]
-    }
-    const updateUser = await userService.updateSingleUser(criteria, updateData, option);
+      $set: {
+        notificationTo: ["anil@codenomad.net"],
+        'metaData.$.firstName': data.firstName,
+        'metaData.$.lastName': data.lastName,
+        'metaData.$.position': data.position,
+        'metaData.$.status': data.status,
+        'metaData.$.metaId': checkUserId1[0].metaId,
+        'metaData.$.roleId': checkUserId1[0].roleId
 
+      }
+    }
+    let criteria = { metaData: { $elemMatch: { metaId: checkUserId1[0].metaId } }, _id: req.params.userId }
+    const updateUser = await userService.updateSingleUser(criteria, updateData, option);
+    console.log("fdfgdgdfgd", updateUser)
     if (!updateUser) {
       //Save Logs updateUserData
       let logData = {
@@ -661,6 +660,15 @@ exports.updateUserData = async (req, res) => {
     //Get role by id
     const checkRole = await userService.getRoleById({ _id: updateUser.metaData[0].roleId }, {});
 
+    const checkDealer = await dealerService.getDealerById(updateUser.metaId)
+
+    const checkReseller = await resellerService.getReseller({ _id: updateUser.metaId }, { isDeleted: false })
+
+    const checkCustomer = await customerService.getCustomerById({ _id: updateUser.metaId })
+
+    const checkServicer = await providerService.getServiceProviderById({ _id: updateUser.metaId })
+
+
     //send notification to dealer when status change
     let IDs = await supportingFunction.getUserIds()
     let getPrimary = await supportingFunction.getPrimaryUser({
@@ -672,20 +680,8 @@ exports.updateUserData = async (req, res) => {
       }
     })
 
-    IDs.push(getPrimary._id)
-    let notificationData = {
-      title: checkRole.role + " " + "user change",
-      description: "The  user has been changed!",
-      userId: req.teammateId,
-      flag: checkRole.role,
-      notificationFor: [getPrimary._id]
-    };
-
-    let createNotification = await userService.createNotification(notificationData);
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
-    notificationEmails.push(getPrimary.email);
-    notificationEmails.push(updateUser.email);
     let emailData;
 
     if (data.firstName) {
@@ -713,7 +709,26 @@ exports.updateUserData = async (req, res) => {
       }
     }
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(updateUser.email, getPrimary.email, emailData))
+
+    if (checkServicer?.isAccountCreate || checkReseller?.isAccountCreate || checkDealer?.isAccountCreate || checkCustomer?.isAccountCreate) {
+      notificationEmails.push(getPrimary.email);
+      notificationEmails.push(updateUser.email);
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(updateUser.email, getPrimary.email, emailData))
+      IDs.push(getPrimary._id)
+    }
+    else {
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+    }
+
+    let notificationData = {
+      title: checkRole.role + " " + "user change",
+      description: "The  user has been changed!",
+      userId: req.teammateId,
+      flag: checkRole.role,
+      notificationFor: IDs
+    };
+
+    let createNotification = await userService.createNotification(notificationData);
 
     //Save Logs updateUserData
     let logData = {
@@ -952,7 +967,7 @@ exports.deleteUser = async (req, res) => {
     let option = { new: true }
     const checkUser = await userService.getUserById1({ _id: req.params.userId }, {});
     const deleteUser = await userService.deleteUser(criteria, newValue, option);
-
+    console.log("checkUser-----------------------", checkUser)
     let settingData = await userService.getSetting({});
     if (!deleteUser) {
       //Save Logs delete user
@@ -972,10 +987,9 @@ exports.deleteUser = async (req, res) => {
       });
       return;
     };
-    const checkRole = await userService.getRoleById({ _id: checkUser.metaData[0].roleId }, {});
+    const checkRole = await userService.getRoleById({ _id: checkUser?.metaData[0].roleId }, {});
 
-    let primaryUser = await supportingFunction.getPrimaryUser({ metaId: checkUser.metaData[0].metaId, isPrimary: true })
-
+    let primaryUser = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkUser?.metaData[0].metaId, isPrimary: true } } })
 
     //send notification to dealer when deleted
     let IDs = await supportingFunction.getUserIds()
@@ -991,8 +1005,7 @@ exports.deleteUser = async (req, res) => {
 
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
-    notificationEmails.push(primaryUser.email);
-    notificationEmails.push(checkUser.email);
+
 
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -1005,9 +1018,36 @@ exports.deleteUser = async (req, res) => {
     }
 
     let notificationDataUpdate = primaryUser.notificationTo.filter(email => email != checkUser.email);
+
     let updateUser = await userService.updateSingleUser({ _id: primaryUser._id }, { notificationTo: notificationDataUpdate }, { new: true })
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(checkUser.email, primaryUser.email, emailData))
+    const checkDealer = await dealerService.getDealerById(primaryUser.metaId)
+
+    const checkReseller = await resellerService.getReseller({ _id: primaryUser.metaId }, { isDeleted: false })
+
+    const checkCustomer = await customerService.getCustomerById({ _id: primaryUser.metaId })
+
+    const checkServicer = await providerService.getServiceProviderById({ _id: primaryUser.metaId })
+
+    if (checkServicer?.isAccountCreate || checkReseller?.isAccountCreate || checkDealer?.isAccountCreate || checkCustomer?.isAccountCreate) {
+      notificationEmails.push(primaryUser.email);
+      notificationEmails.push(checkUser.email);
+      IDs.push(primaryUser._id)
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(checkUser.email, primaryUser.email, emailData))
+    }
+    else {
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+
+    }
+    // let notificationData = {
+    //   title: "User Deletion",
+    //   description: checkUser.firstName + " user has been deleted!",
+    //   userId: req.teammateId,
+    //   flag: checkRole.role,
+    //   notificationFor: IDs
+    // };
+
+    // let createNotification = await userService.createNotification(notificationData);
     //Save Logs delete user
     let logData = {
       endpoint: "user/deleteUser",
@@ -1455,7 +1495,6 @@ exports.addMembers = async (req, res) => {
     };
 
     let createNotification = await userService.createNotification(notificationData);
-
     let resetPasswordCode = randtoken.generate(4, '123456789')
     let checkPrimaryEmail2 = await userService.updateSingleUser({ email: data.email }, { resetPasswordCode: resetPasswordCode }, { new: true });
     let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
@@ -1524,6 +1563,9 @@ exports.getMembers = async (req, res) => {
           'status': { $arrayElemAt: ["$metaData.status", 0] },
           resetPasswordCode: 1,
           isResetPassword: 1,
+          notificationTo:1,
+          threshHoldLimit:1,
+          isThreshHoldLimit:1,
           approvedStatus: 1,
           createdAt: 1,
           updatedAt: 1
@@ -1551,6 +1593,9 @@ exports.getMembers = async (req, res) => {
           resetPasswordCode: 1,
           isResetPassword: 1,
           approvedStatus: 1,
+          notificationTo:1,
+          threshHoldLimit:1,
+          isThreshHoldLimit:1,
           createdAt: 1,
           updatedAt: 1
         }
@@ -1743,8 +1788,32 @@ exports.resetSetting = async (req, res) => {
     let response;
     const getData = await userService.getSetting({});
     let defaultResetColor = [];
+    let defaultPaymentDetail = '';
+    let defaultLightLogo = {};
+    let defaultDarkLogo = {};
+    let defaultFavIcon = {};
+    let defaultAddress = '';
+    let defaultTitle = '';
     if (getData[0]?.defaultColor.length > 0) {
       defaultResetColor = getData[0]?.defaultColor
+      defaultPaymentDetail = getData[0]?.defaultPaymentDetail
+      defaultLightLogo = {
+        fileName: getData[0].defaultLightLogo.fileName,
+        name: getData[0].defaultLightLogo.name,
+        size: getData[0].defaultLightLogo.size
+      }
+      defaultDarkLogo = {
+        fileName: getData[0].defaultDarkLogo.fileName,
+        name: getData[0].defaultDarkLogo.name,
+        size: getData[0].defaultDarkLogo.size
+      }
+      defaultFavIcon = {
+        fileName: getData[0].defaultFavIcon.fileName,
+        name: getData[0].defaultFavIcon.name,
+        size: getData[0].defaultFavIcon.size
+      }
+      defaultAddress = getData[0]?.defaultAddress
+      defaultTitle = getData[0]?.defaultTitle
     }
     else {
       defaultResetColor = [
@@ -1802,7 +1871,16 @@ exports.resetSetting = async (req, res) => {
         }
       ];
     }
-    response = await userService.updateSetting({ _id: getData[0]?._id }, { colorScheme: defaultResetColor, setDefault: 1 }, { new: true })
+    response = await userService.updateSetting({ _id: getData[0]?._id }, {
+      colorScheme: defaultResetColor,
+      logoLight:defaultLightLogo,
+      logoDark:defaultDarkLogo,
+      favIcon:defaultFavIcon,
+      title:defaultTitle,
+      address:defaultAddress,
+      paymentDetail:defaultPaymentDetail,
+      setDefault: 1
+    }, { new: true })
     res.send({
       code: constant.successCode,
       message: "Reset Successfully!!",
@@ -1819,7 +1897,6 @@ exports.resetSetting = async (req, res) => {
 }
 
 //Set As default setting
-
 exports.setDefault = async (req, res) => {
   try {
     // if (req.role != "Super Admin") {
@@ -1833,7 +1910,17 @@ exports.setDefault = async (req, res) => {
     let response;
     const getData = await userService.getSetting({});
 
-    response = await userService.updateSetting({ _id: getData[0]?._id }, { defaultColor: getData[0].colorScheme, setDefault: 1 }, { new: true })
+    response = await userService.updateSetting({ _id: getData[0]?._id },
+      {
+        defaultColor: getData[0].colorScheme,
+        setDefault: 1,
+        defaultAddress: getData[0].address,
+        defaultLightLogo: getData[0].logoLight,
+        defaultTitle: getData[0].title,
+        defaultDarkLogo: getData[0].logoDark,
+        defaultPaymentDetail: getData[0].paymentDetail,
+      },
+      { new: true })
 
     res.send({
       code: constant.successCode,
@@ -2112,7 +2199,9 @@ exports.getOptions1 = async (req, res) => {
   try {
     let filterOption = req.query.key
     const query = { name: { $in: filterOption } }
+    console.log("sklfskdfjskjf", query)
     const getOptions = await userService.getMultipleOptions(query);
+
     if (!getOptions) {
       res.send({
         code: constant.errorCode,
@@ -2123,6 +2212,13 @@ exports.getOptions1 = async (req, res) => {
     const reorderedData = query.name['$in'].map(key => {
       return getOptions.find(item => item.name === key);
     });
+
+    if (req.params.filter == 1) {
+      for (let v = 0; v < reorderedData.length; v++) {
+        reorderedData[v].value = reorderedData[v].value.filter(item => item.status === true)
+      }
+    }
+
     res.send({
       code: constant.successCode,
       result: reorderedData
@@ -2141,52 +2237,56 @@ exports.getOptions1 = async (req, res) => {
 exports.editOption = async (req, res) => {
   try {
     let optionId = req.params.optionId
-    const data = req.body
-    const getOption = await userService.getMultipleOptions({ name: data.name, _id: optionId }, {})
-    if (!getOption) {
-      res.send({
-        code: constant.errorCode,
-        message: "Option not found!"
-      });
-      return;
-    }
+    const data = req.body.data
 
-    let existData = await optionsService.getOption({ value: { $elemMatch: { value: { $regex: new RegExp("^" + data.value.toLowerCase(), "i") } } } })
-    if (existData) {
+    let getOptionData = await userService.getOptions({ name: data.name })
+    if (getOptionData.value.length > data.value.length) {
       res.send({
         code: constant.errorCode,
-        message: "The coverage type of this value is already exist!"
-      });
+        message: "Invalid coverage types"
+      })
       return
     }
-    const updatedDropdown = await userService.updateData(
-      { _id: optionId, 'value._id': data.labelId },  // Match the option and the specific array element
-      {
-        $set: {
-          'value.$.label': data.label,    // Update the 'label' of the matched array element
-          'value.$.status': data.status      // Update the 'value' of the matched array element
+
+    function checkUniqueLabelValue(array) {
+      let labelSet = new Set();
+      let valueSet = new Set();
+
+      for (let obj of array) {
+        // Check if the label or value already exists in the set
+        if (labelSet.has(obj.label) || valueSet.has(obj.value)) {
+          return new Error(`Duplicate found: ${obj.label} or ${obj.value} already exists`);
         }
-      },
-      {
-        new: true      // Return the updated document
+
+        // Add label and value to the set
+        labelSet.add(obj.label);
+        valueSet.add(obj.value);
       }
-    );
 
-
-    if (!updatedDropdown) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to update!"
-      })
-      return;
+      return "All labels and values are unique!";
     }
 
-    res.send({
-      code: constant.successCode,
-      message: "Success!",
-      result: updatedDropdown
-    })
+    // Example usage:
+    let array = data.value
 
+    let result = checkUniqueLabelValue(array);
+    if (result instanceof Error) {
+      res.send({ code: constant.errorCode, message: "Some fields are repeated" }) // Outputs: Duplicate found: Accidental or liquid_damage already exists
+    } else {
+      let updateOption = await userService.updateData({ name: data.name }, data, { new: true })
+      if (!updateOption) {
+        res.send({
+          code: constant.errorCode,
+          message: "Unable to process the request "
+        })
+      } else {
+        res.send({
+          code: constant.successCode,
+          message: "Success",
+          result: updateOption
+        })
+      }
+    }
   }
   catch (err) {
     res.send({
@@ -2196,4 +2296,25 @@ exports.editOption = async (req, res) => {
   }
 }
 
-
+exports.updateThreshHoldLimit = async (req, res) => {
+  try {
+    let data = req.body
+    let updateAdmin = await userService.updateUser({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } }, { $set: { threshHoldLimit: data.threshHoldLimit, isThreshHoldLimit: data.isThreshHoldLimit } }, { new: true })
+    if (!updateAdmin) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to update the limit"
+      })
+    } else {
+      res.send({
+        code: constant.successCode,
+        message: "Updated successfully"
+      })
+    }
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}

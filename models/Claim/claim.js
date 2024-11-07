@@ -21,6 +21,14 @@ const claimSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  submittedBy: {
+    type: String,
+    default: ''
+  },
+  shippingTo: {
+    type: String,
+    default: ''
+  },
   serial: {
     type: String,
     default: ''
@@ -30,6 +38,14 @@ const claimSchema = new mongoose.Schema({
     default: ''
   },
   pName: {
+    type: String,
+    default: ''
+  },
+  shippingTo:{
+    type: String,
+    default: ''
+  },
+  submittedBy:{
     type: String,
     default: ''
   },
@@ -111,11 +127,11 @@ const claimSchema = new mongoose.Schema({
   },
   claimDate: {
     type: Date,
-    default: Date.now()
+    default: () => Date.now()
   },
   lossDate: {
     type: Date,
-    default: Date.now()
+    default: () => Date.now()
   },
   claimType: {
     type: String,
@@ -169,7 +185,7 @@ const claimSchema = new mongoose.Schema({
   },
   customerClaimAmount: {
     type: Number,
-    default: 0 
+    default: 0
   },
   getCoverClaimAmount: {
     type: Number,
@@ -188,13 +204,13 @@ const claimSchema = new mongoose.Schema({
         },
         date: {
           type: Date,
-          default: new Date()
+          default: () => Date.now()
         }
       },
     ],
     default: [{
       status: 'request_submitted',
-      date: new Date()
+      default: () => Date.now()
     }]
   },
   trackStatus: {
@@ -206,22 +222,22 @@ const claimSchema = new mongoose.Schema({
         },
         date: {
           type: Date,
-          default: Date.now()
+          default: () => Date.now()
         }
       },
     ],
     default: [
       {
         status: 'open',
-        date: Date.now()
+        default: () => Date.now()
       },
       {
         status: 'request_submitted',
-        date: Date.now()
+        default: () => Date.now()
       },
       {
         status: 'request_sent',
-        date: Date.now()
+        default: () => Date.now()
       },
     ]
   },
@@ -234,14 +250,14 @@ const claimSchema = new mongoose.Schema({
         },
         date: {
           type: Date,
-          default: Date.now()
+          default: () => Date.now() 
 
         }
       },
     ],
     default: [{
       status: 'open',
-      date: Date.now()
+      default: () => Date.now()
     }]
   },
   repairStatus: {
@@ -253,13 +269,13 @@ const claimSchema = new mongoose.Schema({
         },
         date: {
           type: Date,
-          default: Date.now()
+          default: () => Date.now()
         }
       },
     ],
     default: [{
       status: 'request_sent',
-      date: Date.now()
+      default: () => Date.now()
     }]
   },
 }, { timestamps: true });

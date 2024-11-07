@@ -99,6 +99,7 @@ exports.createServiceProvider = async (req, res, next) => {
               roleId: "65719c8368a8a86ef8e1ae4d",
               position: member.position,
               dialCode: member.dialCode,
+              phoneNumber: member.phoneNumber,
               status: member.status,
               isPrimary: member.isPrimary
             }
@@ -151,8 +152,6 @@ exports.createServiceProvider = async (req, res, next) => {
       }
       let IDs = await supportingFunction.getUserIds()
       //Send Notification to ,admin,,servicer 
-      IDs.push(createServiceProvider._id)
-
       let notificationData = {
         title: "Servicer Account Creation",
         description: data.accountName + " " + "servicer account has been created successfully!",
@@ -292,6 +291,7 @@ exports.createServiceProvider = async (req, res, next) => {
               roleId: "65719c8368a8a86ef8e1ae4d",
               position: member.position,
               dialCode: member.dialCode,
+              phoneNumber: member.phoneNumber,
               status: true,
               isPrimary: member.isPrimary
             }
@@ -331,8 +331,6 @@ exports.createServiceProvider = async (req, res, next) => {
 
       let IDs = await supportingFunction.getUserIds()
       //Send Notification to ,admin,,servicer 
-      IDs.push(data.providerId)
-
       let notificationData = {
         title: "Servicer Account Approved",
         description: data.accountName + " " + "servicer account has been approved successfully!",
@@ -687,6 +685,15 @@ exports.rejectServicer = async (req, res) => {
     let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.params.servicerId, isPrimary: true } } })
 
     IDs.push(getPrimary._id)
+    let notificationEmails = await supportingFunction.getUserEmails();
+    // let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.servicerId, isPrimary: true })
+    let toEmail = notificationEmails;
+    let ccEmail = "noreply@getcover.com";
+    if (getServicer.isAccountCreate) {
+      toEmail = getPrimary.email
+      ccEmail = notificationEmails
+      IDs.push(getPrimary._id)
+    }
 
     if (!checkServicer) {
       res.send({
@@ -706,8 +713,6 @@ exports.rejectServicer = async (req, res) => {
     };
 
     let createNotification = await userService.createNotification(notificationData);
-    // Primary User Welcoime email
-    let notificationEmails = await supportingFunction.getUserEmails();
     let settingData = await userService.getSetting({});
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -719,7 +724,7 @@ exports.rejectServicer = async (req, res) => {
       subject: "Rejection Account"
     }
     // Send Email code here
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(toEmail, ccEmail, emailData))
     res.send({
       code: constant.successCode,
       message: "Deleted Successfully!"
@@ -824,6 +829,16 @@ exports.editServicerDetail = async (req, res) => {
     let IDs = await supportingFunction.getUserIds()
     let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.params.servicerId, isPrimary: true } } })
     IDs.push(getPrimary._id)
+    let notificationEmails = await supportingFunction.getUserEmails();
+    // let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.servicerId, isPrimary: true })
+    let toEmail = notificationEmails;
+    let ccEmail = "noreply@getcover.com"
+    if (updateData.isAccountCreate) {
+      toEmail = getPrimary.email
+      ccEmail = notificationEmails
+      IDs.push(getPrimary._id)
+
+    }
     let notificationData = {
       title: "Servicer Detail Update",
       description: "The servicer information has been changed!",
@@ -834,17 +849,17 @@ exports.editServicerDetail = async (req, res) => {
 
     let createNotification = await userService.createNotification(notificationData);
     // Send Email code here
-    let notificationEmails = await supportingFunction.getUserEmails();
+
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: checkServicer.metaData[0]?.name,
+      senderName: checkServicer?.name,
       content: "Information has been updated successfully! effective immediately.",
       subject: "Update Info"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(toEmail, ccEmail, emailData))
     //Save Logs
     let logData = {
       userId: req.userId,
@@ -957,6 +972,11 @@ exports.updateStatus = async (req, res) => {
         let IDs = await supportingFunction.getUserIds()
         let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.params.servicerId, isPrimary: true } } })
         IDs.push(getPrimary._id)
+        // let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.servicerId, isPrimary: true })
+        if (updateData.isAccountCreate) {
+          IDs.push(getPrimary._id)
+
+        }
         let notificationData = {
           title: "Servicer status update",
           description: checkServicer.name + " , " + "your status has been updated",
@@ -989,7 +1009,9 @@ exports.updateStatus = async (req, res) => {
       }
     } else {
       let IDs = await supportingFunction.getUserIds()
-      IDs.push(getPrimary._id)
+      if (updateData.isAccountCreate) {
+        IDs.push(getPrimary._id)
+      }
       let notificationData = {
         title: "Servicer status update",
         description: checkServicer.name + " , " + "your status has been updated",
@@ -1040,7 +1062,13 @@ exports.updateStatus = async (req, res) => {
       subject: "Update Status"
     }
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary?.email, notificationEmails, emailData))
+
+    if (updateData.isAccountCreate) {
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary?.email, notificationEmails, emailData))
+    }
+    else {
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, 'noreply@getcover.com', emailData))
+    }
     //Save Logs
     let logData = {
       userId: req.userId,
@@ -1381,13 +1409,13 @@ exports.statusUpdate = async (req, res) => {
         message: "Updated Successfully",
       })
     } else {
-      let criteria1 = { metaData: { $elemMatch: { metaId: updatedResult._id, isPrimary: true } }  }
+      let criteria1 = { metaData: { $elemMatch: { metaId: updatedResult._id, isPrimary: true } } }
       let option = { new: true }
       let updateUsers = await userService.updateUser(criteria1, {
         $set: {
-            'metaData.$.status': req.body.status,
-          }
-    }, option)
+          'metaData.$.status': req.body.status,
+        }
+      }, option)
       if (!updateUsers) {
         res.send({
           code: constant.errorCode,
@@ -1686,34 +1714,34 @@ exports.getServicerDealers = async (req, res) => {
 
     const dealarUser = await userService.findUserforCustomer1([
       {
-          $match: {
-              $and: [
-                  { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
-                  { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                  { metaData: { $elemMatch: { metaId: { $in: ids }, isPrimary: true } } }
-              ]
-          }
+        $match: {
+          $and: [
+            { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+            { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { metaData: { $elemMatch: { metaId: { $in: ids }, isPrimary: true } } }
+          ]
+        }
       },
       {
-          $project: {
-              email: 1,
-              'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
-              'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
-              'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
-              'position': { $arrayElemAt: ["$metaData.position", 0] },
-              'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
-              'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
-              'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
-              'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
-              'status': { $arrayElemAt: ["$metaData.status", 0] },
-              resetPasswordCode: 1,
-              isResetPassword: 1,
-              approvedStatus: 1,
-              createdAt: 1,
-              updatedAt: 1
-          }
+        $project: {
+          email: 1,
+          'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+          'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+          'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+          'position': { $arrayElemAt: ["$metaData.position", 0] },
+          'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+          'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+          'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+          'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+          'status': { $arrayElemAt: ["$metaData.status", 0] },
+          resetPasswordCode: 1,
+          isResetPassword: 1,
+          approvedStatus: 1,
+          createdAt: 1,
+          updatedAt: 1
+        }
       }
-  ]);
+    ]);
 
     let orderQuery = { dealerId: { $in: ids }, status: "Active" };
     let project = {
@@ -1790,7 +1818,7 @@ exports.getServicerDealers = async (req, res) => {
 
     const filteredData = result_Array.filter(entry => {
       return (
-        nameRegex.test(entry.dealerData.name) 
+        nameRegex.test(entry.dealerData.name)
       );
     });
 
@@ -1835,14 +1863,19 @@ exports.getServicerDealers1 = async (req, res) => {
               $lookup: {
                 from: "users",
                 localField: "_id",
-                foreignField: "metaId",
+                foreignField: "metaData.metaId",
                 as: "userData",
                 pipeline: [
                   {
                     $match: {
                       metaData: { $elemMatch: { isPrimary: true } },
                       "email": { '$regex': data.email ? data.email : '', '$options': 'i' },
-                      metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } }
+                    }
+                  },
+                  {
+                    $project: {
+                      email: 1,
+                      'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
                     }
                   }
                 ]
@@ -1887,9 +1920,19 @@ exports.getServicerDealers1 = async (req, res) => {
       {
         $unwind: "$dealerData"
       },
+      {
+        $match: {
+          // metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } }
+          "dealerData.userData.phoneNumber": { '$regex': data.phoneNumber ? data.phoneNumber.replace(/\s+/g, ' ').trim() : '', '$options': 'i' }
+
+        }
+      }
 
     ]
+
     let filteredData = await dealerRelationService.getDealerRelationsAggregate(query)
+
+    console.log("filteredData----------------------", filteredData);
     res.send({
       code: constant.successCode,
       data: filteredData
@@ -2005,6 +2048,10 @@ exports.getServicerClaims = async (req, res) => {
               reason: 1,
               "unique_key": 1,
               totalAmount: 1,
+              getCoverClaimAmount: 1,
+              customerClaimAmount: 1,
+              getcoverOverAmount: 1,
+              customerOverAmount: 1,
               servicerId: 1,
               dealerSku: 1,
               customerStatus: 1,
@@ -2197,7 +2244,7 @@ exports.getServicerClaims = async (req, res) => {
       {}
     );
 
-    const result_Array = resultFiter.map((item1) => {
+    let result_Array = resultFiter.map((item1) => {
       servicer = []
       let mergedData = []
       if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
@@ -2238,6 +2285,32 @@ exports.getServicerClaims = async (req, res) => {
       }
     })
     let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0
+    let getTheThresholdLimit = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
+
+    result_Array = result_Array.map(claimObject => {
+      const { productValue, claimAmount } = claimObject.contracts;
+
+      // Calculate the threshold limit value
+      const thresholdLimitValue = (getTheThresholdLimit.threshHoldLimit.value / 100) * productValue;
+
+      // Check if claimAmount exceeds the threshold limit value
+      let overThreshold = claimAmount > thresholdLimitValue;
+      let threshHoldMessage = "Claim amount exceeds the allowed limit. This might lead to claim rejection. To proceed further with claim please contact admin."
+      if (!overThreshold) {
+        threshHoldMessage = ""
+      }
+      if (!getTheThresholdLimit.isThreshHoldLimit) {
+        overThreshold = false
+        threshHoldMessage = ""
+      }
+
+      // Return the updated object with the new key 'overThreshold'
+      return {
+        ...claimObject,
+        overThreshold,
+        threshHoldMessage
+      };
+    });
     res.send({
       code: constant.successCode,
       message: "Success",
@@ -2353,9 +2426,11 @@ exports.paidUnpaidClaim = async (req, res) => {
               "contractId": 1,
               "claimFile": 1,
               "lossDate": 1,
+              "claimType": 1,
               "receiptImage": 1,
               reason: 1,
               "unique_key": 1,
+              ClaimType: 1,
               note: 1,
               totalAmount: 1,
               servicerId: 1,
@@ -2375,6 +2450,7 @@ exports.paidUnpaidClaim = async (req, res) => {
               "contracts.unique_key": 1,
               "contracts.productName": 1,
               "contracts.pName": 1,
+              "contracts.coverageType": 1,
               "contracts.model": 1,
               "contracts.coverageType": 1,
               "contracts.manufacture": 1,
@@ -2457,7 +2533,14 @@ exports.paidUnpaidClaim = async (req, res) => {
             { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { 'customerStatus.status': { '$regex': data.customerStatusValue ? data.customerStatusValue : '', '$options': 'i' } },
             { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
-            { 'claimStatus.status': 'Completed' },
+            {
+              $or: [
+                { 'claimStatus.status': 'Completed' },
+                { 'claimStatus.status': 'completed' },
+
+              ]
+            },
+
             { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { 'productName': { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { claimPaymentStatus: flag },
@@ -2559,6 +2642,7 @@ exports.paidUnpaidClaim = async (req, res) => {
     if (newQuery.length > 0) {
       lookupQuery = lookupQuery.concat(newQuery);
     }
+
     let allClaims = await claimService.getClaimWithAggregate(lookupQuery);
     let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
 

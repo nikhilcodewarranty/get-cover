@@ -255,6 +255,8 @@ exports.getDealerOrders = async (req, res) => {
                 createdAt: 1,
                 venderOrder: 1,
                 orderAmount: 1,
+                paidAmount: 1,
+                dueAmount: 1,
                 contract: "$contract"
             };
 
@@ -542,6 +544,9 @@ exports.getDealerContract = async (req, res) => {
     try {
         let data = req.body
         let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+        // let getTheThresholdLimir = await userService.getUserById1({ roleId: process.env.super_admin, isPrimary: true })
+        let getTheThresholdLimir = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
+
         let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
         let limitData = Number(pageLimit)
         let dealerIds = [];
@@ -740,6 +745,9 @@ exports.getDealerContract = async (req, res) => {
         let result1 = getContracts[0]?.data ? getContracts[0]?.data : []
         for (let e = 0; e < result1.length; e++) {
             result1[e].reason = " "
+            if (!result1[e].eligibilty) {
+                result1[e].reason = "Claims limit cross for this contract"
+              }
             if (result1[e].status != "Active") {
                 result1[e].reason = "Contract is not active"
             }
@@ -786,6 +794,20 @@ exports.getDealerContract = async (req, res) => {
                     result1[e].reason = "Claim value exceed the product value limit"
                 }
             }
+
+            let thresholdLimitPercentage = getTheThresholdLimir.threshHoldLimit.value
+            const thresholdLimitValue = (thresholdLimitPercentage / 100) * Number(result1[e].productValue);
+            let overThreshold = result1[e].claimAmount > thresholdLimitValue;
+            let threshHoldMessage = "This claim amount surpasses the maximum allowed threshold."
+            if (!overThreshold) {
+                threshHoldMessage = ""
+            }
+            if (!thresholdLimitPercentage.isThreshHoldLimit) {
+                overThreshold = false
+                threshHoldMessage = ""
+            }
+            result1[e].threshHoldMessage = threshHoldMessage
+            result1[e].overThreshold = overThreshold
         }
 
         res.send({
@@ -1094,7 +1116,7 @@ exports.getDealerClaims = async (req, res) => {
             { _id: { $in: allServicerIds }, status: true },
             {}
         );
-        const result_Array = resultFiter.map((item1) => {
+        let result_Array = resultFiter.map((item1) => {
             servicer = []
             let mergedData = []
             if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
@@ -1134,6 +1156,32 @@ exports.getDealerClaims = async (req, res) => {
             }
         })
         let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0
+        let getTheThresholdLimit = await userService.getUserById1({ roleId: process.env.super_admin, isPrimary: true })
+
+        result_Array = result_Array.map(claimObject => {
+            const { productValue, claimAmount } = claimObject.contracts;
+
+            // Calculate the threshold limit value
+            const thresholdLimitValue = (getTheThresholdLimit.threshHoldLimit.value / 100) * productValue;
+
+            // Check if claimAmount exceeds the threshold limit value
+            let overThreshold = claimAmount > thresholdLimitValue;
+            let threshHoldMessage = "Claim amount exceeds the allowed limit. This might lead to claim rejection. To proceed further with claim please contact admin."
+            if (!overThreshold) {
+                threshHoldMessage = ""
+            }
+            if (!getTheThresholdLimit.isThreshHoldLimit) {
+                overThreshold = false
+                threshHoldMessage = ""
+            }
+
+            // Return the updated object with the new key 'overThreshold'
+            return {
+                ...claimObject,
+                overThreshold,
+                threshHoldMessage
+            };
+        });
         res.send({
             code: constant.successCode,
             message: "Success",
@@ -1492,7 +1540,8 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
                 query = {
                     $and: [
                         { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-                        { 'priceBooks.coverageType': { $elemMatch: { value: { $in: data.coverageType } } } },
+                        { 'priceBooks.coverageType.value': { $all: data.coverageType } },
+                        { 'priceBooks.coverageType': { $size: data.coverageType.length } },
                         { 'priceBooks.category._id': { $in: catIdsArray } },
                         { 'status': data.status },
                         { 'dealerSku': { '$regex': dealerSku, '$options': 'i' } },
@@ -1520,7 +1569,8 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
             query = {
                 $and: [
                     { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-                    { 'priceBooks.coverageType': { $elemMatch: { value: { $in: data.coverageType } } } },
+                    { 'priceBooks.coverageType.value': { $all: data.coverageType } },
+                    { 'priceBooks.coverageType': { $size: data.coverageType.length } },
                     { 'priceBooks.category._id': { $in: catIdsArray } },
                     { 'dealerSku': { '$regex': dealerSku, '$options': 'i' } },
 
@@ -1644,8 +1694,11 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
         }
 
         if (data.coverageType) {
-            matchConditions.push({ 'priceBooks.coverageType': { $elemMatch: { value: { $in: data.coverageType } } } });
+            matchConditions.push({ 'priceBooks.coverageType.value': { "$all": data.coverageType }, 'priceBooks.coverageType': { "$size": data.coverageType.length } });
         }
+
+
+        console.log("sdfsdfdsfdsdsf")
 
         if (data.name) {
             matchConditions.push({ 'priceBooks.name': { '$regex': req.body.name ? req.body.name.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } });
@@ -1721,7 +1774,7 @@ exports.getAllDealers = async (req, res) => {
             {
                 $match: {
                     $and: [
-                        { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+                        { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phoneNumber ? data.phoneNumber.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
                         { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         { metaData: { $elemMatch: { metaId: { $in: dealerIds }, isPrimary: true } } }
                     ]

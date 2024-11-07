@@ -99,7 +99,9 @@ exports.updateDealer = async (req, res) => {
     let primaryUser = await supportingFunction.getPrimaryUser({ metaId: req.params.dealerId, isPrimary: true })
 
     let IDs = await supportingFunction.getUserIds()
-    IDs.push(primaryUser._id)
+    if (updatedDealer.isAccountCreate) {
+      IDs.push(primaryUser._id)
+    }
     const notificationData = {
       title: "Dealer updated",
       description: data.name + " ," + "detail has beed updated ",
@@ -420,7 +422,13 @@ exports.statusUpdate = async (req, res) => {
 
     let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: existingDealerPriceBook.dealerId, isPrimary: true } } })
     IDs.push(getPrimary._id)
+    //Merge start singleServer
+    // let getPrimary = await supportingFunction.getPrimaryUser({ metaId: existingDealerPriceBook.dealerId, isPrimary: true })
+    //Merge end
     let getDealerDetail = await dealerService.getDealerByName({ _id: existingDealerPriceBook.dealerId })
+    if (getDealerDetail.isAccountCreate) {
+      IDs.push(getPrimary._id)
+    }
     let notificationData = {
       title: "Dealer price book updated",
       description: getDealerDetail.name + " , " + "your price book has been updated",
@@ -444,7 +452,15 @@ exports.statusUpdate = async (req, res) => {
       subject: "Update Price Book"
     }
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+    //check if account create true
+    if (getDealerDetail.isAccountCreate) {
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+    }
+    else {
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+
+    }
+
 
     let logData = {
       userId: req.teammateId,
@@ -555,8 +571,13 @@ exports.changeDealerStatus = async (req, res) => {
     if (changedDealerStatus) {
       let IDs = await supportingFunction.getUserIds()
       let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.params.dealerId, isPrimary: true } } })
+      //Merge start singleServer
+      // let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.dealerId, isPrimary: true })
+      //Merge end
+      if (singleDealer.isAccountCreate) {
+        IDs.push(getPrimary._id)
+      }
 
-      IDs.push(getPrimary._id)
       let notificationData = {
         title: "Dealer status update",
         description: singleDealer.name + ", " + "your status has been updated",
@@ -580,7 +601,12 @@ exports.changeDealerStatus = async (req, res) => {
         content: "Status has been changed to " + status_content + " " + ", effective immediately.",
         subject: "Update Status"
       }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+      if (singleDealer.isAccountCreate) {
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+      }
+      else {
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+      }
       let logData = {
         userId: req.teammateId,
         endpoint: "dealer/changeDealerStatus",
@@ -694,10 +720,13 @@ exports.createDealerPriceBook = async (req, res) => {
       let IDs = await supportingFunction.getUserIds()
       let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data.dealerId, isPrimary: true } } })
       let settingData = await userService.getSetting({});
-      IDs.push(getPrimary._id)
+      if (checkDealer.isAccountCreate) {
+        IDs.push(getPrimary._id)
+      }
+
       let notificationData = {
         title: "New dealer price book created",
-        description: data.priceBook + " , " + "new price book has been created",
+        description: "The price book " + data.dealerSku + " has been created! ",
         userId: req.teammateId,
         flag: 'Dealer Price Book',
         contentId: createDealerPrice._id,
@@ -714,11 +743,18 @@ exports.createDealerPriceBook = async (req, res) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: checkDealer.metaData[0]?.name,
+        senderName: checkDealer.name,
         content: "The price book name" + " " + checkPriceBookMain[0]?.pName + " has been created successfully! effective immediately.",
         subject: "New Price Book"
       }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+      if (checkDealer.isAccountCreate) {
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+
+      }
+      else {
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+
+      }
       let logData = {
         userId: req.teammateId,
         endpoint: "dealer/createPriceBook",
@@ -908,9 +944,15 @@ exports.rejectDealer = async (req, res) => {
     //if status is rejected
     if (req.body.status == 'Rejected') {
       let IDs = await supportingFunction.getUserIds()
-      let getPrimary = await supportingFunction.getPrimaryUser({ metaId: singleDealer._id, isPrimary: true })
+      let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: singleDealer._id, isPrimary: true } } })
       IDs.push(getPrimary._id)
       const deleteUser = await userService.deleteUser({ metaData: { $elemMatch: { metaId: req.params.dealerId } } })
+      //Merge start singleServer
+      if (singleDealer.isAccountCreate) {
+        IDs.push(getPrimary._id)
+      }
+      // const deleteUser = await userService.deleteUser({ metaId: req.params.dealerId })
+      //Merge end
       if (!deleteUser) {
         res.send({
           code: constant.errorCode,
@@ -949,7 +991,12 @@ exports.rejectDealer = async (req, res) => {
         subject: "Rejection Account"
       }
       // Send Email code here
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+      if (singleDealer.isAccountCreate) {
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+      } else {
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+      }
+
       //Delete the user
 
       res.send({
@@ -970,10 +1017,7 @@ exports.rejectDealer = async (req, res) => {
 exports.updateDealerMeta = async (req, res) => {
   try {
     let data = req.body
-
-
     let checkDealer = await dealerService.getDealerById(data.dealerId, {})
-
     let coverageType = data.coverageType
 
     // data.coverageType = coverageType.map(types => types.value);
@@ -1024,41 +1068,9 @@ exports.updateDealerMeta = async (req, res) => {
       let updatedCustomer = await customerService.updateDealerName(criteria, { dealerName: data.accountName }, option)
       //Update dealer name in reseller
       let updateResellerDealer = await resellerService.updateMeta(criteria, { dealerName: data.accountName }, option)
-
-      //Update Meta in servicer also     
-      if (data.isServicer) {
-        const checkServicer = await servicerService.getServiceProviderById({ dealerId: checkDealer._id })
-        if (!checkServicer) {
-          const CountServicer = await servicerService.getServicerCount();
-          let servicerObject = {
-            name: data.accountName,
-            street: data.street,
-            city: data.city,
-            zip: data.zip,
-            dealerId: checkDealer._id,
-            state: data.state,
-            country: data.country,
-            status: data.status,
-            accountStatus: "Approved",
-            unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
-          }
-          let createData = await servicerService.createServiceProvider(servicerObject)
-        }
-
-        else {
-          const servicerMeta = {
-            name: data.accountName,
-            city: data.city,
-            country: data.country,
-            street: data.street,
-            zip: data.zip
-          }
-          const updateServicerMeta = await servicerService.updateServiceProvider(criteria, servicerMeta)
-        }
-      }
     }
     //update primary user to true by default
-    if (data.isAccountCreate && checkDealer.accountStatus) {
+    if (checkDealer.accountStatus) {
       let criteria1 = { metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } }
 
       let updateMetaData = await userService.updateSingleUser(criteria1, {
@@ -1068,20 +1080,13 @@ exports.updateDealerMeta = async (req, res) => {
       }, { new: true })
 
     }
-    if (!data.isAccountCreate) {
-      let criteria1 = { metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } }
-
-      let updateMetaData = await userService.updateUser(criteria1, {
-        $set: {
-          'metaData.$.status': false,
-        }
-      }, { new: true })
-
-    }
     let IDs = await supportingFunction.getUserIds()
-    let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
+    let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
     let settingData = await userService.getSetting({});
-    IDs.push(getPrimary._id)
+    if (updatedData.isAccountCreate) {
+      IDs.push(getPrimary._id)
+    }
+
     let notificationData = {
       title: "Dealer updated",
       description: checkDealer.name + " , " + "details has been updated",
@@ -1099,12 +1104,17 @@ exports.updateDealerMeta = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: checkDealer.metaData[0]?.name,
+      senderName: checkDealer.name,
       content: "The information has been updated successfully! effective immediately.",
       subject: "Update Info"
     }
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+    if (updatedData.isAccountCreate) {
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+    }
+    else {
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+    }
     //Save Logs update dealer
     let logData = {
       userId: req.userId,
@@ -1144,7 +1154,6 @@ exports.updateDealerMeta = async (req, res) => {
 exports.updateDealerSetting = async (req, res) => {
   try {
     let data = req.body
-
     let checkDealerId = await dealerService.getDealerByName({ _id: req.params.dealerId })
     if (!checkDealerId) {
       res.send({
@@ -1164,11 +1173,45 @@ exports.updateDealerSetting = async (req, res) => {
     }
     //update primary user to true by default
     if (data.isAccountCreate && checkDealerId.accountStatus) {
-      await userService.updateSingleUser({ metaId: req.params.dealerId, isPrimary: true }, { status: true }, { new: true })
+      await userService.updateSingleUser({ metaData: { $elemMatch: { metaId: req.params.dealerId, isPrimary: true } } }, { status: true }, { new: true })
     }
     if (!data.isAccountCreate) {
-      await userService.updateUser({ metaId: req.params.dealerId }, { status: false }, { new: true })
+      await userService.updateUser({ metaData: { $elemMatch: { metaId: req.params.dealerId } } }, { status: false }, { new: true })
     }
+    //Update Meta in servicer also     
+    if (data.isServicer) {
+      const checkServicer = await servicerService.getServiceProviderById({ dealerId: checkDealerId._id })
+      if (!checkServicer) {
+        const CountServicer = await servicerService.getServicerCount();
+        let servicerObject = {
+          name: checkDealerId.name,
+          street: checkDealerId.street,
+          city: checkDealerId.city,
+          zip: checkDealerId.zip,
+          dealerId: checkDealerId._id,
+          state: checkDealerId.state,
+          country: checkDealerId.country,
+          status: checkDealerId.status,
+          accountStatus: "Approved",
+          unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
+        }
+        let createData = await servicerService.createServiceProvider(servicerObject)
+      }
+
+      else {
+        let criteria = { dealerId: checkDealerId._id }
+        let option = { new: true }
+        const servicerMeta = {
+          name: checkDealerId.name,
+          city: checkDealerId.city,
+          country: checkDealerId.country,
+          street: checkDealerId.street,
+          zip: checkDealerId.zip
+        }
+        const updateServicerMeta = await servicerService.updateServiceProvider(criteria, servicerMeta)
+      }
+    }
+
     let updateSettingData = await eligibilityService.updateEligibility({ userId: req.params.dealerId }, data, { new: true })
     if (!updateSettingData) {
       res.send({
@@ -1261,6 +1304,12 @@ exports.addDealerUser = async (req, res) => {
       let IDs = await supportingFunction.getUserIds()
       let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
       IDs.push(getPrimary._id)
+      //Merge start singleServer
+      // let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
+      if (checkDealer.isAccountCreate) {
+        IDs.push(getPrimary._id)
+      }
+      //Merge end
 
       let notificationData = {
         title: "New user added",
@@ -1567,7 +1616,6 @@ exports.uploadDealerPriceBook = async (req, res) => {
 
 exports.uploadDealerPriceBookNew = async (req, res) => {
   try {
-    let data = req.body
 
     uploadP(req, res, async (err) => {
 
@@ -1582,6 +1630,15 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
         })
         return;
       }
+      let getDealerSetting = await eligibilityService.getEligibility({ userId: req.body.dealerId })
+      console.log("get dealer settings +++++++++++", data, getDealerSetting)
+
+      let adhDays = checkDealer[0].adhDays
+      let noOfClaim = getDealerSetting.noOfClaim
+      let noOfClaimPerPeriod = getDealerSetting.noOfClaimPerPeriod
+      let isMaxClaimAmount = getDealerSetting.isMaxClaimAmount
+      let isManufacturerWarranty = getDealerSetting.isManufacturerWarranty
+
       if (!req.file) {
         res.send({
           code: constant.errorCode,
@@ -1615,24 +1672,6 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
         };
       });
 
-
-      // let lastOccurrenceMap = {};
-
-      // totalDataComing.forEach((item, index) => {
-      //   lastOccurrenceMap[item.productSku] = index;
-      // });
-
-      // // Add the isExist key
-      // totalDataComing = totalDataComing.map((item, index) => {
-      //   if (item.dealerSku == "") {
-      //     item.dealerSku = item.productSku
-      //   }
-      //   return {
-      //     ...item,
-      //     isExist: index === lastOccurrenceMap[item.productSku]
-      //   }
-      // });
-
       let lastOccurrenceMap = {};
 
       // Track the first occurrence of each productSku
@@ -1654,10 +1693,6 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
         };
       });
 
-
-
-
-
       function checkForDuplicateDealerSku(data) {
         let dealerSkuMap = {};
 
@@ -1677,24 +1712,80 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
         }
       }
       let newArray = []
+      const optionQuery = {
+        value: {
+          $elemMatch: {
+            value: { $in: checkDealer[0].coverageType }
+          }
+        }
+      }
+
+      const dynamicOption = await userService.getOptions(optionQuery)
+      const filteredOptions = dynamicOption.value
+        .filter(item => !checkDealer[0].coverageType.includes(item.value))
+        .map(item => item.value);
+
       for (let s = 0; s < totalDataComing.length; s++) {
         let currentData = totalDataComing[s]
         // if (currentData.isExist) {
-        let checkPriceBook = await priceBookService.findByName1({ name: currentData.productSku, coverageType: { $elemMatch: { $in: checkDealer[0].coverageType } } })
+
+        let checkPriceBook = await priceBookService.findByName1({
+          name: { '$regex': new RegExp(`^${currentData.productSku.trim()}$`, 'i') }, coverageType: { $elemMatch: { value: { $in: checkDealer[0].coverageType } } }, "coverageType.value": {
+            $nin: filteredOptions
+          }
+        })
+        console.log("checking the dealer price book-----------", checkPriceBook)
+
         if (checkPriceBook) {
           let wholeSalePrice = Number(checkPriceBook.frontingFee) + Number(checkPriceBook.reserveFutureFee) + Number(checkPriceBook.reinsuranceFee) + Number(checkPriceBook.adminFee)
           let checkDealerSku = await dealerPriceService.getDealerPriceById({ priceBook: checkPriceBook._id, dealerId: data.dealerId })
           if (checkDealerSku) {
-            let updateDealerPriceBook = await dealerPriceService.updateDealerPrice({ _id: checkDealerSku._id }, { retailPrice: currentData.retailPrice, dealerSku: currentData.dealerSku }, { new: true })
-            currentData.message = "Updated successfully"
+            if (!currentData.retailPrice) {
+
+              currentData.message = "Retail price is missing"
+            } else {
+              let checkDealerSku1 = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, dealerSku: currentData.dealerSku.trim() })
+              if (checkDealerSku1) {
+                if (checkDealerSku1.priceBook.toString() == checkPriceBook._id.toString()) {
+                  let brokerFee = currentData.retailPrice - wholeSalePrice
+                  let updateDealerPriceBook = await dealerPriceService.updateDealerPrice({ _id: checkDealerSku._id }, { retailPrice: currentData.retailPrice, brokerFee: brokerFee, dealerSku: currentData.dealerSku.trim() }, { new: true })
+                  currentData.message = "Updated successfully"
+                } else {
+                  currentData.message = "Dealer sku already exist"
+                }
+              } else {
+                let brokerFee = currentData.retailPrice - wholeSalePrice
+                let updateDealerPriceBook = await dealerPriceService.updateDealerPrice({ _id: checkDealerSku._id }, { retailPrice: currentData.retailPrice, brokerFee: brokerFee, dealerSku: currentData.dealerSku.trim() }, { new: true })
+                currentData.message = "Updated successfully"
+              }
+            }
           } else {
-            let brokerFee = wholeSalePrice - currentData.retailPrice
-            let createDealerPriceBook = await dealerPriceService.createDealerPrice({ priceBook: checkPriceBook._id, dealerSku: currentData.dealerSku, retailPrice: currentData.retailPrice, status: true, dealerId: data.dealerId, brokerFee: brokerFee, wholesalePrice: wholeSalePrice })
-            currentData.message = "created successfully"
+            if (!currentData.retailPrice) {
+
+              currentData.message = "Retail price is missing"
+            } else {
+              let checkDealerSku1 = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, dealerSku: currentData.dealerSku.trim() })
+              if (checkDealerSku1) {
+                currentData.message = "Dealer sku already exist"
+              } else {
+                console.log("else condition---------1111111111", currentData.retailPrice, wholeSalePrice)
+                let brokerFee = currentData.retailPrice - wholeSalePrice
+                let updateAdh = checkPriceBook.coverageType.map(item1 => {
+                  // Find a match in array2
+                  let match = adhDays.find(item2 => item2.value === item1.value);
+
+                  // Return the merged object only if there's a match
+                  return match ? { ...item1, ...match } : item1;
+                });
+                let createDealerPriceBook = await dealerPriceService.createDealerPrice({ priceBook: checkPriceBook._id, dealerSku: currentData.dealerSku.trim(), retailPrice: currentData.retailPrice, status: true, dealerId: data.dealerId, brokerFee: brokerFee, wholesalePrice: wholeSalePrice, adhDays: updateAdh, noOfClaim: noOfClaim, noOfClaimPerPeriod: noOfClaimPerPeriod, isMaxClaimAmount: isMaxClaimAmount, isManufacturerWarranty: isManufacturerWarranty })
+                // code to be added here
+                currentData.message = "created successfully"
+              }
+            }
+
           }
         } else {
           currentData.message = "Product sku does not exist"
-
         }
         newArray.push(currentData)
 
@@ -1743,6 +1834,12 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
 
       let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.body.dealerId, isPrimary: true } } })
       IDs.push(dealerPrimary?._id)
+      //Merge start singleServer
+      // let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: req.body.dealerId, isPrimary: true })
+      if (checkDealer[0].isAccountCreate) {
+        IDs.push(dealerPrimary?._id)
+      }
+      //Merge end
 
       let notificationData = {
         title: "Dealer Price Book Uploaded",
@@ -1755,7 +1852,14 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
       let createNotification = await userService.createNotification(notificationData);
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
-      const mailing = sgMail.send(emailConstant.sendCsvFile("anil+1@codenomad.net", notificationEmails, htmlTableString));
+      console.log(dealerPrimary.email, checkDealer[0].isAccountCreate)
+      if (checkDealer[0].isAccountCreate) {
+        const mailing = sgMail.send(emailConstant.sendCsvFile(dealerPrimary.email, notificationEmails, htmlTableString));
+      }
+      else {
+        const mailing = sgMail.send(emailConstant.sendCsvFile(notificationEmails, "noreply@getcover.com", htmlTableString));
+
+      }
 
       res.send({
         code: constant.successCode,
@@ -1770,7 +1874,6 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
     })
   }
 }
-
 
 //Get File data from S3 bucket
 const getObjectFromS3 = (bucketReadUrl) => {

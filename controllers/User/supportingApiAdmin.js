@@ -88,8 +88,6 @@ exports.createDealer = async (req, res) => {
                 name: termFile ? termFile.originalname : '',
                 size: termFile ? termFile.size : '',
             }
-
-
             // Check if the specified role exists
             const checkRole = await role.findOne({ role: { '$regex': data.role, '$options': 'i' } });
             if (!checkRole) {
@@ -168,22 +166,19 @@ exports.createDealer = async (req, res) => {
                 //Primary information edit
                 let userQuery = { metaData: { $elemMatch: { metaId: { $in: [data.dealerId] }, isPrimary: true } } }
 
-
+         
                 let newValues1 = {
                     $set: {
                         email: allUserData[0].email,
-                        metaData: [
-                            {
-                                firstName: allUserData[0].firstName,
-                                lastName: allUserData[0].lastName,
-                                phoneNumber: allUserData[0].phoneNumber,
-                                position: allUserData[0].position,
-                                roleId: '656f08041eb1acda244af8c6',
-                                status: allUserData[0].status ? true : false,
-                            }
-                        ]
-
-                    }
+                        'metaData.$.firstName':allUserData[0].firstNam,
+                        'metaData.$.lastName':  allUserData[0].lastName,
+                        'metaData.$.position':allUserData[0].position,
+                        'metaData.$.phoneNumber':allUserData[0].phoneNumber,
+                        'metaData.$.status':allUserData[0].status ? true : false,
+                        'metaData.$.roleId': "656f08041eb1acda244af8c6"
+                
+                      }
+                  
                 }
 
                 await userService.updateUser(userQuery, newValues1, { new: true })
@@ -267,7 +262,9 @@ exports.createDealer = async (req, res) => {
                 await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
                 // Send notification when approved
                 let IDs = await supportingFunction.getUserIds()
-                IDs.push(req.body.dealerId);
+                if (req.body.isAccountCreate) {
+                    IDs.push(req.body.dealerId);
+                }
                 let notificationData = {
                     title: "Dealer Approval",
                     description: req.body.name + " " + "has been successfully approved",
@@ -331,13 +328,15 @@ exports.createDealer = async (req, res) => {
                     body: req.body,
                     response: {
                         code: constant.successCode,
-                        message: 'Successfully Created',
+                        message: 'New Dealer Created Successfully',
                     }
                 }
                 await logs(logData).save()
                 res.send({
                     code: constant.successCode,
-                    message: 'Successfully Created',
+                    message: 'New Dealer Created Successfully',
+                    result: dealerStatus
+
                 });
                 return;
             }
@@ -424,7 +423,7 @@ exports.createDealer = async (req, res) => {
                     body: req.body,
                     response: {
                         code: constant.errorCode,
-                        message: "Created Successfully"
+                        message: "New Dealer Created Successfully"
                     }
                 }
                 await logs(logData).save()
@@ -514,7 +513,7 @@ exports.createDealer = async (req, res) => {
                 }
                 res.send({
                     code: constant.successCode,
-                    message: 'Successfully Created',
+                    message: 'New Dealer Created Successfully',
                     result: createMetaData
                 });
                 return;

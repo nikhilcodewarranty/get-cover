@@ -18,6 +18,16 @@ module.exports = {
         html: data
       };
     },
+
+    sendPriceBookFile: (toEmail, ccMail, data) => {
+      return {
+        to: toEmail,
+        cc: ccMail,
+        from: process.env.from_email,
+        subject: `Price Book Report`,
+        html: data
+      };
+    },
   
     sendEmailTemplate: (toEmail, ccEmail, data) => {
       return {
@@ -25,6 +35,26 @@ module.exports = {
         cc: ccEmail,
         from: process.env.from_email,
         templateId: process.env.update_status,
+        dynamic_template_data: data,
+      };
+    },
+
+    sendCommentNotification: (toEmail, ccEmail, data) => {
+      return {
+        to: toEmail,
+        cc: ccEmail,
+        from: process.env.from_email,
+        templateId: process.env.comment_notification,
+        dynamic_template_data: data,
+      };
+    },
+
+    sendClaimStatusNotification: (toEmail, ccEmail, data) => {
+      return {
+        to: toEmail,
+        cc: ccEmail,
+        from: process.env.from_email,
+        templateId: process.env.claim_status,
         dynamic_template_data: data,
       };
     },
@@ -89,7 +119,7 @@ module.exports = {
       return {
         to: toEmail,
         from: process.env.from_email,
-        templateId: 'd-a5d4a679ef5e459aaffcf27b5876e782',
+        templateId: process.env.servicer_approval,
         dynamic_template_data: data
       };
     },

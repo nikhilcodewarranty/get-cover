@@ -7,6 +7,7 @@ const orderService = require("../../services/Order/orderService");
 const userService = require("../../services/User/userService");
 const contractService = require("../../services/Contract/contractService");
 const servicerService = require("../../services/Provider/providerService");
+const optionService = require("../../services/User/optionsService");
 const priceBookService = require("../../services/PriceBook/priceBookService");
 const customerService = require("../../services/Customer/customerService");
 const providerService = require("../../services/Provider/providerService");
@@ -14,7 +15,7 @@ const resellerService = require("../../services/Dealer/resellerService");
 const dealerService = require("../../services/Dealer/dealerService");
 const supportingFunction = require('../../config/supportingFunction')
 let dealerController = require("../../controllers/Dealer/dealerController")
-
+const jwt = require("jsonwebtoken");
 const emailConstant = require('../../config/emailConstant');
 const constant = require("../../config/constant");
 const sgMail = require('@sendgrid/mail');
@@ -34,6 +35,7 @@ aws.config.update({
   accessKeyId: process.env.aws_access_key_id,
   secretAccessKey: process.env.aws_secret_access_key,
 });
+
 const S3Bucket = new aws.S3();
 // s3 bucket connections
 const s3 = new S3Client({
@@ -50,6 +52,7 @@ const StorageP = multerS3({
   s3: s3,
   bucket: process.env.bucket_name,
   metadata: (req, file, cb) => {
+    console.log(" process.env.bucket_name", process.env.bucket_name)
     cb(null, { fieldName: file.fieldname });
   },
   key: (req, file, cb) => {
@@ -71,7 +74,7 @@ var uploadP = multer({
   limits: {
     fileSize: 500 * 1024 * 1024, // 500 MB limit
   },
-}).array("file", 100);
+}).single("file");
 
 // search claim api  -- not using
 exports.searchClaim = async (req, res, next) => {
@@ -273,6 +276,7 @@ exports.uploadReceipt = async (req, res, next) => {
   try {
     uploadP(req, res, async (err) => {
 
+
       let file = req.files;
       res.send({
         code: constant.successCode,
@@ -323,6 +327,8 @@ exports.addClaim = async (req, res, next) => {
     let data = req.body;
 
     let checkContract = await contractService.getContractById({ _id: data.contractId })
+    data.lossDate = new Date(data.lossDate).setDate(new Date(data.lossDate).getDate() + 1)
+    data.lossDate = new Date(data.lossDate)
 
     if (!checkContract) {
       res.send({
@@ -351,7 +357,8 @@ exports.addClaim = async (req, res, next) => {
       }
     }
 
-    if (new Date(checkContract.coverageStartDate) > new Date(data.lossDate)) {
+    let checkCoverageStartDate = new Date(checkContract.coverageStartDate).setHours(0, 0, 0, 0)
+    if (new Date(checkCoverageStartDate) > new Date(data.lossDate)) {
       res.send({
         code: constant.errorCode,
         message: 'Loss date should be in between coverage start date and present date!'
@@ -385,16 +392,45 @@ exports.addClaim = async (req, res, next) => {
 
 
     let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
-    let remainingPrice = checkContract.productValue - claimTotal[0]?.amount
-    // if (checkContract.productValue <= claimTotal[0]?.amount) {
-    //   res.send({
-    //     code: constant.errorCode,
-    //     message: 'Claim Amount Exceeds Contract Retail Price'
-    //   });
-    //   return;
-    // }
 
-    data.receiptImage = data.file
+    let remainingPrice = checkContract.productValue - claimTotal[0]?.amount
+    if (data.coverageType != "") {
+      let checkCoverageTypeForContract = checkContract.coverageType.find(item => item.value == data.coverageType)
+      if (!checkCoverageTypeForContract) {
+        res.send({
+          code: constant.errorCode,
+          message: 'Coverage type is not available for this contract!'
+        })
+        return;
+      }
+      let startDateToCheck = new Date(checkContract.coverageStartDate)
+      let coverageTypeDays = checkContract.adhDays
+      let serviceCoverageType = checkContract.serviceCoverageType
+
+      let getDeductible = coverageTypeDays.filter(coverageType => coverageType.value == data.coverageType)
+
+      let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0].waitingDays))
+
+      let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
+
+      const result = getCoverageTypeFromOption.value.filter(item => item.value === data.coverageType).map(item => item.label);
+      checkCoverageTypeDate = new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0)
+      data.lossDate = new Date(data.lossDate).setHours(0, 0, 0, 0)
+      if (new Date(checkCoverageTypeDate) > new Date(data.lossDate)) {
+        // claim not allowed for that coverageType
+        res.send({
+          code: 403,
+          tittle: `Claim not eligible for ${result[0]}.`,
+          // message: `Your selected ${result[0]} is currently not eligible for the claim. You can file the claim for ${result[0]} on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}. Do you wish to proceed in rejecting this claim?`
+          message: `Your claim for ${result[0]} cannot be filed because it is not eligible based on the loss date. You will be able to file this claim starting on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}`
+        })
+        return
+
+      }
+
+    }
+
+    data.receiptImage = data.file    
     data.servicerId = data.servicerId ? data.servicerId : null
 
     const checkOrder = await orderService.getOrder({ _id: checkContract.orderId }, { isDeleted: false })
@@ -415,6 +451,7 @@ exports.addClaim = async (req, res, next) => {
     data.model = checkContract.model
     data.manufacture = checkContract.manufacture
     data.serialNumber = checkContract.serial
+    data.claimType = data.coverageType
 
     let claimResponse = await claimService.createClaim(data)
     if (!claimResponse) {
@@ -450,6 +487,7 @@ exports.addClaim = async (req, res, next) => {
         result: claimResponse
       }
     }
+
     await LOG(logData).save()
 
     //Send notification to all
@@ -459,15 +497,28 @@ exports.addClaim = async (req, res, next) => {
     let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } })
     let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data?.servicerId, isPrimary: true } } })
 
-    if (resellerPrimary) {
+    //Get Dealer,reseller, customer status
+    const checkDealer = await dealerService.getDealerById(checkOrder.dealerId)
+    const checkReseller = await resellerService.getReseller({ _id: checkOrder?.resellerId }, {})
+    const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
+    const checkServicer = await servicerService.getServiceProviderById({ $or: [{ _id: data?.servicerId }, { dealerId: data?.servicerId }, { resellerId: data?.servicerId }] })
+
+    if (resellerPrimary && checkReseller?.isAccountCreate) {
       IDs.push(resellerPrimary._id)
     }
-    if (servicerPrimary) {
+    if (servicerPrimary && checkServicer?.isAccountCreate) {
+
       IDs.push(servicerPrimary._id)
     }
+    if (checkDealer.isAccountCreate) {
 
-    IDs.push(customerPrimary._id)
-    IDs.push(dealerPrimary._id)
+      IDs.push(dealerPrimary._id)
+
+    }
+    if (checkCustomer.isAccountCreate) {
+      IDs.push(customerPrimary._id)
+    }
+
     let notificationData1 = {
       title: "Add Claim",
       description: "The claim has been added",
@@ -479,24 +530,48 @@ exports.addClaim = async (req, res, next) => {
     };
 
     let createNotification = await userService.createNotification(notificationData1);
+
+    // const token = jwt.sign(
+    //   { claimId: claimResponse.unique_key },
+    //   process.env.JWT_ID_SECRET, // Replace with your secret key
+    //   { expiresIn: "1d" }
+    // );
+
     // Send Email code here
     let notificationCC = await supportingFunction.getUserEmails();
     let settingData = await userService.getSetting({});
     let adminCC = await supportingFunction.getUserEmails();
+    const base_url = `${process.env.SITE_URL}claim-listing/${claimResponse.unique_key}`
+
+
     //let cc = notificationEmails;
-    notificationCC.push(dealerPrimary.email);
-    notificationCC.push(resellerPrimary?.email);
+    if (checkDealer.isAccountCreate) {
+      notificationCC.push(dealerPrimary.email);
+
+    }
+    if (checkReseller?.isAccountCreate) {
+      notificationCC.push(resellerPrimary.email);
+
+    }
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
       senderName: customerPrimary.metaData[0]?.firstName,
-      content: "The claim " + claimResponse.unique_key + " has been filed for the " + checkContract.unique_key + " contract!.",
-      subject: 'Add Claim'
+      redirectId: base_url
     }
-
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationCC, emailData))
+    let mailing;
+    if (checkCustomer.isAccountCreate) {
+      emailData.subject = `Claim Received -${claimResponse.unique_key}`
+      emailData.content = `The Claim # ${claimResponse.unique_key} has been successfully filed for the Contract # ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here :`
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary?.email, notificationCC, emailData))
+    }
+    else {
+      emailData.subject = `Claim Received - ${claimResponse.unique_key}`
+      emailData.content = `The Claim # ${claimResponse.unique_key} has been successfully filed for the Contract #  ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here :`
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationCC, ["noreply@getcover.com"], emailData))
+    }
 
     // Email to servicer and cc to admin 
     if (servicerPrimary) {
@@ -506,10 +581,18 @@ exports.addClaim = async (req, res, next) => {
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
         senderName: servicerPrimary?.metaData[0]?.firstName,
-        content: "The claim " + claimResponse.unique_key + " has been filed for the " + checkContract.unique_key + " contract!.",
-        subject: 'Add Claim'
+        redirectId: base_url
       }
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary?.email, adminCC, emailData))
+      if (checkServicer?.isAccountCreate) {
+        emailData.subject = `New Device Received for Repair - ID ${claimResponse.unique_key}`
+        emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please check the following link :`
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary?.email, notificationCC, emailData))
+      }
+      else {
+        emailData.subject = `New Device Received for Repair - ID  ${claimResponse.unique_key}`
+        emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please check the following link :`
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationCC, ["noreply@getcover.com"], emailData))
+      }
     }
 
 
@@ -529,6 +612,7 @@ exports.addClaim = async (req, res, next) => {
       response: {
         code: constant.errorCode,
         message: err.message,
+        stack: err.stack
       }
     }
     await LOG(logData).save()
@@ -608,11 +692,14 @@ exports.editClaim = async (req, res) => {
           "x-access-token": req.header["x-access-token"],  // Include the token in the Authorization header
         }
       });
+
       //Send notification to all
       let IDs = await supportingFunction.getUserIds()
       let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkClaim?.servicerId, isPrimary: true } } })
+      //chek servicer status
+      const checkServicer = await servicerService.getServiceProviderById({ $or: [{ _id: checkClaim?.servicerId }, { dealerId: checkClaim?.servicerId }, { resellerId: checkClaim?.servicerId }] })
 
-      if (servicerPrimary) {
+      if (servicerPrimary && checkServicer?.isAccountCreate) {
         IDs.push(servicerPrimary._id)
       }
 
@@ -641,26 +728,61 @@ exports.editClaim = async (req, res) => {
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
       let settingData = await userService.getSetting({});
+      const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
       //notificationEmails.push(servicerPrimary?.email);
-      const servicerEmail = servicerPrimary ? servicerPrimary?.email : process.env.servicerEmail
+      let servicerEmail = servicerPrimary ? servicerPrimary?.email : process.env.servicerEmail
+      servicerEmail = checkServicer?.isAccountCreate ? servicerPrimary?.email : notificationEmails
+      notificationEmails = checkServicer?.isAccountCreate ? notificationEmails : []
+      const lastElement = data.repairParts.pop();
       let emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
         senderName: servicerPrimary ? servicerPrimary.metaData[0]?.firstName : '',
-        content: "The  repair part update for " + checkClaim.unique_key + " claim",
-        subject: "Repair Part Update"
+        redirectId: base_url,
+        content: `We would like to inform you that the repair information for Claim #  ${checkClaim.unique_key} has been successfully updated in our system. Please review the updated details and proceed accordingly.`,
+        subject: `Update on Repair Information for Claim  # ${checkClaim.unique_key}`
       }
+
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, notificationEmails, emailData))
+      let totalClaimQuery1 = [
+        {
+          $match: {
+            contractId: new mongoose.Types.ObjectId(checkClaim.contractId)
+          }
+        },
+        {
+          $group: {
+            _id: null,            // Group by null to aggregate over all documents
+            totalAmount: { $sum: "$totalAmount" }  // Sum the 'amount' field
+          }
+        }
+      ]
+      let getClaims = await claimService.getClaimWithAggregate(totalClaimQuery1)
+      let updateTheContract = await contractService.updateContract({ _id: checkClaim.contractId }, { claimAmount: getClaims[0] ? getClaims[0].totalAmount : 0 }, { new: true })
       res.send({
         code: constant.successCode,
         message: "Updated successfully"
       })
       return;
     }
-
-
+    let totalClaimQuery1 = [
+      {
+        $match: {
+          contractId: new mongoose.Types.ObjectId(checkClaim.contractId)
+        }
+      },
+      {
+        $group: {
+          _id: null,            // Group by null to aggregate over all documents
+          totalAmount: { $sum: "$totalAmount" }  // Sum the 'amount' field
+        }
+      }
+    ]
+    let getClaims = await claimService.getClaimWithAggregate(totalClaimQuery1)
+    let updateTheContract = await contractService.updateContract({ _id: checkClaim._id }, { claimAmount: getClaims[0] ? getClaims[0].totalAmount : 0 }, { new: true })
+    console.log("updated contract ak", getClaims, updateTheContract.claimAmount)
 
     res.send({
       code: constant.successCode,
@@ -703,6 +825,9 @@ exports.editClaimType = async (req, res) => {
     }
 
     if (checkClaim.claimFile == 'open') {
+      if (data.claimType == "theft_and_lost") {
+        data.servicerId = null
+      }
       let option = { new: true }
 
       let updateData = await claimService.updateClaim(criteria, data, option)
@@ -789,6 +914,7 @@ exports.editClaimStatus = async (req, res) => {
     let data = req.body
     let criteria = { _id: req.params.claimId }
     let settingData = await userService.getSetting({});
+
     let checkClaim = await claimService.getClaimById(criteria)
     if (!checkClaim) {
       res.send({
@@ -797,6 +923,7 @@ exports.editClaimStatus = async (req, res) => {
       })
       return
     }
+    const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
 
     const query = { contractId: new mongoose.Types.ObjectId(checkClaim.contractId) }
     let checkContract = await contractService.getContractById({ _id: checkClaim.contractId })
@@ -811,7 +938,16 @@ exports.editClaimStatus = async (req, res) => {
     let status = {};
     let updateData = {};
 
+    //Get Dealer,reseller, customer status
+    const checkDealer = await dealerService.getDealerById(checkOrder.dealerId)
+    const checkReseller = await resellerService.getReseller({ _id: checkOrder?.resellerId }, {})
+    const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
+    const checkServicer = await servicerService.getServiceProviderById({ $or: [{ _id: checkClaim?.servicerId }, { dealerId: checkClaim?.servicerId }, { resellerId: checkClaim?.servicerId }] })
+
+
     if (data.hasOwnProperty("customerStatus")) {
+      const checkCustomerStatus = await optionService.getOption({ name: "customer_status" })
+      const matchedData = checkCustomerStatus?.value.find(status => status.value == data.customerStatus)
       if (data.customerStatus == 'product_received') {
         let option = { new: true }
         let claimStatus = await claimService.updateClaim(criteria, { claimFile: 'completed', claimDate: new Date() }, option)
@@ -852,14 +988,20 @@ exports.editClaimStatus = async (req, res) => {
       let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } })
       let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkClaim?.servicerId, isPrimary: true } } })
 
-      if (resellerPrimary) {
+      if (resellerPrimary && checkReseller?.isAccountCreate) {
         IDs.push(resellerPrimary._id)
       }
-      if (servicerPrimary) {
+      if (servicerPrimary && checkServicer?.isAccountCreate) {
         IDs.push(servicerPrimary._id)
       }
-      IDs.push(customerPrimary._id)
-      IDs.push(dealerPrimary._id)
+      if (checkDealer.isAccountCreate) {
+        IDs.push(dealerPrimary._id)
+
+      }
+      if (checkCustomer.isAccountCreate) {
+        IDs.push(customerPrimary._id)
+
+      }
 
       let notificationData1 = {
         title: "Customer Status Update",
@@ -874,58 +1016,35 @@ exports.editClaimStatus = async (req, res) => {
       let createNotification = await userService.createNotification(notificationData1);
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
+      const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
+      if (checkDealer.isAccountCreate) {
+        notificationEmails.push(dealerPrimary?.email)
+      }
+      if (checkReseller?.isAccountCreate) {
+        notificationEmails.push(resellerPrimary?.email)
+      }
+      if (checkServicer?.isAccountCreate) {
+        notificationEmails.push(servicerPrimary?.email)
+      }
+
       //Email to customer
       let emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: customerPrimary?.metaData[0]?.firstName,
-        content: "The customer status has been updated for " + checkClaim.unique_key + "",
-        subject: "Customer Status Update"
+        senderName: customerPrimary?.metaData[0].firstName,
+        content: `The Customer Status has been updated on the claim # ${checkClaim.unique_key} to be ${matchedData.label}. Please review the information on the following url.`,
+        subject: `Customer Status Updated for ${checkClaim.unique_key}`,
+        redirectId: base_url
       }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationEmails, emailData))
-      //Email to dealer
-      emailData = {
-        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        address: settingData[0]?.address,
-        websiteSetting: settingData[0],
-        senderName: dealerPrimary?.metaData[0]?.firstName,
-        content: "The customer status has been updated for " + checkClaim.unique_key + "",
-        subject: "Customer Status Update"
-      }
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
-      //Email to Reseller
-      if (resellerPrimary) {
-        emailData = {
-          darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-          lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-          address: settingData[0]?.address,
-          websiteSetting: settingData[0],
-          senderName: resellerPrimary?.metaData[0]?.firstName,
-          content: "The customer status has been updated for " + checkClaim.unique_key + "",
-          subject: "Customer Status Update"
-        }
-        mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary?.email, ['noreply@getcover.com'], emailData))
-      }
+      let mailing = checkCustomer.isAccountCreate ? sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
 
-      //email to servicer 
-      if (servicerPrimary) {
-        emailData = {
-          darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-          lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-          address: settingData[0]?.address,
-          websiteSetting: settingData[0],
-          senderName: servicerPrimary?.metaData[0]?.firstName,
-          content: "The customer status has been updated for " + checkClaim.unique_key + "",
-          subject: "Customer Status Update"
-        }
-        mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary?.email, ['noreply@getcover.com'], emailData))
-      }
     }
 
     if (data.hasOwnProperty("repairStatus")) {
+      const checkRepairStatus = await optionService.getOption({ name: "repair_status" })
+      const matchedData = checkRepairStatus?.value.find(status => status.value == data.repairStatus)
       status.trackStatus = [
         {
           status: data.repairStatus,
@@ -949,15 +1068,19 @@ exports.editClaimStatus = async (req, res) => {
       let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkClaim?.servicerId, isPrimary: true } } })
 
 
-      if (resellerPrimary) {
+      if (resellerPrimary && checkReseller?.isAccountCreate) {
         IDs.push(resellerPrimary._id)
       }
-      if (servicerPrimary) {
+      if (servicerPrimary && checkServicer?.isAccountCreate) {
         IDs.push(servicerPrimary._id)
       }
-      IDs.push(customerPrimary._id)
-      IDs.push(dealerPrimary._id)
+      if (checkDealer.isAccountCreate) {
+        IDs.push(dealerPrimary._id)
 
+      }
+      if (checkCustomer.isAccountCreate) {
+        IDs.push(customerPrimary._id)
+      }
       let notificationData1 = {
         title: "Repair Status Update",
         description: "The repair status has been updated for " + checkClaim.unique_key + "",
@@ -971,57 +1094,28 @@ exports.editClaimStatus = async (req, res) => {
       let createNotification = await userService.createNotification(notificationData1);
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
-      let toEmail = []
-
-      //Email to dealer
+      if (checkDealer.isAccountCreate) {
+        notificationEmails.push(dealerPrimary.email)
+      }
+      if (checkReseller?.isAccountCreate) {
+        notificationEmails.push(resellerPrimary?.email)
+      }
+      if (checkServicer?.isAccountCreate) {
+        notificationEmails.push(servicerPrimary?.email)
+      }
+      // Email to Customer
       let emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: dealerPrimary.metaData[0]?.firstName,
-        content: "The claim repair status has been updated for " + checkClaim.unique_key + "",
-        subject: "Repair Status Update"
+        senderName: customerPrimary?.metaData[0].firstName,
+        content: `The Repair Status has been updated on the claim # - ${checkClaim.unique_key} to be ${matchedData.label} .Please review the information on following url`,
+        subject: `Repair Status Updated for Claim #  ${checkClaim.unique_key}`,
+        redirectId: base_url
       }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
-      // Email to Customer
-      emailData = {
-        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        address: settingData[0]?.address,
-        websiteSetting: settingData[0],
-        senderName: customerPrimary?.metaData[0]?.firstName,
-        content: "The claim repair status has been updated for " + checkClaim.unique_key + "",
-        subject: "Repair Status Update"
-      }
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationEmails, emailData))
-      // Email to Reseller
-      if (resellerPrimary) {
-        emailData = {
-          darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-          lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-          address: settingData[0]?.address,
-          websiteSetting: settingData[0],
-          senderName: resellerPrimary?.metaData[0]?.firstName,
-          content: "The claim repair status has been updated for " + checkClaim.unique_key + "",
-          subject: "Repair Status Update"
-        }
-        mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : 'reseller@yopmail.com', notificationEmails, emailData))
-      }
-      //email to servicer
-      if (servicerPrimary) {
-        emailData = {
-          darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-          lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-          address: settingData[0]?.address,
-          websiteSetting: settingData[0],
-          senderName: servicerPrimary?.metaData[0]?.firstName,
-          content: "The claim repair status has been updated for " + checkClaim.unique_key + "",
-          subject: "Repair Status Update"
-        }
-        const servicerEmail = servicerPrimary ? servicerPrimary?.email : process.env.servicerEmail
-        mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, notificationEmails, emailData))
-      }
+      let mailing = checkCustomer.isAccountCreate ? sgMail.send(emailConstant.sendEmailTemplate(customerPrimary?.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+
     }
     if (data.hasOwnProperty("claimStatus")) {
       let claimStatus = await claimService.updateClaim(criteria, { claimFile: data.claimStatus, reason: data.reason ? data.reason : '' }, { new: true })
@@ -1049,14 +1143,20 @@ exports.editClaimStatus = async (req, res) => {
       let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } })
       let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkClaim?.servicerId, isPrimary: true } } })
 
-      if (resellerPrimary) {
+      if (resellerPrimary && checkReseller?.isAccountCreate) {
         IDs.push(resellerPrimary._id)
       }
-      if (servicerPrimary) {
+      if (servicerPrimary && checkServicer?.isAccountCreate) {
         IDs.push(servicerPrimary._id)
       }
-      IDs.push(customerPrimary._id)
-      IDs.push(dealerPrimary._id)
+      if (checkDealer.isAccountCreate) {
+        IDs.push(dealerPrimary._id)
+
+      }
+      if (checkCustomer.isAccountCreate) {
+        IDs.push(customerPrimary._id)
+
+      }
 
       let notificationData1 = {
         title: "Claim Status Update",
@@ -1071,67 +1171,150 @@ exports.editClaimStatus = async (req, res) => {
       let createNotification = await userService.createNotification(notificationData1);
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
-      //Email to dealer
-
-      let emailData = {
-        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        address: settingData[0]?.address,
-        websiteSetting: settingData[0],
-        senderName: dealerPrimary.metaData[0]?.firstName,
-        content: "The claim status has been updated for " + checkClaim.unique_key + "",
-        subject: "Claim Status Update"
-      }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, ['noreply@getcover.com'], emailData))
-      //Email to Reseller
-      if (resellerPrimary) {
-        emailData = {
+      if (data.claimStatus == 'rejected') {
+        //Email to dealer
+        let emailData = {
           darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
           lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
           address: settingData[0]?.address,
           websiteSetting: settingData[0],
-          senderName: resellerPrimary?.metaData[0]?.firstName,
-          content: "The claim status has been updated for " + checkClaim.unique_key + "",
-          subject: "Claim Status Update"
+          senderName: dealerPrimary.metaData[0].firstName,
+          content: `We regret to inform you that your claim ${checkClaim.unique_key} has been reviewed and, unfortunately, does not meet the criteria for approval. After careful assessment, the claim has been rejected due to the following reason:`,
+          content1: `Reason for Rejection : ${data.reason}`,
+          content2: `If you believe there has been an error or if you would like further clarification, please feel free to reach out to our support team at support@getcover.com. Our team is here to assist you with any questions you may have.`,
+          subject: `Claim Rejection Notice -Claim #  ${checkClaim.unique_key}`
         }
-        mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary?.email, ['noreply@getcover.com'], emailData))
-      }
+        let mailing = checkDealer.isAccountCreate ? sgMail.send(emailConstant.sendClaimStatusNotification(dealerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendClaimStatusNotification(notificationEmails, ["noreply@getcover.com"], emailData))
+        //Email to Reseller
+        if (resellerPrimary) {
+          emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
+            senderName: resellerPrimary?.metaData[0].firstName,
+            content: `We regret to inform you that your claim ${checkClaim.unique_key} has been reviewed and, unfortunately, does not meet the criteria for approval. After careful assessment, the claim has been rejected due to the following reason:`,
+            content1: `Reason for Rejection : ${data.reason}`,
+            content2: `If you believe there has been an error or if you would like further clarification, please feel free to reach out to our support team at support@getcover.com. Our team is here to assist you with any questions you may have.`,
+            subject: `Claim Rejection Notice -Claim #  ${checkClaim.unique_key}`
+          }
+          mailing = checkReseller.isAccountCreate ? sgMail.send(emailConstant.sendClaimStatusNotification(resellerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendClaimStatusNotification(notificationEmails, ["noreply@getcover.com"], emailData))
 
-      //Email to customer
-      emailData = {
-        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        address: settingData[0]?.address,
-        websiteSetting: settingData[0],
-        senderName: customerPrimary.metaData[0]?.firstName,
-        content: "The claim status has been updated for " + checkClaim.unique_key + "",
-        subject: "Claim Status Update"
+          //Email to customer
+          emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
+            senderName: customerPrimary.metaData[0].firstName,
+            content: `We regret to inform you that your claim ${checkClaim.unique_key} has been reviewed and, unfortunately, does not meet the criteria for approval. After careful assessment, the claim has been rejected due to the following reason:`,
+            content1: `Reason for Rejection : ${data.reason}`,
+            content2: `If you believe there has been an error or if you would like further clarification, please feel free to reach out to our support team at support@getcover.com. Our team is here to assist you with any questions you may have.`,
+            subject: `Claim Rejection Notice - Claim # ${checkClaim.unique_key}`
+          }
+          mailing = checkCustomer.isAccountCreate ? sgMail.send(emailConstant.sendClaimStatusNotification(customerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendClaimStatusNotification(notificationEmails, ["noreply@getcover.com"], emailData))
+
+          //Email to Servicer
+          if (servicerPrimary) {
+            emailData = {
+              darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+              lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+              address: settingData[0]?.address,
+              websiteSetting: settingData[0],
+              senderName: servicerPrimary?.metaData[0].firstName,
+              content: `We would like to inform you that Claim # - ${checkClaim.unique_key} has been rejected, and no further action is needed on your part for this claim. Please halt any ongoing repair work related to this claim immediately`,
+              content1: `If you have any questions or require clarification, feel free to contact us`,
+              subject: "Claim Update - No Further Action Required"
+            }
+            mailing = checkServicer.isAccountCreate ? sgMail.send(emailConstant.sendClaimStatusNotification(servicerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendClaimStatusNotification(notificationEmails, ["noreply@getcover.com"], emailData))
+
+          }
+          //Email to admin
+          emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
+            senderName: admin?.metaData[0].firstName,
+            content: `This is to notify you that the claim rejection process for Claim # - ${checkClaim.unique_key} has been completed successfully. The claim has been marked as rejected, and the customer has been notified with the reason provided`,
+            subject: "Action Notification – Claim Rejection Completed"
+          }
+          mailing = sgMail.send(emailConstant.sendClaimStatusNotification(notificationEmails, ['noreply@getcover.com'], emailData))
+        }
       }
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary?.email, ['noreply@getcover.com'], emailData))
-      //Email to Servicer
-      if (servicerPrimary) {
-        emailData = {
+      if (data.claimStatus == 'completed') {
+        let emailData = {
           darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
           lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
           address: settingData[0]?.address,
           websiteSetting: settingData[0],
-          senderName: servicerPrimary?.metaData[0]?.firstName,
-          content: "The claim status has been updated for " + checkClaim.unique_key + "",
-          subject: "Claim Status Update"
+          senderName: dealerPrimary.metaData[0].firstName,
+          content: `We are pleased to inform you that your claim # - ${checkClaim.unique_key} has been successfully completed. All necessary repairs or services associated with your claim have been finalized`,
+          content1: `If you have any further questions or require additional support, please feel free to contact us at support@getcover.com.`,
+          content2: '',
+          subject: `Claim Completion Notification – Claim #  ${checkClaim.unique_key}`
         }
-        mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary?.email, ['noreply@getcover.com'], emailData))
+        let mailing = checkDealer.isAccountCreate ? sgMail.send(emailConstant.sendClaimStatusNotification(dealerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendClaimStatusNotification(notificationEmails, ["noreply@getcover.com"], emailData))
+        //Email to Reseller
+        if (resellerPrimary) {
+          emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
+            senderName: resellerPrimary?.metaData[0].firstName,
+            content: `We are pleased to inform you that your claim # - ${checkClaim.unique_key} has been successfully completed. All necessary repairs or services associated with your claim have been finalized`,
+            content1: `If you have any further questions or require additional support, please feel free to contact us at support@getcover.com.`,
+            content2: '',
+            subject: `Claim Completion Notification – Claim #  ${checkClaim.unique_key}`
+          }
+          mailing = checkReseller.isAccountCreate ? sgMail.send(emailConstant.sendClaimStatusNotification(resellerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendClaimStatusNotification(notificationEmails, ["noreply@getcover.com"], emailData))
+
+          //Email to customer
+          emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
+            senderName: customerPrimary.metaData[0].firstName,
+            content: `We are pleased to inform you that your claim # - ${checkClaim.unique_key} has been successfully completed. All necessary repairs or services associated with your claim have been finalized`,
+            content1: `If you have any further questions or require additional support, please feel free to contact us at support@getcover.com.`,
+            content2: '',
+            subject: `Claim Completion Notification – Claim #  ${checkClaim.unique_key}`
+          }
+          mailing = checkCustomer.isAccountCreate ? sgMail.send(emailConstant.sendClaimStatusNotification(customerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendClaimStatusNotification(notificationEmails, ["noreply@getcover.com"], emailData))
+
+          //Email to Servicer
+          if (servicerPrimary) {
+            emailData = {
+              darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+              lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+              address: settingData[0]?.address,
+              websiteSetting: settingData[0],
+              senderName: servicerPrimary?.metaData[0].firstName,
+              content: `We are pleased to inform you that Claim # - ${checkClaim.unique_key} has been successfully completed. Thank you for your prompt and professional service in handling this claim. Your efforts have been invaluable in ensuring a smooth process for our customer.`,
+              content1: `Should you have any questions or require additional information, please do not hesitate to reach out.`,
+              content2: '',
+              subject: "Claim Update – Service Completion Confirmed"
+            }
+            mailing = checkServicer.isAccountCreate ? sgMail.send(emailConstant.sendClaimStatusNotification(servicerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendClaimStatusNotification(notificationEmails, ["noreply@getcover.com"], emailData))
+
+          }
+          //Email to admin
+          emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
+            senderName: admin?.metaData[0].firstName,
+            content: `This is to inform you that the completion process for Claim ID: [Claim ID Number] has been successfully carried out. All steps have been finalized, and the customer has been notified of the claim completion`,
+            content2: '',
+            content1: '',
+            subject: "Action Notification – Claim Completion Processed"
+          }
+          mailing = sgMail.send(emailConstant.sendClaimStatusNotification(notificationEmails, ['noreply@getcover.com'], emailData))
+        }
       }
-      //Email to admin
-      emailData = {
-        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        address: settingData[0]?.address,
-        websiteSetting: settingData[0],
-        senderName: admin?.metaData[0]?.firstName,
-        content: "The claim status has been updated for " + checkClaim.unique_key + "",
-        subject: "Claim Status Update"
-      }
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
     }
 
     if (data.hasOwnProperty("claimType")) {
@@ -1163,19 +1346,140 @@ exports.editClaimStatus = async (req, res) => {
       return;
     }
 
-    //Eligibility true when claim is completed and rejected
-    if (updateBodyStatus.claimFile == 'completed' || updateBodyStatus.claimFile == 'rejected') {
-      if (checkContract.productValue > claimTotal[0]?.amount) {
-        const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
+
+    let baseDate = new Date(checkContract.coverageStartDate);
+    let newDateToCheck = new Date()
+    const newDayOfMonth = newDateToCheck.getDate();
+    const dayOfMonth = baseDate.getDate();
+
+    // Get the current year and month
+    const currentYear1 = new Date().getFullYear();
+    const currentMonth1 = new Date().getMonth(); // Note: 0 = January, so this is the current month index
+
+    // Create a new date with the current year, current month, and the day from baseDate
+    let newDateWithSameDay = new Date(currentYear1, currentMonth1, dayOfMonth);
+    if (Number(newDayOfMonth) > Number(dayOfMonth)) {
+      newDateWithSameDay = new Date(new Date(newDateWithSameDay).setMonth(newDateWithSameDay.getMonth() - 1));
+    }
+
+    const monthlyEndDate = new Date(new Date(newDateWithSameDay).setMonth(newDateWithSameDay.getMonth() + 1)); // Ends on August 11, 2024
+    const yearlyEndDate = new Date(new Date(newDateWithSameDay).setFullYear(newDateWithSameDay.getFullYear() + 1)); // Ends on July 11, 2025
+
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0); // Start of today (00:00)
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999); // End of today (23:59)
+
+    let getNoOfClaimQuery = [
+      {
+        $match: {
+          contractId: new mongoose.Types.ObjectId(checkClaim.contractId),
+          claimFile: "completed"
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          monthlyCount: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $gte: ['$createdAt', newDateWithSameDay] },
+                    { $lt: ['$createdAt', monthlyEndDate] }
+                  ]
+                },
+                1,
+                0
+              ]
+            }
+          },
+          yearlyCount: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $gte: ['$createdAt', newDateWithSameDay] },
+                    { $lt: ['$createdAt', yearlyEndDate] }
+                  ]
+                },
+                1,
+                0
+              ]
+            }
+          }
+        }
       }
-      else if (checkContract.productValue < claimTotal[0]?.amount) {
-        const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: false }, { new: true })
+    ];
+
+    let forCheckOnly;
+
+    //Eligibility true when claim is completed and rejected
+    if (updateBodyStatus.claimFile == 'completed') {
+      if (checkContract.isMaxClaimAmount) {
+        if (checkContract.productValue > claimTotal[0]?.amount) {
+          const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
+          forCheckOnly = true
+        }
+        else if (checkContract.productValue < claimTotal[0]?.amount) {
+          const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: false }, { new: true })
+          forCheckOnly = false
+        }
+      } else {
+        const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
+        forCheckOnly = true
+
+      }
+
+      //Amount reset of the claim in rejected claim
+      if (updateBodyStatus.claimFile == 'rejected') {
+        let updatePrice = await claimService.updateClaim(criteria, { totalAmount: 0, customerClaimAmount: 0, getCoverClaimAmount: 0, customerOverAmount: 0, getcoverOverAmount: 0 }, { new: true })
+        const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
+        forCheckOnly = true
+      }
+
+      if (forCheckOnly) {
+        let checkNoOfClaims = await claimService.getClaimWithAggregate(getNoOfClaimQuery)
+        console.log(checkNoOfClaims, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+        if (checkNoOfClaims.length == 0) {
+          checkNoOfClaims = [{
+            "monthlyCount": 0,
+            "yearlyCount": 0
+          }]
+        }
+        let checkThePeriod = checkContract.noOfClaim
+        let getTotalClaim = await claimService.getClaims({ contractId: checkClaim.contractId, claimFile: "completed" })
+        let noOfTotalClaims = getTotalClaim.length
+        if (checkThePeriod.value != -1) {
+          if (checkThePeriod.period == "Monthly") {
+            let eligibility = checkNoOfClaims[0].monthlyCount >= checkThePeriod.value ? false : true
+            if (eligibility) {
+              if (checkContract.noOfClaimPerPeriod != -1) {
+                eligibility = noOfTotalClaims >= checkContract.noOfClaimPerPeriod ? false : true
+
+              }
+            }
+            const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: eligibility }, { new: true })
+          } else {
+            let eligibility = checkNoOfClaims[0].yearlyCount >= checkThePeriod.value ? false : true
+
+            if (eligibility) {
+              if (checkContract.noOfClaimPerPeriod != -1) {
+
+                eligibility = noOfTotalClaims >= checkContract.noOfClaimPerPeriod ? false : true
+              }
+            }
+            const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: eligibility }, { new: true })
+          }
+        }
       }
     }
 
-    //Amount reset of the claim in rejected claim
+
     if (updateBodyStatus.claimFile == 'rejected') {
-      let updatePrice = await claimService.updateClaim(criteria, { totalAmount: 0 }, { new: true })
+      let updatePrice = await claimService.updateClaim(criteria, { totalAmount: 0, customerClaimAmount: 0, getCoverClaimAmount: 0, customerOverAmount: 0, getcoverOverAmount: 0 }, { new: true })
+      const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
+      forCheckOnly = true
     }
 
     //Save logs
@@ -1204,14 +1508,16 @@ exports.editClaimStatus = async (req, res) => {
       body: req.body ? req.body : { "type": "Catch Error" },
       response: {
         code: constant.errorCode,
-        result: err.message
+        result: err.message,
+        stack: err.stack
       }
     }
     await LOG(logData).save()
 
     res.send({
       code: constant.errorCode,
-      message: err.message
+      message: err.message,
+      stack: err.stack
     })
   }
 }
@@ -1223,6 +1529,11 @@ exports.editServicer = async (req, res) => {
     let criteria = { _id: req.params.claimId }
     let settingData = await userService.getSetting({});
     let checkClaim = await claimService.getClaimById(criteria)
+    let checkContract = await contractService.getContractById({ _id: checkClaim.contractId })
+    const checkOrder = await orderService.getOrder({ _id: checkContract.orderId }, { isDeleted: false })
+    const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
+    const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
+
     if (!checkClaim) {
       res.send({
         code: constant.errorCode,
@@ -1316,12 +1627,14 @@ exports.editServicer = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: getPrimary ? getPrimary.metaData[0]?.firstName : "",
-      content: "The servicer has been updated for the claim " + checkClaim.unique_key + "",
-      subject: "Servicer Update"
+      senderName: getPrimary ? getPrimary.metaData[0].firstName : "",
+      subject: `New Device Received for Repair # - ${checkClaim.unique_key}`,
+      redirectId: base_url,
+      content: `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please check the following link :`
+
     }
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary ? getPrimary.email : process.env.servicerEmail, notificationEmails, emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary?.email, notificationEmails, emailData))
     res.send({
       code: constant.successCode,
       message: 'Success!',
@@ -1350,741 +1663,16 @@ exports.editServicer = async (req, res) => {
 
 }
 
-// //Save bulk claim
-// exports.saveBulkClaim = async (req, res) => {
-//   uploadP(req, res, async (err) => {
-//     try {
-//       let data = req.body
-//       let headerLength;
-//       const bucketReadUrl = { Bucket: process.env.bucket_name, Key: req.files[0].key };
-//       // Await the getObjectFromS3 function to complete
-//       const result = await getObjectFromS3(bucketReadUrl);
-
-//       const emailField = req.body.email;
-
-//       // // Parse the email field
-//       const emailArray = JSON.parse(emailField);
-
-//       let length = 4;
-//       let match = {}
-//       if (req.role == 'Dealer') {
-//         length = 3;
-//         match = { "order.dealer._id": new mongoose.Types.ObjectId(req.userId) }
-//       }
-
-//       if (req.role == 'Reseller') {
-//         length = 3;
-//         match = { "order.reseller._id": new mongoose.Types.ObjectId(req.userId) }
-//       }
-
-//       if (req.role == 'Customer') {
-//         length = 3;
-//         match = { "order.customers._id": new mongoose.Types.ObjectId(req.userId) }
-//       }
-
-//       headerLength = result.headers
-
-//       if (headerLength.length !== length) {
-//         res.send({
-//           code: constant.errorCode,
-//           message: "Invalid file format detected. Please check file format!"
-//         })
-//         return
-//       }
-
-//       const totalDataComing1 = result.data;
-
-//       let totalDataComing = totalDataComing1.map((item, i) => {
-//         const keys = Object.keys(item);
-//         let dateLoss = item[keys[2]]
-//         // Check if the "servicerName" header exists     
-//         if (keys.length > 3) {
-//           let dateLoss = item[keys[2]]
-//           return {
-//             contractId: item[keys[0]],
-//             servicerName: item[keys[1]],
-//             lossDate: dateLoss.toString(),
-//             diagnosis: item[keys[3]],
-//             duplicate: false,
-//             exit: false
-//           };
-//         } else {
-//           let dateLoss = item[keys[1]]
-//           // If "servicerName" does not exist, shift the second item to "lossDate"
-//           return {
-//             contractId: item[keys[0]],
-//             lossDate: dateLoss.toString(),
-//             diagnosis: item[keys[2]],  // Assuming diagnosis is now at index 2
-//             duplicate: false,
-//             exit: false
-//           };
-//         }
-//       });
-
-
-//       if (totalDataComing.length === 0) {
-//         res.send({
-//           code: constant.errorCode,
-//           message: "Invalid file!"
-//         });
-//         return;
-//       }
-
-//       totalDataComing = totalDataComing.map((item, i) => {
-//         if (item.hasOwnProperty("servicerName")) {
-//           return {
-//             contractId: item.contractId?.toString().replace(/\s+/g, ' ').trim(),
-//             servicerName: item.servicerName?.toString().replace(/\s+/g, ' ').trim(),
-//             lossDate: item.lossDate?.toString().replace(/\s+/g, ' ').trim(),
-//             diagnosis: item.diagnosis?.toString().replace(/\s+/g, ' ').trim(),
-//             duplicate: false,
-//             exit: false
-//           };
-//         }
-//         else {
-//           return {
-//             contractId: item.contractId?.toString().replace(/\s+/g, ' ').trim(),
-//             lossDate: item.lossDate?.toString().replace(/\s+/g, ' ').trim(),
-//             diagnosis: item.diagnosis?.toString().replace(/\s+/g, ' ').trim(),
-//             duplicate: false,
-//             exit: false
-//           };
-//         }
-
-//       });
-
-//       totalDataComing.forEach(data => {
-//         if (!data.contractId || data.contractId == "") {
-//           data.status = "Serial number/Asset ID/Contract number cannot be empty"
-//           data.exit = true
-//         }
-//         if (!data.lossDate || data.lossDate == "") {
-//           data.status = "Loss date cannot be empty"
-//           data.exit = true
-//         }
-
-//         if (!moment(data.lossDate).isValid()) {
-//           data.status = "Date is not valid format"
-//           data.exit = true
-//         }
-
-//         if (new Date(data.lossDate) > new Date()) {
-//           data.status = "Date can not greater than today"
-//           data.exit = true
-//         }
-//         data.lossDate = data.lossDate
-//         if (!data.diagnosis || data.diagnosis == "") {
-//           data.status = "Diagnosis can not be empty"
-//           data.exit = true
-//         }
-
-//       })
-
-//       let cache = {};
-
-//       totalDataComing.forEach((data, i) => {
-//         if (!data.exit) {
-//           if (cache[data.contractId?.toLowerCase()]) {
-//             data.status = "Duplicate contract id"
-//             data.exit = true;
-//           } else {
-//             cache[data.contractId?.toLowerCase()] = true;
-//           }
-//         }
-//       })
-
-//       //Check contract is exist or not using contract id
-//       const contractArrayPromise = totalDataComing.map(item => {
-//         if (!item.exit) return contractService.getContractById({
-//           $or: [
-//             { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
-//             { 'serial': { '$regex': item.contractId ? item.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//           ],
-//         });
-//         else {
-//           return null;
-//         }
-//       })
-
-
-//       // get contract with dealer,reseller, servicer 
-//       const contractArray = await Promise.all(contractArrayPromise);
-
-//       let servicerArray;
-
-//       //Check servicer is exist or not using contract id
-//       if (req.role == "Super Admin") {
-//         const servicerArrayPromise = totalDataComing.map(item => {
-//           if (!item.exit && item.servicerName != '') {
-//             const thename = item.servicerName;
-//             return servicerService.getServiceProviderById({
-//               "name":
-//                 { $regex: new RegExp("^" + thename.toLowerCase(), "i") }
-//             });
-//           }
-//           else {
-//             return null;
-//           }
-//         })
-//         servicerArray = await Promise.all(servicerArrayPromise);
-//       }
-
-//       const claimArray = await claimService.getClaims({
-//         claimFile: 'open'
-//       });
-
-//       // Get Contract with dealer, customer, reseller
-//       const contractAllDataPromise = totalDataComing.map(item => {
-//         if (!item.exit) {
-//           let query = [
-//             {
-//               $match: {
-//                 $and: [
-//                   {
-//                     $or: [
-//                       { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
-//                       { 'serial': { '$regex': item.contractId ? item.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//                     ],
-
-//                   },
-//                   { eligibilty: true }
-//                 ],
-//               },
-//             },
-//             {
-//               $lookup: {
-//                 from: "orders",
-//                 localField: "orderId",
-//                 foreignField: "_id",
-//                 as: "order",
-//                 pipeline: [
-//                   {
-//                     $lookup: {
-//                       from: "dealers",
-//                       localField: "dealerId",
-//                       foreignField: "_id",
-//                       as: "dealer",
-//                       pipeline: [
-//                         {
-//                           $lookup: {
-//                             from: "servicer_dealer_relations",
-//                             localField: "_id",
-//                             foreignField: "dealerId",
-//                             as: "dealerServicer",
-//                           }
-//                         },
-//                       ]
-//                     }
-//                   },
-//                   {
-//                     $lookup: {
-//                       from: "resellers",
-//                       localField: "resellerId",
-//                       foreignField: "_id",
-//                       as: "reseller",
-//                     }
-//                   },
-//                   {
-//                     $lookup: {
-//                       from: "customers",
-//                       localField: "customerId",
-//                       foreignField: "_id",
-//                       as: "customers"
-//                     }
-//                   },
-//                   {
-//                     $lookup: {
-//                       from: "serviceproviders",
-//                       localField: "servicerId",
-//                       foreignField: "_id",
-//                       as: "servicer",
-//                     }
-//                   },
-//                 ],
-//               },
-//             },
-//             {
-//               $match: match
-//             },
-//             {
-//               $project: {
-//                 orderId: 1,
-//                 "order.dealerId": 1,
-//                 "order.customerId": 1,
-//                 "order._id": 1,
-//                 "order.unique_key": 1,
-//                 "order.servicerId": 1,
-//                 "order.resellerId": 1,
-//                 "order.dealer": 1,
-//                 "order.reseller": 1,
-//                 "order.servicer": 1
-//               }
-//             },
-//             { $unwind: { path: "$order", preserveNullAndEmptyArrays: true } },
-//             { $unwind: { path: "$order.dealer", preserveNullAndEmptyArrays: true } },
-//             { $unwind: { path: "$order.reseller", preserveNullAndEmptyArrays: true } },
-//             { $unwind: { path: "$order.customers", preserveNullAndEmptyArrays: true } },
-//             { $unwind: { path: "$order.servicer", preserveNullAndEmptyArrays: true } },
-//             { $limit: 1 }
-//           ]
-//           return contractService.getAllContracts2(query)
-//         }
-//         else {
-//           return null;
-//         }
-//       })
-
-//       const contractAllDataArray = await Promise.all(contractAllDataPromise)
-
-//       //Filter data which is contract , servicer and not active
-//       totalDataComing.forEach((item, i) => {
-//         if (!item.exit) {
-//           const contractData = contractArray[i];
-//           const servicerData = servicerArray == undefined ? {} : servicerArray[i]
-//           const allDataArray = contractAllDataArray[i];
-//           const claimData = claimArray;
-//           let flag;
-//           item.contractData = contractData;
-//           item.servicerData = servicerData;
-//           item.orderData = allDataArray[0]
-//           if (!contractData || allDataArray.length == 0) {
-//             item.status = "Contract not found"
-//             item.exit = true;
-//           }
-//           if (contractData && new Date(contractData?.coverageStartDate) > new Date(item.lossDate)) {
-//             item.status = "Loss date should be in between coverage start date and present date!"
-//             item.exit = true;
-//           }
-//           if (allDataArray.length == 0 && item.contractId != '') {
-//             const filter = claimData.filter(claim => claim.contractId?.toString() === item.contractData._id?.toString())
-//             if (filter.length > 0) {
-//               item.status = "Claim is already open of this contract"
-//               item.exit = true;
-//             }
-//           }
-
-//           if (allDataArray.length > 0 && servicerData) {
-//             flag = false;
-//             if (allDataArray[0]?.order.dealer.dealerServicer.length > 0) {
-//               //Find Servicer with dealer Servicer
-//               const servicerCheck = allDataArray[0]?.order.dealer.dealerServicer.find(item => item.servicerId?.toString() === servicerData._id?.toString())
-//               if (servicerCheck) {
-//                 flag = true
-//               }
-//             }
-//             //Check dealer itself servicer
-//             if (allDataArray[0]?.order.dealer?.isServicer && allDataArray[0]?.order.dealer?.accountStatus && allDataArray[0]?.order.dealer._id?.toString() === servicerData.dealerId?.toString()) {
-//               flag = true
-//             }
-
-//             if (allDataArray[0]?.order.reseller?.isServicer && allDataArray[0]?.order.reseller?.status && allDataArray[0]?.order.reseller?._id.toString() === servicerData.resellerId?.toString()) {
-//               flag = true
-//             }
-//           }
-//           if ((item.servicerName != '' && !servicerData)) {
-//             flag = false
-//           }
-
-//           if ((!flag && flag != undefined && item.hasOwnProperty("servicerName"))) {
-//             item.status = "Servicer not found"
-//             item.exit = true;
-//           }
-//           if (contractData && contractData.status != "Active") {
-//             item.status = "Contract is not active";
-//             item.exit = true;
-//           }
-//         } else {
-//           item.contractData = null
-//           item.servicerData = null
-//         }
-//       })
-
-//       let finalArray = []
-//       //Save bulk claim
-//       let count = await claimService.getClaimCount();
-//       let unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
-
-//       //Update eligibility when contract is open
-
-//       const updateArrayPromise = totalDataComing.map(item => {
-//         if (!item.exit && item.contractData) return contractService.updateContract({ _id: item.contractData._id }, { eligibilty: false }, { new: true });
-//         else {
-//           return null;
-//         }
-//       })
-//       const updateArray = await Promise.all(updateArrayPromise);
-//       let existArray = {
-//         data: {}
-//       };
-//       let emailServicerId = [];
-//       totalDataComing.map((data, index) => {
-//         let servicerId = data.servicerData?._id
-//         if (data.servicerData?.dealerId) {
-//           servicerId = data.servicerData?.dealerId
-//         }
-//         if (data.servicerData?.resellerId) {
-//           servicerId = data.servicerData?.resellerId
-//         }
-//         // emailDealerId.push(data.orderData?.order?.dealerId);
-//         if (!data.exit) {
-//           let obj = {
-//             contractId: data.contractData._id,
-//             servicerId: servicerId,
-//             orderId: data.orderData?.order?.unique_key,
-//             dealerId: data.orderData?.order?.dealerId,
-//             resellerId: data.orderData?.order?.resellerId,
-//             dealerSku: data.contractData?.dealerSku,
-//             customerId: data.orderData?.order?.customerId,
-//             venderOrder: data.contractData.venderOrder,
-//             serial: data.contractData.serial,
-//             productName: data.contractData.productName,
-//             pName: data.contractData.pName,
-//             model: data.contractData.model,
-//             manufacture: data.contractData.manufacture,
-//             unique_key_number: unique_key_number,
-//             unique_key_search: "CC" + "2024" + unique_key_number,
-//             unique_key: "CC-" + "2024-" + unique_key_number,
-//             diagnosis: data.diagnosis,
-//             lossDate: data.lossDate,
-//             claimFile: 'open',
-//           }
-//           unique_key_number++
-//           finalArray.push(obj)
-//           data.status = 'Add claim successfully!'
-//         }
-
-//       })
-//       //save bulk claim
-//       const saveBulkClaim = await claimService.saveBulkClaim(finalArray)
-
-//       let IDs = await supportingFunction.getUserIds()
-//       let adminEmail = await supportingFunction.getUserEmails();
-//       let new_admin_array = adminEmail.concat(emailArray)
-//       let toMail = [];
-//       let ccMail;
-//       const csvArray = await Promise.all(totalDataComing.map(async (item, i) => {
-//         // Build bulk csv for dealer only 
-//         let servicerId = item.servicerData?._id
-//         if (item.servicerData?.dealerId) {
-//           servicerId = item.servicerData?.dealerId
-//         }
-//         if (item.servicerData?.resellerId) {
-//           servicerId = item.servicerData?.resellerId
-//         }
-//         if (req.role === 'Dealer') {
-//           const userId = req.userId;
-//           ccMail = new_admin_array;
-//           IDs.push(req.teammateId);
-//           let userData = await userService.getUserById1({ metaId: userId, isPrimary: true }, {});
-//           toMail = userData.email;
-//           if (req.userId.toString() === item.orderData?.order?.dealerId?.toString()) {
-//             // For servicer
-
-//             if (!existArray.data[servicerId] && servicerId != undefined) {
-//               emailServicerId.push(servicerId);
-//               existArray.data[servicerId] = [];
-//             }
-
-//             if (servicerId != undefined) {
-//               existArray.data[servicerId].push({
-//                 contractId: data.contractId ? data.contractId : "",
-//                 lossDate: data.lossDate ? data.lossDate : '',
-//                 diagnosis: data.diagnosis ? data.diagnosis : '',
-//                 status: data.status ? data.status : '',
-//               });
-//             }
-
-//             //get email of all servicer
-//             const emailServicer = await userService.getMembers({ metaId: { $in: emailServicerId }, isPrimary: true }, {})
-//             // If you need to convert existArray.data to a flat array format
-//             if (emailServicer.length > 0) {
-//               IDs = IDs.concat()
-//               let flatArray = [];
-//               for (let servicerId in existArray.data) {
-//                 let matchData = emailServicer.find(matchServicer => matchServicer.metaId.toString() === servicerId.toString());
-//                 let email = matchData ? matchData.email : ''; // Replace servicerId with email if matchData is found
-//                 flatArray.push({
-//                   email: email,
-//                   response: existArray.data[servicerId]
-//                 });
-//               }
-//               //send email to servicer      
-//               for (const item of flatArray) {
-//                 if (item.email != '') {
-//                   const htmlTableString = convertArrayToHTMLTable(item.response);
-//                   let mailing_servicer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
-//                 }
-
-//               }
-//             }
-//           }
-//           return {
-//             contractId: item.contractId || "",
-//             lossDate: item.lossDate || '',
-//             diagnosis: item.diagnosis || '',
-//             status: item.status || '',
-//           };
-//         }
-//         // Build bulk csv for Reseller only 
-//         else if (req.role === 'Reseller') {
-//           const userId = req.userId;
-//           // Get Reseller by id
-//           const reseller = await resellerService.getReseller({ _id: req.userId }, {});
-//           // Get dealer by id
-//           const dealer = await dealerService.getDealerById(reseller.dealerId, {});
-//           let resellerData = await userService.getUserById1({ metaId: userId, isPrimary: true }, {});
-//           // Get dealer info
-//           let dealerData = await userService.getUserById1({ metaId: dealer._id, isPrimary: true }, {});
-//           IDs.push(req.teammateId);
-//           IDs.push(dealerData._id);
-//           new_admin_array.push(dealerData.email);
-//           toMail = resellerData.email;
-//           ccMail = new_admin_array;
-//           if (req.userId.toString() === item.orderData?.order?.resellerId?.toString()) {
-//             // For servicer
-//             if (!existArray.data[servicerId] && servicerId != undefined) {
-//               emailServicerId.push(servicerId);
-//               existArray.data[servicerId] = [];
-//             }
-
-//             if (servicerId != undefined) {
-//               existArray.data[servicerId].push({
-//                 contractId: data.contractId ? data.contractId : "",
-//                 lossDate: data.lossDate ? data.lossDate : '',
-//                 diagnosis: data.diagnosis ? data.diagnosis : '',
-//                 status: data.status ? data.status : '',
-//               });
-//             }
-
-//             //get email of all servicer
-//             const emailServicer = await userService.getMembers({ metaId: { $in: emailServicerId }, isPrimary: true }, {})
-//             // If you need to convert existArray.data to a flat array format
-//             if (emailServicer.length > 0) {
-//               IDs = IDs.concat(emailServicerId)
-//               let flatArray = [];
-//               for (let servicerId in existArray.data) {
-//                 let matchData = emailServicer.find(matchServicer => matchServicer.metaId.toString() === servicerId.toString());
-//                 let email = matchData ? matchData.email : ''; // Replace servicerId with email if matchData is found
-//                 flatArray.push({
-//                   email: email,
-//                   response: existArray.data[servicerId]
-//                 });
-//               }
-//               //send email to servicer      
-//               for (const item of flatArray) {
-//                 if (item.email != '') {
-//                   const htmlTableString = convertArrayToHTMLTable(item.response);
-//                   let mailing_servicer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
-//                 }
-
-//               }
-//             }
-//           }
-//           return {
-//             contractId: item.contractId || "",
-//             lossDate: item.lossDate || '',
-//             diagnosis: item.diagnosis || '',
-//             status: item.status || '',
-//           };
-//         }
-//         // Build bulk csv for Customer only 
-//         else if (req.role === 'Customer') {
-//           const userId = req.userId;
-//           // Get customer
-//           const customer = await customerService.getCustomerById({ _id: req.userId });
-//           if (customer?.resellerId) {
-//             // Get Reseller by id
-//             const reseller = await resellerService.getReseller({ _id: customer.resellerId }, {});
-//             let resellerData = await userService.getUserById1({ metaId: reseller._id, isPrimary: true }, {});
-//             new_admin_array.push(resellerData.email);
-//             IDs.push(resellerData._id);
-//           }
-//           // Get dealer by customer
-//           const dealer = await dealerService.getDealerById(customer.dealerId, {});
-//           // Get dealer info
-//           let dealerData = await userService.getUserById1({ metaId: dealer._id, isPrimary: true }, {});
-//           // Get customer user info
-//           let userData = await userService.getUserById1({ metaId: userId, isPrimary: true }, {});
-//           new_admin_array.push(dealerData.email);
-//           toMail = userData.email;
-//           ccMail = new_admin_array;
-//           IDs.push(req.teammateId);
-//           IDs.push(dealerData._id);
-//           if (req.userId.toString() === item.orderData?.order?.customerId?.toString()) {
-//             // For servicer
-//             if (!existArray.data[servicerId] && servicerId != undefined) {
-//               emailServicerId.push(servicerId);
-//               existArray.data[servicerId] = [];
-//             }
-
-//             if (servicerId != undefined) {
-//               existArray.data[servicerId].push({
-//                 contractId: data.contractId ? data.contractId : "",
-//                 lossDate: data.lossDate ? data.lossDate : '',
-//                 diagnosis: data.diagnosis ? data.diagnosis : '',
-//                 status: data.status ? data.status : '',
-//               });
-//             }
-
-//             //get email of all servicer
-//             const emailServicer = await userService.getMembers({ metaId: { $in: emailServicerId }, isPrimary: true }, {})
-//             // If you need to convert existArray.data to a flat array format
-//             if (emailServicer.length > 0) {
-//               IDs = IDs.concat(emailServicerId)
-//               let flatArray = [];
-//               for (let servicerId in existArray.data) {
-//                 let matchData = emailServicer.find(matchServicer => matchServicer.metaId.toString() === servicerId.toString());
-//                 let email = matchData ? matchData.email : ''; // Replace servicerId with email if matchData is found
-//                 flatArray.push({
-//                   email: email,
-//                   response: existArray.data[servicerId]
-//                 });
-//               }
-//               //send email to servicer      
-//               for (const item of flatArray) {
-//                 if (item.email != '') {
-//                   const htmlTableString = convertArrayToHTMLTable(item.response);
-//                   let mailing_servicer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
-//                 }
-
-//               }
-//             }
-//           }
-//           return {
-//             contractId: item.contractId || "",
-//             lossDate: item.lossDate || '',
-//             diagnosis: item.diagnosis || '',
-//             status: item.status || '',
-//           };
-//         } else {
-//           toMail = new_admin_array;
-//           ccMail = ["noreply@getcover.com"];
-//           // For servicer
-//           if (!existArray.data[servicerId] && servicerId != undefined) {
-//             emailServicerId.push(servicerId);
-//             existArray.data[servicerId] = [];
-//           }
-
-//           if (servicerId != undefined) {
-//             existArray.data[servicerId].push({
-//               contractId: data.contractId ? data.contractId : "",
-//               lossDate: data.lossDate ? data.lossDate : '',
-//               diagnosis: data.diagnosis ? data.diagnosis : '',
-//               status: data.status ? data.status : '',
-//             });
-//           }
-
-//           //get email of all servicer
-//           const emailServicer = await userService.getMembers({ metaId: { $in: emailServicerId }, isPrimary: true }, {})
-//           // If you need to convert existArray.data to a flat array format
-//           if (emailServicer.length > 0) {
-//             IDs = IDs.concat(emailServicerId)
-//             let flatArray = [];
-//             for (let servicerId in existArray.data) {
-//               let matchData = emailServicer.find(matchServicer => matchServicer.metaId.toString() === servicerId.toString());
-//               let email = matchData ? matchData.email : ''; // Replace servicerId with email if matchData is found
-//               flatArray.push({
-//                 email: email,
-//                 response: existArray.data[servicerId]
-//               });
-//             }
-//             //send email to servicer      
-//             for (const item of flatArray) {
-//               if (item.email != '') {
-//                 const htmlTableString = convertArrayToHTMLTable(item.response);
-//                 let mailing_servicer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
-//               }
-
-//             }
-//           }
-//           return {
-//             contractId: item.contractId || "",
-//             servicerName: item.servicerName || "",
-//             lossDate: item.lossDate || '',
-//             diagnosis: item.diagnosis || '',
-//             status: item.status || '',
-//           };
-//         }
-//       }));
-
-//       //Convert Array to HTML table
-//       function convertArrayToHTMLTable(array) {
-//         const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');
-//         const rows = array.map(obj => {
-//           const values = Object.values(obj).map(value => `<td>${value}</td>`);
-//           values[2] = `${values[2]}`;
-//           return values.join('');
-//         });
-
-//         const htmlContent = `<html>
-//             <head>
-//                 <style>
-//                     table {
-//                         border-collapse: collapse;
-//                         width: 100%; 
-//                     }
-//                     th, td {
-//                         border: 1px solid #dddddd;
-//                         text-align: left;
-//                         padding: 8px;
-//                     }
-//                     th {
-//                         background-color: #f2f2f2;
-//                     }
-//                 </style>
-//             </head>
-//             <body>
-//                 <table>
-//                     <thead><tr>${header}</tr></thead>
-//                     <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
-//                 </table>
-//             </body>
-//         </html>`;
-
-//         return htmlContent;
-//       }
-
-//       const htmlTableString = convertArrayToHTMLTable(csvArray);
-//       //send Email to admin 
-//       let mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
-
-//       if (saveBulkClaim.length > 0) {
-//         let notificationData1 = {
-//           title: "Bulk Report",
-//           description: "The Bulk claim file has been registered!",
-//           userId: req.teammateId,
-//           flag: 'Bulk Claim',
-//           notificationFor: IDs
-//         };
-//         let createNotification = await userService.createNotification(notificationData1);
-//       }
-
-//       res.send({
-//         code: constant.successCode,
-//         message: 'Success!',
-//         result: saveBulkClaim
-//       })
-
-//     }
-//     catch (err) {
-//       res.send({
-//         code: constant.errorCode,
-//         message: err.message,
-//         message_line: err.stack
-//       })
-//     }
-//   })
-
-// }
-
+// Save bulk claim(21 oct 24)
 
 //Save bulk claim
+
 exports.saveBulkClaim = async (req, res) => {
   uploadP(req, res, async (err) => {
     try {
       let data = req.body
       let headerLength;
-      const bucketReadUrl = { Bucket: process.env.bucket_name, Key: req.files[0].key };
+      const bucketReadUrl = { Bucket: process.env.bucket_name, Key: req.file.key };
       // Await the getObjectFromS3 function to complete
       const result = await getObjectFromS3(bucketReadUrl);
 
@@ -2093,20 +1681,20 @@ exports.saveBulkClaim = async (req, res) => {
       // // Parse the email field
       const emailArray = JSON.parse(emailField);
 
-      let length = 4;
+      let length = 8;
       let match = {}
       if (req.role == 'Dealer') {
-        length = 3;
+        length = 7;
         match = { "order.dealer._id": new mongoose.Types.ObjectId(req.userId) }
       }
 
       if (req.role == 'Reseller') {
-        length = 3;
+        length = 7;
         match = { "order.reseller._id": new mongoose.Types.ObjectId(req.userId) }
       }
 
       if (req.role == 'Customer') {
-        length = 3;
+        length = 7;
         match = { "order.customers._id": new mongoose.Types.ObjectId(req.userId) }
       }
 
@@ -2122,27 +1710,38 @@ exports.saveBulkClaim = async (req, res) => {
 
       const totalDataComing1 = result.data;
 
+
       let totalDataComing = totalDataComing1.map((item, i) => {
         const keys = Object.keys(item);
-        let dateLoss = item[keys[2]]
         // Check if the "servicerName" header exists    
-        if (keys.length > 3) {
-          let dateLoss = item[keys[2]]
+        if (keys.length == 8) {
+          let coverageType = item[keys[4]]
+          let dateLoss1 = item[keys[2]]
           return {
             contractId: item[keys[0]],
             servicerName: item[keys[1]],
-            lossDate: dateLoss.toString(),
+            lossDate: dateLoss1.toString(),
             diagnosis: item[keys[3]],
+            coverageType: coverageType,
+            issue: item[keys[5]],
+            userEmail: item[keys[6]],
+            shippingTo: item[keys[7]],
             duplicate: false,
             exit: false
           };
         } else {
-          let dateLoss = item[keys[1]]
+          let coverageType = item[keys[3]]
+          let dateLoss2 = item[keys[1]]
           // If "servicerName" does not exist, shift the second item to "lossDate"
           return {
             contractId: item[keys[0]],
-            lossDate: dateLoss.toString(),
+            servicerName: '',
+            lossDate: dateLoss2.toString(),
             diagnosis: item[keys[2]],  // Assuming diagnosis is now at index 2
+            coverageType: coverageType,
+            issue: item[keys[4]],
+            userEmail: item[keys[5]],
+            shippingTo: item[keys[6]],
             duplicate: false,
             exit: false
           };
@@ -2157,14 +1756,49 @@ exports.saveBulkClaim = async (req, res) => {
         });
         return;
       }
+      for (let u = 0; u < totalDataComing.length; u++) {
+        let objectToCheck = totalDataComing[u]
+        if (objectToCheck.servicerName == '' || objectToCheck.servicerName == null) {
+          let getContractDetail = await contractService.getContractById({
+            $and: [
+              {
+                $or: [
+                  { unique_key: { '$regex': objectToCheck.contractId ? objectToCheck.contractId : '', '$options': 'i' } },
+                  { 'serial': { '$regex': objectToCheck.contractId ? objectToCheck.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                ],
+
+              },
+              { eligibilty: true }
+            ],
+
+          });
+          let getOrderDetail = await orderService.getOrder({ _id: getContractDetail?.orderId })
+          if (getOrderDetail?.servicerId != null) {
+            let getServiceData = await servicerService.getServicerByName({
+              $or: [
+                { _id: getOrderDetail.servicerId },
+                { dealerId: getOrderDetail.servicerId },
+                { resellerId: getOrderDetail.servicerId },
+              ]
+            })
+            totalDataComing[u].servicerName = getServiceData.name
+          }
+        }
+
+      }
+
 
       totalDataComing = totalDataComing.map((item, i) => {
         if (item.hasOwnProperty("servicerName")) {
           return {
             contractId: item.contractId?.toString().replace(/\s+/g, ' ').trim(),
             servicerName: item.servicerName?.toString().replace(/\s+/g, ' ').trim(),
+            coverageType: item.coverageType?.toString().replace(/\s+/g, ' ').trim(),
             lossDate: item.lossDate?.toString().replace(/\s+/g, ' ').trim(),
             diagnosis: item.diagnosis?.toString().replace(/\s+/g, ' ').trim(),
+            issue: item.issue?.toString().replace(/\s+/g, ' ').trim(),
+            userEmail: item.userEmail?.toString().replace(/\s+/g, ' ').trim(),
+            shippingTo: item.shippingTo?.toString().replace(/\s+/g, ' ').trim(),
             duplicate: false,
             exit: false
           };
@@ -2173,7 +1807,12 @@ exports.saveBulkClaim = async (req, res) => {
           return {
             contractId: item.contractId?.toString().replace(/\s+/g, ' ').trim(),
             lossDate: item.lossDate?.toString().replace(/\s+/g, ' ').trim(),
+            servicerName: item.servicerName?.toString().replace(/\s+/g, ' ').trim(),
+            coverageType: item.coverageType?.toString().replace(/\s+/g, ' ').trim(),
             diagnosis: item.diagnosis?.toString().replace(/\s+/g, ' ').trim(),
+            issue: item.issue?.toString().replace(/\s+/g, ' ').trim(),
+            userEmail: item.userEmail?.toString().replace(/\s+/g, ' ').trim(),
+            shippingTo: item.shippingTo?.toString().replace(/\s+/g, ' ').trim(),
             duplicate: false,
             exit: false
           };
@@ -2181,6 +1820,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       });
 
+      let cache = {};
       totalDataComing.forEach(data => {
         if (!data.contractId || data.contractId == "") {
           data.status = "Serial number/Asset ID/Contract number cannot be empty"
@@ -2208,12 +1848,12 @@ exports.saveBulkClaim = async (req, res) => {
 
       })
 
-      let cache = {};
 
+      //check duplicasy of the contract id
       totalDataComing.forEach((data, i) => {
         if (!data.exit) {
           if (cache[data.contractId?.toLowerCase()]) {
-            data.status = "Duplicate contract id"
+            data.status = "Duplicate contract id/serial number"
             data.exit = true;
           } else {
             cache[data.contractId?.toLowerCase()] = true;
@@ -2265,7 +1905,7 @@ exports.saveBulkClaim = async (req, res) => {
       }
 
       const claimArray = await claimService.getClaims({
-        claimFile: 'Open'
+        claimFile: 'open'
       });
 
       // Get Contract with dealer, customer, reseller
@@ -2351,7 +1991,9 @@ exports.saveBulkClaim = async (req, res) => {
                 "order.unique_key": 1,
                 "order.servicerId": 1,
                 "order.resellerId": 1,
+                "order.customers": 1,
                 "order.dealer": 1,
+                "order.customers": 1,
                 "order.reseller": 1,
                 "order.servicer": 1
               }
@@ -2370,19 +2012,19 @@ exports.saveBulkClaim = async (req, res) => {
         }
       })
 
+
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
-
-
-
+      let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {
         if (!item.exit) {
           const contractData = contractArray[i];
-          const servicerData = servicerArray == undefined ? {} : servicerArray[i]
           const allDataArray = contractAllDataArray[i];
           const claimData = claimArray;
+          const servicerData = servicerArray == undefined || servicerArray == null ? allDataArray[0]?.order?.servicer : servicerArray[i]
           let flag;
           item.contractData = contractData;
+          item.claimType = ''
           item.servicerData = servicerData;
           item.orderData = allDataArray[0]
 
@@ -2390,40 +2032,88 @@ exports.saveBulkClaim = async (req, res) => {
             item.status = "Contract not found"
             item.exit = true;
           }
-          if (contractData && new Date(contractData?.coverageStartDate) > new Date(item.lossDate)) {
+          if (item.coverageType) {
+            if (item.coverageType != null || item.coverageType != "") {
+              if (contractData) {
+                let checkCoverageTypeForContract = contractData?.coverageType.find(item1 => item1.label == item?.coverageType)
+                if (!checkCoverageTypeForContract) {
+                  item.status = "Coverage type is not available for this contract!";
+                  item.exit = true;
+                }
+                const checkCoverageValue = getCoverageTypeFromOption.value.filter(option => option.label === item?.coverageType).map(item1 => item1.value);
+                let startDateToCheck = new Date(contractData.coverageStartDate)
+                let coverageTypeDays = contractData?.adhDays
+                let getDeductible = coverageTypeDays?.filter(coverageType => coverageType.value == checkCoverageValue[0])
+
+                let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0]?.waitingDays))
+                checkCoverageTypeDate = new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0)
+                let checkLossDate = new Date(item.lossDate).setHours(0, 0, 0, 0)
+                const result = getCoverageTypeFromOption?.value.filter(option => option.label === item?.coverageType).map(item1 => item1.label);
+
+                if (new Date(checkCoverageTypeDate) > new Date(checkLossDate)) {
+                  item.status = `Claim not eligible for ${result[0]}.`
+                  item.exit = true;
+                }
+                item.claimType = checkCoverageValue[0]
+              }
+
+
+            }
+          }
+          // check login email
+          if (item.userEmail != '') {
+            item.submittedBy = item.userEmail
+            if (item.userEmail != req.email) {
+              item.status = "Invalid Email"
+              item.exit = true;
+            }
+          }
+          // check Shipping address
+          if (item.shippingTo != '') {
+            if (allDataArray[0]?.order.customers) {
+              let shipingAddress = item.shippingTo.split(',');   // Split the string by commas
+              let userZip = shipingAddress[shipingAddress.length - 1];
+              let addresses = allDataArray[0]?.order.customers.addresses
+              const validAddress = addresses.find(address => address.zip != userZip)
+              if (!validAddress) {
+                item.status = "Invalid user address!"
+                item.exit = true;
+              }
+            }
+            item.shippingTo = item.shippingTo
+          }
+          let checkCoverageStartDate = new Date(contractData?.coverageStartDate).setHours(0, 0, 0, 0)
+          if (contractData && new Date(checkCoverageStartDate) > new Date(item.lossDate)) {
             item.status = "Loss date should be in between coverage start date and present date!"
             item.exit = true;
           }
-          // if (allDataArray.length == 0 && item.contractId != '') {
-          //   const filter = claimData.filter(claim => claim.contractId?.toString() === item.contractData._id?.toString())
-          //   if (filter.length > 0) {
-          //     item.status = "Claim is already open of this contract"
-          //     item.exit = true;
-          //   }
-          // }
+
 
           if (allDataArray.length > 0 && servicerData) {
+
             flag = false;
             if (allDataArray[0]?.order.dealer.dealerServicer.length > 0) {
               //Find Servicer with dealer Servicer
               const servicerCheck = allDataArray[0]?.order.dealer.dealerServicer.find(item => item.servicerId?.toString() === servicerData._id?.toString())
               if (servicerCheck) {
+
                 flag = true
               }
             }
             //Check dealer itself servicer
             if (allDataArray[0]?.order.dealer?.isServicer && allDataArray[0]?.order.dealer?.accountStatus && allDataArray[0]?.order.dealer._id?.toString() === servicerData.dealerId?.toString()) {
+
               flag = true
             }
 
             if (allDataArray[0]?.order.reseller?.isServicer && allDataArray[0]?.order.reseller?.status && allDataArray[0]?.order.reseller?._id.toString() === servicerData.resellerId?.toString()) {
+
               flag = true
             }
           }
           if ((item.servicerName != '' && !servicerData)) {
             flag = false
           }
-
           if ((!flag && flag != undefined && item.hasOwnProperty("servicerName"))) {
             item.status = "Servicer not found"
           }
@@ -2431,11 +2121,13 @@ exports.saveBulkClaim = async (req, res) => {
             item.status = "Contract is not active";
             item.exit = true;
           }
+
         } else {
           item.contractData = null
           item.servicerData = null
         }
       })
+
 
       let finalArray = []
       //Save bulk claim
@@ -2455,6 +2147,8 @@ exports.saveBulkClaim = async (req, res) => {
         data: {}
       };
       let emailServicerId = [];
+
+
       totalDataComing.map((data, index) => {
         let servicerId = data.servicerData?._id
         if (data.servicerData?.dealerId) {
@@ -2467,11 +2161,14 @@ exports.saveBulkClaim = async (req, res) => {
         if (!data.exit) {
           let obj = {
             contractId: data.contractData._id,
-            servicerId: servicerId,
             orderId: data.orderData?.order?.unique_key,
+            servicerId: data?.claimType == "theft_and_lost" ? null : servicerId,
             dealerId: data.orderData?.order?.dealerId,
+            claimType: data?.claimType,
             resellerId: data.orderData?.order?.resellerId,
             dealerSku: data.contractData?.dealerSku,
+            submittedBy: data?.submittedBy,
+            shippingTo: data?.shippingTo,
             customerId: data.orderData?.order?.customerId,
             venderOrder: data.contractData.venderOrder,
             serial: data.contractData.serial,
@@ -2484,7 +2181,7 @@ exports.saveBulkClaim = async (req, res) => {
             unique_key: "CC-" + "2024-" + unique_key_number,
             diagnosis: data.diagnosis,
             lossDate: data.lossDate,
-            claimFile: 'Open',
+            claimFile: 'open',
           }
           unique_key_number++
           finalArray.push(obj)
@@ -2498,10 +2195,67 @@ exports.saveBulkClaim = async (req, res) => {
       let IDs = await supportingFunction.getUserIds()
       let adminEmail = await supportingFunction.getUserEmails();
       let new_admin_array = adminEmail.concat(emailArray)
+      //  let new_admin_array = adminEmail
       let toMail = [];
       let ccMail;
+
+
+      const userId = req.userId;
+      // Get Reseller by id
+      if (req.role == "Reseller") {
+        const reseller = await resellerService.getReseller({ _id: req.userId }, {});
+        // Get dealer by id
+        const dealer = await dealerService.getDealerById(reseller.dealerId, {});
+        let resellerData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: userId, isPrimary: true } } }, {});
+        // Get dealer info
+        let dealerData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: dealer._id, isPrimary: true } } }, {});
+        new_admin_array.push(dealerData?.email);
+        IDs.push(req.teammateId);
+        IDs.push(dealerData._id);
+      }
+      if (req.role == "Customer") {
+        const userId = req.userId;
+        // Get customer
+        const customer = await customerService.getCustomerById({ _id: req.userId });
+        if (customer?.resellerId) {
+          // Get Reseller by id
+          const reseller = await resellerService.getReseller({ _id: customer.resellerId }, {});
+          var resellerData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: reseller._id, isPrimary: true } } }, {});
+          new_admin_array.push(resellerData?.email);
+          IDs.push(resellerData?._id);
+        }
+        // Get dealer by customer
+        const dealer = await dealerService.getDealerById(customer.dealerId, {});
+        // Get dealer info
+        let dealerData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: dealer._id, isPrimary: true } } }, {});
+
+        // Get customer user info
+        var userData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: userId, isPrimary: true } } }, {});
+
+        new_admin_array.push(dealerData.email);
+        IDs.push(req.teammateId);
+        IDs.push(dealerData._id);
+      }
+
+      //Get Fail and Passes Entries
+      const counts = totalDataComing.reduce((acc, obj) => {
+        // Increment the count of true or false based on the value of exit
+        if (obj.exit) {
+          acc.trueCount += 1;
+        } else {
+          acc.falseCount += 1;
+        }
+        return acc;
+      }, { trueCount: 0, falseCount: 0 });
+
       const csvArray = await Promise.all(totalDataComing.map(async (item, i) => {
         // Build bulk csv for dealer only
+        let localDateString = new Date(item.lossDate)
+        let formattedDate = localDateString.toLocaleDateString("en-US", {
+          month: "2-digit",
+          day: "2-digit",
+          year: "numeric"
+        })
         let servicerId = item.servicerData?._id
         if (item.servicerData?.dealerId) {
           servicerId = item.servicerData?.dealerId
@@ -2513,248 +2267,170 @@ exports.saveBulkClaim = async (req, res) => {
           const userId = req.userId;
           ccMail = new_admin_array;
           IDs.push(req.teammateId);
-          let userData = await userService.getUserById1({ metaId: userId, isPrimary: true }, {});
+          let userData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: userId, isPrimary: true } } }, {});
           toMail = userData.email;
           if (req.userId.toString() === item.orderData?.order?.dealerId?.toString()) {
             // For servicer
-
-            if (!existArray.data[servicerId] && servicerId != undefined) {
+            if (!existArray.data[servicerId] && servicerId != undefined && !item.exit && item?.claimType != "theft_and_lost") {
               emailServicerId.push(servicerId);
               existArray.data[servicerId] = [];
             }
 
-            if (servicerId != undefined) {
+            if (servicerId != undefined && !item.exit && item?.claimType != "theft_and_lost") {
               existArray.data[servicerId].push({
-                contractId: data.contractId ? data.contractId : "",
-                lossDate: data.lossDate ? data.lossDate : '',
-                diagnosis: data.diagnosis ? data.diagnosis : '',
-                status: data.status ? data.status : '',
+                "Contract# / Serial#": item.contractId ? item.contractId : "",
+                "Loss Date": item.lossDate ? formattedDate : '',
+                Diagnosis: item.diagnosis ? item.diagnosis : '',
+                "Coverage Type": item.coverageType ? item.coverageType : '',
               });
             }
 
-            //get email of all servicer
-            const emailServicer = await userService.getMembers({ metaId: { $in: emailServicerId }, isPrimary: true }, {})
-            // If you need to convert existArray.data to a flat array format
-            if (emailServicer.length > 0) {
-              IDs = IDs.concat()
-              let flatArray = [];
-              for (let servicerId in existArray.data) {
-                let matchData = emailServicer.find(matchServicer => matchServicer.metaId.toString() === servicerId.toString());
-                let email = matchData ? matchData.email : ''; // Replace servicerId with email if matchData is found
-                flatArray.push({
-                  email: email,
-                  response: existArray.data[servicerId]
-                });
-              }
-              //send email to servicer      
-              for (const item of flatArray) {
-                if (item.email != '') {
-                  const htmlTableString = convertArrayToHTMLTable(item.response);
-                  let mailing_servicer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
-                }
-
-              }
-            }
           }
           return {
-            contractId: item.contractId || "",
-            lossDate: item.lossDate || '',
-            diagnosis: item.diagnosis || '',
-            status: item.status || '',
+            "Contract#/Serial#": item.contractId ? item.contractId : "",
+            "Loss Date": item.lossDate ? formattedDate : '',
+            Diagnosis: item.diagnosis ? item.diagnosis : '',
+            "Coverage Type": item.coverageType ? item.coverageType : '',
+            Status: item.status ? item.status : '',
+            exit: item.exit
           };
         }
         // Build bulk csv for Reseller only
         else if (req.role === 'Reseller') {
-          const userId = req.userId;
-          // Get Reseller by id
-          const reseller = await resellerService.getReseller({ _id: req.userId }, {});
-          // Get dealer by id
-          const dealer = await dealerService.getDealerById(reseller.dealerId, {});
-          let resellerData = await userService.getUserById1({ metaId: userId, isPrimary: true }, {});
-          // Get dealer info
-          let dealerData = await userService.getUserById1({ metaId: dealer._id, isPrimary: true }, {});
-          IDs.push(req.teammateId);
-          IDs.push(dealerData._id);
-          new_admin_array.push(dealerData.email);
+
           toMail = resellerData.email;
           ccMail = new_admin_array;
           if (req.userId.toString() === item.orderData?.order?.resellerId?.toString()) {
             // For servicer
-            if (!existArray.data[servicerId] && servicerId != undefined) {
+            if (!existArray.data[servicerId] && servicerId != undefined && !item.exit && item?.claimType != "theft_and_lost") {
               emailServicerId.push(servicerId);
               existArray.data[servicerId] = [];
             }
 
-            if (servicerId != undefined) {
+            if (servicerId != undefined && !item.exit && item?.claimType != "theft_and_lost") {
               existArray.data[servicerId].push({
-                contractId: data.contractId ? data.contractId : "",
-                lossDate: data.lossDate ? data.lossDate : '',
-                diagnosis: data.diagnosis ? data.diagnosis : '',
-                status: data.status ? data.status : '',
+                "Contract# / Serial#": item.contractId ? item.contractId : "",
+                "Loss Date": item.lossDate ? formattedDate : '',
+                Diagnosis: item.diagnosis ? item.diagnosis : '',
+                "Coverage Type": item.coverageType ? item.coverageType : '',
+
               });
             }
 
-            //get email of all servicer
-            const emailServicer = await userService.getMembers({ metaId: { $in: emailServicerId }, isPrimary: true }, {})
-            // If you need to convert existArray.data to a flat array format
-            if (emailServicer.length > 0) {
-              IDs = IDs.concat(emailServicerId)
-              let flatArray = [];
-              for (let servicerId in existArray.data) {
-                let matchData = emailServicer.find(matchServicer => matchServicer.metaId.toString() === servicerId.toString());
-                let email = matchData ? matchData.email : ''; // Replace servicerId with email if matchData is found
-                flatArray.push({
-                  email: email,
-                  response: existArray.data[servicerId]
-                });
-              }
-              //send email to servicer      
-              for (const item of flatArray) {
-                if (item.email != '') {
-                  const htmlTableString = convertArrayToHTMLTable(item.response);
-                  let mailing_servicer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
-                }
-
-              }
-            }
           }
           return {
-            contractId: item.contractId || "",
-            lossDate: item.lossDate || '',
-            diagnosis: item.diagnosis || '',
-            status: item.status || '',
+            "Contract# / Serial#": item.contractId ? item.contractId : "",
+            "Loss Date": item.lossDate ? formattedDate : '',
+            Diagnosis: item.diagnosis ? item.diagnosis : '',
+            "Coverage Type": item.coverageType ? item.coverageType : '',
+            Status: item.status ? item.status : '',
+            exit: item.exit
           };
         }
         // Build bulk csv for Customer only
         else if (req.role === 'Customer') {
-          const userId = req.userId;
-          // Get customer
-          const customer = await customerService.getCustomerById({ _id: req.userId });
-          if (customer?.resellerId) {
-            // Get Reseller by id
-            const reseller = await resellerService.getReseller({ _id: customer.resellerId }, {});
-            let resellerData = await userService.getUserById1({ metaId: reseller._id, isPrimary: true }, {});
-            new_admin_array.push(resellerData.email);
-            IDs.push(resellerData._id);
-          }
-          // Get dealer by customer
-          const dealer = await dealerService.getDealerById(customer.dealerId, {});
-          // Get dealer info
-          let dealerData = await userService.getUserById1({ metaId: dealer._id, isPrimary: true }, {});
-          // Get customer user info
-          let userData = await userService.getUserById1({ metaId: userId, isPrimary: true }, {});
-          new_admin_array.push(dealerData.email);
+
           toMail = userData.email;
           ccMail = new_admin_array;
-          IDs.push(req.teammateId);
-          IDs.push(dealerData._id);
+
           if (req.userId.toString() === item.orderData?.order?.customerId?.toString()) {
             // For servicer
-            if (!existArray.data[servicerId] && servicerId != undefined) {
+            if (!existArray.data[servicerId] && servicerId != undefined && !item.exit && item?.claimType != "theft_and_lost") {
               emailServicerId.push(servicerId);
               existArray.data[servicerId] = [];
             }
 
-            if (servicerId != undefined) {
+            if (servicerId != undefined && !item.exit && item?.claimType != "theft_and_lost") {
               existArray.data[servicerId].push({
-                contractId: data.contractId ? data.contractId : "",
-                lossDate: data.lossDate ? data.lossDate : '',
-                diagnosis: data.diagnosis ? data.diagnosis : '',
-                status: data.status ? data.status : '',
+                "Contract# / Serial#": item.contractId ? item.contractId : "",
+                "Loss Date": item.lossDate ? formattedDate : '',
+                Diagnosis: item.diagnosis ? item.diagnosis : '',
+                "Coverage Type": item.coverageType ? item.coverageType : '',
+
               });
             }
 
-            //get email of all servicer
-            const emailServicer = await userService.getMembers({ metaId: { $in: emailServicerId }, isPrimary: true }, {})
-            // If you need to convert existArray.data to a flat array format
-            if (emailServicer.length > 0) {
-              IDs = IDs.concat(emailServicerId)
-              let flatArray = [];
-              for (let servicerId in existArray.data) {
-                let matchData = emailServicer.find(matchServicer => matchServicer.metaId.toString() === servicerId.toString());
-                let email = matchData ? matchData.email : ''; // Replace servicerId with email if matchData is found
-                flatArray.push({
-                  email: email,
-                  response: existArray.data[servicerId]
-                });
-              }
-              //send email to servicer      
-              for (const item of flatArray) {
-                if (item.email != '') {
-                  const htmlTableString = convertArrayToHTMLTable(item.response);
-                  let mailing_servicer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
-                }
-
-              }
-            }
           }
           return {
-            contractId: item.contractId || "",
-            lossDate: item.lossDate || '',
-            diagnosis: item.diagnosis || '',
-            status: item.status || '',
+            "Contract# / Serial#": item.contractId ? item.contractId : "",
+            "Loss Date": item.lossDate ? formattedDate : '',
+            Diagnosis: item.diagnosis ? item.diagnosis : '',
+            "Coverage Type": item.coverageType ? item.coverageType : '',
+            Status: item.status ? item.status : '',
+            exit: item.exit
           };
         } else {
           toMail = new_admin_array;
           ccMail = ["noreply@getcover.com"];
           // For servicer
-          if (!existArray.data[servicerId] && servicerId != undefined) {
+          if (!existArray.data[servicerId] && servicerId != undefined && !item.exit && item?.claimType != "theft_and_lost") {
             emailServicerId.push(servicerId);
             existArray.data[servicerId] = [];
           }
 
-          if (servicerId != undefined) {
+          if (servicerId != undefined && !item.exit && item?.claimType != "theft_and_lost") {
             existArray.data[servicerId].push({
-              contractId: data.contractId ? data.contractId : "",
-              lossDate: data.lossDate ? data.lossDate : '',
-              diagnosis: data.diagnosis ? data.diagnosis : '',
-              status: data.status ? data.status : '',
+              "Contract# / Serial#": item.contractId ? item.contractId : "",
+              "Loss Date": item.lossDate ? formattedDate : '',
+              Diagnosis: item.diagnosis ? item.diagnosis : '',
+              "Coverage Type": item.coverageType ? item.coverageType : '',
+
             });
           }
 
-          //get email of all servicer
-          const emailServicer = await userService.getMembers({ metaId: { $in: emailServicerId }, isPrimary: true }, {})
-          // If you need to convert existArray.data to a flat array format
-          if (emailServicer.length > 0) {
-            IDs = IDs.concat(emailServicerId)
-            let flatArray = [];
-            for (let servicerId in existArray.data) {
-              let matchData = emailServicer.find(matchServicer => matchServicer.metaId.toString() === servicerId.toString());
-              let email = matchData ? matchData.email : ''; // Replace servicerId with email if matchData is found
-              flatArray.push({
-                email: email,
-                response: existArray.data[servicerId]
-              });
-            }
-            //send email to servicer      
-            for (const item of flatArray) {
-              if (item.email != '') {
-                const htmlTableString = convertArrayToHTMLTable(item.response);
-                let mailing_servicer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
-              }
-
-            }
-          }
           return {
-            contractId: item.contractId || "",
-            servicerName: item.servicerName || "",
-            lossDate: item.lossDate || '',
-            diagnosis: item.diagnosis || '',
-            status: item.status || '',
+            "Contract# / Serial#": item.contractId ? item.contractId : "",
+            Servicer: item.servicerName || "",
+            "Loss Date": item.lossDate ? formattedDate : '',
+            Diagnosis: item.diagnosis ? item.diagnosis : '',
+            "Coverage Type": item.coverageType ? item.coverageType : '',
+            Status: item.status ? item.status : '',
+            exit: item.exit
           };
         }
       }));
 
-      //Convert Array to HTML table
-      function convertArrayToHTMLTable(array) {
-        const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');
-        const rows = array.map(obj => {
-          const values = Object.values(obj).map(value => `<td>${value}</td>`);
-          values[2] = `${values[2]}`;
-          return values.join('');
-        });
 
-        const htmlContent = `<html>
+      //get email of all servicer
+      let emailServicer = await userService.getMembers({ metaData: { $elemMatch: { metaId: { $in: emailServicerId }, isPrimary: true } } }, {});
+      // If you need to convert existArray.data to a flat array format
+      if (emailServicer.length > 0) {
+        IDs = IDs.concat(emailServicerId)
+        let flatArray = [];
+        for (let servicerId in existArray.data) {
+          let matchData = emailServicer.find(matchServicer => matchServicer.metaId.toString() === servicerId.toString());
+          let email = matchData ? matchData.email : ''; // Replace servicerId with email if matchData is found
+          flatArray.push({
+            email: email,
+            response: existArray.data[servicerId]
+          });
+        }
+        //send email to servicer      
+        for (const item of flatArray) {
+          if (item.email != '') {
+            const htmlTableString = convertArrayToHTMLTable(item.response, []);
+            let mailing_servicer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
+          }
+
+        }
+      }
+
+      //Convert Array to HTML table
+      function convertArrayToHTMLTable(array, array1) {
+        var htmlContent = '';
+        if (array.length > 0) {
+          const header = Object.keys(array[0]).filter(key => key !== 'exit').map(key => `<th>${key}</th>`).join('');
+          const rows = array.map(obj => {
+            const values = Object.entries(obj)
+              .filter(([key]) => key !== 'exit')  // Exclude 'exit' key
+              .map(([, value]) => `<td>${value}</td>`);
+
+            values[2] = `${values[2]}`; // Keep this line if you have specific logic for this index
+            return values.join('');
+          });
+
+          htmlContent += `
+          <html>
             <head>
                 <style>
                     table {
@@ -2770,22 +2446,132 @@ exports.saveBulkClaim = async (req, res) => {
                         background-color: #f2f2f2;
                     }
                 </style>
-            </head>
+            </head>         
             <body>
                 <table>
                     <thead><tr>${header}</tr></thead>
                     <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
                 </table>
             </body>
-        </html>`;
+          </html>`;
+        }
+
+        if (array1.length > 0) {
+          const header = Object.keys(array1[0]).filter(key => key !== 'exit').map(key => `<th>${key}</th>`).join('');
+
+          const rows = array1.map(obj => {
+            const values = Object.entries(obj)
+              .filter(([key]) => key !== 'exit')  // Exclude 'exit' key
+              .map(([, value]) => `<td>${value}</td>`);
+
+            values[2] = `${values[2]}`; // Keep this line if you have specific logic for this index
+            return values.join('');
+          });
+
+          htmlContent += `
+          <html>
+            <head>
+                <style>
+                    table {
+                        border-collapse: collapse;
+                        width: 100%;
+                    }
+                    th, td {
+                        border: 1px solid #dddddd;
+                        text-align: left;
+                        padding: 8px;
+                    }
+                    th {
+                        background-color: #f2f2f2;
+                    }
+                </style>
+            </head>         
+            <body>
+                <table>
+                <tr>
+                <td colspan="2" style="text-align:center">Total claims: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</td>
+                </tr>
+                <tr>
+                    <td span="1" style="text-align:center">Failure claims: ${counts.trueCount}</td>
+                    <td span="1" style="text-align:center">Successful added claims: ${counts.falseCount}</td>
+                </tr>
+                </table>
+                <table>
+                    <thead><tr>${header}</tr></thead>
+                    <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
+                </table>
+            </body>
+          </html>`;
+        }
 
         return htmlContent;
+
       }
 
-      const htmlTableString = convertArrayToHTMLTable(csvArray);
-      //send Email to admin
-      let mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
+      //Get Failure Claims 
+      const successEntries = csvArray.filter(entry => entry.exit === false);
+      const failureEntries = csvArray.filter(entry => entry.exit === true);
 
+      let mailing;
+      let htmlTableString;
+      // Send Email notification for all roles user
+      if (req.role == "Dealer") {
+        htmlTableString = convertArrayToHTMLTable([], failureEntries);
+        mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
+      }
+      if (req.role == "Reseller") {
+        htmlTableString = convertArrayToHTMLTable([], failureEntries);
+        mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
+      }
+      if (req.role == "Customer") {
+        htmlTableString = convertArrayToHTMLTable([], failureEntries);
+        mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
+      }
+      //send Email to admin
+      if (req.role == "Super Admin") {
+        if (failureEntries.length > 0) {
+          console.log("sdadasdasdasd")
+          htmlTableString = convertArrayToHTMLTable([], failureEntries);
+          mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
+        }
+
+        else {
+          let htmlContent = `
+          <html>
+            <head>
+                <style>
+                    table {
+                        border-collapse: collapse;
+                        width: 100%;
+                    }
+                    th, td {
+                        border: 1px solid #dddddd;
+                        text-align: left;
+                        padding: 8px;
+                    }
+                    th {
+                        background-color: #f2f2f2;
+                    }
+                </style>
+            </head>         
+            <body>
+                <table>
+                <tr>
+                <td colspan="2" style="text-align:center">Total filed claims: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</td>
+                </tr>
+                <tr>
+                    <td span="1" style="text-align:center">Failure claims: ${counts.trueCount}</td>
+                    <td span="1" style="text-align:center">Successful added claims: ${counts.falseCount}</td>
+                </tr>
+                </table>
+            </body>
+          </html>`;
+          //htmlTableString = convertArrayToHTMLTable([], failureEntries);
+          mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlContent));
+        }
+
+
+      }
       if (saveBulkClaim.length > 0) {
         let notificationData1 = {
           title: "Bulk Report",
@@ -2814,6 +2600,7 @@ exports.saveBulkClaim = async (req, res) => {
   })
 
 }
+
 
 
 
@@ -2918,7 +2705,7 @@ exports.sendMessages = async (req, res) => {
     IDs.push(dealerPrimary._id)
 
     let notificationData1 = {
-      title: "Message sent",
+      title: "New message for claim # :" + checkClaim.unique_key + "",
       description: "The one new message for " + checkClaim.unique_key + "",
       userId: req.teammateId,
       contentId: checkClaim._id,
@@ -2931,19 +2718,23 @@ exports.sendMessages = async (req, res) => {
 
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
-
+    const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
     // notificationEmails.push(emailTo.email);
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: emailTo?.metaData[0]?.firstName,
-      content: "The new message for " + checkClaim.unique_key + " claim",
-      subject: "New Message"
+      commentBy: "Amit",
+      date: new Date().toLocaleDateString("en-US"),
+      senderName: emailTo?.metaData[0].firstName,
+      comment: data.content,
+      content: `A new comment has been added to Claim #-${checkClaim.unique_key}. Here are the details:`,
+      subject: "New message for claim # :" + checkClaim.unique_key + "",
+      redirectId: base_url
     }
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(emailTo ? emailTo?.email : process.env.servicerEmail, notificationEmails, emailData))
+    let mailing = sgMail.send(emailConstant.sendCommentNotification(emailTo?.email, notificationEmails, emailData))
     res.send({
       code: constant.successCode,
       messages: 'Message Sent!',
@@ -2973,7 +2764,6 @@ exports.sendMessages = async (req, res) => {
 //Automatic completed when servicer shipped after 7 days cron job
 exports.statusClaim = async (req, res) => {
   try {
-
     const result = await claimService.getClaims({
       'repairStatus.status': 'servicer_shipped',
     });
@@ -2992,7 +2782,7 @@ exports.statusClaim = async (req, res) => {
       const customerLastResponseDate = customerStatus[0]?.date
       const latestServicerShippedDate = new Date(latestServicerShipped);
       const sevenDaysAfterShippedDate = new Date(latestServicerShippedDate);
-      sevenDaysAfterShippedDate.setDate(sevenDaysAfterShippedDate.getDate() + 7);
+      sevenDaysAfterShippedDate.setDate(sevenDaysAfterShippedDate.getDate() + 1);
       if (new Date() === sevenDaysAfterShippedDate || new Date() > sevenDaysAfterShippedDate) {
         // Update status for track status
         messageData.trackStatus = [
@@ -3020,12 +2810,17 @@ exports.statusClaim = async (req, res) => {
         let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
 
         // Update Eligibilty true and false
-        if (checkContract.productValue > claimTotal[0]?.amount) {
-          const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: true }, { new: true })
+        if (checkContract.isMaxClaimAmount) {
+          if (checkContract.productValue > claimTotal[0]?.amount) {
+            const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: true }, { new: true })
+          }
+          else if (checkContract.productValue < claimTotal[0]?.amount) {
+            const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: false }, { new: true })
+          }
+        } else {
+          const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
         }
-        else if (checkContract.productValue < claimTotal[0]?.amount) {
-          const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: false }, { new: true })
-        }
+
       }
     }
 
@@ -3890,3 +3685,171 @@ exports.getCoverageType = async (req, res) => {
     })
   }
 }
+
+exports.updateClaimDate = async (req, res) => {
+  try {
+
+    let baseDate = new Date('2024-07-03');
+    let newDateToCheck = new Date()
+    const newDayOfMonth = newDateToCheck.getDate();
+    const dayOfMonth = baseDate.getDate();
+
+    // Get the current year and month
+    const currentYear1 = new Date().getFullYear();
+    const currentMonth1 = new Date().getMonth(); // Note: 0 = January, so this is the current month index
+
+    // Create a new date with the current year, current month, and the day from baseDate
+    let newDateWithSameDay = new Date(currentYear1, currentMonth1, dayOfMonth);
+    if (Number(newDayOfMonth) > Number(dayOfMonth)) {
+      newDateWithSameDay = new Date(new Date(newDateWithSameDay).setMonth(newDateWithSameDay.getMonth() - 1));
+    }
+
+    const monthlyEndDate = new Date(new Date(newDateWithSameDay).setMonth(newDateWithSameDay.getMonth() + 1)); // Ends on August 11, 2024
+    const yearlyEndDate = new Date(new Date(newDateWithSameDay).setFullYear(newDateWithSameDay.getFullYear() + 1)); // Ends on July 11, 2025
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0); // Start of today (00:00)
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999); // End of today (23:59)
+
+    let getNoOfClaimQuery = [
+      {
+        $match: {
+          contractId: new mongoose.Types.ObjectId("6712381331a2529f6e009d85"),
+          claimFile: "completed"
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          monthlyCount: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $gte: ['$createdAt', newDateWithSameDay] },
+                    { $lt: ['$createdAt', monthlyEndDate] }
+                  ]
+                },
+                1,
+                0
+              ]
+            }
+          },
+          yearlyCount: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $gte: ['$createdAt', newDateWithSameDay] },
+                    { $lt: ['$createdAt', yearlyEndDate] }
+                  ]
+                },
+                1,
+                0
+              ]
+            }
+          },
+          todayCount: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    {
+                      $gte: ['$createdAt', startOfToday
+                      ]
+                    },
+                    {
+                      $lt: ['$createdAt', endOfToday
+                      ]
+                    }
+                  ]
+                },
+                1,
+                0
+              ]
+            }
+          }
+        }
+      }
+    ];
+
+
+    let checkNoOfClaims = await claimService.getClaimWithAggregate(getNoOfClaimQuery)
+
+    res.send({
+      checkNoOfClaims, getNoOfClaimQuery
+    })
+
+
+
+
+
+    // let emailData = {
+    //   // darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + "settingData[0]?.logoDark.fileName",
+    //   // lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+    //   address: "settingData[0]?.address",
+    //   websiteSetting: "settingData[0]",
+    //   senderName: "emailTo?.firstName",
+    //   content: "The new message for " + "checkClaim.unique_key" + " claim",
+    //   subject: "New Message"
+    // }
+    // let mailing = sgMail.send(emailConstant.sendEmailTemplate("anil@codenomad.net", ["amit@codenomad.net"], "emailData"))
+    // res.send({
+    //   mailing
+    // })
+
+
+
+
+
+
+
+
+
+
+
+    // let updateObject = {
+    //   $set: {
+    //     customerStatus: [
+    //       {
+    //         status: "request_submitted",
+    //         date: "2024-10-22T17:31:03.140+00:00"
+    //       }
+    //     ],
+    //     trackStatus: [
+    //       {
+    //         status: "open",
+    //         date: "2024-10-22T17:31:03.140+00:00"
+    //       },
+    //       {
+    //         status: "request_submitted",
+    //         date: "2024-10-22T17:31:03.140+00:00"
+    //       },
+    //       {
+    //         status: "request_sent",
+    //         date: "2024-10-22T17:31:03.140+00:00"
+    //       }
+    //     ],
+    //     claimStatus: [
+    //       {
+    //         status: "open",
+    //         date: "2024-10-22T17:31:03.140+00:00"
+    //       },
+    //     ],
+    //     repairStatus: [
+    //       {
+    //         status: "request_sent",
+    //         date: "2024-10-22T17:31:03.140+00:00"
+    //       }
+    //     ]
+    //   }
+    // }
+    // let updateClaim = await claimService.markAsPaid({ orderId: "GC-2024-100003" }, updateObject, { new: true })
+
+  } catch (err) {
+    res.send({
+      code: err.stack
+    })
+  }
+}
+
