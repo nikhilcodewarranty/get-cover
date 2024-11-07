@@ -1628,7 +1628,7 @@ exports.editServicer = async (req, res) => {
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
       senderName: getPrimary ? getPrimary.metaData[0].firstName : "",
-      subject: `New Device Received for Repair # - ${checkClaim.unique_key}`,
+      subject: `New Device Received for Repair # ${checkClaim.unique_key}`,
       redirectId: base_url,
       content: `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please check the following link :`
 
@@ -2729,8 +2729,8 @@ exports.sendMessages = async (req, res) => {
       date: new Date().toLocaleDateString("en-US"),
       senderName: emailTo?.metaData[0].firstName,
       comment: data.content,
-      content: `A new comment has been added to Claim #-${checkClaim.unique_key}. Here are the details:`,
-      subject: "New message for claim # :" + checkClaim.unique_key + "",
+      content: `A new comment has been added to Claim # ${checkClaim.unique_key}. Here are the details:`,
+      subject: "New message for claim #" + checkClaim.unique_key + "",
       redirectId: base_url
     }
 
