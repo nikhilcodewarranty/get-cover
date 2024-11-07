@@ -582,12 +582,12 @@ exports.addClaim = async (req, res, next) => {
       }
       if (checkServicer?.isAccountCreate) {
         emailData.subject = `New Device Received for Repair - ID: ${claimResponse.unique_key}`
-        emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please check the following link :`
+        emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please click the following link :`
         mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary?.email, notificationCC, emailData))
       }
       else {
         emailData.subject = `New Device Received for Repair - ID: ${claimResponse.unique_key}`
-        emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please check the following link :`
+        emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please click the following link :`
         mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationCC, ["noreply@getcover.com"], emailData))
       }
     }
@@ -1625,7 +1625,7 @@ exports.editServicer = async (req, res) => {
       senderName: getPrimary ? getPrimary.firstName : "",
       subject: `New Device Received for Repair # - ${checkClaim.unique_key}`,
       redirectId: base_url,
-      content: `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please check the following link :`
+      content: `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please click the following link :`
 
     }
 
