@@ -429,7 +429,7 @@ exports.addClaim = async (req, res, next) => {
 
     }
 
-    data.receiptImage = data.file    
+    data.receiptImage = data.file
     data.servicerId = data.servicerId ? data.servicerId : null
 
     const checkOrder = await orderService.getOrder({ _id: checkContract.orderId }, { isDeleted: false })
@@ -2068,11 +2068,7 @@ exports.saveBulkClaim = async (req, res) => {
               let shipingAddress = item.shippingTo.split(',');   // Split the string by commas
               let userZip = shipingAddress[shipingAddress.length - 1];
               let addresses = allDataArray[0]?.order.customers.addresses
-              console.log("shipingAddress-----------",shipingAddress)
-              console.log("userZip-----------",userZip)
-              console.log("addresses-----------",addresses)
               const validAddress = addresses.find(address => Number(address.zip) === Number(userZip));
-              console.log("validAddress--------------------",validAddress)
               if (!validAddress) {
                 item.status = "Invalid user address!"
                 item.exit = true;
@@ -2155,6 +2151,7 @@ exports.saveBulkClaim = async (req, res) => {
         if (data.servicerData?.resellerId) {
           servicerId = data.servicerData?.resellerId
         }
+        const issue = data.issue != "" ? data.issue + "-" + data.diagnosis : data.diagnosis
         // emailDealerId.push(data.orderData?.order?.dealerId);
         if (!data.exit) {
           let obj = {
@@ -2177,7 +2174,7 @@ exports.saveBulkClaim = async (req, res) => {
             unique_key_number: unique_key_number,
             unique_key_search: "CC" + "2024" + unique_key_number,
             unique_key: "CC-" + "2024-" + unique_key_number,
-            diagnosis: data.diagnosis,
+            diagnosis: issue,
             lossDate: data.lossDate,
             claimFile: 'open',
           }
@@ -2276,8 +2273,10 @@ exports.saveBulkClaim = async (req, res) => {
               existArray.data[servicerId].push({
                 "Contract# / Serial#": item.contractId ? item.contractId : "",
                 "Loss Date": item.lossDate ? formattedDate : '',
-                Diagnosis: item.diagnosis ? item.diagnosis : '',
+                Diagnosis: item.issue ? item.issue + "-" + item.diagnosis : item.diagnosis,
                 "Coverage Type": item.coverageType ? item.coverageType : '',
+                "Submitted By": item.userEmail ? item.userEmail : '',
+                "Ship To": item.shippingTo ? item.shippingTo : ''
               });
             }
 
@@ -2285,8 +2284,10 @@ exports.saveBulkClaim = async (req, res) => {
           return {
             "Contract#/Serial#": item.contractId ? item.contractId : "",
             "Loss Date": item.lossDate ? formattedDate : '',
-            Diagnosis: item.diagnosis ? item.diagnosis : '',
+            Diagnosis: item.issue ? item.issue + "-" + item.diagnosis : item.diagnosis,
             "Coverage Type": item.coverageType ? item.coverageType : '',
+            "Submitted By": item.userEmail ? item.userEmail : '',
+            "Ship To": item.shippingTo ? item.shippingTo : '',
             Status: item.status ? item.status : '',
             exit: item.exit
           };
@@ -2307,8 +2308,10 @@ exports.saveBulkClaim = async (req, res) => {
               existArray.data[servicerId].push({
                 "Contract# / Serial#": item.contractId ? item.contractId : "",
                 "Loss Date": item.lossDate ? formattedDate : '',
-                Diagnosis: item.diagnosis ? item.diagnosis : '',
+                Diagnosis: item.issue ? item.issue + "-" + item.diagnosis : item.diagnosis,
                 "Coverage Type": item.coverageType ? item.coverageType : '',
+                "Submitted By": item.userEmail ? item.userEmail : '',
+                "Ship To": item.shippingTo ? item.shippingTo : '',
 
               });
             }
@@ -2317,8 +2320,10 @@ exports.saveBulkClaim = async (req, res) => {
           return {
             "Contract# / Serial#": item.contractId ? item.contractId : "",
             "Loss Date": item.lossDate ? formattedDate : '',
-            Diagnosis: item.diagnosis ? item.diagnosis : '',
+            Diagnosis: item.issue ? item.issue + "-" + item.diagnosis : item.diagnosis,
             "Coverage Type": item.coverageType ? item.coverageType : '',
+            "Submitted By": item.userEmail ? item.userEmail : '',
+            "Ship To": item.shippingTo ? item.shippingTo : '',
             Status: item.status ? item.status : '',
             exit: item.exit
           };
@@ -2340,8 +2345,10 @@ exports.saveBulkClaim = async (req, res) => {
               existArray.data[servicerId].push({
                 "Contract# / Serial#": item.contractId ? item.contractId : "",
                 "Loss Date": item.lossDate ? formattedDate : '',
-                Diagnosis: item.diagnosis ? item.diagnosis : '',
+                Diagnosis: item.issue ? item.issue + "-" + item.diagnosis : item.diagnosis,
                 "Coverage Type": item.coverageType ? item.coverageType : '',
+                "Submitted By": item.userEmail ? item.userEmail : '',
+                "Ship To": item.shippingTo ? item.shippingTo : '',
 
               });
             }
@@ -2350,8 +2357,10 @@ exports.saveBulkClaim = async (req, res) => {
           return {
             "Contract# / Serial#": item.contractId ? item.contractId : "",
             "Loss Date": item.lossDate ? formattedDate : '',
-            Diagnosis: item.diagnosis ? item.diagnosis : '',
+            Diagnosis: item.issue ? item.issue + "-" + item.diagnosis : item.diagnosis,
             "Coverage Type": item.coverageType ? item.coverageType : '',
+            "Submitted By": item.userEmail ? item.userEmail : '',
+            "Ship To": item.shippingTo ? item.shippingTo : '',
             Status: item.status ? item.status : '',
             exit: item.exit
           };
@@ -2368,8 +2377,10 @@ exports.saveBulkClaim = async (req, res) => {
             existArray.data[servicerId].push({
               "Contract# / Serial#": item.contractId ? item.contractId : "",
               "Loss Date": item.lossDate ? formattedDate : '',
-              Diagnosis: item.diagnosis ? item.diagnosis : '',
+              Diagnosis: item.issue ? item.issue + "-" + item.diagnosis : item.diagnosis,
               "Coverage Type": item.coverageType ? item.coverageType : '',
+              "Submitted By": item.userEmail ? item.userEmail : '',
+              "Ship To": item.shippingTo ? item.shippingTo : '',
 
             });
           }
@@ -2378,8 +2389,10 @@ exports.saveBulkClaim = async (req, res) => {
             "Contract# / Serial#": item.contractId ? item.contractId : "",
             Servicer: item.servicerName || "",
             "Loss Date": item.lossDate ? formattedDate : '',
-            Diagnosis: item.diagnosis ? item.diagnosis : '',
+            Diagnosis: item.issue ? item.issue + "-" + item.diagnosis : item.diagnosis,
             "Coverage Type": item.coverageType ? item.coverageType : '',
+            "Submitted By": item.userEmail ? item.userEmail : '',
+            "Ship To": item.shippingTo ? item.shippingTo : '',
             Status: item.status ? item.status : '',
             exit: item.exit
           };
