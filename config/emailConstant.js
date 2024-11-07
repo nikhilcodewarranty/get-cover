@@ -49,6 +49,16 @@ module.exports = {
       };
     },
 
+    sendClaimStatusNotification: (toEmail, ccEmail, data) => {
+      return {
+        to: toEmail,
+        cc: ccEmail,
+        from: process.env.from_email,
+        templateId: process.env.claim_status,
+        dynamic_template_data: data,
+      };
+    },
+
     sendContactUsTemplate: (toEmail, ccEmail, data) => {
       return {
         to: toEmail,
