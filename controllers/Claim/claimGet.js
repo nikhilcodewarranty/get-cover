@@ -1345,3 +1345,31 @@ exports.checkClaimThreshHold = async (req, res) => {
     })
   }
 }
+
+exports.getcustomerDetail = async (req, res) => {
+  try {
+    let data = req.body
+    let claimQuery = [
+      {
+        $match: {
+          _id: new mongoose.Types.ObjectId(req.params.claimId)
+        }
+      },
+      {
+        $lookup: {
+          from: 'customers',
+          localField: 'customerId',
+          foreignField: '_id',
+          as: 'customer'
+        }
+      }
+      { $unwind: '$customer' }
+    ]
+    let getClaim = await claimService.getClaimWithAggregate()
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
