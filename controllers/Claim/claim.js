@@ -2071,9 +2071,9 @@ exports.saveBulkClaim = async (req, res) => {
               console.log("shipingAddress-----------",shipingAddress)
               console.log("userZip-----------",userZip)
               console.log("addresses-----------",addresses)
-              const validAddress = !addresses.find(address => Number(address.zip) === Number(userZip));
+              const validAddress = addresses.find(address => Number(address.zip) === Number(userZip));
               console.log("validAddress--------------------",validAddress)
-              if (validAddress) {
+              if (!validAddress) {
                 item.status = "Invalid user address!"
                 item.exit = true;
               }
