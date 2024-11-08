@@ -1952,7 +1952,6 @@ exports.getOptions1 = async (req, res) => {
     const query = { name: { $in: filterOption } }
     console.log("sklfskdfjskjf", query)
     const getOptions = await userService.getMultipleOptions(query);
-
     if (!getOptions) {
       res.send({
         code: constant.errorCode,
