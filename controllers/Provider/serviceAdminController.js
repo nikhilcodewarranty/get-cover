@@ -263,7 +263,7 @@ exports.createServiceProvider = async (req, res, next) => {
       let updatePrimaryCode = await userService.updateSingleUser({ email: primaryEmail }, {
         $set: {
           resetPasswordCode: primaryCode,
-          'metaData.$.status': data.status ? true : false,
+          'metaData.$.status': data.status || data.status == "true" ? true : false,
         }
       }, { new: true });
       let updatePrimaryLInk = `${process.env.SITE_URL}newPassword/${updatePrimaryCode._id}/${primaryCode}`
