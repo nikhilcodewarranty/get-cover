@@ -266,6 +266,8 @@ exports.createServiceProvider = async (req, res, next) => {
           'metaData.$.status': data.status || data.status == "true" ? true : false,
         }
       }, { new: true });
+
+      console.log("updatePrimaryCode---------------------",updatePrimaryCode);
       let updatePrimaryLInk = `${process.env.SITE_URL}newPassword/${updatePrimaryCode._id}/${primaryCode}`
       mailing = sgMail.send(emailConstant.servicerApproval(updatePrimaryCode.email,
         {
@@ -300,7 +302,7 @@ exports.createServiceProvider = async (req, res, next) => {
 
       })
       );
-
+      console.log("teamMembers---------------------",teamMembers);
       if (teamMembers.length > 0) {
         let saveMembers = await userService.insertManyUser(teamMembers)
         if (data.status) {
