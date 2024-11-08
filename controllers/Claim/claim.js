@@ -576,22 +576,25 @@ exports.addClaim = async (req, res, next) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: servicerPrimary?.firstName,
+        model: checkContract.model,
+        serial: checkContract.serial,
+        manufacturer: checkContract.manufacture,
         redirectId: base_url
 
       }
       if (checkServicer?.isAccountCreate) {
         emailData.subject = `New Device Received for Repair - ID: ${claimResponse.unique_key}`
-        emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please click the following link :`
-        mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary?.email, notificationCC, emailData))
+        emailData.senderName = servicerPrimary?.firstName
+        emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device detailed below:`
+        mailing = sgMail.send(emailConstant.sendServicerClaimNotification(servicerPrimary?.email, notificationCC, emailData))
       }
       else {
         emailData.subject = `New Device Received for Repair - ID: ${claimResponse.unique_key}`
-        emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please click the following link :`
-        mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationCC, ["noreply@getcover.com"], emailData))
+        emailData.senderName = "Admin"
+        emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device detailed below:`
+        mailing = sgMail.send(emailConstant.sendServicerClaimNotification(notificationCC, ["noreply@getcover.com"], emailData))
       }
     }
-
 
     res.send({
       code: constant.successCode,
@@ -1623,13 +1626,16 @@ exports.editServicer = async (req, res) => {
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
       senderName: getPrimary ? getPrimary.firstName : "",
+      model:checkContract.model,
+      serial:checkContract.serial,
+      manufacturer:checkContract.manufacture,
       subject: `New Device Received for Repair - ID: ${checkClaim.unique_key}`,
       redirectId: base_url,
-      content: `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please click the following link :`
+      content: `We want to inform you that ${checkCustomer.username} has requested for the repair of a device detailed below:`
 
     }
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary?.email, notificationEmails, emailData))
+    let mailing = sgMail.send(emailConstant.sendServicerClaimNotification(getPrimary?.email, notificationEmails, emailData))
     res.send({
       code: constant.successCode,
       message: 'Success!',
