@@ -87,9 +87,10 @@ exports.getAllPriceBooks = async (req, res, next) => {
       return;
     }
     const status = data.status == "true" ? true : false
-    console.log("sdfsdfdsfddds",status)
+  
     if (data.status != "all") {
       if (data.coverageType != "") {
+        console.log("11111111111111111111",status)
         query = {
           $and: [
             { isDeleted: false },
@@ -101,6 +102,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
           ]
         };
       } else {
+        console.log("22222222222222222",status)
         query = {
           $and: [
             { isDeleted: false },
