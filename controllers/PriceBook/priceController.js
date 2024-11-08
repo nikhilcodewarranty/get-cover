@@ -88,6 +88,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
     }
 
     if (data.status != "all") {
+      console.log("asdasdaaaaaaaaaaaaaaaaaa",data.status)
       if (data.coverageType != "") {
         query = {
           $and: [
@@ -105,7 +106,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
             { isDeleted: false },
             { 'name': { '$regex': searchName, '$options': 'i' } },
             { 'pName': { '$regex': searchName1, '$options': 'i' } },
-            { 'status': status },
+            { 'status': data.status },
             { 'category': { $in: catIdsArray } }
           ]
         };
@@ -124,13 +125,14 @@ exports.getAllPriceBooks = async (req, res, next) => {
         ]
       };
     } else {
-      console.log("asdasdaaaaaaaaaaaaaaaaaa",data.status)
+      // console.log("asdasdaaaaaaaaaaaaaaaaaa",data.status)
       query = {
         $and: [
           { isDeleted: false },
           { 'pName': { '$regex': searchName1, '$options': 'i' } },
           { 'name': { '$regex': searchName, '$options': 'i' } },
-          { 'category': { $in: catIdsArray } },          { 'status': data.status },
+          { 'category': { $in: catIdsArray } },         
+           { 'status': data.status },
 
 
         ]
