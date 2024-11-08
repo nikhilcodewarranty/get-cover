@@ -87,8 +87,9 @@ exports.getAllPriceBooks = async (req, res, next) => {
       return;
     }
     const status = data.status == "true" ? true : false
+    console.log("sdfsdfdsfddds",status)
     if (data.status != "all") {
-      if (data.coverageType.length != "") {
+      if (data.coverageType != "") {
         query = {
           $and: [
             { isDeleted: false },
