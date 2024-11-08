@@ -1677,7 +1677,7 @@ exports.saveBulkClaim = async (req, res) => {
       const emailArray = JSON.parse(emailField);
 
       //Get all emails of the login user
-
+      const memberEmail = await userService.getMembers({ metaId: req.userId }, {})
       let length = [8, 5];
       let match = {}
       if (req.role == 'Dealer') {
@@ -1790,7 +1790,7 @@ exports.saveBulkClaim = async (req, res) => {
         });
         return;
       }
-      
+
       for (let u = 0; u < totalDataComing.length; u++) {
         let objectToCheck = totalDataComing[u]
         if (objectToCheck.servicerName == '' || objectToCheck.servicerName == null) {
