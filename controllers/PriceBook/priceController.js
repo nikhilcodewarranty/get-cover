@@ -86,7 +86,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
       });
       return;
     }
-
+    console.log("22222222222222222222222222222",data.status)
     if (data.status != "all") {
       console.log("asdasdaaaaaaaaaaaaaaaaaa",data.status)
       if (data.coverageType != "") {
