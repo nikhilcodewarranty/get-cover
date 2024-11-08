@@ -1105,7 +1105,7 @@ exports.editClaimStatus = async (req, res) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: customerPrimary?.firstName,
+        senderName:'',
         content: `The Repair Status has been updated on the claim #  ${checkClaim.unique_key} to be ${matchedData.label} .Please review the information at`,
         subject: `Repair Status Updated for ${checkClaim.unique_key}`,
         redirectId: base_url
@@ -1675,6 +1675,8 @@ exports.saveBulkClaim = async (req, res) => {
 
       // // Parse the email field
       const emailArray = JSON.parse(emailField);
+
+      //Get all emails of the login user
 
       let length = 8;
       let match = {}
@@ -2640,6 +2642,7 @@ exports.sendMessages = async (req, res) => {
     data.commentedBy = req.userId
     data.commentedTo = req.userId;
     data.commentedByUser = req.teammateId
+    const commentByUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
 
     emailTo = await supportingFunction.getPrimaryUser({ _id: req.teammateId, isPrimary: true })
     if (data.type == 'Reseller') {
@@ -2731,7 +2734,7 @@ exports.sendMessages = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      commentBy: "Amit",
+      commentBy: commentByUser.firstName,
       date: new Date().toLocaleDateString("en-US"),
       senderName: emailTo?.firstName,
       comment: data.content,
