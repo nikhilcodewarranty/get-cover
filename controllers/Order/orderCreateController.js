@@ -1185,8 +1185,6 @@ exports.createOrder1 = async (req, res) => {
         for (let A = 0; A < getChoosedProducts.length; A++) {
             if (getChoosedProducts[A].coverageStartDate != "") {
 
-
-
                 let addOneDay = new Date(getChoosedProducts[A].coverageStartDate)
                 let addOneDay1 = new Date(getChoosedProducts[A].coverageStartDate)
                 let addOneDay2 = new Date(getChoosedProducts[A].coverageStartDate)
