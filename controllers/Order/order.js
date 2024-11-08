@@ -1752,6 +1752,8 @@ exports.getSingleOrder = async (req, res) => {
                 address: settingData[0]?.address,
                 paymentDetail: settingData[0]?.paymentDetail,
                 title: settingData[0]?.title,
+                darkLogoName: settingData[0]?.logoDark.fileName,
+                lightLogoName: settingData[0]?.logoLight.fileName,
             },
             resellerData: reseller ? reseller : {},
             username: singleDealerUser[0] ? singleDealerUser[0] : {},

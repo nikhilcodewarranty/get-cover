@@ -61,6 +61,28 @@ var upload = multer({
 ])
 
 const eligibilityService = require("../../services/Dealer/eligibilityService")
+const fs = require('fs');
+
+exports.convertToBase64 = async (req, res) => {
+    try {
+        let data = req.body
+        const filePath = path.join(__dirname, '..', '..', 'uploads', 'logo', data.logo);
+
+        // Read the file synchronously
+        const fileData = fs.readFileSync(filePath);
+
+        // Convert the file data to a base64 string
+        const base64String = fileData.toString('base64');
+
+        // Send the base64 string in the response
+        res.send({ base64: base64String });
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
 
 //Create Dealer by super admin
 exports.createDealer = async (req, res) => {

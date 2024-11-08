@@ -580,21 +580,24 @@ exports.addClaim = async (req, res, next) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: servicerPrimary?.metaData[0]?.firstName,
+        model: checkContract.model,
+        serial: checkContract.serial,
+        manufacturer: checkContract.manufacture,
         redirectId: base_url
       }
       if (checkServicer?.isAccountCreate) {
         emailData.subject = `New Device Received for Repair - ID: ${claimResponse.unique_key}`
-        emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please click the following link :`
-        mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary?.email, notificationCC, emailData))
+        emailData.senderName = servicerPrimary?.metaData[0]?.firstName
+        emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device detailed below:`
+        mailing = sgMail.send(emailConstant.sendServicerClaimNotification(servicerPrimary?.email, notificationCC, emailData))
       }
       else {
         emailData.subject = `New Device Received for Repair - ID: ${claimResponse.unique_key}`
-        emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please click the following link :`
-        mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationCC, ["noreply@getcover.com"], emailData))
+        emailData.senderName = "Admin"
+        emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device detailed below:`
+        mailing = sgMail.send(emailConstant.sendServicerClaimNotification(notificationCC, ["noreply@getcover.com"], emailData))
       }
     }
-
 
     res.send({
       code: constant.successCode,
@@ -1628,13 +1631,16 @@ exports.editServicer = async (req, res) => {
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
       senderName: getPrimary ? getPrimary.metaData[0].firstName : "",
+      model:checkContract.model,
+      serial:checkContract.serial,
+      manufacturer:checkContract.manufacture,
       subject: `New Device Received for Repair - ID: ${checkClaim.unique_key}`,
       redirectId: base_url,
-      content: `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please click the following link :`
+      content: `We want to inform you that ${checkCustomer.username} has requested for the repair of a device detailed below:`
 
     }
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary?.email, notificationEmails, emailData))
+    let mailing = sgMail.send(emailConstant.sendServicerClaimNotification(getPrimary?.email, notificationEmails, emailData))
     res.send({
       code: constant.successCode,
       message: 'Success!',
@@ -1682,31 +1688,29 @@ exports.saveBulkClaim = async (req, res) => {
       const emailArray = JSON.parse(emailField);
 
       //Get all emails of the login user
-
       const memberEmail = await userService.getMembers({
         metaData: { $elemMatch: { metaId: req.userId } }
       },{})
-
-      let length = 8;
+      let length = [8, 5];
       let match = {}
       if (req.role == 'Dealer') {
-        length = 7;
+        length = [4, 7];
         match = { "order.dealer._id": new mongoose.Types.ObjectId(req.userId) }
       }
 
       if (req.role == 'Reseller') {
-        length = 7;
+        length = [4, 7];
         match = { "order.reseller._id": new mongoose.Types.ObjectId(req.userId) }
       }
 
       if (req.role == 'Customer') {
-        length = 7;
+        length = [4, 7];
         match = { "order.customers._id": new mongoose.Types.ObjectId(req.userId) }
       }
 
       headerLength = result.headers
 
-      if (headerLength.length !== length) {
+      if (!length.includes(headerLength.length)) {
         res.send({
           code: constant.errorCode,
           message: "Invalid file format detected. Please check file format!"
@@ -1720,37 +1724,75 @@ exports.saveBulkClaim = async (req, res) => {
       let totalDataComing = totalDataComing1.map((item, i) => {
         const keys = Object.keys(item);
         // Check if the "servicerName" header exists    
-        if (keys.length == 8) {
-          let coverageType = item[keys[4]]
-          let dateLoss1 = item[keys[2]]
-          return {
-            contractId: item[keys[0]],
-            servicerName: item[keys[1]],
-            lossDate: dateLoss1.toString(),
-            diagnosis: item[keys[3]],
-            coverageType: coverageType,
-            issue: item[keys[5]],
-            userEmail: item[keys[6]],
-            shippingTo: item[keys[7]],
-            duplicate: false,
-            exit: false
-          };
-        } else {
-          let coverageType = item[keys[3]]
-          let dateLoss2 = item[keys[1]]
-          // If "servicerName" does not exist, shift the second item to "lossDate"
-          return {
-            contractId: item[keys[0]],
-            servicerName: '',
-            lossDate: dateLoss2.toString(),
-            diagnosis: item[keys[2]],  // Assuming diagnosis is now at index 2
-            coverageType: coverageType,
-            issue: item[keys[4]],
-            userEmail: item[keys[5]],
-            shippingTo: item[keys[6]],
-            duplicate: false,
-            exit: false
-          };
+        if (keys.length == 8 || keys.length == 5) {
+          if (keys.length == 8) {
+            let coverageType = item[keys[4]]
+            let dateLoss1 = item[keys[2]]
+            return {
+              contractId: item[keys[0]],
+              servicerName: item[keys[1]],
+              lossDate: dateLoss1.toString(),
+              diagnosis: item[keys[3]],
+              coverageType: coverageType,
+              issue: item[keys[5]],
+              userEmail: item[keys[6]],
+              shippingTo: item[keys[7]],
+              duplicate: false,
+              exit: false
+            };
+          }
+          if (keys.length == 5) {
+            let coverageType = item[keys[4]]
+            let dateLoss1 = item[keys[2]]
+            return {
+              contractId: item[keys[0]],
+              servicerName: item[keys[1]],
+              lossDate: dateLoss1.toString(),
+              diagnosis: item[keys[3]],
+              coverageType: coverageType,
+              issue: '',
+              userEmail: '',
+              shippingTo: '',
+              duplicate: false,
+              exit: false
+            };
+          }
+        }
+        else {
+          if (keys.length == 7) {
+            let coverageType = item[keys[3]]
+            let dateLoss2 = item[keys[1]]
+            // If "servicerName" does not exist, shift the second item to "lossDate"
+            return {
+              contractId: item[keys[0]],
+              servicerName: '',
+              lossDate: dateLoss2.toString(),
+              diagnosis: item[keys[2]],  // Assuming diagnosis is now at index 2
+              coverageType: coverageType,
+              issue: item[keys[4]],
+              userEmail: item[keys[5]],
+              shippingTo: item[keys[6]],
+              duplicate: false,
+              exit: false
+            };
+          }
+          if (keys.length == 4) {
+            let coverageType = item[keys[3]]
+            let dateLoss2 = item[keys[1]]
+            // If "servicerName" does not exist, shift the second item to "lossDate"
+            return {
+              contractId: item[keys[0]],
+              servicerName: '',
+              lossDate: dateLoss2.toString(),
+              diagnosis: item[keys[2]],  // Assuming diagnosis is now at index 2
+              coverageType: coverageType,
+              issue: '',
+              userEmail: '',
+              shippingTo: '',
+              duplicate: false,
+              exit: false
+            };
+          }
         }
       });
 
@@ -1762,6 +1804,7 @@ exports.saveBulkClaim = async (req, res) => {
         });
         return;
       }
+
       for (let u = 0; u < totalDataComing.length; u++) {
         let objectToCheck = totalDataComing[u]
         if (objectToCheck.servicerName == '' || objectToCheck.servicerName == null) {
@@ -2069,7 +2112,7 @@ exports.saveBulkClaim = async (req, res) => {
           // check login email
           if (item.userEmail != '') {
             item.submittedBy = item.userEmail
-            const validEmail = memberEmail.find(member =>member.email === item.userEmail);
+            const validEmail = memberEmail.find(member => member.email === item.userEmail);
             if (!validEmail) {
               item.status = "Invalid Email"
               item.exit = true;
@@ -2658,9 +2701,9 @@ exports.sendMessages = async (req, res) => {
     data.commentedBy = req.userId
     data.commentedTo = req.userId;
     data.commentedByUser = req.teammateId
+    const commentByUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
 
     emailTo = await supportingFunction.getPrimaryUser({ _id: req.teammateId, metaData: { $elemMatch: { isPrimary: true } } })
-    const commentByUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
     if (data.type == 'Reseller') {
       data.commentedTo = orderData.resellerId
       emailTo = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.resellerId, isPrimary: true } } })
@@ -2750,7 +2793,7 @@ exports.sendMessages = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      commentBy: commentByUser.metaData[0]?.firstName,
+      commentBy: commentByUser.firstName,
       date: new Date().toLocaleDateString("en-US"),
       senderName: emailTo?.metaData[0].firstName,
       comment: data.content,

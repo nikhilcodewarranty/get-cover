@@ -82,6 +82,7 @@ router.get("/downloadFile1/:token/:folder/:key", [verifyToken], userController.d
 router.post("/downloadFile", userController.downloadFile); // check email
 router.post("/approveDealer", [verifyToken], validator("create_dealer_validation"), supportingApiAdmin.createDealer); // approve dealer
 router.post("/createDealer", [verifyToken], supportingApiAdmin.createDealer); // create dealer API from super admin
+router.post("/convertToBase64",  supportingApiAdmin.convertToBase64); // create dealer API from super admin
 router.post('/createServicer', [verifyToken], validator("create_service_provider_validation"), supportingApiAdmin.createServiceProvider);// create service provider API from super admin
 
 module.exports = router;

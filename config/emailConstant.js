@@ -59,6 +59,15 @@ module.exports = {
       };
     },
 
+    sendServicerClaimNotification: (toEmail, ccEmail, data) => {
+      return {
+        to: toEmail,
+        cc: ccEmail,
+        from: process.env.from_email,
+        templateId: process.env.servicer_claim_notification,
+        dynamic_template_data: data,
+      };
+    },
     sendContactUsTemplate: (toEmail, ccEmail, data) => {
       return {
         to: toEmail,
