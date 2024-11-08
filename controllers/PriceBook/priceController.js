@@ -86,7 +86,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
       });
       return;
     }
-
+    const status = data.status == "true" ? true : false
     if (data.status != "all") {
       if (data.coverageType.length != "") {
         query = {
@@ -95,7 +95,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
             { 'name': { '$regex': searchName, '$options': 'i' } },
             { 'pName': { '$regex': searchName1, '$options': 'i' } },
             { 'coverageType': data.coverageType },
-            { 'status': data.status },
+            { 'status': status },
             { 'category': { $in: catIdsArray } }
           ]
         };
@@ -105,7 +105,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
             { isDeleted: false },
             { 'name': { '$regex': searchName, '$options': 'i' } },
             { 'pName': { '$regex': searchName1, '$options': 'i' } },
-            { 'status': data.status },
+            { 'status':status },
             { 'category': { $in: catIdsArray } }
           ]
         };
@@ -129,7 +129,6 @@ exports.getAllPriceBooks = async (req, res, next) => {
           { isDeleted: false },
           { 'pName': { '$regex': searchName1, '$options': 'i' } },
           { 'name': { '$regex': searchName, '$options': 'i' } },
-          { 'status': data.status },
           { 'category': { $in: catIdsArray } }
         ]
       };
