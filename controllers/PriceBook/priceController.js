@@ -76,7 +76,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
     let searchName = req.body.name ? req.body.name.replace(/\s+/g, ' ').trim() : ''
     let searchName1 = req.body.pName ? req.body.pName.replace(/\s+/g, ' ').trim() : ''
     console.log(typeof (data.status))
-    let filterStatus = (data.status === true || data.status === false) ? (data.status === true ? true : false) : ""
+    let filterStatus = (data.status === "true" || data.status === "false") ? (data.status === "true" ? true : false) : ""
     console.log("123123123123123122121",filterStatus);
     data.status = typeof (filterStatus) == "string" ? "all" : filterStatus
     let query;
