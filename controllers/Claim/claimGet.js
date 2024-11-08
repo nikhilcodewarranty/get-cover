@@ -1375,7 +1375,7 @@ exports.getcustomerDetail = async (req, res) => {
                 ]
               }
             },
-            {$unwind:'$customer_user'}
+            { $unwind: '$customer_user' }
           ]
         }
       },
@@ -1391,13 +1391,32 @@ exports.getcustomerDetail = async (req, res) => {
     }
     let customerDetail = getClaim[0].customer
     customerDetail.shippingTo = getClaim[0].shippingTo != "" ? getClaim[0].shippingTo : customerDetail.street + ", " + customerDetail.city + ", " + customerDetail.state + ", " + customerDetail.country + ", " + customerDetail.zip
-    customerDetail.submittedBy =  getClaim[0].shippingTo != "" ? getClaim[0].shippingTo : customerDetail.customer_user.email
+    let submittedByDetail
+    if (getClaim[0].submittedBy && getClaim[0].submittedBy != "") {
+      let getUser = await userService.getUserById1({ email: getClaim[0].submittedBy })
+      if (getUser) {
+        checkRole = await userService.getRoleById({ _id: getUser.roleId })
+        submittedByDetail = {
+          emailWithRole: getUser.email + " (" + checkRole.role + ")",
+          name: getUser.firstName + " " + getUser.lastName,
+          role: checkRole.role,
+          email: getUser.email
+        }
+      }
+
+    } else {
+      submittedByDetail = {
+        role: "primaryDetail",
+        customerDetail
+      }
+    }
+    // customerDetail.submittedBy = getClaim[0].submittedBy != "" ? getClaim[0].submittedBy : customerDetail.customer_user.email
 
 
     res.send({
       code: constants.successCode,
       message: "Success",
-      result: customerDetail
+      result: submittedByDetail
     })
 
   } catch (err) {
