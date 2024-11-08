@@ -1676,6 +1676,8 @@ exports.saveBulkClaim = async (req, res) => {
       // // Parse the email field
       const emailArray = JSON.parse(emailField);
 
+      //Get all emails of the login user
+
       let length = 8;
       let match = {}
       if (req.role == 'Dealer') {
