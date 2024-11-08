@@ -1390,7 +1390,8 @@ exports.getcustomerDetail = async (req, res) => {
       return
     }
     let customerDetail = getClaim[0].customer
-    customerDetail.shippingTo = getClaim[0].shippingTo != "" ? getClaim[0].shippingTo : customerDetail.street + " " + customerDetail.city + " " + customerDetail.state + " " + customerDetail.country + " " + customerDetail.zip
+    customerDetail.shippingTo = getClaim[0].shippingTo != "" ? getClaim[0].shippingTo : customerDetail.street + ", " + customerDetail.city + ", " + customerDetail.state + ", " + customerDetail.country + ", " + customerDetail.zip
+    customerDetail.submittedBy =  getClaim[0].shippingTo != "" ? getClaim[0].shippingTo : customerDetail.customer_user.email
 
 
     res.send({
