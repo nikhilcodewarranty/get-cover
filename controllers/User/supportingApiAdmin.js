@@ -166,19 +166,19 @@ exports.createDealer = async (req, res) => {
                 //Primary information edit
                 let userQuery = { metaData: { $elemMatch: { metaId: { $in: [data.dealerId] }, isPrimary: true } } }
 
-         
+
                 let newValues1 = {
                     $set: {
                         email: allUserData[0].email,
-                        'metaData.$.firstName':allUserData[0].firstNam,
-                        'metaData.$.lastName':  allUserData[0].lastName,
-                        'metaData.$.position':allUserData[0].position,
-                        'metaData.$.phoneNumber':allUserData[0].phoneNumber,
-                        'metaData.$.status':allUserData[0].status ? true : false,
+                        'metaData.$.firstName': allUserData[0].firstNam,
+                        'metaData.$.lastName': allUserData[0].lastName,
+                        'metaData.$.position': allUserData[0].position,
+                        'metaData.$.phoneNumber': allUserData[0].phoneNumber,
+                        'metaData.$.status': allUserData[0].status ? true : false,
                         'metaData.$.roleId': "656f08041eb1acda244af8c6"
-                
-                      }
-                  
+
+                    }
+
                 }
 
                 await userService.updateUser(userQuery, newValues1, { new: true })
@@ -664,24 +664,26 @@ exports.updateData = async (req, res) => {
     try {
         let findUser = await userService.findUser()
         for (let u = 0; u < findUser.length; u++) {
+            findUser[u] = findUser[u].toObject()
+            console.log(findUser[u], "++++++++++++++++", findUser[u].firstName)
             let dataToUpdate = {
                 $set: {
                     metaData: [{
-                        metaId: findUser[0].metaId,
-                        status: findUser[0].status,
-                        roleId: findUser[0].roleId,
-                        firstName: findUser[0].firstName,
-                        lastName: findUser[0].lastName,
-                        phoneNumber: findUser[0].phoneNumber,
-                        position: findUser[0].position,
-                        isPrimary: findUser[0].isPrimary,
-                        isDeleted: findUser[0].isDeleted,
-                        dialCode: findUser[0].dialCode
+                        metaId: findUser[u].metaId,
+                        status: findUser[u].status,
+                        roleId: findUser[u].roleId,
+                        firstName: findUser[u].firstName,
+                        lastName: findUser[u].lastName,
+                        phoneNumber: findUser[u].phoneNumber,
+                        position: findUser[u].position,
+                        isPrimary: findUser[u].isPrimary,
+                        isDeleted: findUser[u].isDeleted,
+                        dialCode: findUser[u].dialCode
                     }]
                 }
             }
-            let updateUser = await userService.updateUser(dataToUpdate)
-            console.log(updateUser, "==============================================================")
+            let updateUser = await userService.updateUser({ _id: findUser[u]._id }, dataToUpdate, { new: true })
+            // console.log(findUser[u],dataToUpdate.$set, "==============================================================")
         }
         res.send({
             code: 200
