@@ -132,7 +132,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
           { 'pName': { '$regex': searchName1, '$options': 'i' } },
           { 'name': { '$regex': searchName, '$options': 'i' } },
           { 'category': { $in: catIdsArray } },         
-           { 'status': data.status },
+          //  { 'status': data.status },
 
 
         ]
