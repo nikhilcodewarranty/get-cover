@@ -129,6 +129,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
           { isDeleted: false },
           { 'pName': { '$regex': searchName1, '$options': 'i' } },
           { 'name': { '$regex': searchName, '$options': 'i' } },
+          { 'status': data.status },
           { 'category': { $in: catIdsArray } }
         ]
       };
