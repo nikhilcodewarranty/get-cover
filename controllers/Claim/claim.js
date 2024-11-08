@@ -2098,7 +2098,8 @@ exports.saveBulkClaim = async (req, res) => {
           // check login email
           if (item.userEmail != '') {
             item.submittedBy = item.userEmail
-            if (item.userEmail != req.email) {
+            const validEmail = memberEmail.find(member => member.email === item.userEmail);
+            if (!validEmail) {
               item.status = "Invalid Email"
               item.exit = true;
             }
