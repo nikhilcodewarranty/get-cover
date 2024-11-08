@@ -303,7 +303,6 @@ exports.createServiceProvider = async (req, res, next) => {
 
       })
       );
-      console.log("teamMembers---------------------", teamMembers);
       if (teamMembers.length > 0) {
         let saveMembers = await userService.insertManyUser(teamMembers)
         if (data.status) {

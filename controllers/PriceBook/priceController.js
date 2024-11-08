@@ -86,12 +86,9 @@ exports.getAllPriceBooks = async (req, res, next) => {
       });
       return;
     }
-    console.log("1111111111", data.status)
 
     if (data.status != "all") {
       if (data.coverageType != "") {
-        console.log("1111111111", data.status)
-
         query = {
           $and: [
             { isDeleted: false },
@@ -103,7 +100,6 @@ exports.getAllPriceBooks = async (req, res, next) => {
           ]
         };
       } else {
-        console.log("22222222222222222", data.status)
         query = {
           $and: [
             { isDeleted: false },
@@ -117,8 +113,6 @@ exports.getAllPriceBooks = async (req, res, next) => {
 
     }
     else if (data.coverageType.length > 0) {
-    console.log("3333333333", data.status)
-
       query = {
         $and: [
           { isDeleted: false },
@@ -130,14 +124,15 @@ exports.getAllPriceBooks = async (req, res, next) => {
         ]
       };
     } else {
-    console.log("44444444", data.status)
-
+      console.log("asdasdaaaaaaaaaaaaaaaaaa",data.status)
       query = {
         $and: [
           { isDeleted: false },
           { 'pName': { '$regex': searchName1, '$options': 'i' } },
           { 'name': { '$regex': searchName, '$options': 'i' } },
-          { 'category': { $in: catIdsArray } }
+          { 'category': { $in: catIdsArray } },          { 'status': data.status },
+
+
         ]
       };
     }
