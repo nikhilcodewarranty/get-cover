@@ -1105,7 +1105,7 @@ exports.editClaimStatus = async (req, res) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName:'',
+        senderName: '',
         content: `The Repair Status has been updated on the claim #  ${checkClaim.unique_key} to be ${matchedData.label} .Please review the information at`,
         subject: `Repair Status Updated for ${checkClaim.unique_key}`,
         redirectId: base_url
@@ -1678,26 +1678,26 @@ exports.saveBulkClaim = async (req, res) => {
 
       //Get all emails of the login user
 
-      let length = 8;
+      let length = [8, 5];
       let match = {}
       if (req.role == 'Dealer') {
-        length = 7;
+        length = [4, 7];
         match = { "order.dealer._id": new mongoose.Types.ObjectId(req.userId) }
       }
 
       if (req.role == 'Reseller') {
-        length = 7;
+        length = [4, 7];
         match = { "order.reseller._id": new mongoose.Types.ObjectId(req.userId) }
       }
 
       if (req.role == 'Customer') {
-        length = 7;
+        length = [4, 7];
         match = { "order.customers._id": new mongoose.Types.ObjectId(req.userId) }
       }
 
       headerLength = result.headers
 
-      if (headerLength.length !== length) {
+      if (!length.includes(headerLength.length)) {
         res.send({
           code: constant.errorCode,
           message: "Invalid file format detected. Please check file format!"
@@ -1710,37 +1710,75 @@ exports.saveBulkClaim = async (req, res) => {
       let totalDataComing = totalDataComing1.map((item, i) => {
         const keys = Object.keys(item);
         // Check if the "servicerName" header exists    
-        if (keys.length == 8) {
-          let coverageType = item[keys[4]]
-          let dateLoss1 = item[keys[2]]
-          return {
-            contractId: item[keys[0]],
-            servicerName: item[keys[1]],
-            lossDate: dateLoss1.toString(),
-            diagnosis: item[keys[3]],
-            coverageType: coverageType,
-            issue: item[keys[5]],
-            userEmail: item[keys[6]],
-            shippingTo: item[keys[7]],
-            duplicate: false,
-            exit: false
-          };
-        } else {
-          let coverageType = item[keys[3]]
-          let dateLoss2 = item[keys[1]]
-          // If "servicerName" does not exist, shift the second item to "lossDate"
-          return {
-            contractId: item[keys[0]],
-            servicerName: '',
-            lossDate: dateLoss2.toString(),
-            diagnosis: item[keys[2]],  // Assuming diagnosis is now at index 2
-            coverageType: coverageType,
-            issue: item[keys[4]],
-            userEmail: item[keys[5]],
-            shippingTo: item[keys[6]],
-            duplicate: false,
-            exit: false
-          };
+        if (keys.length == 8 || keys.length == 5) {
+          if (keys.length == 8) {
+            let coverageType = item[keys[4]]
+            let dateLoss1 = item[keys[2]]
+            return {
+              contractId: item[keys[0]],
+              servicerName: item[keys[1]],
+              lossDate: dateLoss1.toString(),
+              diagnosis: item[keys[3]],
+              coverageType: coverageType,
+              issue: item[keys[5]],
+              userEmail: item[keys[6]],
+              shippingTo: item[keys[7]],
+              duplicate: false,
+              exit: false
+            };
+          }
+          if (keys.length == 5) {
+            let coverageType = item[keys[4]]
+            let dateLoss1 = item[keys[2]]
+            return {
+              contractId: item[keys[0]],
+              servicerName: item[keys[1]],
+              lossDate: dateLoss1.toString(),
+              diagnosis: item[keys[3]],
+              coverageType: coverageType,
+              issue: '',
+              userEmail: '',
+              shippingTo: '',
+              duplicate: false,
+              exit: false
+            };
+          }
+        }
+        else {
+          if (keys.length == 7) {
+            let coverageType = item[keys[3]]
+            let dateLoss2 = item[keys[1]]
+            // If "servicerName" does not exist, shift the second item to "lossDate"
+            return {
+              contractId: item[keys[0]],
+              servicerName: '',
+              lossDate: dateLoss2.toString(),
+              diagnosis: item[keys[2]],  // Assuming diagnosis is now at index 2
+              coverageType: coverageType,
+              issue: item[keys[4]],
+              userEmail: item[keys[5]],
+              shippingTo: item[keys[6]],
+              duplicate: false,
+              exit: false
+            };
+          }
+          if (keys.length == 4) {
+            let coverageType = item[keys[3]]
+            let dateLoss2 = item[keys[1]]
+            // If "servicerName" does not exist, shift the second item to "lossDate"
+            return {
+              contractId: item[keys[0]],
+              servicerName: '',
+              lossDate: dateLoss2.toString(),
+              diagnosis: item[keys[2]],  // Assuming diagnosis is now at index 2
+              coverageType: coverageType,
+              issue: '',
+              userEmail: '',
+              shippingTo: '',
+              duplicate: false,
+              exit: false
+            };
+          }
         }
       });
 
@@ -1752,6 +1790,7 @@ exports.saveBulkClaim = async (req, res) => {
         });
         return;
       }
+      
       for (let u = 0; u < totalDataComing.length; u++) {
         let objectToCheck = totalDataComing[u]
         if (objectToCheck.servicerName == '' || objectToCheck.servicerName == null) {
