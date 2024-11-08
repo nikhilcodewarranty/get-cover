@@ -260,14 +260,15 @@ exports.createServiceProvider = async (req, res, next) => {
 
       let primaryEmail = teamMembers[0].email
       let primaryCode = randtoken.generate(4, '123456789')
-      let updatePrimaryCode = await userService.updateSingleUser({ email: primaryEmail }, {
+      let checkPrimary = await userService.findOneUser({ email: data.email });
+      let creteria = { email: primaryEmail, metaData: { $elemMatch: { metaId: checkPrimary.metaData[0].metaId } } }
+      let updatePrimaryCode = await userService.updateSingleUser(creteria, {
         $set: {
           resetPasswordCode: primaryCode,
           'metaData.$.status': data.status || data.status == "true" ? true : false,
         }
       }, { new: true });
 
-      console.log("updatePrimaryCode---------------------",updatePrimaryCode);
       let updatePrimaryLInk = `${process.env.SITE_URL}newPassword/${updatePrimaryCode._id}/${primaryCode}`
       mailing = sgMail.send(emailConstant.servicerApproval(updatePrimaryCode.email,
         {
@@ -302,7 +303,7 @@ exports.createServiceProvider = async (req, res, next) => {
 
       })
       );
-      console.log("teamMembers---------------------",teamMembers);
+      console.log("teamMembers---------------------", teamMembers);
       if (teamMembers.length > 0) {
         let saveMembers = await userService.insertManyUser(teamMembers)
         if (data.status) {
