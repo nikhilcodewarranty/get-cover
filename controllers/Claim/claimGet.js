@@ -1402,6 +1402,18 @@ exports.getcustomerDetail = async (req, res) => {
           role: checkRole.role,
           email: getUser.email
         }
+        if (getUser.roleId.toString() == process.env.customer) {
+          submittedByDetail = {
+            role: "primaryDetail",
+            customerDetail
+          }
+        }
+        if (req.role != "Customer") {
+          submittedByDetail = {
+            role: "primaryDetail",
+            customerDetail
+          }
+        }
       }
 
     } else {
@@ -1411,7 +1423,6 @@ exports.getcustomerDetail = async (req, res) => {
       }
     }
     // customerDetail.submittedBy = getClaim[0].submittedBy != "" ? getClaim[0].submittedBy : customerDetail.customer_user.email
-
 
     res.send({
       code: constants.successCode,
