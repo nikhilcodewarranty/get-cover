@@ -430,7 +430,7 @@ exports.addClaim = async (req, res, next) => {
 
     }
 
-    data.receiptImage = data.file    
+    data.receiptImage = data.file
     data.servicerId = data.servicerId ? data.servicerId : null
 
     const checkOrder = await orderService.getOrder({ _id: checkContract.orderId }, { isDeleted: false })
@@ -584,13 +584,13 @@ exports.addClaim = async (req, res, next) => {
         redirectId: base_url
       }
       if (checkServicer?.isAccountCreate) {
-        emailData.subject = `New Device Received for Repair - ID ${claimResponse.unique_key}`
-        emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please check the following link :`
+        emailData.subject = `New Device Received for Repair - ID: ${claimResponse.unique_key}`
+        emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please click the following link :`
         mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary?.email, notificationCC, emailData))
       }
       else {
-        emailData.subject = `New Device Received for Repair - ID  ${claimResponse.unique_key}`
-        emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please check the following link :`
+        emailData.subject = `New Device Received for Repair - ID: ${claimResponse.unique_key}`
+        emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please click the following link :`
         mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationCC, ["noreply@getcover.com"], emailData))
       }
     }
@@ -741,8 +741,8 @@ exports.editClaim = async (req, res) => {
         websiteSetting: settingData[0],
         senderName: servicerPrimary ? servicerPrimary.metaData[0]?.firstName : '',
         redirectId: base_url,
-        content: `We would like to inform you that the repair information for Claim #  ${checkClaim.unique_key} has been successfully updated in our system. Please review the updated details and proceed accordingly.`,
-        subject: `Update on Repair Information for Claim  # ${checkClaim.unique_key}`
+        content: `We would like to inform you that the repair information for Claim ID  ${checkClaim.unique_key} has been successfully updated in our system. Please review the updated details and proceed accordingly.`,
+        subject: `Update on Repair Information for Claim  ID ${checkClaim.unique_key}`
       }
 
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, notificationEmails, emailData))
@@ -1109,9 +1109,9 @@ exports.editClaimStatus = async (req, res) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: customerPrimary?.metaData[0].firstName,
-        content: `The Repair Status has been updated on the claim # - ${checkClaim.unique_key} to be ${matchedData.label} .Please review the information on following url`,
-        subject: `Repair Status Updated for Claim #  ${checkClaim.unique_key}`,
+        senderName: '',
+        content: `The Repair Status has been updated on the claim #  ${checkClaim.unique_key} to be ${matchedData.label} .Please review the information at`,
+        subject: `Repair Status Updated for ${checkClaim.unique_key}`,
         redirectId: base_url
       }
       let mailing = checkCustomer.isAccountCreate ? sgMail.send(emailConstant.sendEmailTemplate(customerPrimary?.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
@@ -1179,10 +1179,10 @@ exports.editClaimStatus = async (req, res) => {
           address: settingData[0]?.address,
           websiteSetting: settingData[0],
           senderName: dealerPrimary.metaData[0].firstName,
-          content: `We regret to inform you that your claim ${checkClaim.unique_key} has been reviewed and, unfortunately, does not meet the criteria for approval. After careful assessment, the claim has been rejected due to the following reason:`,
+          content: `We regret to inform you that your claim ID: ${checkClaim.unique_key} has been reviewed and, unfortunately, does not meet the criteria for approval. After careful assessment, the claim has been rejected due to the following reason:`,
           content1: `Reason for Rejection : ${data.reason}`,
           content2: `If you believe there has been an error or if you would like further clarification, please feel free to reach out to our support team at support@getcover.com. Our team is here to assist you with any questions you may have.`,
-          subject: `Claim Rejection Notice -Claim #  ${checkClaim.unique_key}`
+          subject: `Claim Rejection Notice -Claim ID:  ${checkClaim.unique_key}`
         }
         let mailing = checkDealer.isAccountCreate ? sgMail.send(emailConstant.sendClaimStatusNotification(dealerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendClaimStatusNotification(notificationEmails, ["noreply@getcover.com"], emailData))
         //Email to Reseller
@@ -1193,7 +1193,7 @@ exports.editClaimStatus = async (req, res) => {
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
             senderName: resellerPrimary?.metaData[0].firstName,
-            content: `We regret to inform you that your claim ${checkClaim.unique_key} has been reviewed and, unfortunately, does not meet the criteria for approval. After careful assessment, the claim has been rejected due to the following reason:`,
+            content: `We regret to inform you that your Claim ID: ${checkClaim.unique_key} has been reviewed and, unfortunately, does not meet the criteria for approval. After careful assessment, the claim has been rejected due to the following reason:`,
             content1: `Reason for Rejection : ${data.reason}`,
             content2: `If you believe there has been an error or if you would like further clarification, please feel free to reach out to our support team at support@getcover.com. Our team is here to assist you with any questions you may have.`,
             subject: `Claim Rejection Notice -Claim #  ${checkClaim.unique_key}`
@@ -1207,7 +1207,7 @@ exports.editClaimStatus = async (req, res) => {
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
             senderName: customerPrimary.metaData[0].firstName,
-            content: `We regret to inform you that your claim ${checkClaim.unique_key} has been reviewed and, unfortunately, does not meet the criteria for approval. After careful assessment, the claim has been rejected due to the following reason:`,
+            content: `We regret to inform you that your claim Claim ID: ${checkClaim.unique_key} has been reviewed and, unfortunately, does not meet the criteria for approval. After careful assessment, the claim has been rejected due to the following reason:`,
             content1: `Reason for Rejection : ${data.reason}`,
             content2: `If you believe there has been an error or if you would like further clarification, please feel free to reach out to our support team at support@getcover.com. Our team is here to assist you with any questions you may have.`,
             subject: `Claim Rejection Notice - Claim # ${checkClaim.unique_key}`
@@ -1222,7 +1222,7 @@ exports.editClaimStatus = async (req, res) => {
               address: settingData[0]?.address,
               websiteSetting: settingData[0],
               senderName: servicerPrimary?.metaData[0].firstName,
-              content: `We would like to inform you that Claim # - ${checkClaim.unique_key} has been rejected, and no further action is needed on your part for this claim. Please halt any ongoing repair work related to this claim immediately`,
+              content: `We would like to inform you that Claim ID - ${checkClaim.unique_key} has been rejected, and no further action is needed on your part for this claim. Please halt any ongoing repair work related to this claim immediately`,
               content1: `If you have any questions or require clarification, feel free to contact us`,
               subject: "Claim Update - No Further Action Required"
             }
@@ -1236,7 +1236,7 @@ exports.editClaimStatus = async (req, res) => {
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
             senderName: admin?.metaData[0].firstName,
-            content: `This is to notify you that the claim rejection process for Claim # - ${checkClaim.unique_key} has been completed successfully. The claim has been marked as rejected, and the customer has been notified with the reason provided`,
+            content: `This is to notify you that the claim rejection process for Claim ID - ${checkClaim.unique_key} has been completed successfully. The claim has been marked as rejected, and the customer has been notified with the reason provided`,
             subject: "Action Notification – Claim Rejection Completed"
           }
           mailing = sgMail.send(emailConstant.sendClaimStatusNotification(notificationEmails, ['noreply@getcover.com'], emailData))
@@ -1249,10 +1249,10 @@ exports.editClaimStatus = async (req, res) => {
           address: settingData[0]?.address,
           websiteSetting: settingData[0],
           senderName: dealerPrimary.metaData[0].firstName,
-          content: `We are pleased to inform you that your claim # - ${checkClaim.unique_key} has been successfully completed. All necessary repairs or services associated with your claim have been finalized`,
+          content: `We are pleased to inform you that your claim Claim ID: - ${checkClaim.unique_key} has been successfully completed. All necessary repairs or services associated with your claim have been finalized`,
           content1: `If you have any further questions or require additional support, please feel free to contact us at support@getcover.com.`,
           content2: '',
-          subject: `Claim Completion Notification – Claim #  ${checkClaim.unique_key}`
+          subject: `Claim Completion Notification – Claim ID:  ${checkClaim.unique_key}`
         }
         let mailing = checkDealer.isAccountCreate ? sgMail.send(emailConstant.sendClaimStatusNotification(dealerPrimary.email, notificationEmails, emailData)) : sgMail.send(emailConstant.sendClaimStatusNotification(notificationEmails, ["noreply@getcover.com"], emailData))
         //Email to Reseller
@@ -1263,7 +1263,7 @@ exports.editClaimStatus = async (req, res) => {
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
             senderName: resellerPrimary?.metaData[0].firstName,
-            content: `We are pleased to inform you that your claim # - ${checkClaim.unique_key} has been successfully completed. All necessary repairs or services associated with your claim have been finalized`,
+            content: `We are pleased to inform you that  your claim Claim ID: ${checkClaim.unique_key} has been successfully completed. All necessary repairs or services associated with your claim have been finalized`,
             content1: `If you have any further questions or require additional support, please feel free to contact us at support@getcover.com.`,
             content2: '',
             subject: `Claim Completion Notification – Claim #  ${checkClaim.unique_key}`
@@ -1277,7 +1277,7 @@ exports.editClaimStatus = async (req, res) => {
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
             senderName: customerPrimary.metaData[0].firstName,
-            content: `We are pleased to inform you that your claim # - ${checkClaim.unique_key} has been successfully completed. All necessary repairs or services associated with your claim have been finalized`,
+            content: `We are pleased to inform you that your claim Claim ID:  ${checkClaim.unique_key} has been successfully completed. All necessary repairs or services associated with your claim have been finalized`,
             content1: `If you have any further questions or require additional support, please feel free to contact us at support@getcover.com.`,
             content2: '',
             subject: `Claim Completion Notification – Claim #  ${checkClaim.unique_key}`
@@ -1292,7 +1292,7 @@ exports.editClaimStatus = async (req, res) => {
               address: settingData[0]?.address,
               websiteSetting: settingData[0],
               senderName: servicerPrimary?.metaData[0].firstName,
-              content: `We are pleased to inform you that Claim # - ${checkClaim.unique_key} has been successfully completed. Thank you for your prompt and professional service in handling this claim. Your efforts have been invaluable in ensuring a smooth process for our customer.`,
+              content: `We are pleased to inform you that Claim ID ${checkClaim.unique_key} has been successfully completed. Thank you for your prompt and professional service in handling this claim. Your efforts have been invaluable in ensuring a smooth process for our customer.`,
               content1: `Should you have any questions or require additional information, please do not hesitate to reach out.`,
               content2: '',
               subject: "Claim Update – Service Completion Confirmed"
@@ -1306,8 +1306,8 @@ exports.editClaimStatus = async (req, res) => {
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
-            senderName: admin?.metaData[0].firstName,
-            content: `This is to inform you that the completion process for Claim ID: [Claim ID Number] has been successfully carried out. All steps have been finalized, and the customer has been notified of the claim completion`,
+            senderName: "Admin",
+            content: `This is to inform you that the completion process for Claim ID: ${checkClaim.unique_key} has been successfully carried out. All steps have been finalized, and the customer has been notified of the claim completion`,
             content2: '',
             content1: '',
             subject: "Action Notification – Claim Completion Processed"
@@ -1628,9 +1628,9 @@ exports.editServicer = async (req, res) => {
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
       senderName: getPrimary ? getPrimary.metaData[0].firstName : "",
-      subject: `New Device Received for Repair # ${checkClaim.unique_key}`,
+      subject: `New Device Received for Repair - ID: ${checkClaim.unique_key}`,
       redirectId: base_url,
-      content: `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please check the following link :`
+      content: `We want to inform you that ${checkCustomer.username} has requested for the repair of a device ${checkContract.serial}. Please proceed with the necessary assessment and repairs as soon as possible. To view the Claim, please click the following link :`
 
     }
 
@@ -2074,7 +2074,7 @@ exports.saveBulkClaim = async (req, res) => {
               let shipingAddress = item.shippingTo.split(',');   // Split the string by commas
               let userZip = shipingAddress[shipingAddress.length - 1];
               let addresses = allDataArray[0]?.order.customers.addresses
-              const validAddress = addresses.find(address => address.zip != userZip)
+              const validAddress = addresses.find(address => Number(address.zip) === Number(userZip));
               if (!validAddress) {
                 item.status = "Invalid user address!"
                 item.exit = true;
@@ -2157,6 +2157,7 @@ exports.saveBulkClaim = async (req, res) => {
         if (data.servicerData?.resellerId) {
           servicerId = data.servicerData?.resellerId
         }
+        const issue = data.issue != "" ? data.issue + "-" + data.diagnosis : data.diagnosis
         // emailDealerId.push(data.orderData?.order?.dealerId);
         if (!data.exit) {
           let obj = {
@@ -2179,7 +2180,7 @@ exports.saveBulkClaim = async (req, res) => {
             unique_key_number: unique_key_number,
             unique_key_search: "CC" + "2024" + unique_key_number,
             unique_key: "CC-" + "2024-" + unique_key_number,
-            diagnosis: data.diagnosis,
+            diagnosis: issue,
             lossDate: data.lossDate,
             claimFile: 'open',
           }
@@ -2280,8 +2281,10 @@ exports.saveBulkClaim = async (req, res) => {
               existArray.data[servicerId].push({
                 "Contract# / Serial#": item.contractId ? item.contractId : "",
                 "Loss Date": item.lossDate ? formattedDate : '',
-                Diagnosis: item.diagnosis ? item.diagnosis : '',
+                Diagnosis: item.issue ? item.issue + "-" + item.diagnosis : item.diagnosis,
                 "Coverage Type": item.coverageType ? item.coverageType : '',
+                "Submitted By": item.userEmail ? item.userEmail : '',
+                "Ship To": item.shippingTo ? item.shippingTo : ''
               });
             }
 
@@ -2289,8 +2292,10 @@ exports.saveBulkClaim = async (req, res) => {
           return {
             "Contract#/Serial#": item.contractId ? item.contractId : "",
             "Loss Date": item.lossDate ? formattedDate : '',
-            Diagnosis: item.diagnosis ? item.diagnosis : '',
+            Diagnosis: item.issue ? item.issue + "-" + item.diagnosis : item.diagnosis,
             "Coverage Type": item.coverageType ? item.coverageType : '',
+            "Submitted By": item.userEmail ? item.userEmail : '',
+            "Ship To": item.shippingTo ? item.shippingTo : '',
             Status: item.status ? item.status : '',
             exit: item.exit
           };
@@ -2311,8 +2316,10 @@ exports.saveBulkClaim = async (req, res) => {
               existArray.data[servicerId].push({
                 "Contract# / Serial#": item.contractId ? item.contractId : "",
                 "Loss Date": item.lossDate ? formattedDate : '',
-                Diagnosis: item.diagnosis ? item.diagnosis : '',
+                Diagnosis: item.issue ? item.issue + "-" + item.diagnosis : item.diagnosis,
                 "Coverage Type": item.coverageType ? item.coverageType : '',
+                "Submitted By": item.userEmail ? item.userEmail : '',
+                "Ship To": item.shippingTo ? item.shippingTo : '',
 
               });
             }
@@ -2321,8 +2328,10 @@ exports.saveBulkClaim = async (req, res) => {
           return {
             "Contract# / Serial#": item.contractId ? item.contractId : "",
             "Loss Date": item.lossDate ? formattedDate : '',
-            Diagnosis: item.diagnosis ? item.diagnosis : '',
+            Diagnosis: item.issue ? item.issue + "-" + item.diagnosis : item.diagnosis,
             "Coverage Type": item.coverageType ? item.coverageType : '',
+            "Submitted By": item.userEmail ? item.userEmail : '',
+            "Ship To": item.shippingTo ? item.shippingTo : '',
             Status: item.status ? item.status : '',
             exit: item.exit
           };
@@ -2344,8 +2353,10 @@ exports.saveBulkClaim = async (req, res) => {
               existArray.data[servicerId].push({
                 "Contract# / Serial#": item.contractId ? item.contractId : "",
                 "Loss Date": item.lossDate ? formattedDate : '',
-                Diagnosis: item.diagnosis ? item.diagnosis : '',
+                Diagnosis: item.issue ? item.issue + "-" + item.diagnosis : item.diagnosis,
                 "Coverage Type": item.coverageType ? item.coverageType : '',
+                "Submitted By": item.userEmail ? item.userEmail : '',
+                "Ship To": item.shippingTo ? item.shippingTo : '',
 
               });
             }
@@ -2354,8 +2365,10 @@ exports.saveBulkClaim = async (req, res) => {
           return {
             "Contract# / Serial#": item.contractId ? item.contractId : "",
             "Loss Date": item.lossDate ? formattedDate : '',
-            Diagnosis: item.diagnosis ? item.diagnosis : '',
+            Diagnosis: item.issue ? item.issue + "-" + item.diagnosis : item.diagnosis,
             "Coverage Type": item.coverageType ? item.coverageType : '',
+            "Submitted By": item.userEmail ? item.userEmail : '',
+            "Ship To": item.shippingTo ? item.shippingTo : '',
             Status: item.status ? item.status : '',
             exit: item.exit
           };
@@ -2372,8 +2385,10 @@ exports.saveBulkClaim = async (req, res) => {
             existArray.data[servicerId].push({
               "Contract# / Serial#": item.contractId ? item.contractId : "",
               "Loss Date": item.lossDate ? formattedDate : '',
-              Diagnosis: item.diagnosis ? item.diagnosis : '',
+              Diagnosis: item.issue ? item.issue + "-" + item.diagnosis : item.diagnosis,
               "Coverage Type": item.coverageType ? item.coverageType : '',
+              "Submitted By": item.userEmail ? item.userEmail : '',
+              "Ship To": item.shippingTo ? item.shippingTo : '',
 
             });
           }
@@ -2382,8 +2397,10 @@ exports.saveBulkClaim = async (req, res) => {
             "Contract# / Serial#": item.contractId ? item.contractId : "",
             Servicer: item.servicerName || "",
             "Loss Date": item.lossDate ? formattedDate : '',
-            Diagnosis: item.diagnosis ? item.diagnosis : '',
+            Diagnosis: item.issue ? item.issue + "-" + item.diagnosis : item.diagnosis,
             "Coverage Type": item.coverageType ? item.coverageType : '',
+            "Submitted By": item.userEmail ? item.userEmail : '',
+            "Ship To": item.shippingTo ? item.shippingTo : '',
             Status: item.status ? item.status : '',
             exit: item.exit
           };
@@ -2636,6 +2653,7 @@ exports.sendMessages = async (req, res) => {
     data.commentedByUser = req.teammateId
 
     emailTo = await supportingFunction.getPrimaryUser({ _id: req.teammateId, metaData: { $elemMatch: { isPrimary: true } } })
+    const commentByUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
     if (data.type == 'Reseller') {
       data.commentedTo = orderData.resellerId
       emailTo = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.resellerId, isPrimary: true } } })
@@ -2725,12 +2743,12 @@ exports.sendMessages = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      commentBy: "Amit",
+      commentBy: commentByUser.metaData[0]?.firstName,
       date: new Date().toLocaleDateString("en-US"),
       senderName: emailTo?.metaData[0].firstName,
       comment: data.content,
-      content: `A new comment has been added to Claim # ${checkClaim.unique_key}. Here are the details:`,
-      subject: "New message for claim #" + checkClaim.unique_key + "",
+      content: `A new comment has been added to Claim #${checkClaim.unique_key}. Here are the details:`,
+      subject: `New Comment on Claim #${checkClaim.unique_key}`,
       redirectId: base_url
     }
 
