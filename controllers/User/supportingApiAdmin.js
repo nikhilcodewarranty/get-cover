@@ -166,19 +166,19 @@ exports.createDealer = async (req, res) => {
                 //Primary information edit
                 let userQuery = { metaData: { $elemMatch: { metaId: { $in: [data.dealerId] }, isPrimary: true } } }
 
-         
+
                 let newValues1 = {
                     $set: {
                         email: allUserData[0].email,
-                        'metaData.$.firstName':allUserData[0].firstNam,
-                        'metaData.$.lastName':  allUserData[0].lastName,
-                        'metaData.$.position':allUserData[0].position,
-                        'metaData.$.phoneNumber':allUserData[0].phoneNumber,
-                        'metaData.$.status':allUserData[0].status ? true : false,
+                        'metaData.$.firstName': allUserData[0].firstNam,
+                        'metaData.$.lastName': allUserData[0].lastName,
+                        'metaData.$.position': allUserData[0].position,
+                        'metaData.$.phoneNumber': allUserData[0].phoneNumber,
+                        'metaData.$.status': allUserData[0].status ? true : false,
                         'metaData.$.roleId': "656f08041eb1acda244af8c6"
-                
-                      }
-                  
+
+                    }
+
                 }
 
                 await userService.updateUser(userQuery, newValues1, { new: true })
@@ -457,7 +457,7 @@ exports.createDealer = async (req, res) => {
 
                     let createData = await providerService.createServiceProvider(servicerObject)
                 }
-        
+
                 let allUsersData = allUserData.map((obj, index) => ({
                     ...obj,
                     approvedStatus: 'Approved',
@@ -569,13 +569,13 @@ const getObjectFromS3 = (bucketReadUrl) => {
                 };
 
                 resolve(result);
-            } 
+            }
         });
     });
 };
 
 //Create new service provider By SA
-exports.createServiceProvider = async (req, res) => { 
+exports.createServiceProvider = async (req, res) => {
     try {
         const data = req.body;
         const providerUserArray = data.providers;
@@ -658,3 +658,40 @@ exports.createServiceProvider = async (req, res) => {
         });
     }
 };
+
+
+exports.updateData = async (req, res) => {
+    try {
+        let findUser = await userService.findUser()
+        for (let u = 0; u < findUser.length; u++) {
+            findUser[u] = findUser[u].toObject()
+            console.log(findUser[u], "++++++++++++++++", findUser[u].firstName)
+            let dataToUpdate = {
+                $set: {
+                    metaData: [{
+                        metaId: findUser[u].metaId,
+                        status: findUser[u].status,
+                        roleId: findUser[u].roleId,
+                        firstName: findUser[u].firstName,
+                        lastName: findUser[u].lastName,
+                        phoneNumber: findUser[u].phoneNumber,
+                        position: findUser[u].position,
+                        isPrimary: findUser[u].isPrimary,
+                        isDeleted: findUser[u].isDeleted,
+                        dialCode: findUser[u].dialCode
+                    }]
+                }
+            }
+            let updateUser = await userService.updateUser({ _id: findUser[u]._id }, dataToUpdate, { new: true })
+            // console.log(findUser[u],dataToUpdate.$set, "==============================================================")
+        }
+        res.send({
+            code: 200
+        })
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message,
+        })
+    }
+}
