@@ -1681,6 +1681,12 @@ exports.saveBulkClaim = async (req, res) => {
       // // Parse the email field
       const emailArray = JSON.parse(emailField);
 
+      //Get all emails of the login user
+
+      const memberEmail = await userService.getMembers({
+        metaData: { $elemMatch: { metaId: req.userId } }
+      },{})
+
       let length = 8;
       let match = {}
       if (req.role == 'Dealer') {
@@ -2063,7 +2069,8 @@ exports.saveBulkClaim = async (req, res) => {
           // check login email
           if (item.userEmail != '') {
             item.submittedBy = item.userEmail
-            if (item.userEmail != req.email) {
+            const validEmail = memberEmail.find(member =>member.email === item.userEmail);
+            if (!validEmail) {
               item.status = "Invalid Email"
               item.exit = true;
             }
