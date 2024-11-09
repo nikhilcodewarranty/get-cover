@@ -1388,6 +1388,7 @@ exports.getcustomerDetail = async (req, res) => {
                 'customer_user.firstName': { $arrayElemAt: ["$customer_user.metaData.firstName", 0] },
                  'customer_user.lastName': { $arrayElemAt: ["$customer_user.metaData.lastName", 0] },
                  'customer_user.dialCode': { $arrayElemAt: ["$customer_user.metaData.dialCode", 0] },
+                 'customer_user.roleId': { $arrayElemAt: ["$customer_user.metaData.roleId", 0] },
                 'customer_user.email':"$customer_user.email" ,
                  'customer_user.phoneNumber': { $arrayElemAt: ["$customer_user.metaData.phoneNumber", 0] },
                  'customer_user.position': { $arrayElemAt: ["$customer_user.metaData.position", 0] },
@@ -1415,14 +1416,15 @@ exports.getcustomerDetail = async (req, res) => {
     if (getClaim[0].submittedBy && getClaim[0].submittedBy != "") {
       let getUser = await userService.getUserById1({ email: getClaim[0].submittedBy })
       if (getUser) {
-        checkRole = await userService.getRoleById({ _id: getUser.metaData[0].roleId })
+        let checkRole = await userService.getRoleById({ _id: getUser.metaData[0].roleId })
         submittedByDetail = {
           emailWithRole: getUser.email + " (" + checkRole.role + ")",
           name: getUser.metaData[0]?.firstName + " " + getUser.metaData[0]?.lastName,
           role: checkRole.role,
           email: getUser.email
         }
-        if (getUser.metaData[0].roleId.toString() == process.env.customer) {
+
+        if (getUser.metaData[0].roleId.toString() == process.env.customer.toString()) {
           submittedByDetail = {
             role: "primaryDetail",
             customerDetail
