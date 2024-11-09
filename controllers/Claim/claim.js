@@ -2881,7 +2881,7 @@ exports.statusClaim = async (req, res) => {
         } else {
           console.log("444444444444444444444")
 
-          const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
+          const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: true }, { new: true })
         }
 
       }
