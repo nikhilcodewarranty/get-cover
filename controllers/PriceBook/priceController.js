@@ -77,7 +77,6 @@ exports.getAllPriceBooks = async (req, res, next) => {
     let searchName1 = req.body.pName ? req.body.pName.replace(/\s+/g, ' ').trim() : ''
     console.log(typeof (data.status))
     let filterStatus = (data.status === "true" || data.status === "false") ? (data.status === "true" ? true : false) : ""
-    console.log("123123123123123122121",filterStatus);
     data.status = typeof (filterStatus) == "string" ? "all" : filterStatus
     let query; 
     if (!Array.isArray(data.coverageType) && data.coverageType != '') {
@@ -87,9 +86,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
       });
       return;
     }
-    console.log("22222222222222222222222222222",data.status)
     if (data.status != "all") {
-      console.log("asdasdaaaaaaaaaaaaaaaaaa",data.status)
       if (data.coverageType != "") {
         query = {
           $and: [
@@ -126,7 +123,6 @@ exports.getAllPriceBooks = async (req, res, next) => {
         ]
       };
     } else {
-      // console.log("asdasdaaaaaaaaaaaaaaaaaa",data.status)
       query = {
         $and: [
           { isDeleted: false },
@@ -139,7 +135,6 @@ exports.getAllPriceBooks = async (req, res, next) => {
         ]
       };
     }
-    // return;
     if (data.term != '') {
       query.$and.push({ 'term': Number(data.term) });
     }
