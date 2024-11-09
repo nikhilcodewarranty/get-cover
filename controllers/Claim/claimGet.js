@@ -1387,6 +1387,7 @@ exports.getcustomerDetail = async (req, res) => {
                 zip:1,
                 'customer_user.firstName': { $arrayElemAt: ["$customer_user.metaData.firstName", 0] },
                  'customer_user.lastName': { $arrayElemAt: ["$customer_user.metaData.lastName", 0] },
+                 'customer_user.dialCode': { $arrayElemAt: ["$customer_user.metaData.dialCode", 0] },
                 'customer_user.email':"$customer_user.email" ,
                  'customer_user.phoneNumber': { $arrayElemAt: ["$customer_user.metaData.phoneNumber", 0] },
                  'customer_user.position': { $arrayElemAt: ["$customer_user.metaData.position", 0] },
