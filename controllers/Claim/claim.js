@@ -2889,10 +2889,10 @@ exports.statusClaim = async (req, res) => {
       }
     }
 
-    res.send({
-      code: constant.successCode,
-      updateStatus
-    })
+    // res.send({
+    //   code: constant.successCode,
+    //   updateStatus
+    // })
   }
   catch (err) {
     res.send({
