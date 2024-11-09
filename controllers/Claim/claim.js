@@ -1037,7 +1037,7 @@ exports.editClaimStatus = async (req, res) => {
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
         senderName: customerPrimary?.metaData[0].firstName,
-        content: `The Customer Status has been updated on the claim # ${checkClaim.unique_key} to be ${matchedData.label}. Please review the information on the following url.`,
+        content: `The Customer Status has been updated on the claim # ${checkClaim.unique_key} to be ${matchedData?.label}. Please review the information on the following url.`,
         subject: `Customer Status Updated for ${checkClaim.unique_key}`,
         redirectId: base_url
       }
@@ -1113,7 +1113,7 @@ exports.editClaimStatus = async (req, res) => {
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
         senderName: '',
-        content: `The Repair Status has been updated on the claim #  ${checkClaim.unique_key} to be ${matchedData.label} .Please review the information at`,
+        content: `The Repair Status has been updated on the claim #  ${checkClaim.unique_key} to be ${matchedData?.label} .Please review the information at`,
         subject: `Repair Status Updated for ${checkClaim.unique_key}`,
         redirectId: base_url
       }
