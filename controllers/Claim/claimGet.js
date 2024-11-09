@@ -1390,20 +1390,22 @@ exports.getcustomerDetail = async (req, res) => {
       })
       return
     }
+
+   ;
     let customerDetail = getClaim[0].customer
     customerDetail.shippingTo = getClaim[0].shippingTo != "" ? getClaim[0].shippingTo : customerDetail.street + ", " + customerDetail.city + ", " + customerDetail.state + ", " + customerDetail.country + ", " + customerDetail.zip
     let submittedByDetail
     if (getClaim[0].submittedBy && getClaim[0].submittedBy != "") {
       let getUser = await userService.getUserById1({ email: getClaim[0].submittedBy })
       if (getUser) {
-        checkRole = await userService.getRoleById({ _id: getUser.roleId })
+        checkRole = await userService.getRoleById({ _id: getUser.metaData[0].roleId })
         submittedByDetail = {
           emailWithRole: getUser.email + " (" + checkRole.role + ")",
-          name: getUser.firstName + " " + getUser.lastName,
+          name: getUser.metaData[0]?.firstName + " " + getUser.metaData[0]?.lastName,
           role: checkRole.role,
           email: getUser.email
         }
-        if (getUser.roleId.toString() == process.env.customer) {
+        if (getUser.metaData[0].roleId.toString() == process.env.customer) {
           submittedByDetail = {
             role: "primaryDetail",
             customerDetail
