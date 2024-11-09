@@ -2839,42 +2839,44 @@ exports.statusClaim = async (req, res) => {
       const sevenDaysAfterShippedDate = new Date(latestServicerShippedDate);
       sevenDaysAfterShippedDate.setDate(sevenDaysAfterShippedDate.getDate() + 1);
       if (new Date() === sevenDaysAfterShippedDate || new Date() > sevenDaysAfterShippedDate) {
+
+        console.log("I amdddsdfsfdsfdsdfsdfsdfssdfsdf");
         // Update status for track status
-        messageData.trackStatus = [
-          {
-            status: 'completed',
-            date: new Date()
-          }
-        ]
+        // messageData.trackStatus = [
+        //   {
+        //     status: 'completed',
+        //     date: new Date()
+        //   }
+        // ]
 
-        updateStatus = await claimService.updateClaim({ _id: claimId }, {
-          $push: messageData,
-          $set: { claimFile: 'completed', claimDate: new Date(), claimStatus: [{ status: 'completed', date: new Date() }] }
-        }, { new: true })
+        // updateStatus = await claimService.updateClaim({ _id: claimId }, {
+        //   $push: messageData,
+        //   $set: { claimFile: 'completed', claimDate: new Date(), claimStatus: [{ status: 'completed', date: new Date() }] }
+        // }, { new: true })
 
-        const query = { contractId: new mongoose.Types.ObjectId(contractId) }
+        // const query = { contractId: new mongoose.Types.ObjectId(contractId) }
 
-        let checkContract = await contractService.getContractById({ _id: contractId })
+        // let checkContract = await contractService.getContractById({ _id: contractId })
 
-        let claimTotalQuery = [
-          { $match: query },
-          { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
+        // let claimTotalQuery = [
+        //   { $match: query },
+        //   { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
 
-        ]
+        // ]
 
-        let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
+        // let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
 
-        // Update Eligibilty true and false
-        if (checkContract.isMaxClaimAmount) {
-          if (checkContract.productValue > claimTotal[0]?.amount) {
-            const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: true }, { new: true })
-          }
-          else if (checkContract.productValue < claimTotal[0]?.amount) {
-            const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: false }, { new: true })
-          }
-        } else {
-          const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
-        }
+        // // Update Eligibilty true and false
+        // if (checkContract.isMaxClaimAmount) {
+        //   if (checkContract.productValue > claimTotal[0]?.amount) {
+        //     const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: true }, { new: true })
+        //   }
+        //   else if (checkContract.productValue < claimTotal[0]?.amount) {
+        //     const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: false }, { new: true })
+        //   }
+        // } else {
+        //   const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
+        // }
 
       }
     }
