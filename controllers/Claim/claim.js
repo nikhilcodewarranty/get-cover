@@ -2887,7 +2887,7 @@ exports.statusClaim = async (req, res) => {
             const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: false }, { new: true })
           }
         } else {
-          const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
+          const updateContract = await contractService.updateContract({ _id:contractId }, { eligibilty: true }, { new: true })
         }
 
       }
