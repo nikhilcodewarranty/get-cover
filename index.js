@@ -114,7 +114,6 @@ cron.schedule(' 4 0 * * *', () => {
 });
 
 cron.schedule('35 11 * * *', () => {
-  console.log("Hello I am")
   axios.get(`${process.env.API_ENDPOINT}api-v1/claim/statusClaim`)   //live
 });
 

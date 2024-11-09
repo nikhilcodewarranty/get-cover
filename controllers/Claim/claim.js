@@ -1631,9 +1631,9 @@ exports.editServicer = async (req, res) => {
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
       senderName: getPrimary ? getPrimary.metaData[0].firstName : "",
-      model:checkContract.model,
-      serial:checkContract.serial,
-      manufacturer:checkContract.manufacture,
+      model: checkContract.model,
+      serial: checkContract.serial,
+      manufacturer: checkContract.manufacture,
       subject: `New Device Received for Repair - ID: ${checkClaim.unique_key}`,
       redirectId: base_url,
       content: `We want to inform you that ${checkCustomer.username} has requested for the repair of a device detailed below:`
@@ -1690,7 +1690,7 @@ exports.saveBulkClaim = async (req, res) => {
       //Get all emails of the login user
       const memberEmail = await userService.getMembers({
         metaData: { $elemMatch: { metaId: req.userId } }
-      },{})
+      }, {})
       let length = [8, 5];
       let match = {}
       if (req.role == 'Dealer') {
@@ -2850,54 +2850,47 @@ exports.statusClaim = async (req, res) => {
       const customerLastResponseDate = customerStatus[0]?.date
       const latestServicerShippedDate = new Date(latestServicerShipped);
       const sevenDaysAfterShippedDate = new Date(latestServicerShippedDate);
-      sevenDaysAfterShippedDate.setDate(sevenDaysAfterShippedDate.getDate() + 1);
-     
+      sevenDaysAfterShippedDate.setDate(sevenDaysAfterShippedDate.getDate() + 1); 
 
-      if(new Date() === sevenDaysAfterShippedDate || new Date() > sevenDaysAfterShippedDate){
-        console.log("claimId-------------------",result[i].unique_key)
-        console.log("today date",new Date())
-        console.log("sevenDaysAfterShippedDate",sevenDaysAfterShippedDate)
+      if (new Date() === sevenDaysAfterShippedDate || new Date() > sevenDaysAfterShippedDate) {
+        // Update status for track status
+        messageData.trackStatus = [
+          {
+            status: 'completed',
+            date: new Date()
+          }
+        ]
+
+        updateStatus = await claimService.updateClaim({ _id: claimId }, {
+          $push: messageData,
+          $set: { claimFile: 'completed', claimDate: new Date(), claimStatus: [{ status: 'completed', date: new Date() }] }
+        }, { new: true })
+
+        const query = { contractId: new mongoose.Types.ObjectId(contractId) }
+
+        let checkContract = await contractService.getContractById({ _id: contractId })
+
+        let claimTotalQuery = [
+          { $match: query },
+          { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
+
+        ]
+
+        let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
+
+        // Update Eligibilty true and false
+        if (checkContract.isMaxClaimAmount) {
+          if (checkContract.productValue > claimTotal[0]?.amount) {
+            const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: true }, { new: true })
+          }
+          else if (checkContract.productValue < claimTotal[0]?.amount) {
+            const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: false }, { new: true })
+          }
+        } else {
+          const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
+        }
+
       }
-      
-      // if (new Date() === sevenDaysAfterShippedDate || new Date() > sevenDaysAfterShippedDate) {
-      //   // Update status for track status
-      //   messageData.trackStatus = [
-      //     {
-      //       status: 'completed',
-      //       date: new Date()
-      //     }
-      //   ]
-
-      //   updateStatus = await claimService.updateClaim({ _id: claimId }, {
-      //     $push: messageData,
-      //     $set: { claimFile: 'completed', claimDate: new Date(), claimStatus: [{ status: 'completed', date: new Date() }] }
-      //   }, { new: true })
-
-      //   const query = { contractId: new mongoose.Types.ObjectId(contractId) }
-
-      //   let checkContract = await contractService.getContractById({ _id: contractId })
-
-      //   let claimTotalQuery = [
-      //     { $match: query },
-      //     { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
-
-      //   ]
-
-      //   let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
-
-      //   // Update Eligibilty true and false
-      //   if (checkContract.isMaxClaimAmount) {
-      //     if (checkContract.productValue > claimTotal[0]?.amount) {
-      //       const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: true }, { new: true })
-      //     }
-      //     else if (checkContract.productValue < claimTotal[0]?.amount) {
-      //       const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: false }, { new: true })
-      //     }
-      //   } else {
-      //     const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
-      //   }
-
-      // }
     }
 
     res.send({
