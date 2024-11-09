@@ -1565,9 +1565,9 @@ exports.getCustomerDetails = async (req, res) => {
       })
       return;
     }
-    
+
     let custmerDetails = {
-      ...getCustomerDetails,
+      ...getUser,
       firstName: getUser.metaData[0].firstName,
       isPrimary: getUser.metaData[0].isPrimary,
       phoneNumber: getUser.metaData[0].phoneNumber,
