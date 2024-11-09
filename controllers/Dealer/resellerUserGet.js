@@ -926,8 +926,6 @@ exports.getResellerUsers = async (req, res) => {
         return;
     }
 
-
-
     const users = await userService.findUserforCustomer1([
         {
             $match: {
@@ -936,7 +934,7 @@ exports.getResellerUsers = async (req, res) => {
                     { metaData: { $elemMatch: { firstName: { '$regex': data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
                     { metaData: { $elemMatch: { lastName: { '$regex': data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
                     { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                    { metaData: { $elemMatch: { metaId: checkReseller._id, isPrimary: true } } }
+                    { metaData: { $elemMatch: { metaId: checkReseller._id } } }
                 ]
             }
         },
