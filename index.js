@@ -106,16 +106,15 @@ var cronOptions = {
   'url': `${process.env.API_ENDPOINT}api-v1/order/cronJobStatus`,
 };
 
-cron.schedule(' 2 0 * * *', () => {
+cron.schedule('2 0 * * *', () => {
   axios.get(`${process.env.API_ENDPOINT}api-v1/order/cronJobStatus`)   //live
 });
-cron.schedule(' 4 0 * * *', () => {
+cron.schedule('4 0 * * *', () => {
   axios.get(`${process.env.API_ENDPOINT}api-v1/contract/cronJobEligible`)   //live
 });
 
-cron.schedule('2 * * * * *', () => {
-  console.log("Hello I am")
-  axios.get(`${process.env.API_ENDPOINT}api-v1/claim/statusClaim`)   //live
+cron.schedule('6 0 * * *', () => {
+  axios.get(`${process.env.API_ENDPOINT}api-v1/claim/statusClaim`);   //live
 });
 
 

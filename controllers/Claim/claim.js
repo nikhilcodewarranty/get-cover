@@ -2865,19 +2865,15 @@ exports.statusClaim = async (req, res) => {
 
         // Update Eligibilty true and false
         if (checkContract.isMaxClaimAmount) {
-          console.log("111111111111111111111111")
           if (checkContract.productValue > claimTotal[0]?.amount) {
-            console.log("222222222222222222")
 
             const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: true }, { new: true })
           }
           else if (checkContract.productValue < claimTotal[0]?.amount) {
-            console.log("333333333333333333333")
 
             const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: false }, { new: true })
           }
         } else {
-          console.log("444444444444444444444")
 
           const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: true }, { new: true })
         }
