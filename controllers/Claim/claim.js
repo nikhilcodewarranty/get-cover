@@ -2826,6 +2826,7 @@ exports.statusClaim = async (req, res) => {
     let updateStatus
 
     for (let i = 0; i < result.length; i++) {
+      
       let messageData = {};
       const repairStatus = result[i].repairStatus;
       let contractId = result[i].contractId;
@@ -2839,8 +2840,6 @@ exports.statusClaim = async (req, res) => {
       const sevenDaysAfterShippedDate = new Date(latestServicerShippedDate);
       sevenDaysAfterShippedDate.setDate(sevenDaysAfterShippedDate.getDate() + 1);
       if (new Date() === sevenDaysAfterShippedDate || new Date() > sevenDaysAfterShippedDate) {
-
-        console.log("I amdddsdfsfdsfdsdfsdfsdfssdfsdf");
         //Update status for track status
         messageData.trackStatus = [
           {
@@ -2854,7 +2853,6 @@ exports.statusClaim = async (req, res) => {
           $set: { claimFile: 'completed', claimDate: new Date(), claimStatus: [{ status: 'completed', date: new Date() }] }
         }, { new: true })
 
-        console.log("unique_key", result[i].unique_key)
         const query = { contractId: new mongoose.Types.ObjectId(contractId) }
 
         let checkContract = await contractService.getContractById({ _id: contractId })
@@ -2889,10 +2887,10 @@ exports.statusClaim = async (req, res) => {
       }
     }
 
-    // res.send({
-    //   code: constant.successCode,
-    //   updateStatus
-    // })
+    res.send({
+      code: constant.successCode,
+      updateStatus
+    })
   }
   catch (err) {
     res.send({
