@@ -1458,7 +1458,7 @@ exports.getDashboardData = async (req, res) => {
     let getClaim = await claimService.getClaimWithAggregate(claimQuery)
     let getContracts = await contractService.findContracts2({ orderId: { $in: orderIds } })
 
-    
+
     res.send({
       code: constant.successCode,
       message: "Success",
@@ -1527,7 +1527,7 @@ exports.getDashboardData1 = async (req, res) => {
 exports.getCustomerDetails = async (req, res) => {
   try {
     let data = req.body
-    let getUser = await userService.getUserById1({ _id: req.teammateId }) 
+    let getUser = await userService.getUserById1({ _id: req.teammateId })
     let mid = new mongoose.Types.ObjectId(req.userId)
     let query = [
       {
@@ -1565,11 +1565,21 @@ exports.getCustomerDetails = async (req, res) => {
       })
       return;
     }
+    
+    let custmerDetails = {
+      ...getCustomerDetails,
+      firstName: getUser.metaData[0].firstName,
+      isPrimary: getUser.metaData[0].isPrimary,
+      phoneNumber: getUser.metaData[0].phoneNumber,
+      status: getUser.metaData[0].status,
+      position: getUser.metaData[0].position,
+      lastName: getUser.metaData[0].lastName,
+    }
     res.send({
       code: constant.successCode,
       message: "Successfully fetched user details.",
       result: getCustomer[0],
-      loginMember: getUser
+      loginMember: custmerDetails
     })
   } catch (err) {
     res.send({
