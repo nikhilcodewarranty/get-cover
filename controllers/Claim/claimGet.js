@@ -1375,14 +1375,32 @@ exports.getcustomerDetail = async (req, res) => {
                   { $match: { metaData: { $elemMatch: { isPrimary: true } } } }
                 ]
               }
+            },            
+            { $unwind: '$customer_user' },
+            {
+              $project:{
+                username:1,
+                city:1,
+                street:1,
+                country:1,
+                state:1,
+                zip:1,
+                'customer_user.firstName': { $arrayElemAt: ["$customer_user.metaData.firstName", 0] },
+                 'customer_user.lastName': { $arrayElemAt: ["$customer_user.metaData.lastName", 0] },
+                'customer_user.email':"$customer_user.email" ,
+                 'customer_user.phoneNumber': { $arrayElemAt: ["$customer_user.metaData.phoneNumber", 0] },
+                 'customer_user.position': { $arrayElemAt: ["$customer_user.metaData.position", 0] },
+
+              }
             },
-            { $unwind: '$customer_user' }
+
           ]
         }
       },
-      { $unwind: '$customer' }
+      { $unwind: '$customer' },
     ]
     let getClaim = await claimService.getClaimWithAggregate(claimQuery)
+ 
     if (!getClaim[0]) {
       res.send({
         code: constants.errorCode,
@@ -1390,8 +1408,6 @@ exports.getcustomerDetail = async (req, res) => {
       })
       return
     }
-
-   ;
     let customerDetail = getClaim[0].customer
     customerDetail.shippingTo = getClaim[0].shippingTo != "" ? getClaim[0].shippingTo : customerDetail.street + ", " + customerDetail.city + ", " + customerDetail.state + ", " + customerDetail.country + ", " + customerDetail.zip
     let submittedByDetail
