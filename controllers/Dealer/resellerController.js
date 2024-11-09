@@ -1239,8 +1239,8 @@ exports.getResellerServicers = async (req, res) => {
             {
                 $match: {
                     $and: [
-                        { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
-                        { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        // { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+                        // { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         { metaData: { $elemMatch: { metaId: { $in: servicerIds }, isPrimary: true } } }
                     ]
                 }
@@ -1292,11 +1292,15 @@ exports.getResellerServicers = async (req, res) => {
                 return servicer.toObject();
             }
         })
-        const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
+        let emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
+        let nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
+        let phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
 
-        const filteredData = result_Array.filter(entry => {
+        let filteredData = result_Array.filter(entry => {
             return (
-                nameRegex.test(entry.servicerData.name)
+                nameRegex.test(entry.servicerData?.name)&&
+                emailRegex.test(entry.email)&&
+                phoneRegex.test(entry.phone)
             );
         });
         res.send({
