@@ -1167,8 +1167,6 @@ exports.getDealerServicers = async (req, res) => {
 
         const servicerIds = servicer.map(obj => obj._id);
         const query1 = { metaId: { $in: servicerIds }, isPrimary: true };
-
-
         const servicerUser = await userService.findUserforCustomer1([
             {
                 $match: {
@@ -1268,9 +1266,12 @@ exports.getDealerServicers = async (req, res) => {
 
         let filteredData = result_Array.filter(entry => {
             return (
-                nameRegex.test(entry.servicerData?.name)
+                nameRegex.test(entry.servicerData?.name)&&
+                emailRegex.test(entry.email)&&
+                phoneRegex.test(entry.phoneNumber)
             );
         });
+
         // Add isServicer key for reseller when true
         filteredData.forEach(item => {
             // Check if resellerId is not null
