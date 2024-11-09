@@ -2819,14 +2819,12 @@ exports.sendMessages = async (req, res) => {
 //Automatic completed when servicer shipped after 7 days cron job
 exports.statusClaim = async (req, res) => {
   try {
-    const result = await claimService.getClaims({
-      'repairStatus.status': 'servicer_shipped',
-    });
+    const result = await claimService.getClaims({ 'repairStatus.status': 'servicer_shipped', claimFile: "open" });
 
     let updateStatus
 
     for (let i = 0; i < result.length; i++) {
-      
+
       let messageData = {};
       const repairStatus = result[i].repairStatus;
       let contractId = result[i].contractId;
@@ -2869,12 +2867,12 @@ exports.statusClaim = async (req, res) => {
         if (checkContract.isMaxClaimAmount) {
           console.log("111111111111111111111111")
           if (checkContract.productValue > claimTotal[0]?.amount) {
-          console.log("222222222222222222")
+            console.log("222222222222222222")
 
             const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: true }, { new: true })
           }
           else if (checkContract.productValue < claimTotal[0]?.amount) {
-          console.log("333333333333333333333")
+            console.log("333333333333333333333")
 
             const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: false }, { new: true })
           }
