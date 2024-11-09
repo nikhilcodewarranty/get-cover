@@ -2854,6 +2854,8 @@ exports.statusClaim = async (req, res) => {
             $set: { claimFile: 'completed', claimDate: new Date(), claimStatus: [{ status: 'completed', date: new Date() }] }
           }, { new: true })
 
+          console.log("messageData",messageData)
+          console.log("updateStatus",updateStatus)
         const query = { contractId: new mongoose.Types.ObjectId(contractId) }
 
         let checkContract = await contractService.getContractById({ _id: contractId })
