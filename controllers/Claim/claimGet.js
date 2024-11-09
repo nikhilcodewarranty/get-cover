@@ -1352,6 +1352,7 @@ exports.checkClaimThreshHold = async (req, res) => {
 exports.getcustomerDetail = async (req, res) => {
   try {
     let data = req.body
+    
     let claimQuery = [
       {
         $match: {
@@ -1401,6 +1402,7 @@ exports.getcustomerDetail = async (req, res) => {
       },
       { $unwind: '$customer' },
     ]
+
     let getClaim = await claimService.getClaimWithAggregate(claimQuery)
  
     if (!getClaim[0]) {
@@ -1418,7 +1420,7 @@ exports.getcustomerDetail = async (req, res) => {
       if (getUser) {
         let checkRole = await userService.getRoleById({ _id: getUser.metaData[0].roleId })
         submittedByDetail = {
-          emailWithRole: getUser.email + " (" + checkRole.role + ")",
+          emailWithRole: getUser.email + "(" + checkRole.role + ")",
           name: getUser.metaData[0]?.firstName + " " + getUser.metaData[0]?.lastName,
           role: checkRole.role,
           email: getUser.email,
