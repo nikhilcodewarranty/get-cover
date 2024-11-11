@@ -2450,13 +2450,14 @@ exports.getResellerByDealerAndCustomer = async (req, res) => {
             {
                 $lookup: {
                     from: "resellers",
-                    localField: "metaId",
+                    localField: "metaData.metaId",
                     foreignField: "_id",
                     as: "resellerData"
                 }
             },
             {
-                $project: {
+                $project:{
+                    resellerData:1, 
                     email: 1,
                     'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
                     'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
@@ -2474,6 +2475,7 @@ exports.getResellerByDealerAndCustomer = async (req, res) => {
                     updatedAt: 1
                 }
             }
+            
         ])
         if (!getReseller) {
             res.send({
