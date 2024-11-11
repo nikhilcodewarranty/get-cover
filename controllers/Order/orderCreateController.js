@@ -1316,7 +1316,7 @@ exports.createOrder1 = async (req, res) => {
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
             senderName: getPrimary.metaData[0]?.firstName,
-            content: "The new order " + checkOrder.unique_key + "  has been created for " + getPrimary.firstName + "",
+            content: "The new order " + checkOrder.unique_key + "  has been created for " + getPrimary.metaData[0]?.firstName + "",
             subject: "New Order"
         }
   
