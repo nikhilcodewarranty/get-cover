@@ -2796,7 +2796,7 @@ exports.sendMessages = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      commentBy: commentByUser.firstName,
+      commentBy: commentByUser.metaData[0].firstName,
       date: new Date().toLocaleDateString("en-US"),
       senderName: emailTo?.metaData[0].firstName,
       comment: data.content,
