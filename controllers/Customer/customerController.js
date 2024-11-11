@@ -2557,8 +2557,6 @@ exports.deleteAddress = async (req, res) => {
     console.log(customerAddresses)
     let newArray = customerAddresses.filter(obj => obj._id.toString() !== data.addressId.toString())
     customerAddresses.push(data.address)
-    console.log("----------------------------------------------", data, customerAddresses)
-
     let udpateCustomer = await customerService.updateCustomer({ _id: req.params.customerId }, { addresses: newArray }, { new: true })
     if (!udpateCustomer) {
       res.send({

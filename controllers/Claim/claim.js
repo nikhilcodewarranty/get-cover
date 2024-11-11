@@ -2063,8 +2063,6 @@ exports.saveBulkClaim = async (req, res) => {
         }
       })
 
-      console.log("---------------------------------------2---------------------------------")
-
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
       let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
       //Filter data which is contract , servicer and not active
