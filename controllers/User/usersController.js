@@ -1919,6 +1919,7 @@ exports.setDefault = async (req, res) => {
         defaultTitle: getData[0].title,
         defaultDarkLogo: getData[0].logoDark,
         defaultPaymentDetail: getData[0].paymentDetail,
+        defaultFavIcon: getData[0].favIcon,
       },
       { new: true })
 
