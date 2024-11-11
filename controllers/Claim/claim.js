@@ -2125,9 +2125,12 @@ exports.saveBulkClaim = async (req, res) => {
               let shipingAddress = item.shippingTo.split(',');   // Split the string by commas
               let userZip = shipingAddress[shipingAddress.length - 1];
               let addresses = allDataArray[0]?.order.customers.addresses
-               addresses?.push(allDataArray[0]?.order.customers.zip)
               const validAddress = addresses?.find(address => Number(address.zip) === Number(userZip));
               if (!validAddress) {
+                item.status = "Invalid user address!"
+                item.exit = true;
+              }
+              if (Number(userZip) != allDataArray[0]?.order.customers.zip) {
                 item.status = "Invalid user address!"
                 item.exit = true;
               }
@@ -2634,7 +2637,7 @@ exports.saveBulkClaim = async (req, res) => {
                 </tr>
                 </table>
             </body>
-          </html>`;     
+          </html>`;
 
           //htmlTableString = convertArrayToHTMLTable([], failureEntries);
           mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlContent));
@@ -3263,7 +3266,7 @@ exports.getAllClaims = async (req, res, next) => {
 
       if (item1.servicerId != null) {
         servicerName = servicer.find(servicer => servicer?._id?.toString() === item1.servicerId?.toString());
-        selfServicer = req.role=="Customer" ? false : item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() ? true : false
+        selfServicer = req.role == "Customer" ? false : item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() ? true : false
         selfResellerServicer = item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString()
       }
 
