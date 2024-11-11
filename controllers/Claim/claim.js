@@ -2167,7 +2167,7 @@ exports.saveBulkClaim = async (req, res) => {
           if ((item.servicerName != '' && !servicerData)) {
             flag = false
           }
-          if ((!flag && flag != undefined && item.hasOwnProperty("servicerName"))) {
+          if ((!flag && flag != undefined && item.hasOwnProperty("servicerName") && req.role == "Admin")) {
             item.status = "Servicer not found"
           }
           if (contractData && contractData.status != "Active") {
