@@ -1425,6 +1425,7 @@ exports.getcustomerDetail = async (req, res) => {
         if (checkRole.role == "Reseller") {
            detail = await resellerService.getReseller({ _id: getUser.metaData[0]?.metaId })
         }
+        console.log("detail------------------------",detail)
         submittedByDetail = {
           emailWithRole: getUser.email + " (" + checkRole.role + ")",
           name: getUser.metaData[0]?.firstName + " " + getUser.metaData[0]?.lastName,
