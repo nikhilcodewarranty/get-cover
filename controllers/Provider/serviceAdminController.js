@@ -2377,8 +2377,8 @@ exports.paidUnpaidClaim = async (req, res) => {
     if (data.startDate && data.endDate) {
       approveQuery = {
         approveDate: {
-          $gte: new Date(data.startDate),
-          $lte: new Date(data.endDate),
+          $gte: new Date("2024-10-31"),
+          $lte: new Date("2024-11-11"),
         }
       }
     }
