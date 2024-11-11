@@ -130,10 +130,35 @@ exports.customerOrders = async (req, res) => {
 
     const allUserIds = mergedArray.concat(userCustomerIds);
 
+    const getPrimaryUser = await userService.findUserforCustomer1([
+      {
+        $match: {
+          $and: [
+            { metaData: { $elemMatch: { metaId: { $in: allUserIds }, isPrimary: true } } }
+          ]
+        }
+      },
+      {
+        $project: {
+          email: 1,
+          'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+          'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+          'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+          'position': { $arrayElemAt: ["$metaData.position", 0] },
+          'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+          'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+          'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+          'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+          'status': { $arrayElemAt: ["$metaData.status", 0] },
+          resetPasswordCode: 1,
+          isResetPassword: 1,
+          approvedStatus: 1,
+          createdAt: 1,
+          updatedAt: 1
+        }
+      }
+    ]);
 
-    const queryUser = { metaId: { $in: allUserIds }, isPrimary: true };
-
-    let getPrimaryUser = await userService.findUserforCustomer(queryUser)
 
     let servicerIdArray = ordersResult.map((result) => result.servicerId);
     const servicerCreteria = {
@@ -338,9 +363,9 @@ exports.getSingleOrder = async (req, res) => {
       ],
     };
     let checkServicer = await servicerService.getServiceProviderById(query1);
-    let singleDealerUser = await userService.getUserById1({ metaId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false });
-    let singleResellerUser = await userService.getUserById1({ metaId: checkOrder.resellerId, isPrimary: true }, { isDeleted: false });
-    let singleCustomerUser = await userService.getUserById1({ metaId: checkOrder.customerId, isPrimary: true }, { isDeleted: false });
+    let singleDealerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } }, { isDeleted: false });
+    let singleResellerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } }, { isDeleted: false });
+    let singleCustomerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } }, { isDeleted: false });
     // ------------------------------------Get Dealer Servicer -----------------------------
     let getServicersIds = await dealerRelationService.getDealerRelations({
       dealerId: checkOrder.dealerId,
@@ -363,9 +388,37 @@ exports.getSingleOrder = async (req, res) => {
       servicer.unshift(dealer);
     }
     const servicerIds = servicer.map((obj) => obj._id);
-    const servicerQuery = { metaId: { $in: servicerIds }, isPrimary: true };
 
-    let servicerUser = await userService.getMembers(servicerQuery, {});
+    const servicerUser = await userService.findUserforCustomer1([
+      {
+        $match: {
+          $and: [
+            { metaData: { $elemMatch: { metaId: { $in: servicerIds }, isPrimary: true } } }
+          ]
+        }
+      },
+      {
+        $project: {
+          email: 1,
+          'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+          'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+          'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+          'position': { $arrayElemAt: ["$metaData.position", 0] },
+          'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+          'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+          'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+          'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+          'status': { $arrayElemAt: ["$metaData.status", 0] },
+          resetPasswordCode: 1,
+          isResetPassword: 1,
+          approvedStatus: 1,
+          createdAt: 1,
+          updatedAt: 1
+        }
+      }
+    ]);
+
+
     const result_Array = servicer.map((item1) => {
       const matchingItem = servicerUser.find(
         (item2) => item2.metaId?.toString() === item1._id.toString()
@@ -373,8 +426,8 @@ exports.getSingleOrder = async (req, res) => {
 
       if (matchingItem) {
         return {
-          ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-          servicerData: matchingItem.toObject(),
+          ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
+          servicerData: matchingItem,
         };
       } else {
         return servicer.toObject();
@@ -453,7 +506,9 @@ exports.getCustomerContract = async (req, res) => {
   try {
     let data = req.body
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
-    let getTheThresholdLimir = await userService.getUserById1({ roleId: process.env.super_admin, isPrimary: true })
+    // let getTheThresholdLimir = await userService.getUserById1({ roleId: process.env.super_admin, isPrimary: true })
+    let getTheThresholdLimir = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
+
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
     let dealerIds = [];
@@ -720,10 +775,26 @@ exports.addCustomerUser = async (req, res) => {
       return;
     };
 
-    data.accountId = checkCustomer._id
-    data.metaId = checkCustomer._id
-    data.roleId = process.env.customer
-    let saveData = await userService.createUser(data)
+    let metaData = {
+      email: data.email,
+      metaData: [
+        {
+          metaId: checkCustomer._id,
+          roleId: process.env.customer,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          phoneNumber: data.phoneNumber,
+          position: data.position,
+          isPrimary: false,
+          dialCode: data.dialCode ? data.dialCode : "+1"
+
+        }
+      ]
+
+    }
+
+
+    let saveData = await userService.createUser(metaData)
     if (!saveData) {
       //Save Logs
       let logData = {
@@ -788,7 +859,42 @@ exports.addCustomerUser = async (req, res) => {
 exports.getCustomerUsers = async (req, res) => {
   try {
     let data = req.body
-    let getCustomerUsers = await userService.findUser({ metaId: req.userId, isDeleted: false }, { isPrimary: -1 })
+
+    // let getCustomerUsers = await userService.findUser({ metaData: { $elemMatch: { metaId: req.userId, isDeleted: false } } }, { isPrimary: -1 })
+
+    const getCustomerUsers = await userService.findUserforCustomer1([
+      {
+        $match: {
+          $and: [
+            { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+            { metaData: { $elemMatch: { firstName: { '$regex': data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+            { metaData: { $elemMatch: { lastName: { '$regex': data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+            { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { metaData: { $elemMatch: { metaId: new mongoose.Types.ObjectId(req.userId) } } }
+          ]
+        }
+      },
+      {
+        $project: {
+          email: 1,
+          'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+          'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+          'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+          'position': { $arrayElemAt: ["$metaData.position", 0] },
+          'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+          'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+          'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+          'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+          'status': { $arrayElemAt: ["$metaData.status", 0] },
+          resetPasswordCode: 1,
+          isResetPassword: 1,
+          approvedStatus: 1,
+          createdAt: 1,
+          updatedAt: 1
+        }
+      }
+    ]);
+
     if (!getCustomerUsers) {
       res.send({
         code: constant.errorCode,
@@ -806,19 +912,6 @@ exports.getCustomerUsers = async (req, res) => {
       l_name: nameArray.slice(1).join(" ")  // Last name (if there are multiple parts)
     };
 
-    const firstNameRegex = new RegExp(data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', 'i')
-    const lastNameRegex = new RegExp(data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', 'i')
-    const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
-    const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
-
-    const filteredData = getCustomerUsers.filter(entry => {
-      return (
-        firstNameRegex.test(entry.firstName) &&
-        lastNameRegex.test(entry.lastName) &&
-        emailRegex.test(entry.email) &&
-        phoneRegex.test(entry.phoneNumber)
-      );
-    });
 
     let checkCustomer = await customerService.getCustomerByName({ _id: req.userId }, { status: 1 })
     if (!checkCustomer) {
@@ -833,7 +926,7 @@ exports.getCustomerUsers = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: "Success",
-      result: filteredData,
+      result: getCustomerUsers,
       customerStatus: checkCustomer.status,
       isAccountCreate: checkCustomer.isAccountCreate
     })
@@ -948,7 +1041,7 @@ exports.getCustomerById = async (req, res) => {
         message: "Invalid customer ID"
       })
     } else {
-      let getPrimaryUser = await userService.findOneUser({ metaId: checkCustomer._id, isPrimary: true }, {})
+      let getPrimaryUser = await userService.findOneUser({ metaData: { $elemMatch: { metaId: checkCustomer._id, isPrimary: true } } }, {})
       let checkReseller = await resellerService.getReseller({ _id: checkCustomer.resellerId }, { isDeleted: 0 });
       let project = {
         productsArray: 1,
@@ -1051,9 +1144,67 @@ exports.getOrderContract = async (req, res) => {
 
     const queryResselerUser = { metaId: { $in: [checkOrder[0].order[0].resellerId != null ? checkOrder[0].order[0].resellerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
 
-    let dealerUser = await userService.findUserforCustomer(queryDealerUser)
 
-    let resellerUser = await userService.findUserforCustomer(queryResselerUser)
+    let dealerUser = await userService.findUserforCustomer1([
+      {
+        $match: {
+          $and: [
+            { metaData: { $elemMatch: { metaId: new mongoose.Types.ObjectId(checkOrder[0].order[0].dealerId) } } },
+          ]
+        }
+      },
+      {
+        $project: {
+          email: 1,
+          password: 1,
+          'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+          'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+          'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+          'position': { $arrayElemAt: ["$metaData.position", 0] },
+          'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+          'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+          'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+          'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+          'status': { $arrayElemAt: ["$metaData.status", 0] },
+          resetPasswordCode: 1,
+          isResetPassword: 1,
+          approvedStatus: 1,
+          createdAt: 1,
+          updatedAt: 1
+        }
+      }
+    ])
+
+    let resellerUser = await userService.findUserforCustomer1([
+      {
+        $match: {
+          $and: [
+            { metaData: { $elemMatch: { metaId: new mongoose.Types.ObjectId(checkOrder[0].order[0].resellerId) } } },
+          ]
+        }
+      },
+      {
+        $project: {
+          email: 1,
+          password: 1,
+          'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+          'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+          'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+          'position': { $arrayElemAt: ["$metaData.position", 0] },
+          'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+          'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+          'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+          'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+          'status': { $arrayElemAt: ["$metaData.status", 0] },
+          resetPasswordCode: 1,
+          isResetPassword: 1,
+          approvedStatus: 1,
+          createdAt: 1,
+          updatedAt: 1
+        }
+      }
+    ])
+
 
     //Get Servicer Data
 
@@ -1307,7 +1458,7 @@ exports.getDashboardData = async (req, res) => {
     let getClaim = await claimService.getClaimWithAggregate(claimQuery)
     let getContracts = await contractService.findContracts2({ orderId: { $in: orderIds } })
 
-    
+
     res.send({
       code: constant.successCode,
       message: "Success",
@@ -1376,7 +1527,7 @@ exports.getDashboardData1 = async (req, res) => {
 exports.getCustomerDetails = async (req, res) => {
   try {
     let data = req.body
-    let getUser = await userService.getUserById1({ _id: req.teammateId }) 
+    let getUser = await userService.getUserById1({ _id: req.teammateId })
     let mid = new mongoose.Types.ObjectId(req.userId)
     let query = [
       {
@@ -1414,11 +1565,21 @@ exports.getCustomerDetails = async (req, res) => {
       })
       return;
     }
+
+    let custmerDetails = {
+      ...getUser.toObject(),
+      firstName: getUser.metaData[0].firstName,
+      isPrimary: getUser.metaData[0].isPrimary,
+      phoneNumber: getUser.metaData[0].phoneNumber,
+      status: getUser.metaData[0].status,
+      position: getUser.metaData[0].position,
+      lastName: getUser.metaData[0].lastName,
+    }
     res.send({
       code: constant.successCode,
       message: "Successfully fetched user details.",
       result: getCustomer[0],
-      loginMember: getUser
+      loginMember: custmerDetails
     })
   } catch (err) {
     res.send({
@@ -1742,7 +1903,6 @@ const checkCustomerEmail = async (data) => {
           let dealerIds = checkEmail.customerData.map(ID => ID.dealerId.toString())
 
           const includesAny = (arr, values) => values.some(v => arr.includes(v));
-
 
           if (includesAny(resellerIds, [data.resellerId]) && includesAny(dealerIds, [data.dealerId])) {
             return {

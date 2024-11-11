@@ -73,7 +73,7 @@ exports.convertToBase64 = async (req, res) => {
 
         // Convert the file data to a base64 string
         const base64String = fileData.toString('base64');
-
+ 
         // Send the base64 string in the response
         res.send({ base64: base64String });
     } catch (err) {
@@ -89,7 +89,7 @@ exports.createDealer = async (req, res) => {
     try {
         upload(req, res, async () => {
             const data = req.body;
-            const loginUser = await userService.getUserById1({ metaId: req.userId, isPrimary: true }, {});
+            const loginUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: req.userId, isPrimary: true } } }, {});
             //get coverage type based on dealer coverageType
             const coverageType = data.coverageType
 
@@ -159,7 +159,7 @@ exports.createDealer = async (req, res) => {
                     }
                 }
 
-                const singleDealerUser = await userService.findOneUser({ metaId: data.dealerId }, {});
+                const singleDealerUser = await userService.findOneUser({ metaData: { $elemMatch: { metaId: data.dealerId } } }, {});
                 const singleDealer = await dealerService.getDealerById({ _id: data.dealerId });
                 if (!singleDealer) {
                     res.send({
@@ -186,28 +186,43 @@ exports.createDealer = async (req, res) => {
                 }
 
                 //Primary information edit
-                let userQuery = { metaId: { $in: [data.dealerId] }, isPrimary: true }
+                let userQuery = { metaData: { $elemMatch: { metaId: { $in: [data.dealerId] }, isPrimary: true } } }
+
+
                 let newValues1 = {
                     $set: {
                         email: allUserData[0].email,
-                        firstName: allUserData[0].firstName,
-                        lastName: allUserData[0].lastName,
-                        phoneNumber: allUserData[0].phoneNumber,
-                        position: allUserData[0].position,
-                        roleId: '656f08041eb1acda244af8c6',
-                        status: allUserData[0].status ? true : false,
+                        'metaData.$.firstName': allUserData[0].firstNam,
+                        'metaData.$.lastName': allUserData[0].lastName,
+                        'metaData.$.position': allUserData[0].position,
+                        'metaData.$.phoneNumber': allUserData[0].phoneNumber,
+                        'metaData.$.status': allUserData[0].status ? true : false,
+                        'metaData.$.roleId': "656f08041eb1acda244af8c6"
+
                     }
+
                 }
 
                 await userService.updateUser(userQuery, newValues1, { new: true })
 
                 let allUsersData = allUserData.map((obj, index) => ({
                     ...obj,
-                    roleId: '656f08041eb1acda244af8c6',
-                    metaId: data.dealerId,
-                    isPrimary: index === 0 ? true : false,
-                    status: !req.body.isAccountCreate || req.body.isAccountCreate == 'false' ? false : obj.status
-                }));
+                    metaData:
+                        [
+                            {
+                                firstName: obj.firstName,
+                                lastName: obj.lastName,
+                                metaId: data.dealerId,
+                                roleId: "656f08041eb1acda244af8c6",
+                                position: obj.position,
+                                dialCode: obj.dialCode,
+                                status: !req.body.isAccountCreate || req.body.isAccountCreate == 'false' ? false : obj.status,
+                                isPrimary: index === 0 ? true : false,
+                            }
+                        ],
+                })
+                );
+
 
                 if (allUsersData.length > 1) {
                     allUsersData = [...allUsersData.slice(0, 0), ...allUsersData.slice(1)];
@@ -260,7 +275,7 @@ exports.createDealer = async (req, res) => {
                     })
                     return
                 }
-                let statusUpdateCreateria = { metaId: { $in: [data.dealerId] } }
+                let statusUpdateCreateria = { metaData: { $elemMatch: { metaId: { $in: [data.dealerId] } } } }
                 let updateData = {
                     $set: {
                         approvedStatus: 'Approved'
@@ -284,7 +299,7 @@ exports.createDealer = async (req, res) => {
                 // Primary User Welcoime email
                 let notificationEmails = await supportingFunction.getUserEmails();
                 let emailData = {
-                    senderName: loginUser.firstName,
+                    senderName: loginUser.metaData[0]?.firstName,
                     content: "We are delighted to inform you that the dealer account for " + singleDealer.name + " has been approved.",
                     subject: "Dealer Account Approved - " + singleDealer.name
                 }
@@ -467,13 +482,23 @@ exports.createDealer = async (req, res) => {
 
                 let allUsersData = allUserData.map((obj, index) => ({
                     ...obj,
-                    roleId: '656f08041eb1acda244af8c6',
-                    metaId: createMetaData._id,
-                    position: obj.position || '', // Using the shorthand for conditional (obj.position ? obj.position : '')
-                    isPrimary: index === 0 ? true : false,
-                    status: !req.body.isAccountCreate || req.body.isAccountCreate == 'false' ? false : obj.status,
-                    approvedStatus: 'Approved'
-                }));
+                    approvedStatus: 'Approved',
+                    metaData:
+                        [
+                            {
+                                firstName: obj.firstName,
+                                lastName: obj.lastName,
+                                phoneNumber: obj.phoneNumber,
+                                metaId: createMetaData._id,
+                                roleId: "656f08041eb1acda244af8c6",
+                                position: obj.position,
+                                dialCode: obj.dialCode,
+                                status: !req.body.isAccountCreate || req.body.isAccountCreate == 'false' ? false : obj.status,
+                                isPrimary: index === 0 ? true : false,
+                            }
+                        ],
+                })
+                );
                 const createUsers = await userService.insertManyUser(allUsersData);
 
                 if (!createUsers) {
@@ -488,7 +513,7 @@ exports.createDealer = async (req, res) => {
                 let notificationEmails = await supportingFunction.getUserEmails();
 
                 let emailData = {
-                    senderName: loginUser.firstName,
+                    senderName: loginUser.metaData[0]?.firstName,
                     content: "We are delighted to inform you that the dealer account for " + createMetaData.name + " has been created.",
                     subject: "Dealer Account Created - " + createMetaData.name
                 }
@@ -655,3 +680,40 @@ exports.createServiceProvider = async (req, res) => {
         });
     }
 };
+
+
+exports.updateData = async (req, res) => {
+    try {
+        let findUser = await userService.findUser()
+        for (let u = 0; u < findUser.length; u++) {
+            findUser[u] = findUser[u].toObject()
+            console.log(findUser[u], "++++++++++++++++", findUser[u].firstName)
+            let dataToUpdate = {
+                $set: {
+                    metaData: [{
+                        metaId: findUser[u].metaId,
+                        status: findUser[u].status,
+                        roleId: findUser[u].roleId,
+                        firstName: findUser[u].firstName,
+                        lastName: findUser[u].lastName,
+                        phoneNumber: findUser[u].phoneNumber,
+                        position: findUser[u].position,
+                        isPrimary: findUser[u].isPrimary,
+                        isDeleted: findUser[u].isDeleted,
+                        dialCode: findUser[u].dialCode
+                    }]
+                }
+            }
+            let updateUser = await userService.updateUser({ _id: findUser[u]._id }, dataToUpdate, { new: true })
+            // console.log(findUser[u],dataToUpdate.$set, "==============================================================")
+        }
+        res.send({
+            code: 200
+        })
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message,
+        })
+    }
+}

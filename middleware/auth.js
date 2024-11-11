@@ -27,7 +27,7 @@ verifyToken = async (req, res, next) => {
         })
         return
       }
-      if (!checkUser.status) {
+      if (!checkUser.metaData[0].status) {
         res.send({
           code: 400,
           message: "Please login again"

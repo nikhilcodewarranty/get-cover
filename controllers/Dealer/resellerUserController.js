@@ -210,7 +210,26 @@ exports.createCustomer = async (req, res, next) => {
             return;
         };
 
-        teamMembers = teamMembers.map(member => ({ ...member, metaId: createdCustomer._id, roleId: process.env.customer }));
+        teamMembers = teamMembers.map(member => ({
+            ...member,
+            metaData:
+                [
+                    {
+                        firstName: member.firstName,
+                        lastName: member.lastName,
+                        phoneNumber: member.phoneNumber,
+                        metaId: createdCustomer._id,
+                        roleId: process.env.customer,
+                        position: member.position,
+                        dialCode: member.dialCode,
+                        status: member.status,
+                        isPrimary: member.isPrimary
+                    }
+                ],
+            approvedStatus: "Approved",
+
+        })
+        );
         // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
         res.send({
@@ -333,7 +352,8 @@ exports.createOrder = async (req, res) => {
 
         data.status = "Pending";
         if (data.billTo == "Dealer") {
-            let getUser = await userService.getSingleUserByEmail({ metaId: checkDealer._id, isPrimary: true })
+            let getUser = await userService.getSingleUserByEmail({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
+
             data.billDetail = {
                 billTo: "Dealer",
                 detail: {
@@ -348,7 +368,8 @@ exports.createOrder = async (req, res) => {
 
         if (data.billTo == "Reseller") {
             let getReseller = await resellerService.getReseller({ _id: data.resellerId })
-            let getUser = await userService.getSingleUserByEmail({ metaId: getReseller._id, isPrimary: true })
+            let getUser = await userService.getSingleUserByEmail({ metaData: { $elemMatch: { metaId: getReseller._id, isPrimary: true } } })
+
             data.billDetail = {
                 billTo: "Reseller",
                 detail: {
@@ -474,9 +495,10 @@ exports.createOrder = async (req, res) => {
         returnField.push(obj);
         //send notification to admin and dealer 
         let IDs = await supportingFunction.getUserIds()
-        let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
+        let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
+
         if (data.resellerId) {
-            let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: data.resellerId, isPrimary: true })
+            let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data.resellerId, isPrimary: true } } })
             IDs.push(resellerPrimary._id)
         }
         IDs.push(getPrimary._id)
@@ -498,7 +520,7 @@ exports.createOrder = async (req, res) => {
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
-            senderName: getPrimary.firstName,
+            senderName: getPrimary.metaData[0]?.firstName,
             content: "The new order " + checkOrder.unique_key + "  has been created for " + getPrimary.firstName + "",
             subject: "New Order"
         }
@@ -637,9 +659,9 @@ exports.createOrder = async (req, res) => {
                 let saveContracts = await contractService.createBulkContracts(contractArray);
                 //send notification to dealer,reseller,admin,customer
                 let IDs = await supportingFunction.getUserIds()
-                let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: savedResponse.dealerId, isPrimary: true })
-                let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: savedResponse.customerId, isPrimary: true })
-                let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: savedResponse.resellerId, isPrimary: true })
+                let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: savedResponse.dealerId, isPrimary: true } } })
+                let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: savedResponse.customerId, isPrimary: true } } })
+                let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: savedResponse.resellerId, isPrimary: true } } })
                 if (resellerPrimary) {
                     IDs.push(resellerPrimary?._id)
                 }
@@ -884,7 +906,7 @@ exports.editOrderDetail = async (req, res) => {
             let checkDealer = await dealerService.getDealerById(
                 checkReseller.dealerId
             );
-            let getUser = await userService.getSingleUserByEmail({ metaId: checkDealer._id, isPrimary: true })
+            let getUser = await userService.getSingleUserByEmail({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
             data.billDetail = {
                 billTo: "Dealer",
                 detail: {
@@ -898,7 +920,7 @@ exports.editOrderDetail = async (req, res) => {
         }
         if (data.billTo == "Reseller") {
             let getReseller = await resellerService.getReseller({ _id: checkReseller._id })
-            let getUser = await userService.getSingleUserByEmail({ metaId: getReseller._id, isPrimary: true })
+            let getUser = await userService.getSingleUserByEmail({ metaData: { $elemMatch: { metaId: getReseller._id, isPrimary: true } } })
             data.billDetail = {
                 billTo: "Reseller",
                 detail: {
@@ -1025,7 +1047,7 @@ exports.editOrderDetail = async (req, res) => {
 
         //send notification to dealer,reseller,admin,customer
         let IDs = await supportingFunction.getUserIds()
-        let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.dealerId, isPrimary: true })
+        let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } })
         IDs.push(dealerPrimary._id)
         let notificationData = {
             title: "Order update",
@@ -1046,11 +1068,10 @@ exports.editOrderDetail = async (req, res) => {
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
-            senderName: dealerPrimary.firstName,
-            content: "Your order " + checkOrder.unique_key + " has been updated in our system. The order is still pending, as there is some data missing.Please update the data using the link here",
+            senderName: dealerPrimary.metaData[0]?.firstName,
+            content: "The  order " + checkOrder.unique_key + " has been updated",
             subject: "Order Updated"
         }
-
         if (req.body.sendNotification) {
             let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
         }
@@ -1282,9 +1303,9 @@ exports.editOrderDetail = async (req, res) => {
                     await LOG(logData).save();
                     //send notification to dealer,reseller,admin,customer
                     let IDs = await supportingFunction.getUserIds()
-                    let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: savedResponse.dealerId, isPrimary: true })
-                    let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: savedResponse.customerId, isPrimary: true })
-                    let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: savedResponse.resellerId, isPrimary: true })
+                    let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: savedResponse.dealerId, isPrimary: true } } })
+                    let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: savedResponse.customerId, isPrimary: true } } })
+                    let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: savedResponse.resellerId, isPrimary: true } } })
                     if (resellerPrimary) {
                         IDs.push(resellerPrimary._id)
                     }
@@ -1305,7 +1326,7 @@ exports.editOrderDetail = async (req, res) => {
                         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
                         address: settingData[0]?.address,
                         websiteSetting: settingData[0],
-                        senderName: dealerPrimary.firstName,
+                        senderName: dealerPrimary.metaData[0]?.firstName,
                         content: "The  order " + savedResponse.unique_key + " has been updated and processed",
                         subject: "Process Order"
                     }
@@ -1319,7 +1340,7 @@ exports.editOrderDetail = async (req, res) => {
                         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
                         address: settingData[0]?.address,
                         websiteSetting: settingData[0],
-                        senderName: resellerPrimary?.firstName,
+                        senderName: resellerPrimary?.metaData[0]?.firstName,
                         content: "The  order " + savedResponse.unique_key + " has been updated and processed",
                         subject: "Process Order"
                     }
@@ -2051,8 +2072,6 @@ exports.addResellerUser = async (req, res) => {
             return;
         }
 
-        data.metaId = checkReseller._id
-        data.roleId = '65bb94b4b68e5a4a62a0b563'
 
         let statusCheck;
         if (!checkReseller.status) {
@@ -2060,8 +2079,25 @@ exports.addResellerUser = async (req, res) => {
         } else {
             statusCheck = data.status
         }
-        data.status = statusCheck
-        let saveData = await userService.createUser(data)
+        let metaData = {
+            email: data.email,
+            metaData: [
+                {
+                    metaId: checkReseller._id,
+                    status: statusCheck,
+                    roleId: "65bb94b4b68e5a4a62a0b563",
+                    firstName: data.firstName,
+                    lastName: data.lastName,
+                    phoneNumber: data.phoneNumber,
+                    position: data.position,
+                    isPrimary: false,
+                    dialCode: data.dialCode ? data.dialCode : "+1"
+
+                }
+            ]
+
+        }
+        let saveData = await userService.createUser(metaData)
         if (!saveData) {
             //Save Logs add user
             let logData = {
@@ -2502,13 +2538,13 @@ async function generateTC(orderData) {
         //Get customer
         const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId }, { isDeleted: false })
         //Get customer primary info
-        const customerUser = await userService.getUserById1({ metaId: checkOrder.customerId, isPrimary: true }, { isDeleted: false })
+        const customerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } }, { isDeleted: false })
 
-        const DealerUser = await userService.getUserById1({ metaId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false })
+        const DealerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } }, { isDeleted: false })
 
         const checkReseller = await resellerService.getReseller({ _id: checkOrder.resellerId }, { isDeleted: false })
         //Get reseller primary info
-        const resellerUser = await userService.getUserById1({ metaId: checkOrder.resellerId, isPrimary: true }, { isDeleted: false })
+        const resellerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } }, { isDeleted: false })
         //Get contract info of the order
         let productCoveredArray = []
         //Check contract is exist or not using contract id
@@ -2557,7 +2593,8 @@ async function generateTC(orderData) {
             ]
         }, { isDeleted: false })
 
-        const servicerUser = await userService.getUserById1({ metaId: checkOrder.servicerId, isPrimary: true }, { isDeleted: false })
+        const servicerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.servicerId, isPrimary: true } } }, { isDeleted: false })
+
         //res.json(checkDealer);return
         const options = {
             format: 'A4',
@@ -2585,7 +2622,7 @@ async function generateTC(orderData) {
                                 <td style="font-size:13px;"> 
                                     <p><b>Attention –</b> ${checkReseller ? checkReseller.name : checkDealer.name}</p>
                                     <p> <b>Email Address – </b>${resellerUser ? resellerUser?.email : DealerUser.email}</p>
-                                    <p><b>Telephone :</b> +1 ${resellerUser ? resellerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : DealerUser.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3")}</p>
+                                    <p><b>Telephone :</b> +1 ${resellerUser ? resellerUser?.metaData[0]?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : DealerUser.metaData[0]?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3")}</p>
                                 </td>
                             </tr>
                         <tr>
@@ -2593,7 +2630,7 @@ async function generateTC(orderData) {
                             <td style="font-size:13px;">
                             <p> <b>Attention –</b>${checkCustomer ? checkCustomer?.username : ''}</p>
                             <p> <b>Email Address –</b>${checkCustomer ? customerUser?.email : ''}</p>
-                            <p><b>Telephone :</b> +1${checkCustomer ? customerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''}</p>
+                            <p><b>Telephone :</b> +1${checkCustomer ? customerUser?.metaData[0]?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''}</p>
                             </td>
                         </tr>
                     <tr>
@@ -2677,7 +2714,7 @@ async function generateTC(orderData) {
                 lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
                 address: settingData[0]?.address,
                 websiteSetting: settingData[0],
-                senderName: customerUser.firstName,
+                senderName: customerUser.metaData[0]?.firstName,
                 content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
                 subject: 'Order Term and Condition-' + checkOrder.unique_key,
             }

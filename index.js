@@ -114,8 +114,9 @@ cron.schedule('4 0 * * *', () => {
 });
 
 cron.schedule('6 0 * * *', () => {
-  axios.get(`${process.env.API_ENDPOINT}api-v1/claim/statusClaim`);   //live
+  axios.get(`${process.env.API_ENDPOINT}api-v1/claim/statusClaim`)   //live
 });
+
 
 
 //common routing for server

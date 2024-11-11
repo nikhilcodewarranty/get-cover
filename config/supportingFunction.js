@@ -4,7 +4,7 @@ const REPORTING = require('../models/Order/reporting')
 
 
 exports.getUserIds = async () => {
-    const getSuperId = await userService.findUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {});
+    const getSuperId = await userService.findUser({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), status: true } } }, {});
     return getSuperId.map(ID => ID._id);
 }
 
@@ -14,7 +14,7 @@ exports.websiteSetting = async () => {
 }
 
 exports.getUserEmails = async () => {
-    const getSuperEmails = await userService.findUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true }, { notificationTo: 1 });
+    const getSuperEmails = await userService.findUser({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true } } }, { notificationTo: 1 });
     return getSuperEmails[0]?.notificationTo
 }
 

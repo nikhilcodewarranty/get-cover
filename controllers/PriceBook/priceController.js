@@ -75,10 +75,10 @@ exports.getAllPriceBooks = async (req, res, next) => {
     let catIdsArray = getCatIds.map(category => category._id)
     let searchName = req.body.name ? req.body.name.replace(/\s+/g, ' ').trim() : ''
     let searchName1 = req.body.pName ? req.body.pName.replace(/\s+/g, ' ').trim() : ''
-    let filterStatus = (data.status === true || data.status === false) ? (data.status === true ? true : false) : ""
+    console.log(typeof (data.status))
+    let filterStatus = (data.status === "true" || data.status === "false") ? (data.status === "true" ? true : false) : ""
     data.status = typeof (filterStatus) == "string" ? "all" : filterStatus
-    let query;
-
+    let query; 
     if (!Array.isArray(data.coverageType) && data.coverageType != '') {
       res.send({
         code: constant.errorCode,
@@ -86,9 +86,8 @@ exports.getAllPriceBooks = async (req, res, next) => {
       });
       return;
     }
-
     if (data.status != "all") {
-      if (data.coverageType.length != "") {
+      if (data.coverageType != "") {
         query = {
           $and: [
             { isDeleted: false },
@@ -129,11 +128,13 @@ exports.getAllPriceBooks = async (req, res, next) => {
           { isDeleted: false },
           { 'pName': { '$regex': searchName1, '$options': 'i' } },
           { 'name': { '$regex': searchName, '$options': 'i' } },
-          { 'category': { $in: catIdsArray } }
+          { 'category': { $in: catIdsArray } },         
+          //  { 'status': data.status },
+
+
         ]
       };
     }
-    // return;
     if (data.term != '') {
       query.$and.push({ 'term': Number(data.term) });
     }
@@ -308,13 +309,13 @@ exports.createPriceBook = async (req, res, next) => {
       let notificationEmails = await supportingFunction.getUserEmails();
       //Get Website Setting
       const settingData = await userService.getSetting({});
-      const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
+      const admin = await userService.getSingleUserByEmail({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), status: true } } }, {})
       let emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: admin.firstName,
+        senderName: admin.metaData[0]?.firstName,
         content: "The priceBook " + data.name + " created successfully! effective immediately.",
         subject: "Create Price Book"
       }
@@ -585,7 +586,8 @@ exports.updatePriceBookById = async (req, res, next) => {
 
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
-    const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
+    const admin = await userService.getSingleUserByEmail({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), status: true } } }, {})
+
     //Get Website Setting
     const settingData = await userService.getSetting({});
     let emailData;
@@ -595,7 +597,7 @@ exports.updatePriceBookById = async (req, res, next) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: admin.firstName,
+        senderName: admin.metaData[0]?.firstName,
         content: "The priceBook " + existingPriceBook[0]?.name + " updated successfully! effective immediately.",
         subject: "Update Price Book"
       }
@@ -606,7 +608,7 @@ exports.updatePriceBookById = async (req, res, next) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: admin.firstName,
+        senderName: admin.metaData[0]?.firstName,
         content: "The priceBook " + existingPriceBook[0]?.name + " has been changed to " + body.status ? 'Active' : "Inactive" + "! effective immediately.",
         subject: "Update Status"
       }
@@ -745,13 +747,13 @@ exports.createPriceBookCat = async (req, res) => {
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
     const settingData = await userService.getSetting({});
-    const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
+    const admin = await userService.getSingleUserByEmail({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true } } }, {})
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: admin.firstName,
+      senderName: admin.metaData[0]?.firstName,
       content: "The category " + data.name + " created successfully! effective immediately.",
       subject: "New Category Added"
     }
@@ -1039,13 +1041,13 @@ exports.updatePriceBookCat = async (req, res) => {
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
     const settingData = await userService.getSetting({});
-    const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
+    const admin = await userService.getSingleUserByEmail({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true } } }, {})
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: admin.firstName,
+      senderName: admin.metaData[0]?.firstName,
       content: "The category " + data.name + " updated successfully! effective immediately.",
       subject: "Update Category"
     }

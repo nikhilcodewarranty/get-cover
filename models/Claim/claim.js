@@ -21,6 +21,14 @@ const claimSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  submittedBy: {
+    type: String,
+    default: ''
+  },
+  shippingTo: {
+    type: String,
+    default: ''
+  },
   serial: {
     type: String,
     default: ''
@@ -28,6 +36,10 @@ const claimSchema = new mongoose.Schema({
   productName: {
     type: String,
     default: ''
+  },
+  approveDate:{
+    type: Date,
+    default:''
   },
   pName: {
     type: String,

@@ -379,13 +379,13 @@ async function generateTC(orderData) {
         //Get customer
         const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId }, { isDeleted: false })
         //Get customer primary info
-        const customerUser = await userService.getUserById1({ metaId: checkOrder.customerId, isPrimary: true }, { isDeleted: false })
+        const customerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } }, { isDeleted: false })
 
-        const DealerUser = await userService.getUserById1({ metaId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false })
+        const DealerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } }, { isDeleted: false })
 
         const checkReseller = await resellerService.getReseller({ _id: checkOrder.resellerId }, { isDeleted: false })
         //Get reseller primary info
-        const resellerUser = await userService.getUserById1({ metaId: checkOrder.resellerId, isPrimary: true }, { isDeleted: false })
+        const resellerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } }, { isDeleted: false })
         //Get contract info of the order
         let productCoveredArray = []
         let otherInfo = []
@@ -454,7 +454,7 @@ async function generateTC(orderData) {
             ]
         }, { isDeleted: false })
 
-        const servicerUser = await userService.getUserById1({ metaId: checkOrder.servicerId, isPrimary: true }, { isDeleted: false })
+        const servicerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.servicerId, isPrimary: true } } }, { isDeleted: false })
         //res.json(checkDealer);return
         const options = {
             format: 'A4',
@@ -482,7 +482,7 @@ async function generateTC(orderData) {
                                 <td style="font-size:13px;"> 
                                     <p><b>Attention –</b> ${checkReseller ? checkReseller.name : checkDealer.name}</p>
                                     <p> <b>Email Address – </b>${resellerUser ? resellerUser?.email : DealerUser.email}</p>
-                                    <p><b>Telephone :</b> +1 ${resellerUser ? resellerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : DealerUser.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3")}</p>
+                                    <p><b>Telephone :</b> +1 ${resellerUser ? resellerUser?.metaData[0]?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : DealerUser.metaData[0]?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3")}</p>
                                 </td>
                             </tr>
                         <tr>
@@ -490,7 +490,7 @@ async function generateTC(orderData) {
                             <td style="font-size:13px;">
                             <p> <b>Attention –</b>${checkCustomer ? checkCustomer?.username : ''}</p>
                             <p> <b>Email Address –</b>${checkCustomer ? customerUser?.email : ''}</p>
-                            <p><b>Telephone :</b> +1${checkCustomer ? customerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''}</p>
+                            <p><b>Telephone :</b> +1${checkCustomer ? customerUser?.metaData[0]?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''}</p>
                             </td>
                         </tr>
                     <tr>
@@ -569,7 +569,7 @@ async function generateTC(orderData) {
             notificationEmails.push(DealerUser.email)
             notificationEmails.push(resellerUser?.email)
             let emailData = {
-                senderName: customerUser.firstName,
+                senderName: customerUser.metaData[0]?.firstName,
                 content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
                 subject: 'Order Term and Condition-' + checkOrder.unique_key,
             }
@@ -597,18 +597,20 @@ exports.generateHtmltopdf = async (req, res) => {
         const checkOrder = await orderService.getOrder({ _id: req.params.orderId }, { isDeleted: false })
         let coverageStartDate = checkOrder.productsArray[0]?.coverageStartDate;
         let coverageEndDate = checkOrder.productsArray[0]?.coverageEndDate;
+
         //Get Dealer
         const checkDealer = await dealerService.getDealerById(checkOrder.dealerId, { isDeleted: false })
         //Get customer
         const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId }, { isDeleted: false })
         //Get customer primary info
-        const customerUser = await userService.getUserById1({ metaId: checkOrder.customerId, isPrimary: true }, { isDeleted: false })
+        const customerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } }, { isDeleted: false })
 
-        const DealerUser = await userService.getUserById1({ metaId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false })
+        const DealerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } }, { isDeleted: false })
 
         const checkReseller = await resellerService.getReseller({ _id: checkOrder.resellerId }, { isDeleted: false })
         //Get reseller primary info
-        const resellerUser = await userService.getUserById1({ metaId: checkOrder.resellerId, isPrimary: true }, { isDeleted: false })
+        const resellerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } }, { isDeleted: false })
+
         //Get contract info of the order
         //Get contract info of the order
         let productCoveredArray = []
@@ -684,9 +686,7 @@ exports.generateHtmltopdf = async (req, res) => {
             ]
         }, { isDeleted: false })
 
-
-        const servicerUser = await userService.getUserById1({ metaId: checkOrder.servicerId, isPrimary: true }, { isDeleted: false })
-        //res.json(checkDealer);return
+        const servicerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.servicerId, isPrimary: true } } }, { isDeleted: false })
         const options = {
             format: 'A4',
             orientation: 'portrait',
@@ -710,24 +710,24 @@ exports.generateHtmltopdf = async (req, res) => {
             <td style="font-size:13px;">${checkOrder.unique_key}</td>
         </tr>
         <tr>
-            <td style="font-size:13px;padding:15px;">${checkReseller ? "Reseller Name" : "Dealer Name"}:</td>
-            <td style="font-size:13px;"> 
-                <p><b>Attention –</b> ${checkReseller ? checkReseller.name : checkDealer.name}</p>
-                <p> <b>Email Address – </b>${resellerUser ? resellerUser?.email : DealerUser.email}</p>
-                <p><b>Telephone :</b> +1 ${resellerUser ? resellerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : DealerUser.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3")}</p>
-            </td>
-        </tr>
-    <tr>
-        <td style="font-size:13px;padding:15px;">GET COVER service contract holder name:</td>
-        <td style="font-size:13px;">
-        <p> <b>Attention –</b>${checkCustomer ? checkCustomer?.username : ''}</p>
-        <p> <b>Email Address –</b>${checkCustomer ? customerUser?.email : ''}</p>
-        <p><b>Telephone :</b> +1${checkCustomer ? customerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''}</p>
+        <td style="font-size:13px;padding:15px;">${checkReseller ? "Reseller Name" : "Dealer Name"}:</td>
+        <td style="font-size:13px;"> 
+            <p><b>Attention –</b> ${checkReseller ? checkReseller.name : checkDealer.name}</p>
+            <p> <b>Email Address – </b>${resellerUser ? resellerUser?.email : DealerUser.email}</p>
+            <p><b>Telephone :</b> +1 ${resellerUser ? resellerUser?.metaData[0]?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : DealerUser.metaData[0]?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3")}</p>
         </td>
     </tr>
+    <tr>
+    <td style="font-size:13px;padding:15px;">GET COVER service contract holder name:</td>
+    <td style="font-size:13px;">
+    <p> <b>Attention –</b>${checkCustomer ? checkCustomer?.username : ''}</p>
+    <p> <b>Email Address –</b>${checkCustomer ? customerUser?.email : ''}</p>
+    <p><b>Telephone :</b> +1${checkCustomer ? customerUser?.metaData[0]?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''}</p>
+    </td>
+</tr>
 <tr>
-    <td style="font-size:13px;padding:15px;">Address of GET COVER service contract holder:</td>
-    <td style="font-size:13px;">${checkCustomer ? checkCustomer?.street : ''}, ${checkCustomer ? checkCustomer?.city : ''}, ${checkCustomer ? checkCustomer?.state : ''}, ${checkCustomer ? checkCustomer?.country : ''}</td>
+<td style="font-size:13px;padding:15px;">Address of GET COVER service contract holder:</td>
+<td style="font-size:13px;">${checkCustomer ? checkCustomer?.street : ''}, ${checkCustomer ? checkCustomer?.city : ''}, ${checkCustomer ? checkCustomer?.state : ''}, ${checkCustomer ? checkCustomer?.country : ''}</td>
 </tr>
 <tr>
 <td style="font-size:13px;padding:15px;">Coverage Start Date:</td>
@@ -750,7 +750,6 @@ ${term}
 
 </table > `;
 
-        console.log("exist----------------------------------", mergeFileName)
         const checkFileExist = await checkFileExistsInS3(process.env.bucket_name, `mergedFile/${mergeFileName}`)
         // if (checkFileExist) {
         //     // link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
@@ -762,7 +761,6 @@ ${term}
         //     })
         // } 
         //else {
-            console.log("sdfsdfdsfdssdfsd----------------------------------", mergeFileName)
 
             pdf.create(html, options).toFile(orderFile, async (err, result) => {
                 if (err) return console.log(err);
@@ -776,7 +774,6 @@ ${term}
 
                 const termConditionFile = checkOrder.termCondition.fileName
                 const termPath = termConditionFile
-                console.log("termPath----------------------------------", termPath)
                 //Download from S3 bucket 
                 const termPathBucket = await downloadFromS3(bucketName, termPath);
                 const orderPathBucket = await downloadFromS3(bucketName, s3Key);
@@ -823,7 +820,7 @@ ${term}
                     lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
                     address: settingData[0]?.address,
                     websiteSetting: settingData[0],
-                    senderName: customerUser.firstName,
+                    senderName: customerUser.metaData[0]?.firstName,
                     content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
                     subject: 'Order Term and Condition-' + checkOrder.unique_key,
                 }
@@ -1114,16 +1111,49 @@ exports.getServicerInOrders = async (req, res) => {
         $and: [
             {
                 $or: [
-                    { metaId: { $in: servicerIds } },
-                    { metaId: { $in: resellerIdss } },
-                    { metaId: { $in: dealerIdss } },
+                    { metaData: { $elemMatch: { metaId: { $in: servicerIds } } } },
+                    { metaData: { $elemMatch: { metaId: { $in: resellerIdss } } } },
+                    { metaData: { $elemMatch: { metaId: { $in: dealerIdss } } } },
                 ]
             },
             { isPrimary: true }
         ]
     };
 
-    let servicerUser = await userService.getMembers(query1, {});
+    const servicerUser = await userService.findUserforCustomer1([
+        {
+            $match: {
+                $and: [
+                    {
+                        $or: [
+                            { metaData: { $elemMatch: { metaId: { $in: servicerIds } } } },
+                            { metaData: { $elemMatch: { metaId: { $in: resellerIdss } } } },
+                            { metaData: { $elemMatch: { metaId: { $in: dealerIdss } } } },
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            $project: {
+                email: 1,
+                'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+                'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+                'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+                'position': { $arrayElemAt: ["$metaData.position", 0] },
+                'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+                'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+                'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                'status': { $arrayElemAt: ["$metaData.status", 0] },
+                resetPasswordCode: 1,
+                isResetPassword: 1,
+                approvedStatus: 1,
+                createdAt: 1,
+                updatedAt: 1
+            }
+        }
+    ]);
     if (!servicerUser) {
         res.send({
             code: constant.errorCode,
@@ -1132,17 +1162,17 @@ exports.getServicerInOrders = async (req, res) => {
         return;
     }
 
-    console.log("servicer user ++++++++++++++++++++++++++", servicer, servicerUser)
-
+    console.log("sdfsfsdfsdfsdfsdfsddfs",servicerUser);
     const result_Array = servicer.map((item1) => {
         const matchingItem = servicerUser.find(
-            (item2) => item2.metaId.toString() === item1?._id.toString());
+            (item2) => item2.metaId?.toString() === item1?._id?.toString());
+            
         let matchingItem2 = servicerUser.find(
-            (item2) => item2.metaId?.toString() === item1?.resellerId?.toString() || item2.metaId.toString() === item1?.dealerId?.toString());
+            (item2) => item2.metaId?.toString() === item1?.resellerId?.toString() || item2.metaId?.toString() === item1?.dealerId?.toString());
         if (matchingItem) {
             return {
                 ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-                servicerData: matchingItem.toObject(),
+                servicerData: matchingItem,
             };
         } else if (matchingItem2) {
             return {
@@ -1188,9 +1218,38 @@ exports.getDealerResellers = async (req, res) => {
         const resellerId = resellers.map(obj => obj._id);
 
         const orderResellerId = resellers.map(obj => obj._id);
-        const queryUser = { metaId: { $in: resellerId }, isPrimary: true };
+        // const queryUser = { metaId: { $in: resellerId }, isPrimary: true };
 
-        let getPrimaryUser = await userService.findUserforCustomer(queryUser)
+        const getPrimaryUser = await userService.findUserforCustomer1([
+            {
+                $match: {
+                    $and: [
+                        { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+                        { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { metaData: { $elemMatch: { metaId: { $in: resellerId }, isPrimary: true } } }
+                    ]
+                }
+            },
+            {
+                $project: {
+                    email: 1,
+                    'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+                    'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+                    'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+                    'position': { $arrayElemAt: ["$metaData.position", 0] },
+                    'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                    'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+                    'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+                    'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                    'status': { $arrayElemAt: ["$metaData.status", 0] },
+                    resetPasswordCode: 1,
+                    isResetPassword: 1,
+                    approvedStatus: 1,
+                    createdAt: 1,
+                    updatedAt: 1
+                }
+            }
+        ]);
 
         //Get Dealer Customer Orders
 
@@ -1229,17 +1288,13 @@ exports.getDealerResellers = async (req, res) => {
             }
         });
 
-        const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
         const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
-        const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
         const dealerRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
 
         const filteredData = result_Array.filter(entry => {
             return (
                 nameRegex.test(entry.resellerData.name) &&
-                emailRegex.test(entry.email) &&
-                dealerRegex.test(entry.resellerData.dealerId) &&
-                phoneRegex.test(entry.phoneNumber)
+                dealerRegex.test(entry.resellerData.dealerId)
             );
         });
         res.send({

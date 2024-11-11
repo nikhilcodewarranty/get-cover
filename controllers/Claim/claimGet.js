@@ -403,7 +403,7 @@ exports.getAllClaims = async (req, res, next) => {
 
       if (item1.servicerId != null) {
         servicerName = servicer.find(servicer => servicer?._id?.toString() === item1.servicerId?.toString());
-        selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() ? true : false
+        selfServicer = req.role=="Customer" ? false : item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() ? true : false
         selfResellerServicer = item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString()
       }
 
@@ -421,13 +421,13 @@ exports.getAllClaims = async (req, res, next) => {
     })
 
     let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0 // getting the total count 
-    let getTheThresholdLimit = await userService.getUserById1({ roleId: process.env.super_admin, isPrimary: true })
+    let getTheThresholdLimit = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
 
     result_Array = result_Array.map(claimObject => {
       const { productValue, claimAmount } = claimObject.contracts;
 
       // Calculate the threshold limit value
-      const thresholdLimitValue = (getTheThresholdLimit.threshHoldLimit.value / 100) * productValue;
+      const thresholdLimitValue = (getTheThresholdLimit?.threshHoldLimit.value / 100) * productValue;
 
       // Check if claimAmount exceeds the threshold limit value
       let overThreshold = claimAmount > thresholdLimitValue;
@@ -802,8 +802,7 @@ exports.getMessages = async (req, res) => {
 
   let lookupQuery = [
     {
-      $match:
-      {
+      $match: {
         $and: [
           { claimId: new mongoose.Types.ObjectId(req.params.claimId) }
         ]
@@ -813,26 +812,18 @@ exports.getMessages = async (req, res) => {
       $lookup: {
         from: "users",
         localField: "commentedTo",
-        foreignField: "metaId",
+        foreignField: "metaData.metaId",
         as: "commentTo",
         pipeline: [
           {
-            $match:
-            {
+            $match: {
               $and: [
-                { isPrimary: true },
-                { metaId: { $ne: null } }
+                // Matching the element in the metaData array with isPrimary and non-null metaId
+                { metaData: { $elemMatch: { isPrimary: true, metaId: { $ne: null } } } }
               ]
             },
           },
-          {
-            $project: {
-              firstName: 1,
-              lastName: 1,
-            }
-          }
         ]
-
       }
     },
     { $unwind: { path: "$commentTo", preserveNullAndEmptyArrays: true } },
@@ -846,7 +837,7 @@ exports.getMessages = async (req, res) => {
           {
             $lookup: {
               from: 'roles',
-              localField: 'roleId',
+              localField: 'metaData.roleId',
               foreignField: '_id',
               as: 'roles'
             }
@@ -854,13 +845,6 @@ exports.getMessages = async (req, res) => {
           {
             $unwind: "$roles"
           },
-          {
-            $project: {
-              firstName: 1,
-              lastName: 1,
-              "roles.role": 1,
-            }
-          }
         ]
       }
     },
@@ -872,13 +856,30 @@ exports.getMessages = async (req, res) => {
         type: 1,
         messageFile: 1,
         content: 1,
-        "commentBy": 1,
-        "commentTo": 1,
+        'commentTo.firstName': { $arrayElemAt: ["$commentTo.metaData.firstName", 0] },
+        'commentTo.lastName': { $arrayElemAt: ["$commentTo.metaData.lastName", 0] },
+        'commentBy.lastName': { $arrayElemAt: ["$commentBy.metaData.lastName", 0] },
+        'commentBy.firstName': { $arrayElemAt: ["$commentBy.metaData.firstName", 0] },
+        "commentBy.roles": 1
+
       }
-    }
+    },
+    // {
+    //   $project: {
+    //     _id: 1,
+    //     date: 1,
+    //     type: 1,
+    //     messageFile: 1,
+    //     content: 1,
+    //     "commentBy.metaData.firstName": 1,
+    //     "commentTo": 1,
+    //   }
+    // }
   ]
 
+
   let allMessages = await claimService.getAllMessages(lookupQuery);
+
   res.send({
     code: constant.successCode,
     messages: 'Success!',
@@ -917,7 +918,7 @@ exports.getMaxClaimAmount = async (req, res) => {
     const claimAmountCompleted = claimTotalCompleted[0]?.amount ? claimTotalCompleted[0]?.amount : 0
     console.log(claimAmountCompleted, claimTotalCompleted[0], claimTotal[0], "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
     const product = contract ? contract.productValue : 0
-    let getTheThresholdLimit = await userService.getUserById1({ roleId: process.env.super_admin, isPrimary: true })
+    let getTheThresholdLimit = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
     let thresholdLimitPercentage = getTheThresholdLimit.threshHoldLimit.value
     const thresholdLimitValue = (thresholdLimitPercentage / 100) * Number(contract.productValue);
     let remainingThreshHoldLimit = thresholdLimitValue - Number(claimAmount)
@@ -1320,7 +1321,6 @@ exports.checkClaimThreshHold = async (req, res) => {
 
     let thresholdLimitPercentage = getTheThresholdLimit.threshHoldLimit.value
     const thresholdLimitValue = (thresholdLimitPercentage / 100) * Number(productValue);
-    console.log(claimAmountTaken, thresholdLimitValue)
     let overThreshold = claimAmountTaken > thresholdLimitValue;
     console.log(claimAmountTaken, thresholdLimitValue, overThreshold, thresholdLimitPercentage)
 
@@ -1351,6 +1351,7 @@ exports.checkClaimThreshHold = async (req, res) => {
 exports.getcustomerDetail = async (req, res) => {
   try {
     let data = req.body
+
     let claimQuery = [
       {
         $match: {
@@ -1368,20 +1369,41 @@ exports.getcustomerDetail = async (req, res) => {
               $lookup: {
                 from: 'users',
                 localField: '_id',
-                foreignField: 'metaId',
+                foreignField: 'metaData.metaId',
                 as: 'customer_user',
                 pipeline: [
-                  { $match: { isPrimary: true } }
+                  { $match: { metaData: { $elemMatch: { isPrimary: true } } } }
                 ]
               }
             },
-            { $unwind: '$customer_user' }
+            { $unwind: '$customer_user' },
+            {
+              $project: {
+                username: 1,
+                city: 1,
+                street: 1,
+                country: 1,
+                state: 1,
+                zip: 1,
+                'customer_user.firstName': { $arrayElemAt: ["$customer_user.metaData.firstName", 0] },
+                'customer_user.lastName': { $arrayElemAt: ["$customer_user.metaData.lastName", 0] },
+                'customer_user.dialCode': { $arrayElemAt: ["$customer_user.metaData.dialCode", 0] },
+                'customer_user.roleId': { $arrayElemAt: ["$customer_user.metaData.roleId", 0] },
+                'customer_user.email': "$customer_user.email",
+                'customer_user.phoneNumber': { $arrayElemAt: ["$customer_user.metaData.phoneNumber", 0] },
+                'customer_user.position': { $arrayElemAt: ["$customer_user.metaData.position", 0] },
+
+              }
+            },
+
           ]
         }
       },
-      { $unwind: '$customer' }
+      { $unwind: '$customer' },
     ]
+
     let getClaim = await claimService.getClaimWithAggregate(claimQuery)
+
     if (!getClaim[0]) {
       res.send({
         code: constants.errorCode,
@@ -1395,14 +1417,23 @@ exports.getcustomerDetail = async (req, res) => {
     if (getClaim[0].submittedBy && getClaim[0].submittedBy != "") {
       let getUser = await userService.getUserById1({ email: getClaim[0].submittedBy })
       if (getUser) {
-        checkRole = await userService.getRoleById({ _id: getUser.roleId })
+        let checkRole = await userService.getRoleById({ _id: getUser.metaData[0].roleId })
+        let detail;
+        if (checkRole.role == "Dealer") {
+           detail = await dealerService.getDealerById(getUser.metaData[0]?.metaId)
+        }
+        if (checkRole.role == "Reseller") {
+           detail = await resellerService.getReseller({ _id: getUser.metaData[0]?.metaId })
+        }
         submittedByDetail = {
           emailWithRole: getUser.email + " (" + checkRole.role + ")",
-          name: getUser.firstName + " " + getUser.lastName,
+          name: getUser.metaData[0]?.firstName + " " + getUser.metaData[0]?.lastName,
           role: checkRole.role,
-          email: getUser.email
+          email: getUser.email,
+          shippingTo:  detail.street + ", " + detail.city + ", " + detail.state + ", " + detail.country + ", " + detail.zip
         }
-        if (getUser.roleId.toString() == process.env.customer) {
+
+        if (getUser.metaData[0].roleId.toString() == process.env.customer.toString()) {
           submittedByDetail = {
             role: "primaryDetail",
             customerDetail

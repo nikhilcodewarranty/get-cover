@@ -186,7 +186,7 @@ exports.registerDealer = async (req, res) => {
     // Check if the email already exists
     const pendingUser = await userService.findOneUser({ email: req.body.email });
     if (pendingUser) {
-      let checkDealer = await dealerService.getDealerByName({ _id: pendingUser.metaId })
+      let checkDealer = await dealerService.getDealerByName({ _id: pendingUser.metaData[0]?.metaId })
       if (checkDealer) {
         if (checkDealer.status == "Pending") {
           res.send({
@@ -242,11 +242,16 @@ exports.registerDealer = async (req, res) => {
     // Create user metadata
     const userMetaData = {
       email: data.email,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      phoneNumber: data.phoneNumber,
-      roleId: checkRole._id,
-      metaId: createdDealer._id,
+      metaData: [
+        {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          phoneNumber: data.phoneNumber,
+          roleId: checkRole._id,
+          metaId: createdDealer._id,
+        }
+      ]
+
     };
 
     // Create the user
@@ -287,14 +292,14 @@ exports.registerDealer = async (req, res) => {
       role: "Dealer"
     }
     let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
-    const admin = await supportingFunction.getPrimaryUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true })
+    const admin = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true } } })
     const notificationEmail = await supportingFunction.getUserEmails();
     emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: admin.firstName,
+      senderName: admin.metaData[0]?.firstName,
       subject: "Notification of New Dealer Registration",
       content: "A new dealer " + createdDealer.name + " has been registered"
     }
@@ -415,8 +420,11 @@ exports.statusUpdate = async (req, res) => {
     let IDs = await supportingFunction.getUserIds()
     let settingData = await userService.getSetting({});
 
-    let getPrimary = await supportingFunction.getPrimaryUser({ metaId: existingDealerPriceBook.dealerId, isPrimary: true })
-
+    let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: existingDealerPriceBook.dealerId, isPrimary: true } } })
+    IDs.push(getPrimary._id)
+    //Merge start singleServer
+    // let getPrimary = await supportingFunction.getPrimaryUser({ metaId: existingDealerPriceBook.dealerId, isPrimary: true })
+    //Merge end
     let getDealerDetail = await dealerService.getDealerByName({ _id: existingDealerPriceBook.dealerId })
     if (getDealerDetail.isAccountCreate) {
       IDs.push(getPrimary._id)
@@ -439,7 +447,7 @@ exports.statusUpdate = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: getPrimary.firstName,
+      senderName: getPrimary.metaData[0]?.firstName,
       content: "The price book " + priceBookData[0]?.pName + " has been updated",
       subject: "Update Price Book"
     }
@@ -514,32 +522,37 @@ exports.changeDealerStatus = async (req, res) => {
     }
     //Update Dealer User Status if inactive
     if (!req.body.status) {
-      let dealerUserCreateria = { metaId: req.params.dealerId };
-      let newValue = {
+
+      let dealerUserCreateria = { metaData: { $elemMatch: { metaId: req.params.dealerId } } }
+
+      let changeDealerUser = await userService.updateUser(dealerUserCreateria, {
         $set: {
-          status: req.body.status
+          'metaData.$.status': req.body.status,
         }
-      };
-      let option = { new: true };
-      const changeDealerUser = await userService.updateUser(dealerUserCreateria, newValue, option);
+      }, { new: true })
+
       //Archeive All orders when dealer inactive
       let orderCreteria = { dealerId: req.params.dealerId, status: 'Pending' };
       let updateStatus = await orderService.updateManyOrder(orderCreteria, { status: 'Archieved' }, { new: true })
 
       const updateDealerServicer = await providerService.updateServiceProvider({ dealerId: req.params.dealerId }, { status: false })
 
+
     }
 
     else {
       if (singleDealer.isAccountCreate) {
-        let dealerUserCreateria = { metaId: req.params.dealerId, isPrimary: true };
-        let newValue = {
+
+        let dealerUserCreateria = { metaData: { $elemMatch: { metaId: req.params.dealerId, isPrimary: true } } }
+
+        let changeDealerUser = await userService.updateUser(dealerUserCreateria, {
           $set: {
-            status: req.body.status
+            'metaData.$.status': req.body.status,
           }
-        };
-        let option = { new: true };
-        const changeDealerUser = await userService.updateUser(dealerUserCreateria, newValue, option);
+        }, { new: true })
+
+
+
       }
     }
     option = { new: true };
@@ -557,7 +570,10 @@ exports.changeDealerStatus = async (req, res) => {
     const changedDealerStatus = await dealerService.updateDealerStatus({ _id: req.params.dealerId }, newValue, option);
     if (changedDealerStatus) {
       let IDs = await supportingFunction.getUserIds()
-      let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.dealerId, isPrimary: true })
+      let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.params.dealerId, isPrimary: true } } })
+      //Merge start singleServer
+      // let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.dealerId, isPrimary: true })
+      //Merge end
       if (singleDealer.isAccountCreate) {
         IDs.push(getPrimary._id)
       }
@@ -577,7 +593,7 @@ exports.changeDealerStatus = async (req, res) => {
       const status_content = req.body.status ? 'Active' : 'Inactive';
       let settingData = await userService.getSetting({});
       let emailData = {
-        senderName: singleDealer.name,
+        senderName: singleDealer.metaData[0]?.name,
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
@@ -702,7 +718,7 @@ exports.createDealerPriceBook = async (req, res) => {
       })
     } else {
       let IDs = await supportingFunction.getUserIds()
-      let getPrimary = await supportingFunction.getPrimaryUser({ metaId: data.dealerId, isPrimary: true })
+      let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data.dealerId, isPrimary: true } } })
       let settingData = await userService.getSetting({});
       if (checkDealer.isAccountCreate) {
         IDs.push(getPrimary._id)
@@ -721,7 +737,7 @@ exports.createDealerPriceBook = async (req, res) => {
       let createNotification = await userService.createNotification(notificationData);
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
-      let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
+      let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
       let emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -928,12 +944,15 @@ exports.rejectDealer = async (req, res) => {
     //if status is rejected
     if (req.body.status == 'Rejected') {
       let IDs = await supportingFunction.getUserIds()
-      let getPrimary = await supportingFunction.getPrimaryUser({ metaId: singleDealer._id, isPrimary: true })
+      let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: singleDealer._id, isPrimary: true } } })
+      IDs.push(getPrimary._id)
+      const deleteUser = await userService.deleteUser({ metaData: { $elemMatch: { metaId: req.params.dealerId } } })
+      //Merge start singleServer
       if (singleDealer.isAccountCreate) {
         IDs.push(getPrimary._id)
       }
-
-      const deleteUser = await userService.deleteUser({ metaId: req.params.dealerId })
+      // const deleteUser = await userService.deleteUser({ metaId: req.params.dealerId })
+      //Merge end
       if (!deleteUser) {
         res.send({
           code: constant.errorCode,
@@ -967,7 +986,7 @@ exports.rejectDealer = async (req, res) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: singleDealer.name,
+        senderName: singleDealer.metaData[0]?.name,
         content: "Dear " + singleDealer.name + ",\n\nWe regret to inform you that your registration as a dealer has been rejected by our admin team. If you have any questions or require further assistance, please feel free to contact us.\n\nBest regards,\nAdmin Team",
         subject: "Rejection Account"
       }
@@ -1049,48 +1068,20 @@ exports.updateDealerMeta = async (req, res) => {
       let updatedCustomer = await customerService.updateDealerName(criteria, { dealerName: data.accountName }, option)
       //Update dealer name in reseller
       let updateResellerDealer = await resellerService.updateMeta(criteria, { dealerName: data.accountName }, option)
-
-      //Update Meta in servicer also     
-      // if (data.isServicer) {
-      //   const checkServicer = await servicerService.getServiceProviderById({ dealerId: checkDealer._id })
-      //   if (!checkServicer) {
-      //     const CountServicer = await servicerService.getServicerCount();
-      //     let servicerObject = {
-      //       name: data.accountName,
-      //       street: data.street,
-      //       city: data.city,
-      //       zip: data.zip,
-      //       dealerId: checkDealer._id,
-      //       state: data.state,
-      //       country: data.country,
-      //       status: data.status,
-      //       accountStatus: "Approved",
-      //       unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
-      //     }
-      //     let createData = await servicerService.createServiceProvider(servicerObject)
-      //   }
-
-      //   else {
-      //     const servicerMeta = {
-      //       name: data.accountName,
-      //       city: data.city,
-      //       country: data.country,
-      //       street: data.street,
-      //       zip: data.zip
-      //     }
-      //     const updateServicerMeta = await servicerService.updateServiceProvider(criteria, servicerMeta)
-      //   }
-      // }
     }
     //update primary user to true by default
     if (checkDealer.accountStatus) {
-      await userService.updateSingleUser({ metaId: checkDealer._id, isPrimary: true }, { status: true }, { new: true })
+      let criteria1 = { metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } }
+
+      let updateMetaData = await userService.updateSingleUser(criteria1, {
+        $set: {
+          'metaData.$.status': true,
+        }
+      }, { new: true })
+
     }
-    // if (!data.isAccountCreate) {
-    //   await userService.updateUser({ metaId: checkDealer._id }, { status: false }, { new: true })
-    // }
     let IDs = await supportingFunction.getUserIds()
-    let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
+    let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
     let settingData = await userService.getSetting({});
     if (updatedData.isAccountCreate) {
       IDs.push(getPrimary._id)
@@ -1182,10 +1173,10 @@ exports.updateDealerSetting = async (req, res) => {
     }
     //update primary user to true by default
     if (data.isAccountCreate && checkDealerId.accountStatus) {
-      await userService.updateSingleUser({ metaId: req.params.dealerId, isPrimary: true }, { status: true }, { new: true })
+      await userService.updateSingleUser({ metaData: { $elemMatch: { metaId: req.params.dealerId, isPrimary: true } } }, { status: true }, { new: true })
     }
     if (!data.isAccountCreate) {
-      await userService.updateUser({ metaId: req.params.dealerId }, { status: false }, { new: true })
+      await userService.updateUser({ metaData: { $elemMatch: { metaId: req.params.dealerId } } }, { status: false }, { new: true })
     }
     //Update Meta in servicer also     
     if (data.isServicer) {
@@ -1265,9 +1256,6 @@ exports.addDealerUser = async (req, res) => {
       })
       return;
     }
-
-    data.metaId = checkDealer._id
-    data.roleId = '656f08041eb1acda244af8c6'
     let statusCheck;
 
     if (!checkDealer.accountStatus) {
@@ -1276,9 +1264,25 @@ exports.addDealerUser = async (req, res) => {
       statusCheck = data.status
     }
 
-    data.status = statusCheck
-    let saveData = await userService.createUser(data)
+    let metaData = {
+      email: data.email,
+      metaData: [
+        {
+          metaId: checkDealer._id,
+          status: statusCheck,
+          roleId: "656f08041eb1acda244af8c6",
+          firstName: data.firstName,
+          lastName: data.lastName,
+          phoneNumber: data.phoneNumber,
+          position: data.position,
+          isPrimary: false,
+          dialCode: data.dialCode ? data.dialCode : "+1"
 
+        }
+      ]
+
+    }
+    let saveData = await userService.createUser(metaData)
     if (!saveData) {
       //Save Logs create Customer
       let logData = {
@@ -1298,10 +1302,14 @@ exports.addDealerUser = async (req, res) => {
       })
     } else {
       let IDs = await supportingFunction.getUserIds()
-      let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
+      let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
+      IDs.push(getPrimary._id)
+      //Merge start singleServer
+      // let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
       if (checkDealer.isAccountCreate) {
         IDs.push(getPrimary._id)
       }
+      //Merge end
 
       let notificationData = {
         title: "New user added",
@@ -1779,12 +1787,9 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
         } else {
           currentData.message = "Product sku does not exist"
         }
-
-
         newArray.push(currentData)
 
       }
-
       function convertArrayToHTMLTable(array) {
         const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');
         const rows = array.map(obj => {
@@ -1826,11 +1831,15 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
       //Send notification to admin,dealer,reseller
 
       let IDs = await supportingFunction.getUserIds()
-      let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: req.body.dealerId, isPrimary: true })
+
+      let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.body.dealerId, isPrimary: true } } })
+      IDs.push(dealerPrimary?._id)
+      //Merge start singleServer
+      // let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: req.body.dealerId, isPrimary: true })
       if (checkDealer[0].isAccountCreate) {
         IDs.push(dealerPrimary?._id)
       }
-
+      //Merge end
 
       let notificationData = {
         title: "Dealer Price Book Uploaded",
