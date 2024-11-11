@@ -248,7 +248,7 @@ exports.createDealer = async (req, res) => {
                         adhDays: req.body.adhDays,
                         termCondition: termData,
                         accountStatus: true,
-                        userAccount: data.userAccount,
+                        userAccount: data.customerAccountCreated,
                         isServicer: data.isServicer ? data.isServicer : false
                     }
                 }
