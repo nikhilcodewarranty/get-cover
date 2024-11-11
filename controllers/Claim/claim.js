@@ -2587,9 +2587,6 @@ exports.saveBulkClaim = async (req, res) => {
       const successEntries = csvArray.filter(entry => entry.exit === false);
       const failureEntries = csvArray.filter(entry => entry.exit === true);
 
-      console.log("successEntries--------------,successEntries",successEntries)
-      console.log("failureEntries--------------,failureEntries",failureEntries)
-
       let mailing;
       let htmlTableString;
       // Send Email notification for all roles user
@@ -2602,17 +2599,13 @@ exports.saveBulkClaim = async (req, res) => {
         mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
       }
       if (req.role == "Customer") {
-        console.log("toMail------------------------------,,",toMail)
-        console.log("ccMail------------------------------,,",ccMail)
         htmlTableString = convertArrayToHTMLTable([], failureEntries);
-        console.log("ccMhtmlTableStringail------------------------------,,",htmlTableString)
 
         mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
       }
       //send Email to admin
-      if (req.role == "Super Admin") {
+      if (req.role == "Super Admin" || req.role == "Dealer" || req.role == "Customer") {
         if (failureEntries.length > 0) {
-          console.log("sdadasdasdasd")
           htmlTableString = convertArrayToHTMLTable([], failureEntries);
           mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
         }
@@ -2648,6 +2641,12 @@ exports.saveBulkClaim = async (req, res) => {
                 </table>
             </body>
           </html>`;
+
+          console.log("sdfsdfsdfsdfdffdssd---------")
+          console.log("toMail---------",toMail)
+          console.log("ccMail---------")
+          console.log("htmlContent---------")
+
           //htmlTableString = convertArrayToHTMLTable([], failureEntries);
           mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlContent));
         }
