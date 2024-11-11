@@ -2063,6 +2063,7 @@ exports.saveBulkClaim = async (req, res) => {
         }
       })
 
+      console.log("---------------------------------------2---------------------------------")
 
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
       let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
@@ -2159,7 +2160,7 @@ exports.saveBulkClaim = async (req, res) => {
               flag = true
             }
 
-            if (allDataArray[0]?.order.reseller?.isServicer && allDataArray[0]?.order.reseller?.status && allDataArray[0]?.order.reseller?._id.toString() === servicerData.resellerId?.toString()) {
+            if (allDataArray[0]?.order.reseller?.isServicer && allDataArray[0]?.order.reseller?.status && allDataArray[0]?.order.reseller?._id?.toString() === servicerData.resellerId?.toString()) {
 
               flag = true
             }
@@ -2201,6 +2202,7 @@ exports.saveBulkClaim = async (req, res) => {
       };
       let emailServicerId = [];
 
+      console.log("---------------------------------------3---------------------------------")
 
       totalDataComing.map((data, index) => {
         let servicerId = data.servicerData?._id
@@ -2301,6 +2303,8 @@ exports.saveBulkClaim = async (req, res) => {
         }
         return acc;
       }, { trueCount: 0, falseCount: 0 });
+      console.log("---------------------------------------4---------------------------------")
+
 
       const csvArray = await Promise.all(totalDataComing.map(async (item, i) => {
         // Build bulk csv for dealer only
@@ -2460,6 +2464,7 @@ exports.saveBulkClaim = async (req, res) => {
         }
       }));
 
+      console.log("---------------------------------------5---------------------------------")
 
       //get email of all servicer
       let emailServicer = await userService.getMembers({ metaData: { $elemMatch: { metaId: { $in: emailServicerId }, isPrimary: true } } }, {});
@@ -2468,7 +2473,7 @@ exports.saveBulkClaim = async (req, res) => {
         IDs = IDs.concat(emailServicerId)
         let flatArray = [];
         for (let servicerId in existArray.data) {
-          let matchData = emailServicer.find(matchServicer => matchServicer.metaId.toString() === servicerId.toString());
+          let matchData = emailServicer.find(matchServicer => matchServicer.metaData[0].metaId?.toString() === servicerId.toString());
           let email = matchData ? matchData.email : ''; // Replace servicerId with email if matchData is found
           flatArray.push({
             email: email,
