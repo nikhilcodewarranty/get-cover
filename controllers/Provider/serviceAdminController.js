@@ -2334,7 +2334,7 @@ exports.paidUnpaid = async (req, res) => {
     let data = req.body
     let claimId = data.claimIds
     let queryIds = { _id: { $in: claimId } };
-    const updateBulk = await claimService.markAsPaid(queryIds, { claimPaymentStatus: 'Paid' }, { new: true })
+    const updateBulk = await claimService.markAsPaid(queryIds, { claimPaymentStatus: 'Paid', approveDate: new Date() }, { new: true })
     if (!updateBulk) {
       res.send({
         code: constant.errorCode,

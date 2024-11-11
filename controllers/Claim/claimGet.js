@@ -1321,7 +1321,6 @@ exports.checkClaimThreshHold = async (req, res) => {
 
     let thresholdLimitPercentage = getTheThresholdLimit.threshHoldLimit.value
     const thresholdLimitValue = (thresholdLimitPercentage / 100) * Number(productValue);
-    console.log(claimAmountTaken, thresholdLimitValue)
     let overThreshold = claimAmountTaken > thresholdLimitValue;
     console.log(claimAmountTaken, thresholdLimitValue, overThreshold, thresholdLimitPercentage)
 

@@ -37,6 +37,10 @@ const claimSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  approveDate:{
+    type: Date,
+    default:''
+  },
   pName: {
     type: String,
     default: ''
