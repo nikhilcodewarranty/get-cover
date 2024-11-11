@@ -2373,6 +2373,16 @@ exports.paidUnpaidClaim = async (req, res) => {
       }
     }
 
+    let approveQuery = {}
+    if (data.startDate && data.endDate) {
+      approveQuery = {
+        approveDate: {
+          $gte: new Date(data.startDate),
+          $lte: new Date(data.endDate),
+        }
+      }
+    }
+    
     const flag = req.body.flag == 1 ? 'Paid' : 'Unpaid'
     let query = { isDeleted: false };
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
@@ -2535,6 +2545,7 @@ exports.paidUnpaidClaim = async (req, res) => {
             { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { 'customerStatus.status': { '$regex': data.customerStatusValue ? data.customerStatusValue : '', '$options': 'i' } },
             { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
+
             {
               $or: [
                 { 'claimStatus.status': 'Completed' },
@@ -2547,6 +2558,7 @@ exports.paidUnpaidClaim = async (req, res) => {
             { 'productName': { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { claimPaymentStatus: flag },
             dateQuery,
+            approveQuery,
             { 'servicerId': new mongoose.Types.ObjectId(servicerId) }
           ]
         },
