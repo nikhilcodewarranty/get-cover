@@ -1808,7 +1808,7 @@ exports.saveBulkClaim = async (req, res) => {
 
 
       console.log("totalDataComing-------------------------",totalDataComing);
-      return;
+      
 
       for (let u = 0; u < totalDataComing.length; u++) {
         let objectToCheck = totalDataComing[u]
@@ -1818,7 +1818,7 @@ exports.saveBulkClaim = async (req, res) => {
               {
                 $or: [
                   { unique_key: { '$regex': objectToCheck.contractId ? objectToCheck.contractId : '', '$options': 'i' } },
-                  { 'serial': { '$regex': objectToCheck.contractId ? objectToCheck.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                  { 'serial': { '$regex': objectToCheck.contractId ? objectToCheck.contractId?.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 ],
 
               },
@@ -1922,7 +1922,7 @@ exports.saveBulkClaim = async (req, res) => {
             {
               $or: [
                 { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
-                { 'serial': { '$regex': item.contractId ? item.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { 'serial': { '$regex': item.contractId ? item.contractId?.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
               ],
 
             },
