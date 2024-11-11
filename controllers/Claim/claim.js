@@ -2670,10 +2670,6 @@ exports.saveBulkClaim = async (req, res) => {
   })
 
 }
-
-
-
-
 //Send message Done
 exports.sendMessages = async (req, res) => {
   try {
