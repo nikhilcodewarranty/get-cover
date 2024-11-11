@@ -2587,6 +2587,9 @@ exports.saveBulkClaim = async (req, res) => {
       const successEntries = csvArray.filter(entry => entry.exit === false);
       const failureEntries = csvArray.filter(entry => entry.exit === true);
 
+      console.log("successEntries--------------,successEntries",successEntries)
+      console.log("failureEntries--------------,failureEntries",failureEntries)
+
       let mailing;
       let htmlTableString;
       // Send Email notification for all roles user
