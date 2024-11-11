@@ -2807,8 +2807,9 @@ exports.sendMessages = async (req, res) => {
 
     console.log("emailTo",emailTo)
     console.log("notificationEmails",notificationEmails)
+    console.log("emailData",emailData)
 
-    let mailing = sgMail.send(emailConstant.sendCommentNotification(emailTo?.email, notificationEmails, emailData))
+    let mailing = sgMail.send(emailConstant.sendCommentNotification("amit@codenomad.net", notificationEmails, emailData))
     res.send({
       code: constant.successCode,
       messages: 'Message Sent!',
