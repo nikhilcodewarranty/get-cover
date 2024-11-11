@@ -1807,8 +1807,6 @@ exports.saveBulkClaim = async (req, res) => {
       }
 
 
-      console.log("totalDataComing1-------------------------", totalDataComing);
-
 
       for (let u = 0; u < totalDataComing.length; u++) {
         let objectToCheck = totalDataComing[u]
@@ -1934,8 +1932,6 @@ exports.saveBulkClaim = async (req, res) => {
           return null;
         }
       })
-
-      console.log("totalDataComing2-------------------------", totalDataComing);
 
       // get contract with dealer,reseller, servicer
       const contractArray = await Promise.all(contractArrayPromise);
