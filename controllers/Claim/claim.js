@@ -1797,6 +1797,7 @@ exports.saveBulkClaim = async (req, res) => {
       });
 
 
+
       if (totalDataComing.length === 0) {
         res.send({
           code: constant.errorCode,
@@ -1804,6 +1805,10 @@ exports.saveBulkClaim = async (req, res) => {
         });
         return;
       }
+
+
+      console.log("totalDataComing-------------------------",totalDataComing);
+      return;
 
       for (let u = 0; u < totalDataComing.length; u++) {
         let objectToCheck = totalDataComing[u]
