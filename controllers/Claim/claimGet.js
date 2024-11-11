@@ -1425,12 +1425,13 @@ exports.getcustomerDetail = async (req, res) => {
         if (checkRole.role == "Reseller") {
            detail = await resellerService.getReseller({ _id: getUser.metaData[0]?.metaId })
         }
+        console.log("detail------------------------",detail)
         submittedByDetail = {
           emailWithRole: getUser.email + " (" + checkRole.role + ")",
           name: getUser.metaData[0]?.firstName + " " + getUser.metaData[0]?.lastName,
           role: checkRole.role,
           email: getUser.email,
-          shippingTo:  detail.street + ", " + detail.city + ", " + detail.state + ", " + detail.country + ", " + detail.zip
+          shippingTo:  detail?.street + ", " + detail?.city + ", " + detail?.state + ", " + detail?.country + ", " + detail?.zip
         }
 
         if (getUser.metaData[0].roleId.toString() == process.env.customer.toString()) {
