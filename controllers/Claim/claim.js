@@ -2849,7 +2849,7 @@ exports.statusClaim = async (req, res) => {
       const customerLastResponseDate = customerStatus[0]?.date
       const latestServicerShippedDate = new Date(latestServicerShipped);
       const sevenDaysAfterShippedDate = new Date(latestServicerShippedDate);
-      sevenDaysAfterShippedDate.setDate(sevenDaysAfterShippedDate.getDate() + 1);
+      sevenDaysAfterShippedDate.setDate(sevenDaysAfterShippedDate.getDate() + 14);
 
       if (new Date() === sevenDaysAfterShippedDate || new Date() > sevenDaysAfterShippedDate) {
         // Update status for track status
