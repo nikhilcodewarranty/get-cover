@@ -2599,7 +2599,8 @@ exports.editaddress = async (req, res) => {
     );
     res.send({
       code: constant.successCode,
-      message: updateCustomer
+      message: "Success!",
+      result:updateCustomer
     })
   } catch (err) {
     res.send({
