@@ -2202,7 +2202,6 @@ exports.saveBulkClaim = async (req, res) => {
       };
       let emailServicerId = [];
 
-      console.log("---------------------------------------3---------------------------------")
 
       totalDataComing.map((data, index) => {
         let servicerId = data.servicerData?._id
@@ -2303,7 +2302,6 @@ exports.saveBulkClaim = async (req, res) => {
         }
         return acc;
       }, { trueCount: 0, falseCount: 0 });
-      console.log("---------------------------------------4---------------------------------")
 
 
       const csvArray = await Promise.all(totalDataComing.map(async (item, i) => {
@@ -2463,8 +2461,6 @@ exports.saveBulkClaim = async (req, res) => {
           };
         }
       }));
-
-      console.log("---------------------------------------5---------------------------------")
 
       //get email of all servicer
       let emailServicer = await userService.getMembers({ metaData: { $elemMatch: { metaId: { $in: emailServicerId }, isPrimary: true } } }, {});
@@ -2640,12 +2636,7 @@ exports.saveBulkClaim = async (req, res) => {
                 </tr>
                 </table>
             </body>
-          </html>`;
-
-          console.log("sdfsdfsdfsdfdffdssd---------")
-          console.log("toMail---------",toMail)
-          console.log("ccMail---------")
-          console.log("htmlContent---------")
+          </html>`;     
 
           //htmlTableString = convertArrayToHTMLTable([], failureEntries);
           mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlContent));

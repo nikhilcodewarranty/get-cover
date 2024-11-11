@@ -1351,7 +1351,7 @@ exports.checkClaimThreshHold = async (req, res) => {
 exports.getcustomerDetail = async (req, res) => {
   try {
     let data = req.body
-    
+
     let claimQuery = [
       {
         $match: {
@@ -1375,23 +1375,23 @@ exports.getcustomerDetail = async (req, res) => {
                   { $match: { metaData: { $elemMatch: { isPrimary: true } } } }
                 ]
               }
-            },            
+            },
             { $unwind: '$customer_user' },
             {
-              $project:{
-                username:1,
-                city:1,
-                street:1,
-                country:1,
-                state:1,
-                zip:1,
+              $project: {
+                username: 1,
+                city: 1,
+                street: 1,
+                country: 1,
+                state: 1,
+                zip: 1,
                 'customer_user.firstName': { $arrayElemAt: ["$customer_user.metaData.firstName", 0] },
-                 'customer_user.lastName': { $arrayElemAt: ["$customer_user.metaData.lastName", 0] },
-                 'customer_user.dialCode': { $arrayElemAt: ["$customer_user.metaData.dialCode", 0] },
-                 'customer_user.roleId': { $arrayElemAt: ["$customer_user.metaData.roleId", 0] },
-                'customer_user.email':"$customer_user.email" ,
-                 'customer_user.phoneNumber': { $arrayElemAt: ["$customer_user.metaData.phoneNumber", 0] },
-                 'customer_user.position': { $arrayElemAt: ["$customer_user.metaData.position", 0] },
+                'customer_user.lastName': { $arrayElemAt: ["$customer_user.metaData.lastName", 0] },
+                'customer_user.dialCode': { $arrayElemAt: ["$customer_user.metaData.dialCode", 0] },
+                'customer_user.roleId': { $arrayElemAt: ["$customer_user.metaData.roleId", 0] },
+                'customer_user.email': "$customer_user.email",
+                'customer_user.phoneNumber': { $arrayElemAt: ["$customer_user.metaData.phoneNumber", 0] },
+                'customer_user.position': { $arrayElemAt: ["$customer_user.metaData.position", 0] },
 
               }
             },
@@ -1403,7 +1403,7 @@ exports.getcustomerDetail = async (req, res) => {
     ]
 
     let getClaim = await claimService.getClaimWithAggregate(claimQuery)
- 
+
     if (!getClaim[0]) {
       res.send({
         code: constants.errorCode,
@@ -1418,11 +1418,19 @@ exports.getcustomerDetail = async (req, res) => {
       let getUser = await userService.getUserById1({ email: getClaim[0].submittedBy })
       if (getUser) {
         let checkRole = await userService.getRoleById({ _id: getUser.metaData[0].roleId })
+        let detail;
+        if (checkRole.role == "Dealer") {
+           detail = await dealerService.getDealerById(getUser.metaData[0]?.metaId)
+        }
+        if (checkRole.role == "Reseller") {
+           detail = await resellerService.getReseller({ _id: getUser.metaData[0]?.metaId })
+        }
         submittedByDetail = {
-          emailWithRole: getUser.email + "(" + checkRole.role + ")",
+          emailWithRole: getUser.email + " (" + checkRole.role + ")",
           name: getUser.metaData[0]?.firstName + " " + getUser.metaData[0]?.lastName,
           role: checkRole.role,
-          email: getUser.email, 
+          email: getUser.email,
+          shippingTo:  detail.street + ", " + detail.city + ", " + detail.state + ", " + detail.country + ", " + detail.zip
         }
 
         if (getUser.metaData[0].roleId.toString() == process.env.customer.toString()) {
