@@ -1431,7 +1431,7 @@ exports.getcustomerDetail = async (req, res) => {
           name: getUser.metaData[0]?.firstName + " " + getUser.metaData[0]?.lastName,
           role: checkRole.role,
           email: getUser.email,
-          shippingTo:  detail.street + ", " + detail.city + ", " + detail.state + ", " + detail.country + ", " + detail.zip
+          shippingTo:  detail?.street + ", " + detail?.city + ", " + detail?.state + ", " + detail?.country + ", " + detail?.zip
         }
 
         if (getUser.metaData[0].roleId.toString() == process.env.customer.toString()) {
