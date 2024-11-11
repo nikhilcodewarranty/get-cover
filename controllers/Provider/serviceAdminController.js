@@ -2382,6 +2382,7 @@ exports.paidUnpaidClaim = async (req, res) => {
         }
       }
     }
+
     
     const flag = req.body.flag == 1 ? 'Paid' : 'Unpaid'
     let query = { isDeleted: false };
