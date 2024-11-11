@@ -2382,7 +2382,8 @@ exports.paidUnpaidClaim = async (req, res) => {
         }
       }
     }
-    
+    console.log("approveQuery00000000000000000000",approveQuery)
+
     const flag = req.body.flag == 1 ? 'Paid' : 'Unpaid'
     let query = { isDeleted: false };
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
