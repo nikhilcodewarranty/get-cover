@@ -1807,8 +1807,8 @@ exports.saveBulkClaim = async (req, res) => {
       }
 
 
-      console.log("totalDataComing-------------------------",totalDataComing);
-      
+      console.log("totalDataComing1-------------------------", totalDataComing);
+
 
       for (let u = 0; u < totalDataComing.length; u++) {
         let objectToCheck = totalDataComing[u]
@@ -1935,6 +1935,7 @@ exports.saveBulkClaim = async (req, res) => {
         }
       })
 
+      console.log("totalDataComing2-------------------------", totalDataComing);
 
       // get contract with dealer,reseller, servicer
       const contractArray = await Promise.all(contractArrayPromise);
@@ -1972,7 +1973,7 @@ exports.saveBulkClaim = async (req, res) => {
                   {
                     $or: [
                       { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
-                      { 'serial': { '$regex': item.contractId ? item.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                      { 'serial': { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
                     ],
 
                   },
@@ -2856,7 +2857,7 @@ exports.statusClaim = async (req, res) => {
       const customerLastResponseDate = customerStatus[0]?.date
       const latestServicerShippedDate = new Date(latestServicerShipped);
       const sevenDaysAfterShippedDate = new Date(latestServicerShippedDate);
-      sevenDaysAfterShippedDate.setDate(sevenDaysAfterShippedDate.getDate() + 1); 
+      sevenDaysAfterShippedDate.setDate(sevenDaysAfterShippedDate.getDate() + 1);
 
       if (new Date() === sevenDaysAfterShippedDate || new Date() > sevenDaysAfterShippedDate) {
         // Update status for track status
@@ -2893,7 +2894,7 @@ exports.statusClaim = async (req, res) => {
             const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: false }, { new: true })
           }
         } else {
-          const updateContract = await contractService.updateContract({ _id:contractId }, { eligibilty: true }, { new: true })
+          const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: true }, { new: true })
         }
 
       }
