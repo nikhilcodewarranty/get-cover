@@ -2594,6 +2594,9 @@ exports.saveBulkClaim = async (req, res) => {
         mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
       }
       if (req.role == "Customer") {
+        console.log("toMail------------------------------,,",toMail)
+        console.log("ccMail------------------------------,,",ccMail)
+        console.log("ccMhtmlTableStringail------------------------------,,",htmlTableString)
         htmlTableString = convertArrayToHTMLTable([], failureEntries);
         mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
       }
