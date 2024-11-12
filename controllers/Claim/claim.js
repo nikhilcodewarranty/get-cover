@@ -2127,11 +2127,13 @@ exports.saveBulkClaim = async (req, res) => {
               addresses.push(
                 {
                   zip: allDataArray[0]?.order.customers.zip,
-                  state:allDataArray[0]?.order.customers.zip,
-                  city:allDataArray[0]?.order.customers.city,
-                  street:allDataArray[0]?.order.customers.street,
-                  country:allDataArray[0]?.order.customers.country,
+                  state: allDataArray[0]?.order.customers.zip,
+                  city: allDataArray[0]?.order.customers.city,
+                  street: allDataArray[0]?.order.customers.street,
+                  country: allDataArray[0]?.order.customers.country,
                 })
+              console.log("address-----------------------------", addresses)
+
               const validAddress = addresses?.find(address => Number(address.zip) === Number(userZip));
               if (!validAddress) {
                 item.status = "Invalid user address!"
@@ -2139,9 +2141,8 @@ exports.saveBulkClaim = async (req, res) => {
               }
             }
             item.shippingTo = item.shippingTo
-            console.log("address-----------------------------",addresses)
           }
-        
+
           let checkCoverageStartDate = new Date(contractData?.coverageStartDate).setHours(0, 0, 0, 0)
           if (contractData && new Date(checkCoverageStartDate) > new Date(item.lossDate)) {
             item.status = "Loss date should be in between coverage start date and present date!"
