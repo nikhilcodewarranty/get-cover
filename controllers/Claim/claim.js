@@ -2139,7 +2139,7 @@ exports.saveBulkClaim = async (req, res) => {
               }
             }
             item.shippingTo = item.shippingTo
-            console.log("address-----------------------------",address)
+            console.log("address-----------------------------",addresses)
           }
         
           let checkCoverageStartDate = new Date(contractData?.coverageStartDate).setHours(0, 0, 0, 0)
