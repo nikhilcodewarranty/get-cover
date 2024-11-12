@@ -1688,9 +1688,6 @@ exports.saveBulkClaim = async (req, res) => {
       const emailArray = JSON.parse(emailField);
 
       //Get all emails of the login user
-      const memberEmail = await userService.getMembers({
-        metaData: { $elemMatch: { metaId: req.userId } }
-      }, {})
       let length = [8, 5];
       let match = {}
       if (req.role == 'Dealer') {
@@ -1719,7 +1716,6 @@ exports.saveBulkClaim = async (req, res) => {
       }
 
       const totalDataComing1 = result.data;
-
 
       let totalDataComing = totalDataComing1.map((item, i) => {
         const keys = Object.keys(item);
@@ -1796,8 +1792,6 @@ exports.saveBulkClaim = async (req, res) => {
         }
       });
 
-
-
       if (totalDataComing.length === 0) {
         res.send({
           code: constant.errorCode,
@@ -1807,7 +1801,7 @@ exports.saveBulkClaim = async (req, res) => {
       }
 
 
-
+      // Assign servicer when servicer is empty in the list
       for (let u = 0; u < totalDataComing.length; u++) {
         let objectToCheck = totalDataComing[u]
         if (objectToCheck.servicerName == '' || objectToCheck.servicerName == null) {
@@ -1839,7 +1833,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       }
 
-
+      //Trim the space from the sheet data
       totalDataComing = totalDataComing.map((item, i) => {
         if (item.hasOwnProperty("servicerName")) {
           return {
@@ -1872,6 +1866,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       });
 
+      //check sheet data is not empty for specific field
       let cache = {};
       totalDataComing.forEach(data => {
         if (!data.contractId || data.contractId == "") {
@@ -1937,7 +1932,6 @@ exports.saveBulkClaim = async (req, res) => {
       const contractArray = await Promise.all(contractArrayPromise);
 
       let servicerArray;
-
       //Check servicer is exist or not using contract id
       if (req.role == "Super Admin") {
         const servicerArrayPromise = totalDataComing.map(item => {
@@ -2044,7 +2038,6 @@ exports.saveBulkClaim = async (req, res) => {
                 "order.resellerId": 1,
                 "order.customers": 1,
                 "order.dealer": 1,
-                "order.customers": 1,
                 "order.reseller": 1,
                 "order.servicer": 1
               }
@@ -2113,6 +2106,9 @@ exports.saveBulkClaim = async (req, res) => {
           // check login email
           if (item.userEmail != '') {
             item.submittedBy = item.userEmail
+            let memberEmail =  userService.getMembers({
+              metaData: { $elemMatch: { metaId: data.orderData?.order?.customerId } }
+            }, {})
             const validEmail = memberEmail.find(member => member.email === item.userEmail);
             if (!validEmail) {
               item.status = "Invalid Email"
@@ -2673,6 +2669,7 @@ exports.saveBulkClaim = async (req, res) => {
   })
 
 }
+
 //Send message Done
 exports.sendMessages = async (req, res) => {
   try {
