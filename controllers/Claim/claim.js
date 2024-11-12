@@ -1962,7 +1962,7 @@ exports.saveBulkClaim = async (req, res) => {
                 $and: [
                   {
                     $or: [
-                      { unique_key: { $regex: new RegExp("^" + item.contractId.toLowerCase(), "i") } },
+                      { unique_key: { $regex: new RegExp("^" + item.contractId, "i") } },
                       { serial: { $regex: new RegExp("^" + item.contractId.toLowerCase(), "i") } },
                     ],
 
@@ -2189,7 +2189,6 @@ exports.saveBulkClaim = async (req, res) => {
           item.servicerData = null
         }
       })
-
 
       let finalArray = []
       //Save bulk claim
