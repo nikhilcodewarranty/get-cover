@@ -1917,7 +1917,6 @@ exports.saveBulkClaim = async (req, res) => {
                 { unique_key: { $regex: new RegExp("^" + item.contractId.toLowerCase(), "i") } },
                 { serial: { $regex: new RegExp("^" + item.contractId.toLowerCase(), "i") } },
               ],
-
             },
             { eligibilty: true }
           ],
@@ -1931,7 +1930,7 @@ exports.saveBulkClaim = async (req, res) => {
       // get contract with dealer,reseller, servicer
       const contractArray = await Promise.all(contractArrayPromise);
 
-      console.log("contractArray-------------------",contractArray)
+      console.log("contractArray-------------------", contractArray)
 
 
       let servicerArray;
@@ -1968,10 +1967,9 @@ exports.saveBulkClaim = async (req, res) => {
                       { unique_key: { $regex: new RegExp("^" + item.contractId.toLowerCase(), "i") } },
                       { serial: { $regex: new RegExp("^" + item.contractId.toLowerCase(), "i") } },
                     ],
-
                   },
                   { eligibilty: true }
-                ],
+                ]
               },
             },
             {
@@ -2062,7 +2060,7 @@ exports.saveBulkClaim = async (req, res) => {
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
 
 
-      console.log("contractAllDataArray-------------------",contractAllDataArray)
+      console.log("contractAllDataArray-------------------", contractAllDataArray)
       return
       let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
       //Filter data which is contract , servicer and not active
@@ -2199,7 +2197,7 @@ exports.saveBulkClaim = async (req, res) => {
       let finalArray = []
       //Save bulk claim
       let count = await claimService.getClaimCount();
-      let unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000 
+      let unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
 
       //Update eligibility when contract is open
 
