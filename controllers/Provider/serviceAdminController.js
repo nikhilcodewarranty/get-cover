@@ -2443,6 +2443,7 @@ exports.paidUnpaidClaim = async (req, res) => {
               "unique_key": 1,
               ClaimType: 1,
               note: 1,
+              approveDate: 1,
               totalAmount: 1,
               servicerId: 1,
               getcoverOverAmount: 1,

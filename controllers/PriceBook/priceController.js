@@ -1466,7 +1466,6 @@ exports.uploadRegularPriceBook = async (req, res) => {
       const result = await getObjectFromS3(bucketReadUrl);
       let responseData = result.data;
       const headers = result.headers
-      console.log("check the header length ++++++++++++++++++++++++++++++", headers.length)
 
       if (data.priceType == "Regular Pricing") {
         //check the header of file
@@ -1477,7 +1476,6 @@ exports.uploadRegularPriceBook = async (req, res) => {
           })
           return
         }
-
         // updating the key names 
         let totalDataComing = responseData.map(item => {
           let keys = Object.keys(item);
@@ -2117,10 +2115,8 @@ exports.uploadRegularPriceBook = async (req, res) => {
 exports.uploadCompanyPriceBook = async (req, res) => {
   try {
     let data = req.body
-    console.log("called +++++++++++++++++++ regular", req)
 
     if (data.priceType == "Regular Price") {
-      console.log("called +++++++++++++++++++ regular")
       let callApi = await uploadRegularPriceBook(req, res)
       res.send({
         callApi
