@@ -2109,6 +2109,7 @@ exports.saveBulkClaim = async (req, res) => {
             let memberEmail =  userService.getMembers({
               metaData: { $elemMatch: { metaId: data.orderData?.order?.customerId } }
             }, {})
+            console.log("memberEmail--------------------",memberEmail)
             const validEmail = memberEmail?.find(member => member.email === item.userEmail);
             if (!validEmail) {
               item.status = "Invalid Email"
