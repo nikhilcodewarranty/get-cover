@@ -1915,7 +1915,7 @@ exports.saveBulkClaim = async (req, res) => {
             {
               $or: [
                 { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
-                { serial: { $regex: new RegExp("^" + item.contractId.toLowerCase(), "i") } },
+                { serial: item.contractId },
               ],
 
             },
@@ -1963,7 +1963,7 @@ exports.saveBulkClaim = async (req, res) => {
                   {
                     $or: [
                       { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
-                      { serial: { $regex: new RegExp("^" + item.contractId.toLowerCase(), "i") } },
+                      { serial: item.contractId },
                     ],
 
                   },
@@ -2110,7 +2110,6 @@ exports.saveBulkClaim = async (req, res) => {
               metaData: { $elemMatch: { metaId: data.orderData?.order?.customerId } }
             }, {})
             if (memberEmail.length > 0) {
-              console.log("memberEmail--------------------", memberEmail)
               const validEmail = memberEmail?.find(member => member.email === item.userEmail);
               if (!validEmail) {
                 item.status = "Invalid Email"
@@ -2125,18 +2124,24 @@ exports.saveBulkClaim = async (req, res) => {
               let shipingAddress = item.shippingTo.split(',');   // Split the string by commas
               let userZip = shipingAddress[shipingAddress.length - 1];
               let addresses = allDataArray[0]?.order.customers.addresses
+              addresses.push(
+                {
+                  zip: allDataArray[0]?.order.customers.zip,
+                  state:allDataArray[0]?.order.customers.zip,
+                  city:allDataArray[0]?.order.customers.city,
+                  street:allDataArray[0]?.order.customers.street,
+                  country:allDataArray[0]?.order.customers.country,
+                })
               const validAddress = addresses?.find(address => Number(address.zip) === Number(userZip));
               if (!validAddress) {
                 item.status = "Invalid user address!"
                 item.exit = true;
               }
-              if (Number(userZip) != allDataArray[0]?.order.customers.zip) {
-                item.status = "Invalid user address!"
-                item.exit = true;
-              }
             }
             item.shippingTo = item.shippingTo
+            console.log("address-----------------------------",address)
           }
+        
           let checkCoverageStartDate = new Date(contractData?.coverageStartDate).setHours(0, 0, 0, 0)
           if (contractData && new Date(checkCoverageStartDate) > new Date(item.lossDate)) {
             item.status = "Loss date should be in between coverage start date and present date!"
