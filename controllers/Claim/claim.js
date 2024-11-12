@@ -1964,8 +1964,8 @@ exports.saveBulkClaim = async (req, res) => {
                 $and: [
                   {
                     $or: [
-                      { unique_key: { $regex: new RegExp("^" + item.contractId.toLowerCase(), "i") } },
-                      { serial: { $regex: new RegExp("^" + item.contractId.toLowerCase(), "i") } },
+                      { unique_key: item.contractId },
+                      { serial: item.contractId },
                     ],
                   },
                   { eligibilty: true }
