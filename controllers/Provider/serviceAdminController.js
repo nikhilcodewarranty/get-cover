@@ -2449,6 +2449,7 @@ exports.paidUnpaidClaim = async (req, res) => {
               servicerId: 1,
               getcoverOverAmount: 1,
               customerOverAmount: 1,
+              approveDate: 1,
               customerClaimAmount: 1,
               getCoverClaimAmount: 1,
               customerStatus: 1,
