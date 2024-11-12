@@ -1914,8 +1914,8 @@ exports.saveBulkClaim = async (req, res) => {
           $and: [
             {
               $or: [
-                { unique_key: item.contractId },
-                { serial: item.contractId },
+                { unique_key: { $regex: new RegExp("^" + item.contractId.toLowerCase(), "i") } },
+                { serial: { $regex: new RegExp("^" + item.contractId.toLowerCase(), "i") } },
               ],
 
             },
@@ -1930,9 +1930,6 @@ exports.saveBulkClaim = async (req, res) => {
 
       // get contract with dealer,reseller, servicer
       const contractArray = await Promise.all(contractArrayPromise);
-
-
-      console.log("contractArray---------------------",contractArray)
 
       let servicerArray;
       //Check servicer is exist or not using contract id
@@ -1965,8 +1962,8 @@ exports.saveBulkClaim = async (req, res) => {
                 $and: [
                   {
                     $or: [
-                      { unique_key: item.contractId },
-                      { serial: item.contractId },
+                      { unique_key: { $regex: new RegExp("^" + item.contractId.toLowerCase(), "i") } },
+                      { serial: { $regex: new RegExp("^" + item.contractId.toLowerCase(), "i") } },
                     ],
 
                   },
@@ -2060,7 +2057,6 @@ exports.saveBulkClaim = async (req, res) => {
       })
 
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
-      console.log("contractAllDataArray---------------------",contractAllDataArray)
 
       let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
       //Filter data which is contract , servicer and not active
