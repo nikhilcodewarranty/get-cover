@@ -1920,7 +1920,7 @@ exports.saveBulkClaim = async (req, res) => {
             {
               $or: [
                 { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
-                { serial: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
+                { serial: { $regex: new RegExp("^" + item.contractId.toLowerCase(), "i") }},
               ],
 
             },
@@ -1969,7 +1969,7 @@ exports.saveBulkClaim = async (req, res) => {
                   {
                     $or: [
                       { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
-                      { 'serial': { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
+                      { serial: { $regex: new RegExp("^" + item.contractId.toLowerCase(), "i") }},
                     ],
 
                   },
