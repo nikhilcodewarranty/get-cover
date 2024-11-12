@@ -2199,7 +2199,7 @@ exports.saveBulkClaim = async (req, res) => {
       let finalArray = []
       //Save bulk claim
       let count = await claimService.getClaimCount();
-      let unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
+      let unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000 
 
       //Update eligibility when contract is open
 
