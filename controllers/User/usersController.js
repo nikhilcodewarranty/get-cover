@@ -1946,8 +1946,17 @@ exports.getSetting = async (req, res) => {
     //     message: "Only super admin allow to do this action!"
     //   });
     //   return
-    // }
-    let setting = await userService.getSetting({});
+    // 
+    let userId = req.userId
+    if (req.role == "Customer") {
+      const checkCustomer = await customerService.getCustomerById({ _id: req.userId })
+      userId = checkCustomer.dealerId
+    }
+    if (req.role == "Reseller") {
+      const checkReseller = await resellerService.getReseller({ _id: req.userId })
+      userId = checkReseller.dealerId
+    }
+    let setting = await userService.getSetting({ userId: userId });
     const baseUrl = process.env.API_ENDPOINT;
     if (setting.length > 0) {
       setting[0].base_url = baseUrl;
