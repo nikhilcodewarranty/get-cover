@@ -1809,8 +1809,8 @@ exports.saveBulkClaim = async (req, res) => {
             $and: [
               {
                 $or: [
-                  { unique_key: { '$regex': objectToCheck.contractId ? objectToCheck.contractId : '', '$options': 'i' } },
-                  { serial: { '$regex': objectToCheck.contractId ? objectToCheck.contractId : '', '$options': 'i' } },
+                  { unique_key: objectToCheck.contractId },
+                  { serial: objectToCheck.contractId },
                 ],
 
               },
@@ -1899,11 +1899,11 @@ exports.saveBulkClaim = async (req, res) => {
       //check duplicasy of the contract id
       totalDataComing.forEach((data, i) => {
         if (!data.exit) {
-          if (cache[data.contractId?.toLowerCase()]) {
+          if (cache[data.contractId]) {
             data.status = "Duplicate contract id/serial number"
             data.exit = true;
           } else {
-            cache[data.contractId?.toLowerCase()] = true;
+            cache[data.contractId] = true;
           }
         }
       })
@@ -1929,6 +1929,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       // get contract with dealer,reseller, servicer
       const contractArray = await Promise.all(contractArrayPromise);
+      console.log("contractArray---------------------------",contractArray)
 
 
       let servicerArray;
@@ -2056,6 +2057,8 @@ exports.saveBulkClaim = async (req, res) => {
       })
 
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
+
+      console.log("contractAllDataArray---------------------------",contractAllDataArray)
 
       let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
       //Filter data which is contract , servicer and not active
