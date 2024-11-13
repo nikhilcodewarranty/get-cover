@@ -1431,18 +1431,7 @@ exports.getcustomerDetail = async (req, res) => {
           // shippingTo:  detail?.street + ", " + detail?.city + ", " + detail?.state + ", " + detail?.country + ", " + detail?.zip
         }
 
-        if (getUser.metaData[0].roleId.toString() == process.env.customer.toString()) {
-          submittedByDetail = {
-            role: "primaryDetail",
-            submittedByDetail
-          }
-        }
-        if (req.role != "Customer") {
-          submittedByDetail = {
-            role: "primaryDetail",
-            submittedByDetail
-          }
-        }
+ }
       }
 
     } else {
