@@ -1673,6 +1673,7 @@ exports.editServicer = async (req, res) => {
 
 //Save bulk claim
 
+
 exports.saveBulkClaim = async (req, res) => {
   uploadP(req, res, async (err) => {
     try {
@@ -1688,9 +1689,6 @@ exports.saveBulkClaim = async (req, res) => {
       const emailArray = JSON.parse(emailField);
 
       //Get all emails of the login user
-      const memberEmail = await userService.getMembers({
-        metaData: { $elemMatch: { metaId: req.userId } }
-      }, {})
       let length = [8, 5];
       let match = {}
       if (req.role == 'Dealer') {
@@ -1719,7 +1717,6 @@ exports.saveBulkClaim = async (req, res) => {
       }
 
       const totalDataComing1 = result.data;
-
 
       let totalDataComing = totalDataComing1.map((item, i) => {
         const keys = Object.keys(item);
@@ -1796,8 +1793,6 @@ exports.saveBulkClaim = async (req, res) => {
         }
       });
 
-
-
       if (totalDataComing.length === 0) {
         res.send({
           code: constant.errorCode,
@@ -1806,6 +1801,8 @@ exports.saveBulkClaim = async (req, res) => {
         return;
       }
 
+
+      // Assign servicer when servicer is empty in the list
       for (let u = 0; u < totalDataComing.length; u++) {
         let objectToCheck = totalDataComing[u]
         if (objectToCheck.servicerName == '' || objectToCheck.servicerName == null) {
@@ -1837,7 +1834,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       }
 
-
+      //Trim the space from the sheet data
       totalDataComing = totalDataComing.map((item, i) => {
         if (item.hasOwnProperty("servicerName")) {
           return {
@@ -1870,6 +1867,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       });
 
+      //check sheet data is not empty for specific field
       let cache = {};
       totalDataComing.forEach(data => {
         if (!data.contractId || data.contractId == "") {
@@ -1917,10 +1915,9 @@ exports.saveBulkClaim = async (req, res) => {
           $and: [
             {
               $or: [
-                { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
-                { serial: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
+                { unique_key: item.contractId },
+                { serial: item.contractId },
               ],
-
             },
             { eligibilty: true }
           ],
@@ -1934,8 +1931,8 @@ exports.saveBulkClaim = async (req, res) => {
       // get contract with dealer,reseller, servicer
       const contractArray = await Promise.all(contractArrayPromise);
 
-      let servicerArray;
 
+      let servicerArray;
       //Check servicer is exist or not using contract id
       if (req.role == "Super Admin") {
         const servicerArrayPromise = totalDataComing.map(item => {
@@ -1966,13 +1963,12 @@ exports.saveBulkClaim = async (req, res) => {
                 $and: [
                   {
                     $or: [
-                      { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
-                      { 'serial': { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
+                      { unique_key: item.contractId },
+                      { serial: item.contractId },
                     ],
-
                   },
                   { eligibilty: true }
-                ],
+                ]
               },
             },
             {
@@ -2042,7 +2038,6 @@ exports.saveBulkClaim = async (req, res) => {
                 "order.resellerId": 1,
                 "order.customers": 1,
                 "order.dealer": 1,
-                "order.customers": 1,
                 "order.reseller": 1,
                 "order.servicer": 1
               }
@@ -2062,6 +2057,7 @@ exports.saveBulkClaim = async (req, res) => {
       })
 
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
+
       let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {
@@ -2111,11 +2107,17 @@ exports.saveBulkClaim = async (req, res) => {
           // check login email
           if (item.userEmail != '') {
             item.submittedBy = item.userEmail
-            const validEmail = memberEmail.find(member => member.email === item.userEmail);
-            if (!validEmail) {
-              item.status = "Invalid Email"
-              item.exit = true;
+            let memberEmail = userService.getMembers({
+              metaData: { $elemMatch: { metaId: data.orderData?.order?.customerId } }
+            }, {})
+            if (memberEmail.length > 0) {
+              const validEmail = memberEmail?.find(member => member.email === item.userEmail);
+              if (!validEmail) {
+                item.status = "Invalid Email"
+                item.exit = true;
+              }
             }
+
           }
           // check Shipping address
           if (item.shippingTo != '') {
@@ -2123,7 +2125,15 @@ exports.saveBulkClaim = async (req, res) => {
               let shipingAddress = item.shippingTo.split(',');   // Split the string by commas
               let userZip = shipingAddress[shipingAddress.length - 1];
               let addresses = allDataArray[0]?.order.customers.addresses
-               addresses?.push(allDataArray[0]?.order.customers.zip)
+              addresses.push(
+                {
+                  zip: allDataArray[0]?.order.customers.zip,
+                  state: allDataArray[0]?.order.customers.zip,
+                  city: allDataArray[0]?.order.customers.city,
+                  street: allDataArray[0]?.order.customers.street,
+                  country: allDataArray[0]?.order.customers.country,
+                })
+
               const validAddress = addresses?.find(address => Number(address.zip) === Number(userZip));
               if (!validAddress) {
                 item.status = "Invalid user address!"
@@ -2132,6 +2142,7 @@ exports.saveBulkClaim = async (req, res) => {
             }
             item.shippingTo = item.shippingTo
           }
+
           let checkCoverageStartDate = new Date(contractData?.coverageStartDate).setHours(0, 0, 0, 0)
           if (contractData && new Date(checkCoverageStartDate) > new Date(item.lossDate)) {
             item.status = "Loss date should be in between coverage start date and present date!"
@@ -2177,7 +2188,6 @@ exports.saveBulkClaim = async (req, res) => {
           item.servicerData = null
         }
       })
-
 
       let finalArray = []
       //Save bulk claim
@@ -2632,7 +2642,7 @@ exports.saveBulkClaim = async (req, res) => {
                 </tr>
                 </table>
             </body>
-          </html>`;     
+          </html>`;
 
           //htmlTableString = convertArrayToHTMLTable([], failureEntries);
           mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlContent));
@@ -2668,9 +2678,6 @@ exports.saveBulkClaim = async (req, res) => {
   })
 
 }
-
-
-
 
 //Send message Done
 exports.sendMessages = async (req, res) => {
