@@ -2381,9 +2381,11 @@ exports.paidUnpaidClaim = async (req, res) => {
           $lte: new Date(data.endDate).setDate(data.endDate.getDate() + 1),
         }
       }
-    }
+      console.log("approveQuery----------------------", approveQuery)
 
+    }
     console.log("approveQuery----------------------",approveQuery)
+
     const flag = req.body.flag == 1 ? 'Paid' : 'Unpaid'
     let query = { isDeleted: false };
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
