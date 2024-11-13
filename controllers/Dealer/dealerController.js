@@ -2385,7 +2385,7 @@ exports.defaultSettingDealer = async (req, res) => {
       getData = dealerSetting
     }
     else {
-      getData = await userService.getSetting({ userId: dealerId });
+      getData = await userService.getSetting({ userId: req.userId });
 
     }
 
