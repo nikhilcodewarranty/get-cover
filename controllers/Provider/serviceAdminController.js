@@ -2375,12 +2375,18 @@ exports.paidUnpaidClaim = async (req, res) => {
 
     let approveQuery = {}
     if (data.startDate && data.endDate) {
+      const start = new Date(data.startDate); // Replace with your start date
+      let end = new Date(data.endDate);
+      // Add one day to the end date
+      end.setDate(end.getDate() + 1);
+      start.setDate(start.getDate() + 1);
       approveQuery = {
         approveDate: {
-          $gte: new Date(data.startDate),
-          $lte: new Date(data.endDate),
+          $gte: new Date(start),
+          $lte: new Date(end),
         }
       }
+
     }
 
     
