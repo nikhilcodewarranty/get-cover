@@ -1431,7 +1431,7 @@ exports.getcustomerDetail = async (req, res) => {
           // shippingTo:  detail?.street + ", " + detail?.city + ", " + detail?.state + ", " + detail?.country + ", " + detail?.zip
         }
 
- }
+      
       }
 
     } else {
