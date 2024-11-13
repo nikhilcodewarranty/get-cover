@@ -2265,8 +2265,22 @@ exports.resetDealerSetting = async (req, res) => {
     // Define the default resetColor array
 
     let data = req.body;
+    const adminSetting = await userService.getSetting({ userId: req.userId });
+
+    let dealerId = req.body.dealerId
+    if (req.role == "Dealer") {
+      dealerId = req.userId
+    }
+    if (req.role == "Reseller") {
+      const checkReseller = await resellerService.getReseller({ _id: req.userId })
+      dealerId = checkReseller.dealerId
+    }
+    if (req.role == "Customer") {
+      const checkCustomer = await customerService.getCustomerById({ _id: req.userId })
+      dealerId = checkCustomer.dealerId
+    }
     let response;
-    const getData = await userService.getSetting({});
+    const getData = await userService.getSetting({userId:dealerId});
     let defaultResetColor = [];
     let defaultPaymentDetail = '';
     let defaultLightLogo = {};
@@ -2296,60 +2310,25 @@ exports.resetDealerSetting = async (req, res) => {
       defaultTitle = getData[0]?.defaultTitle
     }
     else {
-      defaultResetColor = [
-        {
-          colorCode: "#303030",
-          colorType: "sideBarColor"
-        },
-        {
-          colorCode: "#fafafa",
-          colorType: "sideBarTextColor"
-        },
-        {
-          colorCode: "#f2f2f2",
-          colorType: "sideBarButtonColor"
-        },
-        {
-          colorCode: "#201d1d",
-          colorType: "sideBarButtonTextColor"
-        },
-        {
-          colorCode: "#343232",
-          colorType: "buttonColor"
-        },
-        {
-          colorCode: "#fffafa",
-          colorType: "buttonTextColor"
-        },
-        {
-          colorCode: "#f2f2f2",
-          colorType: "backGroundColor"
-        },
-        {
-          colorCode: "#333333",
-          colorType: "textColor"
-        },
-        {
-          colorCode: "#242424",
-          colorType: "titleColor"
-        },
-        {
-          colorCode: "#1a1a1a",
-          colorType: "cardColor"
-        },
-        {
-          colorCode: "#fcfcfc",
-          colorType: "cardBackGroundColor"
-        },
-        {
-          colorCode: "#fcfcfc",
-          colorType: "modelBackgroundColor"
-        },
-        {
-          colorCode: "#2b2727",
-          colorType: "modelColor"
-        }
-      ];
+      defaultResetColor = adminSetting[0]?.defaultColor
+      defaultPaymentDetail = adminSetting[0]?.defaultPaymentDetail
+      defaultLightLogo = {
+        fileName: adminSetting[0].defaultLightLogo.fileName,
+        name: adminSetting[0].defaultLightLogo.name,
+        size: adminSetting[0].defaultLightLogo.size
+      }
+      defaultDarkLogo = {
+        fileName: adminSetting[0].defaultDarkLogo.fileName,
+        name: adminSetting[0].defaultDarkLogo.name,
+        size: adminSetting[0].defaultDarkLogo.size
+      }
+      defaultFavIcon = {
+        fileName: adminSetting[0].defaultFavIcon.fileName,
+        name: adminSetting[0].defaultFavIcon.name,
+        size: adminSetting[0].defaultFavIcon.size
+      }
+      defaultAddress = adminSetting[0]?.defaultAddress
+      defaultTitle = adminSetting[0]?.defaultTitle
     }
     response = await userService.updateSetting({ _id: getData[0]?._id }, {
       colorScheme: defaultResetColor,
