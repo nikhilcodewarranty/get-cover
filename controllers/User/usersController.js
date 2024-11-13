@@ -1956,6 +1956,8 @@ exports.getSetting = async (req, res) => {
       const checkReseller = await resellerService.getReseller({ _id: req.userId })
       userId = checkReseller.dealerId
     }
+
+    console.log("userId------------------------",userId)
     let setting = await userService.getSetting({ userId: userId });
     const baseUrl = process.env.API_ENDPOINT;
     if (setting.length > 0) {
