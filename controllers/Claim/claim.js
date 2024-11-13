@@ -1915,7 +1915,7 @@ exports.saveBulkClaim = async (req, res) => {
             {
               $or: [
                 { unique_key: { $regex: new RegExp("^" + item.contractId.toLowerCase(), "i") } },
-                { serial: { $regex: '^ramramram$', $options: 'i' } },
+                { serial: { $regex: '^ram$', $options: 'i' } },
               ],
             },
             { eligibilty: true }
