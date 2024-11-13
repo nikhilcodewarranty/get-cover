@@ -551,7 +551,7 @@ exports.getUserById = async (req, res) => {
     let checkDealer = await dealerService.getDealerById(criteria)
     let checkReseller = await resellerService.getReseller(criteria, {})
     let checkCustomer = await customerService.getCustomerByName(criteria)
-    console.log(checkCustomer,"checking the customer dta-------------------")
+    console.log(checkCustomer, "checking the customer dta-------------------")
     mainStatus = checkStatus ? checkStatus.status : checkDealer ? checkDealer.accountStatus : checkReseller ? checkReseller.status : checkCustomer ? checkCustomer.isAccountCreate : false
     res.send({
       code: constant.successCode,
@@ -1563,9 +1563,9 @@ exports.getMembers = async (req, res) => {
           'status': { $arrayElemAt: ["$metaData.status", 0] },
           resetPasswordCode: 1,
           isResetPassword: 1,
-          notificationTo:1,
-          threshHoldLimit:1,
-          isThreshHoldLimit:1,
+          notificationTo: 1,
+          threshHoldLimit: 1,
+          isThreshHoldLimit: 1,
           approvedStatus: 1,
           createdAt: 1,
           updatedAt: 1
@@ -1593,9 +1593,9 @@ exports.getMembers = async (req, res) => {
           resetPasswordCode: 1,
           isResetPassword: 1,
           approvedStatus: 1,
-          notificationTo:1,
-          threshHoldLimit:1,
-          isThreshHoldLimit:1,
+          notificationTo: 1,
+          threshHoldLimit: 1,
+          isThreshHoldLimit: 1,
           createdAt: 1,
           updatedAt: 1
         }
@@ -1746,6 +1746,7 @@ exports.accountSetting = async (req, res) => {
     // }
     let data = req.body;
     data.setDefault = 0;
+    data.userId = req.userId
     let response;
     const getData = await userService.getSetting();
     if (getData.length > 0) {
@@ -1872,12 +1873,12 @@ exports.resetSetting = async (req, res) => {
     }
     response = await userService.updateSetting({ _id: getData[0]?._id }, {
       colorScheme: defaultResetColor,
-      logoLight:defaultLightLogo,
-      logoDark:defaultDarkLogo,
-      favIcon:defaultFavIcon,
-      title:defaultTitle,
-      address:defaultAddress,
-      paymentDetail:defaultPaymentDetail,
+      logoLight: defaultLightLogo,
+      logoDark: defaultDarkLogo,
+      favIcon: defaultFavIcon,
+      title: defaultTitle,
+      address: defaultAddress,
+      paymentDetail: defaultPaymentDetail,
       setDefault: 1
     }, { new: true })
     res.send({

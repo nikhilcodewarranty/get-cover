@@ -2388,7 +2388,27 @@ exports.defaultSettingDealer = async (req, res) => {
     // }
     // Define the default resetColor array
     let response;
-    const getData = await userService.getSetting({});
+    let dealerId = req.params.dealerId
+    if (req.role == "Dealer") {
+      dealerId = req.userId
+    }
+    if (req.role == "Reseller") {
+      const checkReseller = await resellerService.getReseller({ _id: req.userId })
+      dealerId = checkReseller.dealerId
+    }
+    if (req.role == "Customer") {
+      const checkCustomer = await customerService.getCustomerById({ _id: req.userId })
+      dealerId = checkCustomer.dealerId
+    }
+    let getData;
+    let dealerSetting = await userService.getSetting({ userId: dealerId });
+    if (getData.length > 0) {
+      getData = dealerSetting
+    }
+    else {
+      getData = await userService.getSetting({ userId: dealerId });
+
+    }
 
     response = await userService.updateSetting({ _id: getData[0]?._id },
       {
@@ -2439,7 +2459,7 @@ exports.getDealerSetting = async (req, res) => {
       const checkCustomer = await customerService.getCustomerById({ _id: req.userId })
       dealerId = checkCustomer.dealerId
     }
-    let setting = await userService.getSetting({ userId:dealerId});
+    let setting = await userService.getSetting({ userId: dealerId });
     const baseUrl = process.env.API_ENDPOINT;
     if (setting.length > 0) {
       setting[0].base_url = baseUrl;
