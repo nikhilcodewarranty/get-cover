@@ -1952,7 +1952,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       const claimArray = await claimService.getClaims({
         claimFile: 'open'
-      });
+      });      
 
       // Get Contract with dealer, customer, reseller
       const contractAllDataPromise = totalDataComing.map(item => {

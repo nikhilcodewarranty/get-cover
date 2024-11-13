@@ -2207,3 +2207,267 @@ exports.checkEligibiltyForContracts = async (req, res) => {
     })
   }
 }
+
+
+// Setting Function
+exports.saveDealerSetting = async (req, res) => {
+  try {
+    // if (req.role != "Super Admin") {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Only super admin allow to do this action!"
+    //   });
+    //   return
+    // }
+    const adminSetting = await userService.getSetting({ userId: req.userId });
+
+    let dealerId = req.body.dealerId;
+    let data = req.body;
+    data.setDefault = 0;
+    data.userId = dealerId
+    let response;
+    const getData = await userService.getSetting({ userId: dealerId });
+    if (getData.length > 0) {
+      response = await userService.updateSetting({ _id: getData[0]?._id }, data, { new: true })
+
+    }
+    else {
+      data.title = adminSetting[0]?.title
+      data.paymentDetail = adminSetting[0]?.paymentDetail
+      data.address = adminSetting[0]?.address
+      response = await userService.saveSetting(data)
+    }
+    res.send({
+      code: constant.successCode,
+      message: "Success!",
+      result: response
+    })
+
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+//Reset Setting 
+exports.resetDealerSetting = async (req, res) => {
+  try {
+    // if (req.role != "Super Admin") {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Only super admin allow to do this action!"
+    //   });
+    //   return
+    // }
+    // Define the default resetColor array
+
+    let data = req.body;
+    let response;
+    const getData = await userService.getSetting({});
+    let defaultResetColor = [];
+    let defaultPaymentDetail = '';
+    let defaultLightLogo = {};
+    let defaultDarkLogo = {};
+    let defaultFavIcon = {};
+    let defaultAddress = '';
+    let defaultTitle = '';
+    if (getData[0]?.defaultColor.length > 0) {
+      defaultResetColor = getData[0]?.defaultColor
+      defaultPaymentDetail = getData[0]?.defaultPaymentDetail
+      defaultLightLogo = {
+        fileName: getData[0].defaultLightLogo.fileName,
+        name: getData[0].defaultLightLogo.name,
+        size: getData[0].defaultLightLogo.size
+      }
+      defaultDarkLogo = {
+        fileName: getData[0].defaultDarkLogo.fileName,
+        name: getData[0].defaultDarkLogo.name,
+        size: getData[0].defaultDarkLogo.size
+      }
+      defaultFavIcon = {
+        fileName: getData[0].defaultFavIcon.fileName,
+        name: getData[0].defaultFavIcon.name,
+        size: getData[0].defaultFavIcon.size
+      }
+      defaultAddress = getData[0]?.defaultAddress
+      defaultTitle = getData[0]?.defaultTitle
+    }
+    else {
+      defaultResetColor = [
+        {
+          colorCode: "#303030",
+          colorType: "sideBarColor"
+        },
+        {
+          colorCode: "#fafafa",
+          colorType: "sideBarTextColor"
+        },
+        {
+          colorCode: "#f2f2f2",
+          colorType: "sideBarButtonColor"
+        },
+        {
+          colorCode: "#201d1d",
+          colorType: "sideBarButtonTextColor"
+        },
+        {
+          colorCode: "#343232",
+          colorType: "buttonColor"
+        },
+        {
+          colorCode: "#fffafa",
+          colorType: "buttonTextColor"
+        },
+        {
+          colorCode: "#f2f2f2",
+          colorType: "backGroundColor"
+        },
+        {
+          colorCode: "#333333",
+          colorType: "textColor"
+        },
+        {
+          colorCode: "#242424",
+          colorType: "titleColor"
+        },
+        {
+          colorCode: "#1a1a1a",
+          colorType: "cardColor"
+        },
+        {
+          colorCode: "#fcfcfc",
+          colorType: "cardBackGroundColor"
+        },
+        {
+          colorCode: "#fcfcfc",
+          colorType: "modelBackgroundColor"
+        },
+        {
+          colorCode: "#2b2727",
+          colorType: "modelColor"
+        }
+      ];
+    }
+    response = await userService.updateSetting({ _id: getData[0]?._id }, {
+      colorScheme: defaultResetColor,
+      logoLight: defaultLightLogo,
+      logoDark: defaultDarkLogo,
+      favIcon: defaultFavIcon,
+      title: defaultTitle,
+      address: defaultAddress,
+      paymentDetail: defaultPaymentDetail,
+      setDefault: 1
+    }, { new: true })
+    res.send({
+      code: constant.successCode,
+      message: "Reset Successfully!!",
+      result: response
+    })
+
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+//Set As default setting
+exports.defaultSettingDealer = async (req, res) => {
+  try {
+    // if (req.role != "Super Admin") {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Only super admin allow to do this action!"
+    //   });
+    //   return
+    // }
+    // Define the default resetColor array
+    let response;
+    const getData = await userService.getSetting({});
+
+    response = await userService.updateSetting({ _id: getData[0]?._id },
+      {
+        defaultColor: getData[0].colorScheme,
+        setDefault: 1,
+        defaultAddress: getData[0].address,
+        defaultLightLogo: getData[0].logoLight,
+        defaultTitle: getData[0].title,
+        defaultDarkLogo: getData[0].logoDark,
+        defaultPaymentDetail: getData[0].paymentDetail,
+        defaultFavIcon: getData[0].favIcon,
+      },
+      { new: true })
+
+    res.send({
+      code: constant.successCode,
+      message: "Set as default successfully!",
+    })
+
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+//Get Setting Data
+exports.getDealerSetting = async (req, res) => {
+  try {
+    // if (req.role != "Super Admin") {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Only super admin allow to do this action!"
+    //   });
+    //   return
+    // }
+    let dealerId = req.params.dealerId
+    if (req.role == "Dealer") {
+      dealerId = req.userId
+    }
+    if (req.role == "Reseller") {
+      const checkReseller = await resellerService.getReseller({ _id: req.userId })
+      dealerId = checkReseller.dealerId
+    }
+    if (req.role == "Customer") {
+      const checkCustomer = await customerService.getCustomerById({ _id: req.userId })
+      dealerId = checkCustomer.dealerId
+    }
+    let setting = await userService.getSetting({ userId:dealerId});
+    const baseUrl = process.env.API_ENDPOINT;
+    if (setting.length > 0) {
+      setting[0].base_url = baseUrl;
+
+      // Assuming setting[0].logoDark and setting[0].logoLight contain relative paths
+      if (setting[0].logoDark && setting[0].logoDark.fileName) {
+        setting[0].logoDark.baseUrl = baseUrl;
+      }
+
+      if (setting[0].logoLight && setting[0].logoLight.fileName) {
+        setting[0].logoLight.baseUrl = baseUrl;
+      }
+
+      if (setting[0].favIcon && setting[0].favIcon.fileName) {
+        setting[0].favIcon.baseUrl = baseUrl;
+      }
+      // Repeat for any other properties that need the base_url prepended
+    }
+    res.send({
+      code: constant.successCode,
+      message: "Success!",
+      result: setting
+    });
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}

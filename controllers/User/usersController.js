@@ -1746,9 +1746,8 @@ exports.accountSetting = async (req, res) => {
     // }
     let data = req.body;
     data.setDefault = 0;
-
     let response;
-    const getData = await userService.getSetting({});
+    const getData = await userService.getSetting();
     if (getData.length > 0) {
       response = await userService.updateSetting({ _id: getData[0]?._id }, data, { new: true })
 
@@ -1979,6 +1978,8 @@ exports.getSetting = async (req, res) => {
     })
   }
 }
+
+
 
 exports.uploadLogo = async (req, res) => {
   try {
