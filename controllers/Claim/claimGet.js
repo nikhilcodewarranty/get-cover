@@ -1417,32 +1417,27 @@ exports.getcustomerDetail = async (req, res) => {
     if (getClaim[0].submittedBy && getClaim[0].submittedBy != "") {
       let getUser = await userService.getUserById1({ email: getClaim[0].submittedBy })
       if (getUser) {
-        let checkRole = await userService.getRoleById({ _id: getUser.metaData[0].roleId })
-        let detail;
-        if (checkRole.role == "Dealer") {
-           detail = await dealerService.getDealerById(getUser.metaData[0]?.metaId)
-        }
-        if (checkRole.role == "Reseller") {
-           detail = await resellerService.getReseller({ _id: getUser.metaData[0]?.metaId })
-        }
+        let checkRole = await userService.getRoleById({ _id: getUser.metaData[0].roleId })  
         submittedByDetail = {
           emailWithRole: getUser.email + " (" + checkRole.role + ")",
           name: getUser.metaData[0]?.firstName + " " + getUser.metaData[0]?.lastName,
           role: checkRole.role,
           email: getUser.email,
+          phoneNumber:getUser.metaData[0]?.phoneNumber,
+          customerDetail,
           shippingTo:  detail?.street + ", " + detail?.city + ", " + detail?.state + ", " + detail?.country + ", " + detail?.zip
         }
 
         if (getUser.metaData[0].roleId.toString() == process.env.customer.toString()) {
           submittedByDetail = {
             role: "primaryDetail",
-            customerDetail
+            submittedByDetail
           }
         }
         if (req.role != "Customer") {
           submittedByDetail = {
             role: "primaryDetail",
-            customerDetail
+            submittedByDetail
           }
         }
       }

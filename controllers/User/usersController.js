@@ -1948,7 +1948,6 @@ exports.getSetting = async (req, res) => {
     //   return
     // 
 
-    console.log("getSetting-----------------------------",req.role)
     let userId = req.userId
     if (req.role == "Customer") {
       const checkCustomer = await customerService.getCustomerById({ _id: req.userId })
@@ -1959,7 +1958,6 @@ exports.getSetting = async (req, res) => {
       userId = checkReseller.dealerId
     }
 
-    console.log("userId------------------------",userId)
     let setting = await userService.getSetting({ userId: userId });
     const baseUrl = process.env.API_ENDPOINT;
     if (setting.length > 0) {
