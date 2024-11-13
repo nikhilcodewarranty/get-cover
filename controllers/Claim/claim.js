@@ -2284,7 +2284,7 @@ exports.saveBulkClaim = async (req, res) => {
         if (customer?.resellerId) {
           // Get Reseller by id
           const reseller = await resellerService.getReseller({ _id: customer.resellerId }, {});
-          var resellerData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: reseller._id, isPrimary: true } } }, {});
+         resellerData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: reseller._id, isPrimary: true } } }, {});
           new_admin_array.push(resellerData?.email);
           IDs.push(resellerData?._id);
         }
