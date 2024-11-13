@@ -2367,22 +2367,23 @@ exports.paidUnpaidClaim = async (req, res) => {
       const start = moment().subtract(data.noOfDays, 'days').startOf('day')
       dateQuery = {
         claimDate: {
-          $gte: new Date(start).setDate(start.getDate() + 1),
-          $lte: new Date(end).setDate(end.getDate() + 1),
+          $gte: new Date(start),
+          $lte: new Date(end),
         }
       }
     }
 
-    console.log("dateQuery-------------------",dateQuery)
     let approveQuery = {}
     if (data.startDate && data.endDate) {
       approveQuery = {
         approveDate: {
-          $gte: new Date(data.startDate),
-          $lte: new Date(data.endDate),
+          $gte: new Date(data.startDate).setDate(data.startDate.getDate() + 1),
+          $lte: new Date(data.endDate).setDate(data.endDate.getDate() + 1),
         }
       }
     }
+
+    console.log("approveQuery----------------------",approveQuery)
     const flag = req.body.flag == 1 ? 'Paid' : 'Unpaid'
     let query = { isDeleted: false };
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
