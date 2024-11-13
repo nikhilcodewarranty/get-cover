@@ -22,7 +22,7 @@ router.post('/saveDealerSetting', dealerController.saveDealerSetting);
 
 router.post('/resetDealerSetting', dealerController.resetDealerSetting)
 
-router.get('/getDealerSetting', dealerController.getDealerSetting);
+router.get('/getDealerSetting/:dealerId', dealerController.getDealerSetting);
 
 router.get('/defaultSettingDealer', dealerController.defaultSettingDealer);
 
