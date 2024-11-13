@@ -1915,7 +1915,7 @@ exports.saveBulkClaim = async (req, res) => {
             {
               $or: [
                 { unique_key: { $regex: new RegExp("^" + item.contractId.toLowerCase(), "i") } },
-                { serial: { $regex: new RegExp("^" + item.contractId.toLowerCase(), "i") } },
+                { serial: { $regex: '^ramramram$', $options: 'i' } },
               ],
             },
             { eligibilty: true }
@@ -2060,7 +2060,7 @@ exports.saveBulkClaim = async (req, res) => {
       console.log("2-------------------------",contractAllDataArray)
 
       return;
-      
+
       let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {
