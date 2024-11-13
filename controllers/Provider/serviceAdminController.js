@@ -2374,6 +2374,8 @@ exports.paidUnpaidClaim = async (req, res) => {
     }
 
     let approveQuery = {}
+    console.log("approveQuery111111111---------------------", data.startDate,data.endDate)
+
     if (data.startDate && data.endDate) {
       approveQuery = {
         approveDate: {
