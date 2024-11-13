@@ -1416,6 +1416,8 @@ exports.getcustomerDetail = async (req, res) => {
     customerDetail.shippingTo = getClaim[0].shippingTo != "" ? getClaim[0].shippingTo : customerDetail.street + ", " + customerDetail.city + ", " + customerDetail.state + ", " + customerDetail.country + ", " + customerDetail.zip
     let submittedByDetail
     if (getClaim[0].submittedBy && getClaim[0].submittedBy != "") {
+
+      console.log("342342342342342342334");
       let getUser = await userService.getUserById1({ email: getClaim[0].submittedBy })
       if (getUser) {
         let checkRole = await userService.getRoleById({ _id: getUser.metaData[0].roleId })  
@@ -1449,6 +1451,9 @@ exports.getcustomerDetail = async (req, res) => {
         customerDetail
       }
     }
+
+
+    console.log("submittedByDetail---------------------------",submittedByDetail)
     // customerDetail.submittedBy = getClaim[0].submittedBy != "" ? getClaim[0].submittedBy : customerDetail.customer_user.email
 
     res.send({
