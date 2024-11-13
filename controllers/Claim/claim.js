@@ -2132,7 +2132,6 @@ exports.saveBulkClaim = async (req, res) => {
                   street: allDataArray[0]?.order.customers.street,
                   country: allDataArray[0]?.order.customers.country,
                 })
-              console.log("address-----------------------------", addresses)
 
               const validAddress = addresses?.find(address => Number(address.zip) === Number(userZip));
               if (!validAddress) {
@@ -2262,12 +2261,13 @@ exports.saveBulkClaim = async (req, res) => {
 
 
       const userId = req.userId;
+      let resellerData
       // Get Reseller by id
       if (req.role == "Reseller") {
         const reseller = await resellerService.getReseller({ _id: req.userId }, {});
         // Get dealer by id
         const dealer = await dealerService.getDealerById(reseller.dealerId, {});
-        let resellerData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: userId, isPrimary: true } } }, {});
+        resellerData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: userId, isPrimary: true } } }, {});
         // Get dealer info
         let dealerData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: dealer._id, isPrimary: true } } }, {});
         new_admin_array.push(dealerData?.email);
@@ -2364,7 +2364,7 @@ exports.saveBulkClaim = async (req, res) => {
         // Build bulk csv for Reseller only
         else if (req.role === 'Reseller') {
 
-          toMail = resellerData.email;
+          toMail = resellerData?.email;
           ccMail = new_admin_array;
           if (req.userId.toString() === item.orderData?.order?.resellerId?.toString()) {
             // For servicer
