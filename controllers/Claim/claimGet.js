@@ -1427,7 +1427,7 @@ exports.getcustomerDetail = async (req, res) => {
           role: checkRole.role,
           email: getUser.email,
           phoneNumber:getUser.metaData[0]?.phoneNumber,
-          customerDetail,
+          customerDetail, 
           // shippingTo:  detail?.street + ", " + detail?.city + ", " + detail?.state + ", " + detail?.country + ", " + detail?.zip
         }
 
