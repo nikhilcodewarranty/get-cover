@@ -1947,6 +1947,8 @@ exports.getSetting = async (req, res) => {
     //   });
     //   return
     // 
+
+    console.log("getSetting-----------------------------",req.role)
     let userId = req.userId
     if (req.role == "Customer") {
       const checkCustomer = await customerService.getCustomerById({ _id: req.userId })
