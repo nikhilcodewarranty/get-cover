@@ -2381,7 +2381,7 @@ exports.paidUnpaidClaim = async (req, res) => {
           $lte: new Date(data.endDate).setDate(data.endDate.getDate() + 1),
         }
       }
-      console.log("approveQuery----------------------", approveQuery)
+      console.log("approveQuery----------------------", data.startDate,data.endDate)
 
     }
     console.log("approveQuery----------------------",approveQuery)
