@@ -2374,8 +2374,6 @@ exports.paidUnpaidClaim = async (req, res) => {
     }
 
     let approveQuery = {}
-    console.log("approveQuery111111111---------------------", data.startDate, data.endDate)
-
     if (data.startDate && data.endDate) {
       const start = new Date(data.startDate); // Replace with your start date
       let end = new Date(data.endDate);
@@ -2388,10 +2386,8 @@ exports.paidUnpaidClaim = async (req, res) => {
           $lte: new Date(end),
         }
       }
-      console.log("approveQuery----------------------", data.startDate, data.endDate)
 
     }
-    console.log("approveQuery----------------------", approveQuery)
 
     const flag = req.body.flag == 1 ? 'Paid' : 'Unpaid'
     let query = { isDeleted: false };
