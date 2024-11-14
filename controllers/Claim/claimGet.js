@@ -403,7 +403,7 @@ exports.getAllClaims = async (req, res, next) => {
 
       if (item1.servicerId != null) {
         servicerName = servicer.find(servicer => servicer?._id?.toString() === item1.servicerId?.toString());
-        selfServicer = req.role=="Customer" ? false : item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() ? true : false
+        selfServicer = req.role == "Customer" ? false : item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() ? true : false
         selfResellerServicer = item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString()
       }
 
@@ -1420,18 +1420,18 @@ exports.getcustomerDetail = async (req, res) => {
       console.log("342342342342342342334");
       let getUser = await userService.getUserById1({ email: getClaim[0].submittedBy })
       if (getUser) {
-        let checkRole = await userService.getRoleById({ _id: getUser.metaData[0].roleId })  
+        let checkRole = await userService.getRoleById({ _id: getUser.metaData[0].roleId })
         submittedByDetail = {
           emailWithRole: getUser.email + " (" + checkRole.role + ")",
           name: getUser.metaData[0]?.firstName + " " + getUser.metaData[0]?.lastName,
           role: checkRole.role,
           email: getUser.email,
-          phoneNumber:getUser.metaData[0]?.phoneNumber,
-          customerDetail, 
+          phoneNumber: getUser.metaData[0]?.phoneNumber,
+          customerDetail,
           // shippingTo:  detail?.street + ", " + detail?.city + ", " + detail?.state + ", " + detail?.country + ", " + detail?.zip
         }
 
-      
+
       }
 
     } else {
@@ -1442,7 +1442,7 @@ exports.getcustomerDetail = async (req, res) => {
     }
 
 
-    console.log("submittedByDetail---------------------------",submittedByDetail)
+    console.log("submittedByDetail---------------------------", submittedByDetail)
     // customerDetail.submittedBy = getClaim[0].submittedBy != "" ? getClaim[0].submittedBy : customerDetail.customer_user.email
 
     res.send({
