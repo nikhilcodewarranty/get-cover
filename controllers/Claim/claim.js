@@ -1810,8 +1810,8 @@ exports.saveBulkClaim = async (req, res) => {
             $and: [
               {
                 $or: [
-                  { unique_key: { '$regex': objectToCheck.contractId ? objectToCheck.contractId : '', '$options': 'i' } },
-                  { serial: { '$regex': objectToCheck.contractId ? objectToCheck.contractId : '', '$options': 'i' } },
+                  { unique_key: objectToCheck.contractId },
+                  { serial: objectToCheck.contractId },
                 ],
 
               },
@@ -1900,11 +1900,11 @@ exports.saveBulkClaim = async (req, res) => {
       //check duplicasy of the contract id
       totalDataComing.forEach((data, i) => {
         if (!data.exit) {
-          if (cache[data.contractId?.toLowerCase()]) {
+          if (cache[data.contractId]) {
             data.status = "Duplicate contract id/serial number"
             data.exit = true;
           } else {
-            cache[data.contractId?.toLowerCase()] = true;
+            cache[data.contractId] = true;
           }
         }
       })
@@ -1952,7 +1952,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       const claimArray = await claimService.getClaims({
         claimFile: 'open'
-      });      
+      });
 
       // Get Contract with dealer, customer, reseller
       const contractAllDataPromise = totalDataComing.map(item => {
@@ -2057,6 +2057,7 @@ exports.saveBulkClaim = async (req, res) => {
       })
 
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
+
 
       let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
       //Filter data which is contract , servicer and not active
@@ -2262,12 +2263,13 @@ exports.saveBulkClaim = async (req, res) => {
 
 
       const userId = req.userId;
+      let resellerData
       // Get Reseller by id
       if (req.role == "Reseller") {
         const reseller = await resellerService.getReseller({ _id: req.userId }, {});
         // Get dealer by id
         const dealer = await dealerService.getDealerById(reseller.dealerId, {});
-        let resellerData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: userId, isPrimary: true } } }, {});
+        resellerData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: userId, isPrimary: true } } }, {});
         // Get dealer info
         let dealerData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: dealer._id, isPrimary: true } } }, {});
         new_admin_array.push(dealerData?.email);
@@ -2281,7 +2283,7 @@ exports.saveBulkClaim = async (req, res) => {
         if (customer?.resellerId) {
           // Get Reseller by id
           const reseller = await resellerService.getReseller({ _id: customer.resellerId }, {});
-          var resellerData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: reseller._id, isPrimary: true } } }, {});
+         resellerData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: reseller._id, isPrimary: true } } }, {});
           new_admin_array.push(resellerData?.email);
           IDs.push(resellerData?._id);
         }
@@ -2364,7 +2366,7 @@ exports.saveBulkClaim = async (req, res) => {
         // Build bulk csv for Reseller only
         else if (req.role === 'Reseller') {
 
-          toMail = resellerData.email;
+          toMail = resellerData?.email;
           ccMail = new_admin_array;
           if (req.userId.toString() === item.orderData?.order?.resellerId?.toString()) {
             // For servicer
