@@ -1722,6 +1722,7 @@ exports.saveBulkClaim = async (req, res) => {
         // Check if the "servicerName" header exists    
         if (keys.length == 8 || keys.length == 5) {
           if (keys.length == 8) {
+            console.log("yes i am 8")
             let coverageType = item[keys[4]]
             let dateLoss1 = item[keys[2]]
             return {
@@ -1738,6 +1739,8 @@ exports.saveBulkClaim = async (req, res) => {
             };
           }
           if (keys.length == 5) {
+            console.log("yes i am 5")
+
             let coverageType = item[keys[4]]
             let dateLoss1 = item[keys[2]]
             return {
@@ -1756,6 +1759,8 @@ exports.saveBulkClaim = async (req, res) => {
         }
         else {
           if (keys.length == 7) {
+            console.log("yes i am 7")
+
             let coverageType = item[keys[3]]
             let dateLoss2 = item[keys[1]]
             // If "servicerName" does not exist, shift the second item to "lossDate"
@@ -1773,6 +1778,8 @@ exports.saveBulkClaim = async (req, res) => {
             };
           }
           if (keys.length == 4) {
+            console.log("yes i am 4")
+
             let coverageType = item[keys[3]]
             let dateLoss2 = item[keys[1]]
             // If "servicerName" does not exist, shift the second item to "lossDate"
@@ -1800,6 +1807,7 @@ exports.saveBulkClaim = async (req, res) => {
         return;
       }
 
+      console.log("totalDataComing------------------------",totalDataComing)
       // Assign servicer when servicer is empty in the list
       for (let u = 0; u < totalDataComing.length; u++) {
         let objectToCheck = totalDataComing[u]
