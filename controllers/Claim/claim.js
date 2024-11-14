@@ -2060,7 +2060,9 @@ exports.saveBulkClaim = async (req, res) => {
 
       let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
       //Filter data which is contract , servicer and not active
-      totalDataComing.forEach(async (item, i) => {
+      for (let k = 0; k < totalDataComing.length; k++) {
+        let item = totalDataComing[k]
+        let i = k
         if (!item.exit) {
           const contractData = contractArray[i];
           const allDataArray = contractAllDataArray[i];
@@ -2190,7 +2192,138 @@ exports.saveBulkClaim = async (req, res) => {
           item.contractData = null
           item.servicerData = null
         }
-      })
+      }
+      // totalDataComing.forEach(async (item, i) => {
+      //   if (!item.exit) {
+      //     const contractData = contractArray[i];
+      //     const allDataArray = contractAllDataArray[i];
+      //     const claimData = claimArray;
+      //     const servicerData = servicerArray == undefined || servicerArray == null ? allDataArray[0]?.order?.servicer : servicerArray[i]
+      //     let flag;
+      //     item.contractData = contractData;
+      //     item.claimType = ''
+      //     item.servicerData = servicerData;
+      //     item.orderData = allDataArray[0]
+
+      //     if (!contractData || allDataArray.length == 0) {
+      //       item.status = "Contract not found"
+      //       item.exit = true;
+      //     }
+      //     if (item.coverageType) {
+      //       if (item.coverageType != null || item.coverageType != "") {
+      //         if (contractData) {
+      //           let checkCoverageTypeForContract = contractData?.coverageType.find(item1 => item1.label == item?.coverageType)
+      //           if (!checkCoverageTypeForContract) {
+      //             item.status = "Coverage type is not available for this contract!";
+      //             item.exit = true;
+      //           }
+      //           const checkCoverageValue = getCoverageTypeFromOption.value.filter(option => option.label === item?.coverageType).map(item1 => item1.value);
+      //           let startDateToCheck = new Date(contractData.coverageStartDate)
+      //           let coverageTypeDays = contractData?.adhDays
+      //           let getDeductible = coverageTypeDays?.filter(coverageType => coverageType.value == checkCoverageValue[0])
+
+      //           let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0]?.waitingDays))
+      //           checkCoverageTypeDate = new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0)
+      //           let checkLossDate = new Date(item.lossDate).setHours(0, 0, 0, 0)
+      //           const result = getCoverageTypeFromOption?.value.filter(option => option.label === item?.coverageType).map(item1 => item1.label);
+
+      //           if (new Date(checkCoverageTypeDate) > new Date(checkLossDate)) {
+      //             item.status = `Claim not eligible for ${result[0]}.`
+      //             item.exit = true;
+      //           }
+      //           item.claimType = checkCoverageValue[0]
+      //         }
+
+
+      //       }
+      //     }
+      //     // check login email
+      //     if (item.userEmail != '') {
+      //       item.submittedBy = item.userEmail
+      //       let memberEmail = await userService.getMembers({
+      //         metaData: { $elemMatch: { metaId: data.orderData?.order?.customerId } }
+      //       }, {})
+      //       console.log("memberEmail-------------------", memberEmail)
+      //       // if (memberEmail.length > 0) {
+      //       const validEmail = memberEmail?.find(member => member.email === item.userEmail);
+      //       console.log("validEmail-------------------", validEmail)
+
+      //       if (!validEmail || validEmail == undefined) {
+      //         item.status = "Invalid Email"
+      //         item.exit = true;
+      //       }
+      //       // }
+
+      //     }
+      //     // check Shipping address
+      //     if (item.shippingTo != '') {
+      //       if (allDataArray[0]?.order.customers) {
+      //         let shipingAddress = item.shippingTo.split(',');   // Split the string by commas
+      //         let userZip = shipingAddress[shipingAddress.length - 1];
+      //         let addresses = allDataArray[0]?.order.customers.addresses
+      //         addresses.push(
+      //           {
+      //             zip: allDataArray[0]?.order.customers.zip,
+      //             state: allDataArray[0]?.order.customers.zip,
+      //             city: allDataArray[0]?.order.customers.city,
+      //             street: allDataArray[0]?.order.customers.street,
+      //             country: allDataArray[0]?.order.customers.country,
+      //           })
+
+      //         const validAddress = addresses?.find(address => Number(address.zip) === Number(userZip));
+      //         if (!validAddress) {
+      //           item.status = "Invalid user address!"
+      //           item.exit = true;
+      //         }
+      //       }
+      //       item.shippingTo = item.shippingTo
+      //     }
+
+      //     let checkCoverageStartDate = new Date(contractData?.coverageStartDate).setHours(0, 0, 0, 0)
+      //     if (contractData && new Date(checkCoverageStartDate) > new Date(item.lossDate)) {
+      //       item.status = "Loss date should be in between coverage start date and present date!"
+      //       item.exit = true;
+      //     }
+
+
+      //     if (allDataArray.length > 0 && servicerData) {
+
+      //       flag = false;
+      //       if (allDataArray[0]?.order.dealer.dealerServicer.length > 0) {
+      //         //Find Servicer with dealer Servicer
+      //         const servicerCheck = allDataArray[0]?.order.dealer.dealerServicer.find(item => item.servicerId?.toString() === servicerData._id?.toString())
+      //         if (servicerCheck) {
+
+      //           flag = true
+      //         }
+      //       }
+      //       //Check dealer itself servicer
+      //       if (allDataArray[0]?.order.dealer?.isServicer && allDataArray[0]?.order.dealer?.accountStatus && allDataArray[0]?.order.dealer._id?.toString() === servicerData.dealerId?.toString()) {
+
+      //         flag = true
+      //       }
+
+      //       if (allDataArray[0]?.order.reseller?.isServicer && allDataArray[0]?.order.reseller?.status && allDataArray[0]?.order.reseller?._id?.toString() === servicerData.resellerId?.toString()) {
+
+      //         flag = true
+      //       }
+      //     }
+      //     if ((item.servicerName != '' && !servicerData)) {
+      //       flag = false
+      //     }
+      //     if ((!flag && flag != undefined && item.hasOwnProperty("servicerName") && req.role == "Admin")) {
+      //       item.status = "Servicer not found"
+      //     }
+      //     if (contractData && contractData.status != "Active") {
+      //       item.status = "Contract is not active";
+      //       item.exit = true;
+      //     }
+
+      //   } else {
+      //     item.contractData = null
+      //     item.servicerData = null
+      //   }
+      // })
 
 
       console.log("totalDataComing---------------------------", totalDataComing)
