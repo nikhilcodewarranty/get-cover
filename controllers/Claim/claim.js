@@ -1722,8 +1722,8 @@ exports.saveBulkClaim = async (req, res) => {
       let totalDataComing = totalDataComing1.map((item, i) => {
         const keys = Object.keys(item);
         // Check if the "servicerName" header exists    
-        if (keys.length == 8 || keys.length == 5) {
-          if (keys.length == 8) {
+        if (req.role == "Super Admin") {
+          if (keys.length >= 8) {
             let coverageType = item[keys[4]]
             let dateLoss1 = item[keys[2]]
             return {
@@ -1739,7 +1739,7 @@ exports.saveBulkClaim = async (req, res) => {
               exit: false
             };
           }
-          if (keys.length == 5) {
+          if (keys.length >= 5) {
 
             let coverageType = item[keys[4]]
             let dateLoss1 = item[keys[2]]
@@ -1765,7 +1765,7 @@ exports.saveBulkClaim = async (req, res) => {
           }
         }
         else {
-          if (keys.length == 7) {
+          if (keys.length >= 7) {
 
             let coverageType = item[keys[3]]
             let dateLoss2 = item[keys[1]]
@@ -1783,7 +1783,7 @@ exports.saveBulkClaim = async (req, res) => {
               exit: false
             };
           }
-          if (keys.length == 4) {
+          if (keys.length >= 4) {
 
             let coverageType = item[keys[3]]
             let dateLoss2 = item[keys[1]]
