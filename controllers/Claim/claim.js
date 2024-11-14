@@ -1929,7 +1929,6 @@ exports.saveBulkClaim = async (req, res) => {
 
       // get contract with dealer,reseller, servicer
       const contractArray = await Promise.all(contractArrayPromise);
-      console.log("contractArray---------------------------",contractArray)
 
 
       let servicerArray;
@@ -2058,7 +2057,6 @@ exports.saveBulkClaim = async (req, res) => {
 
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
 
-      console.log("contractAllDataArray---------------------------",contractAllDataArray)
 
       let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
       //Filter data which is contract , servicer and not active
