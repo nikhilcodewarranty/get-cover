@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const connection = require('../../db');
-
 // Define the default resetColor array
 
 
