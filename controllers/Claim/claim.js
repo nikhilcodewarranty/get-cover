@@ -2177,7 +2177,7 @@ exports.saveBulkClaim = async (req, res) => {
               flag = true
             }
           }
-          if ((item.servicerName != '' && !servicerData)) {
+          if ((item?.servicerName != '' && !servicerData)) {
             flag = false
           }
           if ((!flag && flag != undefined && item.hasOwnProperty("servicerName") && req.role == "Admin")) {
@@ -2328,7 +2328,6 @@ exports.saveBulkClaim = async (req, res) => {
 
       console.log("totalDataComing---------------------------", totalDataComing)
 
-      return
       let finalArray = []
       //Save bulk claim
       let count = await claimService.getClaimCount();
