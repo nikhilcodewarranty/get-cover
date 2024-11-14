@@ -2225,7 +2225,7 @@ exports.saveBulkClaim = async (req, res) => {
 
 
 console.log("ffgdgdfgdfgdfgfdfdfg",totalDataComing)
-      return;
+   
       // totalDataComing.forEach(async (item, i) => {
       //   if (!item.exit) {
       //     const contractData = contractArray[i];
