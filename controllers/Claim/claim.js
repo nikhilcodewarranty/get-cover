@@ -1899,11 +1899,11 @@ exports.saveBulkClaim = async (req, res) => {
       //check duplicasy of the contract id
       totalDataComing.forEach((data, i) => {
         if (!data.exit) {
-          if (cache[data.contractId]) {
+          if (cache[data.contractId?.toLowerCase()]) {
             data.status = "Duplicate contract id/serial number"
             data.exit = true;
           } else {
-            cache[data.contractId] = true;
+            cache[data.contractId?.toLowerCase()] = true;
           }
         }
       })
@@ -2110,8 +2110,12 @@ exports.saveBulkClaim = async (req, res) => {
             let memberEmail = userService.getMembers({
               metaData: { $elemMatch: { metaId: data.orderData?.order?.customerId } }
             }, {})
+            console.log("memberEmail-----------------------",memberEmail)
             if (memberEmail.length > 0) {
               const validEmail = memberEmail?.find(member => member.email === item.userEmail);
+              console.log("validEmail-----------------------",validEmail)
+              console.log("validEmail1111111-----------------------",item.userEmail)
+
               if (!validEmail) {
                 item.status = "Invalid Email"
                 item.exit = true;
@@ -2189,6 +2193,8 @@ exports.saveBulkClaim = async (req, res) => {
         }
       })
 
+
+      return;
       let finalArray = []
       //Save bulk claim
       let count = await claimService.getClaimCount();
