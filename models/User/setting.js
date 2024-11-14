@@ -85,6 +85,10 @@ const settingSchema = new mongoose.Schema({
   setDefault: {
     type: Number,
     default:0
+  },
+  userId:{
+    type: mongoose.Schema.Types.ObjectId,
+    default:null
   }
 });
 
