@@ -2110,7 +2110,7 @@ exports.saveBulkClaim = async (req, res) => {
           if (item.userEmail != '') {
             item.submittedBy = item.userEmail
             let memberEmail = await userService.getMembers({
-              metaData: { $elemMatch: { metaId: data.orderData?.order?.customerId } }
+              metaData: { $elemMatch: { metaId: item.orderData?.order?.customerId } }
             }, {})
             console.log("memberEmail-------------------", memberEmail)
             // if (memberEmail.length > 0) {
