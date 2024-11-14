@@ -1707,15 +1707,13 @@ exports.saveBulkClaim = async (req, res) => {
 
       headerLength = result.headers
 
-
-
-      if (!length.includes(headerLength.length)) {
-        res.send({
-          code: constant.errorCode,
-          message: "Invalid file format detected. Please check file format!"
-        })
-        return
-      }
+      // if (!length.includes(headerLength.length)) {
+      //   res.send({
+      //     code: constant.errorCode,
+      //     message: "Invalid file format detected. Please check file format!"
+      //   })
+      //   return
+      // }
 
       const totalDataComing1 = result.data;
 
