@@ -1805,6 +1805,7 @@ exports.saveBulkClaim = async (req, res) => {
       // Assign servicer when servicer is empty in the list
       for (let u = 0; u < totalDataComing.length; u++) {
         let objectToCheck = totalDataComing[u]
+        console.log("objectToCheck-------------------------",objectToCheck)
         if (objectToCheck.servicerName == '' || objectToCheck.servicerName == null) {
           let getContractDetail = await contractService.getContractById({
             $and: [
