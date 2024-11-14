@@ -2137,8 +2137,8 @@ exports.saveBulkClaim = async (req, res) => {
               metaData: { $elemMatch: { metaId: item.orderData?.order?.customerId } }
             }, {})
 
-            console,log("memberEmail------------------------",memberEmail)
-            console,log("item.userEmail------------------------",item.userEmail)
+            console.log("memberEmail------------------------",memberEmail)
+            console.log("item.userEmail------------------------",item.userEmail)
             // if (memberEmail.length > 0) {
             const validEmail = memberEmail?.find(member => member.email === item.userEmail);
 
