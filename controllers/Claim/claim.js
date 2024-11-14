@@ -2060,7 +2060,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
       //Filter data which is contract , servicer and not active
-      totalDataComing.forEach((item, i) => {
+      totalDataComing.forEach(async(item, i) => {
         if (!item.exit) {
           const contractData = contractArray[i];
           const allDataArray = contractAllDataArray[i];
@@ -2107,7 +2107,7 @@ exports.saveBulkClaim = async (req, res) => {
           // check login email
           if (item.userEmail != '') {
             item.submittedBy = item.userEmail
-            let memberEmail = userService.getMembers({
+            let memberEmail = await userService.getMembers({
               metaData: { $elemMatch: { metaId: data.orderData?.order?.customerId } }
             }, {})
             console.log("memberEmail-----------------------",memberEmail)
