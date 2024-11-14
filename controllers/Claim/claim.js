@@ -1719,91 +1719,98 @@ exports.saveBulkClaim = async (req, res) => {
 
       const totalDataComing1 = result.data;
 
-      if (totalDataComing1.length > 8){
-          res.send({
-            code:constant.errorCode,
-            message:"Invalid file format!"
-          });
-          return;
-      }
+      let totalDataComing = totalDataComing1.map((item, i) => {
+        const keys = Object.keys(item);
+        // Check if the "servicerName" header exists    
+        if (keys.length == 8 || keys.length == 5) {
+          if (keys.length == 8) {
+            let coverageType = item[keys[4]]
+            let dateLoss1 = item[keys[2]]
+            return {
+              contractId: item[keys[0]],
+              servicerName: item[keys[1]],
+              lossDate: dateLoss1.toString(),
+              diagnosis: item[keys[3]],
+              coverageType: coverageType,
+              issue: item[keys[5]],
+              userEmail: item[keys[6]],
+              shippingTo: item[keys[7]],
+              duplicate: false,
+              exit: false
+            };
+          }
+          if (keys.length == 5) {
 
-        let totalDataComing = totalDataComing1.map((item, i) => {
-          const keys = Object.keys(item);
-          // Check if the "servicerName" header exists    
-          if (keys.length == 8 || keys.length == 5) {
-            if (keys.length == 8) {
-              let coverageType = item[keys[4]]
-              let dateLoss1 = item[keys[2]]
-              return {
-                contractId: item[keys[0]],
-                servicerName: item[keys[1]],
-                lossDate: dateLoss1.toString(),
-                diagnosis: item[keys[3]],
-                coverageType: coverageType,
-                issue: item[keys[5]],
-                userEmail: item[keys[6]],
-                shippingTo: item[keys[7]],
-                duplicate: false,
-                exit: false
-              };
-            }
-            if (keys.length == 5) {
-
-              let coverageType = item[keys[4]]
-              let dateLoss1 = item[keys[2]]
-              return {
-                contractId: item[keys[0]],
-                servicerName: item[keys[1]],
-                lossDate: dateLoss1.toString(),
-                diagnosis: item[keys[3]],
-                coverageType: coverageType,
-                issue: '',
-                userEmail: '',
-                shippingTo: '',
-                duplicate: false,
-                exit: false
-              };
-            }
+            let coverageType = item[keys[4]]
+            let dateLoss1 = item[keys[2]]
+            return {
+              contractId: item[keys[0]],
+              servicerName: item[keys[1]],
+              lossDate: dateLoss1.toString(),
+              diagnosis: item[keys[3]],
+              coverageType: coverageType,
+              issue: '',
+              userEmail: '',
+              shippingTo: '',
+              duplicate: false,
+              exit: false
+            };
           }
           else {
-            if (keys.length == 7) {
-
-              let coverageType = item[keys[3]]
-              let dateLoss2 = item[keys[1]]
-              // If "servicerName" does not exist, shift the second item to "lossDate"
-              return {
-                contractId: item[keys[0]],
-                servicerName: '',
-                lossDate: dateLoss2.toString(),
-                diagnosis: item[keys[2]],  // Assuming diagnosis is now at index 2
-                coverageType: coverageType,
-                issue: item[keys[4]],
-                userEmail: item[keys[5]],
-                shippingTo: item[keys[6]],
-                duplicate: false,
-                exit: false
-              };
-            }
-            if (keys.length == 4) {
-
-              let coverageType = item[keys[3]]
-              let dateLoss2 = item[keys[1]]
-              // If "servicerName" does not exist, shift the second item to "lossDate"
-              return {
-                contractId: item[keys[0]],
-                servicerName: '',
-                lossDate: dateLoss2.toString(),
-                diagnosis: item[keys[2]],  // Assuming diagnosis is now at index 2
-                coverageType: coverageType,
-                issue: '',
-                userEmail: '',
-                shippingTo: '',
-                duplicate: false,
-                exit: false
-              };
-            }
+            res.send({
+              code: constant.errorCode,
+              message: "Invalid File format!"
+            })
+            return
           }
-        });
+        }
+        else {
+          if (keys.length == 7) {
+
+            let coverageType = item[keys[3]]
+            let dateLoss2 = item[keys[1]]
+            // If "servicerName" does not exist, shift the second item to "lossDate"
+            return {
+              contractId: item[keys[0]],
+              servicerName: '',
+              lossDate: dateLoss2.toString(),
+              diagnosis: item[keys[2]],  // Assuming diagnosis is now at index 2
+              coverageType: coverageType,
+              issue: item[keys[4]],
+              userEmail: item[keys[5]],
+              shippingTo: item[keys[6]],
+              duplicate: false,
+              exit: false
+            };
+          }
+          if (keys.length == 4) {
+
+            let coverageType = item[keys[3]]
+            let dateLoss2 = item[keys[1]]
+            // If "servicerName" does not exist, shift the second item to "lossDate"
+            return {
+              contractId: item[keys[0]],
+              servicerName: '',
+              lossDate: dateLoss2.toString(),
+              diagnosis: item[keys[2]],  // Assuming diagnosis is now at index 2
+              coverageType: coverageType,
+              issue: '',
+              userEmail: '',
+              shippingTo: '',
+              duplicate: false,
+              exit: false
+            };
+          }
+          else {
+            res.send({
+              code: constant.errorCode,
+              message: "Invalid File format!"
+            })
+            return
+          }
+
+        }
+      });
 
       if (totalDataComing.length === 0) {
         res.send({
