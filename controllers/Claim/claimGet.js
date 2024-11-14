@@ -1417,16 +1417,24 @@ exports.getcustomerDetail = async (req, res) => {
     if (getClaim[0].submittedBy && getClaim[0].submittedBy != "") {
       let getUser = await userService.getUserById1({ email: getClaim[0].submittedBy })
       if (getUser) {
-        let checkRole = await userService.getRoleById({ _id: getUser.metaData[0].roleId })  
+        let checkRole = await userService.getRoleById({ _id: getUser.metaData[0].roleId })
+        customerDetail.customer_user.email = getUser.email
+        customerDetail.customer_user.firstName = getUser.metaData[0]?.firstName
+        customerDetail.customer_user.lastName = getUser.metaData[0]?.lastName
+        customerDetail.customer_user.phoneNumber = getUser.metaData[0]?.phoneNumber
+        customerDetail.customer_user.position = getUser.metaData[0]?.position
+        customerDetail.customer_user.dialCode = getUser.metaData[0]?.dialCode
         submittedByDetail = {
           emailWithRole: getUser.email + " (" + checkRole.role + ")",
           name: getUser.metaData[0]?.firstName + " " + getUser.metaData[0]?.lastName,
           role: checkRole.role,
           email: getUser.email,
-          phoneNumber:getUser.metaData[0]?.phoneNumber,
+          phoneNumber: getUser.metaData[0]?.phoneNumber,
           customerDetail,
           // shippingTo:  detail?.street + ", " + detail?.city + ", " + detail?.state + ", " + detail?.country + ", " + detail?.zip
         }
+
+
       }
 
     } else {
@@ -1435,6 +1443,7 @@ exports.getcustomerDetail = async (req, res) => {
         customerDetail
       }
     }
+
     // customerDetail.submittedBy = getClaim[0].submittedBy != "" ? getClaim[0].submittedBy : customerDetail.customer_user.email
 
     res.send({
