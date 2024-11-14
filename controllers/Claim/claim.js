@@ -1899,11 +1899,11 @@ exports.saveBulkClaim = async (req, res) => {
       //check duplicasy of the contract id
       totalDataComing.forEach((data, i) => {
         if (!data.exit) {
-          if (cache[data.contractId]) {
+          if (cache[data.contractId?.toLowerCase()]) {
             data.status = "Duplicate contract id/serial number"
             data.exit = true;
           } else {
-            cache[data.contractId] = true;
+            cache[data.contractId?.toLowerCase()] = true;
           }
         }
       })
@@ -2060,7 +2060,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
       //Filter data which is contract , servicer and not active
-      totalDataComing.forEach((item, i) => {
+      totalDataComing.forEach(async (item, i) => {
         if (!item.exit) {
           const contractData = contractArray[i];
           const allDataArray = contractAllDataArray[i];
@@ -2107,16 +2107,19 @@ exports.saveBulkClaim = async (req, res) => {
           // check login email
           if (item.userEmail != '') {
             item.submittedBy = item.userEmail
-            let memberEmail = userService.getMembers({
+            let memberEmail = await userService.getMembers({
               metaData: { $elemMatch: { metaId: data.orderData?.order?.customerId } }
             }, {})
-            if (memberEmail.length > 0) {
-              const validEmail = memberEmail?.find(member => member.email === item.userEmail);
-              if (!validEmail) {
-                item.status = "Invalid Email"
-                item.exit = true;
-              }
+            console.log("memberEmail-------------------", memberEmail)
+            // if (memberEmail.length > 0) {
+            const validEmail = memberEmail?.find(member => member.email === item.userEmail);
+            console.log("validEmail-------------------", validEmail)
+
+            if (!validEmail || validEmail == undefined) {
+              item.status = "Invalid Email"
+              item.exit = true;
             }
+            // }
 
           }
           // check Shipping address
@@ -2189,6 +2192,10 @@ exports.saveBulkClaim = async (req, res) => {
         }
       })
 
+
+      console.log("totalDataComing---------------------------", totalDataComing)
+
+      return
       let finalArray = []
       //Save bulk claim
       let count = await claimService.getClaimCount();

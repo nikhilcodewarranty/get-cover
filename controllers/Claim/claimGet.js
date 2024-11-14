@@ -1443,8 +1443,6 @@ exports.getcustomerDetail = async (req, res) => {
       }
     }
 
-
-    console.log("submittedByDetail---------------------------", submittedByDetail)
     // customerDetail.submittedBy = getClaim[0].submittedBy != "" ? getClaim[0].submittedBy : customerDetail.customer_user.email
 
     res.send({

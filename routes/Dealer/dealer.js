@@ -26,6 +26,13 @@ router.put("/updateDealerMeta", [verifyToken], dealerController.updateDealerMeta
 router.put("/updateDealerSetting/:dealerId", [verifyToken], dealerController.updateDealerSetting); // update dealer setting
 router.put("/changeDealerStatus/:dealerId", [verifyToken], validator('change_status_dealer'), supportingFunction.checkObjectId, dealerController.changeDealerStatus); // change dealer status
 
+router.post('/saveDealerSetting', dealerController.saveDealerSetting);
+
+router.post('/resetDealerSetting', dealerController.resetDealerSetting)
+
+router.get('/getDealerColorSetting/:dealerId', dealerController.getDealerSetting);
+
+router.get('/defaultSettingDealer', dealerController.defaultSettingDealer);
 
 router.post("/dealers", [verifyToken], dealerSupportingController.getAllDealers); // get dealers list
 router.post("/getUserByDealerId/:dealerId", [verifyToken], supportingFunction.checkObjectId, dealerSupportingController.getUserByDealerId); // get dealer detail with ID
