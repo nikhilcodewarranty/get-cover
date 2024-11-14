@@ -1943,7 +1943,7 @@ exports.saveBulkClaim = async (req, res) => {
             });
           }
           else {
-            return null;
+            return null;  
           }
         })
         servicerArray = await Promise.all(servicerArrayPromise);
