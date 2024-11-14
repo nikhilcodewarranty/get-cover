@@ -1801,6 +1801,7 @@ exports.saveBulkClaim = async (req, res) => {
       }
 
 
+      console.log("==========================================1")
       // Assign servicer when servicer is empty in the list
       for (let u = 0; u < totalDataComing.length; u++) {
         let objectToCheck = totalDataComing[u]
@@ -1832,6 +1833,7 @@ exports.saveBulkClaim = async (req, res) => {
         }
 
       }
+      console.log("==========================================2")
 
       //Trim the space from the sheet data
       totalDataComing = totalDataComing.map((item, i) => {
@@ -1948,6 +1950,7 @@ exports.saveBulkClaim = async (req, res) => {
         })
         servicerArray = await Promise.all(servicerArrayPromise);
       }
+      console.log("==========================================3")
 
       const claimArray = await claimService.getClaims({
         claimFile: 'open'
@@ -2055,6 +2058,8 @@ exports.saveBulkClaim = async (req, res) => {
         }
       })
 
+      console.log("==========================================4")
+
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
 
 
@@ -2112,10 +2117,8 @@ exports.saveBulkClaim = async (req, res) => {
             let memberEmail = await userService.getMembers({
               metaData: { $elemMatch: { metaId: item.orderData?.order?.customerId } }
             }, {})
-            console.log("memberEmail-------------------", memberEmail)
             // if (memberEmail.length > 0) {
             const validEmail = memberEmail?.find(member => member.email === item.userEmail);
-            console.log("validEmail-------------------", validEmail)
 
             if (!validEmail || validEmail == undefined) {
               item.status = "Invalid Email"
@@ -2153,7 +2156,6 @@ exports.saveBulkClaim = async (req, res) => {
             item.status = "Loss date should be in between coverage start date and present date!"
             item.exit = true;
           }
-
 
           if (allDataArray.length > 0 && servicerData) {
 
