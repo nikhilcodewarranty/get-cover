@@ -1800,38 +1800,38 @@ exports.saveBulkClaim = async (req, res) => {
         return;
       }
 
-
-      console.log("==========================================1",totalDataComing)
       // Assign servicer when servicer is empty in the list
       for (let u = 0; u < totalDataComing.length; u++) {
         let objectToCheck = totalDataComing[u]
-        console.log("objectToCheck-------------------------",objectToCheck)
-        if (objectToCheck.servicerName == '' || objectToCheck.servicerName == null) {
-          let getContractDetail = await contractService.getContractById({
-            $and: [
-              {
+        if (!objectToCheck) {
+          if (objectToCheck.servicerName == '' || objectToCheck.servicerName == null) {
+            let getContractDetail = await contractService.getContractById({
+              $and: [
+                {
+                  $or: [
+                    { unique_key: objectToCheck.contractId },
+                    { serial: objectToCheck.contractId },
+                  ],
+
+                },
+                { eligibilty: true }
+              ],
+
+            });
+            let getOrderDetail = await orderService.getOrder({ _id: getContractDetail?.orderId })
+            if (getOrderDetail?.servicerId != null) {
+              let getServiceData = await servicerService.getServicerByName({
                 $or: [
-                  { unique_key: objectToCheck.contractId },
-                  { serial: objectToCheck.contractId },
-                ],
-
-              },
-              { eligibilty: true }
-            ],
-
-          });
-          let getOrderDetail = await orderService.getOrder({ _id: getContractDetail?.orderId })
-          if (getOrderDetail?.servicerId != null) {
-            let getServiceData = await servicerService.getServicerByName({
-              $or: [
-                { _id: getOrderDetail.servicerId },
-                { dealerId: getOrderDetail.servicerId },
-                { resellerId: getOrderDetail.servicerId },
-              ]
-            })
-            totalDataComing[u].servicerName = getServiceData.name
+                  { _id: getOrderDetail.servicerId },
+                  { dealerId: getOrderDetail.servicerId },
+                  { resellerId: getOrderDetail.servicerId },
+                ]
+              })
+              totalDataComing[u].servicerName = getServiceData.name
+            }
           }
         }
+
 
       }
       console.log("==========================================2")
@@ -1946,7 +1946,7 @@ exports.saveBulkClaim = async (req, res) => {
             });
           }
           else {
-            return null;  
+            return null;
           }
         })
         servicerArray = await Promise.all(servicerArrayPromise);
