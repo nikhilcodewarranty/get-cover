@@ -2060,7 +2060,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
       //Filter data which is contract , servicer and not active
-      totalDataComing.forEach(async(item, i) => {
+      totalDataComing.forEach(async (item, i) => {
         if (!item.exit) {
           const contractData = contractArray[i];
           const allDataArray = contractAllDataArray[i];
@@ -2110,12 +2110,15 @@ exports.saveBulkClaim = async (req, res) => {
             let memberEmail = await userService.getMembers({
               metaData: { $elemMatch: { metaId: data.orderData?.order?.customerId } }
             }, {})
+            console.log("memberEmail-------------------", memberEmail)
             // if (memberEmail.length > 0) {
-              const validEmail = memberEmail?.find(member => member.email === item.userEmail);
-              if (!validEmail) {
-                item.status = "Invalid Email"
-                item.exit = true;
-              }
+            const validEmail = memberEmail?.find(member => member.email === item.userEmail);
+            console.log("validEmail-------------------", validEmail)
+
+            if (!validEmail || validEmail == undefined) {
+              item.status = "Invalid Email"
+              item.exit = true;
+            }
             // }
 
           }
@@ -2190,6 +2193,9 @@ exports.saveBulkClaim = async (req, res) => {
       })
 
 
+      console.log("totalDataComing---------------------------", totalDataComing)
+
+      return
       let finalArray = []
       //Save bulk claim
       let count = await claimService.getClaimCount();
@@ -2283,7 +2289,7 @@ exports.saveBulkClaim = async (req, res) => {
         if (customer?.resellerId) {
           // Get Reseller by id
           const reseller = await resellerService.getReseller({ _id: customer.resellerId }, {});
-         resellerData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: reseller._id, isPrimary: true } } }, {});
+          resellerData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: reseller._id, isPrimary: true } } }, {});
           new_admin_array.push(resellerData?.email);
           IDs.push(resellerData?._id);
         }
