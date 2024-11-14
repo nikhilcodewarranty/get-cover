@@ -2111,7 +2111,7 @@ exports.saveBulkClaim = async (req, res) => {
               metaData: { $elemMatch: { metaId: data.orderData?.order?.customerId } }
             }, {})
             console.log("memberEmail-----------------------",memberEmail)
-            if (memberEmail.length > 0) {
+            // if (memberEmail.length > 0) {
               const validEmail = memberEmail?.find(member => member.email === item.userEmail);
               console.log("validEmail-----------------------",validEmail)
               console.log("validEmail1111111-----------------------",item.userEmail)
@@ -2120,7 +2120,7 @@ exports.saveBulkClaim = async (req, res) => {
                 item.status = "Invalid Email"
                 item.exit = true;
               }
-            }
+            // }
 
           }
           // check Shipping address
