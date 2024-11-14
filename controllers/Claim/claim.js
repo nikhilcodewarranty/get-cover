@@ -2083,6 +2083,8 @@ exports.saveBulkClaim = async (req, res) => {
 
 
       let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
+
+      console.log("totalDataComing------------------------",totalDataComing)
       //Filter data which is contract , servicer and not active
       for (let k = 0; k < totalDataComing.length; k++) {
         let item = totalDataComing[k]
@@ -2217,6 +2219,10 @@ exports.saveBulkClaim = async (req, res) => {
           item.servicerData = null
         }
       }
+
+
+
+      return;
       // totalDataComing.forEach(async (item, i) => {
       //   if (!item.exit) {
       //     const contractData = contractArray[i];
@@ -2348,9 +2354,6 @@ exports.saveBulkClaim = async (req, res) => {
       //     item.servicerData = null
       //   }
       // })
-
-
-      console.log("totalDataComing---------------------------", totalDataComing)
 
       let finalArray = []
       //Save bulk claim
