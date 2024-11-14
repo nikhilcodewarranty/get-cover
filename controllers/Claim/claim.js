@@ -1717,6 +1717,9 @@ exports.saveBulkClaim = async (req, res) => {
 
       const totalDataComing1 = result.data;
 
+
+      console.log("totalDataComing1-----------------------------0",totalDataComing1)
+
       let totalDataComing = totalDataComing1.map((item, i) => {
         const keys = Object.keys(item);
         // Check if the "servicerName" header exists    
