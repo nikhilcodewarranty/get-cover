@@ -2100,7 +2100,7 @@ exports.saveBulkClaim = async (req, res) => {
           item.servicerData = servicerData;
           item.orderData = allDataArray[0]
 
-          console.log("item.orderData ------------------------",item.orderData)
+          console.log("item.orderData ------------------------",item.orderData.order)
 
           if (!contractData || allDataArray.length == 0) {
             item.status = "Contract not found"
