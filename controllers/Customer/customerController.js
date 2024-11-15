@@ -2529,7 +2529,7 @@ exports.addAddress = async (req, res) => {
       res.send({
         code: constant.errorCode,
         message: "Unable to add customer address"
-      })
+      }) 
     } else {
       res.send({
         code: constant.successCode,
