@@ -1818,7 +1818,6 @@ exports.saveBulkClaim = async (req, res) => {
         return;
       }
 
-
       // Assign servicer when servicer is empty in the list
       for (let u = 0; u < totalDataComing.length; u++) {
         let objectToCheck = totalDataComing[u]
