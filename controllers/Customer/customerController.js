@@ -2505,24 +2505,26 @@ exports.addCustomerAddress = async (req, res) => {
     })
   }
 }
-
 exports.addAddress = async (req, res) => {
   try {
     let data = req.body
-    let checkCustomer = await customerService.getCustomerById({ _id: req.params.customerId })
+    let customerId = req.params.customerId
+    if (req.role == "Customer") {
+      customerId = req.userId
+    }
+    let checkCustomer = await customerService.getCustomerById({ _id: customerId })
     if (!checkCustomer) {
       res.send({
         code: constant.errorCode,
-        message: err.message
+        message: "Customer not found!"
       })
       return
     }
     let customerAddresses = checkCustomer.addresses ? checkCustomer.addresses : []
     console.log(customerAddresses)
     customerAddresses.push(data.address)
-    console.log("----------------------------------------------", data, customerAddresses)
 
-    let udpateCustomer = await customerService.updateCustomer({ _id: req.params.customerId }, { addresses: customerAddresses }, { new: true })
+    let udpateCustomer = await customerService.updateCustomer({ _id:customerId }, { addresses: customerAddresses }, { new: true })
     if (!udpateCustomer) {
       res.send({
         code: constant.errorCode,
@@ -2541,7 +2543,6 @@ exports.addAddress = async (req, res) => {
     })
   }
 }
-
 exports.deleteAddress = async (req, res) => {
   try {
     let data = req.body
