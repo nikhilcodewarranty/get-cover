@@ -1853,11 +1853,6 @@ exports.saveBulkClaim = async (req, res) => {
 
 
       } 
-
-
-
-      console.log("totalDataComing------------------------",totalDataComing);
-      return;
       //Trim the space from the sheet data
       totalDataComing = totalDataComing.map((item, i) => {
         if (item.hasOwnProperty("servicerName")) {
