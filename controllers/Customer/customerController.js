@@ -2510,6 +2510,7 @@ exports.addAddress = async (req, res) => {
   try {
     let data = req.body
     let checkCustomer = await customerService.getCustomerById({ _id: req.params.customerId })
+    console.log("req.params.customerId",checkCustomer)
     if (!checkCustomer) {
       res.send({
         code: constant.errorCode,
