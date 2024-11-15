@@ -18,13 +18,13 @@ router.post("/uploadDealerPriceBook", dealerController.uploadDealerPriceBookNew)
 router.post("/createRelationWithServicer/:dealerId", [verifyToken], supportingFunction.checkObjectId, dealerController.createDeleteRelation); // create relation with servicer
 router.post("/unAssignServicer", [verifyToken], dealerController.unAssignServicer); // unassign servicer
 
-router.post('/saveDealerSetting', dealerController.saveDealerSetting);
+router.post('/saveDealerSetting', [verifyToken], dealerController.saveDealerSetting);
 
-router.post('/resetDealerSetting', dealerController.resetDealerSetting)
+router.post('/resetDealerSetting', [verifyToken], dealerController.resetDealerSetting)
 
-router.get('/getDealerColorSetting/:dealerId', dealerController.getDealerSetting);
+router.get('/getDealerColorSetting/:dealerId',[verifyToken], dealerController.getDealerSetting);
 
-router.get('/defaultSettingDealer', dealerController.defaultSettingDealer);
+router.get('/defaultSettingDealer', [verifyToken], dealerController.defaultSettingDealer);
 
 
 router.get("/saveOldDealerSku", dealerController.saveOldDealerSku); // unassign servicer
