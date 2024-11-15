@@ -2530,7 +2530,7 @@ exports.addAddress = async (req, res) => {
       res.send({
         code: constant.errorCode,
         message: "Unable to add customer address"
-      })
+      }) 
     } else {
       res.send({
         code: constant.successCode,
@@ -2544,11 +2544,14 @@ exports.addAddress = async (req, res) => {
     })
   }
 }
-
 exports.deleteAddress = async (req, res) => {
   try {
     let data = req.body
-    let checkCustomer = await customerService.getCustomerById({ _id: req.params.customerId })
+    let customerId =  req.params.customerId;
+    if (req.role == "Customer") {
+      customerId = req.userId
+    }
+    let checkCustomer = await customerService.getCustomerById({ _id: customerId })
     if (!checkCustomer) {
       res.send({
         code: constant.errorCode,
@@ -2560,7 +2563,7 @@ exports.deleteAddress = async (req, res) => {
     console.log(customerAddresses)
     let newArray = customerAddresses.filter(obj => obj._id.toString() !== data.addressId.toString())
     customerAddresses.push(data.address)
-    let udpateCustomer = await customerService.updateCustomer({ _id: req.params.customerId }, { addresses: newArray }, { new: true })
+    let udpateCustomer = await customerService.updateCustomer({ _id: customerId }, { addresses: newArray }, { new: true })
     if (!udpateCustomer) {
       res.send({
         code: constant.errorCode,
@@ -2583,7 +2586,10 @@ exports.deleteAddress = async (req, res) => {
 exports.editaddress = async (req, res) => {
   try {
     let data = req.body
-    const customerId = data.customerId;
+    let customerId =  data.customerId;
+    if (req.role == "Customer") {
+      customerId = req.userId
+    }
     const addressId = data.addressId;
 
     let updateCustomer = await customerService.updateCustomer(
@@ -2601,7 +2607,7 @@ exports.editaddress = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: "Success!",
-      result: updateCustomer
+      result:updateCustomer
     })
   } catch (err) {
     res.send({
