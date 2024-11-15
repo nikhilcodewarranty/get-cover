@@ -2342,7 +2342,8 @@ exports.preLoginData = async (req, res) => {
     //   });
     //   return
     // }
-    let setting = await userService.getSetting({userId:"669ddfde7a76d6e6ef3eb5c3"});
+    const checkUser = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin } } })
+    let setting = await userService.getSetting({ userId: checkUser.metaData[0].metaId });
     const baseUrl = process.env.API_ENDPOINT;
     if (setting.length > 0) {
       setting[0].base_url = baseUrl;
