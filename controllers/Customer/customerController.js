@@ -2550,7 +2550,7 @@ exports.deleteAddress = async (req, res) => {
     if (req.role == "Customer") {
       customerId = req.userId
     }
-    let checkCustomer = await customerService.getCustomerById({ _id: req.params.customerId })
+    let checkCustomer = await customerService.getCustomerById({ _id: customerId })
     if (!checkCustomer) {
       res.send({
         code: constant.errorCode,
