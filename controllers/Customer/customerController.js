@@ -336,7 +336,7 @@ exports.getAllCustomers = async (req, res, next) => {
     let phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
     let dealerRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
     let resellerRegex = new RegExp(data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', 'i')
-    
+
     let filteredData = result_Array.filter(entry => {
       return (
         nameRegex.test(entry.customerData.username) &&
@@ -2509,8 +2509,12 @@ exports.addCustomerAddress = async (req, res) => {
 exports.addAddress = async (req, res) => {
   try {
     let data = req.body
+    let customerId = req.params.customerId
+    if (req.role == "Customer") {
+      customerId = req.userId
+    }
     let checkCustomer = await customerService.getCustomerById({ _id: req.params.customerId })
-    console.log("req.params.customerId",checkCustomer)
+    console.log("req.params.customerId", checkCustomer)
     if (!checkCustomer) {
       res.send({
         code: constant.errorCode,
@@ -2599,7 +2603,7 @@ exports.editaddress = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: "Success!",
-      result:updateCustomer
+      result: updateCustomer
     })
   } catch (err) {
     res.send({
