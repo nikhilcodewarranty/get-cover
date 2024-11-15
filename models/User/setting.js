@@ -86,10 +86,10 @@ const settingSchema = new mongoose.Schema({
     type: Number,
     default:0
   },
-  userId:{
-    type: mongoose.Schema.Types.ObjectId,
-    default:null
-  }
+  // userId:{
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   default:null
+  // }
 });
 
 module.exports = connection.userConnection.model("setting", settingSchema);
