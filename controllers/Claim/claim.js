@@ -1852,8 +1852,12 @@ exports.saveBulkClaim = async (req, res) => {
         }
 
 
-      }
+      } 
 
+
+
+      console.log("totalDataComing------------------------",totalDataComing);
+      return;
       //Trim the space from the sheet data
       totalDataComing = totalDataComing.map((item, i) => {
         if (item.hasOwnProperty("servicerName")) {
@@ -2081,8 +2085,6 @@ exports.saveBulkClaim = async (req, res) => {
 
 
       let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
-
-      console.log("totalDataComing------------------------", totalDataComing)
       //Filter data which is contract , servicer and not active
       for (let k = 0; k < totalDataComing.length; k++) {
         let item = totalDataComing[k]
@@ -2097,9 +2099,6 @@ exports.saveBulkClaim = async (req, res) => {
           item.claimType = ''
           item.servicerData = servicerData;
           item.orderData = allDataArray[0]
-
-          console.log("item.orderData ------------------------", item.orderData)
-
           if (!contractData || allDataArray.length == 0) {
             item.status = "Contract not found"
             item.exit = true;
@@ -2135,13 +2134,10 @@ exports.saveBulkClaim = async (req, res) => {
           // check login email
           if (item.userEmail != '') {
             item.submittedBy = item.userEmail
-            console.log("item.orderData?.order?.customerId --------------------", item.orderData?.order?.customerId)
             let memberEmail = await userService.getMembers({
               metaData: { $elemMatch: { metaId: item.orderData?.order?.customers._id } }
             }, {})
 
-            console.log("memberEmail------------------------", memberEmail)
-            console.log("item.userEmail------------------------", item.userEmail)
             if (memberEmail.length > 0) {
               const validEmail = memberEmail?.find(member => member.email === item.userEmail);
 
@@ -2222,7 +2218,6 @@ exports.saveBulkClaim = async (req, res) => {
       }
 
 
-      console.log("ffgdgdfgdfgdfgfdfdfg", totalDataComing)
 
       // totalDataComing.forEach(async (item, i) => {
       //   if (!item.exit) {
