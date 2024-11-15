@@ -1947,7 +1947,7 @@ exports.getSetting = async (req, res) => {
     //   });
     //   return
     // }
-    let setting = await userService.getSetting({});
+    let setting = await userService.getSetting({ userId: req.userId });
     const baseUrl = process.env.API_ENDPOINT;
     if (setting.length > 0) {
       setting[0].base_url = baseUrl;
@@ -1990,7 +1990,7 @@ exports.preLoginData = async (req, res) => {
     //   });
     //   return
     // }
-    let setting = await userService.getSetting({ userId: req.userId });
+    let setting = await userService.getSetting({userId:"669ddfde7a76d6e6ef3eb5c3"});
     const baseUrl = process.env.API_ENDPOINT;
     if (setting.length > 0) {
       setting[0].base_url = baseUrl;
