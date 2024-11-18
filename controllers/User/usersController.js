@@ -1992,7 +1992,6 @@ exports.getSetting = async (req, res) => {
 }
 
 
-
 exports.uploadLogo = async (req, res) => {
   try {
     logoUpload(req, res, async (err) => {
@@ -2180,6 +2179,7 @@ exports.saveOptions = async (req, res) => {
     })
   }
 }
+
 
 //Get option from database
 exports.getOptions = async (req, res) => {

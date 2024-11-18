@@ -38,6 +38,7 @@ router.get('/setting/getSetting', [verifyToken], userController.getSetting);
 router.get('/setting/preLoginData', userController.preLoginData);
 
 
+
 router.get('/setting/setDefault',[verifyToken], userController.setDefault);
 
 //Save Contact form 
