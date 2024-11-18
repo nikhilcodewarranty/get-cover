@@ -914,7 +914,7 @@ exports.claimDailyReporting = async (data) => {
         }
     }
 };
-
+ 
 //get weekly claim reporting
 exports.claimWeeklyReporting = async (data) => {
     try {
