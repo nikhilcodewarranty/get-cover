@@ -1711,17 +1711,17 @@ exports.getReportingDropdowns1 = async (req, res) => {
                     $push: {
                         priceBookId: "$companyPriceBooks._id",
                         priceBookName: "$companyPriceBooks.name",
-                        term: "$companyPriceBooks.term",
-                        frontingFee: "$companyPriceBooks.frontingFee",
-                        coverageType: "$companyPriceBooks.coverageType",
-                        rangeStart: "$companyPriceBooks.rangeStart",
-                        rangeEnd: "$companyPriceBooks.rangeEnd",
-                        description: "$companyPriceBooks.description",
-                        priceType: "$companyPriceBooks.priceType",
-                        status: "$companyPriceBooks.status",
-                        isDeleted: "$companyPriceBooks.isDeleted",
-                        createdAt: "$companyPriceBooks.createdAt",
-                        updatedAt: "$companyPriceBooks.updatedAt"
+                        // term: "$companyPriceBooks.term",
+                        // frontingFee: "$companyPriceBooks.frontingFee",
+                        // coverageType: "$companyPriceBooks.coverageType",
+                        // rangeStart: "$companyPriceBooks.rangeStart",
+                        // rangeEnd: "$companyPriceBooks.rangeEnd",
+                        // description: "$companyPriceBooks.description",
+                        // priceType: "$companyPriceBooks.priceType",
+                        // status: "$companyPriceBooks.status",
+                        // isDeleted: "$companyPriceBooks.isDeleted",
+                        // createdAt: "$companyPriceBooks.createdAt",
+                        // updatedAt: "$companyPriceBooks.updatedAt"
                     }
                 }
             }
