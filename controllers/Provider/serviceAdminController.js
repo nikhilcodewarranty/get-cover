@@ -2947,6 +2947,7 @@ exports.getServicerColorSetting = async (req, res) => {
     let servicerId = req.params.servicerId
   
     let setting = await userService.getSetting({ userId: servicerId });
+    console.log("setting-------------------",setting)
     const baseUrl = process.env.API_ENDPOINT;
     if (setting.length > 0) {
       setting[0].base_url = baseUrl;

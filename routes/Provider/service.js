@@ -22,7 +22,7 @@ router.post('/saveServicerSetting', [verifyToken], servicerAdminController.saveS
 
 router.post('/resetServicerSetting', [verifyToken], servicerAdminController.resetServicerSetting)
 
-router.get('/getServicerColorSetting/:dealerId',[verifyToken], servicerAdminController.getServicerColorSetting);
+router.get('/getServicerColorSetting/:servicerId',[verifyToken], servicerAdminController.getServicerColorSetting);
 
 router.get('/defaultSettingServicer', [verifyToken], servicerAdminController.defaultSettingServicer);
 
