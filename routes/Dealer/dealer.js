@@ -32,7 +32,7 @@ router.post('/resetDealerSetting', [verifyToken], dealerController.resetDealerSe
 
 router.get('/getDealerColorSetting/:dealerId',[verifyToken], dealerController.getDealerColorSetting);
 
-router.get('/defaultSettingDealer', [verifyToken], dealerController.defaultSettingDealer);
+router.get('/defaultSettingDealer/:dealerId', [verifyToken], dealerController.defaultSettingDealer);
 
 router.post("/dealers", [verifyToken], dealerSupportingController.getAllDealers); // get dealers list
 router.post("/getUserByDealerId/:dealerId", [verifyToken], supportingFunction.checkObjectId, dealerSupportingController.getUserByDealerId); // get dealer detail with ID
