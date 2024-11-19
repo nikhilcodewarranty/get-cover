@@ -2380,7 +2380,7 @@ exports.defaultSettingDealer = async (req, res) => {
     }
     let getData;
     let dealerSetting = await userService.getSetting({ userId: dealerId });
-    if (getData.length > 0) {
+    if (dealerSetting.length > 0) {
       getData = dealerSetting
     }
     else {
