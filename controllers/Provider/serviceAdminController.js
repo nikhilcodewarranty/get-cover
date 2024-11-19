@@ -2254,6 +2254,10 @@ exports.getServicerClaims = async (req, res) => {
           item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
         );
       }
+      item1.approveDate = ''
+      if(item1?.approveDate!=''){
+        item1.approveDate =  item1.approveDate
+      }
       let servicerName = '';
       let selfServicer = false;
       let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
