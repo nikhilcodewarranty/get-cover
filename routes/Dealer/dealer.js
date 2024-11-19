@@ -30,7 +30,7 @@ router.post('/saveDealerSetting', [verifyToken], dealerController.saveDealerSett
 
 router.post('/resetDealerSetting', [verifyToken], dealerController.resetDealerSetting)
 
-router.get('/getDealerColorSetting/:dealerId',[verifyToken], dealerController.getDealerSetting);
+router.get('/getDealerColorSetting/:dealerId',[verifyToken], dealerController.getDealerColorSetting);
 
 router.get('/defaultSettingDealer', [verifyToken], dealerController.defaultSettingDealer);
 

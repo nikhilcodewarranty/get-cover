@@ -2416,7 +2416,7 @@ exports.defaultSettingDealer = async (req, res) => {
 }
 
 //Get Setting Data
-exports.getDealerSetting = async (req, res) => {
+exports.getDealerColorSetting = async (req, res) => {
   try {
     // if (req.role != "Super Admin") {
     //   res.send({
