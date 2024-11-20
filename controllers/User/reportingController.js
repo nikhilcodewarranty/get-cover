@@ -1662,8 +1662,8 @@ exports.getReportingDropdowns1 = async (req, res) => {
                             input: "$categoryData",     // Input from categoryData
                             as: "cat",                  // Alias for each element
                             in: {
-                                category: "$$cat.name", // Use category name
-                                _id: "$$cat._id",      // Use category _id
+                                categoryName: "$$cat.name", // Use category name
+                                categoryId: "$$cat._id",      // Use category _id
                                 priceBooks: {
                                     $map: {
                                         input: {
