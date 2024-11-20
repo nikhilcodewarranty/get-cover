@@ -1640,7 +1640,7 @@ exports.getReportingDropdowns1 = async (req, res) => {
             {
                 $lookup: {
                     from: "pricebooks",
-                    localField: "dealerPricebookData.priceBook", // Array of userPricebook IDs
+                    localField: "dealerPricebookData.priceBook", // Array of priceBook IDs
                     foreignField: "_id",
                     as: "pricebookData" // Keep pricebookData as an array
                 }
@@ -1655,28 +1655,43 @@ exports.getReportingDropdowns1 = async (req, res) => {
             },
             {
                 $project: {
-                    name: "$name",            // Dealer name as per original dealer document
-                    _id: 1,                         // Keep dealer _id
+                    name: "$name", // Dealer name as per original dealer document
+                    _id: 1,        // Keep dealer _id
                     categories: {
                         $map: {
-                            input: "$categoryData",     // Input from categoryData
-                            as: "cat",                  // Alias for each element
+                            input: "$categoryData", // Input from categoryData
+                            as: "cat",             // Alias for each element
                             in: {
-                                categoryName: "$$cat.name", // Use category name
-                                categoryId: "$$cat._id",      // Use category _id
+                                categoryName: "$$cat.name",  // Use category name
+                                categoryId: "$$cat._id",    // Use category _id
                                 priceBooks: {
                                     $map: {
                                         input: {
                                             $filter: {
                                                 input: "$pricebookData", // Filter pricebooks
                                                 as: "pb",               // Alias for pricebook
-                                                cond: { $eq: ["$$pb.category", "$$cat._id"] }  // Only match pricebooks for the current category
+                                                cond: { $eq: ["$$pb.category", "$$cat._id"] }  // Match pricebooks for the current category
                                             }
                                         },
-                                        as: "pb",                // Alias for each pricebook
+                                        as: "pb", // Alias for each pricebook
                                         in: {
                                             priceBookName: "$$pb.name",  // Use pricebook name
-                                            priceBookId: "$$pb._id"          // Use pricebook _id
+                                            priceBookId: "$$pb._id",      // Use pricebook _id
+                                            dealerSku: {
+                                                $map: {
+                                                    input: {
+                                                        $filter: {
+                                                            input: "$dealerPricebookData", // Filter dealer pricebooks
+                                                            as: "dpb",                    // Alias for dealer pricebook
+                                                            cond: { $eq: ["$$dpb.priceBook", "$$pb._id"] } // Match dealer pricebooks with the current pricebook
+                                                        }
+                                                    },
+                                                    as: "dpb", // Alias for each dealer pricebook
+                                                    in: {
+                                                        sku: "$$dpb.dealerSku" // Include SKU field
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -1685,7 +1700,8 @@ exports.getReportingDropdowns1 = async (req, res) => {
                     }
                 }
             }
-        ]
+        ];
+        
         let getDealers = await dealerService.getTopFiveDealers(dealerQuery)
         res.send({
             code: constant.successCode,
