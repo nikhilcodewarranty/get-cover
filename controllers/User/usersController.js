@@ -1947,7 +1947,17 @@ exports.getSetting = async (req, res) => {
     //   });
     //   return
     // }
-    let setting = await userService.getSetting({ userId: req.userId });
+
+    let userId = req.userId
+    if (req.role == "Reseller") {
+      const checkReseller = await resellerService.getReseller({ _id: req.userId })
+      userId = checkReseller.dealerId
+    }
+    if (req.role == "Customer") {
+      const checkCustomer = await customerService.getCustomerById({ _id: req.userId })
+      userId = checkCustomer.dealerId
+    }
+    let setting = await userService.getSetting({ userId: userId });
     const baseUrl = process.env.API_ENDPOINT;
     if (setting.length > 0) {
       setting[0].base_url = baseUrl;
