@@ -1480,7 +1480,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
         let totalDataComing = responseData.map(item => {
           let keys = Object.keys(item);
           return {
-            category: item[keys[0]],  // First key's value
+            category: item[keys[0]].trim().replace(/\s+/g, ' '),  // First key's value
             name: item[keys[1]].trim().replace(/\s+/g, ' '),   // Second key's value
             pName: item[keys[2]].trim().replace(/\s+/g, ' '),  // Third key's value
             description: item[keys[3]].trim().replace(/\s+/g, ' '),   // Second key's value
@@ -1662,7 +1662,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
         let totalDataComing = responseData.map(item => {
           let keys = Object.keys(item);
           return {
-            category: item[keys[0]],  // First key's value
+            category: item[keys[0]].trim().replace(/\s+/g, ' '),  // First key's value
             name: item[keys[1]],   // Second key's value
             pName: item[keys[2]],  // Third key's value
             description: item[keys[3]],   // Second key's value
@@ -1876,7 +1876,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
             }
           }
           return {
-            category: item[keys[0]],  // First key's value
+            category: item[keys[0]].trim().replace(/\s+/g, ' '),  // First key's value
             name: item[keys[1]],   // Second key's value
             pName: item[keys[2]],  // Third key's value
             description: item[keys[3]],   // Second key's value
