@@ -1653,14 +1653,6 @@ exports.getReportingDropdowns1 = async (req, res) => {
                     as: "categoryData" // Keep categoryData as an array
                 }
             },
-            // {
-            //     $project: {
-            //         dealerName: "$name", // Assuming dealer has a 'name' field
-            //         dealerPricebooks: "$dealerPricebookData", // All dealer pricebooks as an array
-            //         pricebooks: "$pricebookData", // All pricebooks as an array
-            //         categories: "$categoryData" // All categories as an array
-            //     }
-            // }
             {
                 $project: {
                     dealerName: "$name",            // Dealer name as per original dealer document
