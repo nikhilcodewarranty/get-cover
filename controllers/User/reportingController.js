@@ -914,7 +914,7 @@ exports.claimDailyReporting = async (data) => {
         }
     }
 };
-
+ 
 //get weekly claim reporting
 exports.claimWeeklyReporting = async (data) => {
     try {
@@ -1626,76 +1626,144 @@ exports.getReportingDropdowns = async (req, res) => {
 
 //Get Dealer Price Books, Category and Dealer
 exports.getReportingDropdowns1 = async (req, res) => {
-    try {
-        let data = req.body
-        let dealerQuery = [
-            {
-                $lookup: {
-                    from: "dealerpricebooks",
-                    localField: "_id",
-                    foreignField: "dealerId",
-                    as: "dealerPricebookData" // Keep dealerPricebookData as an array
-                }
-            },
-            {
-                $lookup: {
-                    from: "pricebooks",
-                    localField: "dealerPricebookData.priceBook", // Array of userPricebook IDs
-                    foreignField: "_id",
-                    as: "pricebookData" // Keep pricebookData as an array
-                }
-            },
-            {
-                $lookup: {
-                    from: "pricecategories",
-                    localField: "pricebookData.category", // Array of category IDs
-                    foreignField: "_id",
-                    as: "categoryData" // Keep categoryData as an array
-                }
-            },
-            {
-                $project: {
-                    name: "$name",            // Dealer name as per original dealer document
-                    _id: 1,                         // Keep dealer _id
-                    categories: {
-                        $map: {
-                            input: "$categoryData",     // Input from categoryData
-                            as: "cat",                  // Alias for each element
-                            in: {
-                                category: "$$cat.name", // Use category name
-                                _id: "$$cat._id",      // Use category _id
-                                priceBooks: {
-                                    $map: {
-                                        input: {
-                                            $filter: {
-                                                input: "$pricebookData", // Filter pricebooks
-                                                as: "pb",               // Alias for pricebook
-                                                cond: { $eq: ["$$pb.category", "$$cat._id"] }  // Only match pricebooks for the current category
-                                            }
-                                        },
-                                        as: "pb",                // Alias for each pricebook
-                                        in: {
-                                            priceBookName: "$$pb.name",  // Use pricebook name
-                                            priceBookId: "$$pb._id"          // Use pricebook _id
-                                        }
-                                    }
-                                }
-                            }
+    if (req.role !== 'Super Admin') {
+        res.send({
+            code: constant.errorCode,
+            message: 'Only super admin is allowed to perform this action!'
+        });
+        return;
+    }
+
+    let query = [
+        // 1. Match only active dealers
+        {
+            $match: {
+                accountStatus: true
+            }
+        },
+        // 2. Lookup dealerPriceBooks for each dealer
+        {
+            $lookup: {
+                from: "dealerpricebooks",
+                localField: "_id",
+                foreignField: "dealerId",
+                as: "dealerPriceBooks"
+            }
+        },
+        // 3. Unwind dealerPriceBooks to process each one individually
+        {
+            $unwind: {
+                path: "$dealerPriceBooks",
+                preserveNullAndEmptyArrays: true
+            }
+        },
+        // 4. Lookup companyPriceBooks for each dealerPriceBook
+        {
+            $lookup: {
+                from: "pricebooks",
+                localField: "dealerPriceBooks.priceBook",
+                foreignField: "_id",
+                as: "companyPriceBooks",
+                pipeline: [
+                    // 5. Lookup categories for each priceBook
+                    {
+                        $lookup: {
+                            from: "pricecategories",
+                            localField: "category",
+                            foreignField: "_id",
+                            as: "categories"
                         }
+                    },
+                    // 6. Unwind categories to get category details
+                    {
+                        $unwind: {
+                            path: "$categories",
+                            preserveNullAndEmptyArrays: true
+                        }
+                    }
+                ]
+            }
+        },
+        // 7. Unwind companyPriceBooks to process each priceBook individually
+        {
+            $unwind: {
+                path: "$companyPriceBooks",
+                preserveNullAndEmptyArrays: true
+            }
+        },
+        // 8. Unwind categories within companyPriceBooks
+        {
+            $unwind: {
+                path: "$companyPriceBooks.categories",
+                preserveNullAndEmptyArrays: true
+            }
+        },
+        // 9. Group by dealer and category to collect all priceBooks under each category
+        {
+            $group: {
+                _id: {
+                    dealerId: "$_id",
+                    categoryId: "$companyPriceBooks.categories._id",
+                    categoryName: "$companyPriceBooks.categories.name"
+                },
+                name: { $first: "$name" },  // Dealer name
+                priceBooks: {
+                    $push: {
+                        priceBookId: "$companyPriceBooks._id",
+                        priceBookName: "$companyPriceBooks.name",
+                        // term: "$companyPriceBooks.term",
+                        // frontingFee: "$companyPriceBooks.frontingFee",
+                        // coverageType: "$companyPriceBooks.coverageType",
+                        // rangeStart: "$companyPriceBooks.rangeStart",
+                        // rangeEnd: "$companyPriceBooks.rangeEnd",
+                        // description: "$companyPriceBooks.description",
+                        // priceType: "$companyPriceBooks.priceType",
+                        // status: "$companyPriceBooks.status",
+                        // isDeleted: "$companyPriceBooks.isDeleted",
+                        // createdAt: "$companyPriceBooks.createdAt",
+                        // updatedAt: "$companyPriceBooks.updatedAt"
                     }
                 }
             }
-        ]
-        let getDealers = await dealerService.getTopFiveDealers(dealerQuery)
+        },
+        // 10. Group again by dealer to consolidate all categories under each dealer
+        {
+            $group: {
+                _id: "$_id.dealerId",
+                name: { $first: "$name" },
+                categories: {
+                    $push: {
+                        categoryId: "$_id.categoryId",
+                        categoryName: "$_id.categoryName",
+                        priceBooks: "$priceBooks"
+                    }
+                }
+            }
+        },
+        // 11. Optionally, you can project the fields to format the output as desired
+        {
+            $project: {
+                _id: 1,
+                name: 1,
+                categories: 1
+            }
+        }
+    ];
+
+    try {
+        const dealerPriceBook = await dealerService.getDealerAndClaims(query);
+
         res.send({
             code: constant.successCode,
-            result: getDealers
-        })
-    } catch (err) {
+            message: "Success",
+            result: dealerPriceBook
+        });
+    } catch (error) {
+        console.error("Could not fetch dealers and claims:", error);
         res.send({
             code: constant.errorCode,
-            message: err.message
-        })
+            message: `Could not fetch dealers and claims: ${error.message}`
+        });
     }
 };
 
