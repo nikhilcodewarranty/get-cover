@@ -1655,16 +1655,16 @@ exports.getReportingDropdowns1 = async (req, res) => {
             },
             {
                 $project: {
-                    dealerName: "$name",            // Dealer name as per original dealer document
+                    name: "$name",            // Dealer name as per original dealer document
                     _id: 1,                         // Keep dealer _id
-                    category: {
+                    categories: {
                         $map: {
                             input: "$categoryData",     // Input from categoryData
                             as: "cat",                  // Alias for each element
                             in: {
                                 category: "$$cat.name", // Use category name
                                 _id: "$$cat._id",      // Use category _id
-                                pricebook: {
+                                priceBooks: {
                                     $map: {
                                         input: {
                                             $filter: {
@@ -1675,8 +1675,8 @@ exports.getReportingDropdowns1 = async (req, res) => {
                                         },
                                         as: "pb",                // Alias for each pricebook
                                         in: {
-                                            pricebook: "$$pb.name",  // Use pricebook name
-                                            _id: "$$pb._id"          // Use pricebook _id
+                                            priceBookName: "$$pb.name",  // Use pricebook name
+                                            priceBookId: "$$pb._id"          // Use pricebook _id
                                         }
                                     }
                                 }
