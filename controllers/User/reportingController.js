@@ -1630,7 +1630,7 @@ exports.getReportingDropdowns1 = async (req, res) => {
         let data = req.body
         let dealerQuery = [
             {
-                $lookup: {
+                $lookup: { 
                     from: "dealerpricebooks",
                     localField: "_id",
                     foreignField: "dealerId",
