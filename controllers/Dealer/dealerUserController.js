@@ -807,7 +807,7 @@ exports.createReseller = async (req, res) => {
         // Primary User Welcoime email
         let notificationEmails = await supportingFunction.getUserEmails();
         let settingData = await userService.getSetting({});
-        let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } }  })
+        let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
         notificationEmails.push(getPrimary.email)
         let emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -2443,6 +2443,106 @@ exports.claimReportinDropdown = async (req, res) => {
     }
 };
 
+//Get Sale Reporting data
+exports.getSaleReportingDropdown = async (req, res) => {
+    try {
+        let flag = req.params.flag
+        let response;
+        let catQuery = [
+            {
+                $match: {
+                    _id: new mongoose.Types.ObjectId(req.userId)
+                }
+            },
+            {
+                $lookup: {
+                    from: "dealerpricebooks",
+                    localField: "_id",
+                    foreignField: "dealerId",
+                    as: "dealerPricebookData", // Keep dealerPricebookData as an array
+                }
+            },
+            {
+                $lookup: {
+                    from: "pricebooks",
+                    localField: "dealerPricebookData.priceBook", // Array of priceBook IDs
+                    foreignField: "_id",
+                    as: "pricebookData" // Keep pricebookData as an array
+                },
+
+            },
+            {
+                $lookup: {
+                    from: "pricecategories",
+                    localField: "pricebookData.category", // Array of priceBook IDs
+                    foreignField: "_id",
+                    as: "categories" // Keep pricebookData as an array
+                },
+
+            },
+            {
+                $project: {
+                    categories: {
+                        $map: {
+                            input: "$categories", // Input from categoryData
+                            as: "cat",             // Alias for each element
+                            in: {
+                                categoryName: "$$cat.name",  // Use category name
+                                categoryId: "$$cat._id",    // Use category _id
+                                priceBooks: {
+                                    $map: {
+                                        input: {
+                                            $filter: {
+                                                input: "$pricebookData", // Filter pricebooks
+                                                as: "pb",               // Alias for pricebook
+                                                cond: { $eq: ["$$pb.category", "$$cat._id"] }  // Match pricebooks for the current category
+                                            }
+                                        },
+                                        as: "pb", // Alias for each pricebook
+                                        in: {
+                                            priceBookId: "$$pb._id",   
+                                            priceBookName: {                                                
+                                                $arrayElemAt: [
+                                                    {
+                                                        $map: {
+                                                            input: {
+                                                                $filter: {
+                                                                    input: "$dealerPricebookData", // Filter dealer pricebooks
+                                                                    as: "dpb",                    // Alias for dealer pricebook
+                                                                    cond: { $eq: ["$$dpb.priceBook", "$$pb._id"] } // Match dealer pricebooks with the current pricebook
+                                                                }
+                                                            },
+                                                            as: "dpb", // Alias for each dealer pricebook
+                                                            in: "$$dpb.dealerSku" // Extract dealerSku field
+                                                        }
+                                                    },
+                                                    0 // Extract the first dealerSku
+                                                ] 
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }      
+                }
+            }
+        ]
+
+        response = await dealerService.getDealerAndClaims(catQuery)
+
+
+        res.send({
+            code: constant.successCode,
+            result: response
+        })
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+};
 //Get File data from S3 bucket
 const getObjectFromS3 = (bucketReadUrl) => {
     return new Promise((resolve, reject) => {

@@ -18,6 +18,9 @@ router.post("/saleReporting", [verifyToken], dealerUserController.saleReporting)
 router.post("/claimReporting", [verifyToken], dealerUserController.claimReporting); // claim reporting
 router.post("/saleReportinDropDown", [verifyToken], dealerUserController.saleReportinDropDown); // sale reporting dropdown
 router.post("/claimReportinDropdown", [verifyToken], dealerUserController.claimReportinDropdown); // claim reporting dropdown
+router.get("/getSaleReportingDropdown", [verifyToken], dealerUserController.getSaleReportingDropdown); // claim reporting dropdown
+
+
 router.put("/updateDealerPriceBook/:dealerPriceBookId", [verifyToken], supportingFunction.checkObjectId, dealerUserController.statusUpdate); // update dealer price book
 
 router.post('/getDealerUsers', [verifyToken], dealerUserSupportingController.getDealerUsers); // get dealer users
