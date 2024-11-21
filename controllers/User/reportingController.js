@@ -1629,7 +1629,7 @@ exports.getReportingDropdowns1 = async (req, res) => {
     try {
         let flag = req.params.flag
         let response;
-        if (flag == "Dealer") {
+        if (flag == "dealer") {
             let dealerQuery = [
                 {
                     $lookup: {
@@ -1718,9 +1718,18 @@ exports.getReportingDropdowns1 = async (req, res) => {
 
                 },
                 {
+                    $lookup: {
+                        from: "dealerpricebooks",
+                        localField: "pricebookData._id",
+                        foreignField: "priceBook",
+                        as: "dealerPricebookData" // Keep dealerPricebookData as an array
+                    }
+                },
+                {
                     $project: {
                         categoryName: "$name", // Rename 'name' to 'categoryName'
-                        categoryId: "$_id",               // Include _id field
+                        categoryId: "$_id",
+                        dealerPricebookData: 1,             // Include _id field
                         priceBooks: {
                             $map: {
 
@@ -1916,6 +1925,188 @@ exports.claimReportinDropdown = async (req, res) => {
     }
 };
 
+
+exports.claimReportinDropdown1 = async (req, res) => {
+    try {
+        const flag = req.params.flag
+        let response;
+        if (flag == "dealer") {
+            let dealerQuery = [
+                {
+                    $lookup: {
+                        from: "servicer_dealer_relations",
+                        localField: "_id",
+                        foreignField: "dealerId",
+                        as: "dealerServicer" // Keep dealerPricebookData as an array
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "serviceproviders",
+                        localField: "dealerServicer.servicerId",
+                        foreignField: "_id",
+                        as: "servicer" // Keep dealerPricebookData as an array
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "serviceproviders",
+                        let: {
+                            id: "$_id"
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $or: [
+                                            { $eq: [{ $toObjectId: "$dealerId" }, "$$id"] },
+                                        ]
+                                    }
+                                }
+                            }
+                        ],
+                        as: "dealerAsServicer"
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "dealerpricebooks",
+                        localField: "_id",
+                        foreignField: "dealerId",
+                        as: "dealerPricebookData" // Keep dealerPricebookData as an array
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "pricebooks",
+                        localField: "dealerPricebookData.priceBook", // Array of priceBook IDs
+                        foreignField: "_id",
+                        as: "pricebookData" // Keep pricebookData as an array
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "pricecategories",
+                        localField: "pricebookData.category", // Array of category IDs
+                        foreignField: "_id",
+                        as: "categoryData" // Keep categoryData as an array
+                    }
+                },
+                {
+                    $project: {
+                        name: "$name", // Dealer name as per original dealer document
+                        _id: 1,
+                        servicer: {
+                            $map: {
+                                input: { $concatArrays: ["$servicer", "$dealerAsServicer"] }, // Merge servicer and dealerAsServicer arrays
+                                as: "servicerItem",
+                                in: {
+                                    _id: "$$servicerItem._id", // Include only _id
+                                    name: "$$servicerItem.name" // Include only name
+                                }
+                            }
+                        },
+                        categories: {
+                            $map: {
+                                input: "$categoryData", // Input from categoryData
+                                as: "cat",             // Alias for each element
+                                in: {
+                                    categoryName: "$$cat.name",  // Use category name
+                                    categoryId: "$$cat._id",    // Use category _id
+                                    priceBooks: {
+                                        $map: {
+                                            input: {
+                                                $filter: {
+                                                    input: "$pricebookData", // Filter pricebooks
+                                                    as: "pb",               // Alias for pricebook
+                                                    cond: { $eq: ["$$pb.category", "$$cat._id"] }  // Match pricebooks for the current category
+                                                }
+                                            },
+                                            as: "pb", // Alias for each pricebook
+                                            in: {
+                                                priceBookName: "$$pb.name",  // Use pricebook name
+                                                priceBookId: "$$pb._id",      // Use pricebook _id
+                                                dealerSku: {
+                                                    $map: {
+                                                        input: {
+                                                            $filter: {
+                                                                input: "$dealerPricebookData", // Filter dealer pricebooks
+                                                                as: "dpb",                    // Alias for dealer pricebook
+                                                                cond: { $eq: ["$$dpb.priceBook", "$$pb._id"] } // Match dealer pricebooks with the current pricebook
+                                                            }
+                                                        },
+                                                        as: "dpb", // Alias for each dealer pricebook
+                                                        in: {
+                                                            sku: "$$dpb.dealerSku" // Include SKU field
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            ];
+
+            response = await dealerService.getTopFiveDealers(dealerQuery)
+        }
+        if (flag == "category") {
+            let catQuery = [
+                {
+                    $lookup: {
+                        from: "pricebooks",
+                        localField: "_id", // Array of priceBook IDs
+                        foreignField: "category",
+                        as: "pricebookData" // Keep pricebookData as an array
+                    },
+
+                },
+                {
+                    $lookup: {
+                        from: "dealerpricebooks",
+                        localField: "pricebookData._id",
+                        foreignField: "priceBook",
+                        as: "dealerPricebookData" // Keep dealerPricebookData as an array
+                    }
+                },
+                {
+                    $project: {
+                        categoryName: "$name", // Rename 'name' to 'categoryName'
+                        categoryId: "$_id",
+                        dealerPricebookData: 1,             // Include _id field
+                        priceBooks: {
+                            $map: {
+
+                                input: "$pricebookData",
+                                as: "pb",
+                                in: {
+                                    priceBookName: "$$pb.name",  // Use pricebook name
+                                    priceBookId: "$$pb._id",      // Use pricebook _id
+                                }
+                            }
+                        }      // Optionally include pricebookData if needed
+                    }
+                }
+            ]
+
+            response = await priceBookService.getCategoryWithPriceBooks(catQuery)
+        }
+
+        res.send({
+            code: constant.successCode,
+            result: response
+        })
+    }
+    catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
 
 
 
