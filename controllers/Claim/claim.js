@@ -2999,6 +2999,7 @@ exports.statusClaim = async (req, res) => {
   try {
     const result = await claimService.getClaims({
       'repairStatus.status': 'servicer_shipped',
+      claimFile:"open"
     });
 
     let updateStatus
