@@ -1852,7 +1852,7 @@ exports.saveBulkClaim = async (req, res) => {
         }
 
 
-      } 
+      }
       //Trim the space from the sheet data
       totalDataComing = totalDataComing.map((item, i) => {
         if (item.hasOwnProperty("servicerName")) {
@@ -2997,9 +2997,7 @@ exports.sendMessages = async (req, res) => {
 //Automatic completed when servicer shipped after 7 days cron job
 exports.statusClaim = async (req, res) => {
   try {
-    const result = await claimService.getClaims({
-      'repairStatus.status': 'servicer_shipped',
-    });
+    const result = await claimService.getClaims({ 'repairStatus.status': 'servicer_shipped', claimFile: "open" });
 
     let updateStatus
 
@@ -3429,7 +3427,7 @@ exports.getAllClaims = async (req, res, next) => {
 
       if (item1.servicerId != null) {
         servicerName = servicer.find(servicer => servicer?._id?.toString() === item1.servicerId?.toString());
-        selfServicer = req.role=="Customer" ? false : item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() ? true : false
+        selfServicer = req.role == "Customer" ? false : item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() ? true : false
         selfResellerServicer = item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString()
       }
 
