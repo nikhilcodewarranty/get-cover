@@ -2053,7 +2053,7 @@ exports.claimReportinDropdown1 = async (req, res) => {
 
             response = await dealerService.getTopFiveDealers(dealerQuery)
         }
-        if (flag == "category") {
+        if (flag == "category") { 
             let catQuery = [
                 {
                     $lookup: {
