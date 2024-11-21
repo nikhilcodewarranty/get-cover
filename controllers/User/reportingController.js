@@ -1942,6 +1942,15 @@ exports.claimReportinDropdown1 = async (req, res) => {
                 },
                 {
                     $lookup: {
+                        from: "resellers",
+                        localField: "_id",
+                        foreignField: "dealerId",
+                        as: "resellersData" // Keep dealerPricebookData as an array
+                    }
+                },
+               
+                {
+                    $lookup: {
                         from: "serviceproviders",
                         localField: "dealerServicer.servicerId",
                         foreignField: "_id",
@@ -1968,6 +1977,28 @@ exports.claimReportinDropdown1 = async (req, res) => {
                         as: "dealerAsServicer"
                     }
                 },
+                {
+                    $lookup: {
+                        from: "serviceproviders",
+                        let: {
+                            resellerIds: "$resellersData._id" // Resellers associated with the dealer
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            { $isArray: "$$resellerIds" }, // Ensure it's an array
+                                            { $in: [{ $toObjectId: "$resellerId" }, "$$resellerIds"] } // Convert resellerId to ObjectId and match
+                                        ]
+                                    }
+                                }
+                            }
+                        ],
+                        as: "resellerAsServicer"
+                    }
+                },
+                
                 {
                     $lookup: {
                         from: "dealerpricebooks",
@@ -1998,7 +2029,7 @@ exports.claimReportinDropdown1 = async (req, res) => {
                         _id: 1,
                         servicer: {
                             $map: {
-                                input: { $concatArrays: ["$servicer", "$dealerAsServicer"] }, // Merge servicer and dealerAsServicer arrays
+                                input: { $concatArrays: ["$servicer", "$dealerAsServicer","$resellerAsServicer"] }, // Merge servicer and dealerAsServicer arrays
                                 as: "servicerItem",
                                 in: {
                                     _id: "$$servicerItem._id", // Include only _id
