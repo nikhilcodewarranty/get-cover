@@ -2162,19 +2162,25 @@ exports.claimReportinDropdown1 = async (req, res) => {
                                                 priceBookName: "$$pb.name",  // Use pricebook name
                                                 priceBookId: "$$pb._id",      // Use pricebook _id
                                                 dealerSku: {
-                                                    $map: {
-                                                        input: {
-                                                            $filter: {
-                                                                input: "$dealerPricebookData", // Filter dealer pricebooks
-                                                                as: "dpb",                    // Alias for dealer pricebook
-                                                                cond: { $eq: ["$$dpb.priceBook", "$$pb._id"] } // Match dealer pricebooks with the current pricebook
+                                                    $arrayElemAt:[
+                                                        {
+                                                            $map: {
+                                                                input: {
+                                                                    $filter: {
+                                                                        input: "$dealerPricebookData", // Filter dealer pricebooks
+                                                                        as: "dpb",                    // Alias for dealer pricebook
+                                                                        cond: { $eq: ["$$dpb.priceBook", "$$pb._id"] } // Match dealer pricebooks with the current pricebook
+                                                                    }
+                                                                },
+                                                                as: "dpb", // Alias for each dealer pricebook
+                                                                in: {
+                                                                    sku: "$$dpb.dealerSku", // Include SKU field
+                                                                    dealerId: "$$dpb.dealerId" // Include SKU field
+                                                                }
                                                             }
                                                         },
-                                                        as: "dpb", // Alias for each dealer pricebook
-                                                        in: {
-                                                            sku: "$$dpb.dealerSku" // Include SKU field
-                                                        }
-                                                    }
+                                                        0
+                                                    ]
                                                 }
                                             }
                                         }
