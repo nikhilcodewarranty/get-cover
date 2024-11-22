@@ -409,7 +409,7 @@ exports.getDashboardGraph = async (req, res) => {
       },
       {
         $group: {
-          _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$claimDate" } },
           total_amount: { $sum: "$totalAmount" },
           total_claim: { $sum: 1 },
         }
