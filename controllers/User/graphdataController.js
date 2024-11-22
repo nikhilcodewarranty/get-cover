@@ -458,7 +458,10 @@ exports.getDashboardGraph = async (req, res) => {
     let getPriceBooks1 = await priceBookService.getAllActivePriceBook(priceQuery1)
 
     const result = datesArray.map(date => {
+      console.log("adasdassasa",date)
       const dateString = date.toISOString().slice(0, 10);
+      console.log("dateString",dateString)
+
       const order = getData.find(item => item._id === dateString);
       return {
         weekStart: dateString,
