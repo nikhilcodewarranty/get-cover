@@ -1949,6 +1949,7 @@ exports.getSetting = async (req, res) => {
     // }
 
     let userId = req.userId
+    let setting;
     if (req.role == "Reseller") {
       const checkReseller = await resellerService.getReseller({ _id: req.userId })
       userId = checkReseller.dealerId
@@ -1957,7 +1958,7 @@ exports.getSetting = async (req, res) => {
       const checkCustomer = await customerService.getCustomerById({ _id: req.userId })
       userId = checkCustomer.dealerId
     }
-    let setting = await userService.getSetting({ userId: userId });
+    setting = await userService.getSetting({ userId: userId });
     const baseUrl = process.env.API_ENDPOINT;
     if (setting.length > 0) {
       setting[0].base_url = baseUrl;
@@ -1975,6 +1976,27 @@ exports.getSetting = async (req, res) => {
         setting[0].favIcon.baseUrl = baseUrl;
       }
       // Repeat for any other properties that need the base_url prepended
+    }
+    else {
+      const checkUser = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin } } })
+      setting = await userService.getSetting({ userId: checkUser.metaData[0].metaId });
+      if (setting.length > 0) {
+        setting[0].base_url = baseUrl;
+
+        // Assuming setting[0].logoDark and setting[0].logoLight contain relative paths
+        if (setting[0].logoDark && setting[0].logoDark.fileName) {
+          setting[0].logoDark.baseUrl = baseUrl;
+        }
+
+        if (setting[0].logoLight && setting[0].logoLight.fileName) {
+          setting[0].logoLight.baseUrl = baseUrl;
+        }
+
+        if (setting[0].favIcon && setting[0].favIcon.fileName) {
+          setting[0].favIcon.baseUrl = baseUrl;
+        }
+        // Repeat for any other properties that need the base_url prepended
+      }
     }
     res.send({
       code: constant.successCode,
