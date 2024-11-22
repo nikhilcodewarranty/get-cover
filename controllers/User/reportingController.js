@@ -1629,7 +1629,7 @@ exports.getReportingDropdowns1 = async (req, res) => {
     try {
         let flag = req.params.flag
         let response;
-        if (flag == "Dealer") {
+        if (flag == "dealer") {
             let dealerQuery = [
                 {
                     $lookup: {
