@@ -402,12 +402,20 @@ exports.getDashboardGraph = async (req, res) => {
     let dailyQuery = [
       {
         $match: {
-          createdAt: { $gte: startOfMonth, $lt: endOfMonth },
-          claimStatus: {
-            $elemMatch: { status: "completed" }
-          },
-        },
-      },
+            createdAt: { $gte: startOfMonth, $lt: endOfMonth }
+        }
+    },
+    {
+        $addFields: {
+            completedClaims: {
+                $filter: {
+                    input: "$claimStatus",
+                    as: "status",
+                    cond: { $eq: ["$$status.status", "completed"] }
+                }
+            }
+        }
+    },
       {
         $group: {
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$claimDate" } },
