@@ -385,6 +385,7 @@ exports.getDashboardGraph = async (req, res) => {
     let startOfMonth = new Date(startOfMonth2.getFullYear(), startOfMonth2.getMonth(), startOfMonth2.getDate());
 
 
+
     let endOfMonth = new Date(endOfMonth1.getFullYear(), endOfMonth1.getMonth(), endOfMonth1.getDate() + 1);
 
     if (isNaN(startOfMonth) || isNaN(endOfMonth)) {
