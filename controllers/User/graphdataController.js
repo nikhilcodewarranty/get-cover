@@ -384,11 +384,11 @@ exports.getDashboardGraph = async (req, res) => {
 
     let startOfMonth = new Date(startOfMonth2.getFullYear(), startOfMonth2.getMonth(), startOfMonth2.getDate());
 
-    console.log("startOfMonth---------------",startOfMonth)
+    console.log("startOfMonth---------------", startOfMonth)
 
 
     let endOfMonth = new Date(endOfMonth1.getFullYear(), endOfMonth1.getMonth(), endOfMonth1.getDate() + 1);
-    console.log("endOfMonth---------------",endOfMonth)
+    console.log("endOfMonth---------------", endOfMonth)
 
     if (isNaN(startOfMonth) || isNaN(endOfMonth)) {
       return { code: 401, message: "invalid date" };
@@ -460,8 +460,12 @@ exports.getDashboardGraph = async (req, res) => {
     let getPriceBooks1 = await priceBookService.getAllActivePriceBook(priceQuery1)
 
     const result = datesArray.map(date => {
+      console.log("adasdassasa", date)
       const dateString = date.toISOString().slice(0, 10);
+      console.log("dateString", dateString);
       const order = getData.find(item => item._id === dateString);
+      console.log("order", order);
+
       return {
         weekStart: dateString,
         total_amount: order ? order.total_amount : 0,
