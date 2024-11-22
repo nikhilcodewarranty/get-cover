@@ -1790,6 +1790,8 @@ exports.resetSetting = async (req, res) => {
     let defaultResetColor = [];
     let defaultPaymentDetail = '';
     let defaultLightLogo = {};
+    let defaultWhiteLabelLogo = {};
+    
     let defaultDarkLogo = {};
     let defaultFavIcon = {};
     let defaultAddress = '';
@@ -1801,6 +1803,11 @@ exports.resetSetting = async (req, res) => {
         fileName: getData[0].defaultLightLogo.fileName,
         name: getData[0].defaultLightLogo.name,
         size: getData[0].defaultLightLogo.size
+      }
+      defaultWhiteLabelLogo = {
+        fileName: getData[0].defaultWhiteLabelLogo.fileName,
+        name: getData[0].defaultWhiteLabelLogo.name,
+        size: getData[0].defaultWhiteLabelLogo.size
       }
       defaultDarkLogo = {
         fileName: getData[0].defaultDarkLogo.fileName,
@@ -1874,6 +1881,7 @@ exports.resetSetting = async (req, res) => {
     response = await userService.updateSetting({ _id: getData[0]?._id }, {
       colorScheme: defaultResetColor,
       logoLight: defaultLightLogo,
+      whiteLabelLogo: defaultWhiteLabelLogo,
       logoDark: defaultDarkLogo,
       favIcon: defaultFavIcon,
       title: defaultTitle,
@@ -1916,6 +1924,7 @@ exports.setDefault = async (req, res) => {
         setDefault: 1,
         defaultAddress: getData[0].address,
         defaultLightLogo: getData[0].logoLight,
+        defaultWhiteLabelLogo: getData[0].whiteLabelLogo,
         defaultTitle: getData[0].title,
         defaultDarkLogo: getData[0].logoDark,
         defaultPaymentDetail: getData[0].paymentDetail,
@@ -1975,6 +1984,9 @@ exports.getSetting = async (req, res) => {
       if (setting[0].favIcon && setting[0].favIcon.fileName) {
         setting[0].favIcon.baseUrl = baseUrl;
       }
+      if (setting[0].whiteLabelLogo && setting[0].whiteLabelLogo.fileName) {
+        setting[0].whiteLabelLogo.baseUrl = baseUrl;
+      }
       // Repeat for any other properties that need the base_url prepended
     }
     else {
@@ -1994,6 +2006,9 @@ exports.getSetting = async (req, res) => {
 
         if (setting[0].favIcon && setting[0].favIcon.fileName) {
           setting[0].favIcon.baseUrl = baseUrl;
+        }
+        if (setting[0].whiteLabelLogo && setting[0].whiteLabelLogo.fileName) {
+          setting[0].whiteLabelLogo.baseUrl = baseUrl;
         }
         // Repeat for any other properties that need the base_url prepended
       }

@@ -8,6 +8,10 @@ const settingSchema = new mongoose.Schema({
     type: {},
     default: {}
   },
+  whiteLabelLogo: {
+    type: {},
+    default: {}
+  },
   logoDark: {
     type: {},
     default: {}
@@ -58,6 +62,10 @@ const settingSchema = new mongoose.Schema({
     default: [] // Set the default value
   },
   defaultLightLogo:{
+    type: {},
+    default: {}
+  },
+  defaultWhiteLabelLogo:{
     type: {},
     default: {}
   },
