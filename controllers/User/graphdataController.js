@@ -402,7 +402,7 @@ exports.getDashboardGraph = async (req, res) => {
     let dailyQuery = [
       {
         $match: {
-            createdAt: { $gte: startOfMonth, $lt: endOfMonth }
+          claimDate: { $gte: startOfMonth, $lt: endOfMonth }
         }
     },
     {
