@@ -20,6 +20,8 @@ router.post("/saleReportinDropDown", [verifyToken], dealerUserController.saleRep
 router.post("/claimReportinDropdown", [verifyToken], dealerUserController.claimReportinDropdown); // claim reporting dropdown
 router.get("/getSaleReportingDropdown", [verifyToken], dealerUserController.getSaleReportingDropdown); // claim reporting dropdown
 
+router.get("/getClaimReportingDropdown/:flag", [verifyToken], dealerUserController.getClaimReportingDropdown); // claim reporting dropdown
+
 
 router.put("/updateDealerPriceBook/:dealerPriceBookId", [verifyToken], supportingFunction.checkObjectId, dealerUserController.statusUpdate); // update dealer price book
 
