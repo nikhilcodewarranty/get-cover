@@ -383,11 +383,12 @@ exports.getDashboardGraph = async (req, res) => {
     let startOfMonth2 = new Date(new Date().setDate(new Date().getDate() - 30));
 
     let startOfMonth = new Date(startOfMonth2.getFullYear(), startOfMonth2.getMonth(), startOfMonth2.getDate());
-    
+
     console.log("startOfMonth---------------",startOfMonth)
 
 
     let endOfMonth = new Date(endOfMonth1.getFullYear(), endOfMonth1.getMonth(), endOfMonth1.getDate() + 1);
+    console.log("endOfMonth---------------",endOfMonth)
 
     if (isNaN(startOfMonth) || isNaN(endOfMonth)) {
       return { code: 401, message: "invalid date" };
