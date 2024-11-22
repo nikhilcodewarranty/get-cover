@@ -384,8 +384,6 @@ exports.getDashboardGraph = async (req, res) => {
 
     let startOfMonth = new Date(startOfMonth2.getFullYear(), startOfMonth2.getMonth(), startOfMonth2.getDate());
 
-
-
     let endOfMonth = new Date(endOfMonth1.getFullYear(), endOfMonth1.getMonth(), endOfMonth1.getDate() + 1);
 
     if (isNaN(startOfMonth) || isNaN(endOfMonth)) {
@@ -402,20 +400,21 @@ exports.getDashboardGraph = async (req, res) => {
     let dailyQuery = [
       {
         $match: {
-          claimDate: { $gte: startOfMonth, $lt: endOfMonth }
+          claimDate: { $gte: startOfMonth, $lt: endOfMonth },
+          claimFile: "completed"
         }
-    },
-    {
+      },
+      {
         $addFields: {
-            completedClaims: {
-                $filter: {
-                    input: "$claimStatus",
-                    as: "status",
-                    cond: { $eq: ["$$status.status", "completed"] }
-                }
+          completedClaims: {
+            $filter: {
+              input: "$claimStatus",
+              as: "status",
+              cond: { $eq: ["$$status.status", "completed"] }
             }
+          }
         }
-    },
+      },
       {
         $group: {
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$claimDate" } },
@@ -466,9 +465,9 @@ exports.getDashboardGraph = async (req, res) => {
     let getPriceBooks1 = await priceBookService.getAllActivePriceBook(priceQuery1)
 
     const result = datesArray.map(date => {
-      console.log("adasdassasa",date)
+      console.log("adasdassasa", date)
       const dateString = date.toISOString().slice(0, 10);
-      console.log("dateString",dateString)
+      console.log("dateString", dateString)
 
       const order = getData.find(item => item._id === dateString);
       return {
