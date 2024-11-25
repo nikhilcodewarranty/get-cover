@@ -1558,6 +1558,13 @@ exports.getCustomerDetails = async (req, res) => {
       { $unwind: { path: "$reseller", preserveNullAndEmptyArrays: true } }
     ]
     let getCustomer = await customerService.getCustomerByAggregate(query)
+    getCustomer[0].addresses.push({
+      address: getCustomer[0]?.street,
+      city: getCustomer[0]?.city,
+      state: getCustomer[0]?.state,
+      zip: getCustomer[0]?.zip,
+      isPrimary: true
+    })
     if (!getCustomer[0]) {
       res.send({
         code: constant.errorCode,
