@@ -2224,6 +2224,7 @@ exports.saveDealerSetting = async (req, res) => {
     let data = req.body;
     data.setDefault = 0;
     data.userId = dealerId
+    data.whiteLabelLogo = adminSetting[0]?.whiteLabelLogo
     let response;
     const getData = await userService.getSetting({ userId: dealerId });
     if (getData.length > 0) {
@@ -2279,7 +2280,7 @@ exports.resetDealerSetting = async (req, res) => {
       dealerId = checkCustomer.dealerId
     }
     let response;
-    const getData = await userService.getSetting({userId:dealerId});
+    const getData = await userService.getSetting({ userId: dealerId });
     let defaultResetColor = [];
     let defaultPaymentDetail = '';
     let defaultLightLogo = {};
