@@ -2224,7 +2224,7 @@ exports.saveDealerSetting = async (req, res) => {
     let data = req.body;
     data.setDefault = 0;
     data.userId = dealerId
-    data.whiteLabelLogo = adminSetting[0]?.whiteLabelLogo
+
     // data.logoLight = data.logoLight ? data.logoLight : adminSetting[0]?.logoLight
     // data.logoDark = data.logoDark ? data.logoDark : adminSetting[0]?.logoDark
     // data.favIcon = data.favIcon ? data.favIcon : adminSetting[0]?.favIcon

@@ -175,6 +175,25 @@ exports.createServiceProvider = async (req, res, next) => {
       }
 
       await LOG(logData).save()
+      // Save Setting for dealer
+      const checkUser = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin } } })
+      let adminSetting = await userService.getSetting({ userId: checkUser.metaData[0].metaId });
+      const adminDefaultSetting = {
+        logoLight: adminSetting[0]?.logoLight,
+        logoDark: adminSetting[0]?.logoDark,
+        favIcon: adminSetting[0]?.favIcon,
+        title: adminSetting[0]?.title,
+        colorScheme: adminSetting[0]?.colorScheme,
+        address: adminSetting[0]?.address,
+        whiteLabelLogo: adminSetting[0]?.whiteLabelLogo,
+
+        paymentDetail: adminSetting[0]?.paymentDetail,
+        setDefault: 0,
+        userId: createServiceProvider._id,
+      }
+      const saveSetting = await userService.saveSetting(adminDefaultSetting)
+
+
 
       res.send({
         code: constant.successCode,
@@ -355,6 +374,25 @@ exports.createServiceProvider = async (req, res, next) => {
       }
 
       await LOG(logData).save()
+
+      // Save Setting for dealer
+      const checkUser = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin } } })
+      let adminSetting = await userService.getSetting({ userId: checkUser.metaData[0].metaId });
+      const adminDefaultSetting = {
+        logoLight: adminSetting[0]?.logoLight,
+        logoDark: adminSetting[0]?.logoDark,
+        favIcon: adminSetting[0]?.favIcon,
+        title: adminSetting[0]?.title,
+        colorScheme: adminSetting[0]?.colorScheme,
+        address: adminSetting[0]?.address,
+        paymentDetail: adminSetting[0]?.paymentDetail,
+        setDefault: 0,
+        whiteLabelLogo: adminSetting[0]?.whiteLabelLogo,
+
+        userId: data.providerId
+
+      }
+      const saveSetting = await userService.saveSetting(adminDefaultSetting)
 
       res.send({
         code: constant.successCode,
