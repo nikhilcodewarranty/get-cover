@@ -1032,6 +1032,12 @@ exports.getCustomerById = async (req, res) => {
   try {
     let data = req.body
     let checkCustomer = await customerService.getCustomerById({ _id: req.params.customerId }, {})
+    checkCustomer.addresses.push({
+      address:checkCustomer.street,
+      city:checkCustomer.city,
+      state:checkCustomer.state,
+      zip:checkCustomer.zip,
+    })
     if (!checkCustomer) {
       res.send({
         code: constant.errorCode,
