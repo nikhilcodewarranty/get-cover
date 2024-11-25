@@ -851,7 +851,7 @@ exports.getClaimReportingDropdown = async (req, res) => {
         let response;
         let dealerId = req.userId;
 
-        if (flag == "servicer") {
+        if (flag == "dealer") {
             let servicerQuery = [
                 {
                     $match: {
