@@ -1033,10 +1033,11 @@ exports.getCustomerById = async (req, res) => {
     let data = req.body
     let checkCustomer = await customerService.getCustomerById({ _id: req.params.customerId }, {})
     checkCustomer.addresses.push({
-      address:checkCustomer.street,
-      city:checkCustomer.city,
-      state:checkCustomer.state,
-      zip:checkCustomer.zip,
+      address: checkCustomer.street,
+      city: checkCustomer.city,
+      state: checkCustomer.state,
+      zip: checkCustomer.zip,
+      isPrimary: true
     })
     if (!checkCustomer) {
       res.send({
@@ -2531,12 +2532,12 @@ exports.addAddress = async (req, res) => {
     console.log(customerAddresses)
     customerAddresses.push(data.address)
 
-    let udpateCustomer = await customerService.updateCustomer({ _id:customerId }, { addresses: customerAddresses }, { new: true })
+    let udpateCustomer = await customerService.updateCustomer({ _id: customerId }, { addresses: customerAddresses }, { new: true })
     if (!udpateCustomer) {
       res.send({
         code: constant.errorCode,
         message: "Unable to add customer address"
-      }) 
+      })
     } else {
       res.send({
         code: constant.successCode,
@@ -2553,7 +2554,7 @@ exports.addAddress = async (req, res) => {
 exports.deleteAddress = async (req, res) => {
   try {
     let data = req.body
-    let customerId =  req.params.customerId;
+    let customerId = req.params.customerId;
     if (req.role == "Customer") {
       customerId = req.userId
     }
@@ -2592,7 +2593,7 @@ exports.deleteAddress = async (req, res) => {
 exports.editaddress = async (req, res) => {
   try {
     let data = req.body
-    let customerId =  data.customerId;
+    let customerId = data.customerId;
     if (req.role == "Customer") {
       customerId = req.userId
     }
@@ -2613,7 +2614,7 @@ exports.editaddress = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: "Success!",
-      result:updateCustomer
+      result: updateCustomer
     })
   } catch (err) {
     res.send({
