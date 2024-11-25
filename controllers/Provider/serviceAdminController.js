@@ -2255,8 +2255,8 @@ exports.getServicerClaims = async (req, res) => {
         );
       }
       item1.approveDate = ''
-      if(item1?.approveDate!=''){
-        item1.approveDate =  item1.approveDate
+      if (item1?.approveDate != '') {
+        item1.approveDate = item1.approveDate
       }
       let servicerName = '';
       let selfServicer = false;
@@ -2763,6 +2763,11 @@ exports.saveServicerSetting = async (req, res) => {
     let data = req.body;
     data.setDefault = 0;
     data.userId = servicerId
+    data.whiteLabelLogo = adminSetting[0]?.whiteLabelLogo
+    data.logoLight = data.logoLight ? data.logoLight : adminSetting[0]?.logoLight
+    data.logoDark = data.logoDark ? data.logoDark : adminSetting[0]?.logoDark
+    data.favIcon = data.favIcon ? data.favIcon : adminSetting[0]?.favIcon
+
     let response;
     const getData = await userService.getSetting({ userId: servicerId });
     if (getData.length > 0) {
@@ -2808,7 +2813,7 @@ exports.resetServicerSetting = async (req, res) => {
     let servicerId = req.body.servicerId
 
     let response;
-    const getData = await userService.getSetting({userId:servicerId});
+    const getData = await userService.getSetting({ userId: servicerId });
     let defaultResetColor = [];
     let defaultPaymentDetail = '';
     let defaultLightLogo = {};
@@ -2895,7 +2900,7 @@ exports.defaultSettingServicer = async (req, res) => {
     // }
     // Define the default resetColor array
     let response;
-    let servicerId = req.params.servicerId  
+    let servicerId = req.params.servicerId
 
     let getData;
     let dealerSetting = await userService.getSetting({ userId: servicerId });
@@ -2945,9 +2950,9 @@ exports.getServicerColorSetting = async (req, res) => {
     //   return
     // }
     let servicerId = req.params.servicerId
-  
+
     let setting = await userService.getSetting({ userId: servicerId });
-    console.log("setting-------------------",setting)
+    console.log("setting-------------------", setting)
     const baseUrl = process.env.API_ENDPOINT;
     if (setting.length > 0) {
       setting[0].base_url = baseUrl;
