@@ -962,7 +962,47 @@ exports.getClaimReportingDropdown = async (req, res) => {
 
             response = await providerService.getTopFiveServicer(servicerQuery)
         }
+        if (flag == "category") {
+            let catQuery = [
+                {
+                    $lookup: {
+                        from: "pricebooks",
+                        localField: "_id", // Array of priceBook IDs
+                        foreignField: "category",
+                        as: "pricebookData" // Keep pricebookData as an array
+                    },
 
+                },
+                {
+                    $lookup: {
+                        from: "dealerpricebooks",
+                        localField: "pricebookData._id",
+                        foreignField: "priceBook",
+                        as: "dealerPricebookData" // Keep dealerPricebookData as an array
+                    }
+                },
+                {
+                    $project: {
+                        categoryName: "$name", // Rename 'name' to 'categoryName'
+                        categoryId: "$_id",
+                        dealerPricebookData: 1,             // Include _id field
+                        priceBooks: {
+                            $map: {
+
+                                input: "$pricebookData",
+                                as: "pb",
+                                in: {
+                                    priceBookName: "$$pb.name",  // Use pricebook name
+                                    priceBookId: "$$pb._id",      // Use pricebook _id
+                                }
+                            }
+                        }      // Optionally include pricebookData if needed
+                    }
+                }
+            ]
+
+            response = await priceBookService.getCategoryWithPriceBooks(catQuery)
+        }
         res.send({
             code: constant.successCode,
             result: response
