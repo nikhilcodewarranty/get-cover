@@ -2764,9 +2764,9 @@ exports.saveServicerSetting = async (req, res) => {
     data.setDefault = 0;
     data.userId = servicerId
     data.whiteLabelLogo = adminSetting[0]?.whiteLabelLogo
-    data.logoLight = data.logoLight ? data.logoLight : adminSetting[0]?.logoLight
-    data.logoDark = data.logoDark ? data.logoDark : adminSetting[0]?.logoDark
-    data.favIcon = data.favIcon ? data.favIcon : adminSetting[0]?.favIcon
+    // data.logoLight = data.logoLight ? data.logoLight : adminSetting[0]?.logoLight
+    // data.logoDark = data.logoDark ? data.logoDark : adminSetting[0]?.logoDark
+    // data.favIcon = data.favIcon ? data.favIcon : adminSetting[0]?.favIcon
 
     let response;
     const getData = await userService.getSetting({ userId: servicerId });
@@ -2952,7 +2952,6 @@ exports.getServicerColorSetting = async (req, res) => {
     let servicerId = req.params.servicerId
 
     let setting = await userService.getSetting({ userId: servicerId });
-    console.log("setting-------------------", setting)
     const baseUrl = process.env.API_ENDPOINT;
     if (setting.length > 0) {
       setting[0].base_url = baseUrl;
