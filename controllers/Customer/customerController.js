@@ -1039,7 +1039,7 @@ exports.getCustomerById = async (req, res) => {
       zip: checkCustomer.zip,
       isPrimary: true
     })
-    checkCustomer = checkCustomer.addresses.sort((a, b) => b.isPrimary - a.isPrimary);
+    checkCustomer.addresses.sort((a, b) => b.isPrimary - a.isPrimary);
     console.log("checkCustomer----------------------",checkCustomer)
     if (!checkCustomer) {
       res.send({
