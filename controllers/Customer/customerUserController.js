@@ -1526,55 +1526,59 @@ exports.getDashboardData1 = async (req, res) => {
 // get custiner details
 exports.getCustomerDetails = async (req, res) => {
   try {
-    let data = req.body
-    let getUser = await userService.getUserById1({ _id: req.teammateId })
-    let mid = new mongoose.Types.ObjectId(req.userId)
+    let data = req.body;
+    let getUser = await userService.getUserById1({ _id: req.teammateId });
+    let mid = new mongoose.Types.ObjectId(req.userId);
     let query = [
       {
         $match: {
-          _id: mid
-        }
+          _id: mid,
+        },
       },
       {
         $lookup: {
           from: "dealers",
           foreignField: "_id",
           localField: "dealerId",
-          as: "dealer"
-        }
+          as: "dealer",
+        },
       },
       {
-        "$lookup": {
-          "let": { "userObjId": { "$toObjectId": "$resellerId" } },
-          "from": "resellers",
-          "pipeline": [
-            { "$match": { "$expr": { "$eq": ["$_id", "$$userObjId"] } } }
+        $lookup: {
+          let: { userObjId: { $toObjectId: "$resellerId" } },
+          from: "resellers",
+          pipeline: [
+            { $match: { $expr: { $eq: ["$_id", "$$userObjId"] } } },
           ],
-          "as": "reseller"
+          as: "reseller",
         },
-
       },
       { $unwind: { path: "$dealer", preserveNullAndEmptyArrays: true } },
-      { $unwind: { path: "$reseller", preserveNullAndEmptyArrays: true } }
-    ]
-    let getCustomer = await customerService.getCustomerByAggregate(query)
+      { $unwind: { path: "$reseller", preserveNullAndEmptyArrays: true } },
+    ];
+    let getCustomer = await customerService.getCustomerByAggregate(query);
+
+    if (!getCustomer[0]) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the details",
+      });
+      return;
+    }
+
+    // Add a new primary address to the addresses array
     getCustomer[0].addresses.push({
       address: getCustomer[0]?.street,
       city: getCustomer[0]?.city,
       state: getCustomer[0]?.state,
       zip: getCustomer[0]?.zip,
-      isPrimary: true
-    })
+      isPrimary: true,
+    });
+
+    // Sort the addresses array to place isPrimary: true at the top
     getCustomer[0].addresses.sort((a, b) => b.isPrimary - a.isPrimary);
 
-    if (!getCustomer[0]) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to fetch the details"
-      })
-      return;
-    }
-
+    // Prepare loginMember details
     let custmerDetails = {
       ...getUser.toObject(),
       firstName: getUser.metaData[0].firstName,
@@ -1583,20 +1587,23 @@ exports.getCustomerDetails = async (req, res) => {
       status: getUser.metaData[0].status,
       position: getUser.metaData[0].position,
       lastName: getUser.metaData[0].lastName,
-    }
+    };
+
+    // Send the response
     res.send({
       code: constant.successCode,
       message: "Successfully fetched user details.",
       result: getCustomer[0],
-      loginMember: custmerDetails
-    })
+      loginMember: custmerDetails,
+    });
   } catch (err) {
     res.send({
       code: constant.errorCode,
-      message: err.message
-    })
+      message: err.message,
+    });
   }
-}
+};
+
 
 // saker reporting for customer daily/weekly/day
 exports.saleReporting = async (req, res) => {
