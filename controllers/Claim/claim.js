@@ -329,7 +329,8 @@ exports.addClaim = async (req, res, next) => {
     let checkContract = await contractService.getContractById({ _id: data.contractId })
     data.lossDate = new Date(data.lossDate).setDate(new Date(data.lossDate).getDate() + 1)
     data.lossDate = new Date(data.lossDate)
-
+    data.submittedBy = data.submittedBy || ''
+    data.shippingTo = data.shippingTo || ''
     if (!checkContract) {
       res.send({
         code: constant.errorCode,
