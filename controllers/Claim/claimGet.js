@@ -458,7 +458,7 @@ exports.getAllClaims = async (req, res, next) => {
     console.log("result_Array-----------------", result_Array)
     let arrayData;
     for (let i = 0; i < result_Array.length; i++) {
-      arrayData = result_Array[i];
+      result_Array = result_Array[i];
       console.log("arrayData---------------------", arrayData)
       arrayData.overThreshold = ''
       arrayData.threshHoldMessage = ''
