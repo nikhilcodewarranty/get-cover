@@ -429,7 +429,7 @@ exports.getAllClaims = async (req, res, next) => {
     result_Array = await Promise.all(
       result_Array.map(async (claimObject) => {
         const { productValue, claimAmount } = claimObject.contracts;
-
+        console.log("claimObject?.submittedBy ------------------",claimObject?.submittedBy )
        const customerDetail =  await userService.getUserById1({ email: claimObject?.submittedBy })
 
        console.log(customerDetail)
