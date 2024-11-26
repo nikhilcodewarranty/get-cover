@@ -1565,6 +1565,8 @@ exports.getCustomerDetails = async (req, res) => {
       zip: getCustomer[0]?.zip,
       isPrimary: true
     })
+    getCustomer[0].addresses.sort((a, b) => b.isPrimary - a.isPrimary);
+
     if (!getCustomer[0]) {
       res.send({
         code: constant.errorCode,
