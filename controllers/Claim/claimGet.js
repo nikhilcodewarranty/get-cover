@@ -458,6 +458,8 @@ exports.getAllClaims = async (req, res, next) => {
 
     for (let i = 0; i <= result_Array.length; i++) {
       let arrayData = result_Array[i];
+      arrayData[i].overThreshold = ''
+      arrayData[i].threshHoldMessage = ''
       const { productValue, claimAmount } = arrayData.contracts;
       const thresholdLimitValue = (getTheThresholdLimit?.threshHoldLimit.value / 100) * productValue;
       // Check if claimAmount exceeds the threshold limit value
