@@ -1576,7 +1576,7 @@ exports.getCustomerDetails = async (req, res) => {
     });
 
     // Sort the addresses array to place isPrimary: true at the top
-    getCustomer[0].addresses.sort((a, b) => b.isPrimary - a.isPrimary);
+    getCustomer =  getCustomer[0].addresses.sort((a, b) => b.isPrimary - a.isPrimary);
 
     // Prepare loginMember details
     let custmerDetails = {
