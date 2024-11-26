@@ -2332,7 +2332,6 @@ exports.claimReportinDropdown1 = async (req, res) => {
                     $project: {
                         categoryName: "$name", // Rename 'name' to 'categoryName'
                         categoryId: "$_id",
-                        dealerPricebookData: 1,             // Include _id field
                         priceBooks: {
                             $map: {
 
@@ -2341,6 +2340,21 @@ exports.claimReportinDropdown1 = async (req, res) => {
                                 in: {
                                     priceBookName: "$$pb.name",  // Use pricebook name
                                     priceBookId: "$$pb._id",      // Use pricebook _id
+                                    dealerSku: {
+                                        $map: {
+                                            input: {
+                                                $filter: {
+                                                    input: "$dealerPricebookData", // Filter dealer pricebooks
+                                                    as: "dpb",                    // Alias for dealer pricebook
+                                                    cond: { $eq: ["$$dpb.priceBook", "$$pb._id"] } // Match dealer pricebooks with the current pricebook
+                                                }
+                                            },
+                                            as: "dpb", // Alias for each dealer pricebook
+                                            in: {
+                                                sku: "$$dpb.dealerSku" // Include SKU field
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }      // Optionally include pricebookData if needed
