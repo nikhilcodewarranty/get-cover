@@ -455,6 +455,7 @@ exports.getAllClaims = async (req, res, next) => {
     //     threshHoldMessage
     //   };
     // });
+    console.log("result_Array-----------------",result_Array)
 
     for (let i = 0; i < result_Array.length; i++) {
       let arrayData = result_Array[i];
