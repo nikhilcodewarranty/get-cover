@@ -459,7 +459,7 @@ exports.getAllClaims = async (req, res, next) => {
 
     for (let i = 0; i < result_Array.length; i++) {
       let arrayData = result_Array[i];
-      console.log(arrayData)
+      console.log("arrayData---------------------",arrayData)
       arrayData[i].overThreshold = ''
       arrayData[i].threshHoldMessage = ''
       const { productValue, claimAmount } = arrayData.contracts;
