@@ -440,7 +440,7 @@ exports.getAllClaims = async (req, res, next) => {
 
           }
           const customerDetail = await userService.getUserById1(query)
-          claimObject.contracts.orders.customer.username = customerDetail?.firstName + " " + customerDetail?.lastName
+          claimObject.contracts.orders.customer.username = customerDetail?.metaData[0]?.firstName + " " + customerDetail?.metaData[0]?.lastName
         }
 
         // Simulate an async operation if needed (e.g., fetching data)
