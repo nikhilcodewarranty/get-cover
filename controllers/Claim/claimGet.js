@@ -429,9 +429,20 @@ exports.getAllClaims = async (req, res, next) => {
     result_Array = await Promise.all(
       result_Array.map(async (claimObject) => {
         const { productValue, claimAmount } = claimObject.contracts;
-        const customerDetail = await userService.getUserById1({ email: claimObject?.submittedBy })
+        let query;
+        claimObject.contracts.orders.customer.username = claimObject.contracts.orders.customer.username
+        if (req.role == "Customer") {
+          if (claimObject?.submittedBy != '') {
+            query = { email: claimObject?.submittedBy }
+          }
+          else {
+            query = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: claimObject.contracts.orders.customer._id, isPrimary: true } } })
 
-        claimObject.contracts.orders.customer.username =  req.role == "Customer" ? customerDetail?.firstName+" "+customerDetail?.lastName : claimObject.contracts.orders.customer.username
+          }
+          const customerDetail = await userService.getUserById1(query)
+          claimObject.contracts.orders.customer.username = customerDetail?.firstName + " " + customerDetail?.lastName
+        }
+
         // Simulate an async operation if needed (e.g., fetching data)
         const thresholdLimitValue = (getTheThresholdLimit?.threshHoldLimit.value / 100) * productValue;
 
