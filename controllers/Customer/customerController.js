@@ -1039,6 +1039,8 @@ exports.getCustomerById = async (req, res) => {
       zip: checkCustomer.zip,
       isPrimary: true
     })
+    checkCustomer = checkCustomer.addresses.sort((a, b) => b.isPrimary - a.isPrimary);
+
     if (!checkCustomer) {
       res.send({
         code: constant.errorCode,
