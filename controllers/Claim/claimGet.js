@@ -726,6 +726,10 @@ exports.getContractById = async (req, res) => {
       getData[0].claimAmount = claimTotal[0]?.amount
     }
 
+    const customer_id = getData[0]?.order[0]?.customerId
+    const checkAllUser = await userService.findUser({ metaData: { $elemMatch: { metaId: customer_id } } }, {})
+
+    // Get Customer Information
     let orderId = getData[0].orderProductId
     let order = getData[0].order
 
@@ -767,6 +771,26 @@ exports.getContractById = async (req, res) => {
         );
       }
     });
+
+    //Get customer info
+    getData[0].allUsers = []
+    let allUsers = checkAllUser.map(user => ({
+      label: user.metaData[0]?.firstName + " " + user.metaData[0]?.lastName,
+      value: user._id
+    }))
+    getData[0].allUsers = allUsers
+
+    //Get customer addresses
+    const addresses = getData[0]?.order[0]?.customer[0]?.addresses
+    getData[0]?.order[0]?.customer[0]?.addresses.push({
+      address: getData[0]?.order[0]?.customer[0]?.street,
+      city: getData[0]?.order[0]?.customer[0]?.city,
+      state: getData[0]?.order[0]?.customer[0]?.state,
+      zip: getData[0]?.order[0]?.customer[0]?.zip,
+      isPrimary: true
+    })
+    getData[0]?.order[0]?.customer[0]?.addresses.sort((a, b) => b.isPrimary - a.isPrimary);
+
     if (!getData) {
       res.send({
         code: constant.errorCode,
@@ -787,6 +811,8 @@ exports.getContractById = async (req, res) => {
     })
   }
 }
+
+//Get customer detail by contract id
 
 //Get messages
 exports.getMessages = async (req, res) => {
