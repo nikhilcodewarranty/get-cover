@@ -323,7 +323,7 @@ module.exports = class userService {
   //Update Many Setting 
   static async updateManySetting(creteria, data, option) {
     try {
-      const updateSetting = await setting.updateManySetting(creteria, data, option);
+      const updateSetting = await setting.updateMany(creteria, data, option);
       return updateSetting;
     }
     catch (error) {
