@@ -466,7 +466,7 @@ exports.getAllClaims = async (req, res, next) => {
       if (!overThreshold) {
         threshHoldMessage = ""
       }
-      if (claimObject.claimStatus.status == "rejected") {
+      if (arrayData.claimStatus.status == "rejected") {
         threshHoldMessage = ""
       }
       if (!getTheThresholdLimit.isThreshHoldLimit) {
