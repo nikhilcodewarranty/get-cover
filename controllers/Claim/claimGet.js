@@ -426,58 +426,36 @@ exports.getAllClaims = async (req, res, next) => {
     let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0 // getting the total count 
     let getTheThresholdLimit = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
 
-    // result_Array = result_Array.map(claimObject => {
-    //   const { productValue, claimAmount } = claimObject.contracts;
-    //   // Calculate the threshold limit value
-    //   const thresholdLimitValue = (getTheThresholdLimit?.threshHoldLimit.value / 100) * productValue;
-
-    //   // Check if claimAmount exceeds the threshold limit value
-    //   let overThreshold = claimAmount > thresholdLimitValue;
-    //   let threshHoldMessage = "Claim amount exceeds the allowed limit. This might lead to claim rejection. To proceed further with claim please contact admin."
-    //   if (!overThreshold) {
-    //     threshHoldMessage = ""
-    //   }
-    //   if (claimObject.claimStatus.status == "rejected") {
-    //     threshHoldMessage = ""
-    //   }
-    //   // if (claimObject.claimStatus.status == "rejected") {
-    //   //   threshHoldMessage = ""
-    //   // }
-    //   if (!getTheThresholdLimit.isThreshHoldLimit) {
-    //     overThreshold = false
-    //     threshHoldMessage = ""
-    //   }
-
-    //   // Return the updated object with the new key 'overThreshold'
-    //   return {
-    //     ...claimObject,
-    //     overThreshold,
-    //     threshHoldMessage
-    //   };
-    // });
-    console.log("result_Array-----------------", result_Array)
-    for (let i = 0; i < result_Array.length; i++) {
-      result_Array = result_Array[i];
-      // result_Array.overThreshold = ''
-      // result_Array.threshHoldMessage = ''
-      const { productValue, claimAmount } = result_Array.contracts;
+    result_Array = result_Array.map(claimObject => {
+      const { productValue, claimAmount } = claimObject.contracts;
+      // Calculate the threshold limit value
       const thresholdLimitValue = (getTheThresholdLimit?.threshHoldLimit.value / 100) * productValue;
+
       // Check if claimAmount exceeds the threshold limit value
       let overThreshold = claimAmount > thresholdLimitValue;
       let threshHoldMessage = "Claim amount exceeds the allowed limit. This might lead to claim rejection. To proceed further with claim please contact admin."
       if (!overThreshold) {
         threshHoldMessage = ""
       }
-      if (result_Array.claimStatus.status == "rejected") {
+      if (claimObject.claimStatus.status == "rejected") {
         threshHoldMessage = ""
       }
+      // if (claimObject.claimStatus.status == "rejected") {
+      //   threshHoldMessage = ""
+      // }
       if (!getTheThresholdLimit.isThreshHoldLimit) {
         overThreshold = false
         threshHoldMessage = ""
       }
-      // result_Array.overThreshold = overThreshold
-      // result_Array.threshHoldMessage = threshHoldMessage
-    }
+
+      // Return the updated object with the new key 'overThreshold'
+      return {
+        ...claimObject,
+        overThreshold,
+        threshHoldMessage
+      };
+    });
+
 
     res.send({
       code: constant.successCode,
