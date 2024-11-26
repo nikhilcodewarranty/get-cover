@@ -456,13 +456,11 @@ exports.getAllClaims = async (req, res, next) => {
     //   };
     // });
     console.log("result_Array-----------------", result_Array)
-    let arrayData;
     for (let i = 0; i < result_Array.length; i++) {
       result_Array = result_Array[i];
-      console.log("arrayData---------------------", arrayData)
-      arrayData.overThreshold = ''
-      arrayData.threshHoldMessage = ''
-      const { productValue, claimAmount } = arrayData.contracts;
+      // result_Array.overThreshold = ''
+      // result_Array.threshHoldMessage = ''
+      const { productValue, claimAmount } = result_Array.contracts;
       const thresholdLimitValue = (getTheThresholdLimit?.threshHoldLimit.value / 100) * productValue;
       // Check if claimAmount exceeds the threshold limit value
       let overThreshold = claimAmount > thresholdLimitValue;
@@ -470,21 +468,21 @@ exports.getAllClaims = async (req, res, next) => {
       if (!overThreshold) {
         threshHoldMessage = ""
       }
-      if (arrayData.claimStatus.status == "rejected") {
+      if (result_Array.claimStatus.status == "rejected") {
         threshHoldMessage = ""
       }
       if (!getTheThresholdLimit.isThreshHoldLimit) {
         overThreshold = false
         threshHoldMessage = ""
       }
-      arrayData.overThreshold = overThreshold
-      arrayData.threshHoldMessage = threshHoldMessage
+      // result_Array.overThreshold = overThreshold
+      // result_Array.threshHoldMessage = threshHoldMessage
     }
 
     res.send({
       code: constant.successCode,
       message: "Success",
-      result: arrayData,
+      result: result_Array,
       totalCount
     })
 
