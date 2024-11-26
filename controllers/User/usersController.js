@@ -1750,6 +1750,7 @@ exports.accountSetting = async (req, res) => {
     let response;
     const getData = await userService.getSetting({ userId: req.userId });
     if (getData.length > 0) {
+      await userService.updateManySetting({}, { whiteLabelLogo: data.whiteLabelLogo }, { new: true });
       response = await userService.updateSetting({ _id: getData[0]?._id }, data, { new: true })
 
     }
@@ -1791,7 +1792,7 @@ exports.resetSetting = async (req, res) => {
     let defaultPaymentDetail = '';
     let defaultLightLogo = {};
     let defaultWhiteLabelLogo = {};
-    
+
     let defaultDarkLogo = {};
     let defaultFavIcon = {};
     let defaultAddress = '';

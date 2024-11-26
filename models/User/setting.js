@@ -12,6 +12,10 @@ const settingSchema = new mongoose.Schema({
     type: {},
     default: {}
   },
+  isWhiteLabelShow: {
+    type: Boolean,
+    default: false
+  },
   logoDark: {
     type: {},
     default: {}
@@ -61,41 +65,41 @@ const settingSchema = new mongoose.Schema({
     ],
     default: [] // Set the default value
   },
-  defaultLightLogo:{
+  defaultLightLogo: {
     type: {},
     default: {}
   },
-  defaultWhiteLabelLogo:{
+  defaultWhiteLabelLogo: {
     type: {},
     default: {}
   },
-  defaultDarkLogo:{
+  defaultDarkLogo: {
     type: {},
     default: {}
   },
-  defaultFavIcon:{
+  defaultFavIcon: {
     type: {},
     default: {}
   },
-  defaultTitle:{
+  defaultTitle: {
     type: String,
     default: ''
   },
-  defaultPaymentDetail:{
+  defaultPaymentDetail: {
     type: String,
     default: ''
   },
-  defaultAddress:{
+  defaultAddress: {
     type: String,
     default: ''
   },
   setDefault: {
     type: Number,
-    default:0
+    default: 0
   },
-  userId:{
+  userId: {
     type: mongoose.Schema.Types.ObjectId,
-    default:null
+    default: null
   }
 });
 
