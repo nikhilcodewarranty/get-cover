@@ -796,11 +796,12 @@ exports.getContractById = async (req, res) => {
       isPrimary: user.metaData[0]?.isPrimary,
       value: user._id
     }))
+    allUsers.sort((a, b) => b.isPrimary - a.isPrimary);
     getData[0].allUsers = allUsers
 
     //Get customer addresses
     const addresses = getData[0]?.order[0]?.customer[0]?.addresses
-    if (getData[0]?.order[0]?.customer[0]?.addresses){
+    if (getData[0]?.order[0]?.customer[0]?.addresses) {
       getData[0]?.order[0]?.customer[0]?.addresses.push({
         address: getData[0]?.order[0]?.customer[0]?.street,
         city: getData[0]?.order[0]?.customer[0]?.city,
@@ -810,8 +811,8 @@ exports.getContractById = async (req, res) => {
       })
       getData[0]?.order[0]?.customer[0]?.addresses.sort((a, b) => b.isPrimary - a.isPrimary);
     }
- 
-   
+
+
 
     if (!getData) {
       res.send({
