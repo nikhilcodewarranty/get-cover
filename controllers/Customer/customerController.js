@@ -817,13 +817,13 @@ exports.changePrimaryUser = async (req, res) => {
     // let updatePrimary = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true })
 
 
-    const checkDealer = await dealerService.getDealerById(updatePrimary.metaId)
+    const checkDealer = await dealerService.getDealerById(updatePrimary.metaData[0]?.metaId)
 
-    const checkReseller = await resellerService.getReseller({ _id: updatePrimary.metaId }, { isDeleted: false })
+    const checkReseller = await resellerService.getReseller({ _id: updatePrimary.metaData[0]?.metaId }, { isDeleted: false })
 
-    const checkCustomer = await customerService.getCustomerById({ _id: updatePrimary.metaId })
+    const checkCustomer = await customerService.getCustomerById({ _id: updatePrimary.metaData[0]?.metaId })
 
-    const checkServicer = await servicerService.getServiceProviderById({ _id: updatePrimary.metaId })
+    const checkServicer = await servicerService.getServiceProviderById({ _id: updatePrimary.metaData[0]?.metaId })
     //Merge end
 
     //Get role by id
@@ -847,7 +847,8 @@ exports.changePrimaryUser = async (req, res) => {
         code: constant.errorCode,
         message: "Something went wrong"
       })
-    } else {
+    } 
+    else {
       //Send notification for dealer change primary user
       let IDs = await supportingFunction.getUserIds()
       let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkUser.metaData[0]?.metaId }, isPrimary: true } })

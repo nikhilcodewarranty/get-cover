@@ -793,6 +793,7 @@ exports.getContractById = async (req, res) => {
     getData[0].allUsers = []
     let allUsers = checkAllUser.map(user => ({
       label: user.metaData[0]?.firstName + " " + user.metaData[0]?.lastName,
+      isPrimary: user.metaData[0]?.isPrimary,
       value: user._id
     }))
     getData[0].allUsers = allUsers
