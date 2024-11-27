@@ -799,7 +799,7 @@ exports.getContractById = async (req, res) => {
 
     //Get customer addresses
     const addresses = getData[0]?.order[0]?.customer[0]?.addresses
-    if (getData[0]?.order[0]?.customer[0]?.addresses.length > 0){
+    if (getData[0]?.order[0]?.customer[0]?.addresses){
       getData[0]?.order[0]?.customer[0]?.addresses.push({
         address: getData[0]?.order[0]?.customer[0]?.street,
         city: getData[0]?.order[0]?.customer[0]?.city,
