@@ -1567,16 +1567,19 @@ exports.getCustomerDetails = async (req, res) => {
     }
 
     // Add a new primary address to the addresses array
-    getCustomer[0].addresses.push({
-      address: getCustomer[0]?.street,
-      city: getCustomer[0]?.city,
-      state: getCustomer[0]?.state,
-      zip: getCustomer[0]?.zip,
-      isPrimary: true,
-    });
+    if(getCustomer[0]?.addresses){
+      getCustomer[0].addresses.push({
+        address: getCustomer[0]?.street,
+        city: getCustomer[0]?.city,
+        state: getCustomer[0]?.state,
+        zip: getCustomer[0]?.zip,
+        isPrimary: true,
+      });
+      // Sort the addresses array to place isPrimary: true at the top
+      getCustomer[0].addresses.sort((a, b) => b.isPrimary - a.isPrimary);
+    }
+  
 
-    // Sort the addresses array to place isPrimary: true at the top
-    getCustomer[0].addresses.sort((a, b) => b.isPrimary - a.isPrimary);
 
     // Prepare loginMember details
     let custmerDetails = {

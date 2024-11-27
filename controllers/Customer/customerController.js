@@ -1032,14 +1032,17 @@ exports.getCustomerById = async (req, res) => {
   try {
     let data = req.body
     let checkCustomer = await customerService.getCustomerById({ _id: req.params.customerId }, {})
-    checkCustomer.addresses.push({
-      address: checkCustomer.street,
-      city: checkCustomer.city,
-      state: checkCustomer.state,
-      zip: checkCustomer.zip,
-      isPrimary: true
-    })
-    checkCustomer.addresses.sort((a, b) => b.isPrimary - a.isPrimary);
+    if (checkCustomer?.addresses) {
+      checkCustomer.addresses.push({
+        address: checkCustomer?.street,
+        city: checkCustomer?.city,
+        state: checkCustomer?.state,
+        zip: checkCustomer?.zip,
+        isPrimary: true,
+      });
+      checkCustomer.addresses.sort((a, b) => b.isPrimary - a.isPrimary);
+
+    }
     if (!checkCustomer) {
       res.send({
         code: constant.errorCode,
@@ -2530,7 +2533,6 @@ exports.addAddress = async (req, res) => {
       return
     }
     let customerAddresses = checkCustomer.addresses ? checkCustomer.addresses : []
-    console.log(customerAddresses)
     customerAddresses.push(data.address)
 
     let udpateCustomer = await customerService.updateCustomer({ _id: customerId }, { addresses: customerAddresses }, { new: true })
