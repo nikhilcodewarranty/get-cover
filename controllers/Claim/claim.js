@@ -329,7 +329,8 @@ exports.addClaim = async (req, res, next) => {
     let checkContract = await contractService.getContractById({ _id: data.contractId })
     data.lossDate = new Date(data.lossDate).setDate(new Date(data.lossDate).getDate() + 1)
     data.lossDate = new Date(data.lossDate)
-    data.submittedBy = data.submittedBy || ''
+    const submittedUser = await userService.getUserById1({ _id: data.submittedBy },{})
+    data.submittedBy = submittedUser?.email || ''
     data.shippingTo = data.shippingTo || ''
     if (!checkContract) {
       res.send({
@@ -1852,7 +1853,7 @@ exports.saveBulkClaim = async (req, res) => {
         }
 
 
-      } 
+      }
       //Trim the space from the sheet data
       totalDataComing = totalDataComing.map((item, i) => {
         if (item.hasOwnProperty("servicerName")) {
@@ -3000,7 +3001,7 @@ exports.statusClaim = async (req, res) => {
   try {
     const result = await claimService.getClaims({
       'repairStatus.status': 'servicer_shipped',
-      claimFile:"open"
+      claimFile: "open"
     });
 
     let updateStatus

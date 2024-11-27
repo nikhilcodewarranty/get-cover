@@ -799,14 +799,18 @@ exports.getContractById = async (req, res) => {
 
     //Get customer addresses
     const addresses = getData[0]?.order[0]?.customer[0]?.addresses
-    getData[0]?.order[0]?.customer[0]?.addresses.push({
-      address: getData[0]?.order[0]?.customer[0]?.street,
-      city: getData[0]?.order[0]?.customer[0]?.city,
-      state: getData[0]?.order[0]?.customer[0]?.state,
-      zip: getData[0]?.order[0]?.customer[0]?.zip,
-      isPrimary: true
-    })
-    getData[0]?.order[0]?.customer[0]?.addresses.sort((a, b) => b.isPrimary - a.isPrimary);
+    if (getData[0]?.order[0]?.customer[0]?.addresses.length > 0){
+      getData[0]?.order[0]?.customer[0]?.addresses.push({
+        address: getData[0]?.order[0]?.customer[0]?.street,
+        city: getData[0]?.order[0]?.customer[0]?.city,
+        state: getData[0]?.order[0]?.customer[0]?.state,
+        zip: getData[0]?.order[0]?.customer[0]?.zip,
+        isPrimary: true
+      })
+      getData[0]?.order[0]?.customer[0]?.addresses.sort((a, b) => b.isPrimary - a.isPrimary);
+    }
+ 
+   
 
     if (!getData) {
       res.send({
