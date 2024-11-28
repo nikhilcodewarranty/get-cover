@@ -1369,8 +1369,8 @@ exports.createOrder1 = async (req, res) => {
                 pricebookDetailObject.noOfProducts = product.checkNumberProducts
   
                 pricebookDetailObject.retailPrice = product.unitPrice
-                pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
-                pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
+                pricebookDetailObject.brokerFee = product.dealerPriceBookDetails[0].brokerFee
+                pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails[0]._id
                 pricebookDetail.push(pricebookDetailObject)
   
                 const readOpts = { // <--- need these settings in readFile options
@@ -2754,8 +2754,8 @@ exports.editOrderDetail = async (req, res) => {
                 pricebookDetailObject.noOfProducts = product.checkNumberProducts
 
                 pricebookDetailObject.retailPrice = product.unitPrice
-                pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
-                pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
+                pricebookDetailObject.brokerFee = product.dealerPriceBookDetails[0].brokerFee
+                pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails[0]._id
                 pricebookDetail.push(pricebookDetailObject)
                 dealerBookDetail.push(dealerPriceBookObject)
                 const totalDataComing1 = result.data;
