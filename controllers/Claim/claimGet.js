@@ -376,11 +376,7 @@ exports.getAllClaims = async (req, res, next) => {
     let result_Array = resultFiter.map((item1) => {
       servicer = []
       let mergedData = []
-      if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
-        mergedData = dynamicOption.value.filter(contract =>
-          item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
-        );
-      }
+
 
       let servicerName = ''
       let selfServicer = false;
@@ -408,6 +404,31 @@ exports.getAllClaims = async (req, res, next) => {
         servicerName = servicer.find(servicer => servicer?._id?.toString() === item1.servicerId?.toString());
         selfServicer = req.role == "Customer" ? false : item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() ? true : false
         selfResellerServicer = item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString()
+      }
+
+
+      if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
+        if (req.role == "Servicer") {
+          mergedData = dynamicOption.value.filter(contract =>
+            item1.contracts?.coverageType?.find(opt => opt.value === contract.value && contract.value != 'theft_and_lost')
+          );
+        }
+        else if (req.role == "Dealer" && selfServicer) {
+          mergedData = dynamicOption.value.filter(contract =>
+            item1.contracts?.coverageType?.find(opt => opt.value === contract.value && contract.value != 'theft_and_lost')
+          );
+        }
+        else if (req.role == "Reseller" && selfResellerServicer) {
+          mergedData = dynamicOption.value.filter(contract =>
+            item1.contracts?.coverageType?.find(opt => opt.value === contract.value && contract.value != 'theft_and_lost')
+          );
+        }
+        else {
+          mergedData = dynamicOption.value.filter(contract =>
+            item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
+          );
+        }
+
       }
 
       return {
@@ -801,6 +822,7 @@ exports.getContractById = async (req, res) => {
 
     //Get customer addresses
     const addresses = getData[0]?.order[0]?.customer[0]?.addresses
+
     if (getData[0]?.order[0]?.customer[0]?.addresses) {
       getData[0]?.order[0]?.customer[0]?.addresses.push({
         address: getData[0]?.order[0]?.customer[0]?.street,
