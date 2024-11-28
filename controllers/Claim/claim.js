@@ -325,7 +325,7 @@ exports.uploadCommentImage = async (req, res, next) => {
 exports.addClaim = async (req, res, next) => {
   try {
     let data = req.body;
-
+    
     let checkContract = await contractService.getContractById({ _id: data.contractId })
     data.lossDate = new Date(data.lossDate).setDate(new Date(data.lossDate).getDate() + 1)
     data.lossDate = new Date(data.lossDate)
@@ -391,7 +391,6 @@ exports.addClaim = async (req, res, next) => {
       { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
 
     ]
-
 
     let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
 

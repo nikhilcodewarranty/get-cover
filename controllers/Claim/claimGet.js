@@ -377,9 +377,17 @@ exports.getAllClaims = async (req, res, next) => {
       servicer = []
       let mergedData = []
       if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
-        mergedData = dynamicOption.value.filter(contract =>
-          item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
-        );
+        if(req.role=="Servicer"){
+          mergedData = dynamicOption.value.filter(contract =>
+            item1.contracts?.coverageType?.find(opt => opt.value === contract.value && contract.value != 'theft_and_lost')
+          );
+        }
+        else{
+          mergedData = dynamicOption.value.filter(contract =>
+            item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
+          );
+        }
+     
       }
 
       let servicerName = ''
@@ -801,6 +809,7 @@ exports.getContractById = async (req, res) => {
 
     //Get customer addresses
     const addresses = getData[0]?.order[0]?.customer[0]?.addresses
+
     if (getData[0]?.order[0]?.customer[0]?.addresses) {
       getData[0]?.order[0]?.customer[0]?.addresses.push({
         address: getData[0]?.order[0]?.customer[0]?.street,
