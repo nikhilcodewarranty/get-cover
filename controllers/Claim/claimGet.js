@@ -409,16 +409,19 @@ exports.getAllClaims = async (req, res, next) => {
 
       if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
         if (req.role == "Servicer") {
+          // Show coverage type without theft and lost coverage type
           mergedData = dynamicOption.value.filter(contract =>
             item1.contracts?.coverageType?.find(opt => opt.value === contract.value && contract.value != 'theft_and_lost')
           );
         }
         else if (req.role == "Dealer" && selfServicer) {
+          // Show coverage type without theft and lost coverage type
           mergedData = dynamicOption.value.filter(contract =>
             item1.contracts?.coverageType?.find(opt => opt.value === contract.value && contract.value != 'theft_and_lost')
           );
         }
         else if (req.role == "Reseller" && selfResellerServicer) {
+          // Show coverage type without theft and lost coverage type
           mergedData = dynamicOption.value.filter(contract =>
             item1.contracts?.coverageType?.find(opt => opt.value === contract.value && contract.value != 'theft_and_lost')
           );
