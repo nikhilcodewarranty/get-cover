@@ -1746,7 +1746,7 @@ exports.accountSetting = async (req, res) => {
     // }
     let data = req.body;
     data.setDefault = 0;
-    data.userId = req.userId
+    // data.userId = req.userId
     let response;
     const getData = await userService.getSetting({ userId: req.userId });
     if (getData.length > 0) {
