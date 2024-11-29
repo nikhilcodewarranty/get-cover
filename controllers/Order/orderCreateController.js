@@ -1291,7 +1291,6 @@ exports.createOrder1 = async (req, res) => {
         //send notification to admin and dealer 
         let IDs = await supportingFunction.getUserIds()
         let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data.dealerId, isPrimary: true } } })
-  
         IDs.push(getPrimary._id)
   
         let notificationData = {
@@ -1340,8 +1339,8 @@ exports.createOrder1 = async (req, res) => {
             var pricebookDetail = []
             let checkLength = savedResponse.productsArray.length - 1
             let checkOrderForService = await orderService.getOrder({ _id: savedResponse._id })
-  
-            for (let k=0;k<savedResponse.productsArray.length;k++) {
+
+            for (let k = 0; k < savedResponse.productsArray.length; k++) {
                 let product = savedResponse.productsArray[k]
                 let index = k
   
@@ -1369,8 +1368,8 @@ exports.createOrder1 = async (req, res) => {
                 pricebookDetailObject.noOfProducts = product.checkNumberProducts
   
                 pricebookDetailObject.retailPrice = product.unitPrice
-                pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
-                pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
+                pricebookDetailObject.brokerFee = product.dealerPriceBookDetails[0].brokerFee
+                pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails[0]._id
                 pricebookDetail.push(pricebookDetailObject)
   
                 const readOpts = { // <--- need these settings in readFile options
@@ -1655,8 +1654,10 @@ exports.createOrder1 = async (req, res) => {
                     await LOG(logData).save()
                     //reporting codes 
                     let getPriceBookDetail = await priceBookService.findByName1({ _id: priceBookId })
+                    console.log("checking the reporting data ak++++++++++++++++++", pricebookDetail)
                     if (index == checkLength) {
-  
+                        console.log("inside the reporting data ak=============================", pricebookDetail)
+
                         let reportingData = {
                             orderId: savedResponse._id,
                             products: pricebookDetail,
@@ -2038,7 +2039,7 @@ exports.createOrder1 = async (req, res) => {
             errDetail: err.stack
         })
     }
-  };
+};
 // validating of edit file in order
 exports.editFileCase = async (req, res) => {
     try {
@@ -2754,8 +2755,8 @@ exports.editOrderDetail = async (req, res) => {
                 pricebookDetailObject.noOfProducts = product.checkNumberProducts
 
                 pricebookDetailObject.retailPrice = product.unitPrice
-                pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
-                pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
+                pricebookDetailObject.brokerFee = product.dealerPriceBookDetails[0].brokerFee
+                pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails[0]._id
                 pricebookDetail.push(pricebookDetailObject)
                 dealerBookDetail.push(dealerPriceBookObject)
                 const totalDataComing1 = result.data;

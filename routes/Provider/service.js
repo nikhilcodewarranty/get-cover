@@ -17,6 +17,16 @@ router.post("/getServicerClaims/:servicerId", [verifyToken], servicerAdminContro
 router.post("/createRelationWithDealer/:servicerId", [verifyToken], servicerAdminController.createDeleteRelation); // create relation with dealer
 router.post("/getServicerDealers/:servicerId", [verifyToken], servicerAdminController.getServicerDealers); // get servicer dealers
 router.post("/getServicerDealers1/:servicerId", [verifyToken], servicerAdminController.getServicerDealers1); // get servicer dealers (alternative)
+
+router.post('/saveServicerSetting', [verifyToken], servicerAdminController.saveServicerSetting);
+
+router.post('/resetServicerSetting', [verifyToken], servicerAdminController.resetServicerSetting)
+
+router.get('/getServicerColorSetting/:servicerId',[verifyToken], servicerAdminController.getServicerColorSetting);
+
+router.get('/defaultSettingServicer', [verifyToken], servicerAdminController.defaultSettingServicer);
+
+
 // PUT routes
 router.put("/approveServicer/:servicerId", [verifyToken], servicerAdminController.approveServicer); // approve servicer
 router.put("/editServicerDetail/:servicerId", [verifyToken], servicerAdminController.editServicerDetail); // edit servicer detail

@@ -1748,8 +1748,9 @@ exports.accountSetting = async (req, res) => {
     data.setDefault = 0;
     data.userId = req.userId
     let response;
-    const getData = await userService.getSetting();
+    const getData = await userService.getSetting({ userId: req.userId });
     if (getData.length > 0) {
+      await userService.updateManySetting({}, { whiteLabelLogo: data.whiteLabelLogo }, { new: true });
       response = await userService.updateSetting({ _id: getData[0]?._id }, data, { new: true })
 
     }
@@ -1786,10 +1787,12 @@ exports.resetSetting = async (req, res) => {
 
     let data = req.body;
     let response;
-    const getData = await userService.getSetting({});
+    const getData = await userService.getSetting({ userId: req.userId });
     let defaultResetColor = [];
     let defaultPaymentDetail = '';
     let defaultLightLogo = {};
+    let defaultWhiteLabelLogo = {};
+
     let defaultDarkLogo = {};
     let defaultFavIcon = {};
     let defaultAddress = '';
@@ -1801,6 +1804,11 @@ exports.resetSetting = async (req, res) => {
         fileName: getData[0].defaultLightLogo.fileName,
         name: getData[0].defaultLightLogo.name,
         size: getData[0].defaultLightLogo.size
+      }
+      defaultWhiteLabelLogo = {
+        fileName: getData[0].defaultWhiteLabelLogo.fileName,
+        name: getData[0].defaultWhiteLabelLogo.name,
+        size: getData[0].defaultWhiteLabelLogo.size
       }
       defaultDarkLogo = {
         fileName: getData[0].defaultDarkLogo.fileName,
@@ -1874,6 +1882,7 @@ exports.resetSetting = async (req, res) => {
     response = await userService.updateSetting({ _id: getData[0]?._id }, {
       colorScheme: defaultResetColor,
       logoLight: defaultLightLogo,
+      whiteLabelLogo: defaultWhiteLabelLogo,
       logoDark: defaultDarkLogo,
       favIcon: defaultFavIcon,
       title: defaultTitle,
@@ -1908,7 +1917,7 @@ exports.setDefault = async (req, res) => {
     // }
     // Define the default resetColor array
     let response;
-    const getData = await userService.getSetting({});
+    const getData = await userService.getSetting({ userId: req.userId });
 
     response = await userService.updateSetting({ _id: getData[0]?._id },
       {
@@ -1916,6 +1925,7 @@ exports.setDefault = async (req, res) => {
         setDefault: 1,
         defaultAddress: getData[0].address,
         defaultLightLogo: getData[0].logoLight,
+        defaultWhiteLabelLogo: getData[0].whiteLabelLogo,
         defaultTitle: getData[0].title,
         defaultDarkLogo: getData[0].logoDark,
         defaultPaymentDetail: getData[0].paymentDetail,
@@ -1946,19 +1956,90 @@ exports.getSetting = async (req, res) => {
     //     message: "Only super admin allow to do this action!"
     //   });
     //   return
-    // 
+    // }
 
     let userId = req.userId
-    if (req.role == "Customer") {
-      const checkCustomer = await customerService.getCustomerById({ _id: req.userId })
-      userId = checkCustomer.dealerId
-    }
+    let setting;
     if (req.role == "Reseller") {
       const checkReseller = await resellerService.getReseller({ _id: req.userId })
       userId = checkReseller.dealerId
     }
+    if (req.role == "Customer") {
+      const checkCustomer = await customerService.getCustomerById({ _id: req.userId })
+      userId = checkCustomer.dealerId
+    }
+    setting = await userService.getSetting({ userId: userId });
+    const baseUrl = process.env.API_ENDPOINT;
+    if (setting.length > 0) {
+      setting[0].base_url = baseUrl;
 
-    let setting = await userService.getSetting({ userId: userId });
+      // Assuming setting[0].logoDark and setting[0].logoLight contain relative paths
+      if (setting[0].logoDark && setting[0].logoDark.fileName) {
+        setting[0].logoDark.baseUrl = baseUrl;
+      }
+
+      if (setting[0].logoLight && setting[0].logoLight.fileName) {
+        setting[0].logoLight.baseUrl = baseUrl;
+      }
+
+      if (setting[0].favIcon && setting[0].favIcon.fileName) {
+        setting[0].favIcon.baseUrl = baseUrl;
+      }
+      if (setting[0].whiteLabelLogo && setting[0].whiteLabelLogo.fileName) {
+        setting[0].whiteLabelLogo.baseUrl = baseUrl;
+      }
+      // Repeat for any other properties that need the base_url prepended
+    }
+    else {
+      const checkUser = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin } } })
+      setting = await userService.getSetting({ userId: checkUser.metaData[0].metaId });
+      if (setting.length > 0) {
+        setting[0].base_url = baseUrl;
+
+        // Assuming setting[0].logoDark and setting[0].logoLight contain relative paths
+        if (setting[0].logoDark && setting[0].logoDark.fileName) {
+          setting[0].logoDark.baseUrl = baseUrl;
+        }
+
+        if (setting[0].logoLight && setting[0].logoLight.fileName) {
+          setting[0].logoLight.baseUrl = baseUrl;
+        }
+
+        if (setting[0].favIcon && setting[0].favIcon.fileName) {
+          setting[0].favIcon.baseUrl = baseUrl;
+        }
+        if (setting[0].whiteLabelLogo && setting[0].whiteLabelLogo.fileName) {
+          setting[0].whiteLabelLogo.baseUrl = baseUrl;
+        }
+        // Repeat for any other properties that need the base_url prepended
+      }
+    }
+    res.send({
+      code: constant.successCode,
+      message: "Success!",
+      result: setting
+    });
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+//for pre login
+exports.preLoginData = async (req, res) => {
+  try {
+    // if (req.role != "Super Admin") {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Only super admin allow to do this action!"
+    //   });
+    //   return
+    // }
+    const checkUser = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin } } })
+    let setting = await userService.getSetting({ userId: checkUser.metaData[0].metaId });
     const baseUrl = process.env.API_ENDPOINT;
     if (setting.length > 0) {
       setting[0].base_url = baseUrl;
@@ -1990,7 +2071,6 @@ exports.getSetting = async (req, res) => {
     })
   }
 }
-
 
 
 exports.uploadLogo = async (req, res) => {
@@ -2181,6 +2261,7 @@ exports.saveOptions = async (req, res) => {
   }
 }
 
+
 //Get option from database
 exports.getOptions = async (req, res) => {
   try {
@@ -2331,3 +2412,48 @@ exports.updateThreshHoldLimit = async (req, res) => {
     })
   }
 }
+
+
+exports.preLoginData = async (req, res) => {
+  try {
+    // if (req.role != "Super Admin") {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Only super admin allow to do this action!"
+    //   });
+    //   return
+    // }
+    const checkUser = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin } } })
+    let setting = await userService.getSetting({  });
+    const baseUrl = process.env.API_ENDPOINT;
+    if (setting.length > 0) {
+      setting[0].base_url = baseUrl;
+
+      // Assuming setting[0].logoDark and setting[0].logoLight contain relative paths
+      if (setting[0].logoDark && setting[0].logoDark.fileName) {
+        setting[0].logoDark.baseUrl = baseUrl;
+      }
+
+      if (setting[0].logoLight && setting[0].logoLight.fileName) {
+        setting[0].logoLight.baseUrl = baseUrl;
+      }
+
+      if (setting[0].favIcon && setting[0].favIcon.fileName) {
+        setting[0].favIcon.baseUrl = baseUrl;
+      }
+      // Repeat for any other properties that need the base_url prepended
+    }
+    res.send({
+      code: constant.successCode,
+      message: "Success!",
+      result: setting
+    });
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+

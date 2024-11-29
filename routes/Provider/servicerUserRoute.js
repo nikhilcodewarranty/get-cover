@@ -13,6 +13,8 @@ router.post("/createRelationWithDealer", [verifyToken], servicerController.creat
 router.post("/saleReporting", [verifyToken], servicerController.saleReporting); // sale reporting
 router.post("/claimReporting", [verifyToken], servicerController.claimReporting); // claim reporting
 router.post("/claimReportinDropdown", [verifyToken], servicerController.claimReportinDropdown); // claim reporting dropdown 
+
+router.get("/getClaimReportingDropdown/:flag", [verifyToken], servicerController.getClaimReportingDropdown); // claim reporting dropdown 
 // PUT routes
 router.put("/changePrimaryUser", [verifyToken], servicerController.changePrimaryUser); // change primary user
 router.put("/editUserDetail/:userId", [verifyToken], servicerController.editUserDetail); // edit user detail

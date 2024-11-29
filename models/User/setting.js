@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const connection = require('../../db');
-
 // Define the default resetColor array
 
 
@@ -8,6 +7,14 @@ const settingSchema = new mongoose.Schema({
   logoLight: {
     type: {},
     default: {}
+  },
+  whiteLabelLogo: {
+    type: {},
+    default: {}
+  },
+  isWhiteLabelShow: {
+    type: Boolean,
+    default: false
   },
   logoDark: {
     type: {},
@@ -58,37 +65,41 @@ const settingSchema = new mongoose.Schema({
     ],
     default: [] // Set the default value
   },
-  defaultLightLogo:{
+  defaultLightLogo: {
     type: {},
     default: {}
   },
-  defaultDarkLogo:{
+  defaultWhiteLabelLogo: {
     type: {},
     default: {}
   },
-  defaultFavIcon:{
+  defaultDarkLogo: {
     type: {},
     default: {}
   },
-  defaultTitle:{
+  defaultFavIcon: {
+    type: {},
+    default: {}
+  },
+  defaultTitle: {
     type: String,
     default: ''
   },
-  defaultPaymentDetail:{
+  defaultPaymentDetail: {
     type: String,
     default: ''
   },
-  defaultAddress:{
+  defaultAddress: {
     type: String,
     default: ''
   },
   setDefault: {
     type: Number,
-    default:0
+    default: 0
   },
-  userId:{
+  userId: {
     type: mongoose.Schema.Types.ObjectId,
-    default:null
+    default: null
   }
 });
 

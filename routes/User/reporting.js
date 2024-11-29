@@ -4,8 +4,9 @@ const reportingController = require("../../controllers/User/reportingController"
 const { verifyToken } = require('../../middleware/auth');  // authentication with jwt as middleware
 
 router.post('/getReportingDropdowns', [verifyToken], reportingController.getReportingDropdowns); // get reporting dropdowns
-router.post('/getReportingDropdowns1', [verifyToken], reportingController.getReportingDropdowns1); // get reporting dropdowns
+router.get('/getReportingDropdowns1/:flag', [verifyToken], reportingController.getReportingDropdowns1); // get reporting dropdowns
 router.post('/claimReportinDropdown', [verifyToken], reportingController.claimReportinDropdown); // get claim reporting dropdown
+router.get('/claimReportinDropdown1/:flag', [verifyToken], reportingController.claimReportinDropdown1); // get claim reporting dropdown
 
 
 

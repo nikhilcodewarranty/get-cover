@@ -175,6 +175,25 @@ exports.createServiceProvider = async (req, res, next) => {
       }
 
       await LOG(logData).save()
+      // Save Setting for dealer
+      const checkUser = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin } } })
+      let adminSetting = await userService.getSetting({ userId: checkUser.metaData[0].metaId });
+      const adminDefaultSetting = {
+        logoLight: adminSetting[0]?.logoLight,
+        logoDark: adminSetting[0]?.logoDark,
+        favIcon: adminSetting[0]?.favIcon,
+        title: adminSetting[0]?.title,
+        colorScheme: adminSetting[0]?.colorScheme,
+        address: adminSetting[0]?.address,
+        whiteLabelLogo: adminSetting[0]?.whiteLabelLogo,
+
+        paymentDetail: adminSetting[0]?.paymentDetail,
+        setDefault: 0,
+        userId: createServiceProvider._id,
+      }
+      const saveSetting = await userService.saveSetting(adminDefaultSetting)
+
+
 
       res.send({
         code: constant.successCode,
@@ -355,6 +374,25 @@ exports.createServiceProvider = async (req, res, next) => {
       }
 
       await LOG(logData).save()
+
+      // Save Setting for dealer
+      const checkUser = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin } } })
+      let adminSetting = await userService.getSetting({ userId: checkUser.metaData[0].metaId });
+      const adminDefaultSetting = {
+        logoLight: adminSetting[0]?.logoLight,
+        logoDark: adminSetting[0]?.logoDark,
+        favIcon: adminSetting[0]?.favIcon,
+        title: adminSetting[0]?.title,
+        colorScheme: adminSetting[0]?.colorScheme,
+        address: adminSetting[0]?.address,
+        paymentDetail: adminSetting[0]?.paymentDetail,
+        setDefault: 0,
+        whiteLabelLogo: adminSetting[0]?.whiteLabelLogo,
+
+        userId: data.providerId
+
+      }
+      const saveSetting = await userService.saveSetting(adminDefaultSetting)
 
       res.send({
         code: constant.successCode,
@@ -2254,6 +2292,10 @@ exports.getServicerClaims = async (req, res) => {
           item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
         );
       }
+      item1.approveDate = ''
+      if (item1?.approveDate != '') {
+        item1.approveDate = item1.approveDate
+      }
       let servicerName = '';
       let selfServicer = false;
       let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
@@ -2389,7 +2431,6 @@ exports.paidUnpaidClaim = async (req, res) => {
 
     }
 
-    
     const flag = req.body.flag == 1 ? 'Paid' : 'Unpaid'
     let query = { isDeleted: false };
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
@@ -2451,6 +2492,7 @@ exports.paidUnpaidClaim = async (req, res) => {
               "unique_key": 1,
               ClaimType: 1,
               note: 1,
+              approveDate: 1,
               totalAmount: 1,
               servicerId: 1,
               getcoverOverAmount: 1,
@@ -2736,6 +2778,243 @@ exports.paidUnpaidClaim = async (req, res) => {
       result: result_Array,
       totalCount
     })
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+// Setting Function
+exports.saveServicerSetting = async (req, res) => {
+  try {
+    // if (req.role != "Super Admin") {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Only super admin allow to do this action!"
+    //   });
+    //   return
+    // }
+    const adminSetting = await userService.getSetting({ userId: req.userId });
+
+    let servicerId = req.body.servicerId;
+    let data = req.body;
+    data.setDefault = 0;
+    data.userId = servicerId
+    data.whiteLabelLogo = adminSetting[0]?.whiteLabelLogo
+    // data.logoLight = data.logoLight ? data.logoLight : adminSetting[0]?.logoLight
+    // data.logoDark = data.logoDark ? data.logoDark : adminSetting[0]?.logoDark
+    // data.favIcon = data.favIcon ? data.favIcon : adminSetting[0]?.favIcon
+
+    let response;
+    const getData = await userService.getSetting({ userId: servicerId });
+    if (getData.length > 0) {
+      response = await userService.updateSetting({ _id: getData[0]?._id }, data, { new: true })
+
+    }
+    else {
+      data.title = adminSetting[0]?.title
+      data.paymentDetail = adminSetting[0]?.paymentDetail
+      data.address = adminSetting[0]?.address
+      response = await userService.saveSetting(data)
+    }
+    res.send({
+      code: constant.successCode,
+      message: "Success!",
+      result: response
+    })
+
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+//Reset Setting 
+exports.resetServicerSetting = async (req, res) => {
+  try {
+    // if (req.role != "Super Admin") {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Only super admin allow to do this action!"
+    //   });
+    //   return
+    // }
+    // Define the default resetColor array
+
+    let data = req.body;
+    const adminSetting = await userService.getSetting({ userId: req.userId });
+
+    let servicerId = req.body.servicerId
+
+    let response;
+    const getData = await userService.getSetting({ userId: servicerId });
+    let defaultResetColor = [];
+    let defaultPaymentDetail = '';
+    let defaultLightLogo = {};
+    let defaultDarkLogo = {};
+    let defaultFavIcon = {};
+    let defaultAddress = '';
+    let defaultTitle = '';
+    if (getData[0]?.defaultColor.length > 0) {
+      defaultResetColor = getData[0]?.defaultColor
+      defaultPaymentDetail = getData[0]?.defaultPaymentDetail
+      defaultLightLogo = {
+        fileName: getData[0].defaultLightLogo.fileName,
+        name: getData[0].defaultLightLogo.name,
+        size: getData[0].defaultLightLogo.size
+      }
+      defaultDarkLogo = {
+        fileName: getData[0].defaultDarkLogo.fileName,
+        name: getData[0].defaultDarkLogo.name,
+        size: getData[0].defaultDarkLogo.size
+      }
+      defaultFavIcon = {
+        fileName: getData[0].defaultFavIcon.fileName,
+        name: getData[0].defaultFavIcon.name,
+        size: getData[0].defaultFavIcon.size
+      }
+      defaultAddress = getData[0]?.defaultAddress
+      defaultTitle = getData[0]?.defaultTitle
+    }
+    else {
+      defaultResetColor = adminSetting[0]?.defaultColor
+      defaultPaymentDetail = adminSetting[0]?.defaultPaymentDetail
+      defaultLightLogo = {
+        fileName: adminSetting[0].defaultLightLogo.fileName,
+        name: adminSetting[0].defaultLightLogo.name,
+        size: adminSetting[0].defaultLightLogo.size
+      }
+      defaultDarkLogo = {
+        fileName: adminSetting[0].defaultDarkLogo.fileName,
+        name: adminSetting[0].defaultDarkLogo.name,
+        size: adminSetting[0].defaultDarkLogo.size
+      }
+      defaultFavIcon = {
+        fileName: adminSetting[0].defaultFavIcon.fileName,
+        name: adminSetting[0].defaultFavIcon.name,
+        size: adminSetting[0].defaultFavIcon.size
+      }
+      defaultAddress = adminSetting[0]?.defaultAddress
+      defaultTitle = adminSetting[0]?.defaultTitle
+    }
+    response = await userService.updateSetting({ _id: getData[0]?._id }, {
+      colorScheme: defaultResetColor,
+      logoLight: defaultLightLogo,
+      logoDark: defaultDarkLogo,
+      favIcon: defaultFavIcon,
+      title: defaultTitle,
+      address: defaultAddress,
+      paymentDetail: defaultPaymentDetail,
+      setDefault: 1
+    }, { new: true })
+    res.send({
+      code: constant.successCode,
+      message: "Reset Successfully!!",
+      result: response
+    })
+
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+//Set As default setting
+exports.defaultSettingServicer = async (req, res) => {
+  try {
+    // if (req.role != "Super Admin") {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Only super admin allow to do this action!"
+    //   });
+    //   return
+    // }
+    // Define the default resetColor array
+    let response;
+    let servicerId = req.params.servicerId
+
+    let getData;
+    let dealerSetting = await userService.getSetting({ userId: servicerId });
+    if (getData.length > 0) {
+      getData = dealerSetting
+    }
+    else {
+      getData = await userService.getSetting({ userId: req.userId });
+
+    }
+
+    response = await userService.updateSetting({ _id: getData[0]?._id },
+      {
+        defaultColor: getData[0].colorScheme,
+        setDefault: 1,
+        defaultAddress: getData[0].address,
+        defaultLightLogo: getData[0].logoLight,
+        defaultTitle: getData[0].title,
+        defaultDarkLogo: getData[0].logoDark,
+        defaultPaymentDetail: getData[0].paymentDetail,
+        defaultFavIcon: getData[0].favIcon,
+      },
+      { new: true })
+
+    res.send({
+      code: constant.successCode,
+      message: "Set as default successfully!",
+    })
+
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+//Get Setting Data
+exports.getServicerColorSetting = async (req, res) => {
+  try {
+    // if (req.role != "Super Admin") {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Only super admin allow to do this action!"
+    //   });
+    //   return
+    // }
+    let servicerId = req.params.servicerId
+
+    let setting = await userService.getSetting({ userId: servicerId });
+    const baseUrl = process.env.API_ENDPOINT;
+    if (setting.length > 0) {
+      setting[0].base_url = baseUrl;
+
+      // Assuming setting[0].logoDark and setting[0].logoLight contain relative paths
+      if (setting[0].logoDark && setting[0].logoDark.fileName) {
+        setting[0].logoDark.baseUrl = baseUrl;
+      }
+
+      if (setting[0].logoLight && setting[0].logoLight.fileName) {
+        setting[0].logoLight.baseUrl = baseUrl;
+      }
+
+      if (setting[0].favIcon && setting[0].favIcon.fileName) {
+        setting[0].favIcon.baseUrl = baseUrl;
+      }
+      // Repeat for any other properties that need the base_url prepended
+    }
+    res.send({
+      code: constant.successCode,
+      message: "Success!",
+      result: setting
+    });
   }
   catch (err) {
     res.send({

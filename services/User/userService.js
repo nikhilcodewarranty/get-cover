@@ -319,6 +319,17 @@ module.exports = class userService {
       console.log(`Could not fetch users ${error}`);
     }
   }
+
+  //Update Many Setting 
+  static async updateManySetting(creteria, data, option) {
+    try {
+      const updateSetting = await setting.updateMany(creteria, data, option);
+      return updateSetting;
+    }
+    catch (error) {
+      console.log(`Could not fetch users ${error}`);
+    }
+  }
   //-------------------------------------------------------------New Services-----------------------------------------------------------------------------------//
   //find user for unique checks
   // find user for unique checks 
