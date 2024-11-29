@@ -284,4 +284,19 @@ const claimSchema = new mongoose.Schema({
   },
 }, { timestamps: true });
 
+
+claimSchema.pre('save', function (next) {
+  // Define the fields that need to be set to 00:00
+  const dateFields = ['claimDate', 'lossDate'];
+
+  // Loop through each date field and set it to midnight if it exists
+  dateFields.forEach((field) => {
+    if (this[field]) {
+      this[field].setHours(0, 0, 0, 0);
+    }
+  });
+
+  next();
+});
+
 module.exports = connection.userConnection.model("claim", claimSchema);

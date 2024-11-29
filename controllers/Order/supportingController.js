@@ -986,6 +986,7 @@ exports.reportingDataReCreation = async (req, res) => {
             })
         }
 
+
         let reportingToSave = []
         for (let i = 0; i < getAllOrders.length; i++) {
             let orderData = getAllOrders[i]
@@ -1002,6 +1003,7 @@ exports.reportingDataReCreation = async (req, res) => {
                 for (let p = 0; p < orderData.productsArray.length; p++) {
                     productData = orderData.productsArray[p]
                     let productObject = {}
+
                     productObject.price = productData.price
                     productObject.noOfProducts = productData.checkNumberProducts
                     productObject.retailPrice = productData.dealerPriceBookDetails.retailPrice
@@ -1013,9 +1015,10 @@ exports.reportingDataReCreation = async (req, res) => {
                     productObject.categoryId = productData.priceBookDetails.category
                     productObject.term = productData.priceBookDetails.term
                     productObject.adminFee = productData.priceBookDetails.adminFee
-                    productObject.brokerFee = productData.dealerPriceBookDetails.brokerFee
-                    productObject.dealerPriceId = productData.dealerPriceBookDetails._id
+                    productObject.brokerFee = productData.dealerPriceBookDetails[0].brokerFee
+                    productObject.dealerPriceId = productData.dealerPriceBookDetails[0]._id
                     products.push(productObject)
+                    console.log("-----------------------",productObject)
 
                 }
                 reportingData.products = products

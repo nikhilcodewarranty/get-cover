@@ -327,8 +327,8 @@ exports.addClaim = async (req, res, next) => {
     let data = req.body;
     
     let checkContract = await contractService.getContractById({ _id: data.contractId })
-    data.lossDate = new Date(data.lossDate).setDate(new Date(data.lossDate).getDate() + 1)
-    data.lossDate = new Date(data.lossDate)
+    // data.lossDate = new Date(data.lossDate).setDate(new Date(data.lossDate).getDate() + 1)
+    // data.lossDate = new Date(data.lossDate)
     const submittedUser = await userService.getUserById1({ _id: data.submittedBy },{})
     data.submittedBy = submittedUser?.email || ''
     data.shippingTo = data.shippingTo || ''
