@@ -837,7 +837,7 @@ exports.getContractById = async (req, res) => {
       getData[0]?.order[0]?.customer[0]?.addresses.sort((a, b) => {
         const aPrimary = a.isPrimary ?? false;  // Default to false if isPrimary is missing
         const bPrimary = b.isPrimary ?? false;
-        
+
         // Sort logic: if bPrimary is true and aPrimary is false, b should come first
         return bPrimary - aPrimary;
       });
