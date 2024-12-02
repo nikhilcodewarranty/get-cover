@@ -2751,20 +2751,134 @@ exports.saveBulkClaim = async (req, res) => {
       let htmlTableString;
       // Send Email notification for all roles user
       if (req.role == "Dealer") {
-        htmlTableString = convertArrayToHTMLTable([], failureEntries);
-        mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
+        if (failureEntries.length > 0) {
+          htmlTableString = convertArrayToHTMLTable([], failureEntries);
+          mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
+        }
+
+        else {
+          let htmlContent = `
+          <html>
+            <head>
+                <style>
+                    table {
+                        border-collapse: collapse;
+                        width: 100%;
+                    }
+                    th, td {
+                        border: 1px solid #dddddd;
+                        text-align: left;
+                        padding: 8px;
+                    }
+                    th {
+                        background-color: #f2f2f2;
+                    }
+                </style>
+            </head>         
+            <body>
+                <table>
+                <tr>
+                <td colspan="2" style="text-align:center">Total filed claims: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</td>
+                </tr>
+                <tr>
+                    <td span="1" style="text-align:center">Failure claims: ${counts.trueCount}</td>
+                    <td span="1" style="text-align:center">Successful added claims: ${counts.falseCount}</td>
+                </tr>
+                </table>
+            </body>
+          </html>`;
+
+          //htmlTableString = convertArrayToHTMLTable([], failureEntries);
+          mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlContent));
+        }
+        // mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
       }
       if (req.role == "Reseller") {
-        htmlTableString = convertArrayToHTMLTable([], failureEntries);
-        mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
+        if (failureEntries.length > 0) {
+          htmlTableString = convertArrayToHTMLTable([], failureEntries);
+          mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
+        }
+
+        else {
+          let htmlContent = `
+          <html>
+            <head>
+                <style>
+                    table {
+                        border-collapse: collapse;
+                        width: 100%;
+                    }
+                    th, td {
+                        border: 1px solid #dddddd;
+                        text-align: left;
+                        padding: 8px;
+                    }
+                    th {
+                        background-color: #f2f2f2;
+                    }
+                </style>
+            </head>         
+            <body>
+                <table>
+                <tr>
+                <td colspan="2" style="text-align:center">Total filed claims: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</td>
+                </tr>
+                <tr>
+                    <td span="1" style="text-align:center">Failure claims: ${counts.trueCount}</td>
+                    <td span="1" style="text-align:center">Successful added claims: ${counts.falseCount}</td>
+                </tr>
+                </table>
+            </body>
+          </html>`;
+
+          //htmlTableString = convertArrayToHTMLTable([], failureEntries);
+          mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlContent));
+        }
       }
       if (req.role == "Customer") {
-        htmlTableString = convertArrayToHTMLTable([], failureEntries);
+        if (failureEntries.length > 0) {
+          htmlTableString = convertArrayToHTMLTable([], failureEntries);
+          mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
+        }
 
-        mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
+        else {
+          let htmlContent = `
+          <html>
+            <head>
+                <style>
+                    table {
+                        border-collapse: collapse;
+                        width: 100%;
+                    }
+                    th, td {
+                        border: 1px solid #dddddd;
+                        text-align: left;
+                        padding: 8px;
+                    }
+                    th {
+                        background-color: #f2f2f2;
+                    }
+                </style>
+            </head>         
+            <body>
+                <table>
+                <tr>
+                <td colspan="2" style="text-align:center">Total filed claims: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</td>
+                </tr>
+                <tr>
+                    <td span="1" style="text-align:center">Failure claims: ${counts.trueCount}</td>
+                    <td span="1" style="text-align:center">Successful added claims: ${counts.falseCount}</td>
+                </tr>
+                </table>
+            </body>
+          </html>`;
+
+          //htmlTableString = convertArrayToHTMLTable([], failureEntries);
+          mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlContent));
+        }
       }
       //send Email to admin
-      if (req.role == "Super Admin" || req.role == "Dealer" || req.role == "Customer") {
+      if (req.role == "Super Admin") {
         if (failureEntries.length > 0) {
           htmlTableString = convertArrayToHTMLTable([], failureEntries);
           mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
