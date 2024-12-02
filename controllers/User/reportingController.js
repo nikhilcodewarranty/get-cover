@@ -138,8 +138,8 @@ exports.weeklySales = async (data, req, res) => {
         let getOrders = await REPORTING.aggregate(weeklyQuery);
         let getOrders1 = await REPORTING.aggregate(weeklyQuery1);
         if (getOrders[0]) {
-            getOrders[0]._id = datesArray[0]
-            getOrders1[0]._id = datesArray[0]
+            getOrders[0]._id = datesArray[0].startOf('isoWeek').toDate()
+            getOrders1[0]._id = datesArray[0].startOf('isoWeek').toDate()
         }
         // Example: Logging MongoDB aggregation results for debugging
         // Prepare response data based on datesArray and MongoDB results
