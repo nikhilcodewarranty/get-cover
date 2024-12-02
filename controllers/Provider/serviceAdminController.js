@@ -2303,6 +2303,7 @@ exports.getServicerClaims = async (req, res) => {
         servicer.push(dealerOfServicer)
       });
       if (item1.contracts.orders.servicers[0]?.length > 0) {
+        console.log(item1.contracts.orders.servicers[0]?.length);
         servicer.unshift(item1.contracts.orders.servicers[0])
       }
       if (item1.contracts.orders.resellers?.isServicer) {

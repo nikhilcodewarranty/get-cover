@@ -834,7 +834,7 @@ exports.getContractById = async (req, res) => {
         zip: getData[0]?.order[0]?.customer[0]?.zip,
         isPrimary: true
       })
-      getData[0]?.order[0]?.customer[0]?.addresses.sort((a, b) => b.isPrimary - a.isPrimary);
+      getData[0]?.order[0]?.customer[0]?.addresses.sort((a, b) => b.isPrimary ? b.isPrimary : false - a.isPrimary ? a.isPrimary : false);
     }
 
 
