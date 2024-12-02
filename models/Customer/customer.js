@@ -98,6 +98,10 @@ const customerSchema = new mongoose.Schema({
         },
         state: {
           type: String
+        },
+        isPrimary: {
+          type: Boolean,
+          default: false
         }
       }
     ],

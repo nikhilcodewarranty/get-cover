@@ -250,5 +250,15 @@ module.exports = class priceBookService {
       return `Could not fetch price book ${error}`;
     }
   }
+
+  static async getCategoryWithPriceBooks(query) {
+    try {
+      const allCategories = await priceCategory.aggregate(query).sort({ createdAt: -1 })
+      return allCategories;
+    }
+    catch (error) {
+      return `Could not get categories ${error}`
+    }
+  }
 }
 

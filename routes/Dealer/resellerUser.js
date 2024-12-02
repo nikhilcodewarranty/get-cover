@@ -18,6 +18,10 @@ router.post('/saleReportinDropDown', [verifyToken], resellerController.saleRepor
 router.post('/claimReportinDropdown', [verifyToken], resellerController.claimReportinDropdown); // claim reporting dropdown
 router.put("/editResellers", [verifyToken], resellerController.editResellers); // edit resellers
 
+router.get("/getSaleReportingDropdown", [verifyToken], resellerController.getSaleReportingDropdown); // claim reporting dropdown
+
+router.get("/getClaimReportingDropdown/:flag", [verifyToken], resellerController.getClaimReportingDropdown); // claim reporting dropdown
+
 
 router.post('/getAllResellers', [verifyToken], resellerUserGetController.getAllResellers); // get all resellers
 router.post("/getResellerServicers", [verifyToken], resellerUserGetController.getResellerServicers); // get reseller servicers
@@ -39,6 +43,8 @@ router.get("/getDashboardData", [verifyToken], resellerUserGetController.getDash
 router.get("/getDealerByReseller", [verifyToken], resellerUserGetController.getDealerByReseller); // get dealer by reseller
 router.get('/getDashboardGraph', [verifyToken], resellerUserGetController.getDashboardGraph); // get dashboard graph
 router.get('/getDashboardInfo', [verifyToken], resellerUserGetController.getDashboardInfo); // get dashboard info
+
+
 
 
 

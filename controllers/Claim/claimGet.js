@@ -125,6 +125,7 @@ exports.getAllClaims = async (req, res, next) => {
               "contractId": 1,
               "claimFile": 1,
               "lossDate": 1,
+              submittedBy: 1,
               "receiptImage": 1,
               reason: 1,
               "unique_key": 1,
@@ -370,14 +371,12 @@ exports.getAllClaims = async (req, res, next) => {
 
     const dynamicOption = await userService.getOptions({ name: 'coverage_type' })
 
+
+
     let result_Array = resultFiter.map((item1) => {
       servicer = []
       let mergedData = []
-      if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
-        mergedData = dynamicOption.value.filter(contract =>
-          item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
-        );
-      }
+
 
       let servicerName = ''
       let selfServicer = false;
@@ -403,8 +402,36 @@ exports.getAllClaims = async (req, res, next) => {
 
       if (item1.servicerId != null) {
         servicerName = servicer.find(servicer => servicer?._id?.toString() === item1.servicerId?.toString());
-        selfServicer = req.role=="Customer" ? false : item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() ? true : false
+        selfServicer = req.role == "Customer" ? false : item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() ? true : false
         selfResellerServicer = item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString()
+      }
+
+
+      if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
+        if (req.role == "Servicer") {
+          // Show coverage type without theft and lost coverage type
+          mergedData = dynamicOption.value.filter(contract =>
+            item1.contracts?.coverageType?.find(opt => opt.value === contract.value && contract.value != 'theft_and_lost')
+          );
+        }
+        else if (req.role == "Dealer" && selfServicer) {
+          // Show coverage type without theft and lost coverage type
+          mergedData = dynamicOption.value.filter(contract =>
+            item1.contracts?.coverageType?.find(opt => opt.value === contract.value && contract.value != 'theft_and_lost')
+          );
+        }
+        else if (req.role == "Reseller" && selfResellerServicer) {
+          // Show coverage type without theft and lost coverage type
+          mergedData = dynamicOption.value.filter(contract =>
+            item1.contracts?.coverageType?.find(opt => opt.value === contract.value && contract.value != 'theft_and_lost')
+          );
+        }
+        else {
+          mergedData = dynamicOption.value.filter(contract =>
+            item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
+          );
+        }
+
       }
 
       return {
@@ -423,36 +450,50 @@ exports.getAllClaims = async (req, res, next) => {
     let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0 // getting the total count 
     let getTheThresholdLimit = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
 
-    result_Array = result_Array.map(claimObject => {
-      const { productValue, claimAmount } = claimObject.contracts;
+    result_Array = await Promise.all(
+      result_Array.map(async (claimObject) => {
+        const { productValue, claimAmount } = claimObject.contracts;
+        let query;
+        claimObject.contracts.orders.customer.username = claimObject.contracts.orders.customer.username
+        if (req.role == "Customer") {
+          if (claimObject?.submittedBy != '') {
+            query = { email: claimObject?.submittedBy }
+          }
+          else {
+            query = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: claimObject.contracts.orders.customer._id, isPrimary: true } } })
 
-      // Calculate the threshold limit value
-      const thresholdLimitValue = (getTheThresholdLimit?.threshHoldLimit.value / 100) * productValue;
+          }
+          const customerDetail = await userService.getUserById1(query)
+          claimObject.contracts.orders.customer.username = customerDetail?.metaData[0]?.firstName + " " + customerDetail?.metaData[0]?.lastName
+        }
 
-      // Check if claimAmount exceeds the threshold limit value
-      let overThreshold = claimAmount > thresholdLimitValue;
-      let threshHoldMessage = "Claim amount exceeds the allowed limit. This might lead to claim rejection. To proceed further with claim please contact admin."
-      if (!overThreshold) {
-        threshHoldMessage = ""
-      }
-      if (claimObject.claimStatus.status == "rejected") {
-        threshHoldMessage = ""
-      }
-      // if (claimObject.claimStatus.status == "rejected") {
-      //   threshHoldMessage = ""
-      // }
-      if (!getTheThresholdLimit.isThreshHoldLimit) {
-        overThreshold = false
-        threshHoldMessage = ""
-      }
+        // Simulate an async operation if needed (e.g., fetching data)
+        const thresholdLimitValue = (getTheThresholdLimit?.threshHoldLimit.value / 100) * productValue;
 
-      // Return the updated object with the new key 'overThreshold'
-      return {
-        ...claimObject,
-        overThreshold,
-        threshHoldMessage
-      };
-    });
+        // Check if claimAmount exceeds the threshold limit value
+        let overThreshold = claimAmount > thresholdLimitValue;
+        let threshHoldMessage = "Claim amount exceeds the allowed limit. This might lead to claim rejection. To proceed further with claim please contact admin.";
+        if (!overThreshold) {
+          threshHoldMessage = "";
+        }
+        if (claimObject.claimStatus.status === "rejected") {
+          threshHoldMessage = "";
+        }
+        if (!getTheThresholdLimit.isThreshHoldLimit) {
+          overThreshold = false;
+          threshHoldMessage = "";
+        }
+
+        // Return the updated object with the new key 'overThreshold'
+        return {
+          ...claimObject,
+          overThreshold,
+          threshHoldMessage,
+        };
+      })
+    );
+
+
 
     res.send({
       code: constant.successCode,
@@ -726,6 +767,10 @@ exports.getContractById = async (req, res) => {
       getData[0].claimAmount = claimTotal[0]?.amount
     }
 
+    const customer_id = getData[0]?.order[0]?.customerId
+    const checkAllUser = await userService.findUser({ metaData: { $elemMatch: { metaId: customer_id } } }, {})
+
+    // Get Customer Information
     let orderId = getData[0].orderProductId
     let order = getData[0].order
 
@@ -767,6 +812,33 @@ exports.getContractById = async (req, res) => {
         );
       }
     });
+
+    //Get customer info
+    getData[0].allUsers = []
+    let allUsers = checkAllUser.map(user => ({
+      label: user.metaData[0]?.firstName + " " + user.metaData[0]?.lastName,
+      isPrimary: user.metaData[0]?.isPrimary,
+      value: user._id
+    }))
+    allUsers.sort((a, b) => b.isPrimary - a.isPrimary);
+    getData[0].allUsers = allUsers
+
+    //Get customer addresses
+    const addresses = getData[0]?.order[0]?.customer[0]?.addresses
+
+    if (getData[0]?.order[0]?.customer[0]?.addresses) {
+      getData[0]?.order[0]?.customer[0]?.addresses.push({
+        address: getData[0]?.order[0]?.customer[0]?.street,
+        city: getData[0]?.order[0]?.customer[0]?.city,
+        state: getData[0]?.order[0]?.customer[0]?.state,
+        zip: getData[0]?.order[0]?.customer[0]?.zip,
+        isPrimary: true
+      })
+      getData[0]?.order[0]?.customer[0]?.addresses.sort((a, b) => b.isPrimary - a.isPrimary);
+    }
+
+
+
     if (!getData) {
       res.send({
         code: constant.errorCode,
@@ -787,6 +859,8 @@ exports.getContractById = async (req, res) => {
     })
   }
 }
+
+//Get customer detail by contract id
 
 //Get messages
 exports.getMessages = async (req, res) => {
@@ -1347,6 +1421,7 @@ exports.checkClaimThreshHold = async (req, res) => {
     })
   }
 }
+
 
 exports.getcustomerDetail = async (req, res) => {
   try {

@@ -2191,7 +2191,6 @@ exports.checkEligibiltyForContracts = async (req, res) => {
       }
 
     }
-    console.log("check  4444444+++++++++++++++++++++++++++++++++++++++++++++++++++")
     return { code: 200, message: "Success" }
 
     // res.send({
@@ -2225,6 +2224,11 @@ exports.saveDealerSetting = async (req, res) => {
     let data = req.body;
     data.setDefault = 0;
     data.userId = dealerId
+    data.whiteLabelLogo = adminSetting[0]?.whiteLabelLogo
+
+    // data.logoLight = data.logoLight ? data.logoLight : adminSetting[0]?.logoLight
+    // data.logoDark = data.logoDark ? data.logoDark : adminSetting[0]?.logoDark
+    // data.favIcon = data.favIcon ? data.favIcon : adminSetting[0]?.favIcon
     let response;
     const getData = await userService.getSetting({ userId: dealerId });
     if (getData.length > 0) {
@@ -2280,7 +2284,7 @@ exports.resetDealerSetting = async (req, res) => {
       dealerId = checkCustomer.dealerId
     }
     let response;
-    const getData = await userService.getSetting({userId:dealerId});
+    const getData = await userService.getSetting({ userId: dealerId });
     let defaultResetColor = [];
     let defaultPaymentDetail = '';
     let defaultLightLogo = {};
@@ -2381,7 +2385,7 @@ exports.defaultSettingDealer = async (req, res) => {
     }
     let getData;
     let dealerSetting = await userService.getSetting({ userId: dealerId });
-    if (getData.length > 0) {
+    if (dealerSetting.length > 0) {
       getData = dealerSetting
     }
     else {
@@ -2417,7 +2421,7 @@ exports.defaultSettingDealer = async (req, res) => {
 }
 
 //Get Setting Data
-exports.getDealerSetting = async (req, res) => {
+exports.getDealerColorSetting = async (req, res) => {
   try {
     // if (req.role != "Super Admin") {
     //   res.send({

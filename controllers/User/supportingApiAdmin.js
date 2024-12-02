@@ -343,6 +343,23 @@ exports.createDealer = async (req, res) => {
 
                     let createData = await providerService.createServiceProvider(servicerObject)
                 }
+
+                // Save Setting for dealer
+                const checkUser = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin } } })
+                let adminSetting = await userService.getSetting({ userId: checkUser.metaData[0].metaId });
+                const settingData = {
+                    logoLight: adminSetting[0]?.logoLight,
+                    logoDark: adminSetting[0]?.logoDark,
+                    favIcon: adminSetting[0]?.favIcon,
+                    title: adminSetting[0]?.title,
+                    colorScheme: adminSetting[0]?.colorScheme,
+                    whiteLabelLogo: adminSetting[0]?.whiteLabelLogo,
+                    address: adminSetting[0]?.address,
+                    paymentDetail: adminSetting[0]?.paymentDetail,
+                    setDefault: 0,
+                    userId: req.body.dealerId,
+                }
+                const saveSetting = await userService.saveSetting(settingData)
                 // Save Logs
                 logData = {
                     userId: req.teammateId,
@@ -533,6 +550,24 @@ exports.createDealer = async (req, res) => {
 
                     }
                 }
+                // Save Setting for dealer
+                const checkUser = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin } } })
+                let adminSetting = await userService.getSetting({ userId: checkUser.metaData[0].metaId });
+                const settingData = {
+                    logoLight: adminSetting[0]?.logoLight,
+                    logoDark: adminSetting[0]?.logoDark,
+                    favIcon: adminSetting[0]?.favIcon,
+                    title: adminSetting[0]?.title,
+                    colorScheme: adminSetting[0]?.colorScheme,
+                    address: adminSetting[0]?.address,
+                    whiteLabelLogo: adminSetting[0]?.whiteLabelLogo,
+                    paymentDetail: adminSetting[0]?.paymentDetail,
+                    setDefault: 0,
+                    userId: createMetaData._id
+                }
+                const saveSetting = await userService.saveSetting(settingData)
+
+
                 res.send({
                     code: constant.successCode,
                     message: 'New Dealer Created Successfully',

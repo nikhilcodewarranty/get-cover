@@ -336,7 +336,6 @@ exports.getAllCustomers = async (req, res, next) => {
     let phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
     let dealerRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
     let resellerRegex = new RegExp(data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', 'i')
-    
     let filteredData = result_Array.filter(entry => {
       return (
         nameRegex.test(entry.customerData.username) &&
@@ -816,14 +815,20 @@ exports.changePrimaryUser = async (req, res) => {
     //Merge start singleServer
     // let updatePrimary = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true })
 
+    // return;
 
-    const checkDealer = await dealerService.getDealerById(updatePrimary.metaId)
+    // let updatePrimary = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true })
+    //Merge start singleServer
+    // let updatePrimary = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true })
 
-    const checkReseller = await resellerService.getReseller({ _id: updatePrimary.metaId }, { isDeleted: false })
 
-    const checkCustomer = await customerService.getCustomerById({ _id: updatePrimary.metaId })
+    const checkDealer = await dealerService.getDealerById(updatePrimary.metaData[0]?.metaId)
 
-    const checkServicer = await servicerService.getServiceProviderById({ _id: updatePrimary.metaId })
+    const checkReseller = await resellerService.getReseller({ _id: updatePrimary.metaData[0]?.metaId }, { isDeleted: false })
+
+    const checkCustomer = await customerService.getCustomerById({ _id: updatePrimary.metaData[0]?.metaId })
+
+    const checkServicer = await servicerService.getServiceProviderById({ _id: updatePrimary.metaData[0]?.metaId })
     //Merge end
 
     //Get role by id
@@ -847,7 +852,8 @@ exports.changePrimaryUser = async (req, res) => {
         code: constant.errorCode,
         message: "Something went wrong"
       })
-    } else {
+    } 
+    else {
       //Send notification for dealer change primary user
       let IDs = await supportingFunction.getUserIds()
       let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkUser.metaData[0]?.metaId }, isPrimary: true } })
@@ -1032,6 +1038,17 @@ exports.getCustomerById = async (req, res) => {
   try {
     let data = req.body
     let checkCustomer = await customerService.getCustomerById({ _id: req.params.customerId }, {})
+    if (checkCustomer?.addresses) {
+      checkCustomer.addresses.push({
+        address: checkCustomer?.street,
+        city: checkCustomer?.city,
+        state: checkCustomer?.state,
+        zip: checkCustomer?.zip,
+        isPrimary: true,
+      });
+      checkCustomer.addresses.sort((a, b) => b.isPrimary - a.isPrimary);
+
+    }
     if (!checkCustomer) {
       res.send({
         code: constant.errorCode,
@@ -2521,10 +2538,9 @@ exports.addAddress = async (req, res) => {
       return
     }
     let customerAddresses = checkCustomer.addresses ? checkCustomer.addresses : []
-    console.log(customerAddresses)
     customerAddresses.push(data.address)
 
-    let udpateCustomer = await customerService.updateCustomer({ _id:customerId }, { addresses: customerAddresses }, { new: true })
+    let udpateCustomer = await customerService.updateCustomer({ _id: customerId }, { addresses: customerAddresses }, { new: true })
     if (!udpateCustomer) {
       res.send({
         code: constant.errorCode,
@@ -2546,7 +2562,7 @@ exports.addAddress = async (req, res) => {
 exports.deleteAddress = async (req, res) => {
   try {
     let data = req.body
-    let customerId =  req.params.customerId;
+    let customerId = req.params.customerId;
     if (req.role == "Customer") {
       customerId = req.userId
     }
@@ -2585,7 +2601,7 @@ exports.deleteAddress = async (req, res) => {
 exports.editaddress = async (req, res) => {
   try {
     let data = req.body
-    let customerId =  data.customerId;
+    let customerId = data.customerId;
     if (req.role == "Customer") {
       customerId = req.userId
     }
@@ -2606,7 +2622,7 @@ exports.editaddress = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: "Success!",
-      result:updateCustomer
+      result: updateCustomer
     })
   } catch (err) {
     res.send({
