@@ -432,19 +432,15 @@ exports.dailySales1 = async (data, req, res) => {
 
         let datesArray = [];
         let currentDate = new Date(startOfMonth);
-        console.log("new Date(currentDate)222222222222222111111111111112222",datesArray,new Date(currentDate))
 
         while (currentDate <= endOfMonth) {
             console.log("new Date(currentDate)2222222222",new Date(currentDate))
             datesArray.push(new Date(currentDate));
             currentDate.setDate(currentDate.getDate() + 1);
         }
-        console.log("new Date(currentDate)2222222222222221111kkkkk11111111112222",datesArray,new Date(currentDate))
 
         // datesArray.shift()
         datesArray.pop()
-        console.log("new Date(currentDate)222222222222222111111000000111111112222",datesArray,new Date(currentDate))
-        // console.log("startOfMonth2",startOfMonth2,startOfMonth,new Date(endOfMonth))
         let dailyQuery = [
             {
                 $match: {
@@ -508,7 +504,6 @@ exports.dailySales1 = async (data, req, res) => {
 
         let getOrders = await REPORTING.aggregate(dailyQuery);
         let getOrders1 = await REPORTING.aggregate(dailyQuery1);
-        // console.log("getorders",getOrders,getOrders1,dailyQuery)
 
         if (!getOrders) {
             return {
