@@ -138,8 +138,8 @@ exports.weeklySales = async (data, req, res) => {
         let getOrders = await REPORTING.aggregate(weeklyQuery);
         let getOrders1 = await REPORTING.aggregate(weeklyQuery1);
         if (getOrders[0]) {
-            getOrders[0]._id = datesArray[0]
-            getOrders1[0]._id = datesArray[0]
+            getOrders[0]._id = datesArray[0].startOf('isoWeek').toDate()
+            getOrders1[0]._id = datesArray[0].startOf('isoWeek').toDate()
         }
         // Example: Logging MongoDB aggregation results for debugging
         // Prepare response data based on datesArray and MongoDB results
@@ -419,10 +419,12 @@ exports.daySale = async (data) => {
 exports.dailySales1 = async (data, req, res) => {
     try {
         let query;
+        console.log(data)
         let startOfMonth2 = new Date(data.startDate);
         let endOfMonth1 = new Date(data.endDate);
-        let startOfMonth = new Date(startOfMonth2.getFullYear(), startOfMonth2.getMonth(), startOfMonth2.getDate());
-        let endOfMonth = new Date(endOfMonth1.getFullYear(), endOfMonth1.getMonth(), endOfMonth1.getDate() + 1);
+        // let startOfMonth = new Date(startOfMonth2.getFullYear(), startOfMonth2.getMonth(), startOfMonth2.getDate());
+        let startOfMonth = startOfMonth2
+        let endOfMonth = new Date(endOfMonth1.getFullYear(), endOfMonth1.getMonth(), endOfMonth1.getDate() + 1).setHours(23, 59, 59, 999)
 
         if (isNaN(startOfMonth) || isNaN(endOfMonth)) {
             return { code: 401, message: "invalid date" };
@@ -432,15 +434,17 @@ exports.dailySales1 = async (data, req, res) => {
         let currentDate = new Date(startOfMonth);
 
         while (currentDate <= endOfMonth) {
+            console.log("new Date(currentDate)2222222222",new Date(currentDate))
             datesArray.push(new Date(currentDate));
             currentDate.setDate(currentDate.getDate() + 1);
         }
-        datesArray.shift()
 
+        // datesArray.shift()
+        datesArray.pop()
         let dailyQuery = [
             {
                 $match: {
-                    createdAt: { $gte: startOfMonth, $lt: endOfMonth }
+                    createdAt: { $gte: new Date(startOfMonth), $lt: new Date(endOfMonth) }
                 }
             },
             {
@@ -458,7 +462,7 @@ exports.dailySales1 = async (data, req, res) => {
         let dailyQuery1 = [
             {
                 $match: {
-                    createdAt: { $gte: startOfMonth, $lte: endOfMonth }
+                    createdAt: { $gte: new Date(startOfMonth), $lte: new Date(endOfMonth) }
                 }
             },
             {
@@ -510,6 +514,7 @@ exports.dailySales1 = async (data, req, res) => {
 
         const result = datesArray.map(date => {
             const dateString = date.toISOString().slice(0, 10);
+            console.log("===================",dateString,getOrders[0]._id)
             const order = getOrders.find(item => item._id === dateString);
             return {
                 weekStart: dateString,
@@ -606,7 +611,7 @@ exports.dailySales1 = async (data, req, res) => {
 
         return {
             graphData: mergedResult,
-            totalFees: totalFees
+            totalFees: totalFees,
         }
 
     } catch (err) {

@@ -2506,6 +2506,7 @@ exports.paidUnpaidClaim = async (req, res) => {
               dealerSku: 1,
               claimDate: 1,
               claimType: 1,
+              approveDate: 1,
               claimStatus: 1,
               claimPaymentStatus: 1,
               repairStatus: 1,
