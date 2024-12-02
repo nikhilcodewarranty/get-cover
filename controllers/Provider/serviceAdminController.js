@@ -2497,6 +2497,7 @@ exports.paidUnpaidClaim = async (req, res) => {
               servicerId: 1,
               getcoverOverAmount: 1,
               customerOverAmount: 1,
+              approveDate: 1,
               customerClaimAmount: 1,
               getCoverClaimAmount: 1,
               customerStatus: 1,
@@ -2733,6 +2734,7 @@ exports.paidUnpaidClaim = async (req, res) => {
     const result_Array = resultFiter.map((item1) => {
       servicer = []
       let servicerName = '';
+      item1.approveDate =item1?.approveDate ? item1.approveDate : ''
       let selfServicer = false;
       let mergedData = []
       if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {

@@ -2072,6 +2072,7 @@ exports.preLoginData = async (req, res) => {
   }
 }
 
+
 exports.uploadLogo = async (req, res) => {
   try {
     logoUpload(req, res, async (err) => {
@@ -2260,6 +2261,7 @@ exports.saveOptions = async (req, res) => {
   }
 }
 
+
 //Get option from database
 exports.getOptions = async (req, res) => {
   try {
@@ -2410,3 +2412,48 @@ exports.updateThreshHoldLimit = async (req, res) => {
     })
   }
 }
+
+
+exports.preLoginData = async (req, res) => {
+  try {
+    // if (req.role != "Super Admin") {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Only super admin allow to do this action!"
+    //   });
+    //   return
+    // }
+    const checkUser = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin } } })
+    let setting = await userService.getSetting({  });
+    const baseUrl = process.env.API_ENDPOINT;
+    if (setting.length > 0) {
+      setting[0].base_url = baseUrl;
+
+      // Assuming setting[0].logoDark and setting[0].logoLight contain relative paths
+      if (setting[0].logoDark && setting[0].logoDark.fileName) {
+        setting[0].logoDark.baseUrl = baseUrl;
+      }
+
+      if (setting[0].logoLight && setting[0].logoLight.fileName) {
+        setting[0].logoLight.baseUrl = baseUrl;
+      }
+
+      if (setting[0].favIcon && setting[0].favIcon.fileName) {
+        setting[0].favIcon.baseUrl = baseUrl;
+      }
+      // Repeat for any other properties that need the base_url prepended
+    }
+    res.send({
+      code: constant.successCode,
+      message: "Success!",
+      result: setting
+    });
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
