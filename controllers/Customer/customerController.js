@@ -2,6 +2,7 @@ require("dotenv").config();
 
 const LOG = require('../../models/User/logs')
 const customerService = require("../../services/Customer/customerService");
+const customerModel = require("../../models/Customer/customer");
 let dealerService = require('../../services/Dealer/dealerService')
 let resellerService = require('../../services/Dealer/resellerService')
 let contractService = require('../../services/Contract/contractService')
@@ -847,7 +848,7 @@ exports.changePrimaryUser = async (req, res) => {
         code: constant.errorCode,
         message: "Something went wrong"
       })
-    } 
+    }
     else {
       //Send notification for dealer change primary user
       let IDs = await supportingFunction.getUserIds()
@@ -2628,3 +2629,13 @@ exports.editaddress = async (req, res) => {
   }
 }
 
+exports.justToCheck = async (req, res) => {
+  let updateCustomer = await customerModel.updateMany(
+      { addresses: { $exists: false } }, // Match documents where `addresses` is missing
+      { $set: { addresses: [] } }
+    )
+  
+  res.send({
+    data:updateCustomer
+  })
+}

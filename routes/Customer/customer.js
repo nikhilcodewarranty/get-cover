@@ -29,6 +29,7 @@ router.get("/create-customer", [verifyToken], validator('createCustomerValidatio
 
 router.post("/createCustomerNew", [verifyToken], customerController.createCustomerNew); //  getAllCustomers route
 router.post("/customerNew", [verifyToken], customerController.getAllCustomersNew); //  getAllCustomers route
+router.get("/justToCheck", customerController.justToCheck); //  getAllCustomers route
 
 
 
