@@ -815,12 +815,15 @@ exports.getContractById = async (req, res) => {
 
     //Get customer info
     getData[0].allUsers = []
+
     let allUsers = checkAllUser.map(user => ({
       label: user.metaData[0]?.firstName + " " + user.metaData[0]?.lastName,
       isPrimary: user.metaData[0]?.isPrimary,
       value: user._id
     }))
+
     allUsers.sort((a, b) => b.isPrimary - a.isPrimary);
+    
     getData[0].allUsers = allUsers
 
     //Get customer addresses
@@ -834,7 +837,13 @@ exports.getContractById = async (req, res) => {
         zip: getData[0]?.order[0]?.customer[0]?.zip,
         isPrimary: true
       })
-      getData[0]?.order[0]?.customer[0]?.addresses.sort((a, b) => b.isPrimary - a.isPrimary);
+      getData[0]?.order[0]?.customer[0]?.addresses.sort((a, b) => {
+        const aPrimary = a.isPrimary ?? false;  // Default to false if isPrimary is missing
+        const bPrimary = b.isPrimary ?? false;
+
+        // Sort logic: if bPrimary is true and aPrimary is false, b should come first
+        return bPrimary - aPrimary;
+      });
     }
 
 
@@ -1508,6 +1517,8 @@ exports.getcustomerDetail = async (req, res) => {
           customerDetail,
           // shippingTo:  detail?.street + ", " + detail?.city + ", " + detail?.state + ", " + detail?.country + ", " + detail?.zip
         }
+
+
       }
 
     } else {

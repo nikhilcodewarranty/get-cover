@@ -337,7 +337,6 @@ exports.getAllCustomers = async (req, res, next) => {
     let phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
     let dealerRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
     let resellerRegex = new RegExp(data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', 'i')
-
     let filteredData = result_Array.filter(entry => {
       return (
         nameRegex.test(entry.customerData.username) &&
@@ -810,6 +809,12 @@ exports.changePrimaryUser = async (req, res) => {
       }
     );
 
+
+    // return;
+
+    // let updatePrimary = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true })
+    //Merge start singleServer
+    // let updatePrimary = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true })
 
     // return;
 
@@ -2518,7 +2523,6 @@ exports.addCustomerAddress = async (req, res) => {
     })
   }
 }
-
 exports.addAddress = async (req, res) => {
   try {
     let data = req.body
@@ -2542,7 +2546,7 @@ exports.addAddress = async (req, res) => {
       res.send({
         code: constant.errorCode,
         message: "Unable to add customer address"
-      })
+      }) 
     } else {
       res.send({
         code: constant.successCode,

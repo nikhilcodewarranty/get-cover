@@ -73,7 +73,7 @@ exports.convertToBase64 = async (req, res) => {
 
         // Convert the file data to a base64 string
         const base64String = fileData.toString('base64');
-
+ 
         // Send the base64 string in the response
         res.send({ base64: base64String });
     } catch (err) {

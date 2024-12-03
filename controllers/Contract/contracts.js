@@ -620,12 +620,12 @@ exports.cronJobEligible = async (req, res) => {
       // Update when not any claim right now for active contract
       await contractService.allUpdate(bulk);
       bulk = [];
-
       // Fetch claims for contracts
       let checkClaim = await claimService.getClaims({ contractId: { $in: contractIds } });
       const openContractIds = checkClaim.filter(claim => claim.claimFile === 'open').map(claim => claim.contractId);
 
       openContractIds.forEach(openContract => {
+        // console.log("openContract",openContract)
         bulk.push({
           'updateMany': {
             'filter': { '_id': openContract },
@@ -635,6 +635,7 @@ exports.cronJobEligible = async (req, res) => {
         });
       });
 
+      // console.log("bulk00000000000000000000000",bulk)
       // Update when claim is open for contract
       await contractService.allUpdate(bulk);
       bulk = [];
@@ -643,23 +644,26 @@ exports.cronJobEligible = async (req, res) => {
 
       if (notOpenContractIds.length > 0) {
         for (let j = 0; j < notOpenContractIds.length; j++) {
-          let claimTotalQuery = [
-            { $match: { contractId: new mongoose.Types.ObjectId(notOpenContractIds[j]) } },
-            { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
+          if (!openContractIds.some(item => item.equals(notOpenContractIds[j]))) {
+            let claimTotalQuery = [
+              { $match: { contractId: new mongoose.Types.ObjectId(notOpenContractIds[j]) } },
+              { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
 
-          ]
-          let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
-          let obj = result.find(el => el._id.toString() === notOpenContractIds[j].toString());
+            ]
+            let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
+            let obj = result.find(el => el._id.toString() === notOpenContractIds[j].toString());
+            if (obj?.productValue > claimTotal[0]?.amount) {
+              bulk.push({
+                'updateMany': {
+                  'filter': { '_id': notOpenContractIds[j] },
+                  'update': { $set: { eligibilty: true } },
+                  'upsert': false
+                }
+              });
+            }
+          }
 
-          if (obj?.productValue > claimTotal[0]?.amount) {
-            bulk.push({
-              'updateMany': {
-                'filter': { '_id': notOpenContractIds[j] },
-                'update': { $set: { eligibilty: true } },
-                'upsert': false
-              }
-            });
-          } else {
+          else {
             bulk.push({
               'updateMany': {
                 'filter': { '_id': notOpenContractIds[j] },
