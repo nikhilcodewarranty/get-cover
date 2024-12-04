@@ -499,7 +499,6 @@ exports.addClaim = async (req, res, next) => {
     let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } })
     let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } })
     let servicerPrimary = await supportingFunction.getPrimaryUser({ $or: [{ metaData: { $elemMatch: { metaId: data?.servicerId, isPrimary: true } } }, { metaData: { $elemMatch: { metaId: checkServicer?.dealerId, isPrimary: true } } }, { metaData: { $elemMatch: { metaId: checkServicer?.resellerId, isPrimary: true } } }] })
-    // { $or: [{ _id: data?.servicerId }, { dealerId: data?.servicerId }, { resellerId: data?.servicerId }] }
 
     //Get Dealer,reseller, customer status
     const checkDealer = await dealerService.getDealerById(checkOrder.dealerId)
@@ -533,12 +532,6 @@ exports.addClaim = async (req, res, next) => {
     };
 
     let createNotification = await userService.createNotification(notificationData1);
-
-    // const token = jwt.sign(
-    //   { claimId: claimResponse.unique_key },
-    //   process.env.JWT_ID_SECRET, // Replace with your secret key
-    //   { expiresIn: "1d" }
-    // );
 
     // Send Email code here
     let notificationCC = await supportingFunction.getUserEmails();
@@ -593,13 +586,10 @@ exports.addClaim = async (req, res, next) => {
         emailData.subject = `New Device Received for Repair - ID: ${claimResponse.unique_key}`
         emailData.senderName = servicerPrimary?.metaData[0]?.firstName
         emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device detailed below:`
-        console.log("notificationAdmin------------------",notificationAdmin)
-        console.log("servicerPrimary------------------",servicerPrimary)
         mailing = sgMail.send(emailConstant.sendServicerClaimNotification(servicerPrimary?.email, notificationAdmin, emailData))
       }
       else {
         let notificationAdmin = await supportingFunction.getUserEmails();
-
         emailData.subject = `New Device Received for Repair - ID: ${claimResponse.unique_key}`
         emailData.senderName = "Admin"
         emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device detailed below:`

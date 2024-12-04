@@ -1779,7 +1779,7 @@ exports.getAllDealers = async (req, res) => {
             {
                 $match: {
                     $and: [
-                        { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phoneNumber ? data.phoneNumber.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+                        { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phoneNumber ? data.phoneNumber : '', '$options': 'i' } } } },
                         { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         { metaData: { $elemMatch: { metaId: { $in: dealerIds }, isPrimary: true } } }
                     ]
