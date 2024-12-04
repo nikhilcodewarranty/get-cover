@@ -593,6 +593,8 @@ exports.addClaim = async (req, res, next) => {
         emailData.subject = `New Device Received for Repair - ID: ${claimResponse.unique_key}`
         emailData.senderName = servicerPrimary?.metaData[0]?.firstName
         emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device detailed below:`
+        console.log("notificationAdmin------------------",notificationAdmin)
+        console.log("servicerPrimary------------------",servicerPrimary)
         mailing = sgMail.send(emailConstant.sendServicerClaimNotification(servicerPrimary?.email, notificationAdmin, emailData))
       }
       else {
