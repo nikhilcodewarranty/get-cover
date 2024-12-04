@@ -61,13 +61,14 @@ const claimSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-
+  
   claimFile: {
     type: 'String',
     enum: ['open', 'completed', 'rejected'],
     default: 'open',
     index: true
   },
+
   reason: {
     type: 'String',
     default: '',
