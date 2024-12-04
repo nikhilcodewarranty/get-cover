@@ -1831,7 +1831,6 @@ exports.getAllDealers = async (req, res) => {
             return;
         };
 
-        console.log("dealarUser-----------------",dealarUser)
         const result_Array = dealarUser?.map(item1 => {
             const matchingItem = dealers.find(item2 => item2._id.toString() === item1.metaId.toString());
             const orders = orderData.find(order => order._id.toString() === item1.metaId.toString())
