@@ -501,7 +501,6 @@ exports.addClaim = async (req, res, next) => {
     let servicerPrimary = await supportingFunction.getPrimaryUser({ $or: [{ metaData: { $elemMatch: { metaId: data?.servicerId, isPrimary: true } } }, { metaData: { $elemMatch: { metaId: checkServicer?.dealerId, isPrimary: true } } }, { metaData: { $elemMatch: { metaId: checkServicer?.resellerId, isPrimary: true } } }] })
     // { $or: [{ _id: data?.servicerId }, { dealerId: data?.servicerId }, { resellerId: data?.servicerId }] }
 
-    console.log("fsdfdsfdsfsdfd",servicerPrimary)
     //Get Dealer,reseller, customer status
     const checkDealer = await dealerService.getDealerById(checkOrder.dealerId)
     const checkReseller = await resellerService.getReseller({ _id: checkOrder?.resellerId }, {})
@@ -590,18 +589,19 @@ exports.addClaim = async (req, res, next) => {
         redirectId: base_url
       }
       if (checkServicer?.isAccountCreate) {
+        let notificationAdmin = await supportingFunction.getUserEmails();
         emailData.subject = `New Device Received for Repair - ID: ${claimResponse.unique_key}`
         emailData.senderName = servicerPrimary?.metaData[0]?.firstName
         emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device detailed below:`
-        console.log("servicerPrimary",servicerPrimary?.email)
-        console.log("notificationCC",notificationCC)
-        mailing = sgMail.send(emailConstant.sendServicerClaimNotification(servicerPrimary?.email, notificationCC, emailData))
+        mailing = sgMail.send(emailConstant.sendServicerClaimNotification(servicerPrimary?.email, notificationAdmin, emailData))
       }
       else {
+        let notificationAdmin = await supportingFunction.getUserEmails();
+
         emailData.subject = `New Device Received for Repair - ID: ${claimResponse.unique_key}`
         emailData.senderName = "Admin"
         emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device detailed below:`
-        mailing = sgMail.send(emailConstant.sendServicerClaimNotification(notificationCC, ["noreply@getcover.com"], emailData))
+        mailing = sgMail.send(emailConstant.sendServicerClaimNotification(notificationAdmin, ["noreply@getcover.com"], emailData))
       }
     }
 
