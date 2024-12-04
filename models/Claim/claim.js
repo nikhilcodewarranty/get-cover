@@ -57,7 +57,7 @@ const claimSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  manufacture: {
+  manufacture: { 
     type: String,
     default: ''
   },
