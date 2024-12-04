@@ -14,17 +14,17 @@ const userSchema = new mongoose.Schema({
     },
     threshHoldLimit: {
         type: {
-          value: Number,
-          amountType: {
-            type: String,
-            default: "percentage"
-          }
+            value: Number,
+            amountType: {
+                type: String,
+                default: "percentage"
+            }
         }
-      },
-      isThreshHoldLimit: {
+    },
+    isThreshHoldLimit: {
         type: Boolean,
         default: false
-      },
+    },
     notificationTo: {
         type: Array,
         default: []
@@ -70,7 +70,12 @@ const userSchema = new mongoose.Schema({
                 dialCode: {
                     type: String,
                     default: '+1'
-                }
+                },
+                // notificationKeys: {
+                //     type: {
+
+                //     }
+                // }
             }
         ],
     },
@@ -82,7 +87,7 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    
+
     approvedStatus: {
         type: String,
         enum: ["Pending", "Approved", "Rejected"],

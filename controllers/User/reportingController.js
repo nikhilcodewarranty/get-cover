@@ -31,6 +31,7 @@ exports.weeklySales = async (data, req, res) => {
         // Calculate start and end of the week for the given dates
         const startOfWeekDate = moment(startDate).startOf('isoWeek');
         const endOfWeekDate = moment(endDate).endOf('isoWeek');
+        console.log("endofisoweek",endDate)
         // Create an array of dates for each week within the specified range
         const datesArray = [];
         let currentDate = moment(startOfWeekDate);
@@ -234,7 +235,7 @@ exports.weeklySales = async (data, req, res) => {
         }
 
     } catch (err) {
-        return { code: constant.errorCode, message: err.message }
+        return { code: constant.errorCode, message: err.message,stack: err.stack }
     }
 };
 
@@ -514,7 +515,6 @@ exports.dailySales1 = async (data, req, res) => {
 
         const result = datesArray.map(date => {
             const dateString = date.toISOString().slice(0, 10);
-            console.log("===================",dateString,getOrders[0]._id)
             const order = getOrders.find(item => item._id === dateString);
             return {
                 weekStart: dateString,
@@ -615,7 +615,7 @@ exports.dailySales1 = async (data, req, res) => {
         }
 
     } catch (err) {
-        return { code: constant.errorCode, message: err.message }
+        return { code: constant.errorCode, message: err.message,stack: err.stack }
     }
 };
 
@@ -707,7 +707,7 @@ exports.claimDailyReporting = async (data) => {
                 $match: {
                     createdAt: { $gte: startOfMonth, $lt: endOfMonth },
                     claimStatus: {
-                        $elemMatch: { status: "Rejected" }
+                        $elemMatch: { status: "rejected" }
                     },
                 },
             },
@@ -1048,7 +1048,7 @@ exports.claimWeeklyReporting = async (data) => {
                 $match: {
                     createdAt: { $gte: startDate.toDate(), $lte: endDate.toDate() },
                     claimStatus: {
-                        $elemMatch: { status: "Rejected" }
+                        $elemMatch: { status: "rejected" }
                     },
                 },
             },
@@ -1375,7 +1375,7 @@ exports.claimDayReporting = async (data) => {
                 $match: {
                     createdAt: { $gte: startOfDay, $lt: endOfDay },
                     claimStatus: {
-                        $elemMatch: { status: "Rejected" }
+                        $elemMatch: { status: "rejected" }
                     },
                 }
             },
