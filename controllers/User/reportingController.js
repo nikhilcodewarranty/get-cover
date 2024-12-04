@@ -707,7 +707,7 @@ exports.claimDailyReporting = async (data) => {
                 $match: {
                     createdAt: { $gte: startOfMonth, $lt: endOfMonth },
                     claimStatus: {
-                        $elemMatch: { status: "Rejected" }
+                        $elemMatch: { status: "rejected" }
                     },
                 },
             },
@@ -1048,7 +1048,7 @@ exports.claimWeeklyReporting = async (data) => {
                 $match: {
                     createdAt: { $gte: startDate.toDate(), $lte: endDate.toDate() },
                     claimStatus: {
-                        $elemMatch: { status: "Rejected" }
+                        $elemMatch: { status: "rejected" }
                     },
                 },
             },
@@ -1375,7 +1375,7 @@ exports.claimDayReporting = async (data) => {
                 $match: {
                     createdAt: { $gte: startOfDay, $lt: endOfDay },
                     claimStatus: {
-                        $elemMatch: { status: "Rejected" }
+                        $elemMatch: { status: "rejected" }
                     },
                 }
             },
