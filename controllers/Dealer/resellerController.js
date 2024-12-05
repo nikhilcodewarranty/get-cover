@@ -28,6 +28,9 @@ exports.createReseller = async (req, res) => {
     try {
         let data = req.body
         let getCount = await resellerService.getResellersCount({})
+        const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+        const base_url = `${process.env.SITE_URL}`
+
         data.unique_key = getCount[0] ? getCount[0].unique_key + 1 : 1
         data.accountName = data.accountName.trim().replace(/\s+/g, ' ');
         // check dealer for existing 
@@ -81,9 +84,24 @@ exports.createReseller = async (req, res) => {
             return;
         };
         //Send Notification to reseller and admin
-
-        let IDs = await supportingFunction.getUserIds()
-
+        const adminQuery = {
+            metaData: {
+                $elemMatch: {
+                    $and: [
+                        { "resellerNotifications.resellerAdded": true },
+                        { status: true },
+                        {
+                            $or: [
+                                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                                { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
+                            ]
+                        }
+                    ]
+                }
+            },
+        }
+        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
+        const IDs = adminUsers.map(user => user._id)
         // Create the user
 
         teamMembers = teamMembers.map(member => ({
@@ -106,25 +124,25 @@ exports.createReseller = async (req, res) => {
 
         })
         );
-
         // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
         // Primary User Welcoime email
-        let notificationEmails = await supportingFunction.getUserEmails();
-
-        let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
-        IDs.push(getPrimary._id)
+        let notificationEmails = adminUsers.map(user => user.email)
         //Merge start singleServer
-        // let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
-        if (checkDealer.isAccountCreate) {
-            IDs.push(getPrimary._id)
-            notificationEmails.push(getPrimary.email)
-        }
+        let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
+        // if (checkDealer.isAccountCreate) {
+        //     IDs.push(getPrimary._id)
+        //     notificationEmails.push(getPrimary.email)
+        // }
         //Merge end
         let notificationData = {
-            title: "Reseller Account Creation",
-            description: data.accountName + " " + "reseller account has been created successfully!",
+            adminTitle: "New Reseller  Added",
+            adminMessage: `A New Reseller ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} - User Role - ${req.role} on our portal.`,
+            dealerTitle: "New Reseller  Added",
+            dealerMessage: `A New Reseller ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} - User Role - ${req.role} on our portal.`,
             userId: req.teammateId,
+            redirectionId: "resellerDetails/" + createdReseler._id,
+            endpoint: base_url,
             flag: 'reseller',
             notificationFor: IDs
         };
@@ -137,8 +155,9 @@ exports.createReseller = async (req, res) => {
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
             senderName: getPrimary.metaData[0]?.firstName,
-            content: "We are delighted to inform you that the reseller account for " + createdReseler.name + " has been created.",
-            subject: "Reseller Account Created - " + createdReseler.name
+            redirectId: base_url + "resellerDetails/" + createdReseler._id,
+            content: `A New Reseller ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} - User Role - ${req.role} on our portal.`,
+            subject: "New Reseller Added"
         }
 
 
@@ -1298,8 +1317,8 @@ exports.getResellerServicers = async (req, res) => {
 
         let filteredData = result_Array.filter(entry => {
             return (
-                nameRegex.test(entry.servicerData?.name)&&
-                emailRegex.test(entry.email)&&
+                nameRegex.test(entry.servicerData?.name) &&
+                emailRegex.test(entry.email) &&
                 phoneRegex.test(entry.phone)
             );
         });

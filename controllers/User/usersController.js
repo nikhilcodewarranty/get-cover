@@ -2479,24 +2479,30 @@ exports.preLoginData = async (req, res) => {
 const userModel = require("../../models/User/users")
 exports.updateDataBase = async (req, res) => {
 
-  // const adminQuery = {
-  //   metaData: {
-  //     $elemMatch: {
-  //       roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"),
-  //       status: true,
-  //       "registerNotifications.dealerRegistrationRequest": true,
-  //     }
-  //   },
+//   const adminQuery = {
+//     metaData: {
+//         $elemMatch: {
+//             $and: [
+//                 { "resellerNotifications.resellerAdded": true },
+//                 { status: true },
+//                 {
+//                     $or: [
+//                         { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+//                         { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
+//                     ]
+//                 }
+//             ]
+//         }
+//     },
+// }
 
-  // }
+//   let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
 
-  // let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
+//   const IDs = adminUsers.map(user => user._id)
 
-  // const IDs = adminUsers.map(user => user._id)
+//   console.log("dsdssdfsdfsdsdf",IDs,adminUsers)
 
-  // console.log("dsdssdfsdfsdsdf",IDs,adminUsers)
-
-  // return;
+//   return;
   
   try {
     let updateData = await userModel.updateMany(

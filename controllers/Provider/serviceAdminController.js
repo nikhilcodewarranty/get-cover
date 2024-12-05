@@ -1376,7 +1376,7 @@ exports.registerServiceProvider = async (req, res) => {
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
       senderName: admin.metaData[0]?.firstName,
-      redirectId: base_url,
+      redirectId: base_url,      
       content: `A New Servicer ${data.name} has registered with us on the portal`,
       subject: 'New Servicer Request'
     }

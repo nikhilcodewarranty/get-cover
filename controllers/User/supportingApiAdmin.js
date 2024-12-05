@@ -131,7 +131,7 @@ exports.createDealer = async (req, res) => {
                 });
                 return
             }
-            const base_url = `${process.env.SITE_URL}dealerDetails/`
+            const base_url = `${process.env.SITE_URL}`
             let savePriceBookType = req.body.savePriceBookType
             const allUserData = [...dealersUserData, ...primaryUserData];
             if (data.dealerId != 'null' && data.dealerId != undefined) {
@@ -305,7 +305,8 @@ exports.createDealer = async (req, res) => {
                     adminMessage: `A New Dealer ${data.name} has been approved by ${checkLoginUser.metaData[0]?.firstName} on our portal.`,
                     userId: req.teammateId,
                     flag: 'dealer',
-                    redirectionId: base_url + data.dealerId,
+                    redirectionId: "dealerDetails/" + data.dealerId,
+                    endpoint: base_url,
                     notificationFor: IDs
                 };
 
@@ -316,7 +317,7 @@ exports.createDealer = async (req, res) => {
                     senderName: loginUser.metaData[0]?.firstName,
                     content: `A New Dealer ${data.name} has been approved by ${checkLoginUser.metaData[0]?.firstName} on our portal.`,
                     subject: "New Dealer Approved",
-                    redirectId: base_url + data.dealerId,
+                    redirectId: base_url + "dealerDetails/" + data.dealerId,
                 }
                 // Send Email code here
                 sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
@@ -503,7 +504,8 @@ exports.createDealer = async (req, res) => {
                     adminMessage: `A New Dealer ${createMetaData.name} has been added by ${checkLoginUser.metaData[0]?.firstName} on our portal.`,
                     userId: req.teammateId,
                     flag: 'dealer',
-                    redirectionId: base_url + createMetaData._id,
+                    redirectionId: "dealerDetails/" + createMetaData._id,
+                    endpoint: base_url,
                     notificationFor: IDs
                 };
                 let createNotification = await userService.createNotification(notificationData);
@@ -562,7 +564,7 @@ exports.createDealer = async (req, res) => {
                     senderName: loginUser.metaData[0]?.firstName,
                     content: `A New Dealer ${createMetaData.name} has been added by ${checkLoginUser.metaData[0]?.firstName} on our portal.`,
                     subject: "New Dealer Added",
-                    redirectId: base_url + createMetaData._id,
+                    redirectId: base_url + "dealerDetails/" + createMetaData._id,
                 }
 
                 sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
