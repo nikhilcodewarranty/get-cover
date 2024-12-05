@@ -28,7 +28,7 @@ router.get("/getCountNotification", [verifyToken], userController.getCountNotifi
 // Setting Routes
 
 router.post('/setting',[verifyToken], userController.accountSetting);
-// router.get('/updateDataBase', userController.updateDataBase);
+router.get('/updateDataBase', userController.updateDataBase);
 
 router.post('/resetSetting', [verifyToken],userController.resetSetting)
 

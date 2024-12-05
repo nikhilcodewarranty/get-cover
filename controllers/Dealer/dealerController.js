@@ -267,9 +267,21 @@ exports.registerDealer = async (req, res) => {
       return
     }
     //Send Notification to dealer 
+    const adminQuery = {
+      metaData: {
+        $elemMatch: {
+          roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"),
+          status: true,
+          "registerNotifications.dealerRegistrationRequest": true,
+        }
+      },
 
-    let IDs = await supportingFunction.getUserIds()
-    
+    }
+
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
+
+    const IDs = adminUsers.map(user => user._id)
+
     let settingData = await userService.getSetting({});
 
     let notificationData = {
@@ -297,7 +309,7 @@ exports.registerDealer = async (req, res) => {
     }
     let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
     const admin = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true } } })
-    const notificationEmail = await supportingFunction.getUserEmails();
+    const notificationEmail = adminUsers.map(user => user.email)
     emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -305,7 +317,7 @@ exports.registerDealer = async (req, res) => {
       websiteSetting: settingData[0],
       senderName: admin.metaData[0]?.firstName,
       subject: "New Dealer Request",
-      redirectId:base_url,
+      redirectId: base_url,
       content: "A new dealer " + createdDealer.name + " has registered with us on the portal."
     }
     mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmail, [], emailData))

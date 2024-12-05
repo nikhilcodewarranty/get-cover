@@ -73,7 +73,7 @@ exports.convertToBase64 = async (req, res) => {
 
         // Convert the file data to a base64 string
         const base64String = fileData.toString('base64');
- 
+
         // Send the base64 string in the response
         res.send({ base64: base64String });
     } catch (err) {
@@ -131,7 +131,7 @@ exports.createDealer = async (req, res) => {
                 });
                 return
             }
-
+            const base_url = `${process.env.SITE_URL}dealerDetails/`
             let savePriceBookType = req.body.savePriceBookType
             const allUserData = [...dealersUserData, ...primaryUserData];
             if (data.dealerId != 'null' && data.dealerId != undefined) {
@@ -283,25 +283,40 @@ exports.createDealer = async (req, res) => {
                 }
                 await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
                 // Send notification when approved
-                let IDs = await supportingFunction.getUserIds()
-                if (req.body.isAccountCreate) {
-                    IDs.push(req.body.dealerId);
+                const adminQuery = {
+                    metaData: {
+                        $elemMatch: {
+                            roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"),
+                            status: true,
+                            "dealerNotifications.dealerAdded": true,
+                        }
+                    },
+
                 }
+
+                let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
+
+                const IDs = adminUsers.map(user => user._id)
+
+                const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+
                 let notificationData = {
-                    title: "Dealer Approval",
-                    description: req.body.name + " " + "has been successfully approved",
+                    adminTitle: "New Dealer Approved",
+                    adminMessage: `A New Dealer ${data.name} has been approved by ${checkLoginUser.metaData[0]?.firstName} on our portal.`,
                     userId: req.teammateId,
                     flag: 'dealer',
+                    redirectionId: base_url + data.dealerId,
                     notificationFor: IDs
                 };
 
                 await userService.createNotification(notificationData);
                 // Primary User Welcoime email
-                let notificationEmails = await supportingFunction.getUserEmails();
+                let notificationEmails = adminUsers.map(user => user.email)
                 let emailData = {
                     senderName: loginUser.metaData[0]?.firstName,
-                    content: "We are delighted to inform you that the dealer account for " + singleDealer.name + " has been approved.",
-                    subject: "Dealer Account Approved - " + singleDealer.name
+                    content: `A New Dealer ${data.name} has been approved by ${checkLoginUser.metaData[0]?.firstName} on our portal.`,
+                    subject: "New Dealer Approved",
+                    redirectId: base_url + data.dealerId,
                 }
                 // Send Email code here
                 sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
@@ -327,7 +342,6 @@ exports.createDealer = async (req, res) => {
                 }
                 if (req.body.isServicer) {
                     const CountServicer = await providerService.getServicerCount();
-
                     let servicerObject = {
                         name: data.name,
                         street: data.street,
@@ -467,14 +481,29 @@ exports.createDealer = async (req, res) => {
                 }
                 await logs(logData).save()
                 //Send Notification to dealer 
+                const adminQuery = {
+                    metaData: {
+                        $elemMatch: {
+                            roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"),
+                            status: true,
+                            "dealerNotifications.dealerAdded": true,
+                        }
+                    },
 
-                let IDs = await supportingFunction.getUserIds()
+                }
+
+                let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
+
+                const IDs = adminUsers.map(user => user._id)
+
+                const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
 
                 let notificationData = {
-                    title: "Dealer Creation",
-                    description: createMetaData.name + " " + "has been successfully created",
+                    adminTitle: "New Dealer Added",
+                    adminMessage: `A New Dealer ${createMetaData.name} has been added by ${checkLoginUser.metaData[0]?.firstName} on our portal.`,
                     userId: req.teammateId,
                     flag: 'dealer',
+                    redirectionId: base_url + createMetaData._id,
                     notificationFor: IDs
                 };
                 let createNotification = await userService.createNotification(notificationData);
@@ -527,12 +556,13 @@ exports.createDealer = async (req, res) => {
                 }
 
                 //Approve status 
-                let notificationEmails = await supportingFunction.getUserEmails();
+                let notificationEmails = adminUsers.map(user => user._id)
 
                 let emailData = {
                     senderName: loginUser.metaData[0]?.firstName,
-                    content: "We are delighted to inform you that the dealer account for " + createMetaData.name + " has been created.",
-                    subject: "Dealer Account Created - " + createMetaData.name
+                    content: `A New Dealer ${createMetaData.name} has been added by ${checkLoginUser.metaData[0]?.firstName} on our portal.`,
+                    subject: "New Dealer Added",
+                    redirectId: base_url + createMetaData._id,
                 }
 
                 sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))

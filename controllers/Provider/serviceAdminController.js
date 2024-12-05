@@ -1320,8 +1320,20 @@ exports.registerServiceProvider = async (req, res) => {
       return
     }
     //Send Notification to dealer 
+    const adminQuery = {
+      metaData: {
+        $elemMatch: {
+          roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"),
+          status: true,
+          "registerNotifications.servicerRegistrationRequest": true,
+        }
+      },
 
-    let IDs = await supportingFunction.getUserIds()
+    }
+
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
+
+    const IDs = adminUsers.map(user => user._id)
 
     const base_url = `${process.env.SITE_URL}servicerRequestList/`
 
@@ -1357,15 +1369,14 @@ exports.registerServiceProvider = async (req, res) => {
     let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
     const admin = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true } } })
 
-    const notificationEmail = await supportingFunction.getUserEmails();
-
+    const notificationEmail = adminUsers.map(user => user.email)
     emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
       senderName: admin.metaData[0]?.firstName,
-      redirectId:base_url,
+      redirectId: base_url,
       content: `A New Servicer ${data.name} has registered with us on the portal`,
       subject: 'New Servicer Request'
     }
@@ -2739,7 +2750,7 @@ exports.paidUnpaidClaim = async (req, res) => {
     const result_Array = resultFiter.map((item1) => {
       servicer = []
       let servicerName = '';
-      item1.approveDate =item1?.approveDate ? item1.approveDate : ''
+      item1.approveDate = item1?.approveDate ? item1.approveDate : ''
       let selfServicer = false;
       let mergedData = []
       if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {

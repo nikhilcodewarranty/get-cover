@@ -49,9 +49,9 @@ module.exports = class userService {
   }
 
   //find user
-  static async findUser(query, sorting) {
+  static async findUser(query, sorting,projection) {
     try {
-      const allUsers = await user.find(query).sort(sorting);
+      const allUsers = await user.find(query,projection).sort(sorting);
       return allUsers;
     } catch (error) {
       return `Could not fetch users: ${error}`;
