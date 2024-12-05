@@ -274,7 +274,7 @@ exports.login = async (req, res) => {
         code: constant.errorCode,
         message: "Invalid Credentials"
       })
-      return;
+      return; 
     }
     let roleQuery = { _id: user.metaData[0].roleId }
     let roleProjection = { __v: 0 }
