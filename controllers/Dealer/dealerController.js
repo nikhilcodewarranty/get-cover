@@ -269,8 +269,8 @@ exports.registerDealer = async (req, res) => {
     let IDs = await supportingFunction.getUserIds()
     let settingData = await userService.getSetting({});
     let notificationData = {
-      title: "New Dealer Registration",
-      description: data.name + " " + "has finished registering as a new dealer. For the onboarding process to proceed more quickly, kindly review and give your approval.",
+      title: "New Dealer Request",
+      description: "A New Dealer " + data.name + " has registered with us on the portal",
       userId: req.teammateId,
       redirectionId: createdDealer._id,
       flag: 'Dealer Request',

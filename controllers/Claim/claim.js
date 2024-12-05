@@ -325,11 +325,11 @@ exports.uploadCommentImage = async (req, res, next) => {
 exports.addClaim = async (req, res, next) => {
   try {
     let data = req.body;
-    
+
     let checkContract = await contractService.getContractById({ _id: data.contractId })
     // data.lossDate = new Date(data.lossDate).setDate(new Date(data.lossDate).getDate() + 1)
     // data.lossDate = new Date(data.lossDate)
-    const submittedUser = await userService.getUserById1({ _id: data.submittedBy },{})
+    const submittedUser = await userService.getUserById1({ _id: data.submittedBy }, {})
     data.submittedBy = submittedUser?.email || ''
     data.shippingTo = data.shippingTo || ''
     if (!checkContract) {
@@ -492,17 +492,18 @@ exports.addClaim = async (req, res, next) => {
     await LOG(logData).save()
 
     //Send notification to all
+    const checkServicer = await servicerService.getServiceProviderById({ $or: [{ _id: data?.servicerId }, { dealerId: data?.servicerId }, { resellerId: data?.servicerId }] })
+
     let IDs = await supportingFunction.getUserIds()
     let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } })
     let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } })
     let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } })
-    let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data?.servicerId, isPrimary: true } } })
+    let servicerPrimary = await supportingFunction.getPrimaryUser({ $or: [{ metaData: { $elemMatch: { metaId: data?.servicerId, isPrimary: true } } }, { metaData: { $elemMatch: { metaId: checkServicer?.dealerId, isPrimary: true } } }, { metaData: { $elemMatch: { metaId: checkServicer?.resellerId, isPrimary: true } } }] })
 
     //Get Dealer,reseller, customer status
     const checkDealer = await dealerService.getDealerById(checkOrder.dealerId)
     const checkReseller = await resellerService.getReseller({ _id: checkOrder?.resellerId }, {})
     const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
-    const checkServicer = await servicerService.getServiceProviderById({ $or: [{ _id: data?.servicerId }, { dealerId: data?.servicerId }, { resellerId: data?.servicerId }] })
 
     if (resellerPrimary && checkReseller?.isAccountCreate) {
       IDs.push(resellerPrimary._id)
@@ -531,12 +532,6 @@ exports.addClaim = async (req, res, next) => {
     };
 
     let createNotification = await userService.createNotification(notificationData1);
-
-    // const token = jwt.sign(
-    //   { claimId: claimResponse.unique_key },
-    //   process.env.JWT_ID_SECRET, // Replace with your secret key
-    //   { expiresIn: "1d" }
-    // );
 
     // Send Email code here
     let notificationCC = await supportingFunction.getUserEmails();
@@ -587,16 +582,18 @@ exports.addClaim = async (req, res, next) => {
         redirectId: base_url
       }
       if (checkServicer?.isAccountCreate) {
+        let notificationAdmin = await supportingFunction.getUserEmails();
         emailData.subject = `New Device Received for Repair - ID: ${claimResponse.unique_key}`
         emailData.senderName = servicerPrimary?.metaData[0]?.firstName
         emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device detailed below:`
-        mailing = sgMail.send(emailConstant.sendServicerClaimNotification(servicerPrimary?.email, notificationCC, emailData))
+        mailing = sgMail.send(emailConstant.sendServicerClaimNotification(servicerPrimary?.email, notificationAdmin, emailData))
       }
       else {
+        let notificationAdmin = await supportingFunction.getUserEmails();
         emailData.subject = `New Device Received for Repair - ID: ${claimResponse.unique_key}`
         emailData.senderName = "Admin"
         emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device detailed below:`
-        mailing = sgMail.send(emailConstant.sendServicerClaimNotification(notificationCC, ["noreply@getcover.com"], emailData))
+        mailing = sgMail.send(emailConstant.sendServicerClaimNotification(notificationAdmin, ["noreply@getcover.com"], emailData))
       }
     }
 
@@ -4035,6 +4032,139 @@ exports.getCoverageType = async (req, res) => {
     })
   }
 }
+
+
+exports.checkNumberOfCertainPeriod = async (req, res) => {
+  try {
+    const query = { eligibilty: true };
+    const limit = 10000; // Adjust the limit based on your needs
+    let page = 0;
+    let hasMore = true;
+    while (hasMore) {
+      const result = await contractService.findContracts2(query, limit, page);
+      if (result.length === 0) {
+        hasMore = false;
+        break;
+      }
+
+      for (let i = 0; i < result.length; i++) {
+        let checkContract = result[i]
+        let baseDate = new Date(checkContract.coverageStartDate);
+        let newDateToCheck = new Date()
+        const newDayOfMonth = newDateToCheck.getDate();
+        const dayOfMonth = baseDate.getDate();
+
+        // Get the current year and month
+        const currentYear1 = new Date().getFullYear();
+        const currentMonth1 = new Date().getMonth(); // Note: 0 = January, so this is the current month index
+
+        // Create a new date with the current year, current month, and the day from baseDate
+        let newDateWithSameDay = new Date(currentYear1, currentMonth1, dayOfMonth);
+        if (Number(newDayOfMonth) > Number(dayOfMonth)) {
+          newDateWithSameDay = new Date(new Date(newDateWithSameDay).setMonth(newDateWithSameDay.getMonth() - 1));
+        }
+
+        const monthlyEndDate = new Date(new Date(newDateWithSameDay).setMonth(newDateWithSameDay.getMonth() + 1)); // Ends on August 11, 2024
+        const yearlyEndDate = new Date(new Date(newDateWithSameDay).setFullYear(newDateWithSameDay.getFullYear() + 1)); // Ends on July 11, 2025
+
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+        const endOfToday = new Date();
+        endOfToday.setHours(23, 59, 59, 999);
+
+        let getNoOfClaimQuery = [
+          {
+            $match: {
+              contractId: new mongoose.Types.ObjectId(checkContract._id),
+              claimFile: "completed"
+            }
+          },
+          {
+            $group: {
+              _id: null,
+              monthlyCount: {
+                $sum: {
+                  $cond: [
+                    {
+                      $and: [
+                        { $gte: ['$createdAt', newDateWithSameDay] },
+                        { $lt: ['$createdAt', monthlyEndDate] }
+                      ]
+                    },
+                    1,
+                    0
+                  ]
+                }
+              },
+              yearlyCount: {
+                $sum: {
+                  $cond: [
+                    {
+                      $and: [
+                        { $gte: ['$createdAt', newDateWithSameDay] },
+                        { $lt: ['$createdAt', yearlyEndDate] }
+                      ]
+                    },
+                    1,
+                    0
+                  ]
+                }
+              }
+            }
+          }
+        ];
+
+        let checkNoOfClaims = await claimService.getClaimWithAggregate(getNoOfClaimQuery)
+        if (checkNoOfClaims.length == 0) {
+          checkNoOfClaims = [{
+            "monthlyCount": 0,
+            "yearlyCount": 0
+          }]
+        }
+        let checkThePeriod = checkContract.noOfClaim
+        let getTotalClaim = await claimService.getClaims({ contractId: checkContract._id, claimFile: "completed" })
+        let noOfTotalClaims = getTotalClaim.length
+        if (checkThePeriod.value != -1) {
+          if (checkThePeriod.period == "Monthly") {
+            let eligibility = checkNoOfClaims[0].monthlyCount >= checkThePeriod.value ? false : true
+            if (eligibility) {
+              if (checkContract.noOfClaimPerPeriod != -1) {
+                eligibility = noOfTotalClaims >= checkContract.noOfClaimPerPeriod ? false : true
+
+              }
+            }
+            const updateContract = await contractService.updateContract({ _id: checkContract._id }, { eligibilty: eligibility }, { new: true })
+          } else {
+            let eligibility = checkNoOfClaims[0].yearlyCount >= checkThePeriod.value ? false : true
+
+            if (eligibility) {
+              if (checkContract.noOfClaimPerPeriod != -1) {
+
+                eligibility = noOfTotalClaims >= checkContract.noOfClaimPerPeriod ? false : true
+              }
+            }
+            const updateContract = await contractService.updateContract({ _id: checkContract._id }, { eligibilty: eligibility }, { new: true })
+          }
+        }
+        
+      }
+      page++;
+    }
+
+    res.send({
+      code: constant.successCode,
+    });
+
+
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
 
 exports.updateClaimDate = async (req, res) => {
   try {

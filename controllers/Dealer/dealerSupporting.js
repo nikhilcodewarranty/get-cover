@@ -1779,7 +1779,7 @@ exports.getAllDealers = async (req, res) => {
             {
                 $match: {
                     $and: [
-                        { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phoneNumber ? data.phoneNumber.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+                        { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phoneNumber ? data.phoneNumber.toString().trim() : '', '$options': 'i' } } } },
                         { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         { metaData: { $elemMatch: { metaId: { $in: dealerIds }, isPrimary: true } } }
                     ]
@@ -1831,7 +1831,7 @@ exports.getAllDealers = async (req, res) => {
             return;
         };
 
-        const result_Array = dealarUser.map(item1 => {
+        const result_Array = dealarUser?.map(item1 => {
             const matchingItem = dealers.find(item2 => item2._id.toString() === item1.metaId.toString());
             const orders = orderData.find(order => order._id.toString() === item1.metaId.toString())
             if (matchingItem || orders) {

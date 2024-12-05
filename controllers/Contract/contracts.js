@@ -702,7 +702,6 @@ exports.updateContract = async (req, res) => {
         coverageEndDate1: getOrder.productsArray[0].coverageEndDate
       }
     }
-    console.log("contractObject==============", contractObject)
     let updateMany = await contractService.updateManyContract({ orderId: getOrder._id }, contractObject, { new: true })
     res.send({
       updateMany
