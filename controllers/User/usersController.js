@@ -534,7 +534,8 @@ exports.getUserById = async (req, res) => {
           isResetPassword: 1,
           approvedStatus: 1,
           createdAt: 1,
-          updatedAt: 1
+          updatedAt: 1,
+          metaData:1
         }
       },
     ]);
@@ -2424,7 +2425,7 @@ exports.preLoginData = async (req, res) => {
     //   return
     // }
     const checkUser = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin } } })
-    let setting = await userService.getSetting({  });
+    let setting = await userService.getSetting({});
     const baseUrl = process.env.API_ENDPOINT;
     if (setting.length > 0) {
       setting[0].base_url = baseUrl;
@@ -2450,6 +2451,110 @@ exports.preLoginData = async (req, res) => {
     });
   }
   catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+
+const userModel = require("../../models/User/users")
+exports.updateDataBase = async (req, res) => {
+  try {
+    let updateData = await userModel.updateMany(
+      { metaData: { $exists: true } }, // Match documents with the `metaData` field
+      {
+        $set: {
+          metaData: {
+            $map: {
+              input: "$metaData",
+              as: "item",
+              in: {
+                $mergeObjects: [
+                  "$$item",
+                  {
+                    orderNotifications: {
+                      addingNewOrderPending: true,
+                      addingNewOrderActive: true,
+                      makingOrderPaid: true,
+                      updateOrderPending: true,
+                      updateOrderActive: true,
+                      archivinOrder: true
+                    },
+                    claimNotification: {
+                      newClaim: true,
+                      fileBulkClaimAdmin: true,
+                      fileBulkClaimDealer: true,
+                      fileBulkClaimServicer: true,
+                      fileBulkClaimReseller: true,
+                      fileBulkClaimCustomer: true,
+                      servicerUpdate: true,
+                      customerStatusUpdate: true,
+                      repairStatusUpdate: true,
+                      claimStatusUpdate: true,
+                      partsUpdate: true,
+                      claimComment: true
+                    },
+                    adminNotification: {
+                      userAdded: true,
+                      categoryUpdate: true,
+                      priceBookUpdate: true,
+                      priceBookAdd: true,
+                      unassignDealerServicer: true,
+                      assignDealerServicer: true,
+                      categoryAdded: true
+                    },
+                    servicerNotification: {
+                      servicerAdded: true,
+                      userAdded: true,
+                      userUpdate: true,
+                      primaryChanged: true,
+                      userDelete: true
+                    },
+                    dealerNotifications: {
+                      dealerAdded: true,
+                      userAdded: true,
+                      userUpdate: true,
+                      primaryChanged: true,
+                      userDelete: true,
+                      dealerPriceBookUpload: true,
+                      dealerPriceBookAdd: true,
+                      dealerPriceBookUpdate: true
+                    },
+                    resellerNotifications: {
+                      resellerAdded: true,
+                      userAdd: true,
+                      userUpdate: true,
+                      primaryChange: true,
+                      userDelete: true
+                    },
+                    customerNotifications: {
+                      customerAdded: true,
+                      userAdd: true,
+                      userUpdate: true,
+                      primaryChange: true,
+                      userDelete: true
+                    },
+                    registerNotifications: {
+                      dealerRegistrationRequest: true,
+                      dealerServicerRequest: true,
+                      dealerDisapproved: true,
+                      servicerDisapproved: true
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    );
+    res.send({
+      code: 200,
+      data: updateData
+    })
+  } catch (err) {
     res.send({
       code: constant.errorCode,
       message: err.message
