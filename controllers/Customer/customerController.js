@@ -31,21 +31,21 @@ exports.createCustomer = async (req, res, next) => {
     let checkDealer = await dealerService.getDealerByName({ _id: data.dealerName }, {});
     const adminQuery = {
       metaData: {
-        $elemMatch: {
-          $and: [
-            { "resellerNotifications.resellerAdded": true },
-            { status: true },
-            {
-              $or: [
-                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
-                { roleId: new mongoose.Types.ObjectId("656f080e1eb1acda244af8c7") },
+          $elemMatch: {
+              $and: [
+                  { "customerNotifications.customerAdded": true },
+                  { status: true },
+                  {
+                      $or: [
+                          { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                          { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
+                          { roleId: new mongoose.Types.ObjectId("65bb94b4b68e5a4a62a0b563") },
+                      ]
+                  }
               ]
-            }
-          ]
-        }
+          }
       },
-    }
+  }
     let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
     const IDs = adminUsers.map(user => user._id)
     if (!checkDealer) {

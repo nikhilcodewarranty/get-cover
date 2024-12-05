@@ -481,10 +481,31 @@ exports.createDeleteRelation = async (req, res) => {
 exports.createCustomer = async (req, res, next) => {
     try {
         let data = req.body;
+        const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+        const base_url = `${process.env.SITE_URL}`
         data.accountName = data.accountName.trim().replace(/\s+/g, ' ');
         let getCount = await customerService.getCustomersCount({})
         data.unique_key = getCount[0] ? getCount[0].unique_key + 1 : 1
-        let IDs = await supportingFunction.getUserIds()
+        const adminQuery = {
+            metaData: {
+                $elemMatch: {
+                    $and: [
+                        { "customerNotifications.customerAdded": true },
+                        { status: true },
+                        {
+                            $or: [
+                                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                                { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
+                                { roleId: new mongoose.Types.ObjectId("65bb94b4b68e5a4a62a0b563") },
+                            ]
+                        }
+                    ]
+                }
+            },
+        }
+        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
+
+        const IDs = adminUsers.map(user => user._id)
         // check dealer ID
         let checkDealer = await dealerService.getDealerByName({ _id: req.userId }, {});
         if (!checkDealer) {
@@ -590,25 +611,11 @@ exports.createCustomer = async (req, res, next) => {
         // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
         // Primary User Welcoime email
-        let notificationEmails = await supportingFunction.getUserEmails();
+        let notificationEmails = adminUsers.map(user => user.email)
         let settingData = await userService.getSetting({});
 
         let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
         let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkReseller?._id, isPrimary: true } } })
-
-        notificationEmails.push(getPrimary.email)
-        notificationEmails.push(resellerPrimary?.email)
-        //Merge start singleServer
-        // let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
-        // let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkReseller?._id, isPrimary: true })
-        if (checkDealer.isAccountCreate) {
-            IDs.push(getPrimary._id)
-            notificationEmails.push(getPrimary.email)
-        }
-        if (checkReseller.isAccountCreate) {
-            IDs.push(resellerPrimary?._id)
-            notificationEmails.push(resellerPrimary.email)
-        }
         //Merge end
         let emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -616,8 +623,9 @@ exports.createCustomer = async (req, res, next) => {
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
             senderName: getPrimary.metaData[0]?.firstName,
-            content: "We are delighted to inform you that the customer account for " + createdCustomer.username + " has been created.",
-            subject: "Customer Account Created - " + createdCustomer.username
+            redirectId: base_url + "customerDetails/" + createdCustomer._id,
+            content: `A New Customer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} - User Role - ${req.role} on our portal.`,
+            subject: "New Customer Added"
         }
 
         // Send Email code here
@@ -651,11 +659,17 @@ exports.createCustomer = async (req, res, next) => {
         //Send Notification to customer,admin,reseller,dealer 
 
         let notificationData = {
-            title: "New Customer Created",
-            description: data.accountName + " " + "customer account has been created successfully!",
+            adminTitle: "New Customer  Added",
+            adminMessage: `A New Customer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} - User Role - ${req.role} on our portal.`,
+            resellerTitle: "New Customer  Added",
+            dealerTitle: "New Customer  Added",
+            resellerMessage: `A New Customer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} - User Role - ${req.role} on our portal.`,
+            dealerMessage: `A New Customer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} - User Role - ${req.role} on our portal.`,
             userId: req.teammateId,
             flag: 'customer',
-            notificationFor: IDs
+            notificationFor: IDs,
+            redirectionId: "customerDetails/" + createdCustomer._id,
+            endpoint: base_url,
         };
         let createNotification = await userService.createNotification(notificationData);
         //Save Logs create Customer
