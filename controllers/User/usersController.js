@@ -1451,6 +1451,8 @@ exports.addMembers = async (req, res) => {
       })
       return;
     };
+
+    const base_url = `${process.env.SITE_URL}manageAccount/`
     data.isPrimary = false;
     let getRole = await userService.getRoleById({ role: req.role })
     data.metaId = req.userId
@@ -1486,11 +1488,14 @@ exports.addMembers = async (req, res) => {
 
     let IDs = await supportingFunction.getUserIds()
 
+    const admin = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true } } })
+
     let notificationData = {
-      title: "New member created",
-      description: "The new member " + data.firstName + " has been created",
+      adminTitle: "New Admin User added",
+      adminMessage: `A new admin user ${data.firstName} with Email ID ${data.email} has been added by ${admin.firstName}.`,
       userId: req.teammateId,
       contentId: null,
+      redirectionId: base_url,
       flag: 'Member Created',
       notificationFor: IDs
     };

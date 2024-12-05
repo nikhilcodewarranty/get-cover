@@ -1323,11 +1323,14 @@ exports.registerServiceProvider = async (req, res) => {
 
     let IDs = await supportingFunction.getUserIds()
 
+    const base_url = `${process.env.SITE_URL}servicerRequestList/`
+
     const notificationData = {
-      title: "New Servicer Registration",
-      description: data.name + " " + "has finished registering as a new servicer. For the onboarding process to proceed more quickly, kindly review and give your approval.",
+      adminTitle: "New Servicer Request",
+      adminMessage: `A New Servicer ${data.name} has registered with us on the portal.`,
       userId: req.teammateId,
       flag: 'servicer',
+      redirectionId: base_url,
       notificationFor: IDs
     };
 
@@ -1362,8 +1365,9 @@ exports.registerServiceProvider = async (req, res) => {
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
       senderName: admin.metaData[0]?.firstName,
-      content: "A new servicer " + ServicerMeta.name + " has been registered",
-      subject: 'New Servicer Registration'
+      redirectId:base_url,
+      content: `A New Servicer ${data.name} has registered with us on the portal`,
+      subject: 'New Servicer Request'
     }
     mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmail, ["noreply@getcover.com"], emailData))
     let logData = {
