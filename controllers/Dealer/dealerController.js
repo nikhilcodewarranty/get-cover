@@ -267,12 +267,13 @@ exports.registerDealer = async (req, res) => {
     //Send Notification to dealer 
 
     let IDs = await supportingFunction.getUserIds()
+
     let settingData = await userService.getSetting({});
     let notificationData = {
       title: "New Dealer Request",
       description: "A New Dealer " + data.name + " has registered with us on the portal",
       userId: req.teammateId,
-      redirectionId: createdDealer._id,
+      redirectionId: "/newDealerList",
       flag: 'Dealer Request',
       notificationFor: IDs
     };
@@ -283,12 +284,12 @@ exports.registerDealer = async (req, res) => {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
-      subject: "New Dealer Registration Request Received",
-      c1: "Thank you for",
-      c2: "Registering! as a",
-      c3: "Your account is currently pending approval from our admin.",
-      c4: "Once approved, you will receive a confirmation emai",
-      c5: "We appreciate your patience.",
+      subject: "New Dealer Request",
+      c1: "A New Dealer " + data.name,
+      c2: "has registered with us on the portal",
+      c3: "",
+      c4: "",
+      c5: "",
       role: "Dealer"
     }
     let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
