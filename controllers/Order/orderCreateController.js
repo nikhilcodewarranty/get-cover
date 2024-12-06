@@ -1361,7 +1361,8 @@ exports.createOrder1 = async (req, res) => {
             websiteSetting: settingData[0],
             senderName: getPrimary.metaData[0]?.firstName,
             content: "The new order " + checkOrder.unique_key + "  has been created for " + getPrimary.metaData[0]?.firstName + "",
-            subject: "New Order"
+            subject: "New Order",
+            redirectId: base_url + "orderList/" + savedResponse.unique_key,
         }
         if (data.sendNotification) {
             let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
@@ -2364,22 +2365,48 @@ exports.editOrderDetail = async (req, res) => {
 
         returnField.push(obj);
         //send notification to dealer,reseller,admin,customer
-        let IDs = await supportingFunction.getUserIds()
+        const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+        const base_url = `${process.env.SITE_URL}`
+        const adminUpdateOrderQuery = {
+            metaData: {
+                $elemMatch: {
+                    $and: [
+                        { "orderNotifications.updateOrderPending": true },
+                        { status: true },
+                        {
+                            $or: [
+                                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                                { roleId: new mongoose.Types.ObjectId("65bb94b4b68e5a4a62a0b563") },
+                                { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
+                            ]
+                        }
+                    ]
+                }
+            },
+        }
+        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdateOrderQuery, { email: 1 })
+        const IDs = adminUsers.map(user => user._id)
         let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } })
-        IDs.push(dealerPrimary._id)
         let notificationData = {
-            title: "Order update",
-            description: "Your order " + savedResponse.unique_key + " has been updated in our system. The order is still pending, as there is some data missing.",
+            title: "Draft Order Updated Successfully",
+            dealerTitle: "Draft Order Updated Successfully",
+            adminTitle: "Draft Order Updated Successfully",
+            resellerTitle: "Draft Order Updated Successfully",
+            description: `The draft Order # ${checkOrder.unique_key} has been updated successfully by ${checkLoginUser.metaData[0]?.firstName}.`,
+            dealerMessage: `The draft Order # ${checkOrder.unique_key} has been updated successfully by ${checkLoginUser.metaData[0]?.firstName}.`,
+            adminMessage: `The draft Order # ${checkOrder.unique_key} has been updated successfully by ${checkLoginUser.metaData[0]?.firstName}.`,
+            resellerMessage: `The draft Order # ${checkOrder.unique_key} has been updated successfully by ${checkLoginUser.metaData[0]?.firstName}.`,
             userId: req.teammateId,
             contentId: checkOrder._id,
             flag: 'order',
-            redirectionId: savedResponse.unique_key,
+            redirectionId: "orderList/" + savedResponse.unique_key,
+            endPoint: base_url,
             notificationFor: IDs
         };
         let createNotification = await userService.createNotification(notificationData);
 
         // Send Email code here
-        let notificationEmails = await supportingFunction.getUserEmails();
+        let notificationEmails = adminUsers.map(user => user.email)
         let settingData = await userService.getSetting({});
         //Email to Dealer
         let emailData = {
@@ -2389,10 +2416,11 @@ exports.editOrderDetail = async (req, res) => {
             websiteSetting: settingData[0],
             senderName: dealerPrimary.metaData[0].firstName,
             content: "The  order " + savedResponse.unique_key + " has been updated",
-            subject: "Order Update"
+            subject: "Order Update",
+            redirectId: base_url + "orderList/" + savedResponse.unique_key,
         }
         if (data.sendNotification) {
-            let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
         }
 
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
@@ -2651,29 +2679,52 @@ exports.editOrderDetail = async (req, res) => {
                         const tcResponse = await generateTC(savedResponse);
                     }
                     // send notification to dealer,admin, customer
-                    let IDs = await supportingFunction.getUserIds()
-
+                    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+                    const base_url = `${process.env.SITE_URL}`
+                    const adminUpdateOrderQuery = {
+                        metaData: {
+                            $elemMatch: {
+                                $and: [
+                                    { "orderNotifications.updateOrderActive": true },
+                                    { status: true },
+                                    {
+                                        $or: [
+                                            { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                                            { roleId: new mongoose.Types.ObjectId("65bb94b4b68e5a4a62a0b563") },
+                                            { roleId: new mongoose.Types.ObjectId("656f080e1eb1acda244af8c7") },
+                                            { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                    }
+                    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdateOrderQuery, { email: 1 })
+                    const IDs = adminUsers.map(user => user._id)
                     let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } })
                     let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } })
                     let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } })
-
-
-                    if (resellerPrimary) {
-                        IDs.push(resellerPrimary._id)
-                    }
-                    IDs.push(dealerPrimary._id, customerPrimary._id)
-                    let notificationData1 = {
-                        title: "Process Order",
-                        description: "The order " + checkOrder.unique_key + " has been updated and processed",
+                    let notificationData = {
+                        title: "New Active Order Created Successfully",
+                        dealerTitle: "New Active Order Created Successfully",
+                        adminTitle: "New Active Order Created Successfully",
+                        customerTitle: "New Active Order Created Successfully",
+                        resellerTitle: "New Active Order Created Successfully",
+                        description: `The draft Order # ${checkOrder.unique_key} has been marked completed successfully by ${checkLoginUser.metaData[0]?.firstName}.`,
+                        dealerMessage: `The draft Order # ${checkOrder.unique_key} has been marked completed successfully by ${checkLoginUser.metaData[0]?.firstName}.`,
+                        adminMessage: `The draft Order # ${checkOrder.unique_key} has been marked completed successfully by ${checkLoginUser.metaData[0]?.firstName}.`,
+                        resellerMessage: `The draft Order # ${checkOrder.unique_key} has been marked completed successfully by ${checkLoginUser.metaData[0]?.firstName}.`,
+                        customerMessage: `The draft Order # ${checkOrder.unique_key} has been marked completed successfully by ${checkLoginUser.metaData[0]?.firstName}.`,
                         userId: req.teammateId,
                         contentId: checkOrder._id,
                         flag: 'order',
-                        redirectionId: checkOrder.unique_key,
+                        redirectionId: "orderDetails/" + checkOrder._id,
+                        endPoint: base_url,
                         notificationFor: IDs
                     };
-                    let createNotification = await userService.createNotification(notificationData1);
+                    let createNotification = await userService.createNotification(notificationData);
                     // Send Email code here
-                    let notificationEmails = await supportingFunction.getUserEmails();
+                    let notificationEmails = adminUsers.map(user => user.email)
                     //Email to Dealer
                     let emailData = {
                         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -2682,22 +2733,11 @@ exports.editOrderDetail = async (req, res) => {
                         websiteSetting: settingData[0],
                         senderName: dealerPrimary.metaData[0].firstName,
                         content: "The  order " + savedResponse.unique_key + " updated and processed",
-                        subject: "Process Order"
+                        subject: "Process Order",
+                        redirectId: base_url + "orderDetails/" + checkOrder._id,
                     }
 
-                    let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
-                    //Email to Reseller
-                    emailData = {
-                        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-                        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-                        address: settingData[0]?.address,
-                        websiteSetting: settingData[0],
-                        senderName: resellerPrimary?.metaData[0].firstName,
-                        content: "The  order " + savedResponse.unique_key + " has been paid",
-                        subject: "Process Order"
-                    }
-
-                    mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
+                    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
                     //Email to customer code here........
                     if (index == checkLength) {
 
