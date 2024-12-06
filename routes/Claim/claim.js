@@ -33,5 +33,7 @@ router.get("/checkClaimAmount/:claimId", claimGetController.checkClaimAmount); /
 router.get("/updateContracts", claimGetController.updateContracts); // check claim amount in edit claim and change coverage type
 router.post("/checkClaimThreshHold/:claimId", [verifyToken], claimGetController.checkClaimThreshHold); // check claim amount in edit claim and change coverage type
 router.get("/updateClaimDate", claimController.updateClaimDate); // check claim amount in edit claim and change coverage type
+router.get("/checkNumberOfCertainPeriod", claimController.checkNumberOfCertainPeriod); // check claim amount in edit claim and change coverage type
+
 
 module.exports = router;
