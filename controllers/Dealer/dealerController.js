@@ -153,6 +153,8 @@ exports.uploadTermAndCondition = async (req, res, next) => {
 exports.registerDealer = async (req, res) => {
   try {
     const data = req.body;
+    const base_url = `${process.env.SITE_URL}newDealerList/`
+
     // Check if the specified role exists
     const checkRole = await role.findOne({ role: { '$regex': new RegExp(`^${req.body.role}$`, 'i') } });
     if (!checkRole) {
@@ -265,14 +267,28 @@ exports.registerDealer = async (req, res) => {
       return
     }
     //Send Notification to dealer 
+    const adminQuery = {
+      metaData: {
+        $elemMatch: {
+          roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"),
+          status: true,
+          "registerNotifications.dealerRegistrationRequest": true,
+        }
+      },
 
-    let IDs = await supportingFunction.getUserIds()
+    }
+
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
+
+    const IDs = adminUsers.map(user => user._id)
+
     let settingData = await userService.getSetting({});
+
     let notificationData = {
-      title: "New Dealer Request",
-      description: "A New Dealer " + data.name + " has registered with us on the portal",
+      adminTitle: "New Dealer Request",
+      adminMessage: "A New Dealer " + data.name + " has registered with us on the portal",
       userId: req.teammateId,
-      redirectionId: createdDealer._id,
+      redirectionId: base_url,
       flag: 'Dealer Request',
       notificationFor: IDs
     };
@@ -293,15 +309,16 @@ exports.registerDealer = async (req, res) => {
     }
     let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
     const admin = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true } } })
-    const notificationEmail = await supportingFunction.getUserEmails();
+    const notificationEmail = adminUsers.map(user => user.email)
     emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
       senderName: admin.metaData[0]?.firstName,
-      subject: "Notification of New Dealer Registration",
-      content: "A new dealer " + createdDealer.name + " has been registered"
+      subject: "New Dealer Request",
+      redirectId: base_url,
+      content: "A new dealer " + createdDealer.name + " has registered with us on the portal."
     }
     mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmail, [], emailData))
     let logData = {

@@ -8,6 +8,13 @@ exports.getUserIds = async () => {
     return getSuperId.map(ID => ID._id);
 }
 
+
+exports.getNotificationEligibleUser = async (query,projection) => {
+    const getSuperId = await userService.findUser(query,{},projection);
+    return getSuperId;
+}
+
+
 exports.websiteSetting = async () => {
     let settingData = await userService.getSetting({});
     return settingData;

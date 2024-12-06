@@ -26,7 +26,8 @@ exports.createServiceProvider = async (req, res, next) => {
     data.accountName = data.accountName.trim().replace(/\s+/g, ' ');
     const count = await providerService.getServicerCount();
     const admin = await userService.getUserById1({ metaData: { $elemMatch: { metaId: new mongoose.Types.ObjectId(req.userId), isPrimary: true } } }, {})
-
+    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+    const base_url = `${process.env.SITE_URL}`
 
     let servicerObject = {
       name: data.accountName,
@@ -108,10 +109,27 @@ exports.createServiceProvider = async (req, res, next) => {
 
       })
       );
+      const adminQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "servicerNotification.servicerAdded": true },
+              { status: true },
+              {
+                $or: [
+                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                ]
+              }
+            ]
+          }
+        },
+      }
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
+      const IDs = adminUsers.map(user => user._id)
+      let notificationEmails = adminUsers.map(user => user.email)
 
       let saveMembers = await userService.insertManyUser(teamMembers)
       // Primary User Welcoime email
-      let notificationEmails = await supportingFunction.getUserEmails();
       let settingData = await userService.getSetting({});
       let emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -119,9 +137,10 @@ exports.createServiceProvider = async (req, res, next) => {
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
         title: settingData[0]?.title,
+        redirectId: base_url + "servicerDetails/" + createServiceProvider._id,
         senderName: admin.metaData[0]?.firstName,
-        content: "We are delighted to inform you that the servicer account for " + createServiceProvider.name + " has been created.",
-        subject: "Servicer Account Created - " + createServiceProvider.name
+        content: `A New Servicer ${createServiceProvider.name} has been added and approved by ${checkLoginUser.metaData[0].firstName} on our portal.`,
+        subject: "New Servicer Added"
       }
 
       // Send Email code here
@@ -150,14 +169,17 @@ exports.createServiceProvider = async (req, res, next) => {
 
         }
       }
-      let IDs = await supportingFunction.getUserIds()
       //Send Notification to ,admin,,servicer 
       let notificationData = {
-        title: "Servicer Account Creation",
-        description: data.accountName + " " + "servicer account has been created successfully!",
+        adminTitle: "New Servicer Added",
+        title: "New Servicer Added",
+        adminMessage: `A New Servicer ${createServiceProvider.name} has been added and approved by ${checkLoginUser.metaData[0].firstName} on our portal`,
+        description: `A New Servicer ${createServiceProvider.name} has been added and approved by ${checkLoginUser.metaData[0].firstName} on our portal`,
         userId: req.teammateId,
         flag: 'servicer',
-        notificationFor: IDs
+        notificationFor: IDs,
+        redirectionId: "servicerDetails/" + createServiceProvider._id,
+        endpoint: base_url,
       };
 
       let createNotification = await userService.createNotification(notificationData);
@@ -213,6 +235,8 @@ exports.createServiceProvider = async (req, res, next) => {
         return;
       }
 
+      
+
       if (servicerObject.name != data.oldName) {
         let checkAccountName = await providerService.getServicerByName({ name: data.accountName }, {});
         if (checkAccountName) {
@@ -262,18 +286,37 @@ exports.createServiceProvider = async (req, res, next) => {
         return;
       };
 
-      let notificationEmails = await supportingFunction.getUserEmails();
+      const adminQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "servicerNotification.servicerAdded": true },
+              { status: true },
+              {
+                $or: [
+                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                ]
+              }
+            ]
+          }
+        },
+      }
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
+      const IDs = adminUsers.map(user => user._id)
 
+      let notificationEmails = adminUsers.map(user => user.email)
       let emailData = {
-        senderName: admin.metaData[0]?.firstName,
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
-        title: settingData[0]?.title,
         websiteSetting: settingData[0],
-        content: "We are delighted to inform you that the servicer account for " + checkDetail.name + " has been created.",
-        subject: "Servicer Account Approved - " + checkDetail.name
+        title: settingData[0]?.title,
+        redirectId: base_url + "servicerDetails/" + checkDetail._id,
+        senderName: admin.metaData[0]?.firstName,
+        content: `A New Servicer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} on our portal.`,
+        subject: "New Servicer Added"
       }
+
       // Send Email code here
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
 
@@ -349,15 +392,17 @@ exports.createServiceProvider = async (req, res, next) => {
           }
         }
       }
-
-      let IDs = await supportingFunction.getUserIds()
       //Send Notification to ,admin,,servicer 
       let notificationData = {
-        title: "Servicer Account Approved",
-        description: data.accountName + " " + "servicer account has been approved successfully!",
+        adminTitle: "New Servicer Added",
+        title: "New Servicer Added",
+        adminMessage: `A New Servicer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} on our portal`,
+        description: `A New Servicer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} on our portal`,
         userId: req.teammateId,
         flag: 'servicer',
-        notificationFor: IDs
+        notificationFor: IDs,
+        redirectionId: "servicerDetails/" + createServiceProvider._id,
+        endpoint: base_url,
       };
 
       let createNotification = await userService.createNotification(notificationData);
@@ -1320,14 +1365,29 @@ exports.registerServiceProvider = async (req, res) => {
       return
     }
     //Send Notification to dealer 
+    const adminQuery = {
+      metaData: {
+        $elemMatch: {
+          roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"),
+          status: true,
+          "registerNotifications.servicerRegistrationRequest": true,
+        }
+      },
 
-    let IDs = await supportingFunction.getUserIds()
+    }
+
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
+
+    const IDs = adminUsers.map(user => user._id)
+
+    const base_url = `${process.env.SITE_URL}servicerRequestList/`
 
     const notificationData = {
-      title: "New Servicer Registration",
-      description: data.name + " " + "has finished registering as a new servicer. For the onboarding process to proceed more quickly, kindly review and give your approval.",
+      adminTitle: "New Servicer Request",
+      adminMessage: `A New Servicer ${data.name} has registered with us on the portal.`,
       userId: req.teammateId,
       flag: 'servicer',
+      redirectionId: base_url,
       notificationFor: IDs
     };
 
@@ -1354,16 +1414,16 @@ exports.registerServiceProvider = async (req, res) => {
     let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
     const admin = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true } } })
 
-    const notificationEmail = await supportingFunction.getUserEmails();
-
+    const notificationEmail = adminUsers.map(user => user.email)
     emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
       senderName: admin.metaData[0]?.firstName,
-      content: "A new servicer " + ServicerMeta.name + " has been registered",
-      subject: 'New Servicer Registration'
+      redirectId: base_url,
+      content: `A New Servicer ${data.name} has registered with us on the portal`,
+      subject: 'New Servicer Request'
     }
     mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmail, ["noreply@getcover.com"], emailData))
     let logData = {
@@ -2735,7 +2795,7 @@ exports.paidUnpaidClaim = async (req, res) => {
     const result_Array = resultFiter.map((item1) => {
       servicer = []
       let servicerName = '';
-      item1.approveDate =item1?.approveDate ? item1.approveDate : ''
+      item1.approveDate = item1?.approveDate ? item1.approveDate : ''
       let selfServicer = false;
       let mergedData = []
       if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {

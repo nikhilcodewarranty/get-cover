@@ -1449,7 +1449,6 @@ exports.checkClaimThreshHold = async (req, res) => {
   }
 }
 
-
 exports.getcustomerDetail = async (req, res) => {
   try {
     let data = req.body

@@ -6,6 +6,7 @@ const filer_contact_us = Joi.object({
     lastName:Joi.string().trim().allow(null).allow('').optional(),
     email:Joi.string().allow(null).allow('').optional(),
     description:Joi.string().allow(null).allow('').optional(),    
+    category:Joi.string().allow(null).allow('').optional(),    
     
 })
 

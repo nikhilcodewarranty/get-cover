@@ -1451,6 +1451,8 @@ exports.addMembers = async (req, res) => {
       })
       return;
     };
+
+    const base_url = `${process.env.SITE_URL}manageAccount/`
     data.isPrimary = false;
     let getRole = await userService.getRoleById({ role: req.role })
     data.metaId = req.userId
@@ -1484,13 +1486,28 @@ exports.addMembers = async (req, res) => {
 
     let settingData = await userService.getSetting({});
 
-    let IDs = await supportingFunction.getUserIds()
+    const adminQuery = {
+      metaData: {
+        $elemMatch: {
+          roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"),
+          status: true,
+          "adminNotification.userAdded": true,
+        }
+      },
+    }
+
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
+
+    const IDs = adminUsers.map(user => user._id)
+
+    const admin = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true } } })
 
     let notificationData = {
-      title: "New member created",
-      description: "The new member " + data.firstName + " has been created",
+      adminTitle: "New Admin User added",
+      adminMessage: `A new admin user ${data.firstName} with Email ID ${data.email} has been added by ${admin.firstName}.`,
       userId: req.teammateId,
       contentId: null,
+      redirectionId: base_url,
       flag: 'Member Created',
       notificationFor: IDs
     };
@@ -2461,6 +2478,32 @@ exports.preLoginData = async (req, res) => {
 
 const userModel = require("../../models/User/users")
 exports.updateDataBase = async (req, res) => {
+
+//   const adminQuery = {
+//     metaData: {
+//         $elemMatch: {
+//             $and: [
+//                 { "resellerNotifications.resellerAdded": true },
+//                 { status: true },
+//                 {
+//                     $or: [
+//                         { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+//                         { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
+//                     ]
+//                 }
+//             ]
+//         }
+//     },
+// }
+
+//   let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
+
+//   const IDs = adminUsers.map(user => user._id)
+
+//   console.log("dsdssdfsdfsdsdf",IDs,adminUsers)
+
+//   return;
+  
   try {
     let updateData = await userModel.updateMany(
       { metaData: { $exists: true } }, // Match documents with the `metaData` field

@@ -81,6 +81,10 @@ const notificationSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  endPoint:{
+    type: String,
+    default: ''
+  },
   flagId: {
     type: mongoose.Schema.Types.ObjectId,
     default: null

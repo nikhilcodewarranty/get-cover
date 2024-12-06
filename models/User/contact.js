@@ -22,7 +22,12 @@ const contactUs = new Schema({
     phoneNumber: {
         type: String,
         default: ""
+    },
+    category: {
+        type: String,
+        default: ""
     }
+    
 }, { timestamps: true })
 
 module.exports = connection.userConnection.model('contact', contactUs)

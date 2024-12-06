@@ -137,6 +137,8 @@ exports.createReseller = async (req, res) => {
 exports.createCustomer = async (req, res, next) => {
     try {
         let data = req.body;
+        const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+        const base_url = `${process.env.SITE_URL}`
         data.accountName = data.accountName.trim().replace(/\s+/g, ' ');
         const checkReseller = await resellerService.getReseller({ _id: req.userId }, { isDeleted: false })
         if (!checkReseller) {
@@ -202,6 +204,8 @@ exports.createCustomer = async (req, res, next) => {
             })
         }
         const createdCustomer = await customerService.createCustomer(customerObject);
+
+
         if (!createdCustomer) {
             res.send({
                 code: constant.errorCode,
@@ -232,6 +236,55 @@ exports.createCustomer = async (req, res, next) => {
         );
         // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
+
+        const adminQuery = {
+            metaData: {
+                $elemMatch: {
+                    $and: [
+                        { "customerNotifications.customerAdded": true },
+                        { status: true },
+                        {
+                            $or: [
+                                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                                { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
+                                { roleId: new mongoose.Types.ObjectId("65bb94b4b68e5a4a62a0b563") },
+                            ]
+                        }
+                    ]
+                }
+            },
+        }
+        //Send Notification to customer,admin,reseller,dealer 
+
+        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
+        const IDs = adminUsers.map(user => user._id)
+        let notificationData = {
+            adminTitle: "New Customer  Added",
+            adminMessage: `A New Customer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} - User Role - ${req.role} on our portal.`,
+            resellerTitle: "New Customer  Added",
+            dealerTitle: "New Customer  Added",
+            resellerMessage: `A New Customer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} - User Role - ${req.role} on our portal.`,
+            dealerMessage: `A New Customer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} - User Role - ${req.role} on our portal.`,
+            userId: req.teammateId,
+            flag: 'customer',
+            notificationFor: IDs,
+            redirectionId: "customerDetails/" + createdCustomer._id,
+            endpoint: base_url,
+        };
+        let createNotification = await userService.createNotification(notificationData);
+        let emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
+            senderName: getPrimary.metaData[0]?.firstName,
+            redirectId: base_url + "customerDetails/" + createdCustomer._id,
+            content: `A New Customer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} - User Role - ${req.role} on our portal.`,
+            subject: "New Customer Added"
+        }
+        let notificationEmails = adminUsers.map(user => user.email)
+        // Send Email code here
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
         res.send({
             code: constant.successCode,
             message: "Customer created successfully",
@@ -2924,10 +2977,10 @@ async function generateTC(orderData) {
         let productCoveredArray = []
         //Check contract is exist or not using contract id
         const contractArrayPromise = checkOrder?.productsArray.map(item => {
-         return contractService.getContractById({
+            return contractService.getContractById({
                 orderProductId: item._id
             });
-           
+
         })
         const contractArray = await Promise.all(contractArrayPromise);
 
