@@ -401,7 +401,7 @@ exports.createServiceProvider = async (req, res, next) => {
         userId: req.teammateId,
         flag: 'servicer',
         notificationFor: IDs,
-        redirectionId: "servicerDetails/" + createServiceProvider._id,
+        redirectionId: "servicerDetails/" + checkDetail._id,
         endpoint: base_url,
       };
 

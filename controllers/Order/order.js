@@ -1369,8 +1369,6 @@ exports.archiveOrder = async (req, res) => {
             { _id: req.params.orderId },
             { isDeleted: 0 }
         );
-        const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
-        const base_url = `${process.env.SITE_URL}`
         if (!checkOrder) {
             res.send({
                 code: constant.errorCode,
@@ -1403,43 +1401,25 @@ exports.archiveOrder = async (req, res) => {
                 return;
             }
         }
-        //send notification to dealer,reseller,admin
-        const archeiveQuery = {
-            metaData: {
-                $elemMatch: {
-                    $and: [
-                        { "orderNotifications.archivinOrder": true },
-                        { status: true },
-                        {
-                            $or: [
-                                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                                { roleId: new mongoose.Types.ObjectId("65bb94b4b68e5a4a62a0b563") },
-                                { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
-                            ]
-                        }
-                    ]
-                }
-            },
-        }
-        let adminUsers = await supportingFunction.getNotificationEligibleUser(archeiveQuery, { email: 1 })
-        const IDs = adminUsers.map(user => user._id)
+        //send notification to dealer,reseller,admin,customer
+        let IDs = await supportingFunction.getUserIds()
         let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } })
         let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } })
         let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } })
+        if (resellerPrimary) {
+            IDs.push(resellerPrimary._id)
+        }
+        if (customerPrimary) {
+            IDs.push(customerPrimary._id)
+        }
+        IDs.push(dealerPrimary._id)
         let notificationData1 = {
-            title: "Order Archieved Successfully",
-            adminTitle: "Order Archieved Successfully",
-            resellerTitle: "Order Archieved Successfully",
-            dealerTitle: "Order Archieved Successfully",
-            description: `The Order # ${checkOrder.unique_key} has been archieved successfully by ${checkLoginUser.metaData[0]?.firstName}.`,
-            resellerMessage: `The Order # ${checkOrder.unique_key} has been archieved successfully by ${checkLoginUser.metaData[0]?.firstName}.`,
-            dealerMessage: `The Order # ${checkOrder.unique_key} has been archieved successfully by ${checkLoginUser.metaData[0]?.firstName}.`,
-            adminMessage: `The Order # ${checkOrder.unique_key} has been archieved successfully by ${checkLoginUser.metaData[0]?.firstName}.`,
+            title: "Order Archieved",
+            description: "The order " + checkOrder.unique_key + " has been archeived!.",
             userId: req.teammateId,
             contentId: checkOrder._id,
             flag: 'Order Archieved',
-            redirectionId: "/archiveOrder",
-            endPoint: base_url,
+            redirectionId: checkOrder.unique_key,
             notificationFor: IDs
         };
         let createNotification = await userService.createNotification(notificationData1);
@@ -1463,11 +1443,23 @@ exports.archiveOrder = async (req, res) => {
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
             senderName: dealerPrimary.metaData[0]?.firstName,
-            content: `The Order # ${checkOrder.unique_key} has been archieved successfully by ${checkLoginUser.metaData[0]?.firstName}.`,
-            subject: "Order Archieved Successfully",
+            content: "The order " + checkOrder.unique_key + " has been archeived!.",
+            subject: "Archeive Order"
         }
         if (checkOrder.sendNotification) {
-            let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+        }
+        emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
+            senderName: resellerPrimary?.metaData[0]?.firstName,
+            content: "The order " + checkOrder.unique_key + " has been archeived!.",
+            subject: "Archeive Order"
+        }
+        if (checkOrder.sendNotification) {
+            mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
         }
         //  }
         res.send({
@@ -2464,8 +2456,8 @@ exports.getResellerByDealerAndCustomer = async (req, res) => {
                 }
             },
             {
-                $project: {
-                    resellerData: 1,
+                $project:{
+                    resellerData:1, 
                     email: 1,
                     'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
                     'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
@@ -2483,7 +2475,7 @@ exports.getResellerByDealerAndCustomer = async (req, res) => {
                     updatedAt: 1
                 }
             }
-
+            
         ])
         if (!getReseller) {
             res.send({
