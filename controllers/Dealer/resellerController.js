@@ -136,7 +136,6 @@ exports.createReseller = async (req, res) => {
         // }
         //Merge end
 
-        console.log("checkLoginUser------------------------", checkLoginUser)
         let notificationData = {
             adminTitle: "New Reseller  Added",
             adminMessage: `A New Reseller ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} - User Role - ${req.role} on our portal.`,
@@ -150,7 +149,6 @@ exports.createReseller = async (req, res) => {
         };
 
 
-        console.log("checkLoginUser12312312321------------------------", checkLoginUser)
 
 
         let createNotification = await userService.createNotification(notificationData);
@@ -165,8 +163,7 @@ exports.createReseller = async (req, res) => {
             content: `A New Reseller ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} - User Role - ${req.role} on our portal.`,
             subject: "New Reseller Added"
         }
-
-        console.log("checkLoginUser3333333------------------------", checkLoginUser)
+ 
 
         // Send Email code here
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
