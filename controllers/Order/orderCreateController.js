@@ -31,6 +31,7 @@ const AWS = require('aws-sdk');
 const { Upload } = require('@aws-sdk/lib-storage');
 const multerS3 = require('multer-s3');
 const aws = require('aws-sdk');
+const { checkout } = require("../../routes/Provider/service");
 const S3 = new aws.S3();
 
 aws.config.update({
@@ -937,23 +938,42 @@ async function generateTC(orderData) {
             //Read from the s3 bucket
             const data = await S3.getObject(params).promise();
             let attachment = data.Body.toString('base64');
-
-            //sendTermAndCondition
-            // Send Email code here
-            let notificationEmails = await supportingFunction.getUserEmails();
-            notificationEmails.push(DealerUser.email)
-            notificationEmails.push(resellerUser?.email)
             let settingData = await userService.getSetting({});
-            let emailData = {
+            const sendTcQuery = {
+                metaData: {
+                    $elemMatch: {
+                        $and: [
+                            { "orderNotifications.addingNewOrderActive": true },
+                            { status: true },
+                            {
+                                $or: [
+                                    { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                                    { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
+                                    { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                                    { roleId: new mongoose.Types.ObjectId("656f080e1eb1acda244af8c7") },
+                                ]
+                            }
+                        ]
+                    }
+                },
+            }
+            let adminUsers = await supportingFunction.getNotificationEligibleUser(sendTcQuery, { email: 1 })
+
+             // Send Email code here
+             let notificationEmails = adminUsers.map(user => user.email)
+             //Email to Dealer, customer, admin
+             let emailData = {
                 darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
                 lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
                 address: settingData[0]?.address,
                 websiteSetting: settingData[0],
                 senderName: customerUser.metaData[0]?.firstName,
-                content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
-                subject: 'Order Term and Condition-' + checkOrder.unique_key,
+                redirectId: base_url + "orderDetails/" + checkOrder._id,
+                content: `A new Order #${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName}- ${req.role}.`,
+                subject: "Order Added Successfully",
             }
-            let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
+
+             let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData, attachment))
 
         })
         return 1
@@ -1339,13 +1359,14 @@ exports.createOrder1 = async (req, res) => {
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
             senderName: getPrimary.metaData[0]?.firstName,
-            content: "The new order " + checkOrder.unique_key + "  has been created for " + getPrimary.metaData[0]?.firstName + "",
-            subject: "New Order"
+            content: `A new draft Order # ${checkOrder.unique_key} has been created by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+            subject: "Draft Order Created",
+            redirectId: base_url + "orderList/" + checkOrder.unique_key,
         }
 
 
         if (data.sendNotification) {
-            let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
         }
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
             let paidDate = {
@@ -1453,10 +1474,9 @@ exports.createOrder1 = async (req, res) => {
                         purchaseDate: item[keys[7]],
                     };
                 });
+
                 var contractArray = [];
-
                 let dealerBookDetail = []
-
                 let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, priceBook: priceBookId })
 
                 totalDataComing.forEach((data, index1) => {
@@ -1618,52 +1638,68 @@ exports.createOrder1 = async (req, res) => {
                     if (checkOrder?.termCondition) {
                         const tcResponse = await generateTC(savedResponse);
                     }
-                    //send notification to admin and dealer 
-                    let IDs = await supportingFunction.getUserIds()
+                    //send notification to admin and dealer, reseler ,customer
+                    const adminActiveOrderQuery = {
+                        metaData: {
+                            $elemMatch: {
+                                $and: [
+                                    { "orderNotifications.addingNewOrderActive": true },
+                                    { status: true },
+                                    {
+                                        $or: [
+                                            { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                                            { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
+                                            { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                                            { roleId: new mongoose.Types.ObjectId("656f080e1eb1acda244af8c7") },
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                    }
+                    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminActiveOrderQuery, { email: 1 })
+
+                    let IDs = adminUsers.map(user => user._id)
+
                     let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data.dealerId, isPrimary: true } } })
                     let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data.customerId, isPrimary: true } } })
                     let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data.resellerId, isPrimary: true } } })
-                    if (resellerPrimary) {
-                        IDs.push(resellerPrimary._id)
-                    }
-                    IDs.push(dealerPrimary._id, customerPrimary._id)
-                    let notificationData1 = {
-                        title: "Order Update and Processed",
-                        description: "The  order " + checkOrder.unique_key + " has been updated and processed",
+
+                    let notificationData = {
+                        title: "Order Added Successfully",
+                        description: `A new Order #${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName}- ${req.role}.`,
+                        adminTitle: "Order Added Successfully",
+                        dealerTitle: "Order Added Successfully",
+                        resellerTitle: "Order Added Successfully",
+                        customerTitle: "Order Added Successfully",
+                        dealerMessage: `A new Order #${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName}- ${req.role}.`,
+                        customerMessage: `A new Order #${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName}- ${req.role}.`,
+                        adminMessage: `A new Order #${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName}- ${req.role}.`,
+                        resellerMessage: `A new Order #${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName}- ${req.role}.`,
                         userId: req.teammateId,
-                        contentId: checkOrder._id,
-                        redirectionId: checkOrder.unique_key,
+                        contentId: null,
                         flag: 'order',
+                        redirectionId: "orderDetails/" + savedResponse._id,
+                        endpoint: base_url,
                         notificationFor: IDs
                     };
-
-                    let createNotification = await userService.createNotification(notificationData1);
-                    // Send Email code here
-                    let notificationEmails = await supportingFunction.getUserEmails();
-                    //Email to Dealer
+                    let createNotification = await userService.createNotification(notificationData);
+                   // Send Email code here
+                    let notificationEmails = adminUsers.map(user => user.email)
+                    //Email to Dealer, customer, admin
                     let emailData = {
                         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
                         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
                         address: settingData[0]?.address,
                         websiteSetting: settingData[0],
                         senderName: dealerPrimary.metaData[0]?.firstName,
-                        content: "The  order " + checkOrder.unique_key + " has been updated and processed",
-                        subject: "Process Order"
+                        redirectId: base_url + "orderDetails/" + savedResponse._id,
+                        content: `A new Order #${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName}- ${req.role}.`,
+                        subject: "Order Added Successfully",
                     }
 
-                    let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
-                    //Email to Reseller
-                    emailData = {
-                        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-                        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-                        address: settingData[0]?.address,
-                        websiteSetting: settingData[0],
-                        senderName: resellerPrimary?.metaData[0].firstName,
-                        content: "The  order " + checkOrder.unique_key + " has been updated and processed",
-                        subject: "Process Order"
-                    }
-
-                    mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
+                    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+                    
                     let logData = {
                         endpoint: "order/createOrder",
                         body: data,
@@ -1678,9 +1714,7 @@ exports.createOrder1 = async (req, res) => {
                     await LOG(logData).save()
                     //reporting codes 
                     let getPriceBookDetail = await priceBookService.findByName1({ _id: priceBookId })
-                    console.log("checking the reporting data ak++++++++++++++++++", pricebookDetail)
                     if (index == checkLength) {
-                        console.log("inside the reporting data ak=============================", pricebookDetail)
 
                         let reportingData = {
                             orderId: savedResponse._id,
@@ -1694,335 +1728,6 @@ exports.createOrder1 = async (req, res) => {
                 }
 
             }
-
-
-            // let mapOnProducts = savedResponse.productsArray.map(async (product, index) => {
-            //     let headerLength;
-            //     if (data.adh && isNaN(data.adh)) {
-
-            //         res.send({
-            //             code: contact.errorCode,
-            //             message: "Order is created successfully,but unable to create the contract due to the invalid ADH day"
-            //         })
-            //         return
-            //     }
-
-            //     let pricebookDetailObject = {}
-            //     let dealerPriceBookObject = {}
-            //     pricebookDetailObject.frontingFee = product?.priceBookDetails.frontingFee
-            //     pricebookDetailObject.reserveFutureFee = product?.priceBookDetails.reserveFutureFee
-            //     pricebookDetailObject.reinsuranceFee = product?.priceBookDetails.reinsuranceFee
-            //     pricebookDetailObject._id = product?.priceBookDetails._id
-            //     pricebookDetailObject.name = product?.priceBookDetails.name
-            //     pricebookDetailObject.categoryId = product?.priceBookDetails.category
-            //     pricebookDetailObject.term = product?.priceBookDetails.term
-            //     pricebookDetailObject.adminFee = product?.priceBookDetails.adminFee
-            //     pricebookDetailObject.price = product.price
-            //     pricebookDetailObject.noOfProducts = product.checkNumberProducts
-
-            //     pricebookDetailObject.retailPrice = product.unitPrice
-            //     pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
-            //     pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
-            //     pricebookDetail.push(pricebookDetailObject)
-
-            //     const readOpts = { // <--- need these settings in readFile options
-            //         cellDates: true
-            //     };
-
-            //     const jsonOpts = {
-            //         defval: '',
-            //         raw: false,
-            //         dateNF: '"m"/"d"/"yyyy"' // <--- need dateNF in sheet_to_json options (note the escape chars)
-            //     }
-            //     const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
-            //     const bucketReadUrl = { Bucket: process.env.bucket_name, Key: product.orderFile.fileName };
-            //     // Await the getObjectFromS3 function to complete
-            //     const result = await getObjectFromS3(bucketReadUrl);
-
-            //     headerLength = result.headers
-            //     if (headerLength.length !== 8) {
-            //         res.send({
-            //             code: constant.errorCode,
-            //             message: "Invalid file format detected. The sheet should contain exactly four columns."
-            //         })
-            //         return
-            //     }
-            //     let priceBookId = product.priceBookId;
-            //     let coverageStartDate = product.coverageStartDate;
-            //     let coverageStartDate1 = product.coverageStartDate1;
-            //     let coverageEndDate = product.coverageEndDate;
-            //     let coverageEndDate1 = product.coverageEndDate1;
-            //     let orderProductId = product._id;
-
-            //     let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
-
-            //     let projection = { isDeleted: 0 };
-
-            //     let priceBook = await priceBookService.getPriceBookById(
-            //         query,
-            //         projection
-            //     );
-            //     let dealerQuery = { priceBook: new mongoose.Types.ObjectId(priceBookId), dealerId: checkOrder.dealerId };
-            //     let dealerPriceBook = await dealerPriceService.getDealerPriceById(
-            //         dealerQuery,
-            //         {}
-            //     );
-
-            //     const totalDataComing1 = result.data
-            //     const totalDataComing = totalDataComing1.map((item) => {
-            //         const keys = Object.keys(item);
-            //         return {
-            //             brand: item[keys[0]],
-            //             model: item[keys[1]],
-            //             serial: item[keys[2]],
-            //             condition: item[keys[3]],
-            //             retailValue: item[keys[4]],
-            //             partsWarranty: item[keys[5]],
-            //             labourWarranty: item[keys[6]],
-            //             purchaseDate: item[keys[7]],
-            //         };
-            //     });
-            //     var contractArray = [];
-
-            //     let dealerBookDetail = []
-
-            //     let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, priceBook: priceBookId })
-
-            //     totalDataComing.forEach((data, index1) => {
-            //         let unique_key_number1 = increamentNumber
-            //         let unique_key_search1 = "OC" + "2024" + unique_key_number1
-            //         let unique_key1 = "OC-" + "2024-" + unique_key_number1
-            //         let claimStatus = new Date(product.coverageStartDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0) ? "Waiting" : "Active"
-            //         claimStatus = new Date(product.coverageEndDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) ? "Expired" : claimStatus
-
-            //         // -------------------------------------------------  copy from -----------------------------------------//
-
-            //         let dateCheck = new Date(product.coverageStartDate)
-            //         let adhDays = Number(product.adh ? product.adh != '' ? Number(product.adh) : 0 : 0)
-            //         let partWarrantyMonth = Number(data.partsWarranty ? data.partsWarranty : 0)
-            //         let labourWarrantyMonth = Number(data.labourWarranty ? data.labourWarranty : 0)
-
-            //         dateCheck = new Date(dateCheck.setDate(dateCheck.getDate() + Number(adhDays)))
-            //         if (!isValidDate(data.purchaseDate)) {
-            //             res.send({
-            //                 code: constant.successCode,
-            //                 message: `All date should be in the format MM/DD/YYYY , order has been created please update the file in edit order to create the contracts `
-            //             })
-            //             return
-            //         };
-            //         let p_date = new Date(data.purchaseDate)
-            //         let p_date1 = new Date(data.purchaseDate)
-            //         let l_date = new Date(data.purchaseDate)
-            //         let l_date1 = new Date(data.purchaseDate)
-            //         let purchaseMonth = p_date.getMonth();
-            //         let monthsPart = partWarrantyMonth;
-            //         let newPartMonth = purchaseMonth + monthsPart;
-
-            //         let monthsLabour = labourWarrantyMonth;
-            //         let newLabourMonth = purchaseMonth + monthsLabour;
-
-            //         let partsWarrantyDate = new Date(p_date.setMonth(newPartMonth))
-            //         let partsWarrantyDate1 = new Date(p_date1.setMonth(newPartMonth))
-            //         let labourWarrantyDate = new Date(l_date.setMonth(newLabourMonth))
-            //         let labourWarrantyDate1 = new Date(l_date1.setMonth(newLabourMonth))
-            //         //---------------------------------------- till here ----------------------------------------------
-
-            //         // Find the minimum date
-            //         let minDate;
-
-            //         let adhDaysArray = product.adhDays
-            //         adhDaysArray.sort((a, b) => a.waitingDays - b.waitingDays);
-            //         const futureDate = new Date(product.coverageStartDate);
-            //         let minDate1 = futureDate.setDate(futureDate.getDate() + adhDaysArray[0].waitingDays);
-            //         if (!product.isManufacturerWarranty) {
-            //             if (adhDaysArray.length == 1) {
-            //                 const hasBreakdown = adhDaysArray.some(item => item.value === 'breakdown');
-            //                 if (hasBreakdown) {
-            //                     let minDate2
-            //                     if (orderServiceCoverageType == "Parts") {
-            //                         minDate2 = partsWarrantyDate1
-            //                     } else if (orderServiceCoverageType == "Labour" || orderServiceCoverageType == "Labor") {
-            //                         minDate2 = labourWarrantyDate1
-            //                     } else {
-            //                         if (partsWarrantyDate1 > labourWarrantyDate1) {
-            //                             minDate2 = labourWarrantyDate1
-            //                         } else {
-            //                             minDate2 = partsWarrantyDate1
-            //                         }
-            //                     }
-            //                     if (minDate1 > minDate2) {
-            //                         minDate = minDate1
-            //                     }
-            //                     if (minDate1 < minDate2) {
-            //                         minDate = minDate2
-            //                     }
-            //                 } else {
-            //                     minDate = minDate1
-            //                 }
-            //             }
-            //             else {
-            //                 minDate = minDate1
-            //             }
-
-            //         } else {
-            //             minDate = minDate1
-
-            //         }
-            //         // let eligibilty = new Date(dateCheck) < new Date() ? true : false
-            //         minDate = new Date(minDate).setHours(0, 0, 0, 0)
-            //         let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
-            //         //reporting codes 
-            //         let contractObject = {
-            //             orderId: savedResponse._id,
-            //             orderUniqueKey: savedResponse.unique_key,
-            //             minDate: new Date(minDate),
-            //             venderOrder: savedResponse.venderOrder,
-            //             orderProductId: orderProductId,
-            //             coverageStartDate: coverageStartDate,
-            //             coverageStartDate1: coverageStartDate1,
-            //             dealerSku: dealerPriceBook.dealerSku,
-            //             coverageEndDate: coverageEndDate,
-            //             coverageEndDate1: coverageEndDate1,
-            //             productName: priceBook[0]?.name,
-            //             pName: priceBook[0]?.pName,
-            //             manufacture: data.brand,
-            //             model: data.model,
-            //             partsWarranty: new Date(partsWarrantyDate1),
-            //             serviceCoverageType: serviceCoverage,
-            //             coverageType: req.body.coverageType,
-            //             labourWarranty: new Date(labourWarrantyDate1),
-            //             purchaseDate: new Date(data.purchaseDate),
-            //             serial: data.serial,
-            //             status: claimStatus,
-            //             eligibilty: eligibilty,
-            //             condition: data.condition,
-            //             adhDays: product.adhDays,
-            //             noOfClaimPerPeriod: product.noOfClaimPerPeriod,
-            //             noOfClaim: product.noOfClaim,
-            //             isManufacturerWarranty: product.isManufacturerWarranty,
-            //             isMaxClaimAmount: product.isMaxClaimAmount,
-            //             productValue: data.retailValue,
-            //             unique_key: unique_key1,
-            //             unique_key_search: unique_key_search1,
-            //             unique_key_number: unique_key_number1,
-            //         };
-
-            //         increamentNumber++
-
-            //         contractArray.push(contractObject);
-            //     });
-
-            //     let saveContracts = await contractService.createBulkContracts(contractArray);
-
-            //     if (saveContracts.length == 0) {
-            //         let logData = {
-            //             endpoint: "order/createOrder",
-            //             body: data,
-            //             userId: req.userId,
-            //             response: {
-            //                 code: constant.errorCode,
-            //                 message: "Something went wrong in creating the contract",
-            //                 saveContracts
-            //             }
-            //         }
-            //         await LOG(logData).save()
-            //         let savedResponse = await orderService.updateOrder(
-            //             { _id: checkOrder._id },
-            //             { status: "Pending" },
-            //             { new: true }
-            //         );
-            //         res.send({
-            //             code: constant.errorCode,
-            //             message: "Something went wrong in creating the contract",
-            //         });
-            //         return
-            //     }
-            //     if (saveContracts[0]) {
-            //         let savedResponse = await orderService.updateOrder(
-            //             { _id: checkOrder._id },
-            //             { status: "Active" },
-            //             { new: true }
-            //         );
-            //         //generate T anc C
-            //         if (checkOrder?.termCondition) {
-            //             const tcResponse = await generateTC(savedResponse);
-            //         }
-            //         //send notification to admin and dealer 
-            //         let IDs = await supportingFunction.getUserIds()
-            //         let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: data.dealerId, isPrimary: true })
-            //         let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: data.customerId, isPrimary: true })
-            //         let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: data.resellerId, isPrimary: true })
-            //         if (resellerPrimary) {
-            //             IDs.push(resellerPrimary._id)
-            //         }
-            //         IDs.push(dealerPrimary._id, customerPrimary._id)
-            //         let notificationData1 = {
-            //             title: "Order Update and Processed",
-            //             description: "The  order " + checkOrder.unique_key + " has been updated and processed",
-            //             userId: req.teammateId,
-            //             contentId: checkOrder._id,
-            //             redirectionId: checkOrder.unique_key,
-            //             flag: 'order',
-            //             notificationFor: IDs
-            //         };
-
-            //         let createNotification = await userService.createNotification(notificationData1);
-            //         // Send Email code here
-            //         let notificationEmails = await supportingFunction.getUserEmails();
-            //         //Email to Dealer
-            //         let emailData = {
-            //             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-            //             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-            //             address: settingData[0]?.address,
-            //             websiteSetting: settingData[0],
-            //             senderName: dealerPrimary.firstName,
-            //             content: "The  order " + checkOrder.unique_key + " has been updated and processed",
-            //             subject: "Process Order"
-            //         }
-
-            //         let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
-            //         //Email to Reseller
-            //         emailData = {
-            //             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-            //             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-            //             address: settingData[0]?.address,
-            //             websiteSetting: settingData[0],
-            //             senderName: resellerPrimary?.firstName,
-            //             content: "The  order " + checkOrder.unique_key + " has been updated and processed",
-            //             subject: "Process Order"
-            //         }
-
-            //         mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
-            //         let logData = {
-            //             endpoint: "order/createOrder",
-            //             body: data,
-            //             userId: req.userId,
-            //             response: {
-            //                 code: constant.successCode,
-            //                 message: "Success2",
-            //                 saveContracts
-            //             }
-            //         }
-
-            //         await LOG(logData).save()
-            //         //reporting codes 
-            //         let getPriceBookDetail = await priceBookService.findByName1({ _id: priceBookId })
-            //         if (index == checkLength) {
-
-            //             let reportingData = {
-            //                 orderId: savedResponse._id,
-            //                 products: pricebookDetail,
-            //                 orderAmount: data.orderAmount,
-            //                 dealerId: data.dealerId,
-            //             }
-
-            //             await supportingFunction.reportingData(reportingData)
-            //         }
-            //     }
-            // })
-            // let checkOrder2 = await orderService.getOrder(
-            //     { _id: savedResponse._id },
-            // );
 
             res.send({
                 code: constant.successCode,
