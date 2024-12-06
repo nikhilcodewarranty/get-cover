@@ -274,7 +274,7 @@ exports.login = async (req, res) => {
         code: constant.errorCode,
         message: "Invalid Credentials"
       })
-      return; 
+      return;
     }
     let roleQuery = { _id: user.metaData[0].roleId }
     let roleProjection = { __v: 0 }
@@ -535,7 +535,7 @@ exports.getUserById = async (req, res) => {
           approvedStatus: 1,
           createdAt: 1,
           updatedAt: 1,
-          metaData:1
+          metaData: 1
         }
       },
     ]);
@@ -2538,7 +2538,7 @@ exports.updateDataBase = async (req, res) => {
                     },
                     registerNotifications: {
                       dealerRegistrationRequest: true,
-                      dealerServicerRequest: true,
+                      servicerRegistrationRequest: true,
                       dealerDisapproved: true,
                       servicerDisapproved: true
                     }

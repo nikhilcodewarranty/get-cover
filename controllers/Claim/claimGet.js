@@ -77,6 +77,8 @@ exports.getAllClaims = async (req, res, next) => {
     let limitData = Number(pageLimit)
     let match = {};
     let servicerMatch = {}
+    let dealerMatch = {}
+    let resellerMatch = {}
     // checking the user type from token
     if (req.role == 'Dealer') {
       match = { 'contracts.orders.dealerId': new mongoose.Types.ObjectId(req.userId) }
@@ -224,6 +226,20 @@ exports.getAllClaims = async (req, res, next) => {
         servicerMatch = { 'servicerId': new mongoose.Types.ObjectId('5fa1c587ae2ac23e9c46510f') }
       }
     }
+    data.dealerName = data.dealerName ? data.dealerName : ""
+    data.resellerMatch = data.resellerMatch ? data.resellerMatch : ""
+    if (data.dealerName != "") {
+      let getDealer = await dealerService.getAllDealers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
+      let dealerIds = getDealer.map(ID => new mongoose.Types.ObjectId(ID._id))
+      dealerMatch = { dealerId: { $in: dealerIds } }
+
+    }
+
+    if (data.resellerName != "") {
+      let getReseller = await resellerService.getResellers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
+      let resellerIds = getReseller.map(ID => new mongoose.Types.ObjectId(ID._id))
+      resellerMatch = { resellerId: { $in: resellerIds } }
+    }
 
     let claimPaidStatus = {}
     if (data.claimPaidStatus != '' && data.claimPaidStatus != undefined) {
@@ -251,7 +267,9 @@ exports.getAllClaims = async (req, res, next) => {
             { 'customerStatus.status': { '$regex': data.customerStatusValue ? data.customerStatusValue : '', '$options': 'i' } },
             { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
             { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus : '', '$options': 'i' } },
-            servicerMatch
+            servicerMatch,
+            dealerMatch,
+            resellerMatch
           ]
         },
       },
@@ -823,7 +841,7 @@ exports.getContractById = async (req, res) => {
     }))
 
     allUsers.sort((a, b) => b.isPrimary - a.isPrimary);
-    
+
     getData[0].allUsers = allUsers
 
     //Get customer addresses

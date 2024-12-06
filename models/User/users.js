@@ -360,7 +360,7 @@ const userSchema = new mongoose.Schema({
                             type: "Boolean",
                             default: true
                         },
-                        dealerServicerRequest: {
+                        servicerRegistrationRequest: {
                             type: "Boolean",
                             default: true
                         },
