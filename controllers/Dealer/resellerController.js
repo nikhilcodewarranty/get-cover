@@ -129,14 +129,14 @@ exports.createReseller = async (req, res) => {
         // Primary User Welcoime email
         let notificationEmails = adminUsers.map(user => user.email)
         //Merge start singleServer
-        let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
+        let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
         // if (checkDealer.isAccountCreate) {
         //     IDs.push(getPrimary._id)
         //     notificationEmails.push(getPrimary.email)
         // }
         //Merge end
 
-        console.log("checkLoginUser------------------------",checkLoginUser)
+        console.log("checkLoginUser------------------------", checkLoginUser)
         let notificationData = {
             adminTitle: "New Reseller  Added",
             adminMessage: `A New Reseller ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} - User Role - ${req.role} on our portal.`,
@@ -150,7 +150,7 @@ exports.createReseller = async (req, res) => {
         };
 
 
-        console.log("checkLoginUser12312312321------------------------",checkLoginUser)
+        console.log("checkLoginUser12312312321------------------------", checkLoginUser)
 
 
         let createNotification = await userService.createNotification(notificationData);
@@ -160,13 +160,13 @@ exports.createReseller = async (req, res) => {
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
-            senderName: getPrimary.metaData[0]?.firstName,
+            senderName: getPrimary?.metaData[0]?.firstName,
             redirectId: base_url + "resellerDetails/" + createdReseler._id,
             content: `A New Reseller ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} - User Role - ${req.role} on our portal.`,
             subject: "New Reseller Added"
         }
 
-        console.log("checkLoginUser3333333------------------------",checkLoginUser)
+        console.log("checkLoginUser3333333------------------------", checkLoginUser)
 
         // Send Email code here
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
