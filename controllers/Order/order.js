@@ -1401,25 +1401,48 @@ exports.archiveOrder = async (req, res) => {
                 return;
             }
         }
+        //Get submitted user
+        const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+        const base_url = `${process.env.SITE_URL}`
+        const adminArcheiveOrderQuery = {
+            metaData: {
+                $elemMatch: {
+                    $and: [
+                        { "orderNotifications.archivinOrder": true },
+                        { status: true },
+                        {
+                            $or: [
+                                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                                { roleId: new mongoose.Types.ObjectId("65bb94b4b68e5a4a62a0b563") },
+                                { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
+                            ]
+                        }
+                    ]
+                }
+            },
+        }
+        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminArcheiveOrderQuery, { email: 1 })
         //send notification to dealer,reseller,admin,customer
-        let IDs = await supportingFunction.getUserIds()
+
+        const IDs = adminUsers.map(user => user._id)
         let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } })
         let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } })
         let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } })
-        if (resellerPrimary) {
-            IDs.push(resellerPrimary._id)
-        }
-        if (customerPrimary) {
-            IDs.push(customerPrimary._id)
-        }
-        IDs.push(dealerPrimary._id)
+
         let notificationData1 = {
-            title: "Order Archieved",
-            description: "The order " + checkOrder.unique_key + " has been archeived!.",
+            title: "Order Archieved Successfully",
+            dealerTitle: "Order Archieved Successfully",
+            resellerTitle: "Order Archieved Successfully",
+            adminTitle: "Order Archieved Successfully",
+            description: `The Order # ${checkOrder.unique_key} has been archieved successfully by ${checkLoginUser.metaData[0]?.firstName}.`,
+            dealerMessage: `The Order # ${checkOrder.unique_key} has been archieved successfully by ${checkLoginUser.metaData[0]?.firstName}.`,
+            resellerMessage: `The Order # ${checkOrder.unique_key} has been archieved successfully by ${checkLoginUser.metaData[0]?.firstName}.`,
+            adminMessage: `The Order # ${checkOrder.unique_key} has been archieved successfully by ${checkLoginUser.metaData[0]?.firstName}.`,
             userId: req.teammateId,
             contentId: checkOrder._id,
             flag: 'Order Archieved',
-            redirectionId: checkOrder.unique_key,
+            redirectionId: "/archiveOrder",
+            endPoint: base_url,
             notificationFor: IDs
         };
         let createNotification = await userService.createNotification(notificationData1);
@@ -1435,7 +1458,7 @@ exports.archiveOrder = async (req, res) => {
         }
         await LOG(logData).save()
         // Send Email code here
-        let notificationEmails = await supportingFunction.getUserEmails();
+        let notificationEmails = adminUsers.map(user => user.email)
         let settingData = await userService.getSetting({});
         let emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -1447,19 +1470,7 @@ exports.archiveOrder = async (req, res) => {
             subject: "Archeive Order"
         }
         if (checkOrder.sendNotification) {
-            let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
-        }
-        emailData = {
-            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-            address: settingData[0]?.address,
-            websiteSetting: settingData[0],
-            senderName: resellerPrimary?.metaData[0]?.firstName,
-            content: "The order " + checkOrder.unique_key + " has been archeived!.",
-            subject: "Archeive Order"
-        }
-        if (checkOrder.sendNotification) {
-            mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
         }
         //  }
         res.send({
@@ -2079,26 +2090,52 @@ exports.markAsPaid = async (req, res) => {
                     const tcResponse = await generateTC(savedResponse);
                 }
                 // send notification to dealer,admin, customer
-                let IDs = await supportingFunction.getUserIds()
+                const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+                const base_url = `${process.env.SITE_URL}`
+                const adminMarkAsPaidQuery = {
+                    metaData: {
+                        $elemMatch: {
+                            $and: [
+                                { "orderNotifications.makingOrderPaid": true },
+                                { status: true },
+                                {
+                                    $or: [
+                                        { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                                        { roleId: new mongoose.Types.ObjectId("656f080e1eb1acda244af8c7") },
+                                        { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
+                                        { roleId: new mongoose.Types.ObjectId("65bb94b4b68e5a4a62a0b563") },
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                }
+                let adminUsers = await supportingFunction.getNotificationEligibleUser(adminMarkAsPaidQuery, { email: 1 })
+                const IDs = adminUsers.map(user => user._id)
                 let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } })
                 let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } })
                 let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } })
-                if (resellerPrimary) {
-                    IDs.push(resellerPrimary._id)
-                }
-                IDs.push(dealerPrimary._id, customerPrimary._id)
                 let notificationData1 = {
-                    title: "Mark As Paid",
-                    description: "The order " + checkOrder.unique_key + " has been mark as paid",
+                    title: "Order Marked Paid Successfully",
+                    dealerTitle: "Order Marked Paid Successfully",
+                    customerTitle: "Order Marked Paid Successfully",
+                    adminTitle: "Order Marked Paid Successfully",
+                    resellerTitle: "Order Marked Paid Successfully",
+                    description: `The Order #${checkOrder.unique_key} has been marked completed in the system by ${checkLoginUser.metaData[0]?.firstName}`,
+                    customerMessage: `The Order #${checkOrder.unique_key} has been marked completed in the system by ${checkLoginUser.metaData[0]?.firstName}`,
+                    adminMessage: `The Order #${checkOrder.unique_key} has been marked completed in the system by ${checkLoginUser.metaData[0]?.firstName}`,
+                    resellerMessage: `The Order #${checkOrder.unique_key} has been marked completed in the system by ${checkLoginUser.metaData[0]?.firstName}`,
+                    dealerMessage: `The Order #${checkOrder.unique_key} has been marked completed in the system by ${checkLoginUser.metaData[0]?.firstName}`,
                     userId: req.teammateId,
                     contentId: checkOrder._id,
                     flag: 'order',
-                    redirectionId: checkOrder.unique_key,
+                    redirectionId: "orderDetails/" + checkOrder.unique_key,
+                    endPoint: base_url,
                     notificationFor: IDs
                 };
                 let createNotification = await userService.createNotification(notificationData1);
                 // Send Email code here
-                let notificationEmails = await supportingFunction.getUserEmails();
+                let notificationEmails = adminUsers.map(user => user.email)
                 //Email to Dealer
                 let settingData = await userService.getSetting({});
                 //Email to Dealer
@@ -2109,24 +2146,11 @@ exports.markAsPaid = async (req, res) => {
                     websiteSetting: settingData[0],
                     senderName: dealerPrimary.metaData[0]?.firstName,
                     content: "The  order " + savedResponse.unique_key + " has been paid",
-                    subject: "Mark as paid"
+                    subject: "Mark as paid",
+                    redirectId: base_url + "orderDetails/" + checkOrder._id,
                 }
                 if (checkOrder.sendNotification) {
-                    let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
-                }
-                //Email to Reseller 
-                emailData = {
-                    darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-                    lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-                    address: settingData[0]?.address,
-                    websiteSetting: settingData[0],
-                    senderName: resellerPrimary?.metaData[0]?.firstName,
-                    content: "The  order " + savedResponse.unique_key + " has been paid",
-                    subject: "Mark As paid"
-                }
-                if (checkOrder.sendNotification) {
-
-                    mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
+                    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
                 }
                 //Email to customer code here........
                 if (index == checkLength) {
@@ -2456,8 +2480,8 @@ exports.getResellerByDealerAndCustomer = async (req, res) => {
                 }
             },
             {
-                $project:{
-                    resellerData:1, 
+                $project: {
+                    resellerData: 1,
                     email: 1,
                     'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
                     'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
@@ -2475,7 +2499,7 @@ exports.getResellerByDealerAndCustomer = async (req, res) => {
                     updatedAt: 1
                 }
             }
-            
+
         ])
         if (!getReseller) {
             res.send({
@@ -2707,10 +2731,28 @@ async function generateTC(orderData) {
             let attachment = data.Body.toString('base64');
             //sendTermAndCondition
             // Send Email code here
-            let notificationEmails = await supportingFunction.getUserEmails();
+            const base_url = `${process.env.SITE_URL}`
+            const adminMarkAsPaidQuery = {
+                metaData: {
+                    $elemMatch: {
+                        $and: [
+                            { "orderNotifications.makingOrderPaid": true },
+                            { status: true },
+                            {
+                                $or: [
+                                    { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                                    { roleId: new mongoose.Types.ObjectId("656f080e1eb1acda244af8c7") },
+                                    { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
+                                    { roleId: new mongoose.Types.ObjectId("65bb94b4b68e5a4a62a0b563") },
+                                ]
+                            }
+                        ]
+                    }
+                },
+            }
+            let adminUsers = await supportingFunction.getNotificationEligibleUser(adminMarkAsPaidQuery, { email: 1 })
+            let notificationEmails = adminUsers.map(user => user.email)
             let settingData = await userService.getSetting({});
-            notificationEmails.push(DealerUser.email)
-            notificationEmails.push(resellerUser?.email)
             let emailData = {
                 darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
                 lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -2719,9 +2761,10 @@ async function generateTC(orderData) {
                 senderName: customerUser.metaData[0]?.firstName,
                 content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
                 subject: 'Order Term and Condition-' + checkOrder.unique_key,
+                redirectId: base_url + "orderDetails/" + checkOrder._id,
             }
             if (checkOrder.sendNotification) {
-                let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
+                let mailing = await sgMail.send(emailConstant.sendTermAndCondition(notificationEmails, ["noreply@getcover.com"], emailData, attachment))
             }
         })
         return 1
