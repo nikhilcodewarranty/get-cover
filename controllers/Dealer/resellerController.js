@@ -135,6 +135,8 @@ exports.createReseller = async (req, res) => {
         //     notificationEmails.push(getPrimary.email)
         // }
         //Merge end
+
+        console.log("checkLoginUser------------------------",checkLoginUser)
         let notificationData = {
             adminTitle: "New Reseller  Added",
             adminMessage: `A New Reseller ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} - User Role - ${req.role} on our portal.`,
