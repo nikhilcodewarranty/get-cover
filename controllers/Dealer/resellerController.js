@@ -149,6 +149,10 @@ exports.createReseller = async (req, res) => {
             notificationFor: IDs
         };
 
+
+        console.log("checkLoginUser12312312321------------------------",checkLoginUser)
+
+
         let createNotification = await userService.createNotification(notificationData);
         let settingData = await userService.getSetting({});
         let emailData = {
@@ -162,6 +166,7 @@ exports.createReseller = async (req, res) => {
             subject: "New Reseller Added"
         }
 
+        console.log("checkLoginUser3333333------------------------",checkLoginUser)
 
         // Send Email code here
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
