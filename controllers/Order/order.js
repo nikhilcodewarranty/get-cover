@@ -1463,7 +1463,7 @@ exports.archiveOrder = async (req, res) => {
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
             senderName: dealerPrimary.metaData[0]?.firstName,
-            content: `The Order # ${checkOrder.unique_key} has been archieved successfully by ${checkLoginUser.metaData[0]?.firstName}.`,,
+            content: `The Order # ${checkOrder.unique_key} has been archieved successfully by ${checkLoginUser.metaData[0]?.firstName}.`,
             subject: "Order Archieved Successfully",
         }
         if (checkOrder.sendNotification) {
