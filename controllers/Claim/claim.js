@@ -4203,3 +4203,134 @@ exports.updateClaimDate = async (req, res) => {
   }
 }
 
+exports.checkNumberOfCertainPeriod = async (req, res) => {
+  try {
+    const query = { eligibilty: true };
+    const limit = 10000; // Adjust the limit based on your needs
+    let page = 0;
+    let hasMore = true;
+    while (hasMore) {
+      const result = await contractService.findContracts2(query, limit, page);
+      if (result.length === 0) {
+        hasMore = false;
+        break;
+      }
+
+      for (let i = 0; i < result.length; i++) {
+        let checkContract = result[i]
+        let baseDate = new Date(checkContract.coverageStartDate);
+        let newDateToCheck = new Date()
+        const newDayOfMonth = newDateToCheck.getDate();
+        const dayOfMonth = baseDate.getDate();
+
+        // Get the current year and month
+        const currentYear1 = new Date().getFullYear();
+        const currentMonth1 = new Date().getMonth(); // Note: 0 = January, so this is the current month index
+
+        // Create a new date with the current year, current month, and the day from baseDate
+        let newDateWithSameDay = new Date(currentYear1, currentMonth1, dayOfMonth);
+        if (Number(newDayOfMonth) > Number(dayOfMonth)) {
+          newDateWithSameDay = new Date(new Date(newDateWithSameDay).setMonth(newDateWithSameDay.getMonth() - 1));
+        }
+
+        const monthlyEndDate = new Date(new Date(newDateWithSameDay).setMonth(newDateWithSameDay.getMonth() + 1)); // Ends on August 11, 2024
+        const yearlyEndDate = new Date(new Date(newDateWithSameDay).setFullYear(newDateWithSameDay.getFullYear() + 1)); // Ends on July 11, 2025
+
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+        const endOfToday = new Date();
+        endOfToday.setHours(23, 59, 59, 999);
+
+        let getNoOfClaimQuery = [
+          {
+            $match: {
+              contractId: new mongoose.Types.ObjectId(checkContract._id),
+              claimFile: "completed"
+            }
+          },
+          {
+            $group: {
+              _id: null,
+              monthlyCount: {
+                $sum: {
+                  $cond: [
+                    {
+                      $and: [
+                        { $gte: ['$createdAt', newDateWithSameDay] },
+                        { $lt: ['$createdAt', monthlyEndDate] }
+                      ]
+                    },
+                    1,
+                    0
+                  ]
+                }
+              },
+              yearlyCount: {
+                $sum: {
+                  $cond: [
+                    {
+                      $and: [
+                        { $gte: ['$createdAt', newDateWithSameDay] },
+                        { $lt: ['$createdAt', yearlyEndDate] }
+                      ]
+                    },
+                    1,
+                    0
+                  ]
+                }
+              }
+            }
+          }
+        ];
+
+        let checkNoOfClaims = await claimService.getClaimWithAggregate(getNoOfClaimQuery)
+        if (checkNoOfClaims.length == 0) {
+          checkNoOfClaims = [{
+            "monthlyCount": 0,
+            "yearlyCount": 0
+          }]
+        }
+        let checkThePeriod = checkContract.noOfClaim
+        let getTotalClaim = await claimService.getClaims({ contractId: checkContract._id, claimFile: "completed" })
+        let noOfTotalClaims = getTotalClaim.length
+        if (checkThePeriod.value != -1) {
+          if (checkThePeriod.period == "Monthly") {
+            let eligibility = checkNoOfClaims[0].monthlyCount >= checkThePeriod.value ? false : true
+            if (eligibility) {
+              if (checkContract.noOfClaimPerPeriod != -1) {
+                eligibility = noOfTotalClaims >= checkContract.noOfClaimPerPeriod ? false : true
+
+              }
+            }
+            const updateContract = await contractService.updateContract({ _id: checkContract._id }, { eligibilty: eligibility }, { new: true })
+          } else {
+            let eligibility = checkNoOfClaims[0].yearlyCount >= checkThePeriod.value ? false : true
+
+            if (eligibility) {
+              if (checkContract.noOfClaimPerPeriod != -1) {
+
+                eligibility = noOfTotalClaims >= checkContract.noOfClaimPerPeriod ? false : true
+              }
+            }
+            const updateContract = await contractService.updateContract({ _id: checkContract._id }, { eligibilty: eligibility }, { new: true })
+          }
+        }
+        
+      }
+      page++;
+    }
+
+    res.send({
+      code: constant.successCode,
+    });
+
+
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
