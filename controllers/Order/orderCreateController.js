@@ -1344,7 +1344,7 @@ exports.createOrder1 = async (req, res) => {
             contentId: null,
             flag: 'order',
             redirectionId: "orderList/" + savedResponse.unique_key,
-            endpoint: base_url,
+            endPoint: base_url,
             notificationFor: IDs
         };
 
@@ -1680,7 +1680,7 @@ exports.createOrder1 = async (req, res) => {
                         contentId: null,
                         flag: 'order',
                         redirectionId: "orderDetails/" + savedResponse._id,
-                        endpoint: base_url,
+                        endPoint: base_url,
                         notificationFor: IDs
                     };
                     let createNotification = await userService.createNotification(notificationData);
