@@ -253,7 +253,7 @@ exports.getAllClaims = async (req, res, next) => {
         dateMatch = { createdAt: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
         // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
       }
-      if (data.dateFilter == "completeDate") {
+      if (data.dateFilter == "closeDate") {
         dateMatch = { claimDate: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
         statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
       }
