@@ -256,6 +256,7 @@ exports.createCustomer = async (req, res, next) => {
             },
         }
         //Send Notification to customer,admin,reseller,dealer 
+        let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
 
         let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
         const IDs = adminUsers.map(user => user._id)
