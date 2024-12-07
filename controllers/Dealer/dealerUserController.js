@@ -570,6 +570,7 @@ exports.createCustomer = async (req, res, next) => {
         }
 
         const createdCustomer = await customerService.createCustomer(customerObject);
+        data._id = createdCustomer._id;
         if (!createdCustomer) {
             //Save Logs create Customer
             let logData = {
