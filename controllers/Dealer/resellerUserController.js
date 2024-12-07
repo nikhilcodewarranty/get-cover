@@ -159,6 +159,7 @@ exports.createCustomer = async (req, res, next) => {
             })
             return;
         };
+        let settingData = await userService.getSetting({});
 
         // check customer acccount name 
         let checkAccountName = await customerService.getCustomerByName({
