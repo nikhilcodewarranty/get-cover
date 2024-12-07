@@ -159,6 +159,7 @@ exports.createCustomer = async (req, res, next) => {
             })
             return;
         };
+        let settingData = await userService.getSetting({});
 
         // check customer acccount name 
         let checkAccountName = await customerService.getCustomerByName({
@@ -255,6 +256,7 @@ exports.createCustomer = async (req, res, next) => {
             },
         }
         //Send Notification to customer,admin,reseller,dealer 
+        let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
 
         let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
         const IDs = adminUsers.map(user => user._id)
@@ -288,7 +290,7 @@ exports.createCustomer = async (req, res, next) => {
         res.send({
             code: constant.successCode,
             message: "Customer created successfully",
-            result: data
+            result: createdCustomer
         })
     } catch (err) {
         res.send({
