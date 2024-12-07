@@ -1340,7 +1340,7 @@ exports.createOrder1 = async (req, res) => {
             description: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  -${req.role}.`,
             dealerMessage: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  -${req.role}.`,
             resellerMessage: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  -${req.role}.`,
-            adminMessage: "A new order " + savedResponse.unique_key + " has been created. The order is still in the pending state.",
+            adminMessage:`A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  -${req.role}.`,
             userId: req.teammateId,
             contentId: null,
             flag: 'order',
