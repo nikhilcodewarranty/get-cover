@@ -1360,7 +1360,7 @@ exports.createOrder1 = async (req, res) => {
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
             senderName: getPrimary.metaData[0]?.firstName,
-            content: "The new order " + checkOrder.unique_key + "  has been created for " + getPrimary.metaData[0]?.firstName + "",
+            content: `A new Order # ${savedResponse.unique_key} has been created. The order is still in the pending state. To complete the order please click here and fill the data`,
             subject: "New Order",
             redirectId: base_url + "orderList/" + savedResponse.unique_key,
         }
@@ -1691,8 +1691,9 @@ exports.createOrder1 = async (req, res) => {
                         address: settingData[0]?.address,
                         websiteSetting: settingData[0],
                         senderName: dealerPrimary.metaData[0]?.firstName,
-                        content: "The  order " + checkOrder.unique_key + " has been updated and processed",
-                        subject: "Process Order"
+                        content: `Congratulations, your order # ${checkOrder.unique_key} has been created in our system. Please login to the system and view your order details.Also, we have attached our T&C to the email for the review. Please review, if there is anything wrong here, do let us know. You can contact us at : support@getcover.com`,
+                        subject: "Process Order",
+                        redirectId: base_url + "orderDetails" + checkOrder.unique_key
                     }
 
                     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
@@ -2415,9 +2416,9 @@ exports.editOrderDetail = async (req, res) => {
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
             senderName: dealerPrimary.metaData[0].firstName,
-            content: "The  order " + savedResponse.unique_key + " has been updated",
+            content: `Your order # ${checkOrder.unique_key} has been updated in our system. The order is still pending, as there is some data missing. Please update the data using the link here.`,
             subject: "Order Update",
-            redirectId: base_url + "orderList/" + savedResponse.unique_key,
+            redirectId: base_url + "editOrder/" + checkOrder.unique_key,
         }
         if (data.sendNotification) {
             let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
@@ -2724,7 +2725,7 @@ exports.editOrderDetail = async (req, res) => {
                     };
                     let createNotification = await userService.createNotification(notificationData);
                     // Send Email code here
-                    let notificationEmails = adminUsers.map(user => user.email)
+                    let = adminUsers.map(user => user.email)
                     //Email to Dealer
                     let emailData = {
                         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -2732,7 +2733,7 @@ exports.editOrderDetail = async (req, res) => {
                         address: settingData[0]?.address,
                         websiteSetting: settingData[0],
                         senderName: dealerPrimary.metaData[0].firstName,
-                        content: "The  order " + savedResponse.unique_key + " updated and processed",
+                        content: "The order " + savedResponse.unique_key + " updated and processed",
                         subject: "Process Order",
                         redirectId: base_url + "orderDetails/" + checkOrder._id,
                     }

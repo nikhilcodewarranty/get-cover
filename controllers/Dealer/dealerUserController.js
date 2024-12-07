@@ -1212,7 +1212,7 @@ exports.createOrder = async (req, res) => {
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
             senderName: getPrimary.metaData[0]?.firstName,
-            content: "The new order " + savedResponse.unique_key + "  has been created for " + getPrimary.metaData[0]?.firstName + "",
+            content: `A new Order # ${savedResponse.unique_key} has been created. The order is still in the pending state. To complete the order please click here and fill the data`,
             subject: "New Order",
             redirectId: base_url + "orderList/" + savedResponse.unique_key,
         }
@@ -1445,12 +1445,9 @@ exports.editOrderDetail = async (req, res) => {
                 let addOneDay = new Date(getChoosedProducts[A].coverageStartDate)
                 let addOneDay1 = new Date(getChoosedProducts[A].coverageStartDate)
                 let addOneDay2 = new Date(getChoosedProducts[A].coverageStartDate)
-                console.log("checking the date+++++++++++++++++++++++", addOneDay2)
                 addOneDay2.setMonth(addOneDay2.getMonth() + getChoosedProducts[A].term)
                 addOneDay2.setDate(addOneDay2.getDate() - 1)
-                console.log("checking the date+++++++++++++++++++++++", addOneDay2)
                 let addOneDay3 = new Date(getChoosedProducts[A].coverageStartDate)
-                console.log("checking the date+++++++++++++++++++++++", addOneDay3)
                 addOneDay3.setMonth(addOneDay3.getMonth() + getChoosedProducts[A].term)
                 addOneDay3.setDate(addOneDay3.getDate() - 1)
 
@@ -1585,7 +1582,7 @@ exports.editOrderDetail = async (req, res) => {
             // senderName: dealerPrimary.firstName,
             content: "Your order " + checkOrder.unique_key + " has been updated in our system. The order is still pending, as there is some data missing.Please update the data using the link here",
             subject: "Order Updated",
-            redirectId: base_url + "orderList/" + savedResponse.unique_key,
+            redirectId: base_url + "editOrder/" + savedResponse.unique_key,
         }
         if (req.body.sendNotification) {
             let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
