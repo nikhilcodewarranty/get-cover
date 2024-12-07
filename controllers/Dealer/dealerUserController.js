@@ -687,7 +687,7 @@ exports.createCustomer = async (req, res, next) => {
         res.send({
             code: constant.successCode,
             message: "Customer created successfully",
-            result: data
+            result: createdCustomer
         })
     } catch (err) {
         //Save Logs create Customer
