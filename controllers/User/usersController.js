@@ -1150,6 +1150,34 @@ exports.getAllNotifications1 = async (req, res) => {
       }
     }
 
+    let titleKeyToUpdate;
+    let messageKeyToUpdate;
+    if (req.role == "Reseller") {
+      titleKeyToUpdate = "resellerTitle"
+      messageKeyToUpdate = "resellerMessage"
+    };
+    if (req.role == "Dealer") {
+      titleKeyToUpdate = "dealerTitle"
+      messageKeyToUpdate = "dealerMessage"
+    };
+    if (req.role == "Customer") {
+      titleKeyToUpdate = "customerTitle"
+      messageKeyToUpdate = "customerMessage"
+    };
+    if (req.role == "Servicer") {
+      titleKeyToUpdate = "servicerTitle"
+      messageKeyToUpdate = "servicerMessage"
+    };
+    if (req.role == "Super Admin") {
+      titleKeyToUpdate = "adminTitle"
+      messageKeyToUpdate = "adminMessage"
+    };
+
+    updatedNotifications = updatedNotifications.map(item => {
+      console.log(item + "." + messageKeyToUpdate)
+      return { ...item, title: item[titleKeyToUpdate], description: item[messageKeyToUpdate] }
+    })
+
     res.send({
       code: constant.successCode,
       message: "Success",
