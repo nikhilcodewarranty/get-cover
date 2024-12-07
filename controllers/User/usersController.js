@@ -1969,6 +1969,10 @@ exports.getSetting = async (req, res) => {
       userId = checkCustomer.dealerId
     }
     setting = await userService.getSetting({ userId: userId });
+    if (!setting[0]) {
+      // dealerId = "668fd6cf91f918f716391e96"
+      setting = await userService.getSetting({});
+    }
     const baseUrl = process.env.API_ENDPOINT;
     if (setting.length > 0) {
       setting[0].base_url = baseUrl;
