@@ -2076,7 +2076,6 @@ exports.preLoginData = async (req, res) => {
   }
 }
 
-
 exports.uploadLogo = async (req, res) => {
   try {
     logoUpload(req, res, async (err) => {
