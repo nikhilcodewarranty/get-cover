@@ -79,6 +79,7 @@ exports.getAllClaims = async (req, res, next) => {
     let servicerMatch = {}
     let dealerMatch = {}
     let resellerMatch = {}
+    let dateMatch = {}
     // checking the user type from token
     if (req.role == 'Dealer') {
       match = { 'contracts.orders.dealerId': new mongoose.Types.ObjectId(req.userId) }
@@ -228,6 +229,7 @@ exports.getAllClaims = async (req, res, next) => {
     }
     data.dealerName = data.dealerName ? data.dealerName : ""
     data.resellerMatch = data.resellerMatch ? data.resellerMatch : ""
+    data.dateFilter = data.dateFilter ? data.dateFilter : ""
     if (data.dealerName != "") {
       let getDealer = await dealerService.getAllDealers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
       let dealerIds = getDealer.map(ID => new mongoose.Types.ObjectId(ID._id))
@@ -239,6 +241,22 @@ exports.getAllClaims = async (req, res, next) => {
       let getReseller = await resellerService.getResellers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
       let resellerIds = getReseller.map(ID => new mongoose.Types.ObjectId(ID._id))
       resellerMatch = { resellerId: { $in: resellerIds } }
+    }
+
+    statusMatch = {}
+    if (data.dateFilter != "") {
+      if (data.dateFilter == "damageDate") {
+        dateMatch = { lossDate: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
+        // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
+      }
+      if (data.dateFilter == "openDate") {
+        dateMatch = { createdAt: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
+        // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
+      }
+      if (data.dateFilter == "completeDate") {
+        dateMatch = { claimDate: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
+        statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
+      }
     }
 
     let claimPaidStatus = {}
@@ -269,7 +287,9 @@ exports.getAllClaims = async (req, res, next) => {
             { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus : '', '$options': 'i' } },
             servicerMatch,
             dealerMatch,
-            resellerMatch
+            resellerMatch,
+            dateMatch,
+            statusMatch
           ]
         },
       },
