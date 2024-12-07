@@ -2719,7 +2719,7 @@ exports.editOrderDetail = async (req, res) => {
                         userId: req.teammateId,
                         contentId: checkOrder._id,
                         flag: 'order',
-                        redirectionId: "orderDetails/" + checkOrder._id,
+                        redirectionId: "orderDetails/" + checkOrder._id,  
                         endPoint: base_url,
                         notificationFor: IDs
                     };
