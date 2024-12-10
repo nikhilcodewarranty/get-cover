@@ -789,22 +789,43 @@ exports.editClaim = async (req, res) => {
       });
 
       //Send notification to all
-      let IDs = await supportingFunction.getUserIds()
+      //Get submitted user
+      const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+      const site_url = `${process.env.SITE_URL}`
+      const adminEditClaimQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "claimNotification.partsUpdate": true },
+              { status: true },
+              {
+                $or: [
+                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                  { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
+                ]
+              }
+            ]
+          }
+        },
+      }
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminEditClaimQuery, { email: 1 })
+      const IDs = adminUsers.map(user => user._id)
       let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkClaim?.servicerId, isPrimary: true } } })
       //chek servicer status
       const checkServicer = await servicerService.getServiceProviderById({ $or: [{ _id: checkClaim?.servicerId }, { dealerId: checkClaim?.servicerId }, { resellerId: checkClaim?.servicerId }] })
 
-      if (servicerPrimary && checkServicer?.isAccountCreate) {
-        IDs.push(servicerPrimary._id)
-      }
-
       let notificationData1 = {
-        title: "Repair Parts/ labor update",
-        description: "The  repair part update for " + checkClaim.unique_key + " claim",
+        title: "Servicer charges added",
+        adminTitle: "Servicer charges added",
+        servicerTitle: "Servicer charges added",
+        description: `Claim # ${checkClaim.unique_key} - Service charges has been updated by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+        adminMessage: `Claim # ${checkClaim.unique_key} - Service charges has been updated by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+        servicerMessage: `Claim # ${checkClaim.unique_key} - Service charges has been updated by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
         userId: req.teammateId,
         contentId: checkClaim._id,
         flag: 'claim',
-        redirectionId: checkClaim.unique_key,
+        endPoint: site_url,
+        redirectionId: "claim-listing/" + checkClaim.unique_key,
         notificationFor: IDs
       };
       let createNotification = await userService.createNotification(notificationData1);
@@ -821,13 +842,9 @@ exports.editClaim = async (req, res) => {
       }
       await LOG(logData).save()
       // Send Email code here
-      let notificationEmails = await supportingFunction.getUserEmails();
+      let notificationEmails = adminUsers.map(user => user.email)
       let settingData = await userService.getSetting({});
       const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
-      //notificationEmails.push(servicerPrimary?.email);
-      let servicerEmail = servicerPrimary ? servicerPrimary?.email : process.env.servicerEmail
-      servicerEmail = checkServicer?.isAccountCreate ? servicerPrimary?.email : notificationEmails
-      notificationEmails = checkServicer?.isAccountCreate ? notificationEmails : []
       const lastElement = data.repairParts.pop();
       let emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -840,7 +857,7 @@ exports.editClaim = async (req, res) => {
         subject: `Update on Repair Information for Claim  ID ${checkClaim.unique_key}`
       }
 
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, notificationEmails, emailData))
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
       let totalClaimQuery1 = [
         {
           $match: {
