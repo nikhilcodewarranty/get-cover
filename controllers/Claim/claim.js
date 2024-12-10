@@ -1217,7 +1217,7 @@ exports.editClaimStatus = async (req, res) => {
       let createNotification = await userService.createNotification(notificationData1);
       // Send Email code here
       let notificationEmails = adminUsers.map(user => user.email)
-     
+
       // Email to Customer
       let emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -3274,37 +3274,76 @@ exports.sendMessages = async (req, res) => {
     await LOG(logData).save()
 
     //Send notification to all
-    let IDs = await supportingFunction.getUserIds()
+    //Get submitted user
+    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+    const site_url = `${process.env.SITE_URL}`
+    const adminCommentQuery = {
+      metaData: {
+        $elemMatch: {
+          $and: [
+            { "claimNotification.claimComment": true },
+            { status: true },
+            {
+              $or: [
+                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                { roleId: new mongoose.Types.ObjectId("65bb94b4b68e5a4a62a0b563") },
+                { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
+              ]
+            }
+          ]
+        }
+      },
+    }
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminCommentQuery, { email: 1 })
+    const IDs = adminUsers.map(user => user._id)
     let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.dealerId, isPrimary: true } } })
     let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.customerId, isPrimary: true } } })
     let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.resellerId, isPrimary: true } } })
     let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.servicerId, isPrimary: true } } })
 
-    if (resellerPrimary) {
-      IDs.push(resellerPrimary._id)
-    }
-    if (servicerPrimary) {
-      IDs.push(servicerPrimary._id)
-    }
-    IDs.push(customerPrimary._id)
-    IDs.push(dealerPrimary._id)
-
     let notificationData1 = {
-      title: "New message for claim # :" + checkClaim.unique_key + "",
-      description: "The one new message for " + checkClaim.unique_key + "",
+      title: "New Claim Comment added",
+      dealerTitle: "New Claim Comment added",
+      customerTitle: "New Claim Comment added",
+      servicerTitle: "New Claim Comment added",
+      customerTitle: "New Claim Comment added",
+      adminTitle: "New Claim Comment added",
+      dealerMessage: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+      customerMessage: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+      servicerMessage: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+      adminMessage: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+      description: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+      resellerMessage: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
       userId: req.teammateId,
       contentId: checkClaim._id,
       flag: 'claim',
-      redirectionId: checkClaim.unique_key,
+      endPoint: site_url,
+      redirectionId: "claim-listing/" + checkClaim.unique_key,
       notificationFor: IDs
     };
 
     let createNotification = await userService.createNotification(notificationData1);
 
     // Send Email code here
-    let notificationEmails = await supportingFunction.getUserEmails();
+    const commentCaseQuery = {
+      metaData: {
+        $elemMatch: {
+          $and: [
+            { "claimNotification.claimComment": true },
+            { status: true },
+            {
+              $or: [
+                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
+              ]
+            }
+          ]
+        }
+      },
+    }
+    let commentNotification = await supportingFunction.getNotificationEligibleUser(commentCaseQuery, { email: 1 })
+    let notificationEmails = commentNotification.map(user => user.email);
     const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
-    // notificationEmails.push(emailTo.email);
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -3319,7 +3358,7 @@ exports.sendMessages = async (req, res) => {
       redirectId: base_url
     }
 
-    let mailing = sgMail.send(emailConstant.sendCommentNotification(emailTo?.email, notificationEmails, emailData))
+    let mailing = sgMail.send(emailConstant.sendCommentNotification(notificationEmails, ["noreply@getcover.com"], emailData))
     res.send({
       code: constant.successCode,
       messages: 'Message Sent!',
