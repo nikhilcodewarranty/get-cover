@@ -2227,11 +2227,11 @@ exports.contactUs = async (req, res) => {
       websiteSetting: settingData[0],
       senderName: admin.metaData[0]?.firstName,
       content: `A new user has submitted a request via the contact form`,
-      subject: 'New Contact Form Submission'
-
+      subject: 'New Contact Form Submission',
+      contactForm:data
     }
     //Send email to admin
-    mailing = sgMail.send(emailConstant.sendEmailTemplate(adminCC, ["noreply@getcover.com"], emailData))
+    mailing = sgMail.send(emailConstant.sendContactUsTemplateAdmin(adminCC, ["noreply@getcover.com"], emailData))
     res.send({
       code: constant.successCode,
       message: "Record save successfully!"

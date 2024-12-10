@@ -457,12 +457,9 @@ exports.createOrder = async (req, res) => {
                 let addOneDay = new Date(getChoosedProducts[A].coverageStartDate)
                 let addOneDay1 = new Date(getChoosedProducts[A].coverageStartDate)
                 let addOneDay2 = new Date(getChoosedProducts[A].coverageStartDate)
-                console.log("checking the date+++++++++++++++++++++++", addOneDay2)
                 addOneDay2.setMonth(addOneDay2.getMonth() + getChoosedProducts[A].term)
                 addOneDay2.setDate(addOneDay2.getDate() - 1)
-                console.log("checking the date+++++++++++++++++++++++", addOneDay2)
                 let addOneDay3 = new Date(getChoosedProducts[A].coverageStartDate)
-                console.log("checking the date+++++++++++++++++++++++", addOneDay3)
                 addOneDay3.setMonth(addOneDay3.getMonth() + getChoosedProducts[A].term)
                 addOneDay3.setDate(addOneDay3.getDate() - 1)
 
@@ -582,10 +579,10 @@ exports.createOrder = async (req, res) => {
             dealerTitle: "Draft Order Created",
             adminTitle: "Draft Order Created",
             resellerTitle: "Draft Order Created",
-            description: `A new draft Order # ${checkOrder.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  -${req.role}.`,
-            dealerMessage: `A new draft Order # ${checkOrder.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  -${req.role}.`,
-            resellerMessage: `A new draft Order # ${checkOrder.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  -${req.role}.`,
-            adminMessage: "A new order " + checkOrder.unique_key + " has been created. The order is still in the pending state.",
+            description: `A new draft Order # ${checkOrder.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  - ${req.role}.`,
+            dealerMessage: `A new draft Order # ${checkOrder.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  - ${req.role}.`,
+            resellerMessage: `A new draft Order # ${checkOrder.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  - ${req.role}.`,
+            adminMessage:`A new draft Order # ${checkOrder.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  - ${req.role}.`,
             userId: req.teammateId,
             contentId: null,
             flag: 'order',

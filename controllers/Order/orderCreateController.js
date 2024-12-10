@@ -1337,10 +1337,10 @@ exports.createOrder1 = async (req, res) => {
             dealerTitle: "Draft Order Created",
             adminTitle: "Draft Order Created",
             resellerTitle: "Draft Order Created",
-            description: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  -${req.role}.`,
-            dealerMessage: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  -${req.role}.`,
-            resellerMessage: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  -${req.role}.`,
-            adminMessage: "A new order " + savedResponse.unique_key + " has been created. The order is still in the pending state.",
+            description: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  - ${req.role}.`,
+            dealerMessage: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  - ${req.role}.`,
+            resellerMessage: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  - ${req.role}.`,
+            adminMessage:`A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  - ${req.role}.`,
             userId: req.teammateId,
             contentId: null,
             flag: 'order',
@@ -2719,7 +2719,7 @@ exports.editOrderDetail = async (req, res) => {
                         userId: req.teammateId,
                         contentId: checkOrder._id,
                         flag: 'order',
-                        redirectionId: "orderDetails/" + checkOrder._id,
+                        redirectionId: "orderDetails/" + checkOrder._id,  
                         endPoint: base_url,
                         notificationFor: IDs
                     };
