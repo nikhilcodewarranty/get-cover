@@ -493,8 +493,27 @@ exports.addClaim = async (req, res, next) => {
 
     //Send notification to all
     const checkServicer = await servicerService.getServiceProviderById({ $or: [{ _id: data?.servicerId }, { dealerId: data?.servicerId }, { resellerId: data?.servicerId }] })
-
-    let IDs = await supportingFunction.getUserIds()
+    const adminAddClaimQuery = {
+      metaData: {
+        $elemMatch: {
+          $and: [
+            { "claimNotification.newClaim": true },
+            { status: true },
+            {
+              $or: [
+                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                { roleId: new mongoose.Types.ObjectId("65bb94b4b68e5a4a62a0b563") },
+                { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
+                { roleId: new mongoose.Types.ObjectId("656f080e1eb1acda244af8c7") },
+                { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
+              ]
+            }
+          ]
+        }
+      },
+    }
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminAddClaimQuery, { email: 1 })
+    const IDs = adminUsers.map(user => user._id)
     let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } })
     let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } })
     let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } })
@@ -505,36 +524,36 @@ exports.addClaim = async (req, res, next) => {
     const checkReseller = await resellerService.getReseller({ _id: checkOrder?.resellerId }, {})
     const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
 
-    if (resellerPrimary && checkReseller?.isAccountCreate) {
-      IDs.push(resellerPrimary._id)
-    }
-    if (servicerPrimary && checkServicer?.isAccountCreate) {
-
-      IDs.push(servicerPrimary._id)
-    }
-    if (checkDealer.isAccountCreate) {
-
-      IDs.push(dealerPrimary._id)
-
-    }
-    if (checkCustomer.isAccountCreate) {
-      IDs.push(customerPrimary._id)
-    }
-
+    //Get submitted user
+    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+    const site_url = `${process.env.SITE_URL}`
     let notificationData1 = {
-      title: "Add Claim",
-      description: "The claim has been added",
+      title: "Claim Filed Successfully",
+      adminTitle: "Claim Filed Successfully",
+      dealerTitle: "Claim Filed Successfully",
+      resellerTitle: "Claim Filed Successfully",
+      customerTitle: "Claim Filed Successfully",
+      servicerTitle: "Claim Filed Successfully",
+      description: `A new claim # ${claimResponse.unique_key} for dealer ${checkDealer.name} has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+      adminMessage: `A new claim # ${claimResponse.unique_key} for dealer ${checkDealer.name} has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+      resellerMessage: `A new claim # ${claimResponse.unique_key} for dealer ${checkCustomer.username} has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+      dealerMessage: `A new claim # ${claimResponse.unique_key} for dealer ${checkCustomer.username} has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+      customerMessage: `A new claim # ${claimResponse.unique_key}  has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+      servicerMessage: `A new claim # ${claimResponse.unique_key} for dealer ${checkDealer.name} has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
       userId: req.teammateId,
       contentId: claimResponse._id,
       flag: 'claim',
-      redirectionId: claimResponse.unique_key,
-      notificationFor: IDs
+      // redirectionId: claimResponse.unique_key,
+      notificationFor: IDs,
+      endPoint: site_url,
+      redirectionId: "claim-listing/" + claimResponse.unique_key,
     };
 
     let createNotification = await userService.createNotification(notificationData1);
 
     // Send Email code here
     let notificationCC = await supportingFunction.getUserEmails();
+    let allUserEmail = adminUsers.map(user => user.email)
     let settingData = await userService.getSetting({});
     let adminCC = await supportingFunction.getUserEmails();
     const base_url = `${process.env.SITE_URL}claim-listing/${claimResponse.unique_key}`
@@ -559,18 +578,58 @@ exports.addClaim = async (req, res, next) => {
     }
     let mailing;
     if (checkCustomer.isAccountCreate) {
+      const customerCaseNotification = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "claimNotification.newClaim": true },
+              { status: true },
+              {
+                $or: [
+                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                  { roleId: new mongoose.Types.ObjectId("65bb94b4b68e5a4a62a0b563") },
+                  { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
+                  { roleId: new mongoose.Types.ObjectId("656f080e1eb1acda244af8c7") },
+                ]
+              }
+            ]
+          }
+        },
+      }
+      let customerCaseUser = await supportingFunction.getNotificationEligibleUser(customerCaseNotification, { email: 1 })
+      const sendNotificationForCustomer = customerCaseUser.map(user => user.email)
       emailData.subject = `Claim Received -${claimResponse.unique_key}`
       emailData.content = `The Claim # ${claimResponse.unique_key} has been successfully filed for the Contract # ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here :`
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary?.email, notificationCC, emailData))
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(sendNotificationForCustomer, ["noreply@getcover.com"], emailData))
     }
     else {
+      const customerCaseNotification = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "claimNotification.newClaim": true },
+              { status: true },
+              {
+                $or: [
+                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                  { roleId: new mongoose.Types.ObjectId("65bb94b4b68e5a4a62a0b563") },
+                  { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
+                ]
+              }
+            ]
+          }
+        },
+      }
+      let customerCaseUser = await supportingFunction.getNotificationEligibleUser(customerCaseNotification, { email: 1 })
+      const sendNotificationForCustomer = customerCaseUser.map(user => user.email)
       emailData.subject = `Claim Received - ${claimResponse.unique_key}`
       emailData.content = `The Claim # ${claimResponse.unique_key} has been successfully filed for the Contract #  ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here :`
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationCC, ["noreply@getcover.com"], emailData))
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(sendNotificationForCustomer, ["noreply@getcover.com"], emailData))
     }
 
     // Email to servicer and cc to admin 
     if (servicerPrimary) {
+  
       emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -582,18 +641,53 @@ exports.addClaim = async (req, res, next) => {
         redirectId: base_url
       }
       if (checkServicer?.isAccountCreate) {
+        const servicerCaseNotification = {
+          metaData: {
+            $elemMatch: {
+              $and: [
+                { "claimNotification.newClaim": true },
+                { status: true },
+                {
+                  $or: [
+                    { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                    { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
+                  ]
+                }
+              ]
+            }
+          },
+        }
+        let servicerCaseUser = await supportingFunction.getNotificationEligibleUser(servicerCaseNotification, { email: 1 })
+        const sendNotificationForServicer = servicerCaseUser.map(user => user.email)
         let notificationAdmin = await supportingFunction.getUserEmails();
         emailData.subject = `New Device Received for Repair - ID: ${claimResponse.unique_key}`
         emailData.senderName = servicerPrimary?.metaData[0]?.firstName
         emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device detailed below:`
-        mailing = sgMail.send(emailConstant.sendServicerClaimNotification(servicerPrimary?.email, notificationAdmin, emailData))
+        mailing = sgMail.send(emailConstant.sendServicerClaimNotification(sendNotificationForServicer,["noreply@getcover.com"], emailData))
       }
       else {
+        const servicerCaseNotification = {
+          metaData: {
+            $elemMatch: {
+              $and: [
+                { "claimNotification.newClaim": true },
+                { status: true },
+                {
+                  $or: [
+                    { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                  ]
+                }
+              ]
+            }
+          },
+        }
+        let servicerCaseUser = await supportingFunction.getNotificationEligibleUser(servicerCaseNotification, { email: 1 })
+        const sendNotificationForServicer = servicerCaseUser.map(user => user.email)
         let notificationAdmin = await supportingFunction.getUserEmails();
         emailData.subject = `New Device Received for Repair - ID: ${claimResponse.unique_key}`
         emailData.senderName = "Admin"
         emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device detailed below:`
-        mailing = sgMail.send(emailConstant.sendServicerClaimNotification(notificationAdmin, ["noreply@getcover.com"], emailData))
+        mailing = sgMail.send(emailConstant.sendServicerClaimNotification(sendNotificationForServicer, ["noreply@getcover.com"], emailData))
       }
     }
 
@@ -4146,7 +4240,7 @@ exports.checkNumberOfCertainPeriod = async (req, res) => {
             const updateContract = await contractService.updateContract({ _id: checkContract._id }, { eligibilty: eligibility }, { new: true })
           }
         }
-        
+
       }
       page++;
     }
