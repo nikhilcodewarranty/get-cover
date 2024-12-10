@@ -2190,7 +2190,10 @@ exports.contactUs = async (req, res) => {
 
     //Send to admin
     const admin = await supportingFunction.getPrimaryUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true });
-
+    const ip = data.ipAddress
+    const response = await axios.get(`https://ipapi.co/${ip}/json/`);
+    const result = response.data;
+    data.location = result.city + "," + result.region
     emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -2199,7 +2202,7 @@ exports.contactUs = async (req, res) => {
       senderName: admin.metaData[0]?.firstName,
       content: `A new user has submitted a request via the contact form`,
       subject: 'New Contact Form Submission',
-      contactForm:data
+      contactForm: data
 
     }
     //Send email to admin
@@ -2428,7 +2431,7 @@ exports.preLoginData = async (req, res) => {
     //   return
     // }
     const checkUser = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin } } })
-    let setting = await userService.getSetting({  });
+    let setting = await userService.getSetting({});
     const baseUrl = process.env.API_ENDPOINT;
     if (setting.length > 0) {
       setting[0].base_url = baseUrl;
