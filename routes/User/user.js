@@ -69,8 +69,9 @@ router.put("/updateThreshHoldLimit", [verifyToken], userController.updateThreshH
 router.put("/updateUserData/:userId", [verifyToken], userController.updateUserData); // update user data
 router.put("/updateUser/:userId", [verifyToken], userController.updateUser); // update user
 router.post("/checkEmail", [verifyToken], validator("email_validation"), userController.checkEmail); // check email
-router.post("/updateData", supportingApiAdmin.updateData); // check email
-router.get("/getUserNotificationData/:userId", [verifyToken], supportingApiAdmin.getUserNotificationData); // check email
+router.post("/updateData", supportingApiAdmin.updateData); // for backend use only
+router.get("/getUserNotificationData/:userId", [verifyToken], supportingApiAdmin.getUserNotificationData); // get notification data for sinlge user
+router.put("/updateNotificationData/:userId", [verifyToken], supportingApiAdmin.updateNotificationData); // update notification data for sinlge user
 router.get("/downloadFile", userController.downloadFile); // check email
 router.post("/validateData", [verifyToken], userController.validateData); // validate data
 router.get("/checkToken", [verifyToken], userController.checkToken); // check token
