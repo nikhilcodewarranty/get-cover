@@ -62,6 +62,7 @@ var upload = multer({
 
 const eligibilityService = require("../../services/Dealer/eligibilityService")
 const fs = require('fs');
+const { constants } = require("buffer");
 
 exports.convertToBase64 = async (req, res) => {
     try {
@@ -781,6 +782,77 @@ exports.updateData = async (req, res) => {
         res.send({
             code: constant.errorCode,
             message: err.message,
+        })
+    }
+}
+
+
+exports.getUserNotificationData = async (req, res) => {
+    try {
+        let data = req.body
+        let getData = await userService.getUserById1({ _id: req.params.userId }, { metaData: 1 })
+        if (!getData) {
+            res.send({
+                code: constant.errorCode,
+                message: "User not found",
+            })
+            return
+        }
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            result: { notifications: getData.metaData[0], _id: getData._id }
+        })
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
+exports.updateNotificationData = async (req, res) => {
+    try {
+        let data = req.body
+        let getData = await userService.getUserById1({ _id: req.params.userId }, { metaData: 1 })
+        if (!getData) {
+            res.send({
+                code: constant.errorCode,
+                message: "User not found",
+            })
+            return
+        }
+        let updateData = {
+            $set: {
+                'metaData.$.orderNotifications': data.orderNotifications ? data.orderNotifications : getData.metaData[0].orderNotifications,
+                'metaData.$.claimNotification': data.claimNotification ? data.claimNotification : getData.metaData[0].claimNotification,
+                'metaData.$.adminNotification': data.adminNotifications ? data.adminNotifications : getData.metaData[0].adminNotifications,
+                'metaData.$.servicerNotification': data.servicerNotification ? data.servicerNotification : getData.metaData[0].servicerNotification,
+                'metaData.$.dealerNotifications': data.dealerNotifications ? data.dealerNotifications : getData.metaData[0].dealerNotifications,
+                'metaData.$.resellerNotifications': data.resellerNotifications ? data.resellerNotifications : getData.metaData[0].resellerNotifications,
+                'metaData.$.customerNotifications': data.customerNotifications ? data.customerNotifications : getData.metaData[0].customerNotifications,
+                'metaData.$.registerNotifications': data.registerNotifications ? data.registerNotifications : getData.metaData[0].registerNotifications,
+
+            }
+        }
+
+        let updateUserData = await userService.updateSingleUser({ _id: req.params.userId }, updateData, { new: true })
+        if (!updateUserData) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to update the data"
+            })
+            return
+        }
+        res.send({
+            code: constant.successCode,
+            message: "Successfully updated the data",
+            result: { notifications: updateUserData.metaData[0], _id: updateUserData._id }
+        })
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
         })
     }
 }

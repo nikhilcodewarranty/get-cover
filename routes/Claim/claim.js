@@ -1,6 +1,7 @@
 const express = require("express"); // Express framework
 const router = express.Router(); // Express router
 const claimController = require("../../controllers/Claim/claim"); // claim controller
+const claimExportController = require("../../controllers/Claim/claimExports"); // claim controller
 const claimGetController = require("../../controllers/Claim/claimGet"); // claim get functions controller
 const { verifyToken } = require("../../middleware/auth"); // authentication with JWT as middleware
 const supportingFunction = require("../../config/supportingFunction");
@@ -34,5 +35,8 @@ router.get("/updateContracts", claimGetController.updateContracts); // check cla
 router.post("/checkClaimThreshHold/:claimId", [verifyToken], claimGetController.checkClaimThreshHold); // check claim amount in edit claim and change coverage type
 router.get("/updateClaimDate", claimController.updateClaimDate); // check claim amount in edit claim and change coverage type
 router.get("/checkNumberOfCertainPeriod", claimController.checkNumberOfCertainPeriod); // check claim amount in edit claim and change coverage type
+
+
+router.post("/exportDataForClaim", [verifyToken], claimExportController.exportDataForClaim); // check claim amount in edit claim and change coverage type
 
 module.exports = router;

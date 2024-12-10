@@ -2463,7 +2463,7 @@ exports.getDealerColorSetting = async (req, res) => {
     if (!setting[0]) {
       // dealerId = "668fd6cf91f918f716391e96"
       setting = await userService.getSetting({});
-    }
+    }0
     const baseUrl = process.env.API_ENDPOINT;
     if (setting.length > 0) {
       setting[0].base_url = baseUrl;

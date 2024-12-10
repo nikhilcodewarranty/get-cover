@@ -27,18 +27,18 @@ router.get("/getCountNotification", [verifyToken], userController.getCountNotifi
 
 // Setting Routes
 
-router.post('/setting',[verifyToken], userController.accountSetting);
+router.post('/setting', [verifyToken], userController.accountSetting);
 router.get('/updateDataBase', userController.updateDataBase);
 
-router.post('/resetSetting', [verifyToken],userController.resetSetting)
+router.post('/resetSetting', [verifyToken], userController.resetSetting)
 
-router.post('/setting/uploadLogo',[verifyToken], userController.uploadLogo);
+router.post('/setting/uploadLogo', [verifyToken], userController.uploadLogo);
 
-router.get('/setting/getSetting',[verifyToken], userController.getSetting);
+router.get('/setting/getSetting', [verifyToken], userController.getSetting);
 
 router.get('/setting/preLoginData', userController.preLoginData);
 
-router.get('/setting/setDefault', [verifyToken],userController.setDefault);
+router.get('/setting/setDefault', [verifyToken], userController.setDefault);
 
 //Save Contact form 
 router.post('/contact-us', validator("filer_contact_us"), userController.contactUs);
@@ -70,6 +70,7 @@ router.put("/updateUserData/:userId", [verifyToken], userController.updateUserDa
 router.put("/updateUser/:userId", [verifyToken], userController.updateUser); // update user
 router.post("/checkEmail", [verifyToken], validator("email_validation"), userController.checkEmail); // check email
 router.post("/updateData", supportingApiAdmin.updateData); // check email
+router.get("/getUserNotificationData/:userId", [verifyToken], supportingApiAdmin.getUserNotificationData); // check email
 router.get("/downloadFile", userController.downloadFile); // check email
 router.post("/validateData", [verifyToken], userController.validateData); // validate data
 router.get("/checkToken", [verifyToken], userController.checkToken); // check token
@@ -85,7 +86,7 @@ router.get("/downloadFile1/:token/:folder/:key", [verifyToken], userController.d
 router.post("/downloadFile", userController.downloadFile); // check email
 router.post("/approveDealer", [verifyToken], validator("create_dealer_validation"), supportingApiAdmin.createDealer); // approve dealer
 router.post("/createDealer", [verifyToken], supportingApiAdmin.createDealer); // create dealer API from super admin
-router.post("/convertToBase64",  supportingApiAdmin.convertToBase64); // create dealer API from super admin
+router.post("/convertToBase64", supportingApiAdmin.convertToBase64); // create dealer API from super admin
 router.post('/createServicer', [verifyToken], validator("create_service_provider_validation"), supportingApiAdmin.createServiceProvider);// create service provider API from super admin
 
 module.exports = router;
