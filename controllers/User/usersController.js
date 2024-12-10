@@ -2198,7 +2198,8 @@ exports.contactUs = async (req, res) => {
       websiteSetting: settingData[0],
       senderName: admin.metaData[0]?.firstName,
       content: `A new user has submitted a request via the contact form`,
-      subject: 'New Contact Form Submission'
+      subject: 'New Contact Form Submission',
+      contactForm:data
 
     }
     //Send email to admin
