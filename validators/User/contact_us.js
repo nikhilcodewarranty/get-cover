@@ -8,7 +8,6 @@ const filer_contact_us = Joi.object({
     description:Joi.string().allow(null).allow('').optional(),    
     category:Joi.string().allow(null).allow('').optional(),    
     siteURL:Joi.string().allow(null).allow('').optional(),    
-    location:Joi.string().allow(null).allow('').optional(),    
     ipAddress:Joi.string().allow(null).allow('').optional(),    
     
 })
