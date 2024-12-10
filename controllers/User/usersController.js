@@ -2194,7 +2194,7 @@ exports.contactUs = async (req, res) => {
     const ip = data.ipAddress
     const response = await axios.get(`https://ipapi.co/${ip}/json/`);
     const result = response.data;
-    data.location = result.city + "," + result.region
+    data.location = result.city + "," + result.region + "," + result.country_name + ","+result.postal
     emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
