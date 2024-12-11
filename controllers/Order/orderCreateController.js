@@ -1058,6 +1058,9 @@ exports.createOrder1 = async (req, res) => {
         data.resellerId = data.resellerId == 'null' ? null : data.resellerId;
         data.venderOrder = data.dealerPurchaseOrder;
         const orderTermCondition = data.termCondition != null ? data.termCondition : {}
+        let notificationData;
+        let notificationEmails
+        let emailData;
         let projection = { isDeleted: 0 };
         let settingData = await userService.getSetting({});
         let checkDealer = await dealerService.getDealerById(
@@ -1308,6 +1311,59 @@ exports.createOrder1 = async (req, res) => {
         };
 
         returnField.push(obj);
+
+        //send notification to admin and dealer 
+        const adminPendingQuery = {
+            metaData: {
+                $elemMatch: {
+                    $and: [
+                        { "orderNotifications.addingNewOrderPending": true },
+                        { status: true },
+                        {
+                            $or: [
+                                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                                { roleId: new mongoose.Types.ObjectId("65bb94b4b68e5a4a62a0b563") },
+                                { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
+                            ]
+                        }
+                    ]
+                }
+            },
+        }
+        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminPendingQuery, { email: 1 })
+        const IDs = adminUsers.map(user => user._id)
+        let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data.dealerId, isPrimary: true } } })
+        notificationData = {
+            title: "Draft Order Created",
+            dealerTitle: "Draft Order Created",
+            adminTitle: "Draft Order Created",
+            resellerTitle: "Draft Order Created",
+            description: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  - ${req.role}.`,
+            dealerMessage: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  - ${req.role}.`,
+            resellerMessage: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  - ${req.role}.`,
+            adminMessage: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  - ${req.role}.`,
+            userId: req.teammateId,
+            contentId: null,
+            flag: 'order',
+            redirectionId: "orderList/" + savedResponse.unique_key,
+            endPoint: base_url,
+            notificationFor: IDs
+        };
+        // Send Email code here
+        notificationEmails = adminUsers.map(user => user.email)
+        emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
+            senderName: getPrimary.metaData[0]?.firstName,
+            content: `A new Order # ${savedResponse.unique_key} has been created. The order is still in the pending state. To complete the order please click here and fill the data`,
+            subject: "New Order",
+            redirectId: base_url + "editOrder/" + savedResponse._id,
+        }
+        if (data.sendNotification) {
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+        }
 
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
             let paidDate = {
@@ -1576,130 +1632,70 @@ exports.createOrder1 = async (req, res) => {
                         { status: "Active" },
                         { new: true }
                     );
-                    //send notification to admin and dealer 
-                    if (savedResponse.status == "Pending") {
-                        //send notification to admin and dealer 
-                        const adminPendingQuery = {
-                            metaData: {
-                                $elemMatch: {
-                                    $and: [
-                                        { "orderNotifications.addingNewOrderPending": true },
-                                        { status: true },
-                                        {
-                                            $or: [
-                                                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                                                { roleId: new mongoose.Types.ObjectId("65bb94b4b68e5a4a62a0b563") },
-                                                { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
-                                            ]
-                                        }
-                                    ]
-                                }
-                            },
-                        }
-                        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminPendingQuery, { email: 1 })
-                        const IDs = adminUsers.map(user => user._id)
-                        let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data.dealerId, isPrimary: true } } })
-                        let notificationData = {
-                            title: "Draft Order Created",
-                            dealerTitle: "Draft Order Created",
-                            adminTitle: "Draft Order Created",
-                            resellerTitle: "Draft Order Created",
-                            description: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  - ${req.role}.`,
-                            dealerMessage: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  - ${req.role}.`,
-                            resellerMessage: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  - ${req.role}.`,
-                            adminMessage: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  - ${req.role}.`,
-                            userId: req.teammateId,
-                            contentId: null,
-                            flag: 'order',
-                            redirectionId: "orderList/" + savedResponse.unique_key,
-                            endPoint: base_url,
-                            notificationFor: IDs
-                        };
 
-                        let createNotification = await userService.createNotification(notificationData);
+                    //generate T anc C
+                    if (checkOrder?.termCondition) {
+                        const tcResponse = await generateTC(savedResponse);
+                    }
+                    const adminActiveOrderQuery = {
+                        metaData: {
+                            $elemMatch: {
+                                $and: [
+                                    { "orderNotifications.addingNewOrderActive": true },
+                                    { status: true },
+                                    {
+                                        $or: [
+                                            { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                                            { roleId: new mongoose.Types.ObjectId("656f080e1eb1acda244af8c7") },
+                                            { roleId: new mongoose.Types.ObjectId("65bb94b4b68e5a4a62a0b563") },
+                                            { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                    }
+                    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminActiveOrderQuery, { email: 1 })
+                    const IDs = adminUsers.map(user => user._id)
+                    let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data.dealerId, isPrimary: true } } })
+                    let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data.customerId, isPrimary: true } } })
+                    let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data.resellerId, isPrimary: true } } })
+                    let notificationData1 = {
+                        title: "Order Added Successfully",
+                        resellerTitle: "Order Added Successfully",
+                        dealerTitle: "Order Added Successfully",
+                        customerTitle: "Order Added Successfully",
+                        adminTitle: "Order Added Successfully",
+                        description: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+                        dealerMessage: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+                        customerMessage: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+                        adminMessage: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+                        resellerMessage: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+                        userId: req.teammateId,
+                        contentId: checkOrder._id,
+                        redirectionId: "orderDetails/" + checkOrder.unique_key,
+                        endPoint: base_url,
+                        flag: 'order',
+                        notificationFor: IDs
+                    };
 
-                        // Send Email code here
-                        let notificationEmails = adminUsers.map(user => user.email)
-
-                        let emailData = {
-                            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-                            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-                            address: settingData[0]?.address,
-                            websiteSetting: settingData[0],
-                            senderName: getPrimary.metaData[0]?.firstName,
-                            content: `A new Order # ${savedResponse.unique_key} has been created. The order is still in the pending state. To complete the order please click here and fill the data`,
-                            subject: "New Order",
-                            redirectId: base_url + "editOrder/" + savedResponse._id,
-                        }
-                        if (data.sendNotification) {
-                            let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-                        }
+                    let createNotification = await userService.createNotification(notificationData1);
+                    // Send Email code here
+                    let notificationEmails = adminUsers.map(user => user.email)
+                    //Email to Dealer
+                    let emailData = {
+                        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                        address: settingData[0]?.address,
+                        websiteSetting: settingData[0],
+                        senderName: dealerPrimary.metaData[0]?.firstName,
+                        content: `Congratulations, your order # ${checkOrder.unique_key} has been created in our system. Please login to the system and view your order details.Also, we have attached our T&C to the email for the review. Please review, if there is anything wrong here, do let us know. You can contact us at : support@getcover.com`,
+                        subject: "Process Order",
+                        redirectId: base_url + "orderDetails" + checkOrder.unique_key
                     }
 
-                    else {
-                        //generate T anc C
-                        if (checkOrder?.termCondition) {
-                            const tcResponse = await generateTC(savedResponse);
-                        }
-                        const adminActiveOrderQuery = {
-                            metaData: {
-                                $elemMatch: {
-                                    $and: [
-                                        { "orderNotifications.addingNewOrderActive": true },
-                                        { status: true },
-                                        {
-                                            $or: [
-                                                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                                                { roleId: new mongoose.Types.ObjectId("656f080e1eb1acda244af8c7") },
-                                                { roleId: new mongoose.Types.ObjectId("65bb94b4b68e5a4a62a0b563") },
-                                                { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
-                                            ]
-                                        }
-                                    ]
-                                }
-                            },
-                        }
-                        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminActiveOrderQuery, { email: 1 })
-                        const IDs = adminUsers.map(user => user._id)
-                        let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data.dealerId, isPrimary: true } } })
-                        let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data.customerId, isPrimary: true } } })
-                        let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data.resellerId, isPrimary: true } } })
-                        let notificationData1 = {
-                            title: "Order Added Successfully",
-                            resellerTitle: "Order Added Successfully",
-                            dealerTitle: "Order Added Successfully",
-                            customerTitle: "Order Added Successfully",
-                            adminTitle: "Order Added Successfully",
-                            description: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-                            dealerMessage: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-                            customerMessage: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-                            adminMessage: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-                            resellerMessage: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-                            userId: req.teammateId,
-                            contentId: checkOrder._id,
-                            redirectionId: "orderDetails/" + checkOrder.unique_key,
-                            endPoint: base_url,
-                            flag: 'order',
-                            notificationFor: IDs
-                        };
+                    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
 
-                        let createNotification = await userService.createNotification(notificationData1);
-                        // Send Email code here
-                        let notificationEmails = adminUsers.map(user => user.email)
-                        //Email to Dealer
-                        let emailData = {
-                            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-                            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-                            address: settingData[0]?.address,
-                            websiteSetting: settingData[0],
-                            senderName: dealerPrimary.metaData[0]?.firstName,
-                            content: `Congratulations, your order # ${checkOrder.unique_key} has been created in our system. Please login to the system and view your order details.Also, we have attached our T&C to the email for the review. Please review, if there is anything wrong here, do let us know. You can contact us at : support@getcover.com`,
-                            subject: "Process Order",
-                            redirectId: base_url + "orderDetails" + checkOrder.unique_key
-                        }
-
-                        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-                    }
 
                     let logData = {
                         endpoint: "order/createOrder",
@@ -1729,7 +1725,6 @@ exports.createOrder1 = async (req, res) => {
                 }
 
             }
-
             res.send({
                 code: constant.successCode,
                 message: "Success1",
@@ -1737,6 +1732,9 @@ exports.createOrder1 = async (req, res) => {
             return
 
         } else {
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+            let createNotification = await userService.createNotification(notificationData);
+
             let logData = {
                 endpoint: "order/createOrder",
                 body: data,
