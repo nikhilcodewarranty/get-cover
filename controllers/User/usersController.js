@@ -2023,8 +2023,11 @@ exports.getSetting = async (req, res) => {
         setting[0].whiteLabelLogo.baseUrl = baseUrl;
       }
       const sideBarColor = setting[0]?.colorScheme.find(color => color.colorType === "sideBarColor");
-
-      setting[0].adminSideBarColor = sideBarColor
+      
+      if (sideBarColor) {
+        setting[0].adminSideBarColor = sideBarColor;
+        setting[0].colorScheme.push({ colorType: "adminSideBarColor", colorCode: sideBarColor.colorCode });
+      }
       // Repeat for any other properties that need the base_url prepended
     }
     else {
@@ -2049,8 +2052,11 @@ exports.getSetting = async (req, res) => {
           setting[0].whiteLabelLogo.baseUrl = baseUrl;
         }
         const sideBarColor = setting[0]?.colorScheme.find(color => color.colorType === "sideBarColor");
-
-        setting[0].adminSideBarColor = sideBarColor
+      
+        if (sideBarColor) {
+          setting[0].adminSideBarColor = sideBarColor;
+          setting[0].colorScheme.push({ colorType: "adminSideBarColor", colorCode: sideBarColor.colorCode });
+        }
         // Repeat for any other properties that need the base_url prepended
       }
     }
