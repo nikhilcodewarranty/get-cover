@@ -2024,12 +2024,20 @@ exports.getSetting = async (req, res) => {
         setting[0].whiteLabelLogo.baseUrl = baseUrl;
       }
       const sideBarColor = adminData[0]?.colorScheme.find(color => color.colorType === "sideBarColor");
-      
+
       if (sideBarColor) {
         setting[0].adminSideBarColor = sideBarColor;
         setting[0].colorScheme.push({ colorType: "adminSideBarColor", colorCode: sideBarColor.colorCode });
       }
       // Repeat for any other properties that need the base_url prepended
+      const exists = setting[0]?.colorScheme.some(color => color.colorType === 'chartFirstColor');
+      if (!exists) {
+        const chartFirstColor = adminData[0]?.colorScheme.find(color => color.colorType === "chartFirstColor");
+        setting[0].colorScheme.push({ colorType: "chartFirstColor", colorCode: chartFirstColor.colorCode });
+
+
+      }
+
     }
     else {
       const checkUser = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin } } })
@@ -2053,7 +2061,7 @@ exports.getSetting = async (req, res) => {
           setting[0].whiteLabelLogo.baseUrl = baseUrl;
         }
         const sideBarColor = setting[0]?.colorScheme.find(color => color.colorType === "sideBarColor");
-      
+
         if (sideBarColor) {
           setting[0].adminSideBarColor = sideBarColor;
           setting[0].colorScheme.push({ colorType: "adminSideBarColor", colorCode: sideBarColor.colorCode });
