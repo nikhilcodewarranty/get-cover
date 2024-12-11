@@ -2003,6 +2003,8 @@ exports.getSetting = async (req, res) => {
     setting = await userService.getSetting({ userId: userId });
     const baseUrl = process.env.API_ENDPOINT;
     if (setting.length > 0) {
+      const checkUser = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin } } })
+      setting = await userService.getSetting({ userId: checkUser.metaData[0].metaId });
       setting[0].base_url = baseUrl;
 
       // Assuming setting[0].logoDark and setting[0].logoLight contain relative paths
@@ -2020,6 +2022,9 @@ exports.getSetting = async (req, res) => {
       if (setting[0].whiteLabelLogo && setting[0].whiteLabelLogo.fileName) {
         setting[0].whiteLabelLogo.baseUrl = baseUrl;
       }
+      const sideBarColor = setting[0]?.colorScheme.find(color => color.colorType === "sideBarColor");
+
+      setting[0].adminSideBarColor = sideBarColor
       // Repeat for any other properties that need the base_url prepended
     }
     else {
@@ -2043,6 +2048,9 @@ exports.getSetting = async (req, res) => {
         if (setting[0].whiteLabelLogo && setting[0].whiteLabelLogo.fileName) {
           setting[0].whiteLabelLogo.baseUrl = baseUrl;
         }
+        const sideBarColor = setting[0]?.colorScheme.find(color => color.colorType === "sideBarColor");
+
+        setting[0].adminSideBarColor = sideBarColor
         // Repeat for any other properties that need the base_url prepended
       }
     }
@@ -2228,7 +2236,7 @@ exports.contactUs = async (req, res) => {
       senderName: admin.metaData[0]?.firstName,
       content: `A new user has submitted a request via the contact form`,
       subject: 'New Contact Form Submission',
-      contactForm:data
+      contactForm: data
     }
     //Send email to admin
     mailing = sgMail.send(emailConstant.sendContactUsTemplateAdmin(adminCC, ["noreply@getcover.com"], emailData))

@@ -1362,7 +1362,7 @@ exports.createOrder1 = async (req, res) => {
             senderName: getPrimary.metaData[0]?.firstName,
             content: `A new Order # ${savedResponse.unique_key} has been created. The order is still in the pending state. To complete the order please click here and fill the data`,
             subject: "New Order",
-            redirectId: base_url + "editOrder/" + savedResponse.unique_key,
+            redirectId: base_url + "editOrder/" + savedResponse._id,
         }
         if (data.sendNotification) {
             let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
