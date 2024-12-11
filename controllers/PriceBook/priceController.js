@@ -78,7 +78,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
     console.log(typeof (data.status))
     let filterStatus = (data.status === "true" || data.status === "false") ? (data.status === "true" ? true : false) : ""
     data.status = typeof (filterStatus) == "string" ? "all" : filterStatus
-    let query; 
+    let query;
     if (!Array.isArray(data.coverageType) && data.coverageType != '') {
       res.send({
         code: constant.errorCode,
@@ -128,7 +128,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
           { isDeleted: false },
           { 'pName': { '$regex': searchName1, '$options': 'i' } },
           { 'name': { '$regex': searchName, '$options': 'i' } },
-          { 'category': { $in: catIdsArray } },         
+          { 'category': { $in: catIdsArray } },
           //  { 'status': data.status },
 
 
@@ -218,6 +218,8 @@ exports.getAllActivePriceBook = async (req, res) => {
 exports.createPriceBook = async (req, res, next) => {
   try {
     let data = req.body
+    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+    const base_url = `${process.env.SITE_URL}`
 
     if (req.role != "Super Admin") {
       res.send({
@@ -294,13 +296,33 @@ exports.createPriceBook = async (req, res, next) => {
       })
     } else {
       // Send notification when create
-      let IDs = await supportingFunction.getUserIds()
+      const adminPriceBookQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "adminNotification.priceBookAdd": true },
+              { status: true },
+              {
+                $or: [
+                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                ]
+              }
+            ]
+          }
+        },
+      }
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminPriceBookQuery, { email: 1 })
+      const IDs = adminUsers.map(user => user._id)
       let notificationData = {
-        title: "Price Book Created",
-        description: "The priceBook " + data.name + " created successfully.",
+        title: "New GetCover Pricebook Added",
+        adminTitle: "New GetCover Pricebook Added",
+        description: `A new GetCover Pricebook ${data.name} has been added under category ${checkCat.name} by ${checkLoginUser.metaData[0]?.firstName}.`,
+        adminMessage: `A new GetCover Pricebook ${data.name} has been added under category ${checkCat.name} by ${checkLoginUser.metaData[0]?.firstName}.`,
         userId: req.userId,
         contentId: savePriceBook._id,
         flag: 'priceBook',
+        endPoint: base_url,
+        redirectionId: "/companyPriceBook/" + data.name,
         notificationFor: IDs
       };
       let createNotification = await userService.createNotification(notificationData);
@@ -316,7 +338,7 @@ exports.createPriceBook = async (req, res, next) => {
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
         senderName: admin.metaData[0]?.firstName,
-        content: "The priceBook " + data.name + " created successfully! effective immediately.",
+        content: "The priceBook " + data.name + " created successfully.",
         subject: "Create Price Book"
       }
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
@@ -573,19 +595,40 @@ exports.updatePriceBookById = async (req, res, next) => {
     }
 
     // Send notification when updated
-    let IDs = await supportingFunction.getUserIds()
+    const adminPriceUpdateQuery = {
+      metaData: {
+        $elemMatch: {
+          $and: [
+            { "adminNotification.priceBookUpdate": true },
+            { status: true },
+            {
+              $or: [
+                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+              ]
+            }
+          ]
+        }
+      },
+    }
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminPriceUpdateQuery, { email: 1 })
+    const IDs = adminUsers.map(user => user._id)
+
     let notificationData = {
-      title: "Price Book Updated",
-      description: existingPriceBook[0]?.name + " " + "has been successfully updated",
+      title: "GetCover Pricebook updated",
+      adminTitle: "GetCover Pricebook updated",
+      description: `GetCover Pricebook ${existingPriceBook[0]?.name} has been updated by ${checkLoginUser.metaData[0]?.firstName}.`,
+      adminMessage: `GetCover Pricebook ${existingPriceBook[0]?.name} has been updated by ${checkLoginUser.metaData[0]?.firstName}.`,
       userId: req.userId,
       flag: 'priceBook',
-      notificationFor: IDs
+      notificationFor: IDs,
+      endPoint: base_url,
+      redirectionId: "companyPriceBook/" + existingPriceBook[0]?.name
     };
 
     let createNotification = await userService.createNotification(notificationData);
 
     // Send Email code here
-    let notificationEmails = await supportingFunction.getUserEmails();
+    let notificationEmails = adminUsers.map(user => user.email)
     const admin = await userService.getSingleUserByEmail({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), status: true } } }, {})
 
     //Get Website Setting
@@ -598,8 +641,9 @@ exports.updatePriceBookById = async (req, res, next) => {
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
         senderName: admin.metaData[0]?.firstName,
-        content: "The priceBook " + existingPriceBook[0]?.name + " updated successfully! effective immediately.",
-        subject: "Update Price Book"
+        content: `A company Pricebook ${existingPriceBook[0]?.name} has been updated. To view the changes, please click here."`,
+        subject: "Update Price Book",
+        redirectId: base_url + "companyPriceBook/" + existingPriceBook[0]?.name
       }
     }
     else {
@@ -609,8 +653,9 @@ exports.updatePriceBookById = async (req, res, next) => {
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
         senderName: admin.metaData[0]?.firstName,
-        content: "The priceBook " + existingPriceBook[0]?.name + " has been changed to " + body.status ? 'Active' : "Inactive" + "! effective immediately.",
-        subject: "Update Status"
+        content: `The Company Pricebook ${existingPriceBook[0]?.name} has been made ${body.status ? 'Active' : "Inactive"} in the system. To review the changes, please click here."`,
+        subject: "Update Status",
+        redirectId: base_url + "companyPriceBook/" +existingPriceBook[0]?.name
       }
     }
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "noreply@getcover.com", emailData))
@@ -733,19 +778,41 @@ exports.createPriceBookCat = async (req, res) => {
       });
       return;
     }
+    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+    const base_url = `${process.env.SITE_URL}`
     // save notification for create category
-    let IDs = await supportingFunction.getUserIds()
+    const adminCategoryQuery = {
+      metaData: {
+        $elemMatch: {
+          $and: [
+            { "adminNotification.categoryAdded": true },
+            { status: true },
+            {
+              $or: [
+                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+              ]
+            }
+          ]
+        }
+      },
+    }
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminCategoryQuery, { email: 1 })
+    const IDs = adminUsers.map(user => user._id)
     let notificationData = {
-      title: "New Category Created",
-      description: req.body.name + " " + "has been successfully created",
+      title: "New Pricebook Category Added",
+      adminTitle: "New Pricebook Category Added",
+      description: `A new Pricebook Category ${req.body.name} has been added by ${checkLoginUser.metaData[0]?.firstName}.`,
+      adminMessage: `A new Pricebook Category ${req.body.name} has been added by ${checkLoginUser.metaData[0]?.firstName}.`,
       userId: req.userId,
       flag: 'category',
+      endPoint: base_url,
+      redirectionId: "/category",
       notificationFor: IDs
     };
     let createNotification = await userService.createNotification(notificationData);
 
     // Send Email code here
-    let notificationEmails = await supportingFunction.getUserEmails();
+    let notificationEmails = adminUsers.map(user => user.email)
     const settingData = await userService.getSetting({});
     const admin = await userService.getSingleUserByEmail({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true } } }, {})
     let emailData = {
@@ -754,7 +821,7 @@ exports.createPriceBookCat = async (req, res) => {
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
       senderName: admin.metaData[0]?.firstName,
-      content: "The category " + data.name + " created successfully! effective immediately.",
+      content: `A new Price Book Category ${data.name} has been added to the system by ${checkLoginUser.metaData[0]?.firstName}.`,
       subject: "New Category Added"
     }
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
@@ -1028,18 +1095,58 @@ exports.updatePriceBookCat = async (req, res) => {
       }
     }
     // Send notification when update
-    let IDs = await supportingFunction.getUserIds()
-    let notificationData = {
-      title: "Category Updated",
-      description: "The category " + data.name + " updated successfully!",
-      userId: req.userId,
-      contentId: req.params.catId,
-      flag: 'category',
-      notificationFor: IDs
-    };
+    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+    const base_url = `${process.env.SITE_URL}`
+    const adminUpdateCategoryQuery = {
+      metaData: {
+        $elemMatch: {
+          $and: [
+            { "adminNotification.categoryUpdate": true },
+            { status: true },
+            {
+              $or: [
+                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+              ]
+            }
+          ]
+        }
+      },
+    }
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdateCategoryQuery, { email: 1 })
+    const IDs = adminUsers.map(user => user._id)
+    let notificationData;
+    if (isValid.status == data.status) {
+      notificationData = {
+        title: "Pricebook Category Updated",
+        adminTitle: "Pricebook Category Updated",
+        description: `Pricebook Category ${isValid.name} has been updated by ${checkLoginUser.metaData[0]?.firstName}.`,
+        adminMessage: `Pricebook Category ${isValid.name} has been updated by ${checkLoginUser.metaData[0]?.firstName}.`,
+        userId: req.userId,
+        contentId: req.params.catId,
+        flag: 'category',
+        notificationFor: IDs,
+        endPoint: base_url,
+        redirectionId: "/category"
+      };
+    }
+    else {
+      notificationData = {
+        title: "Pricebook Category Status Updated",
+        adminTitle: "Pricebook Category Status Updated",
+        description: `Pricebook Category ${isValid.name} status has been updated to ${data.status == true ? "Active" : "Inactive"} ${checkLoginUser.metaData[0]?.firstName}..`,
+        adminMessage: `Pricebook Category ${isValid.name}  status has been updated to ${data.status == true ? "Active" : "Inactive"} ${checkLoginUser.metaData[0]?.firstName}..`,
+        userId: req.userId,
+        contentId: req.params.catId,
+        flag: 'category',
+        notificationFor: IDs,
+        endPoint: base_url,
+        redirectionId: "/category"
+      };
+    }
+
     let createNotification = await userService.createNotification(notificationData);
     // Send Email code here
-    let notificationEmails = await supportingFunction.getUserEmails();
+    let notificationEmails = adminUsers.map(user => user.email)
     const settingData = await userService.getSetting({});
     const admin = await userService.getSingleUserByEmail({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true } } }, {})
     let emailData = {
@@ -1048,7 +1155,7 @@ exports.updatePriceBookCat = async (req, res) => {
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
       senderName: admin.metaData[0]?.firstName,
-      content: "The category " + data.name + " updated successfully! effective immediately.",
+      content: "The category " + data.name + " updated successfully.",
       subject: "Update Category"
     }
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
