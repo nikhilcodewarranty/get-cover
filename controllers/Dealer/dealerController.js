@@ -1656,22 +1656,45 @@ exports.uploadDealerPriceBook = async (req, res) => {
         const htmlTableString = convertArrayToHTMLTable(csvArray);
 
         //Send notification to admin,dealer,reseller
-
-        let IDs = await supportingFunction.getUserIds()
+        const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+        const base_url = `${process.env.SITE_URL}`
+        const adminUploadQuery = {
+          metaData: {
+            $elemMatch: {
+              $and: [
+                { "adminNotification.userAdded": true },
+                { status: true },
+                {
+                  $or: [
+                    { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
+                    { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                  ]
+                }
+              ]
+            }
+          },
+        }
+        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUploadQuery, { email: 1 })
+        const IDs = adminUsers.map(user => user._id)
         let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: req.body.dealerId, isPrimary: true })
-        IDs.push(dealerPrimary?._id)
         let notificationData = {
-          title: "Dealer Price Book Uploaded",
-          description: "The priceBook has been successfully uploaded",
+          title: "Dealer Pricebook file added successfully",
+          adminTitle: "Dealer Pricebook file added successfully",
+          dealerTitle: "Pricebook added successfully",
+          dealerMessage: `The Bulk file ${file.fieldName} of  pricebook has been uploaded and processed successfully. The file has been uploaded by ${checkLoginUser.metaData[0]?.firstName}.`,
+          adminMessage: `The Bulk file ${file.fieldName} of dealer pricebook has been uploaded and processed successfully for dealer ${checkDealer.name}. The file has been uploaded by ${checkLoginUser.metaData[0]?.firstName}.`,
+          description: `The Bulk file ${file.fieldName} of dealer pricebook has been uploaded and processed successfully for dealer ${checkDealer.name}. The file has been uploaded by ${checkLoginUser.metaData[0]?.firstName}.`,
           userId: req.teammateId,
           flag: 'Dealer Price Book',
-          notificationFor: IDs
+          notificationFor: IDs,
+          endPoint:base_url,
+          redirectionId:"/  /"+req.body.dealerId
         };
 
         let createNotification = await userService.createNotification(notificationData);
         // Send Email code here
-        let notificationEmails = await supportingFunction.getUserEmails();
-        const mailing = sgMail.send(emailConstant.sendCsvFile(dealerPrimary.email, notificationEmails, htmlTableString));
+        let notificationEmails = adminUsers.map(user => user.email)
+        const mailing = sgMail.send(emailConstant.sendCsvFile(notificationEmails,["noreply@getcover.com"], htmlTableString));
       }
       res.send({
         code: constant.successCode,
