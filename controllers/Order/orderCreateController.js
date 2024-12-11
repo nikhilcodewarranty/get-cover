@@ -1058,6 +1058,8 @@ exports.createOrder1 = async (req, res) => {
         data.resellerId = data.resellerId == 'null' ? null : data.resellerId;
         data.venderOrder = data.dealerPurchaseOrder;
         const orderTermCondition = data.termCondition != null ? data.termCondition : {}
+        const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+        const base_url = `${process.env.SITE_URL}`
         let notificationData;
         let notificationEmails
         let emailData;
