@@ -2243,14 +2243,19 @@ exports.saveDealerSetting = async (req, res) => {
     data.userId = dealerId
     data.whiteLabelLogo = adminSetting[0]?.whiteLabelLogo
 
+    // console.log("response===================",data);
+
+    // return;
+
     // data.logoLight = data.logoLight ? data.logoLight : adminSetting[0]?.logoLight
     // data.logoDark = data.logoDark ? data.logoDark : adminSetting[0]?.logoDark
     // data.favIcon = data.favIcon ? data.favIcon : adminSetting[0]?.favIcon
     let response;
     const getData = await userService.getSetting({ userId: dealerId });
     if (getData.length > 0) {
-      response = await userService.updateSetting({ _id: getData[0]?._id }, data, { new: true })
 
+      response = await userService.updateSetting({ _id: getData[0]?._id }, data, { new: true })
+      console.log("dsfsfdsffsd",response);
     }
     else {
       data.title = adminSetting[0]?.title

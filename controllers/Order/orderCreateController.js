@@ -1362,7 +1362,7 @@ exports.createOrder1 = async (req, res) => {
             senderName: getPrimary.metaData[0]?.firstName,
             content: `A new Order # ${savedResponse.unique_key} has been created. The order is still in the pending state. To complete the order please click here and fill the data`,
             subject: "New Order",
-            redirectId: base_url + "orderList/" + savedResponse.unique_key,
+            redirectId: base_url + "editOrder/" + savedResponse._id,
         }
         if (data.sendNotification) {
             let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
@@ -1711,9 +1711,7 @@ exports.createOrder1 = async (req, res) => {
                     await LOG(logData).save()
                     //reporting codes 
                     let getPriceBookDetail = await priceBookService.findByName1({ _id: priceBookId })
-                    console.log("checking the reporting data ak++++++++++++++++++", pricebookDetail)
                     if (index == checkLength) {
-                        console.log("inside the reporting data ak=============================", pricebookDetail)
 
                         let reportingData = {
                             orderId: savedResponse._id,
@@ -2418,7 +2416,7 @@ exports.editOrderDetail = async (req, res) => {
             senderName: dealerPrimary.metaData[0].firstName,
             content: `Your order # ${checkOrder.unique_key} has been updated in our system. The order is still pending, as there is some data missing. Please update the data using the link here.`,
             subject: "Order Update",
-            redirectId: base_url + "editOrder/" + checkOrder.unique_key,
+            redirectId: base_url + "editOrder/" + checkOrder._id,
         }
         if (data.sendNotification) {
             let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
