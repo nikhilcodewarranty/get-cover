@@ -613,6 +613,7 @@ exports.updatePriceBookById = async (req, res, next) => {
     let adminUsers = await supportingFunction.getNotificationEligibleUser(adminPriceUpdateQuery, { email: 1 })
     const IDs = adminUsers.map(user => user._id)
     const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+    const base_url = `${process.env.SITE_URL}`
 
     let notificationData = {
       title: "GetCover Pricebook updated",
