@@ -465,7 +465,6 @@ exports.statusUpdate = async (req, res) => {
       notificationData = {
         title: "Dealer price book updated",
         adminTitle: "Dealer price book updated",
-        adminTitle: "Price book updated",
         description: `Dealer Pricebook  for ${priceBookData[0]?.pName} has been updated by ${checkLoginUser.metaData[0]?.firstName}.`,
         adminMessage: `Dealer Pricebook  for ${priceBookData[0]?.pName} has been updated by ${checkLoginUser.metaData[0]?.firstName}.`,
         dealerMessage: `Pricebook has been updated by ${checkLoginUser.metaData[0]?.firstName}.`,
@@ -480,8 +479,7 @@ exports.statusUpdate = async (req, res) => {
     else {
       notificationData = {
         title: "Dealer Pricebook Status Updated",
-        adminTitle: "Dealer price book updated",
-        adminTitle: "Price book updated",
+        adminTitle: "Dealer Pricebook  Status updated",
         description: `Dealer Pricebook  for ${priceBookData[0]?.pName} has been updated to ${data.status ? "Active" : "Inactive"} by ${checkLoginUser.metaData[0]?.firstName}.`,
         adminMessage: `Dealer Pricebook  for ${priceBookData[0]?.pName} has been updated to ${data.status ? "Active" : "Inactive"} by ${checkLoginUser.metaData[0]?.firstName}.`,
         dealerMessage: `Pricebook has been updated by ${checkLoginUser.metaData[0]?.firstName}.`,
