@@ -2003,8 +2003,9 @@ exports.getSetting = async (req, res) => {
     setting = await userService.getSetting({ userId: userId });
     const baseUrl = process.env.API_ENDPOINT;
     if (setting.length > 0) {
+      console
       const checkUser = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin } } })
-      setting = await userService.getSetting({ userId: checkUser.metaData[0].metaId });
+      let adminData = await userService.getSetting({ userId: checkUser.metaData[0].metaId });
       setting[0].base_url = baseUrl;
 
       // Assuming setting[0].logoDark and setting[0].logoLight contain relative paths
@@ -2022,7 +2023,7 @@ exports.getSetting = async (req, res) => {
       if (setting[0].whiteLabelLogo && setting[0].whiteLabelLogo.fileName) {
         setting[0].whiteLabelLogo.baseUrl = baseUrl;
       }
-      const sideBarColor = setting[0]?.colorScheme.find(color => color.colorType === "sideBarColor");
+      const sideBarColor = adminData[0]?.colorScheme.find(color => color.colorType === "sideBarColor");
       
       if (sideBarColor) {
         setting[0].adminSideBarColor = sideBarColor;
