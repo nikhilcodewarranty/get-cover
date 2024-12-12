@@ -137,10 +137,9 @@ exports.createServiceProvider = async (req, res, next) => {
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
         title: settingData[0]?.title,
-        redirectId: base_url + "servicerDetails/" + createServiceProvider._id,
         senderName: admin.metaData[0]?.firstName,
-        content: `A New Servicer ${createServiceProvider.name} has been added and approved by ${checkLoginUser.metaData[0].firstName} on our portal.`,
-        subject: "New Servicer Added"
+        content: "We are delighted to inform you that the servicer account for " + createServiceProvider.name + " has been created.",
+        subject: "Servicer Account Created - " + createServiceProvider.name
       }
 
       // Send Email code here
@@ -235,7 +234,7 @@ exports.createServiceProvider = async (req, res, next) => {
         return;
       }
 
-      
+
 
       if (servicerObject.name != data.oldName) {
         let checkAccountName = await providerService.getServicerByName({ name: data.accountName }, {});
@@ -305,18 +304,17 @@ exports.createServiceProvider = async (req, res, next) => {
       const IDs = adminUsers.map(user => user._id)
 
       let notificationEmails = adminUsers.map(user => user.email)
+
       let emailData = {
+        senderName: admin.metaData[0]?.firstName,
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
-        websiteSetting: settingData[0],
         title: settingData[0]?.title,
-        redirectId: base_url + "servicerDetails/" + checkDetail._id,
-        senderName: admin.metaData[0]?.firstName,
-        content: `A New Servicer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} on our portal.`,
-        subject: "New Servicer Added"
+        websiteSetting: settingData[0],
+        content: "We are delighted to inform you that the servicer account for " + checkDetail.name + " has been created.",
+        subject: "Servicer Account Approved - " + checkDetail.name
       }
-
       // Send Email code here
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
 
@@ -911,24 +909,41 @@ exports.editServicerDetail = async (req, res) => {
     }
 
     //send notification to admin and servicer
-    let IDs = await supportingFunction.getUserIds()
-    let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.params.servicerId, isPrimary: true } } })
-    IDs.push(getPrimary._id)
-    let notificationEmails = await supportingFunction.getUserEmails();
-    // let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.servicerId, isPrimary: true })
-    let toEmail = notificationEmails;
-    let ccEmail = "noreply@getcover.com"
-    if (updateData.isAccountCreate) {
-      toEmail = getPrimary.email
-      ccEmail = notificationEmails
-      IDs.push(getPrimary._id)
+    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+    const base_url = `${process.env.SITE_URL}`
+    const adminUpdateServicerQuery = {
+      metaData: {
+        $elemMatch: {
+          $and: [
+            { "servicerNotification.userUpdate": true },
+            { status: true },
+            {
+              $or: [
+                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
 
+              ]
+            }
+          ]
+        }
+      },
     }
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdateServicerQuery, { email: 1 })
+    const IDs = adminUsers.map(user => user._id)
+    let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.params.servicerId, isPrimary: true } } })
+    let notificationEmails = adminUsers.map(user => user.email)
+    // let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.servicerId, isPrimary: true })
     let notificationData = {
-      title: "Servicer Detail Update",
-      description: "The servicer information has been changed!",
+      title: "Servicer Details Updated",
+      adminTitle: "Servicer Details Updated",
+      servicerTitle: "Details Update",
+      description: `The details for the Servicer ${checkServicer.name} has been updated by ${checkLoginUser.metaData[0]?.firstName}.`,
+      adminMessage: `The details for the Servicer ${checkServicer.name} has been updated by ${checkLoginUser.metaData[0]?.firstName}.`,
+      servicerMessage: `The details for your account has been changed by ${checkLoginUser.metaData[0]?.firstName}.`,
       userId: req.teammateId,
-      flag: "Servicer",
+      endPoint: base_url,
+      redirectionId: "servicerDetails/" + checkServicer._id,
+      flag: "Servicer Details",
       notificationFor: IDs
     };
 
@@ -944,7 +959,7 @@ exports.editServicerDetail = async (req, res) => {
       content: "Information has been updated successfully! effective immediately.",
       subject: "Update Info"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(toEmail, ccEmail, emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails,["noreply@getcover.com"], emailData))
     //Save Logs
     let logData = {
       userId: req.userId,
@@ -1023,7 +1038,27 @@ exports.updateStatus = async (req, res) => {
       })
       return;
     }
+    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+    const base_url = `${process.env.SITE_URL}`
+    const adminUpdateStatusQuery = {
+      metaData: {
+        $elemMatch: {
+          $and: [
+            { "servicerNotification.userUpdate": true },
+            { status: true },
+            {
+              $or: [
+                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
 
+
+              ]
+            }
+          ]
+        }
+      },
+    }
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdateStatusQuery, { email: 1 })
     if (data.status == "false" || !data.status) {
       let criteria1 = { metaData: { $elemMatch: { metaId: checkServicer._id } } }
 
@@ -1054,20 +1089,23 @@ exports.updateStatus = async (req, res) => {
         })
       } else {
         //Send notification to servicer and admin
-        let IDs = await supportingFunction.getUserIds()
-        let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.params.servicerId, isPrimary: true } } })
-        IDs.push(getPrimary._id)
-        // let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.servicerId, isPrimary: true })
-        if (updateData.isAccountCreate) {
-          IDs.push(getPrimary._id)
+        //send notification to dealer,reseller,admin,customer
 
-        }
+        const IDs = adminUsers.map(user => user._id)
+        let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.params.servicerId, isPrimary: true } } })
+        // let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.servicerId, isPrimary: true })
         let notificationData = {
-          title: "Servicer status update",
-          description: checkServicer.name + " , " + "your status has been updated",
+          title: "Servicer Status Updated",
+          adminTitle: "Servicer Status Updated",
+          servicerTitle: "Status Updated",
+          description: `The Servicer ${checkServicer.name} status has been updated to ${data.status ? "Active" : "Inactive"} by ${checkLoginUser.metaData[0]?.firstName}.`,
+          adminMessage: `The Servicer  ${checkServicer.name} status has been updated to ${data.status ? "Active" : "Inactive"} by ${checkLoginUser.metaData[0]?.firstName}.`,
+          servicerMessage: `GetCover has updated your status to ${data.status ? "Active" : "Inactive"}.`,
           userId: req.teammateId,
           flag: 'servicer',
-          notificationFor: IDs
+          notificationFor: IDs,
+          endPoint: base_url,
+          redirectionId: "/servicerDetails/" + checkServicer._id
         };
 
         let createNotification = await userService.createNotification(notificationData);
@@ -1093,19 +1131,6 @@ exports.updateStatus = async (req, res) => {
         })
       }
     } else {
-      let IDs = await supportingFunction.getUserIds()
-      if (updateData.isAccountCreate) {
-        IDs.push(getPrimary._id)
-      }
-      let notificationData = {
-        title: "Servicer status update",
-        description: checkServicer.name + " , " + "your status has been updated",
-        userId: req.teammateId,
-        flag: 'servicer',
-        notificationFor: IDs
-      };
-
-      let createNotification = await userService.createNotification(notificationData);
       if (checkServicer.isAccountCreate) {
         let criteria1 = { metaData: { $elemMatch: { metaId: checkServicer._id, isPrimary: true } } }
         let updateMetaData = await userService.updateUser(criteria1, {
@@ -1122,6 +1147,26 @@ exports.updateStatus = async (req, res) => {
           })
         }
         else {
+          //Send notification to servicer and admin
+          //send notification to dealer,reseller,admin,customer
+          const IDs = adminUsers.map(user => user._id)
+          let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.params.servicerId, isPrimary: true } } })
+          // let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.servicerId, isPrimary: true })
+          let notificationData = {
+            title: "Servicer Status Updated",
+            adminTitle: "Servicer Status Updated",
+            servicerTitle: "Status Updated",
+            description: `The Servicer ${checkServicer.name} status has been updated to ${data.status ? "Active" : "Inactive"} by ${checkLoginUser.metaData[0]?.firstName}.`,
+            adminMessage: `The Servicer  ${checkServicer.name} status has been updated to ${data.status ? "Active" : "Inactive"} by ${checkLoginUser.metaData[0]?.firstName}.`,
+            servicerMessage: `GetCover has updated your status to ${data.status ? "Active" : "Inactive"}.`,
+            userId: req.teammateId,
+            flag: 'servicer',
+            notificationFor: IDs,
+            endPoint: base_url,
+            redirectionId: "/servicerDetails/" + checkServicer._id
+          };
+
+          let createNotification = await userService.createNotification(notificationData);
           res.send({
             code: constant.successCode,
             message: "Updated Successfully 'false'",
@@ -1132,7 +1177,7 @@ exports.updateStatus = async (req, res) => {
     }
 
     // Send Email code here
-    let notificationEmails = await supportingFunction.getUserEmails();
+    let notificationEmails = adminUsers.map(user => user.email);
     let settingData = await userService.getSetting({});
 
     const status_content = req.body.status || req.body.status == "true" ? 'Active' : 'Inactive';
@@ -1147,13 +1192,8 @@ exports.updateStatus = async (req, res) => {
       subject: "Update Status"
     }
 
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, 'noreply@getcover.com', emailData))
 
-    if (updateData.isAccountCreate) {
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary?.email, notificationEmails, emailData))
-    }
-    else {
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, 'noreply@getcover.com', emailData))
-    }
     //Save Logs
     let logData = {
       userId: req.userId,
@@ -1691,6 +1731,45 @@ exports.addServicerUser = async (req, res) => {
       }
 
       await LOG(logData).save()
+
+      // Send notification when create
+      const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+      const base_url = `${process.env.SITE_URL}`
+      const adminServicerUserQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "servicerNotification.userAdded": true },
+              { status: true },
+              {
+                $or: [
+                  { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
+                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                ]
+              }
+            ]
+          }
+        },
+      }
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminServicerUserQuery, { email: 1 })
+      const IDs = adminUsers.map(user => user._id)
+      let notificationData = {
+        title: "Servicer User Added",
+        adminTitle: "Servicer User Added",
+        servicerTitle: "New User Added",
+        description: `A new user for Servicer ${checkServicer.name} has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+        adminMessage: `A new user for Servicer ${checkServicer.name} has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+        servicerMessage: `A new user for you account has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+        userId: req.userId,
+        contentId: checkServicer._id,
+        flag: 'Servicer User',
+        endPoint: base_url,
+        redirectionId: "/servicerDetails/" + checkServicer._id,
+        notificationFor: IDs
+      };
+      let createNotification = await userService.createNotification(notificationData);
+      const notificationEmails = adminUsers.map(user => user.email)
+
       res.send({
         code: constant.successCode,
         message: "Added successfully",

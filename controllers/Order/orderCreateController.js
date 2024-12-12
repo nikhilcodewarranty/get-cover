@@ -1363,9 +1363,6 @@ exports.createOrder1 = async (req, res) => {
             subject: "New Order",
             redirectId: base_url + "editOrder/" + savedResponse._id,
         }
-        if (data.sendNotification) {
-            let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-        }
 
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
             let paidDate = {
