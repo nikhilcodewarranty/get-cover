@@ -15,13 +15,30 @@ const claimReporting = new Schema({
         type: String,
         default: ""
     },
+    category: {
+        type: String,
+        enum: ["claimReporting"],
+        default: "claimReporting"
+    },
+    reportName: {
+        type: String,
+        default: ""
+    },
+    remark: {
+        type: String,
+        default: ""
+    },
+    lastDownloadTime: {
+        type: Date,
+        default: () => new Date()
+    },
     date: {
         type: Date,
         default: () => new Date()
     },
     status: {
         type: String,
-        enum: ["Pending", "Active"],
+        enum: ["Pending", "Active", "Failed"],
         default: "Pending"
     }
 }, { timestamps: true })

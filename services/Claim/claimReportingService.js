@@ -12,6 +12,15 @@ module.exports = class claimReportingService {
 
     }
 
+    static async updateReporting(criteria, values, option) {
+        try {
+            let updateReporting = await claimReporting.findOneAndUpdate(criteria, values, option)
+            return updateReporting
+        } catch (err) {
+            console.log("Update reporting service error", err.message)
+        }
+    }
+
     static async getClaimReportings(query) {
         try {
             let getClaimReporting = await claimReporting.find(query)
