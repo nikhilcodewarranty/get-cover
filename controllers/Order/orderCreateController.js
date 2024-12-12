@@ -970,10 +970,14 @@ async function generateTC(orderData) {
                 address: settingData[0]?.address,
                 websiteSetting: settingData[0],
                 senderName: customerUser.metaData[0]?.firstName,
-                content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
-                subject: 'Order Term and Condition-' + checkOrder.unique_key,
+                content: `Congratulations, your order # ${checkOrder.unique_key} has been created in our system. Please login to the system and view your order details. Also, we have attached our T&C to the email for the review. Please review, if there is anything wrong here, do let us know. You can contact us at : support@getcover.com`,
+                subject: "Process Order",
+                redirectId: base_url + "orderDetails" + checkOrder.unique_key
             }
-            let mailing = await sgMail.send(emailConstant.sendTermAndCondition(notificationEmails, ["noreply@getcover.com"], emailData, attachment))
+
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+
+        
 
         })
         return 1
@@ -1680,20 +1684,23 @@ exports.createOrder1 = async (req, res) => {
 
                     let createNotification = await userService.createNotification(notificationData1);
                     // Send Email code here
-                    let notificationEmails = adminUsers.map(user => user.email)
-                    //Email to Dealer
-                    let emailData = {
-                        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-                        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-                        address: settingData[0]?.address,
-                        websiteSetting: settingData[0],
-                        senderName: dealerPrimary.metaData[0]?.firstName,
-                        content: `Congratulations, your order # ${checkOrder.unique_key} has been created in our system. Please login to the system and view your order details.Also, we have attached our T&C to the email for the review. Please review, if there is anything wrong here, do let us know. You can contact us at : support@getcover.com`,
-                        subject: "Process Order",
-                        redirectId: base_url + "orderDetails" + checkOrder.unique_key
+                    if (!checkOrder?.termCondition) {
+                        let notificationEmails = adminUsers.map(user => user.email)
+                        //Email to Dealer
+                        let emailData = {
+                            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                            address: settingData[0]?.address,
+                            websiteSetting: settingData[0],
+                            senderName: dealerPrimary.metaData[0]?.firstName,
+                            content: `Congratulations, your order # ${checkOrder.unique_key} has been created in our system. Please login to the system and view your order details. Please review, if there is anything wrong here, do let us know. You can contact us at : support@getcover.com`,
+                            subject: "Process Order",
+                            redirectId: base_url + "orderDetails" + checkOrder.unique_key
+                        }
+
+                        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
                     }
 
-                    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
 
 
                     let logData = {
