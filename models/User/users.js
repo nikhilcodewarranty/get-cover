@@ -113,23 +113,7 @@ const userSchema = new mongoose.Schema({
                             type: Boolean,
                             default: true
                         },
-                        fileBulkClaimAdmin: {
-                            type: Boolean,
-                            default: true
-                        },
-                        fileBulkClaimDealer: {
-                            type: Boolean,
-                            default: true
-                        },
-                        fileBulkClaimServicer: {
-                            type: Boolean,
-                            default: true
-                        },
-                        fileBulkClaimReseller: {
-                            type: Boolean,
-                            default: true
-                        },
-                        fileBulkClaimCustomer: {
+                        fileBulkClaim: {
                             type: Boolean,
                             default: true
                         },
@@ -161,11 +145,7 @@ const userSchema = new mongoose.Schema({
                     },
                     default: {
                         newClaim: true,
-                        fileBulkClaimAdmin: true,
-                        fileBulkClaimDealer: true,
-                        fileBulkClaimServicer: true,
-                        fileBulkClaimReseller: true,
-                        fileBulkClaimCustomer: true,
+                        fileBulkClaim: true,
                         servicerUpdate: true,
                         customerStatusUpdate: true,
                         repairStatusUpdate: true,
