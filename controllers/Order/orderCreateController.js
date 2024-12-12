@@ -1353,6 +1353,17 @@ exports.createOrder1 = async (req, res) => {
         };
         // Send Email code here
         notificationEmails = adminUsers.map(user => user.email)
+        emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
+            senderName: getPrimary.metaData[0]?.firstName,
+            content: `A new Order # ${savedResponse.unique_key} has been created. The order is still in the pending state. To complete the order please click here and fill the data`,
+            subject: "New Order",
+            redirectId: base_url + "editOrder/" + savedResponse._id,
+        }
+
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
             let paidDate = {
                 name: "processOrder",
