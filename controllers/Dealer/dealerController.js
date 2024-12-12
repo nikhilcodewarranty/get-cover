@@ -2379,7 +2379,6 @@ exports.checkEligibiltyForContracts = async (req, res) => {
   }
 }
 
-
 // Setting Function
 exports.saveDealerSetting = async (req, res) => {
   try {
