@@ -137,10 +137,9 @@ exports.createServiceProvider = async (req, res, next) => {
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
         title: settingData[0]?.title,
-        redirectId: base_url + "servicerDetails/" + createServiceProvider._id,
         senderName: admin.metaData[0]?.firstName,
-        content: `A New Servicer ${createServiceProvider.name} has been added and approved by ${checkLoginUser.metaData[0].firstName} on our portal.`,
-        subject: "New Servicer Added"
+        content: "We are delighted to inform you that the servicer account for " + createServiceProvider.name + " has been created.",
+        subject: "Servicer Account Created - " + createServiceProvider.name
       }
 
       // Send Email code here
@@ -305,18 +304,17 @@ exports.createServiceProvider = async (req, res, next) => {
       const IDs = adminUsers.map(user => user._id)
 
       let notificationEmails = adminUsers.map(user => user.email)
+ 
       let emailData = {
+        senderName: admin.metaData[0]?.firstName,
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
-        websiteSetting: settingData[0],
         title: settingData[0]?.title,
-        redirectId: base_url + "servicerDetails/" + checkDetail._id,
-        senderName: admin.metaData[0]?.firstName,
-        content: `A New Servicer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} on our portal.`,
-        subject: "New Servicer Added"
+        websiteSetting: settingData[0],
+        content: "We are delighted to inform you that the servicer account for " + checkDetail.name + " has been created.",
+        subject: "Servicer Account Approved - " + checkDetail.name
       }
-
       // Send Email code here
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
 
