@@ -31,21 +31,21 @@ exports.createCustomer = async (req, res, next) => {
     let checkDealer = await dealerService.getDealerByName({ _id: data.dealerName }, {});
     const adminQuery = {
       metaData: {
-          $elemMatch: {
-              $and: [
-                  { "customerNotifications.customerAdded": true },
-                  { status: true },
-                  {
-                      $or: [
-                          { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                          { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
-                          { roleId: new mongoose.Types.ObjectId("65bb94b4b68e5a4a62a0b563") },
-                      ]
-                  }
+        $elemMatch: {
+          $and: [
+            { "customerNotifications.customerAdded": true },
+            { status: true },
+            {
+              $or: [
+                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
+                { roleId: new mongoose.Types.ObjectId("65bb94b4b68e5a4a62a0b563") },
               ]
-          }
+            }
+          ]
+        }
       },
-  }
+    }
     let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
     const IDs = adminUsers.map(user => user._id)
     if (!checkDealer) {
@@ -821,19 +821,6 @@ exports.changePrimaryUser = async (req, res) => {
     );
 
 
-    // return;
-
-    // let updatePrimary = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true })
-    //Merge start singleServer
-    // let updatePrimary = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true })
-
-    // return;
-
-    // let updatePrimary = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true })
-    //Merge start singleServer
-    // let updatePrimary = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true })
-
-
     const checkDealer = await dealerService.getDealerById(updatePrimary.metaData[0]?.metaId)
 
     const checkReseller = await resellerService.getReseller({ _id: updatePrimary.metaData[0]?.metaId }, { isDeleted: false })
@@ -867,24 +854,50 @@ exports.changePrimaryUser = async (req, res) => {
     }
     else {
       //Send notification for dealer change primary user
-      let IDs = await supportingFunction.getUserIds()
+      const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+      const base_url = `${process.env.SITE_URL}`
+      let adminUpdatePrimaryQuery
+      let notificationData
+      if (checkServicer) {
+        adminUpdatePrimaryQuery = {
+          metaData: {
+            $elemMatch: {
+              $and: [
+                { "servicerNotification.primaryChanged": true },
+                { status: true },
+                {
+                  $or: [
+                    { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                    { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
+                  ]
+                }
+              ]
+            }
+          },
+        }
+        notificationData = {
+          title: "Servicer Primary User Updated",
+          adminTitle: "Servicer Primary User Updated",
+          servicerTitle: "Primary User Changed",
+          description: `The Primary user for ${checkServicer.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName}.`,
+          adminMessage: `The Primary user for ${checkServicer.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName}.`,
+          servicerMessage: `The Primary user for your account has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName}  by ${checkLoginUser.metaData[0]?.firstName}.`,
+          userId: req.teammateId,
+          flag: checkRole?.role,
+          redirectionId: "servicerDetails/" + checkServicer._id,
+          endPoint: base_url
+        };
+      }
+
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdatePrimaryQuery, { email: 1 })
+      const IDs = adminUsers.map(user => user._id)
       let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkUser.metaData[0]?.metaId }, isPrimary: true } })
-      let notificationData = {
-        title: checkRole?.role + " primary user change",
-        description: "The primary user has been changed!",
-        userId: req.teammateId,
-        flag: checkRole?.role,
-        redirectionId: checkUser.metaData[0]?.metaId,
-        notificationFor: [getPrimary._id]
-      };
+      notificationData.notificationFor = IDs
       let createNotification = await userService.createNotification(notificationData);
 
 
       // Send Email code here
-      let notificationEmails = await supportingFunction.getUserEmails();
-      notificationEmails.push(updateLastPrimary.email);
-      notificationEmails.push(updatePrimary.email);
-
+      let notificationEmails = adminUsers.map(user => user.email);
       let emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -895,12 +908,8 @@ exports.changePrimaryUser = async (req, res) => {
         subject: "Primary User change"
       };
 
-      if (checkServicer?.isAccountCreate || checkReseller?.isAccountCreate || checkDealer?.isAccountCreate || checkCustomer?.isAccountCreate) {
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(updatePrimary.email, updateLastPrimary.email, emailData))
-      }
-      else {
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-      }
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+
       //Save Logs changePrimaryUser
       let logData = {
         endpoint: "changePrimaryUser",
