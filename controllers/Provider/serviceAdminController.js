@@ -235,7 +235,7 @@ exports.createServiceProvider = async (req, res, next) => {
         return;
       }
 
-      
+
 
       if (servicerObject.name != data.oldName) {
         let checkAccountName = await providerService.getServicerByName({ name: data.accountName }, {});
@@ -1691,6 +1691,44 @@ exports.addServicerUser = async (req, res) => {
       }
 
       await LOG(logData).save()
+
+      // Send notification when create
+      const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+      const base_url = `${process.env.SITE_URL}`
+      const adminServicerUserQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "servicerNotification.userAdded": true },
+              { status: true },
+              {
+                $or: [
+                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                ]
+              }
+            ]
+          }
+        },
+      }
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminServicerUserQuery, { email: 1 })
+      const IDs = adminUsers.map(user => user._id)
+      let notificationData = {
+        title: "Servicer User Added",
+        adminTitle: "Servicer User Added",
+        servicerTitle: "New User Added",
+        description: `A new user for Servicer ${checkServicer.name} has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+        adminMessage: `A new user for Servicer ${checkServicer.name} has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+        servicerMessage: `A new user for you account has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+        userId: req.userId,
+        contentId: savePriceBook._id,
+        flag: 'Servicer User',
+        endPoint: base_url,
+        redirectionId: "/servicerDetails/" + checkServicer._id,
+        notificationFor: IDs
+      };
+      let createNotification = await userService.createNotification(notificationData);
+
+
       res.send({
         code: constant.successCode,
         message: "Added successfully",
