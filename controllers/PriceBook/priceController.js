@@ -342,7 +342,7 @@ exports.createPriceBook = async (req, res, next) => {
         content: `A new company pricebook ${data.name} has been added with the following data:`,
         subject: "Create Price Book"
       }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+      let mailing = sgMail.send(emailConstant.sendPriceBookNotification(notificationEmails, [], emailData))
       let logData = {
         userId: req.teammateId,
         endpoint: "price/createPriceBook",
