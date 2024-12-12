@@ -331,6 +331,8 @@ exports.createPriceBook = async (req, res, next) => {
       let notificationEmails =  adminUsers.map(user => user.email)
       //Get Website Setting
       const settingData = await userService.getSetting({});
+      priceBookData.category = checkCat.name
+      priceBookData.coverageType = data.coverageType.map(item => item.label).join(', ');
       const admin = await userService.getSingleUserByEmail({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), status: true } } }, {})
       let emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -343,8 +345,7 @@ exports.createPriceBook = async (req, res, next) => {
         subject: "Create Price Book"
       }
 
-      console.log("emailData----------------",emailData)
-      console.log("notificationEmails----------------",notificationEmails)
+     
 
       let mailing = sgMail.send(emailConstant.sendPriceBookNotification(notificationEmails, [], emailData))
       let logData = {
