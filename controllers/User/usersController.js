@@ -2051,10 +2051,16 @@ exports.getSetting = async (req, res) => {
         setting[0].whiteLabelLogo.baseUrl = baseUrl;
       }
       const sideBarColor = adminData[0]?.colorScheme.find(color => color.colorType === "sideBarColor");
-      
+      const chartFirstColor = adminData[0]?.colorScheme.find(color => color.colorType === "chartFirstColor");
+      const exists = setting[0].colorScheme.some(color => color.colorType === 'chartFirstColor');
+
       if (sideBarColor) {
         setting[0].adminSideBarColor = sideBarColor;
         setting[0].colorScheme.push({ colorType: "adminSideBarColor", colorCode: sideBarColor.colorCode });
+      }
+      if (!exists) {
+        setting[0].adminSideBarColor = sideBarColor;
+        setting[0].colorScheme.push({ colorType: "chartFirstColor", colorCode: chartFirstColor.colorCode });
       }
       // Repeat for any other properties that need the base_url prepended
     }
