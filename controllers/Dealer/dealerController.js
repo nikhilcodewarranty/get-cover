@@ -723,7 +723,7 @@ exports.createDealerPriceBook = async (req, res) => {
       return;
     }
 
-    let checkCategory = await priceBookService.getPriceCatById({ _id: new mongoose.Types.ObjectId(checkPriceBookMain.category) }, {})
+    let checkCategory = await priceBookService.getPriceCatById({ _id: new mongoose.Types.ObjectId(checkPriceBookMain[0].category) }, {})
 
     if (!checkCategory) {
       res.send({

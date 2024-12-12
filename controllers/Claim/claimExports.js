@@ -32,13 +32,11 @@ const multerS3 = require('multer-s3');
 const aws = require('aws-sdk');
 const { default: axios } = require("axios");
 
-
 const AWS = require('aws-sdk');
 const ExcelJS = require('exceljs');
 
 // Configure AWS S3
 AWS.config.update({ region: 'us-east-1' });
-
 
 const s3Client1 = new S3Client({
   region: 'us-east-1',
@@ -49,7 +47,6 @@ const s3Client1 = new S3Client({
 })
 
 const folderName = 'claimFile'; // Replace with your specific folder name
-
 
 const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, dateString) => {
   const workbook = new ExcelJS.Workbook();
@@ -613,82 +610,96 @@ exports.exportDataForClaim = async (req, res) => {
 
     const groupByRole = (resultArray, roleKey, roleName) => {
       const groupedData = resultArray.reduce((acc, item) => {
-        // Extract role name and claim information
-        const roleEntityName = roleKey.split('.').reduce((obj, key) => (obj ? obj[key] : null), item)?.name || `Unknown ${roleName}`;
+        // Extract dealer name and claim information
+        const dealerName = roleKey.split('.').reduce((obj, key) => (obj ? obj[key] : null), item)?.name || `Unknown ${roleName}`;
         const claimAmount = item.totalAmount || 0;
-        const isCompleted = item.claimStatus.some(status => status.status === "rejected"); // Example condition for completed claims
+        const isCompleted = item.claimStatus.some(status => status.status === "completed");
+        const isRejected = item.claimStatus.some(status => status.status === "rejected");
 
-        // Check if role entity already exists in the accumulator
-        let roleEntry = acc.find(entry => entry.roleName === roleEntityName);
+        // Check if dealer already exists in the accumulator
+        let dealerEntry = acc.find(entry => entry["Dealer Name"] === dealerName);
 
-        if (!roleEntry) {
-          // If role entity does not exist, create a new entry
-          roleEntry = {
-            roleName: roleEntityName,
-            totalClaim: 0,
-            completedClaim: 0,
-            totalAmountOfClaim: 0,
+        if (!dealerEntry) {
+          // If dealer does not exist, create a new entry
+          dealerEntry = {
+            "Dealer Name": dealerName,
+            "Total Claims": 0,
+            "Completed Claims": 0,
+            "Rejected Claims": 0,
+            "Total Amount of Claims": 0,
+            "Average Claim Amount": 0, // Initialize average claim amount
           };
-          acc.push(roleEntry);
+          acc.push(dealerEntry);
         }
 
-        // Update role entity entry
-        roleEntry.totalClaim += 1;
-        roleEntry.totalAmountOfClaim += claimAmount;
+        // Update dealer entry
+        dealerEntry["Total Claims"] += 1;
+        dealerEntry["Total Amount of Claims"] += claimAmount;
         if (isCompleted) {
-          roleEntry.completedClaim += 1;
+          dealerEntry["Completed Claims"] += 1;
+        }
+        if (isRejected) {
+          dealerEntry["Rejected Claims"] += 1;
         }
 
         return acc;
       }, []);
 
-      // Calculate average claim amount for each role entity
+      // Calculate average claim amount for each dealer based on completed claims
       groupedData.forEach(entry => {
-        entry.averageClaimAmount = entry.totalClaim
-          ? (entry.totalAmountOfClaim / entry.totalClaim).toFixed(2)
+        entry["Average Claim Amount"] = entry["Completed Claims"]
+          ? (entry["Total Amount of Claims"] / entry["Completed Claims"]).toFixed(2)
           : 0;
       });
 
       return groupedData;
     };
 
+
     const groupDataByCustomer = (resultArray) => {
       return resultArray.reduce((acc, item) => {
         // Extract customer username and claim information
-        const customerName = item?.contracts?.orders?.customer?.username || 'Unknown Customer';
+        const customerName = item?.contracts?.orders?.customer?.username || "Unknown Customer";
         const claimAmount = item.totalAmount || 0;
-        const isCompleted = item.claimStatus.some(status => status.status === 'completed'); // Example condition for completed claims
+        const isCompleted = item.claimStatus.some(status => status.status === "completed");
+        const isRejected = item.claimStatus.some(status => status.status === "rejected");
 
         // Check if customer already exists in the accumulator
-        let customerEntry = acc.find(entry => entry.customerName === customerName);
+        let customerEntry = acc.find(entry => entry["Customer Name"] === customerName);
 
         if (!customerEntry) {
           // If customer does not exist, create a new entry
           customerEntry = {
-            customerName,
-            totalClaim: 0,
-            completedClaim: 0,
-            totalAmountOfClaim: 0,
-            averageClaimAmount: 0, // Initialize average claim amount
+            "Customer Name": customerName,
+            "Total Claims": 0,
+            "Completed Claims": 0,
+            "Rejected Claims": 0,
+            "Total Amount of Claims": 0,
+            "Average Claim Amount": 0, // Initialize average claim amount
           };
           acc.push(customerEntry);
         }
 
         // Update customer entry
-        customerEntry.totalClaim += 1;
-        customerEntry.totalAmountOfClaim += claimAmount;
+        customerEntry["Total Claims"] += 1;
+        customerEntry["Total Amount of Claims"] += claimAmount;
         if (isCompleted) {
-          customerEntry.completedClaim += 1;
+          customerEntry["Completed Claims"] += 1;
+        }
+        if (isRejected) {
+          customerEntry["Rejected Claims"] += 1;
         }
 
-        // Calculate average claim amount
-        customerEntry.averageClaimAmount = customerEntry.totalClaim
-          ? (customerEntry.totalAmountOfClaim / customerEntry.totalClaim).toFixed(2)
+        // Calculate average claim amount for completed claims
+        customerEntry["Average Claim Amount"] = customerEntry["Completed Claims"]
+          ? (customerEntry["Total Amount of Claims"] / customerEntry["Completed Claims"]).toFixed(2)
           : 0;
 
         return acc;
       }, []);
     };
+
+
 
     const groupDataByServicer = (resultArray) => {
       return resultArray.reduce((acc, item) => {
@@ -701,33 +712,38 @@ exports.exportDataForClaim = async (req, res) => {
         }
 
         const claimAmount = item.totalAmount || 0;
-        const isCompleted = item.claimStatus.some(status => status.status === 'completed'); // Example condition for completed claims
+        const isCompleted = item.claimStatus.some(status => status.status === "completed");
+        const isRejected = item.claimStatus.some(status => status.status === "rejected");
 
         // Check if servicer already exists in the accumulator
-        let servicerEntry = acc.find(entry => entry.servicerName === servicerName);
+        let servicerEntry = acc.find(entry => entry["Servicer Name"] === servicerName);
 
         if (!servicerEntry) {
           // If servicer does not exist, create a new entry
           servicerEntry = {
-            servicerName,
-            totalClaim: 0,
-            completedClaim: 0,
-            totalAmountOfClaim: 0,
-            averageClaimAmount: 0, // Initialize average claim amount
+            "Servicer Name": servicerName,
+            "Total Claims": 0,
+            "Completed Claims": 0,
+            "Rejected Claims": 0,
+            "Total Amount of Claims": 0,
+            "Average Claim Amount": 0, // Initialize average claim amount
           };
           acc.push(servicerEntry);
         }
 
         // Update servicer entry
-        servicerEntry.totalClaim += 1;
-        servicerEntry.totalAmountOfClaim += claimAmount;
+        servicerEntry["Total Claims"] += 1;
+        servicerEntry["Total Amount of Claims"] += claimAmount;
         if (isCompleted) {
-          servicerEntry.completedClaim += 1;
+          servicerEntry["Completed Claims"] += 1;
+        }
+        if (isRejected) {
+          servicerEntry["Rejected Claims"] += 1;
         }
 
-        // Calculate average claim amount
-        servicerEntry.averageClaimAmount = servicerEntry.totalClaim
-          ? (servicerEntry.totalAmountOfClaim / servicerEntry.totalClaim).toFixed(2)
+        // Calculate average claim amount for completed claims
+        servicerEntry["Average Claim Amount"] = servicerEntry["Completed Claims"]
+          ? (servicerEntry["Total Amount of Claims"] / servicerEntry["Completed Claims"]).toFixed(2)
           : 0;
 
         return acc;
@@ -737,40 +753,46 @@ exports.exportDataForClaim = async (req, res) => {
     const groupDataByReseller = (resultArray) => {
       return resultArray.reduce((acc, item) => {
         // Extract reseller name and claim information
-        const resellerName = item?.contracts?.orders?.resellers?.[0]?.name || 'Unknown Reseller';
+        const resellerName = item?.contracts?.orders?.resellers?.[0]?.name || "Unknown Reseller";
         const claimAmount = item.totalAmount || 0;
-        const isCompleted = item.claimStatus.some(status => status.status === 'completed'); // Example condition for completed claims
+        const isCompleted = item.claimStatus.some(status => status.status === "completed");
+        const isRejected = item.claimStatus.some(status => status.status === "rejected");
 
         // Check if reseller already exists in the accumulator
-        let resellerEntry = acc.find(entry => entry.customerName === resellerName);
+        let resellerEntry = acc.find(entry => entry["Reseller Name"] === resellerName);
 
         if (!resellerEntry) {
           // If reseller does not exist, create a new entry
           resellerEntry = {
-            customerName: resellerName,
-            totalClaim: 0,
-            completedClaim: 0,
-            totalAmountOfClaim: 0,
-            averageClaimAmount: 0, // Initialize average claim amount
+            "Reseller Name": resellerName,
+            "Total Claims": 0,
+            "Completed Claims": 0,
+            "Rejected Claims": 0,
+            "Total Amount of Claims": 0,
+            "Average Claim Amount": 0, // Initialize average claim amount
           };
           acc.push(resellerEntry);
         }
 
         // Update reseller entry
-        resellerEntry.totalClaim += 1;
-        resellerEntry.totalAmountOfClaim += claimAmount;
+        resellerEntry["Total Claims"] += 1;
+        resellerEntry["Total Amount of Claims"] += claimAmount;
         if (isCompleted) {
-          resellerEntry.completedClaim += 1;
+          resellerEntry["Completed Claims"] += 1;
+        }
+        if (isRejected) {
+          resellerEntry["Rejected Claims"] += 1;
         }
 
-        // Calculate average claim amount
-        resellerEntry.averageClaimAmount = resellerEntry.totalClaim
-          ? (resellerEntry.totalAmountOfClaim / resellerEntry.totalClaim).toFixed(2)
+        // Calculate average claim amount for completed claims
+        resellerEntry["Average Claim Amount"] = resellerEntry["Completed Claims"]
+          ? (resellerEntry["Total Amount of Claims"] / resellerEntry["Completed Claims"]).toFixed(2)
           : 0;
 
         return acc;
       }, []);
     };
+
 
 
     // Group data for Dealer, Servicer, Reseller, and Customer
@@ -782,7 +804,7 @@ exports.exportDataForClaim = async (req, res) => {
     let summary = result_Array.reduce(
       (acc, item) => {
         // Increment total claims
-        acc.totalClaims += 1;
+        acc["Total Claims"] += 1;
 
         // Check claim statuses
         const hasRejectedStatus = item.claimStatus.some(status => status.status === "rejected");
@@ -791,30 +813,35 @@ exports.exportDataForClaim = async (req, res) => {
 
         // Categorize claims
         if (hasRejectedStatus) {
-          acc.totalRejectedClaims += 1;
+          acc["Total Rejected Claims"] += 1;
         } else if (hasCompletedStatus) {
-          acc.totalCompletedClaims += 1;
+          acc["Total Completed Claims"] += 1;
         } else {
-          acc.totalOpenClaims += 1;
+          acc["Total Open Claims"] += 1;
         }
 
-        if (isPaid) {
-          acc.totalPaidClaims += 1;
-        } else {
-          acc.totalUnpaidClaims += 1;
+        // Categorize paid and unpaid claims, but only for completed claims
+        if (hasCompletedStatus) {
+          if (isPaid) {
+            acc["Total Paid Claims"] += 1;
+          } else {
+            acc["Total Unpaid Claims"] += 1;
+          }
         }
 
         return acc;
       },
       {
-        totalClaims: 0,
-        totalOpenClaims: 0,
-        totalCompletedClaims: 0,
-        totalRejectedClaims: 0,
-        totalPaidClaims: 0,
-        totalUnpaidClaims: 0,
+        "Total Claims": 0,
+        "Total Open Claims": 0,
+        "Total Completed Claims": 0,
+        "Total Rejected Claims": 0,
+        "Total Paid Claims": 0,
+        "Total Unpaid Claims": 0,
       }
     );
+
+
     summary = [summary]
     let dataArray = [summary, dealerData, servicerData, resellerData, customerArray]
     let dateString = Date.now()
@@ -824,13 +851,22 @@ exports.exportDataForClaim = async (req, res) => {
       userId: req.teammateId,
       filePath: "claimReporting/claim-report-" + dateString,
       date: new Date(),
-      status: "Active"
+      status: "Pendning",
+      reportName: data.reportName,
+      remark: data.remark,
+      category: "claimReporting"
     }
+    let createReporting = await claimReportingService.createReporting(dataForClaimReporting)
+
     await createExcelFileWithMultipleSheets(dataArray, process.env.bucket_name, 'claimReporting', dateString)
       .then((res) => {
-        claimReportingService.createReporting(dataForClaimReporting)
+        claimReportingService.updateReporting({ _id: createReporting._id }, { status: "Active" }, { new: true })
       })
-      .catch((err) => console.log("err:---------", err))
+      .catch((err) => {
+        console.log("err:---------", err)
+        claimReportingService.updateReporting({ _id: createReporting._id }, { status: "Failed" }, { new: true })
+
+      })
     res.send({
       code: constant.successCode,
       message: "Success",
@@ -925,4 +961,3 @@ exports.deleteClaimReporting = async (req, res) => {
     })
   }
 }
-
