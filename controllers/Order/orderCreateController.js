@@ -977,7 +977,7 @@ async function generateTC(orderData) {
 
             let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
 
-        
+
 
         })
         return 1
@@ -2410,7 +2410,6 @@ exports.editOrderDetail = async (req, res) => {
             endPoint: base_url,
             notificationFor: IDs
         };
-        let createNotification = await userService.createNotification(notificationData);
 
         // Send Email code here
         let notificationEmails = adminUsers.map(user => user.email)
@@ -2425,9 +2424,6 @@ exports.editOrderDetail = async (req, res) => {
             content: `Your order # ${checkOrder.unique_key} has been updated in our system. The order is still pending, as there is some data missing. Please update the data using the link here.`,
             subject: "Order Update",
             redirectId: base_url + "editOrder/" + checkOrder._id,
-        }
-        if (data.sendNotification) {
-            let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
         }
 
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
@@ -2731,20 +2727,23 @@ exports.editOrderDetail = async (req, res) => {
                     };
                     let createNotification = await userService.createNotification(notificationData);
                     // Send Email code here
-                    let = adminUsers.map(user => user.email)
-                    //Email to Dealer
-                    let emailData = {
-                        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-                        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-                        address: settingData[0]?.address,
-                        websiteSetting: settingData[0],
-                        senderName: dealerPrimary.metaData[0].firstName,
-                        content: "The order " + savedResponse.unique_key + " updated and processed",
-                        subject: "Process Order",
-                        redirectId: base_url + "orderDetails/" + checkOrder._id,
+                    if (!checkOrder?.termCondition) {
+                        let notificationEmails = adminUsers.map(user => user.email)
+                        //Email to Dealer
+                        let emailData = {
+                            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                            address: settingData[0]?.address,
+                            websiteSetting: settingData[0],
+                            senderName: dealerPrimary.metaData[0].firstName,
+                            content: "The order " + savedResponse.unique_key + " updated and processed",
+                            subject: "Process Order",
+                            redirectId: base_url + "orderDetails/" + checkOrder._id,
+                        }
+
+                        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
                     }
 
-                    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
                     //Email to customer code here........
                     if (index == checkLength) {
 
@@ -2775,6 +2774,12 @@ exports.editOrderDetail = async (req, res) => {
                 message: "Success",
             });
         } else {
+            if (data.sendNotification) {
+                let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+            }
+            let createNotification = await userService.createNotification(notificationData);
+
+
             logData.response = {
                 code: constant.successCode,
                 message: "Success",

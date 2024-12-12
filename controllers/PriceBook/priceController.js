@@ -328,7 +328,7 @@ exports.createPriceBook = async (req, res, next) => {
       let createNotification = await userService.createNotification(notificationData);
 
       // Send Email code here
-      let notificationEmails = await supportingFunction.getUserEmails();
+      let notificationEmails =  adminUsers.map(user => user.email)
       //Get Website Setting
       const settingData = await userService.getSetting({});
       const admin = await userService.getSingleUserByEmail({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), status: true } } }, {})
@@ -337,8 +337,9 @@ exports.createPriceBook = async (req, res, next) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
+        priceBookData:priceBookData,
         senderName: admin.metaData[0]?.firstName,
-        content: "The priceBook " + data.name + " created successfully.",
+        content: `A new company pricebook ${data.name} has been added with the following data:`,
         subject: "Create Price Book"
       }
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
