@@ -1058,6 +1058,11 @@ exports.createOrder1 = async (req, res) => {
         data.resellerId = data.resellerId == 'null' ? null : data.resellerId;
         data.venderOrder = data.dealerPurchaseOrder;
         const orderTermCondition = data.termCondition != null ? data.termCondition : {}
+        const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+        const base_url = `${process.env.SITE_URL}`
+        let notificationData;
+        let notificationEmails
+        let emailData;
         let projection = { isDeleted: 0 };
         let settingData = await userService.getSetting({});
         let checkDealer = await dealerService.getDealerById(
@@ -1308,8 +1313,6 @@ exports.createOrder1 = async (req, res) => {
         };
 
         returnField.push(obj);
-        const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
-        const base_url = `${process.env.SITE_URL}`
 
         //send notification to admin and dealer 
         const adminPendingQuery = {
@@ -1332,7 +1335,7 @@ exports.createOrder1 = async (req, res) => {
         let adminUsers = await supportingFunction.getNotificationEligibleUser(adminPendingQuery, { email: 1 })
         const IDs = adminUsers.map(user => user._id)
         let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data.dealerId, isPrimary: true } } })
-        let notificationData = {
+        notificationData = {
             title: "Draft Order Created",
             dealerTitle: "Draft Order Created",
             adminTitle: "Draft Order Created",
@@ -1340,7 +1343,7 @@ exports.createOrder1 = async (req, res) => {
             description: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  - ${req.role}.`,
             dealerMessage: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  - ${req.role}.`,
             resellerMessage: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  - ${req.role}.`,
-            adminMessage:`A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  - ${req.role}.`,
+            adminMessage: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  - ${req.role}.`,
             userId: req.teammateId,
             contentId: null,
             flag: 'order',
@@ -1348,13 +1351,9 @@ exports.createOrder1 = async (req, res) => {
             endPoint: base_url,
             notificationFor: IDs
         };
-
-        let createNotification = await userService.createNotification(notificationData);
-
         // Send Email code here
-        let notificationEmails = adminUsers.map(user => user.email)
-
-        let emailData = {
+        notificationEmails = adminUsers.map(user => user.email)
+        emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
@@ -1367,6 +1366,7 @@ exports.createOrder1 = async (req, res) => {
         if (data.sendNotification) {
             let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
         }
+
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
             let paidDate = {
                 name: "processOrder",
@@ -1634,11 +1634,11 @@ exports.createOrder1 = async (req, res) => {
                         { status: "Active" },
                         { new: true }
                     );
+
                     //generate T anc C
                     if (checkOrder?.termCondition) {
                         const tcResponse = await generateTC(savedResponse);
                     }
-                    //send notification to admin and dealer 
                     const adminActiveOrderQuery = {
                         metaData: {
                             $elemMatch: {
@@ -1697,6 +1697,8 @@ exports.createOrder1 = async (req, res) => {
                     }
 
                     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+
+
                     let logData = {
                         endpoint: "order/createOrder",
                         body: data,
@@ -1725,7 +1727,6 @@ exports.createOrder1 = async (req, res) => {
                 }
 
             }
-
             res.send({
                 code: constant.successCode,
                 message: "Success1",
@@ -1733,6 +1734,9 @@ exports.createOrder1 = async (req, res) => {
             return
 
         } else {
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+            let createNotification = await userService.createNotification(notificationData);
+
             let logData = {
                 endpoint: "order/createOrder",
                 body: data,
@@ -2717,7 +2721,7 @@ exports.editOrderDetail = async (req, res) => {
                         userId: req.teammateId,
                         contentId: checkOrder._id,
                         flag: 'order',
-                        redirectionId: "orderDetails/" + checkOrder._id,  
+                        redirectionId: "orderDetails/" + checkOrder._id,
                         endPoint: base_url,
                         notificationFor: IDs
                     };

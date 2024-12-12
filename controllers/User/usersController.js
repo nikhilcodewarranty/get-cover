@@ -1514,17 +1514,41 @@ exports.addMembers = async (req, res) => {
     let notificationEmails = await supportingFunction.getUserEmails();
 
     let settingData = await userService.getSetting({});
+    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+    const base_url = `${process.env.SITE_URL}`
+    let notificationData;
+    if (req.role == "Super Admin") {
+      const adminUserQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "adminNotification.userAdded": true },
+              { status: true },
+              {
+                $or: [
+                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                ]
+              }
+            ]
+          }
+        },
+      }
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUserQuery, { email: 1 })
+      const IDs = adminUsers.map(user => user._id)
+      notificationData = {
+        title: "New Admin User added",
+        adminTitle: "New Admin User added",
+        adminMessage: "New Admin User added",
+        description: `A new admin user ${data.firstName + " " + data.lastName} with Email ID ${data.email} has been added by ${checkLoginUser.metaData[0]?.firstName}.`,
+        userId: req.teammateId,
+        contentId: null,
+        flag: 'Member Created',
+        notificationFor: IDs,
+        redirectionId: "/manageAccount",
+        endPoint: base_url
+      };
+    }
 
-    let IDs = await supportingFunction.getUserIds()
-
-    let notificationData = {
-      title: "New member created",
-      description: "The new member " + data.firstName + " has been created",
-      userId: req.teammateId,
-      contentId: null,
-      flag: 'Member Created',
-      notificationFor: IDs
-    };
 
     let createNotification = await userService.createNotification(notificationData);
     let resetPasswordCode = randtoken.generate(4, '123456789')
@@ -2024,12 +2048,20 @@ exports.getSetting = async (req, res) => {
         setting[0].whiteLabelLogo.baseUrl = baseUrl;
       }
       const sideBarColor = adminData[0]?.colorScheme.find(color => color.colorType === "sideBarColor");
-      
+
       if (sideBarColor) {
         setting[0].adminSideBarColor = sideBarColor;
         setting[0].colorScheme.push({ colorType: "adminSideBarColor", colorCode: sideBarColor.colorCode });
       }
       // Repeat for any other properties that need the base_url prepended
+      const exists = setting[0]?.colorScheme.some(color => color.colorType === 'chartFirstColor');
+      if (!exists) {
+        const chartFirstColor = adminData[0]?.colorScheme.find(color => color.colorType === "chartFirstColor");
+        setting[0].colorScheme.push({ colorType: "chartFirstColor", colorCode: chartFirstColor.colorCode });
+
+
+      }
+
     }
     else {
       const checkUser = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin } } })
@@ -2053,7 +2085,7 @@ exports.getSetting = async (req, res) => {
           setting[0].whiteLabelLogo.baseUrl = baseUrl;
         }
         const sideBarColor = setting[0]?.colorScheme.find(color => color.colorType === "sideBarColor");
-      
+
         if (sideBarColor) {
           setting[0].adminSideBarColor = sideBarColor;
           setting[0].colorScheme.push({ colorType: "adminSideBarColor", colorCode: sideBarColor.colorCode });

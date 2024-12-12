@@ -433,32 +433,68 @@ exports.statusUpdate = async (req, res) => {
 
       return;
     }
-
-    let IDs = await supportingFunction.getUserIds()
+    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+    const base_url = `${process.env.SITE_URL}`
+    const adminDealerPriceUpdateQuery = {
+      metaData: {
+        $elemMatch: {
+          $and: [
+            { "dealerNotifications.dealerPriceBookUpdate": true },
+            { status: true },
+            {
+              $or: [
+                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
+              ]
+            }
+          ]
+        }
+      },
+    }
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerPriceUpdateQuery, { email: 1 })
+    const IDs = adminUsers.map(user => user._id)
     let settingData = await userService.getSetting({});
 
     let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: existingDealerPriceBook.dealerId, isPrimary: true } } })
-    IDs.push(getPrimary._id)
     //Merge start singleServer
     // let getPrimary = await supportingFunction.getPrimaryUser({ metaId: existingDealerPriceBook.dealerId, isPrimary: true })
     //Merge end
     let getDealerDetail = await dealerService.getDealerByName({ _id: existingDealerPriceBook.dealerId })
-    if (getDealerDetail.isAccountCreate) {
-      IDs.push(getPrimary._id)
+    let notificationData
+    if (existingDealerPriceBook.status == data.status) {
+      notificationData = {
+        title: "Dealer price book updated",
+        adminTitle: "Dealer price book updated",
+        description: `Dealer Pricebook  for ${priceBookData[0]?.pName} has been updated by ${checkLoginUser.metaData[0]?.firstName}.`,
+        adminMessage: `Dealer Pricebook  for ${priceBookData[0]?.pName} has been updated by ${checkLoginUser.metaData[0]?.firstName}.`,
+        dealerMessage: `Pricebook has been updated by ${checkLoginUser.metaData[0]?.firstName}.`,
+        userId: req.teammateId,
+        contentId: req.params.dealerPriceBookId,
+        flag: 'Dealer Price Book',
+        redirectionId: "/dealerPriceList/" + priceBookData[0].name,
+        notificationFor: IDs,
+        endPoint: base_url,
+      };
     }
-    let notificationData = {
-      title: "Dealer price book updated",
-      description: getDealerDetail.name + " , " + "your price book has been updated",
-      userId: req.teammateId,
-      contentId: req.params.dealerPriceBookId,
-      redirectionId: getDealerDetail._id,
-      flag: 'Dealer Price Book',
-      notificationFor: IDs
-    };
+    else {
+      notificationData = {
+        title: "Dealer Pricebook Status Updated",
+        adminTitle: "Dealer Pricebook  Status updated",
+        description: `Dealer Pricebook  for ${priceBookData[0]?.pName} has been updated to ${data.status ? "Active" : "Inactive"} by ${checkLoginUser.metaData[0]?.firstName}.`,
+        adminMessage: `Dealer Pricebook  for ${priceBookData[0]?.pName} has been updated to ${data.status ? "Active" : "Inactive"} by ${checkLoginUser.metaData[0]?.firstName}.`,
+        dealerMessage: `Pricebook has been updated by ${checkLoginUser.metaData[0]?.firstName}.`,
+        userId: req.teammateId,
+        contentId: req.params.dealerPriceBookId,
+        flag: 'Dealer Price Book',
+        redirectionId: "/dealerPriceList/" + priceBookData[0].name,
+        notificationFor: IDs,
+        endPoint: base_url,
+      };
+    }
 
     let createNotification = await userService.createNotification(notificationData);
     // Send Email code here
-    let notificationEmails = await supportingFunction.getUserEmails();
+    let notificationEmails = adminUsers.map(user => user.email)
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -468,17 +504,8 @@ exports.statusUpdate = async (req, res) => {
       content: "The price book " + priceBookData[0]?.pName + " has been updated",
       subject: "Update Price Book"
     }
-
     //check if account create true
-    if (getDealerDetail.isAccountCreate) {
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
-    }
-    else {
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-
-    }
-
-
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
     let logData = {
       userId: req.teammateId,
       endpoint: "dealer/statusUpdate",
@@ -696,6 +723,16 @@ exports.createDealerPriceBook = async (req, res) => {
       return;
     }
 
+    let checkCategory = await priceBookService.getPriceCatById({ _id: new mongoose.Types.ObjectId(checkPriceBookMain.category) }, {})
+
+    if (!checkCategory) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid category"
+      })
+      return;
+    }
+
     let checkPriceBook = await dealerPriceService.getDealerPriceById({ priceBook: data.priceBook, dealerId: data.dealerId }, {})
 
     if (checkPriceBook) {
@@ -705,6 +742,7 @@ exports.createDealerPriceBook = async (req, res) => {
       })
       return;
     }
+
 
     let checkDealerSku = await dealerPriceService.getDealerPriceById({ dealerSku: data.dealerSku, dealerId: data.dealerId }, {})
 
@@ -734,26 +772,48 @@ exports.createDealerPriceBook = async (req, res) => {
         message: "Unable to create the dealer price book"
       })
     } else {
-      let IDs = await supportingFunction.getUserIds()
-      let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data.dealerId, isPrimary: true } } })
-      let settingData = await userService.getSetting({});
-      if (checkDealer.isAccountCreate) {
-        IDs.push(getPrimary._id)
-      }
+      const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+      const base_url = `${process.env.SITE_URL}`
+      const adminDealerPriceBookQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "dealerNotifications.dealerPriceBookAdd": true },
+              { status: true },
+              {
+                $or: [
+                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                  { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
 
+                ]
+              }
+            ]
+          }
+        },
+      }
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerPriceBookQuery, { email: 1 })
+      const IDs = adminUsers.map(user => user._id)
+      let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data.dealerId, isPrimary: true } } })
+      let settingData = await userService.getSetting({})
       let notificationData = {
-        title: "New dealer price book created",
-        description: "The price book " + data.dealerSku + " has been created! ",
+        title: "New Dealer Pricebook Added",
+        adminTitle: "New Dealer Pricebook Added",
+        dealerTitle: "New Pricebook Added",
+        description: `A new Dealer Pricebook ${checkPriceBookMain.name} for ${checkDealer.name} has been added under category ${checkCategory.name} by ${checkLoginUser.metaData[0]?.firstName}.`,
+        adminMessage: `A new Dealer Pricebook ${checkPriceBookMain.name} for ${checkDealer.name} has been added under category ${checkCategory.name} by ${checkLoginUser.metaData[0]?.firstName}.`,
+        dealerMessage: `A new  Pricebook ${checkPriceBookMain.name} has been added under category ${checkCategory.name} by ${checkLoginUser.metaData[0]?.firstName}.`,
         userId: req.teammateId,
         flag: 'Dealer Price Book',
         contentId: createDealerPrice._id,
-        redirectionId: createDealerPrice._id,
-        notificationFor: IDs
+        redirectionId: "/dealerPriceList/" + checkPriceBookMain.name,
+        notificationFor: IDs,
+        endPoint: base_url,
+
       };
 
       let createNotification = await userService.createNotification(notificationData);
       // Send Email code here
-      let notificationEmails = await supportingFunction.getUserEmails();
+      let notificationEmails = adminUsers.map(user => user.email)
       let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
       let emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -764,14 +824,8 @@ exports.createDealerPriceBook = async (req, res) => {
         content: "The price book name" + " " + checkPriceBookMain[0]?.pName + " has been created successfully! effective immediately.",
         subject: "New Price Book"
       }
-      if (checkDealer.isAccountCreate) {
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
 
-      }
-      else {
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-
-      }
       let logData = {
         userId: req.teammateId,
         endpoint: "dealer/createPriceBook",
@@ -1600,22 +1654,45 @@ exports.uploadDealerPriceBook = async (req, res) => {
         const htmlTableString = convertArrayToHTMLTable(csvArray);
 
         //Send notification to admin,dealer,reseller
-
-        let IDs = await supportingFunction.getUserIds()
+        const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+        const base_url = `${process.env.SITE_URL}`
+        const adminUploadQuery = {
+          metaData: {
+            $elemMatch: {
+              $and: [
+                { "adminNotification.userAdded": true },
+                { status: true },
+                {
+                  $or: [
+                    { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
+                    { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                  ]
+                }
+              ]
+            }
+          },
+        }
+        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUploadQuery, { email: 1 })
+        const IDs = adminUsers.map(user => user._id)
         let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: req.body.dealerId, isPrimary: true })
-        IDs.push(dealerPrimary?._id)
         let notificationData = {
-          title: "Dealer Price Book Uploaded",
-          description: "The priceBook has been successfully uploaded",
+          title: "Dealer Pricebook file added successfully",
+          adminTitle: "Dealer Pricebook file added successfully",
+          dealerTitle: "Pricebook added successfully",
+          dealerMessage: `The Bulk file ${file.fieldName} of  pricebook has been uploaded and processed successfully. The file has been uploaded by ${checkLoginUser.metaData[0]?.firstName}.`,
+          adminMessage: `The Bulk file ${file.fieldName} of dealer pricebook has been uploaded and processed successfully for dealer ${checkDealer.name}. The file has been uploaded by ${checkLoginUser.metaData[0]?.firstName}.`,
+          description: `The Bulk file ${file.fieldName} of dealer pricebook has been uploaded and processed successfully for dealer ${checkDealer.name}. The file has been uploaded by ${checkLoginUser.metaData[0]?.firstName}.`,
           userId: req.teammateId,
           flag: 'Dealer Price Book',
-          notificationFor: IDs
+          notificationFor: IDs,
+          endPoint: base_url,
+          redirectionId: "/  /" + req.body.dealerId
         };
 
         let createNotification = await userService.createNotification(notificationData);
         // Send Email code here
-        let notificationEmails = await supportingFunction.getUserEmails();
-        const mailing = sgMail.send(emailConstant.sendCsvFile(dealerPrimary.email, notificationEmails, htmlTableString));
+        let notificationEmails = adminUsers.map(user => user.email)
+        const mailing = sgMail.send(emailConstant.sendCsvFile(notificationEmails, ["noreply@getcover.com"], htmlTableString));
       }
       res.send({
         code: constant.successCode,
@@ -1972,6 +2049,46 @@ exports.createDeleteRelation = async (req, res) => {
     }));
     if (newRecords.length > 0) {
       let saveData = await dealerRelationService.createRelationsWithServicer(newRecords);
+
+      const adminAssignServicerQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "adminNotification.assignDealerServicer": true },
+              { status: true },
+              {
+                $or: [
+                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                  { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
+                  { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
+                ]
+              }
+            ]
+          }
+        },
+      }
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminAssignServicerQuery, { email: 1 })
+      const IDs = adminUsers.map(user => user._id)
+      const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+      const base_url = `${process.env.SITE_URL}`
+      let notificationData = {
+        title: "Servicer Assigned to Dealer",
+        adminTitle: "Servicer Assigned to Dealer",
+        dealerTitle: "Servicer Assigned",
+        servicerTitle: "Dealer Assigned",
+        adminMessage: `We have successfully assigned the servicer to Dealer ${checkDealer.name} by ${checkLoginUser.metaData[0]?.firstName}.`,
+        dealerMessage: `You have been assigned a new servicer by ${checkLoginUser.metaData[0]?.firstName}.`,
+        servicerMessage: `You have been assigned a new dealer ${checkDealer.name} by ${checkLoginUser.metaData[0]?.firstName}.`,
+        description: `We have successfully assigned the servicer to Dealer ${checkDealer.name} by ${checkLoginUser.metaData[0]?.firstName}.`,
+        userId: req.teammateId,
+        contentId: null,
+        flag: 'Assigned Servicer',
+        notificationFor: IDs,
+        redirectionId: "/dealerDetails/" + req.params.dealerId,
+        endPoint: base_url
+      };
+      let createNotification = await userService.createNotification(notificationData);
+
       //Save Logs create dealer relation
       let logData = {
         userId: req.userId,
@@ -2036,6 +2153,44 @@ exports.unAssignServicer = async (req, res) => {
         message: "Unable to unassign"
       })
     } else {
+      const adminUnAssignServicerQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "adminNotification.unassignDealerServicer": true },
+              { status: true },
+              {
+                $or: [
+                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                  { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
+                  { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
+                ]
+              }
+            ]
+          }
+        },
+      }
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUnAssignServicerQuery, { email: 1 })
+      const IDs = adminUsers.map(user => user._id)
+      const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+      const base_url = `${process.env.SITE_URL}`
+      let notificationData = {
+        title: "Servicer Unassigned to Dealer",
+        adminTitle: "Servicer Unassigned to Dealer",
+        dealerTitle: "Servicer Unassigned",
+        servicerTitle: "Dealer Unassigned",
+        adminMessage: `We have successfully unassigned the servicer from the Dealer ${checkDealer.name} by ${checkLoginUser.metaData[0]?.firstName}.`,
+        dealerMessage: `Servicer have been unassigned for future repairs from your account by ${checkLoginUser.metaData[0]?.firstName}`,
+        servicerMessage: `Dealer have been unassigned for future repairs from your account by ${checkLoginUser.metaData[0]?.firstName}`,
+        description: `We have successfully assigned the servicer to Dealer ${checkDealer.name} by ${checkLoginUser.metaData[0]?.firstName}.`,
+        userId: req.teammateId,
+        contentId: null,
+        flag: 'Assigned Servicer',
+        notificationFor: IDs,
+        redirectionId: "/dealerDetails/" + req.params.dealerId,
+        endPoint: base_url
+      };
+      let createNotification = await userService.createNotification(notificationData);
       res.send({
         code: constant.successCode,
         message: "Unassigned successfully", deleteRelation
@@ -2255,7 +2410,7 @@ exports.saveDealerSetting = async (req, res) => {
     if (getData.length > 0) {
 
       response = await userService.updateSetting({ _id: getData[0]?._id }, data, { new: true })
-      console.log("dsfsfdsffsd",response);
+      console.log("dsfsfdsffsd", response);
     }
     else {
       data.title = adminSetting[0]?.title
@@ -2468,7 +2623,7 @@ exports.getDealerColorSetting = async (req, res) => {
     if (!setting[0]) {
       // dealerId = "668fd6cf91f918f716391e96"
       setting = await userService.getSetting({});
-    }0
+    } 0
     const baseUrl = process.env.API_ENDPOINT;
     if (setting.length > 0) {
       setting[0].base_url = baseUrl;
