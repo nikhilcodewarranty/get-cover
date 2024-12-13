@@ -352,6 +352,10 @@ const userSchema = new mongoose.Schema({
                             type: "Boolean",
                             default: true
                         },
+                        contactFormB2c: {
+                            type: "Boolean",
+                            default: true
+                        }
                     },
                     default: {
                         dealerRegistrationRequest: true,

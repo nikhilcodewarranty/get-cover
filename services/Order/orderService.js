@@ -38,16 +38,6 @@ module.exports = class orderService {
     }
   }
 
-  // Get order with contract with unique key number
-  // static async getOrderWithContract1(query, skipLimit, limitData) {
-  //   try {
-  //     const allOrders = await order.aggregate(query).sort({ unique_key_number: -1 }).skip(skipLimit).limit(limitData)
-  //     return allOrders;
-  //   } catch (error) {
-  //     return `Could not fetch order: ${error}`;
-  //   }
-  // }
-
   // Get all orders with query
   static async getAllOrders1(query) {
     try {
@@ -163,6 +153,7 @@ module.exports = class orderService {
       return `Could not fetch order: ${error}`;
     }
   }
+
   // Get orders with query and projection
   static async getOrders(query, projection) {
     try {
@@ -172,6 +163,7 @@ module.exports = class orderService {
       return `Could not fetch order: ${err}`;
     }
   }
+
   // Get orders count
   static async getOrdersCount() {
     try {
@@ -181,6 +173,7 @@ module.exports = class orderService {
       return `Could not fetch order count: ${error}`;
     }
   }
+
   // Get orders count with query
   static async getOrdersCount1(query) {
     try {
@@ -190,6 +183,7 @@ module.exports = class orderService {
       return `Could not fetch order count: ${error}`;
     }
   }
+
   // Get last five orders
   static async getLastFive(query) {
     try {
@@ -207,6 +201,7 @@ module.exports = class orderService {
     return createOrder;
 
   }
+
   // Update order
   static async updateOrder(criteria, data, option) {
     try {
@@ -216,6 +211,7 @@ module.exports = class orderService {
       return `Could not update order: ${error}`;
     }
   }
+
   // Update many orders
   static async updateManyOrder(criteria, data, option) {
     try {
@@ -225,6 +221,7 @@ module.exports = class orderService {
       return `Could not update orders: ${error}`;
     }
   }
+  
   // Change date for orders
   static async changeDate(criteria, data, option) {
     try {
