@@ -1341,17 +1341,13 @@ exports.createOrder1 = async (req, res) => {
                         {
                             $or: [
                                 { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                                { metaId:checkOrder.dealerId },
+                                { metaId: checkOrder.customerId },
+                                { metaId: checkOrder.resellerId },
                                 // { roleId: new mongoose.Types.ObjectId("65bb94b4b68e5a4a62a0b563") },
                                 // { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
                             ]
                         },
-                        {
-                            $or: [
-                                { metaId:checkOrder.dealerId },
-                                { metaId: checkOrder.customerId },
-                                { metaId: checkOrder.resellerId },
-                            ]
-                        }
                     ]
                 }
             },
