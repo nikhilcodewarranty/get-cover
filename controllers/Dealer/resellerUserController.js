@@ -1151,7 +1151,14 @@ exports.editOrderDetail = async (req, res) => {
             let contractArray = [];
             var pricebookDetail = [];
             let dealerBookDetail = [];
-            let count1 = await contractService.getContractsCountNew();
+
+            let currentYear = new Date().getFullYear();
+            console.log(currentYear); // Outputs: 2024
+            currentYear = "-" + currentYear + "-"
+
+            let count1 = await contractService.getContractsCountNew({ 'unique_key': { '$regex': currentYear, '$options': 'i' } });
+
+            // let count1 = await contractService.getContractsCountNew();
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             let checkLength = savedResponse.productsArray.length - 1
             await savedResponse.productsArray.map(async (product, index) => {
@@ -1227,8 +1234,8 @@ exports.editOrderDetail = async (req, res) => {
                 });
                 totalDataComing.forEach((data, index) => {
                     let unique_key_number1 = increamentNumber
-                    let unique_key_search1 = "OC" + "2024" + unique_key_number1
-                    let unique_key1 = "OC-" + "2024-" + unique_key_number1
+                    let unique_key_search1 = "OC" + currentYear + unique_key_number1
+                    let unique_key1 = "OC-" + currentYear + "-" + unique_key_number1
                     let claimStatus = new Date(product.coverageStartDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0) ? "Waiting" : "Active"
                     claimStatus = new Date(product.coverageEndDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) ? "Expired" : claimStatus
                     // -------------------------------------------------  copy from -----------------------------------------//
