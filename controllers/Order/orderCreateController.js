@@ -1358,6 +1358,7 @@ exports.createOrder1 = async (req, res) => {
         }
         let adminUsers = await supportingFunction.getNotificationEligibleUser(adminPendingQuery, { email: 1 })
         const IDs = adminUsers.map(user => user._id)
+        console.log("ddsfdsffsdfsdfsd",IDs)
         let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data.dealerId, isPrimary: true } } })
         notificationData = {
             title: "Draft Order Created",
