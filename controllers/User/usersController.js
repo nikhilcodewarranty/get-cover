@@ -1073,7 +1073,7 @@ exports.deleteUser = async (req, res) => {
         servicerTitle: "User Status Changed",
         description: `The User ${checkUser.metaData[0].firstName} for the Servicer ${checkServicer.name} has been deleted by ${checkLoginUser.metaData[0]?.firstName} -${req.role}..`,
         adminMessage: `The User {{User Name}} for the Servicer ${checkServicer.name} has been deleted by ${checkLoginUser.metaData[0]?.firstName} -${req.role}..`,
-        servicerMessage: `The Status for  user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+        servicerMessage: `The user ${updateUser.metaData[0]?.firstName} has been deleted by  ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
         userId: req.teammateId,
         flag: checkRole?.role,
         redirectionId: "servicerDetails/" + checkServicer._id,
