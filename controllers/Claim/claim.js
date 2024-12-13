@@ -510,6 +510,14 @@ exports.addClaim = async (req, res, next) => {
                 { roleId: new mongoose.Types.ObjectId("656f080e1eb1acda244af8c7") },
                 { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
               ]
+            },
+            {
+              $or: [
+                { metaId: checkOrder.dealerId },
+                { metaId: checkOrder.customerId },
+                { metaId: checkOrder.resellerId },
+                { metaId: data?.servicerId },
+              ]
             }
           ]
         }
@@ -594,7 +602,15 @@ exports.addClaim = async (req, res, next) => {
                   { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
                   { roleId: new mongoose.Types.ObjectId("656f080e1eb1acda244af8c7") },
                 ]
+              },
+              {
+                $or: [
+                  { metaId: checkOrder.dealerId },
+                  { metaId: checkOrder.customerId },
+                  { metaId: checkOrder.resellerId },
+                ]
               }
+
             ]
           }
         },
@@ -617,6 +633,12 @@ exports.addClaim = async (req, res, next) => {
                   { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
                   { roleId: new mongoose.Types.ObjectId("65bb94b4b68e5a4a62a0b563") },
                   { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
+                ]
+              },
+              {
+                $or: [
+                  { metaId: checkOrder.dealerId },
+                  { metaId: checkOrder.resellerId },
                 ]
               }
             ]
@@ -655,6 +677,11 @@ exports.addClaim = async (req, res, next) => {
                     { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
                     { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
                   ]
+                },
+                {
+                  $or: [
+                    { metaId: checkServicer._id },
+                  ]
                 }
               ]
             }
@@ -679,7 +706,7 @@ exports.addClaim = async (req, res, next) => {
                   $or: [
                     { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
                   ]
-                }
+                },
               ]
             }
           },
@@ -805,6 +832,11 @@ exports.editClaim = async (req, res) => {
                 $or: [
                   { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
                   { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
+                ]
+              },
+              {
+                $or: [
+                  { metaId: checkClaim?.servicerId },
                 ]
               }
             ]
@@ -1110,6 +1142,14 @@ exports.editClaimStatus = async (req, res) => {
                   { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
                   { roleId: new mongoose.Types.ObjectId("656f080e1eb1acda244af8c7") },
                 ]
+              },
+              {
+                $or: [
+                  { metaId: checkOrder?.dealerId },
+                  { metaId: checkOrder?.customerId },
+                  { metaId: checkOrder?.resellerId },
+                  { metaId: checkClaim?.servicerId },
+                ]
               }
             ]
           }
@@ -1196,6 +1236,14 @@ exports.editClaimStatus = async (req, res) => {
                   { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
                   { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
                   { roleId: new mongoose.Types.ObjectId("656f080e1eb1acda244af8c7") },
+                ]
+              },
+              {
+                $or: [
+                  { metaId: checkOrder?.dealerId },
+                  { metaId: checkOrder?.customerId },
+                  { metaId: checkOrder?.resellerId },
+                  { metaId: checkClaim?.servicerId },
                 ]
               }
             ]
@@ -1287,6 +1335,14 @@ exports.editClaimStatus = async (req, res) => {
                   { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
                   { roleId: new mongoose.Types.ObjectId("656f080e1eb1acda244af8c7") },
                 ]
+              },
+              {
+                $or: [
+                  { metaId: checkOrder?.dealerId },
+                  { metaId: checkOrder?.customerId },
+                  { metaId: checkOrder?.resellerId },
+                  { metaId: checkClaim?.servicerId },
+                ]
               }
             ]
           }
@@ -1343,6 +1399,13 @@ exports.editClaimStatus = async (req, res) => {
                     { roleId: new mongoose.Types.ObjectId("656f080e1eb1acda244af8c7") },
                     { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
                   ]
+                },
+                {
+                  $or: [
+                    { metaId: checkOrder?.dealerId },
+                    { metaId: checkOrder?.customerId },
+                    { metaId: checkOrder?.resellerId },
+                  ]
                 }
               ]
             }
@@ -1373,6 +1436,14 @@ exports.editClaimStatus = async (req, res) => {
                   $or: [
                     { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
                     { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                  ]
+                },
+                {
+                  $or: [
+                    { metaId: checkOrder?.dealerId },
+                    { metaId: checkOrder?.customerId },
+                    { metaId: checkOrder?.resellerId },
+                    { metaId: checkClaim?.servicerId },
                   ]
                 }
               ]
@@ -1407,7 +1478,7 @@ exports.editClaimStatus = async (req, res) => {
                     // { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
                     { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
                   ]
-                }
+                },
               ]
             }
           },
@@ -1442,6 +1513,13 @@ exports.editClaimStatus = async (req, res) => {
                     { roleId: new mongoose.Types.ObjectId("656f080e1eb1acda244af8c7") },
                     { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
                   ]
+                },
+                {
+                  $or: [
+                    { metaId: checkOrder?.dealerId },
+                    { metaId: checkOrder?.customerId },
+                    { metaId: checkOrder?.resellerId },
+                  ]
                 }
               ]
             }
@@ -1473,6 +1551,12 @@ exports.editClaimStatus = async (req, res) => {
                     $or: [
                       { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
                       { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                    ]
+                  },
+                  {
+                    $or: [
+                      { metaId: checkOrder?.resellerId },
+                      { metaId: checkClaim?.servicerId },
                     ]
                   }
                 ]
@@ -1506,7 +1590,8 @@ exports.editClaimStatus = async (req, res) => {
                   $or: [
                     { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
                   ]
-                }
+                },
+                
               ]
             }
           },
@@ -1827,6 +1912,14 @@ exports.editServicer = async (req, res) => {
                 { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
                 { roleId: new mongoose.Types.ObjectId("656f080e1eb1acda244af8c7") },
               ]
+            },
+            {
+              $or: [
+                { metaId: checkOrder?.dealerId },
+                { metaId: checkOrder?.customerId },
+                { metaId: checkOrder?.resellerId },
+                { metaId: checkClaim?.servicerId },
+              ]
             }
           ]
         }
@@ -1874,6 +1967,11 @@ exports.editServicer = async (req, res) => {
               $or: [
                 { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
                 { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
+              ]
+            },
+            {
+              $or: [
+                { metaId: checkClaim?.servicerId },
               ]
             }
           ]
@@ -3314,6 +3412,13 @@ exports.sendMessages = async (req, res) => {
                 { roleId: new mongoose.Types.ObjectId("65bb94b4b68e5a4a62a0b563") },
                 { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
               ]
+            },
+            {
+              $or: [
+                { metaId: orderData?.dealerId },
+                { metaId: orderData?.customerId },
+                { metaId: orderData?.resellerId },
+              ]
             }
           ]
         }
@@ -3361,7 +3466,8 @@ exports.sendMessages = async (req, res) => {
                 { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
                 { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
               ]
-            }
+            },
+            
           ]
         }
       },
