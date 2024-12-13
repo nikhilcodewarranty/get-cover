@@ -2459,6 +2459,9 @@ exports.editOrderDetail = async (req, res) => {
                 { new: true }
             );
             var pricebookDetail = []
+            let currentYear = new Date().getFullYear();
+            console.log(currentYear); // Outputs: 2024
+            currentYear = "-" + currentYear + "-"
             let count1 = await contractService.getContractsCountNew({ 'unique_key': { '$regex': currentYear, '$options': 'i' } });
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             let checkLength = savedResponse.productsArray.length - 1
