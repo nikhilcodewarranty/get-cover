@@ -677,7 +677,7 @@ exports.updateUserData = async (req, res) => {
     const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
     const base_url = `${process.env.SITE_URL}`
     let adminUpdatePrimaryQuery
-    let notificationData
+    let notificationData={};
     if (checkServicer) {
       adminUpdatePrimaryQuery = {
         metaData: {
@@ -708,10 +708,12 @@ exports.updateUserData = async (req, res) => {
         endPoint: base_url
       };
     }
+
+    
     let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdatePrimaryQuery, { email: 1 })
     const IDs = adminUsers.map(user => user._id)
     notificationData.notificationFor = IDs
-
+console.log("notificationData-------------",notificationData)
     let getPrimary = await supportingFunction.getPrimaryUser({
       metaData: {
         $elemMatch: {
@@ -723,7 +725,7 @@ exports.updateUserData = async (req, res) => {
 
     // Send Email code here
     let notificationEmails = adminUsers.map(user => user.email)
-    
+
     let emailData;
     if (data.firstName) {
       emailData = {
