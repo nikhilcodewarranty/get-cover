@@ -1042,6 +1042,10 @@ exports.deleteUser = async (req, res) => {
     const checkCustomer = await customerService.getCustomerById({ _id: primaryUser.metaData[0]?.metaId })
 
     const checkServicer = await providerService.getServiceProviderById({ _id: primaryUser.metaData[0]?.metaId })
+    let notificationDataUpdate = primaryUser.notificationTo.filter(email => email != checkUser.email);
+
+    let updateUser = await userService.updateSingleUser({ _id: primaryUser._id }, { notificationTo: notificationDataUpdate }, { new: true })
+
     //send notification to dealer when deleted
     let adminDeleteQuery
     let notificationData;
@@ -1095,9 +1099,7 @@ exports.deleteUser = async (req, res) => {
       subject: "Delete User"
     }
 
-    let notificationDataUpdate = primaryUser.notificationTo.filter(email => email != checkUser.email);
 
-    let updateUser = await userService.updateSingleUser({ _id: primaryUser._id }, { notificationTo: notificationDataUpdate }, { new: true })
 
 
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
