@@ -388,11 +388,24 @@ exports.createOrder = async (req, res) => {
         data.resellerId = req.userId;
         data.dealerId = checkReseller.dealerId;
         data.customerId = data.customerId != "" ? data.customerId : null;
-        let count = await orderService.getOrdersCount();
+
+        let currentYear = new Date().getFullYear();
+        console.log(currentYear); // Outputs: 2024
+        currentYear = "-" + currentYear + "-"
+
+        let count = await orderService.getOrdersCount({ 'unique_key': { '$regex': currentYear, '$options': 'i' } });
 
         data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
-        data.unique_key_search = "GC" + "2024" + data.unique_key_number
-        data.unique_key = "GC-" + "2024-" + data.unique_key_number
+        data.unique_key_search = "GC" + currentYear + data.unique_key_number
+        data.unique_key = "GC-" + currentYear + "-" + data.unique_key_number
+
+
+        // let count = await orderService.getOrdersCount();
+
+        // data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
+        // data.unique_key_search = "GC" + "2024" + data.unique_key_number
+        // data.unique_key = "GC-" + "2024-" + data.unique_key_number
+
 
         let checkVenderOrder = await orderService.getOrder(
             { venderOrder: data.dealerPurchaseOrder, dealerId: checkDealer._id },
@@ -1414,11 +1427,11 @@ exports.editOrderDetail = async (req, res) => {
                             redirectId: base_url + "orderDetails/" + savedResponse._id,
                         }
                         if (req.body.sendNotification) {
-    
+
                             let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
                         }
                     }
-                  
+
 
 
                     if (index == checkLength) {
