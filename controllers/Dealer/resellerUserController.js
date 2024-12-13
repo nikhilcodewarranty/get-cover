@@ -1401,21 +1401,24 @@ exports.editOrderDetail = async (req, res) => {
                     };
                     let createNotification = await userService.createNotification(notificationData);
                     // Send Email code here
-                    let notificationEmails = adminUsers.map(user => user.email)
-                    let emailData = {
-                        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-                        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-                        address: settingData[0]?.address,
-                        websiteSetting: settingData[0],
-                        senderName: dealerPrimary.metaData[0]?.firstName,
-                        content: "The  order " + savedResponse.unique_key + " has been updated and processed",
-                        subject: "Process Order",
-                        redirectId: base_url + "orderDetails/" + savedResponse._id,
+                    if (!checkOrder?.termCondition) {
+                        let notificationEmails = adminUsers.map(user => user.email)
+                        let emailData = {
+                            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                            address: settingData[0]?.address,
+                            websiteSetting: settingData[0],
+                            senderName: dealerPrimary.metaData[0]?.firstName,
+                            content: `Congratulations, your order # ${savedResponse.unique_key} has been created in our system. Please login to the system and view your order details. Please review, if there is anything wrong here, do let us know. You can contact us at : support@getcover.com`,
+                            subject: "Process Order",
+                            redirectId: base_url + "orderDetails/" + savedResponse._id,
+                        }
+                        if (req.body.sendNotification) {
+    
+                            let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+                        }
                     }
-                    if (req.body.sendNotification) {
-
-                        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-                    }
+                  
 
 
                     if (index == checkLength) {
