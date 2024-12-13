@@ -165,9 +165,10 @@ module.exports = class orderService {
   }
 
   // Get orders count
-  static async getOrdersCount() {
+  static async getOrdersCount(query) {
     try {
-      const count = await order.find({}, { unique_key_number: 1 }).sort({ unique_key_number: -1 });
+      let checkQuery = query ? query : {}
+      const count = await order.find(checkQuery, { unique_key_number: 1 }).sort({ unique_key_number: -1 });
       return count.sort((a, b) => b.unique_key_number - a.unique_key_number);;
     } catch (error) {
       return `Could not fetch order count: ${error}`;
@@ -221,7 +222,7 @@ module.exports = class orderService {
       return `Could not update orders: ${error}`;
     }
   }
-  
+
   // Change date for orders
   static async changeDate(criteria, data, option) {
     try {
