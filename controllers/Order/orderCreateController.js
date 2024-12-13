@@ -976,7 +976,7 @@ async function generateTC(orderData) {
                 redirectId: base_url + "orderDetails" + checkOrder.unique_key
             }
 
-            let mailing = sgMail.send(emailConstant.sendTermAndCondition(notificationEmails, ["noreply@getcover.com"], emailData,attachment))
+            let mailing = sgMail.send(emailConstant.sendTermAndCondition(notificationEmails, ["noreply@getcover.com"], emailData, attachment))
 
 
 
@@ -1385,7 +1385,7 @@ exports.createOrder1 = async (req, res) => {
                 { new: true }
             );
 
-            let count1 = await contractService.getContractsCountNew();
+            let count1 = await contractService.getContractsCountNew({ 'unique_key': { '$regex': currentYear, '$options': 'i' } });
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             var pricebookDetail = []
             let checkLength = savedResponse.productsArray.length - 1
@@ -1488,8 +1488,8 @@ exports.createOrder1 = async (req, res) => {
 
                 totalDataComing.forEach((data, index1) => {
                     let unique_key_number1 = increamentNumber
-                    let unique_key_search1 = "OC" + "2024" + unique_key_number1
-                    let unique_key1 = "OC-" + "2024-" + unique_key_number1
+                    let unique_key_search1 = "OC" + currentYear + unique_key_number1
+                    let unique_key1 = "OC-" + currentYear + "-" + unique_key_number1
                     let claimStatus = new Date(product.coverageStartDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0) ? "Waiting" : "Active"
                     claimStatus = new Date(product.coverageEndDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) ? "Expired" : claimStatus
 
@@ -2455,7 +2455,7 @@ exports.editOrderDetail = async (req, res) => {
                 { new: true }
             );
             var pricebookDetail = []
-            let count1 = await contractService.getContractsCountNew();
+            let count1 = await contractService.getContractsCountNew({ 'unique_key': { '$regex': currentYear, '$options': 'i' } });
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             let checkLength = savedResponse.productsArray.length - 1
             let checkOrderForService = await orderService.getOrder({ _id: savedResponse._id })
@@ -2542,8 +2542,8 @@ exports.editOrderDetail = async (req, res) => {
                 let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: checkOrder.dealerId, priceBook: priceBookId })
                 totalDataComing.forEach((data, index) => {
                     let unique_key_number1 = increamentNumber
-                    let unique_key_search1 = "OC" + "2024" + unique_key_number1
-                    let unique_key1 = "OC-" + "2024-" + unique_key_number1
+                    let unique_key_search1 = "OC" + currentYear + unique_key_number1
+                    let unique_key1 = "OC-" + currentYear + "-" + unique_key_number1
                     let claimStatus = new Date(product.coverageStartDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0) ? "Waiting" : "Active"
                     claimStatus = new Date(product.coverageEndDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) ? "Expired" : claimStatus
 
