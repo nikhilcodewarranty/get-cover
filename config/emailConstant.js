@@ -49,7 +49,15 @@ module.exports = {
         dynamic_template_data: data,
       };
     },
-
+    sendPriceBookNotification: (toEmail, ccEmail, data) => {
+      return {
+        to: toEmail,
+        cc: ccEmail,
+        from: process.env.from_email,
+        templateId: process.env.price_book,
+        dynamic_template_data: data,
+      };
+    },    
     sendCommentNotification: (toEmail, ccEmail, data) => {
       return {
         to: toEmail,

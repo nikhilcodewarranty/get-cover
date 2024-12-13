@@ -637,7 +637,6 @@ exports.updateUserData = async (req, res) => {
 
       }
     }
-    console.log("fdfgdgdfgd", updateData)
 
     let criteria = { metaData: { $elemMatch: { metaId: checkUserId1[0].metaId } }, _id: req.params.userId }
     const updateUser = await userService.updateSingleUser(criteria, updateData, option);
@@ -674,7 +673,28 @@ exports.updateUserData = async (req, res) => {
 
 
     //send notification to dealer when status change
-    let IDs = await supportingFunction.getUserIds()
+    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+    const base_url = `${process.env.SITE_URL}`
+    const adminUpdateStatusQuery = {
+      metaData: {
+        $elemMatch: {
+          $and: [
+            { "servicerNotification.userUpdate": true },
+            { status: true },
+            {
+              $or: [
+                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
+
+
+              ]
+            }
+          ]
+        }
+      },
+    }
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdateStatusQuery, { email: 1 })
+    let IDs = adminUsers.map(user => user._id)
     let getPrimary = await supportingFunction.getPrimaryUser({
       metaData: {
         $elemMatch: {
@@ -685,7 +705,7 @@ exports.updateUserData = async (req, res) => {
     })
 
     // Send Email code here
-    let notificationEmails = await supportingFunction.getUserEmails();
+    let notificationEmails = adminUsers.map(user => user.email)
     let emailData;
 
     if (data.firstName) {
@@ -724,12 +744,16 @@ exports.updateUserData = async (req, res) => {
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
     }
 
+
+
     let notificationData = {
       title: checkRole.role + " " + "user change",
       description: "The  user has been changed!",
       userId: req.teammateId,
       flag: checkRole.role,
-      notificationFor: IDs
+      notificationFor: IDs,
+      endPoint: base_url,
+      redirectionId: "/servicerDetails/" + checkServicer._id
     };
 
     let createNotification = await userService.createNotification(notificationData);
@@ -2027,10 +2051,16 @@ exports.getSetting = async (req, res) => {
         setting[0].whiteLabelLogo.baseUrl = baseUrl;
       }
       const sideBarColor = adminData[0]?.colorScheme.find(color => color.colorType === "sideBarColor");
-      
+      const chartFirstColor = adminData[0]?.colorScheme.find(color => color.colorType === "chartFirstColor");
+      const exists = setting[0].colorScheme.some(color => color.colorType === 'chartFirstColor');
+
       if (sideBarColor) {
         setting[0].adminSideBarColor = sideBarColor;
         setting[0].colorScheme.push({ colorType: "adminSideBarColor", colorCode: sideBarColor.colorCode });
+      }
+      if (!exists) {
+        setting[0].adminSideBarColor = sideBarColor;
+        setting[0].colorScheme.push({ colorType: "chartFirstColor", colorCode: chartFirstColor.colorCode });
       }
       // Repeat for any other properties that need the base_url prepended
     }
