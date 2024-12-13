@@ -663,13 +663,14 @@ exports.updateUserData = async (req, res) => {
     //Get role by id
     const checkRole = await userService.getRoleById({ _id: updateUser.metaData[0].roleId }, {});
 
-    const checkDealer = await dealerService.getDealerById(updateUser.metaId)
+    const checkDealer = await dealerService.getDealerById(updateUser.metaData[0].metaId)
 
-    const checkReseller = await resellerService.getReseller({ _id: updateUser.metaId }, { isDeleted: false })
+    const checkReseller = await resellerService.getReseller({ _id: updateUser.metaData[0].metaId }, { isDeleted: false })
 
-    const checkCustomer = await customerService.getCustomerById({ _id: updateUser.metaId })
+    const checkCustomer = await customerService.getCustomerById({ _id: updateUser.metaData[0].metaId })
 
-    const checkServicer = await providerService.getServiceProviderById({ _id: updateUser.metaId })
+    const checkServicer = await providerService.getServiceProviderById({ _id: updateUser.metaData[0].metaId })
+
 
     const status_content = req.body.status ? 'Active' : 'Inactive';
 
@@ -677,8 +678,9 @@ exports.updateUserData = async (req, res) => {
     const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
     const base_url = `${process.env.SITE_URL}`
     let adminUpdatePrimaryQuery
-    let notificationData={};
+    let notificationData;
     if (checkServicer) {
+
       adminUpdatePrimaryQuery = {
         metaData: {
           $elemMatch: {
