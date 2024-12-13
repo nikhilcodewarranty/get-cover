@@ -838,7 +838,6 @@ exports.updateNotificationData = async (req, res) => {
         }
 
         let updateUserData = await userService.updateSingleUser({ metaData: { $elemMatch: { metaId: getData.metaData[0].metaId } }, _id: req.params.userId }, updateData, { new: true })
-        console.log("--------------------------------",updateUserData,req.params.userId)
 
         if (!updateUserData) {
             res.send({
