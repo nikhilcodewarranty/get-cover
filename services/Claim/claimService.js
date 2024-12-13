@@ -3,7 +3,7 @@ const comments = require("../../models/Claim/comment");
 
 module.exports = class claimService {
 
-   // Fetch all messages based on a query
+  // Fetch all messages based on a query
   static async getAllMessages(query) {
     try {
       const allMessages = await comments.aggregate(query);
@@ -34,9 +34,10 @@ module.exports = class claimService {
   }
 
   // Get the count of claims, sorted by unique_key_number
-  static async getClaimCount() {
+  static async getClaimCount(query) {
     try {
-      const count = await claim.find({}, { unique_key_number: 1 }).sort({ unique_key_number: -1 });
+      let queryCheck = query ? query : {}
+      const count = await claim.find(query, { unique_key_number: 1 }).sort({ unique_key_number: -1 });
       return count.sort((a, b) => b.unique_key_number - a.unique_key_number);
     } catch (error) {
       return `Could not fetch claim count: ${error}`;
