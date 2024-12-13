@@ -3228,6 +3228,7 @@ async function generateTC(orderData) {
                 },
             }
             let adminUsers = await supportingFunction.getNotificationEligibleUser(adminActiveOrderQuery, { email: 1 })
+            const base_url = `${process.env.SITE_URL}`
 
             let notificationEmails = adminUsers.map(user => user.email)
             let settingData = await userService.getSetting({});
