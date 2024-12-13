@@ -39,14 +39,13 @@ const ExcelJS = require('exceljs');
 AWS.config.update({ region: 'us-east-1' });
 
 const s3Client1 = new S3Client({
-  region: 'us-east-1',
+  region: process.env.region,
   credentials: {
     accessKeyId: process.env.aws_access_key_id,
     secretAccessKey: process.env.aws_secret_access_key,
   },
 })
 
-const folderName = 'claimFile'; // Replace with your specific folder name
 
 const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, dateString) => {
   const workbook = new ExcelJS.Workbook();
