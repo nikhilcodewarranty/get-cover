@@ -1181,6 +1181,13 @@ exports.createOrder = async (req, res) => {
                                 { roleId: new mongoose.Types.ObjectId("65bb94b4b68e5a4a62a0b563") },
                                 { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
                             ]
+                        },
+                        {
+                            $or: [
+                                { metaId: savedResponse.dealerId },
+                                { metaId: savedResponse.customerId },
+                                { metaId: savedResponse.resellerId },
+                            ]
                         }
                     ]
                 }
@@ -1783,6 +1790,13 @@ exports.editOrderDetail = async (req, res) => {
                                             { roleId: new mongoose.Types.ObjectId("656f080e1eb1acda244af8c7") },
                                             { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
                                         ]
+                                    },
+                                    {
+                                        $or: [
+                                            { metaId: savedResponse.dealerId },
+                                            { metaId: savedResponse.customerId },
+                                            { metaId: savedResponse.resellerId },
+                                        ]
                                     }
                                 ]
                             }
@@ -1870,6 +1884,13 @@ exports.editOrderDetail = async (req, res) => {
                                     { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
                                     { roleId: new mongoose.Types.ObjectId("65bb94b4b68e5a4a62a0b563") },
                                     { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
+                                ]
+                            },
+                            {
+                                $or: [
+                                    { metaId: checkOrder.dealerId },
+                                    { metaId: checkOrder.customerId },
+                                    { metaId: checkOrder.resellerId },
                                 ]
                             }
                         ]
@@ -2148,6 +2169,13 @@ async function generateTC(orderData) {
                                     { roleId: new mongoose.Types.ObjectId("656f080e1eb1acda244af8c7") },
                                     { roleId: new mongoose.Types.ObjectId("65bb94b4b68e5a4a62a0b563") },
                                     { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
+                                ]
+                            },
+                            {
+                                $or: [
+                                    { metaId: checkOrder.dealerId },
+                                    { metaId: checkOrder.customerId },
+                                    { metaId: checkOrder.resellerId },
                                 ]
                             }
                         ]
