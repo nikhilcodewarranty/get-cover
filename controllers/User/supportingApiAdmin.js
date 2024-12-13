@@ -827,7 +827,7 @@ exports.updateNotificationData = async (req, res) => {
             $set: {
                 'metaData.$.orderNotifications': data.orderNotifications ? data.orderNotifications : getData.metaData[0].orderNotifications,
                 'metaData.$.claimNotification': data.claimNotification ? data.claimNotification : getData.metaData[0].claimNotification,
-                'metaData.$.adminNotification': data.adminNotifications ? data.adminNotifications : getData.metaData[0].adminNotifications,
+                'metaData.$.adminNotification': data.adminNotification ? data.adminNotification : getData.metaData[0].adminNotification,
                 'metaData.$.servicerNotification': data.servicerNotification ? data.servicerNotification : getData.metaData[0].servicerNotification,
                 'metaData.$.dealerNotifications': data.dealerNotifications ? data.dealerNotifications : getData.metaData[0].dealerNotifications,
                 'metaData.$.resellerNotifications': data.resellerNotifications ? data.resellerNotifications : getData.metaData[0].resellerNotifications,
