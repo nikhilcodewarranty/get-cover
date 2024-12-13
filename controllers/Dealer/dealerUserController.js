@@ -1806,7 +1806,7 @@ exports.editOrderDetail = async (req, res) => {
                     };
                     let createNotification = await userService.createNotification(notificationData);
                     // Send Email code here
-                    if (!checkOrder?.termCondition) {
+                    if (!checkOrder?.termCondition || checkOrder?.termCondition == null || checkOrder?.termCondition == '') {
                         let notificationEmails = adminUsers.map(user => user.email)
                         let emailData = {
                             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -2150,6 +2150,7 @@ async function generateTC(orderData) {
                 },
             }
             let adminUsers = await supportingFunction.getNotificationEligibleUser(adminActiveOrderQuery, { email: 1 })
+            const base_url = `${process.env.SITE_URL}`
 
             let notificationEmails = adminUsers.map(user => user.email)
             let settingData = await userService.getSetting({});

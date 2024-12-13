@@ -937,7 +937,6 @@ async function generateTC(orderData) {
             //Read from the s3 bucket
             const data = await S3.getObject(params).promise();
             let attachment = data.Body.toString('base64');
-            const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
             const base_url = `${process.env.SITE_URL}`
             //sendTermAndCondition
             // Send Email code here
@@ -1690,8 +1689,6 @@ exports.createOrder1 = async (req, res) => {
                     };
 
                     let createNotification = await userService.createNotification(notificationData1);
-
-                    console.log("term and conditon-------------------", checkOrder?.termCondition)
                     // Send Email code here
                     if (!checkOrder?.termCondition || checkOrder?.termCondition == null || checkOrder?.termCondition == '') {
                         let notificationEmails = adminUsers.map(user => user.email)
