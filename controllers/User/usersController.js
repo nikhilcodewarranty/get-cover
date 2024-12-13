@@ -640,7 +640,6 @@ exports.updateUserData = async (req, res) => {
 
     let criteria = { metaData: { $elemMatch: { metaId: checkUserId1[0].metaId } }, _id: req.params.userId }
     const updateUser = await userService.updateSingleUser(criteria, updateData, option);
-    console.log("fdfgdgdfgd", updateUser)
     if (!updateUser) {
       //Save Logs updateUserData
       let logData = {
