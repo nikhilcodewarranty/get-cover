@@ -14,7 +14,7 @@ router.post('/getCustomerOrders/:customerId', [verifyToken], supportingFunction.
 router.post('/createReseller', [verifyToken], dealerUserController.createReseller); // create reseller
 router.post('/createDeleteRelation', [verifyToken], dealerUserController.createDeleteRelation); // create or delete relation
 router.post("/createClaim", [verifyToken], dealerUserController.addClaim); // create claim
-router.post("/saleReporting", [verifyToken], dealerUserController.saleReporting); // sale reporting
+router.post("/saleReporting", [verifyToken], dealerUserController.saleReporting); // sale reporting 
 router.post("/claimReporting", [verifyToken], dealerUserController.claimReporting); // claim reporting
 router.post("/saleReportinDropDown", [verifyToken], dealerUserController.saleReportinDropDown); // sale reporting dropdown
 router.post("/claimReportinDropdown", [verifyToken], dealerUserController.claimReportinDropdown); // claim reporting dropdown
