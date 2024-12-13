@@ -1083,7 +1083,6 @@ exports.deleteUser = async (req, res) => {
     let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDeleteQuery, { email: 1 })
     const IDs = adminUsers.map(user => user._id)
     notificationData.notificationFor = IDs
-    CONSOLE.LOG("FSFSDFDDSDFSDSDF",notificationData)
     let createNotification = await userService.createNotification(notificationData);
 
     // Send Email code here
