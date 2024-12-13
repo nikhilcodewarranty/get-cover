@@ -849,7 +849,7 @@ exports.exportDataForClaim = async (req, res) => {
     let dataForClaimReporting = {
       fileName: "claim-report-" + dateString,
       userId: req.teammateId,
-      filePath: "claimReporting/claim-report-" + dateString,
+      filePath: "claimReporting/claim-report-" + dateString + ".xlsx",
       date: new Date(),
       status: "Pendning",
       reportName: data.reportName,
