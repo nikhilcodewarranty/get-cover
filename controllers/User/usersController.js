@@ -1035,13 +1035,13 @@ exports.deleteUser = async (req, res) => {
 
     let primaryUser = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkUser?.metaData[0].metaId, isPrimary: true } } })
 
-    const checkDealer = await dealerService.getDealerById(primaryUser.metaId)
+    const checkDealer = await dealerService.getDealerById(primaryUser.metaData[0]?.metaId)
 
-    const checkReseller = await resellerService.getReseller({ _id: primaryUser.metaId }, { isDeleted: false })
+    const checkReseller = await resellerService.getReseller({ _id: primaryUser.metaData[0]?.metaId }, { isDeleted: false })
 
-    const checkCustomer = await customerService.getCustomerById({ _id: primaryUser.metaId })
+    const checkCustomer = await customerService.getCustomerById({ _id: primaryUser.metaData[0]?.metaId })
 
-    const checkServicer = await providerService.getServiceProviderById({ _id: primaryUser.metaId })
+    const checkServicer = await providerService.getServiceProviderById({ _id: primaryUser.metaData[0]?.metaId })
     //send notification to dealer when deleted
     let adminDeleteQuery
     let notificationData;
