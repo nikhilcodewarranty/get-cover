@@ -975,7 +975,7 @@ async function generateTC(orderData) {
                 redirectId: base_url + "orderDetails" + checkOrder.unique_key
             }
 
-            let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+            let mailing = sgMail.send(emailConstant.sendTermAndCondition(notificationEmails, ["noreply@getcover.com"], emailData,attachment))
 
 
 
