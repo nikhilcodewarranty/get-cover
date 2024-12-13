@@ -663,36 +663,59 @@ exports.updateUserData = async (req, res) => {
     //Get role by id
     const checkRole = await userService.getRoleById({ _id: updateUser.metaData[0].roleId }, {});
 
-    const checkDealer = await dealerService.getDealerById(updateUser.metaId)
+    const checkDealer = await dealerService.getDealerById(updateUser.metaData[0].metaId)
 
-    const checkReseller = await resellerService.getReseller({ _id: updateUser.metaId }, { isDeleted: false })
+    const checkReseller = await resellerService.getReseller({ _id: updateUser.metaData[0].metaId }, { isDeleted: false })
 
-    const checkCustomer = await customerService.getCustomerById({ _id: updateUser.metaId })
+    const checkCustomer = await customerService.getCustomerById({ _id: updateUser.metaData[0].metaId })
 
-    const checkServicer = await providerService.getServiceProviderById({ _id: updateUser.metaId })
+    const checkServicer = await providerService.getServiceProviderById({ _id: updateUser.metaData[0].metaId })
 
+
+    const status_content = req.body.status ? 'Active' : 'Inactive';
 
     //send notification to dealer when status change
     const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
     const base_url = `${process.env.SITE_URL}`
-    const adminUpdateStatusQuery = {
-      metaData: {
-        $elemMatch: {
-          $and: [
-            { "servicerNotification.userUpdate": true },
-            { status: true },
-            {
-              $or: [
-                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
-              ]
-            }
-          ]
-        }
-      },
+    let adminUpdatePrimaryQuery
+    let notificationData;
+    if (checkServicer) {
+
+      adminUpdatePrimaryQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "servicerNotification.userUpdate": true },
+              { status: true },
+              {
+                $or: [
+                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                  { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
+                ]
+              }
+            ]
+          }
+        },
+      }
+      notificationData = {
+        title: "Servicer User Status Changed",
+        adminTitle: "Servicer User Status Changed",
+        servicerTitle: "User Status Changed",
+        description: `The Status for the Servicer ${checkServicer.name} for his user ${updateLastPrimary.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+        adminMessage: `The Status for the Servicer ${checkServicer.name} for his user ${updateLastPrimary.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+        servicerMessage: `The Status for  user ${updateLastPrimary.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+        userId: req.teammateId,
+        flag: checkRole?.role,
+        redirectionId: "servicerDetails/" + checkServicer._id,
+        endPoint: base_url
+      };
     }
-    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdateStatusQuery, { email: 1 })
-    let IDs = adminUsers.map(user => user._id)
+
+    
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdatePrimaryQuery, { email: 1 })
+    const IDs = adminUsers.map(user => user._id)
+    notificationData.notificationFor = IDs
+console.log("notificationData-------------",notificationData)
     let getPrimary = await supportingFunction.getPrimaryUser({
       metaData: {
         $elemMatch: {
@@ -704,8 +727,8 @@ exports.updateUserData = async (req, res) => {
 
     // Send Email code here
     let notificationEmails = adminUsers.map(user => user.email)
-    let emailData;
 
+    let emailData;
     if (data.firstName) {
       emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -719,7 +742,6 @@ exports.updateUserData = async (req, res) => {
     }
 
     else {
-      const status_content = req.body.status ? 'Active' : 'Inactive';
       emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -731,28 +753,8 @@ exports.updateUserData = async (req, res) => {
       }
     }
 
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
 
-    if (checkServicer?.isAccountCreate || checkReseller?.isAccountCreate || checkDealer?.isAccountCreate || checkCustomer?.isAccountCreate) {
-      notificationEmails.push(getPrimary.email);
-      notificationEmails.push(updateUser.email);
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(updateUser.email, getPrimary.email, emailData))
-      IDs.push(getPrimary._id)
-    }
-    else {
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
-    }
-
-
-
-    let notificationData = {
-      title: checkRole.role + " " + "user change",
-      description: "The  user has been changed!",
-      userId: req.teammateId,
-      flag: checkRole.role,
-      notificationFor: IDs,
-      endPoint: base_url,
-      redirectionId: "/servicerDetails/" + checkServicer._id
-    };
 
     let createNotification = await userService.createNotification(notificationData);
 
@@ -2084,7 +2086,7 @@ exports.getSetting = async (req, res) => {
           setting[0].whiteLabelLogo.baseUrl = baseUrl;
         }
         const sideBarColor = setting[0]?.colorScheme.find(color => color.colorType === "sideBarColor");
-      
+
         if (sideBarColor) {
           setting[0].adminSideBarColor = sideBarColor;
           setting[0].colorScheme.push({ colorType: "adminSideBarColor", colorCode: sideBarColor.colorCode });
