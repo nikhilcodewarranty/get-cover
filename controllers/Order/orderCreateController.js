@@ -1140,6 +1140,7 @@ exports.createOrder1 = async (req, res) => {
         let currentYear = new Date().getFullYear();
         console.log(currentYear); // Outputs: 2024
         currentYear = "-" + currentYear + "-"
+        currentYear = "2025"
 
         let count = await orderService.getOrdersCount({ 'unique_key': { '$regex': currentYear, '$options': 'i' } });
 
@@ -1688,10 +1689,8 @@ exports.createOrder1 = async (req, res) => {
                     };
 
                     let createNotification = await userService.createNotification(notificationData1);
-
-                    console.log("term and conditon-------------------",checkOorder?.termCondition)
                     // Send Email code here
-                    if (!checkOrder?.termCondition || checkOorder?.termCondition==null || checkOorder?.termCondition=='') {
+                    if (!checkOrder?.termCondition) {
                         let notificationEmails = adminUsers.map(user => user.email)
                         //Email to Dealer
                         let emailData = {
