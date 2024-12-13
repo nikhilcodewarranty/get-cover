@@ -697,25 +697,40 @@ exports.updateUserData = async (req, res) => {
           }
         },
       }
-      notificationData = {
-        title: "Servicer User Status Changed",
-        adminTitle: "Servicer User Status Changed",
-        servicerTitle: "User Status Changed",
-        description: `The Status for the Servicer ${checkServicer.name} for his user ${updateLastPrimary.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-        adminMessage: `The Status for the Servicer ${checkServicer.name} for his user ${updateLastPrimary.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-        servicerMessage: `The Status for  user ${updateLastPrimary.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-        userId: req.teammateId,
-        flag: checkRole?.role,
-        redirectionId: "servicerDetails/" + checkServicer._id,
-        endPoint: base_url
-      };
+      if (data.firstName) {
+        notificationData = {
+          title: "Servicer User Details Changed",
+          adminTitle: "Servicer User Details Changed",
+          servicerTitle: "User Details Changed",
+          description: `The Details for the Servicer ${checkServicer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated by  ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+          adminMessage: `The Details for the Servicer ${checkServicer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated by  ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+          servicerMessage: `The detail for  user ${updateUser.metaData[0]?.firstName} has been updated by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+          userId: req.teammateId,
+          flag: checkRole?.role,
+          redirectionId: "servicerDetails/" + checkServicer._id,
+          endPoint: base_url
+        };
+      }
+      else {
+        notificationData = {
+          title: "Servicer User Status Changed",
+          adminTitle: "Servicer User Status Changed",
+          servicerTitle: "User Status Changed",
+          description: `The Status for the Servicer ${checkServicer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+          adminMessage: `The Status for the Servicer ${checkServicer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+          servicerMessage: `The Status for  user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+          userId: req.teammateId,
+          flag: checkRole?.role,
+          redirectionId: "servicerDetails/" + checkServicer._id,
+          endPoint: base_url
+        };
+      }
     }
 
-    
+
     let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdatePrimaryQuery, { email: 1 })
     const IDs = adminUsers.map(user => user._id)
     notificationData.notificationFor = IDs
-console.log("notificationData-------------",notificationData)
     let getPrimary = await supportingFunction.getPrimaryUser({
       metaData: {
         $elemMatch: {
@@ -987,6 +1002,8 @@ exports.resetPassword = async (req, res) => {
 exports.deleteUser = async (req, res) => {
   try {
     let criteria = { _id: req.params.userId };
+    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+    const base_url = `${process.env.SITE_URL}`
     let newValue = {
       $set: {
         isDeleted: true
@@ -995,7 +1012,6 @@ exports.deleteUser = async (req, res) => {
     let option = { new: true }
     const checkUser = await userService.getUserById1({ _id: req.params.userId }, {});
     const deleteUser = await userService.deleteUser(criteria, newValue, option);
-    console.log("checkUser-----------------------", checkUser)
     let settingData = await userService.getSetting({});
     if (!deleteUser) {
       //Save Logs delete user
@@ -1019,20 +1035,58 @@ exports.deleteUser = async (req, res) => {
 
     let primaryUser = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkUser?.metaData[0].metaId, isPrimary: true } } })
 
-    //send notification to dealer when deleted
-    let IDs = await supportingFunction.getUserIds()
-    let notificationData = {
-      title: "User Deletion",
-      description: checkUser.metaData[0].firstName + " user has been deleted!",
-      userId: req.teammateId,
-      flag: checkRole.role,
-      notificationFor: [primaryUser._id]
-    };
+    const checkDealer = await dealerService.getDealerById(checkUser.metaData[0]?.metaId)
 
+    const checkReseller = await resellerService.getReseller({ _id: checkUser.metaData[0]?.metaId }, { isDeleted: false })
+
+    const checkCustomer = await customerService.getCustomerById({ _id: checkUser.metaData[0]?.metaId })
+
+    const checkServicer = await providerService.getServiceProviderById({ _id: checkUser.metaData[0]?.metaId })
+    let notificationDataUpdate = primaryUser.notificationTo.filter(email => email != checkUser.email);
+
+    let updateUser = await userService.updateSingleUser({ _id: primaryUser._id }, { notificationTo: notificationDataUpdate }, { new: true })
+
+    //send notification to dealer when deleted
+    let adminDeleteQuery
+    let notificationData;
+    if (checkServicer) {
+      adminDeleteQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "servicerNotification.userDelete": true },
+              { status: true },
+              {
+                $or: [
+                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                  { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
+                ]
+              }
+            ]
+          }
+        },
+      }
+
+      notificationData = {
+        title: "Servicer User Deleted",
+        adminTitle: "Servicer User Deleted",
+        servicerTitle: "User Status Changed",
+        description: `The User ${checkUser.metaData[0].firstName} for the Servicer ${checkServicer.name} has been deleted by ${checkLoginUser.metaData[0]?.firstName} -${req.role}..`,
+        adminMessage: `The User {{User Name}} for the Servicer ${checkServicer.name} has been deleted by ${checkLoginUser.metaData[0]?.firstName} -${req.role}..`,
+        servicerMessage: `The user ${updateUser.metaData[0]?.firstName} has been deleted by  ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+        userId: req.teammateId,
+        flag: checkRole?.role,
+        redirectionId: "servicerDetails/" + checkServicer._id,
+        endPoint: base_url
+      }
+    }
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDeleteQuery, { email: 1 })
+    const IDs = adminUsers.map(user => user._id)
+    notificationData.notificationFor = IDs
     let createNotification = await userService.createNotification(notificationData);
 
     // Send Email code here
-    let notificationEmails = await supportingFunction.getUserEmails();
+    let notificationEmails = adminUsers.map(user => user.email);
 
 
     let emailData = {
@@ -1045,37 +1099,11 @@ exports.deleteUser = async (req, res) => {
       subject: "Delete User"
     }
 
-    let notificationDataUpdate = primaryUser.notificationTo.filter(email => email != checkUser.email);
 
-    let updateUser = await userService.updateSingleUser({ _id: primaryUser._id }, { notificationTo: notificationDataUpdate }, { new: true })
 
-    const checkDealer = await dealerService.getDealerById(primaryUser.metaId)
 
-    const checkReseller = await resellerService.getReseller({ _id: primaryUser.metaId }, { isDeleted: false })
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
 
-    const checkCustomer = await customerService.getCustomerById({ _id: primaryUser.metaId })
-
-    const checkServicer = await providerService.getServiceProviderById({ _id: primaryUser.metaId })
-
-    if (checkServicer?.isAccountCreate || checkReseller?.isAccountCreate || checkDealer?.isAccountCreate || checkCustomer?.isAccountCreate) {
-      notificationEmails.push(primaryUser.email);
-      notificationEmails.push(checkUser.email);
-      IDs.push(primaryUser._id)
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(checkUser.email, primaryUser.email, emailData))
-    }
-    else {
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-
-    }
-    // let notificationData = {
-    //   title: "User Deletion",
-    //   description: checkUser.firstName + " user has been deleted!",
-    //   userId: req.teammateId,
-    //   flag: checkRole.role,
-    //   notificationFor: IDs
-    // };
-
-    // let createNotification = await userService.createNotification(notificationData);
     //Save Logs delete user
     let logData = {
       endpoint: "user/deleteUser",
