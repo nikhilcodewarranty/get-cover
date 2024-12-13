@@ -939,8 +939,6 @@ async function generateTC(orderData) {
             let attachment = data.Body.toString('base64');
 
             //sendTermAndCondition
-            // Send Email code here
-
             //send notification to admin and dealer 
             const adminActiveOrderQuery = {
                 metaData: {
@@ -960,7 +958,10 @@ async function generateTC(orderData) {
                     }
                 },
             }
+
             let adminUsers = await supportingFunction.getNotificationEligibleUser(adminActiveOrderQuery, { email: 1 })
+
+            const base_url = `${process.env.SITE_URL}`
 
             let notificationEmails = adminUsers.map(user => user.email)
             let settingData = await userService.getSetting({});
@@ -1689,7 +1690,6 @@ exports.createOrder1 = async (req, res) => {
 
                     let createNotification = await userService.createNotification(notificationData1);
 
-                    console.log("term and conditon-------------------", checkOrder?.termCondition)
                     // Send Email code here
                     if (!checkOrder?.termCondition || checkOrder?.termCondition == null || checkOrder?.termCondition == '') {
                         let notificationEmails = adminUsers.map(user => user.email)
