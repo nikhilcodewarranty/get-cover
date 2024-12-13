@@ -1035,13 +1035,13 @@ exports.deleteUser = async (req, res) => {
 
     let primaryUser = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkUser?.metaData[0].metaId, isPrimary: true } } })
 
-    const checkDealer = await dealerService.getDealerById(primaryUser.metaData[0]?.metaId)
+    const checkDealer = await dealerService.getDealerById(checkUser.metaData[0]?.metaId)
 
-    const checkReseller = await resellerService.getReseller({ _id: primaryUser.metaData[0]?.metaId }, { isDeleted: false })
+    const checkReseller = await resellerService.getReseller({ _id: checkUser.metaData[0]?.metaId }, { isDeleted: false })
 
-    const checkCustomer = await customerService.getCustomerById({ _id: primaryUser.metaData[0]?.metaId })
+    const checkCustomer = await customerService.getCustomerById({ _id: checkUser.metaData[0]?.metaId })
 
-    const checkServicer = await providerService.getServiceProviderById({ _id: primaryUser.metaData[0]?.metaId })
+    const checkServicer = await providerService.getServiceProviderById({ _id: checkUser.metaData[0]?.metaId })
     let notificationDataUpdate = primaryUser.notificationTo.filter(email => email != checkUser.email);
 
     let updateUser = await userService.updateSingleUser({ _id: primaryUser._id }, { notificationTo: notificationDataUpdate }, { new: true })
@@ -1083,6 +1083,7 @@ exports.deleteUser = async (req, res) => {
     let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDeleteQuery, { email: 1 })
     const IDs = adminUsers.map(user => user._id)
     notificationData.notificationFor = IDs
+    CONSOLE.LOG("FSFSDFDDSDFSDSDF",notificationData)
     let createNotification = await userService.createNotification(notificationData);
 
     // Send Email code here
