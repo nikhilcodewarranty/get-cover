@@ -815,6 +815,7 @@ exports.updateNotificationData = async (req, res) => {
     try {
         let data = req.body
         let getData = await userService.getUserById1({ _id: req.params.userId }, { metaData: 1 })
+        console.log("--------------------------------",getData)
         if (!getData) {
             res.send({
                 code: constant.errorCode,
@@ -836,7 +837,9 @@ exports.updateNotificationData = async (req, res) => {
             }
         }
 
-        let updateUserData = await userService.updateSingleUser({ _id: req.params.userId }, updateData, { new: true })
+        let updateUserData = await userService.updateSingleUser({ metaData: { $elemMatch: { metaId: getData.metaData[0].metaId } }, _id: req.params.userId }, updateData, { new: true })
+        console.log("--------------------------------",updateUserData,req.params.userId)
+
         if (!updateUserData) {
             res.send({
                 code: constant.errorCode,
