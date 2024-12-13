@@ -623,6 +623,7 @@ exports.updateUserData = async (req, res) => {
         }
       }
     ])
+
     const settingData = await userService.getSetting({});
     let updateData = {
       $set: {
@@ -684,8 +685,6 @@ exports.updateUserData = async (req, res) => {
               $or: [
                 { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
                 { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
-
-
               ]
             }
           ]

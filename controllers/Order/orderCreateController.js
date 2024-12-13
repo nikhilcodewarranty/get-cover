@@ -1684,7 +1684,7 @@ exports.createOrder1 = async (req, res) => {
 
                     let createNotification = await userService.createNotification(notificationData1);
                     // Send Email code here
-                    if (!checkOrder?.termCondition) {
+                    if (!checkOrder?.termCondition || checkOorder?.termCondition==null || checkOorder?.termCondition=='') {
                         let notificationEmails = adminUsers.map(user => user.email)
                         //Email to Dealer
                         let emailData = {
