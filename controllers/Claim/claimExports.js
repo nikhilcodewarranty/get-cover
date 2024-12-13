@@ -851,7 +851,7 @@ exports.exportDataForClaim = async (req, res) => {
       userId: req.teammateId,
       filePath: "claimReporting/claim-report-" + dateString + ".xlsx",
       date: new Date(),
-      status: "Pendning",
+      status: "Pending",
       reportName: data.reportName,
       remark: data.remark,
       category: "claimReporting"
