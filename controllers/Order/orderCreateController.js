@@ -1347,15 +1347,16 @@ exports.createOrder1 = async (req, res) => {
                         },
                         {
                             $or: [
-                                { metaId: savedResponse.dealerId },
-                                { metaId: savedResponse.customerId },
-                                { metaId: savedResponse.resellerId },
+                                { metaId:checkOrder.dealerId },
+                                { metaId: checkOrder.customerId },
+                                { metaId: checkOrder.resellerId },
                             ]
                         }
                     ]
                 }
             },
         }
+        console.log("ddssdfdfsdsdf",adminPendingQuery)
         let adminUsers = await supportingFunction.getNotificationEligibleUser(adminPendingQuery, { email: 1 })
         const IDs = adminUsers.map(user => user._id)
         console.log("ddsfdsffsdfsdfsd",IDs)
