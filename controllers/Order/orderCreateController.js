@@ -937,7 +937,7 @@ async function generateTC(orderData) {
             //Read from the s3 bucket
             const data = await S3.getObject(params).promise();
             let attachment = data.Body.toString('base64');
-            const base_url = `${process.env.SITE_URL}`
+
             //sendTermAndCondition
             // Send Email code here
 
@@ -975,7 +975,7 @@ async function generateTC(orderData) {
                 redirectId: base_url + "orderDetails" + checkOrder.unique_key
             }
 
-            let mailing = sgMail.send(emailConstant.sendTermAndCondition(notificationEmails, ["noreply@getcover.com"], emailData, attachment))
+            let mailing = sgMail.send(emailConstant.sendTermAndCondition(notificationEmails, ["noreply@getcover.com"], emailData,attachment))
 
 
 
@@ -1136,17 +1136,11 @@ exports.createOrder1 = async (req, res) => {
         data.servicerId = data.servicerId != "" ? data.servicerId : null;
         data.resellerId = data.resellerId != "" ? data.resellerId : null;
         data.customerId = data.customerId != "" ? data.customerId : null;
-
-        let currentYear = new Date().getFullYear();
-        console.log(currentYear); // Outputs: 2024
-        currentYear = "-" + currentYear + "-"
-        currentYear = "2025"
-
-        let count = await orderService.getOrdersCount({ 'unique_key': { '$regex': currentYear, '$options': 'i' } });
+        let count = await orderService.getOrdersCount();
 
         data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
-        data.unique_key_search = "GC" + currentYear + data.unique_key_number
-        data.unique_key = "GC-" + currentYear + "-" + data.unique_key_number
+        data.unique_key_search = "GC" + "2024" + data.unique_key_number
+        data.unique_key = "GC-" + "2024-" + data.unique_key_number
 
         let checkVenderOrder = await orderService.getOrder(
             { venderOrder: data.dealerPurchaseOrder, dealerId: data.dealerId },
@@ -1690,7 +1684,7 @@ exports.createOrder1 = async (req, res) => {
 
                     let createNotification = await userService.createNotification(notificationData1);
                     // Send Email code here
-                    if (!checkOrder?.termCondition || checkOrder?.termCondition == null || checkOrder?.termCondition == '') {
+                    if (!checkOrder?.termCondition) {
                         let notificationEmails = adminUsers.map(user => user.email)
                         //Email to Dealer
                         let emailData = {
