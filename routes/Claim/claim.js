@@ -10,7 +10,7 @@ router.post("/searchClaim", [verifyToken], claimController.searchClaim); // sear
 router.post("/s3Bucket", claimController.s3Bucket); // s3 bucket operations
 router.post("/saveBulkClaim", [verifyToken], claimController.saveBulkClaim); // save bulk claim
 router.post("/uploadReceipt", [verifyToken], claimController.uploadReceipt); // upload receipt
-router.post("/sendMessages/:claimId", [verifyToken], claimController.sendMessages); // send messages for a claim
+router.post("/sendMessages/:claimId", [verifyToken], claimController.sendMessages); // send messages for a add
 router.post("/uploadCommentImage", [verifyToken], claimController.uploadCommentImage); // upload comment image
 router.post("/createClaim", [verifyToken], claimController.addClaim); // create a claim
 router.post("/getUnpaidAmount", [verifyToken], claimGetController.getUnpaidAmount); // get unpaid amount

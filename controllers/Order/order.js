@@ -2174,7 +2174,7 @@ exports.markAsPaid = async (req, res) => {
             name: "markAsPaid",
             date: new Date()
         }
-        let updatePaidDate = await orderService.updateOrder(
+        let updatePaidDate = await orderService.updateOrder( 
             { _id: req.params.orderId },
             { paidDate: paidDate },
             { new: true }
