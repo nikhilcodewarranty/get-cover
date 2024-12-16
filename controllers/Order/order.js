@@ -1465,7 +1465,7 @@ exports.archiveOrder = async (req, res) => {
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
-            senderName: dealerPrimary.metaData[0]?.firstName,
+            senderName: '',
             content: "The order " + checkOrder.unique_key + " has been archeived!.",
             subject: "Archeive Order"
         }
@@ -2148,7 +2148,7 @@ exports.markAsPaid = async (req, res) => {
                     lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
                     address: settingData[0]?.address,
                     websiteSetting: settingData[0],
-                    senderName: dealerPrimary.metaData[0]?.firstName,
+                    senderName: '',
                     content: `Congratulations, your order # ${savedResponse.unique_key} has been created in our system. Please login to the system and view your order details. Please review, if there is anything wrong here, do let us know. You can contact us at : support@getcover.com`,
                     subject: "Mark as paid",
                     redirectId: base_url + "orderDetails/" + checkOrder._id,
@@ -2763,7 +2763,7 @@ async function generateTC(orderData) {
                 lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
                 address: settingData[0]?.address,
                 websiteSetting: settingData[0],
-                senderName: customerUser.metaData[0]?.firstName,
+                senderName: '',
                 content: `Congratulations, your order # ${checkOrder.unique_key} has been created in our system. Please login to the system and view your order details.Also, we have attached our T&C to the email for the review. Please review, if there is anything wrong here, do let us know. You can contact us at : support@getcover.com`,
                 subject: "Mark as paid",
                 redirectId: base_url + "orderDetails/" + checkOrder._id,
