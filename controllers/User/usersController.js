@@ -1037,11 +1037,11 @@ exports.deleteUser = async (req, res) => {
 
     const checkDealer = await dealerService.getDealerById(checkUser.metaData[0]?.metaId)
 
-    const checkReseller = await resellerService.getReseller({ _id: checkUser.metaData[0]?.metaId }, { isDeleted: false })
+    const checkReseller = await resellerService.getReseller({ _id: checkUser?.metaData[0]?.metaId }, { isDeleted: false })
 
-    const checkCustomer = await customerService.getCustomerById({ _id: checkUser.metaData[0]?.metaId })
+    const checkCustomer = await customerService.getCustomerById({ _id: checkUser?.metaData[0]?.metaId })
 
-    const checkServicer = await providerService.getServiceProviderById({ _id: checkUser.metaData[0]?.metaId })
+    const checkServicer = await providerService.getServiceProviderById({ _id: checkUser?.metaData[0]?.metaId })
     let notificationDataUpdate = primaryUser.notificationTo.filter(email => email != checkUser.email);
 
     let updateUser = await userService.updateSingleUser({ _id: primaryUser._id }, { notificationTo: notificationDataUpdate }, { new: true })

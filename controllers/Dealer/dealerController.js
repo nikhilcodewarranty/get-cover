@@ -613,31 +613,50 @@ exports.changeDealerStatus = async (req, res) => {
 
     const changedDealerStatus = await dealerService.updateDealerStatus({ _id: req.params.dealerId }, newValue, option);
     if (changedDealerStatus) {
-      let IDs = await supportingFunction.getUserIds()
-      let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.params.dealerId, isPrimary: true } } })
-      //Merge start singleServer
-      // let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.dealerId, isPrimary: true })
-      //Merge end
-      if (singleDealer.isAccountCreate) {
-        IDs.push(getPrimary._id)
+      const status_content = req.body.status ? 'Active' : 'Inactive';
+
+      const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+      const base_url = `${process.env.SITE_URL}`
+      const adminDealerrQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "dealerNotifications.dealerUpdate": true },
+              { status: true },
+              {
+                $or: [
+                  { metaId: new mongoose.Types.ObjectId(req.params.dealerId) },
+
+                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                ]
+              }
+            ]
+          }
+        },
       }
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerrQuery, { email: 1 })
+      const IDs = adminUsers.map(user => user._id)
 
       let notificationData = {
-        title: "Dealer status update",
-        description: singleDealer.name + ", " + "your status has been updated",
+        title: "Dealer Status Updated",
+        adminTitle: "Dealer Status Updated",
+        dealerTitle: "Status Updated",
+        description: `The Dealer ${singleDealer.name} status has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName}.`,
+        adminMessage: `The Dealer ${singleDealer.name} status has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName}.`,
+        dealerMessage: `GetCover has updated your status to ${status_content}.`,
         userId: req.teammateId,
-        redirectionId: singleDealer.name,
+        redirectionId:"/dealerDetails/"+singleDealer._id,
         flag: 'dealer',
+        endPoint:base_url,
         notificationFor: IDs
       };
 
       let createNotification = await userService.createNotification(notificationData);
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
-      const status_content = req.body.status ? 'Active' : 'Inactive';
       let settingData = await userService.getSetting({});
       let emailData = {
-        senderName: singleDealer.metaData[0]?.name,
+        senderName: singleDealer.name,
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
