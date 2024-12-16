@@ -2149,11 +2149,11 @@ exports.markAsPaid = async (req, res) => {
                     address: settingData[0]?.address,
                     websiteSetting: settingData[0],
                     senderName: dealerPrimary.metaData[0]?.firstName,
-                    content: `Congratulations, your order # ${savedResponse.unique_key} has been created in our system. Please login to the system and view your order details.Also, we have attached our T&C to the email for the review. Please review, if there is anything wrong here, do let us know. You can contact us at : support@getcover.com`,
+                    content: `Congratulations, your order # ${savedResponse.unique_key} has been created in our system. Please login to the system and view your order details. Please review, if there is anything wrong here, do let us know. You can contact us at : support@getcover.com`,
                     subject: "Mark as paid",
                     redirectId: base_url + "orderDetails/" + checkOrder._id,
                 }
-                if (checkOrder.sendNotification) {
+                if (checkOrder.sendNotification && !checkOrder.termCondition) {
                     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
                 }
                 //Email to customer code here........
@@ -2764,8 +2764,8 @@ async function generateTC(orderData) {
                 address: settingData[0]?.address,
                 websiteSetting: settingData[0],
                 senderName: customerUser.metaData[0]?.firstName,
-                content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
-                subject: 'Order Term and Condition-' + checkOrder.unique_key,
+                content: `Congratulations, your order # ${checkOrder.unique_key} has been created in our system. Please login to the system and view your order details.Also, we have attached our T&C to the email for the review. Please review, if there is anything wrong here, do let us know. You can contact us at : support@getcover.com`,
+                subject: "Mark as paid",
                 redirectId: base_url + "orderDetails/" + checkOrder._id,
             }
             if (checkOrder.sendNotification) {
