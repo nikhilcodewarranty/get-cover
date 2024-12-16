@@ -1147,7 +1147,7 @@ exports.createOrder1 = async (req, res) => {
 
         data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
         data.unique_key_search = "GC" + currentYear + data.unique_key_number
-        data.unique_key = "GC-" + currentYear + "-" + data.unique_key_number
+        data.unique_key = "GC" + currentYear  + data.unique_key_number
 
         let checkVenderOrder = await orderService.getOrder(
             { venderOrder: data.dealerPurchaseOrder, dealerId: data.dealerId },
@@ -1492,7 +1492,7 @@ exports.createOrder1 = async (req, res) => {
                 totalDataComing.forEach((data, index1) => {
                     let unique_key_number1 = increamentNumber
                     let unique_key_search1 = "OC" + currentYear + unique_key_number1
-                    let unique_key1 = "OC-" + currentYear + "-" + unique_key_number1
+                    let unique_key1 = "OC" + currentYear  + unique_key_number1
                     let claimStatus = new Date(product.coverageStartDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0) ? "Waiting" : "Active"
                     claimStatus = new Date(product.coverageEndDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) ? "Expired" : claimStatus
 
@@ -2550,7 +2550,7 @@ exports.editOrderDetail = async (req, res) => {
                 totalDataComing.forEach((data, index) => {
                     let unique_key_number1 = increamentNumber
                     let unique_key_search1 = "OC" + currentYear + unique_key_number1
-                    let unique_key1 = "OC-" + currentYear + "-" + unique_key_number1
+                    let unique_key1 = "OC" + currentYear + unique_key_number1
                     let claimStatus = new Date(product.coverageStartDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0) ? "Waiting" : "Active"
                     claimStatus = new Date(product.coverageEndDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) ? "Expired" : claimStatus
 
