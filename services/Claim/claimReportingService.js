@@ -21,9 +21,9 @@ module.exports = class claimReportingService {
         }
     }
 
-    static async getClaimReportings(query) {
+    static async getClaimReportings(query, sorting) {
         try {
-            let getClaimReporting = await claimReporting.find(query)
+            let getClaimReporting = await claimReporting.find(query).sorting
             return getClaimReporting
         } catch (err) {
             console.log("Claim reporting service error", err.message)

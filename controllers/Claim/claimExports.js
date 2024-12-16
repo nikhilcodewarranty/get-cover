@@ -885,7 +885,7 @@ exports.exportDataForClaim = async (req, res) => {
 exports.getClaimReportings = async (req, res) => {
   try {
     let data = req.body
-    let getClaimReporting = await claimReportingService.getClaimReportings({ userId: req.teammateId })
+    let getClaimReporting = await claimReportingService.getClaimReportings({ userId: req.teammateId }, { createdAt: -1 })
     if (!getClaimReporting) {
       res.send({
         code: constant.errorCode,
@@ -953,6 +953,43 @@ exports.deleteClaimReporting = async (req, res) => {
       code: constant.successCode,
       message: "Successfully deleted the claim reporting"
     })
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.updateReportingDownloadTime = async (req, res) => {
+  try {
+    let data = req.body
+    let checkId = await claimReportingService.getClaimReporting({ _id: req.params.reportingId })
+    if (!checkId) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid claim reporting ID"
+      })
+      return
+    }
+    let newValues = {
+      $set: {
+        lastDownloadTime: new Date()
+      }
+    }
+    let updateReportingDownloadTime = await claimReportingService.updateReporting({ _id: req.params.reportingId }, newValues, { new: true })
+    if (!updateReportingDownloadTime) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to update the download time"
+      })
+    } else {
+      res.send({
+        code: constant.successCode,
+        message: "Success",
+        result: updateReportingDownloadTime
+      })
+    }
   } catch (err) {
     res.send({
       code: constant.errorCode,
