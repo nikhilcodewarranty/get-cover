@@ -617,7 +617,6 @@ exports.addClaim = async (req, res, next) => {
                 $or: [
                   { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
                   { metaId: checkOrder.dealerId },
-                  { metaId: checkOrder.customerId },
                   { metaId: checkOrder.resellerId },
                 ]
               },
@@ -672,30 +671,30 @@ exports.addClaim = async (req, res, next) => {
         emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device detailed below:`
         mailing = sgMail.send(emailConstant.sendServicerClaimNotification(sendNotificationForServicer, ["noreply@getcover.com"], emailData))
       }
-      else {
-        const servicerCaseNotification = {
-          metaData: {
-            $elemMatch: {
-              $and: [
-                { "claimNotification.newClaim": true },
-                { status: true },
-                {
-                  $or: [
-                    { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                  ]
-                },
-              ]
-            }
-          },
-        }
-        let servicerCaseUser = await supportingFunction.getNotificationEligibleUser(servicerCaseNotification, { email: 1 })
-        const sendNotificationForServicer = servicerCaseUser.map(user => user.email)
-        let notificationAdmin = await supportingFunction.getUserEmails();
-        emailData.subject = `New Device Received for Repair - ID: ${claimResponse.unique_key}`
-        emailData.senderName = "Admin"
-        emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device detailed below:`
-        mailing = sgMail.send(emailConstant.sendServicerClaimNotification(sendNotificationForServicer, ["noreply@getcover.com"], emailData))
-      }
+      // else {
+      //   const servicerCaseNotification = {
+      //     metaData: {
+      //       $elemMatch: {
+      //         $and: [
+      //           { "claimNotification.newClaim": true },
+      //           { status: true },
+      //           {
+      //             $or: [
+      //               { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+      //             ]
+      //           },
+      //         ]
+      //       }
+      //     },
+      //   }
+      //   let servicerCaseUser = await supportingFunction.getNotificationEligibleUser(servicerCaseNotification, { email: 1 })
+      //   const sendNotificationForServicer = servicerCaseUser.map(user => user.email)
+      //   let notificationAdmin = await supportingFunction.getUserEmails();
+      //   emailData.subject = `New Device Received for Repair - ID: ${claimResponse.unique_key}`
+      //   emailData.senderName = "Admin"
+      //   emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device detailed below:`
+      //   mailing = sgMail.send(emailConstant.sendServicerClaimNotification(sendNotificationForServicer, ["noreply@getcover.com"], emailData))
+      // }
     }
 
     res.send({
