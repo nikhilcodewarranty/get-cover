@@ -1071,9 +1071,9 @@ exports.deleteUser = async (req, res) => {
         title: "Servicer User Deleted",
         adminTitle: "Servicer User Deleted",
         servicerTitle: "User Status Changed",
-        description: `The User ${checkUser.metaData[0].firstName} for the Servicer ${checkServicer.name} has been deleted by ${checkLoginUser.metaData[0]?.firstName} -${req.role}..`,
+        description: `The User ${checkUser.metaData[0].firstName} for the Servicer ${checkServicer.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName} -${req.role}..`,
         adminMessage: `The User {{User Name}} for the Servicer ${checkServicer.name} has been deleted by ${checkLoginUser.metaData[0]?.firstName} -${req.role}..`,
-        servicerMessage: `The user ${updateUser.metaData[0]?.firstName} has been deleted by  ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+        servicerMessage: `The user ${checkUser?.metaData[0]?.firstName} has been deleted by  ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
         userId: req.teammateId,
         flag: checkRole?.role,
         redirectionId: "servicerDetails/" + checkServicer._id,
@@ -1094,7 +1094,7 @@ exports.deleteUser = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: checkUser.metaData[0].firstName,
+      senderName: checkUser?.metaData[0].firstName,
       content: "Your account has been deleted by Get-Cover team.",
       subject: "Delete User"
     }
