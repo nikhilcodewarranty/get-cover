@@ -1309,6 +1309,8 @@ exports.addDealerUser = async (req, res) => {
   try {
     let data = req.body
     let checkDealer = await dealerService.getDealerByName({ _id: data.dealerId }, {})
+    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+    const base_url = `${process.env.SITE_URL}`
 
     if (!checkDealer) {
       res.send({
@@ -1372,22 +1374,38 @@ exports.addDealerUser = async (req, res) => {
         message: "Unable to add the data"
       })
     } else {
-      let IDs = await supportingFunction.getUserIds()
-      let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
-      IDs.push(getPrimary._id)
-      //Merge start singleServer
-      // let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
-      if (checkDealer.isAccountCreate) {
-        IDs.push(getPrimary._id)
+      const adminDealerQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "dealerNotifications.userAdded": true },
+              { status: true },
+              {
+                $or: [
+                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                  { metaId: new mongoose.Types.ObjectId(checkDealer._id) },
+                ]
+              }
+            ]
+          }
+        },
       }
-      //Merge end
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerQuery, { email: 1 })
+      const IDs = adminUsers.map(user => user._id)
+      let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
 
       let notificationData = {
-        title: "New user added",
-        description: checkDealer.name + " , " + "new user has been added",
+        title: "Dealer User Added",
+        adminTitle: "Dealer User Added",
+        dealerTitle: "New User Added",
+        description: `A new user for Dealer ${checkDealer.name} has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+        adminMessage: `A new user for Dealer ${checkDealer.name} has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+        dealerMessage: `A new user for your account has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
         userId: req.teammateId,
         contentId: saveData._id,
         flag: 'dealer',
+        endPoint:base_url,
+        redirectionId:"/dealerDetails/"+checkDealer._id,
         notificationFor: IDs
       };
 
