@@ -974,7 +974,7 @@ async function generateTC(orderData) {
                 senderName: customerUser.metaData[0]?.firstName,
                 content: `Congratulations, your order # ${checkOrder.unique_key} has been created in our system. Please login to the system and view your order details. Also, we have attached our T&C to the email for the review. Please review, if there is anything wrong here, do let us know. You can contact us at : support@getcover.com`,
                 subject: "Process Order",
-                redirectId: base_url + "orderDetails" + checkOrder.unique_key
+                redirectId: base_url + "orderDetails/" + checkOrder.unique_key
             }
 
             let mailing = sgMail.send(emailConstant.sendTermAndCondition(notificationEmails, ["noreply@getcover.com"], emailData, attachment))
@@ -1706,7 +1706,7 @@ exports.createOrder1 = async (req, res) => {
                             senderName: dealerPrimary.metaData[0]?.firstName,
                             content: `Congratulations, your order # ${checkOrder.unique_key} has been created in our system. Please login to the system and view your order details. Please review, if there is anything wrong here, do let us know. You can contact us at : support@getcover.com`,
                             subject: "Process Order",
-                            redirectId: base_url + "orderDetails" + checkOrder.unique_key
+                            redirectId: base_url + "orderDetails/" + checkOrder.unique_key
                         }
 
                         let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
