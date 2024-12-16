@@ -442,7 +442,7 @@ exports.addClaim = async (req, res, next) => {
 
     data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
     data.unique_key_search = "CC" + currentYear + data.unique_key_number
-    data.unique_key = "CC-" + currentYear + "-" + data.unique_key_number
+    data.unique_key = "CC" + currentYear + data.unique_key_number
     data.orderId = checkOrder.unique_key
     data.venderOrder = checkOrder.venderOrder
     data.serial = checkContract.serial
@@ -2674,7 +2674,7 @@ exports.saveBulkClaim = async (req, res) => {
             manufacture: data.contractData.manufacture,
             unique_key_number: unique_key_number,
             unique_key_search: "CC" + currentYear + unique_key_number,
-            unique_key: "CC-" + currentYear + "-" + unique_key_number,
+            unique_key: "CC" + currentYear + unique_key_number,
             diagnosis: issue,
             lossDate: data.lossDate,
             claimFile: 'open',
