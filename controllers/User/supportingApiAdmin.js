@@ -502,7 +502,9 @@ exports.createDealer = async (req, res) => {
 
                 let notificationData = {
                     adminTitle: "New Dealer Added",
+                    title: "New Dealer Added",
                     adminMessage: `A New Dealer ${createMetaData.name} has been added by ${checkLoginUser.metaData[0]?.firstName} on our portal.`,
+                    description: `A New Dealer ${createMetaData.name} has been added by ${checkLoginUser.metaData[0]?.firstName} on our portal.`,
                     userId: req.teammateId,
                     flag: 'dealer',
                     redirectionId: "dealerDetails/" + createMetaData._id,
