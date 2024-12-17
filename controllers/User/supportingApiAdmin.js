@@ -316,9 +316,8 @@ exports.createDealer = async (req, res) => {
                 let notificationEmails = adminUsers.map(user => user.email)
                 let emailData = {
                     senderName: loginUser.metaData[0]?.firstName,
-                    content: `A New Dealer ${data.name} has been approved by ${checkLoginUser.metaData[0]?.firstName} on our portal.`,
-                    subject: "New Dealer Approved",
-                    redirectId: base_url + "dealerDetails/" + data.dealerId,
+                    content: "We are delighted to inform you that the dealer account for " + singleDealer.name + " has been approved.",
+                    subject: "Dealer Account Approved - " + singleDealer.name,
                 }
                 // Send Email code here
                 sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
@@ -502,7 +501,9 @@ exports.createDealer = async (req, res) => {
 
                 let notificationData = {
                     adminTitle: "New Dealer Added",
+                    title: "New Dealer Added",
                     adminMessage: `A New Dealer ${createMetaData.name} has been added by ${checkLoginUser.metaData[0]?.firstName} on our portal.`,
+                    description: `A New Dealer ${createMetaData.name} has been added by ${checkLoginUser.metaData[0]?.firstName} on our portal.`,
                     userId: req.teammateId,
                     flag: 'dealer',
                     redirectionId: "dealerDetails/" + createMetaData._id,
@@ -563,9 +564,8 @@ exports.createDealer = async (req, res) => {
 
                 let emailData = {
                     senderName: loginUser.metaData[0]?.firstName,
-                    content: `A New Dealer ${createMetaData.name} has been added by ${checkLoginUser.metaData[0]?.firstName} on our portal.`,
-                    subject: "New Dealer Added",
-                    redirectId: base_url + "dealerDetails/" + createMetaData._id,
+                    content: "We are delighted to inform you that the dealer account for " + createMetaData.name + " has been created.",
+                    subject: "Dealer Account Created - " + createMetaData.name
                 }
 
                 sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
