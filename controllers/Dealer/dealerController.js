@@ -658,7 +658,7 @@ exports.changeDealerStatus = async (req, res) => {
       // Send Email code here
       let primaryUser = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.params.dealerId, isPrimary: true } } })
 
-      let notificationEmails = await supportingFunction.getUserEmails();
+      let notificationEmails = adminUsers.map(user => user.email)
       let settingData = await userService.getSetting({});
       let resetPasswordCode = randtoken.generate(4, '123456789')
 
