@@ -731,7 +731,6 @@ exports.addClaim = async (req, res, next) => {
       emailData.content = `The Claim # ${claimResponse.unique_key} has been successfully filed for the Contract #  ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here :`
       mailing = sgMail.send(emailConstant.sendEmailTemplate(sendNotificationForCustomer, ["noreply@getcover.com"], emailData))
     }
-
     // Email to servicer and cc to admin 
     if (servicerPrimary) {
       emailData = {

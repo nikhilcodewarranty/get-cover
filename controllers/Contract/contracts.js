@@ -377,7 +377,6 @@ exports.getContractById = async (req, res) => {
     let claimTotalQuery = [
       { $match: totalCreteria },
       { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
-
     ]
     let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
     let query = [
