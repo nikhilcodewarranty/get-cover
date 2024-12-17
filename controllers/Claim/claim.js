@@ -513,10 +513,6 @@ exports.addClaim = async (req, res, next) => {
             {
               $or: [
                 { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                // { metaId: checkOrder.dealerId },
-                // { metaId: checkOrder.customerId },
-                // { metaId: checkOrder.resellerId },
-                // { metaId: data?.servicerId },
               ]
             },
           ]
@@ -525,17 +521,20 @@ exports.addClaim = async (req, res, next) => {
     }
     let adminUsers = await supportingFunction.getNotificationEligibleUser(adminAddClaimQuery, { email: 1 })
     const IDs = adminUsers.map(user => user._id)
-    let notificationAdmin = {
-      title: "Claim Filed Successfully",
-      description: `A new claim # ${claimResponse.unique_key} for dealer ${checkDealer.name} has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-      userId: req.teammateId,
-      contentId: claimResponse._id,
-      flag: 'claim',
-      notificationFor: IDs,
-      endPoint: site_url + "claim-listing/" + claimResponse.unique_key,
-      redirectionId: "claim-listing/" + claimResponse.unique_key,
-    };
-    notificationArray.push(notificationAdmin)
+    if (adminUsers.length > 0) {
+      let notificationAdmin = {
+        title: "Claim Filed Successfully",
+        description: `A new claim # ${claimResponse.unique_key} for dealer ${checkDealer.name} has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+        userId: req.teammateId,
+        contentId: claimResponse._id,
+        flag: 'claim',
+        notificationFor: IDs,
+        endPoint: site_url + "claim-listing/" + claimResponse.unique_key,
+        redirectionId: "claim-listing/" + claimResponse.unique_key,
+      };
+      notificationArray.push(notificationAdmin)
+    }
+
     //Dealer Notification
     const dealerAddClaimQuery = {
       metaData: {
@@ -546,9 +545,6 @@ exports.addClaim = async (req, res, next) => {
             {
               $or: [
                 { metaId: checkOrder.dealerId },
-                // { metaId: checkOrder.customerId },
-                // { metaId: checkOrder.resellerId },
-                // { metaId: data?.servicerId },
               ]
             },
           ]
@@ -557,17 +553,20 @@ exports.addClaim = async (req, res, next) => {
     }
     let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerAddClaimQuery, { email: 1 })
     const dealerIds = dealerUsers.map(user => user._id)
-    let notificationDealer = {
-      title: "Claim Filed Successfully",
-      description: `A new claim # ${claimResponse.unique_key} for customer ${checkCustomer.username} has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-      userId: req.teammateId,
-      contentId: claimResponse._id,
-      flag: 'claim',
-      notificationFor: dealerIds,
-      endPoint: site_url + "claim-listing/" + claimResponse.unique_key,
-      redirectionId: "claim-listing/" + claimResponse.unique_key,
-    };
-    notificationArray.push(notificationDealer)
+    if (dealerUsers.length > 0) {
+      let notificationDealer = {
+        title: "Claim Filed Successfully",
+        description: `A new claim # ${claimResponse.unique_key} for customer ${checkCustomer.username} has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+        userId: req.teammateId,
+        contentId: claimResponse._id,
+        flag: 'claim',
+        notificationFor: dealerIds,
+        endPoint: site_url + "claim-listing/" + claimResponse.unique_key,
+        redirectionId: "claim-listing/" + claimResponse.unique_key,
+      };
+      notificationArray.push(notificationDealer)
+    }
+
     //Reseller Notification
     const resellerAddClaimQuery = {
       metaData: {
@@ -587,17 +586,21 @@ exports.addClaim = async (req, res, next) => {
     }
     let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerAddClaimQuery, { email: 1 })
     const resellerIds = resellerUsers.map(user => user._id)
-    let notificationReseller = {
-      title: "Claim Filed Successfully",
-      description: `A new claim # ${claimResponse.unique_key} for dealer ${checkCustomer.username} has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-      userId: req.teammateId,
-      contentId: claimResponse._id,
-      flag: 'claim',
-      notificationFor: resellerIds,
-      endPoint: site_url + "claim-listing/" + claimResponse.unique_key,
-      redirectionId: "claim-listing/" + claimResponse.unique_key,
-    };
-    notificationArray.push(notificationReseller)
+
+    if (resellerUser.length > 0) {
+      let notificationReseller = {
+        title: "Claim Filed Successfully",
+        description: `A new claim # ${claimResponse.unique_key} for customer ${checkCustomer.username} has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+        userId: req.teammateId,
+        contentId: claimResponse._id,
+        flag: 'claim',
+        notificationFor: resellerIds,
+        endPoint: site_url + "claim-listing/" + claimResponse.unique_key,
+        redirectionId: "claim-listing/" + claimResponse.unique_key,
+      };
+      notificationArray.push(notificationReseller)
+    }
+
     //Customer Notification
     const customerAddClaimQuery = {
       metaData: {
@@ -618,17 +621,20 @@ exports.addClaim = async (req, res, next) => {
     }
     let customerUsers = await supportingFunction.getNotificationEligibleUser(customerAddClaimQuery, { email: 1 })
     const customerIds = customerUsers.map(user => user._id)
-    let notificationCustomer = {
-      title: "Claim Filed Successfully",
-      description: `A new claim # ${claimResponse.unique_key}  has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-      userId: req.teammateId,
-      contentId: claimResponse._id,
-      flag: 'claim',
-      notificationFor: customerIds,
-      endPoint: site_url + "claim-listing/" + claimResponse.unique_key,
-      redirectionId: "claim-listing/" + claimResponse.unique_key,
-    };
-    notificationArray.push(notificationCustomer)
+    if (customerUsers.length > 0) {
+      let notificationCustomer = {
+        title: "Claim Filed Successfully",
+        description: `A new claim # ${claimResponse.unique_key}  has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+        userId: req.teammateId,
+        contentId: claimResponse._id,
+        flag: 'claim',
+        notificationFor: customerIds,
+        endPoint: site_url + "claim-listing/" + claimResponse.unique_key,
+        redirectionId: "claim-listing/" + claimResponse.unique_key,
+      };
+      notificationArray.push(notificationCustomer)
+    }
+
     //Servicer Notification
     const servicerAddClaimQuery = {
       metaData: {
@@ -647,18 +653,21 @@ exports.addClaim = async (req, res, next) => {
     }
     let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerAddClaimQuery, { email: 1 })
     const servicerIds = servicerUsers.map(user => user._id)
-    let notificationServicer = {
-      title: "Claim Filed Successfully",
-      description:`A new claim # ${claimResponse.unique_key} for dealer ${checkDealer.name} has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-      userId: req.teammateId,
-      contentId: claimResponse._id,
-      flag: 'claim',
-      notificationFor: servicerIds,
-      endPoint: site_url + "claim-listing/" + claimResponse.unique_key,
-      redirectionId: "claim-listing/" + claimResponse.unique_key,
-    };
-    notificationArray.push(notificationServicer)
-    
+    if (servicerUsers.length > 0) {
+      let notificationServicer = {
+        title: "Claim Filed Successfully",
+        description: `A new claim # ${claimResponse.unique_key} for dealer ${checkDealer.name} has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+        userId: req.teammateId,
+        contentId: claimResponse._id,
+        flag: 'claim',
+        notificationFor: servicerIds,
+        endPoint: site_url + "claim-listing/" + claimResponse.unique_key,
+        redirectionId: "claim-listing/" + claimResponse.unique_key,
+      };
+      notificationArray.push(notificationServicer)
+    }
+
+
     let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } })
     let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } })
     let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } })
@@ -769,7 +778,7 @@ exports.addClaim = async (req, res, next) => {
         emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device detailed below:`
         mailing = sgMail.send(emailConstant.sendServicerClaimNotification(sendNotificationForServicer, ["noreply@getcover.com"], emailData))
       }
-    
+
     }
     res.send({
       code: constant.successCode,
