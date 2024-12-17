@@ -23,7 +23,7 @@ module.exports = class claimReportingService {
 
     static async getClaimReportings(query, sorting) {
         try {
-            let getClaimReporting = await claimReporting.find(query).sorting
+            let getClaimReporting = await claimReporting.find(query).sort(sorting)
             return getClaimReporting
         } catch (err) {
             console.log("Claim reporting service error", err.message)

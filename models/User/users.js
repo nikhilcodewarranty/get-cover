@@ -75,293 +75,310 @@ const userSchema = new mongoose.Schema({
                     type: {
                         addingNewOrderPending: {
                             type: Boolean,
-                            default: true
+                            default: false
                         },
                         addingNewOrderActive: {
                             type: Boolean,
-                            default: true
+                            default: false
                         },
                         makingOrderPaid: {
                             type: Boolean,
-                            default: true
+                            default: false
                         },
                         updateOrderPending: {
                             type: Boolean,
-                            default: true
+                            default: false
                         },
                         updateOrderActive: {
                             type: Boolean,
-                            default: true
+                            default: false
                         },
                         archivinOrder: {
                             type: Boolean,
-                            default: true
+                            default: false
                         },
                     },
                     default: {
-                        addingNewOrderPending: true,
-                        addingNewOrderActive: true,
-                        makingOrderPaid: true,
-                        updateOrderPending: true,
-                        updateOrderActive: true,
-                        archivinOrder: true,
+                        addingNewOrderPending: false,
+                        addingNewOrderActive: false,
+                        makingOrderPaid: false,
+                        updateOrderPending: false,
+                        updateOrderActive: false,
+                        archivinOrder: false,
                     }
                 },
                 claimNotification: {
                     type: {
                         newClaim: {
                             type: Boolean,
-                            default: true
+                            default: false
                         },
                         fileBulkClaim: {
                             type: Boolean,
-                            default: true
+                            default: false
                         },
                         servicerUpdate: {
                             type: Boolean,
-                            default: true
+                            default: false
                         },
                         customerStatusUpdate: {
                             type: Boolean,
-                            default: true
+                            default: false
                         },
                         repairStatusUpdate: {
                             type: Boolean,
-                            default: true
+                            default: false
                         },
                         claimStatusUpdate: {
                             type: Boolean,
-                            default: true
+                            default: false
                         },
                         partsUpdate: {
                             type: Boolean,
-                            default: true
+                            default: false
                         },
                         claimComment: {
                             type: Boolean,
-                            default: true
+                            default: false
                         },
 
                     },
                     default: {
-                        newClaim: true,
-                        fileBulkClaim: true,
-                        servicerUpdate: true,
-                        customerStatusUpdate: true,
-                        repairStatusUpdate: true,
-                        claimStatusUpdate: true,
-                        partsUpdate: true,
-                        claimComment: true
+                        newClaim: false,
+                        fileBulkClaim: false,
+                        servicerUpdate: false,
+                        customerStatusUpdate: false,
+                        repairStatusUpdate: false,
+                        claimStatusUpdate: false,
+                        partsUpdate: false,
+                        claimComment: false
                     }
                 },
                 adminNotification: {
                     type: {
                         userAdded: {
                             type: "Boolean",
-                            default: true
+                            default: false
                         },
                         categoryUpdate: {
                             type: "Boolean",
-                            default: true
+                            default: false
                         },
                         priceBookUpdate: {
                             type: "Boolean",
-                            default: true
+                            default: false
                         },
                         priceBookAdd: {
                             type: "Boolean",
-                            default: true
+                            default: false
                         },
                         unassignDealerServicer: {
                             type: "Boolean",
-                            default: true
+                            default: false
                         },
                         assignDealerServicer: {
                             type: "Boolean",
-                            default: true
+                            default: false
                         },
                         categoryAdded: {
                             type: "Boolean",
-                            default: true
+                            default: false
                         }
                     },
                     default: {
-                        newUserCreated: true,
-                        categoryUpdate: true,
-                        priceBookUpdate: true,
-                        priceBookAdd: true,
-                        unassignDealerServicer: true,
-                        assignDealerServicer: true,
-                        categoryAdded: true
+                        newUserCreated: false,
+                        categoryUpdate: false,
+                        priceBookUpdate: false,
+                        priceBookAdd: false,
+                        unassignDealerServicer: false,
+                        assignDealerServicer: false,
+                        categoryAdded: false
                     }
                 },
                 servicerNotification: {
                     type: {
                         servicerAdded: {
                             type: "Boolean",
-                            default: true
+                            default: false
+                        },
+                        servicerUpdate: {
+                            type: "Boolean",
+                            default: false
                         },
                         userAdded: {
                             type: "Boolean",
-                            default: true
+                            default: false
                         },
                         userUpdate: {
                             type: "Boolean",
-                            default: true
+                            default: false
                         },
                         primaryChanged: {
                             type: "Boolean",
-                            default: true
+                            default: false
                         },
                         userDelete: {
                             type: "Boolean",
-                            default: true
+                            default: false
                         },
                     },
                     default: {
-                        servicerAdded: true,
-                        userAdded: true,
-                        userUpdate: true,
-                        primaryUpdate: true,
-                        userDelete: true,
+                        servicerAdded: false,
+                        userAdded: false,
+                        userUpdate: false,
+                        primaryUpdate: false,
+                        userDelete: false
                     }
                 },
+
                 dealerNotifications: {
                     type: {
                         dealerAdded: {
                             type: "Boolean",
-                            default: true
+                            default: false
+                        },
+                        dealerUpdate: {
+                            type: "Boolean",
+                            default: false
                         },
                         userAdded: {
                             type: "Boolean",
-                            default: true
+                            default: false
                         },
                         userUpdate: {
                             type: "Boolean",
-                            default: true
+                            default: false
                         },
                         primaryChanged: {
                             type: "Boolean",
-                            default: true
+                            default: false
                         },
                         userDelete: {
                             type: "Boolean",
-                            default: true
+                            default: false
                         },
                         dealerPriceBookUpload: {
                             type: "Boolean",
-                            default: true
+                            default: false
                         },
                         dealerPriceBookAdd: {
                             type: "Boolean",
-                            default: true
+                            default: false
                         },
                         dealerPriceBookUpdate: {
                             type: "Boolean",
-                            default: true
+                            default: false
                         },
                     },
                     default: {
-                        dealerAdded: true,
-                        userAdded: true,
-                        userUpdate: true,
-                        primaryChanged: true,
-                        userDelete: true,
-                        dealerPriceBookUpload: true,
-                        dealerPriceBookAdd: true,
-                        dealerPriceBookUpdate: true,
+                        dealerAdded: false,
+                        userAdded: false,
+                        userUpdate: false,
+                        primaryChanged: false,
+                        userDelete: false,
+                        dealerPriceBookUpload: false,
+                        dealerPriceBookAdd: false,
+                        dealerPriceBookUpdate: false,
                     }
                 },
                 resellerNotifications: {
                     type: {
                         resellerAdded: {
                             type: "Boolean",
-                            default: true
+                            default: false
+                        },
+                        resellerUpdate: {
+                            type: "Boolean",
+                            default: false
                         },
                         userAdd: {
                             type: "Boolean",
-                            default: true
+                            default: false
                         },
                         userUpdate: {
                             type: "Boolean",
-                            default: true
+                            default: false
                         },
                         primaryChange: {
                             type: "Boolean",
-                            default: true
+                            default: false
                         },
                         userDelete: {
                             type: "Boolean",
-                            default: true
+                            default: false
                         }
                     },
                     default: {
-                        resellerAdded: true,
-                        userAdd: true,
-                        userUpdate: true,
-                        primaryChange: true,
-                        userDelete: true,
+                        resellerAdded: false,
+                        userAdd: false,
+                        userUpdate: false,
+                        primaryChange: false,
+                        userDelete: false,
                     }
                 },
                 customerNotifications: {
                     type: {
                         customerAdded: {
                             type: "Boolean",
-                            default: true
+                            default: false
+                        },
+                        customerUpdate: {
+                            type: "Boolean",
+                            default: false
                         },
                         userAdd: {
                             type: "Boolean",
-                            default: true
+                            default: false
                         },
                         userUpdate: {
                             type: "Boolean",
-                            default: true
+                            default: false
                         },
                         primaryChange: {
                             type: "Boolean",
-                            default: true
+                            default: false
                         },
                         userDelete: {
                             type: "Boolean",
-                            default: true
+                            default: false
                         }
                     },
                     default: {
-                        customerAdded: true,
-                        userAdd: true,
-                        userUpdate: true,
-                        primaryChange: true,
-                        userDelete: true,
+                        customerAdded: false,
+                        userAdd: false,
+                        userUpdate: false,
+                        primaryChange: false,
+                        userDelete: false,
                     }
                 },
                 registerNotifications: {
                     type: {
                         dealerRegistrationRequest: {
                             type: "Boolean",
-                            default: true
+                            default: false
                         },
                         servicerRegistrationRequest: {
                             type: "Boolean",
-                            default: true
+                            default: false
                         },
                         dealerDisapproved: {
                             type: "Boolean",
-                            default: true
+                            default: false
                         },
                         servicerDisapproved: {
                             type: "Boolean",
-                            default: true
+                            default: false
                         },
                         contactFormB2c: {
                             type: "Boolean",
-                            default: true
+                            default: false
                         }
                     },
                     default: {
-                        dealerRegistrationRequest: true,
-                        dealerServicerRequest: true,
-                        dealerDisapproved: true,
-                        servicerDisapproved: true,
+                        dealerRegistrationRequest: false,
+                        dealerServicerRequest: false,
+                        dealerDisapproved: false,
+                        servicerDisapproved: false,
                     }
                 }
             }

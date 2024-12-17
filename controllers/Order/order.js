@@ -1945,7 +1945,7 @@ exports.markAsPaid = async (req, res) => {
             totalDataComing.forEach((data, index) => {
                 let unique_key_number1 = increamentNumber
                 let unique_key_search1 = "OC" + currentYear + unique_key_number1
-                let unique_key1 = "OC-" + currentYear + "-" + unique_key_number1
+                let unique_key1 = "OC" + currentYear  + unique_key_number1
                 let claimStatus = new Date(product.coverageStartDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0) ? "Waiting" : "Active"
                 claimStatus = new Date(product.coverageEndDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) ? "Expired" : claimStatus
 
