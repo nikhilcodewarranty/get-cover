@@ -1375,7 +1375,7 @@ exports.editClaimStatus = async (req, res) => {
           }
         },
       }
-      
+
       let allUser = await supportingFunction.getNotificationEligibleUser(servicerRepairStatusUpdateEmailQuery, { email: 1 })
 
       // Send Email code here
@@ -1437,18 +1437,9 @@ exports.editClaimStatus = async (req, res) => {
         //Get submitted user
         let notificationAdmin = {
           title: "Claim Repair Status Updated",
-          customerTitle: "Claim  Repair Status Updated",
-          adminTitle: "Claim Repair Status Updated",
-          resellerTitle: "Claim Repair Status Updated",
-          dealerTitle: "Claim Repair Status Updated",
-          servicerTitle: "Claim Repair Status Updated",
-          description: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-          servicerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-          resellerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-          adminMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-          resellerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-          dealerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-          customerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label}`,
+          description: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+          
+         
           userId: req.teammateId,
           contentId: checkClaim._id,
           flag: 'claim',
@@ -1480,19 +1471,8 @@ exports.editClaimStatus = async (req, res) => {
       if (dealerUsers.length > 0) {
         //Get submitted user
         let notificationAdmin = {
-          title: "Claim Repair Status Updated",
-          customerTitle: "Claim  Repair Status Updated",
-          adminTitle: "Claim Repair Status Updated",
-          resellerTitle: "Claim Repair Status Updated",
-          dealerTitle: "Claim Repair Status Updated",
-          servicerTitle: "Claim Repair Status Updated",
-          description: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-          servicerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-          resellerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-          adminMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-          resellerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-          dealerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-          customerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label}`,
+          title: "Claim Repair Status Updated",          
+          description: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,          
           userId: req.teammateId,
           contentId: checkClaim._id,
           flag: 'claim',
@@ -1525,18 +1505,7 @@ exports.editClaimStatus = async (req, res) => {
         //Get submitted user
         let notificationAdmin = {
           title: "Claim Repair Status Updated",
-          customerTitle: "Claim  Repair Status Updated",
-          adminTitle: "Claim Repair Status Updated",
-          resellerTitle: "Claim Repair Status Updated",
-          dealerTitle: "Claim Repair Status Updated",
-          servicerTitle: "Claim Repair Status Updated",
-          description: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-          servicerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-          resellerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-          adminMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-          resellerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-          dealerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-          customerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label}`,
+          description: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
           userId: req.teammateId,
           contentId: checkClaim._id,
           flag: 'claim',
@@ -1569,18 +1538,7 @@ exports.editClaimStatus = async (req, res) => {
         //Get submitted user
         let notificationAdmin = {
           title: "Claim Repair Status Updated",
-          customerTitle: "Claim  Repair Status Updated",
-          adminTitle: "Claim Repair Status Updated",
-          resellerTitle: "Claim Repair Status Updated",
-          dealerTitle: "Claim Repair Status Updated",
-          servicerTitle: "Claim Repair Status Updated",
-          description: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-          servicerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-          resellerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-          adminMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-          resellerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-          dealerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-          customerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label}`,
+          description: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label}`,
           userId: req.teammateId,
           contentId: checkClaim._id,
           flag: 'claim',
@@ -1613,7 +1571,7 @@ exports.editClaimStatus = async (req, res) => {
         //Get submitted user
         let notificationAdmin = {
           title: "Claim Repair Status Updated",
-          description: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+          description: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
           userId: req.teammateId,
           contentId: checkClaim._id,
           flag: 'claim',
@@ -1728,7 +1686,7 @@ exports.editClaimStatus = async (req, res) => {
         resellerTitle: "Claim  Status Updated",
         dealerTitle: "Claim  Status Updated",
         servicerTitle: "Claim  Status Updated",
-        description: `Claim # ${checkClaim.unique_key} claim status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+        description: `Claim # ${checkClaim.unique_key} claim status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
         servicerMessage: `Claim # ${checkClaim.unique_key} claim status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
         resellerMessage: `Claim # ${checkClaim.unique_key} claim status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
         adminMessage: `Claim # ${checkClaim.unique_key} claim status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
