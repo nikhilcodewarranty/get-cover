@@ -680,7 +680,6 @@ exports.updateUserData = async (req, res) => {
     let adminUpdatePrimaryQuery
     let notificationData;
     if (checkServicer) {
-
       adminUpdatePrimaryQuery = {
         metaData: {
           $elemMatch: {
@@ -690,7 +689,7 @@ exports.updateUserData = async (req, res) => {
               {
                 $or: [
                   { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                  { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
+                  { roleId: new mongoose.Types.ObjectId(checkServicer._id) },
                 ]
               }
             ]
@@ -727,7 +726,52 @@ exports.updateUserData = async (req, res) => {
       }
     }
 
-
+    if (checkDealer) {
+      adminUpdatePrimaryQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "dealerNotification.userUpdate": true },
+              { status: true },
+              {
+                $or: [
+                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                  { metaId: new mongoose.Types.ObjectId(checkDealer._id) },
+                ]
+              }
+            ]
+          }
+        },
+      }
+      if (data.firstName) {
+        notificationData = {
+          title: "Dealer User Details Changed",
+          adminTitle: "Dealer User Details Changed",
+          dealerTitle: "User Details Changed",
+          description: `The Details for the dealer ${checkDealer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated by  ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+          adminMessage: `The Details for the dealer ${checkDealer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated by  ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+          dealerMessage: `The detail for  user ${updateUser.metaData[0]?.firstName} has been updated by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+          userId: req.teammateId,
+          flag: checkRole?.role,
+          redirectionId: "dealerDetails/" + checkDealer._id,
+          endPoint: base_url
+        };
+      }
+      else {
+        notificationData = {
+          title: "Dealer User Status Changed",
+          adminTitle: "Dealer User Status Changed",
+          dealerTitle: "User Status Changed",
+          description: `The Status for the dealer ${checkDealer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+          adminMessage: `The Status for the dealer ${checkDealer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+          dealerMessage: `The Status for  user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+          userId: req.teammateId,
+          flag: checkRole?.role,
+          redirectionId: "dealerDetails/" + checkDealer._id,
+          endPoint: base_url
+        };
+      }
+    }
     let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdatePrimaryQuery, { email: 1 })
     const IDs = adminUsers.map(user => user._id)
     notificationData.notificationFor = IDs
@@ -742,7 +786,10 @@ exports.updateUserData = async (req, res) => {
 
     // Send Email code here
     let notificationEmails = adminUsers.map(user => user.email)
-
+    const content = req.body.status ? 'Congratulations, you can now login to our system. Please click the following link to login to the system' : "Your account has been made inactive. If you think, this is a mistake, please contact our support team at support@getcover.com"
+    let resetPasswordCode = randtoken.generate(4, '123456789')
+   
+    let resetLink = `${process.env.SITE_URL}newPassword/${req.params.userId}/${resetPasswordCode}`
     let emailData;
     if (data.firstName) {
       emailData = {
@@ -751,7 +798,7 @@ exports.updateUserData = async (req, res) => {
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
         senderName: updateUser.metaData[0].firstName,
-        content: "The user information has been updated successfully!.",
+        content: "The user information has been updated successfully!",
         subject: "Update User Info"
       }
     }
@@ -763,8 +810,9 @@ exports.updateUserData = async (req, res) => {
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
         senderName: updateUser.metaData[0].firstName,
-        content: "Status has been changed to " + status_content + " " + ", effective immediately.",
-        subject: "Update Status"
+        content:content,
+        subject: "Update Status",
+        redirectId: status_content == "Active" ? resetLink : '',
       }
     }
 

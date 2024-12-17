@@ -914,7 +914,7 @@ exports.changePrimaryUser = async (req, res) => {
           dealerMessage: `The Primary user for your account has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName}  by ${checkLoginUser.metaData[0]?.firstName}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
-          redirectionId: "servicerDetails/" + checkDealer._id,
+          redirectionId: "dealerDetails/" + checkDealer._id,
           endPoint: base_url
         };
       }
@@ -924,8 +924,6 @@ exports.changePrimaryUser = async (req, res) => {
       let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkUser.metaData[0]?.metaId }, isPrimary: true } })
       notificationData.notificationFor = IDs
       let createNotification = await userService.createNotification(notificationData);
-
-
       // Send Email code here
       let notificationEmails = adminUsers.map(user => user.email);
       let emailData = {
