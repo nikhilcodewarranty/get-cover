@@ -1014,14 +1014,15 @@ exports.createOrder = async (req, res) => {
         data.resellerId = data.resellerId != "" ? data.resellerId : null;
         data.customerId = data.customerId != "" ? data.customerId : null;
         let currentYear = new Date().getFullYear();
+        let currentYearWithoutHypen = new Date().getFullYear();
         console.log(currentYear); // Outputs: 2024
         currentYear = "-" + currentYear + "-"
 
         let count = await orderService.getOrdersCount({ 'unique_key': { '$regex': currentYear, '$options': 'i' } });
 
         data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
-        data.unique_key_search = "GC" + currentYear + data.unique_key_number
-        data.unique_key = "GC" + currentYear  + data.unique_key_number
+        data.unique_key_search = "GC" + currentYearWithoutHypen + data.unique_key_number
+        data.unique_key = "GC" + currentYear + data.unique_key_number
         let checkVenderOrder = await orderService.getOrder(
             { venderOrder: data.dealerPurchaseOrder, dealerId: req.userId },
             {}
@@ -1182,7 +1183,7 @@ exports.createOrder = async (req, res) => {
                                 { metaId: savedResponse.resellerId },
                             ]
                         },
-                     
+
                     ]
                 }
             },
@@ -1548,6 +1549,7 @@ exports.editOrderDetail = async (req, res) => {
             let dealerBookDetail = [];
 
             let currentYear = new Date().getFullYear();
+            let currentYearWithoutHypen = new Date().getFullYear();
             console.log(currentYear); // Outputs: 2024
             currentYear = "-" + currentYear + "-"
 
@@ -1627,8 +1629,8 @@ exports.editOrderDetail = async (req, res) => {
                 });
                 totalDataComing.forEach((data, index) => {
                     let unique_key_number1 = increamentNumber
-                    let unique_key_search1 = "OC" + currentYear + unique_key_number1
-                    let unique_key1 = "OC" + currentYear  + unique_key_number1
+                    let unique_key_search1 = "OC" + currentYearWithoutHypen + unique_key_number1
+                    let unique_key1 = "OC" + currentYear + unique_key_number1
                     let claimStatus = new Date(product.coverageStartDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0) ? "Waiting" : "Active"
                     claimStatus = new Date(product.coverageEndDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) ? "Expired" : claimStatus
                     // -------------------------------------------------  copy from -----------------------------------------//
@@ -1785,7 +1787,7 @@ exports.editOrderDetail = async (req, res) => {
                                             { metaId: savedResponse.resellerId },
                                         ]
                                     },
-                               
+
                                 ]
                             }
                         },
@@ -1874,7 +1876,7 @@ exports.editOrderDetail = async (req, res) => {
                                     { metaId: checkOrder.resellerId },
                                 ]
                             },
-                        
+
                         ]
                     }
                 },
@@ -2153,7 +2155,7 @@ async function generateTC(orderData) {
                                     { metaId: checkOrder.resellerId },
                                 ]
                             },
-                      
+
                         ]
                     }
                 },
@@ -2311,13 +2313,14 @@ exports.addClaim = async (req, res, next) => {
         data.receiptImage = data.file
         data.servicerId = data.servicerId ? data.servicerId : null
         let currentYear = new Date().getFullYear();
+        let currentYearWithoutHypen = new Date().getFullYear();
         console.log(currentYear); // Outputs: 2024
         currentYear = "-" + currentYear + "-"
         let count = await claimService.getClaimCount({ 'unique_key': { '$regex': currentYear, '$options': 'i' } });
 
         data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
-        data.unique_key_search = "CC" + currentYear + data.unique_key_number
-        data.unique_key = "CC" + currentYear  + data.unique_key_number
+        data.unique_key_search = "CC" + currentYearWithoutHypen + data.unique_key_number
+        data.unique_key = "CC" + currentYear + data.unique_key_number
         let claimResponse = await claimService.createClaim(data)
         if (!claimResponse) {
             res.send({
