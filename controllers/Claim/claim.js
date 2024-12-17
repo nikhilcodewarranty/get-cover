@@ -1355,7 +1355,31 @@ exports.editClaimStatus = async (req, res) => {
 
       let createNotification = await userService.saveNotificationBulk(notificationArray);
       // Send Email code here
-      let notificationEmails = adminUsers.map(user => user.email)
+      const servicerRepairStatusUpdateEmailQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "claimNotification.customerStatusUpdate": true },
+              { status: true },
+              {
+                $or: [
+                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                  { metaId: new mongoose.Types.ObjectId(checkClaim?.servicerId) },
+                  { metaId: new mongoose.Types.ObjectId(checkOrder?.dealerId) },
+                  { metaId: new mongoose.Types.ObjectId(checkOrder?.customerId) },
+                  { metaId: new mongoose.Types.ObjectId(checkOrder?.resellerId) },
+                ]
+              },
+
+            ]
+          }
+        },
+      }
+      
+      let allUser = await supportingFunction.getNotificationEligibleUser(servicerRepairStatusUpdateEmailQuery, { email: 1 })
+
+      // Send Email code here
+      let notificationEmails = allUser.map(user => user.email)
       const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
 
       //Email to customer
@@ -1372,6 +1396,9 @@ exports.editClaimStatus = async (req, res) => {
       let mailing = checkCustomer.isAccountCreate ? sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData)) : sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
     }
     if (data.hasOwnProperty("repairStatus")) {
+      const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+      const site_url = `${process.env.SITE_URL}`
+      let notificationArray = []
       const checkRepairStatus = await optionService.getOption({ name: "repair_status" })
       const matchedData = checkRepairStatus?.value.find(status => status.value == data.repairStatus)
       status.trackStatus = [
@@ -1387,7 +1414,6 @@ exports.editClaimStatus = async (req, res) => {
           date: new Date()
         }
       ]
-
       //Send notification to all
       const adminRepairStatusUpdateQuery = {
         metaData: {
@@ -1398,10 +1424,6 @@ exports.editClaimStatus = async (req, res) => {
               {
                 $or: [
                   { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                  { metaId: checkOrder?.dealerId },
-                  { metaId: checkOrder?.customerId },
-                  { metaId: checkOrder?.resellerId },
-                  { metaId: checkClaim?.servicerId },
                 ]
               },
 
@@ -1411,39 +1433,226 @@ exports.editClaimStatus = async (req, res) => {
       }
       let adminUsers = await supportingFunction.getNotificationEligibleUser(adminRepairStatusUpdateQuery, { email: 1 })
       const IDs = adminUsers.map(user => user._id)
+      if (adminUsers.length > 0) {
+        //Get submitted user
+        let notificationAdmin = {
+          title: "Claim Repair Status Updated",
+          customerTitle: "Claim  Repair Status Updated",
+          adminTitle: "Claim Repair Status Updated",
+          resellerTitle: "Claim Repair Status Updated",
+          dealerTitle: "Claim Repair Status Updated",
+          servicerTitle: "Claim Repair Status Updated",
+          description: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+          servicerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+          resellerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+          adminMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+          resellerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+          dealerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+          customerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label}`,
+          userId: req.teammateId,
+          contentId: checkClaim._id,
+          flag: 'claim',
+          redirectionId: `claim-listing/${checkClaim.unique_key}`,
+          endPoint: site_url,
+          notificationFor: IDs
+        };
+        notificationArray.push(notificationAdmin)
+      }
+      const dealerRepairStatusUpdateQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "claimNotification.repairStatusUpdate": true },
+              { status: true },
+              {
+                $or: [
+                  { metaId: new mongoose.Types.ObjectId(checkOrder.dealerId) },
+                ]
+              },
 
+            ]
+          }
+        },
+      }
+      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerRepairStatusUpdateQuery, { email: 1 })
+
+      const dealerids = dealerUsers.map(user => user._id)
+      if (dealerUsers.length > 0) {
+        //Get submitted user
+        let notificationAdmin = {
+          title: "Claim Repair Status Updated",
+          customerTitle: "Claim  Repair Status Updated",
+          adminTitle: "Claim Repair Status Updated",
+          resellerTitle: "Claim Repair Status Updated",
+          dealerTitle: "Claim Repair Status Updated",
+          servicerTitle: "Claim Repair Status Updated",
+          description: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+          servicerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+          resellerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+          adminMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+          resellerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+          dealerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+          customerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label}`,
+          userId: req.teammateId,
+          contentId: checkClaim._id,
+          flag: 'claim',
+          redirectionId: `claim-listing/${checkClaim.unique_key}`,
+          endPoint: site_url,
+          notificationFor: dealerids
+        };
+        notificationArray.push(notificationAdmin)
+      }
+      const resellerRepairStatusUpdateQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "claimNotification.repairStatusUpdate": true },
+              { status: true },
+              {
+                $or: [
+                  { metaId: new mongoose.Types.ObjectId(checkOrder.resellerId) },
+                ]
+              },
+
+            ]
+          }
+        },
+      }
+      let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerRepairStatusUpdateQuery, { email: 1 })
+
+      const reselerids = resellerUsers.map(user => user._id)
+      if (resellerUsers.length > 0) {
+        //Get submitted user
+        let notificationAdmin = {
+          title: "Claim Repair Status Updated",
+          customerTitle: "Claim  Repair Status Updated",
+          adminTitle: "Claim Repair Status Updated",
+          resellerTitle: "Claim Repair Status Updated",
+          dealerTitle: "Claim Repair Status Updated",
+          servicerTitle: "Claim Repair Status Updated",
+          description: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+          servicerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+          resellerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+          adminMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+          resellerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+          dealerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+          customerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label}`,
+          userId: req.teammateId,
+          contentId: checkClaim._id,
+          flag: 'claim',
+          redirectionId: `claim-listing/${checkClaim.unique_key}`,
+          endPoint: site_url,
+          notificationFor: reselerids
+        };
+        notificationArray.push(notificationAdmin)
+      }
+      const customerRepairStatusUpdateQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "claimNotification.repairStatusUpdate": true },
+              { status: true },
+              {
+                $or: [
+                  { metaId: new mongoose.Types.ObjectId(checkOrder.customerId) },
+                ]
+              },
+
+            ]
+          }
+        },
+      }
+      let customerUsers = await supportingFunction.getNotificationEligibleUser(customerRepairStatusUpdateQuery, { email: 1 })
+
+      const customerids = customerUsers.map(user => user._id)
+      if (customerUsers.length > 0) {
+        //Get submitted user
+        let notificationAdmin = {
+          title: "Claim Repair Status Updated",
+          customerTitle: "Claim  Repair Status Updated",
+          adminTitle: "Claim Repair Status Updated",
+          resellerTitle: "Claim Repair Status Updated",
+          dealerTitle: "Claim Repair Status Updated",
+          servicerTitle: "Claim Repair Status Updated",
+          description: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+          servicerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+          resellerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+          adminMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+          resellerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+          dealerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+          customerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label}`,
+          userId: req.teammateId,
+          contentId: checkClaim._id,
+          flag: 'claim',
+          redirectionId: `claim-listing/${checkClaim.unique_key}`,
+          endPoint: site_url,
+          notificationFor: customerids
+        };
+        notificationArray.push(notificationAdmin)
+      }
+      const servicerRepairStatusUpdateQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "claimNotification.repairStatusUpdate": true },
+              { status: true },
+              {
+                $or: [
+                  { metaId: new mongoose.Types.ObjectId(checkClaim?.servicerId) },
+                ]
+              },
+
+            ]
+          }
+        },
+      }
+      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerRepairStatusUpdateQuery, { email: 1 })
+
+      const servicerids = servicerUsers.map(user => user._id)
+      if (servicerUsers.length > 0) {
+        //Get submitted user
+        let notificationAdmin = {
+          title: "Claim Repair Status Updated",
+          description: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+          userId: req.teammateId,
+          contentId: checkClaim._id,
+          flag: 'claim',
+          redirectionId: `claim-listing/${checkClaim.unique_key}`,
+          endPoint: site_url,
+          notificationFor: servicerids
+        };
+        notificationArray.push(notificationAdmin)
+      }
       let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } })
       let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } })
       let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } })
       let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkClaim?.servicerId, isPrimary: true } } })
 
-      //Get submitted user
-      const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
-      const site_url = `${process.env.SITE_URL}`
-      let notificationData1 = {
-        title: "Claim Repair Status Updated",
-        customerTitle: "Claim  Repair Status Updated",
-        adminTitle: "Claim Repair Status Updated",
-        resellerTitle: "Claim Repair Status Updated",
-        dealerTitle: "Claim Repair Status Updated",
-        servicerTitle: "Claim Repair Status Updated",
-        description: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-        servicerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-        resellerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-        adminMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-        resellerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-        dealerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-        customerMessage: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label}`,
-        userId: req.teammateId,
-        contentId: checkClaim._id,
-        flag: 'claim',
-        redirectionId: `claim-listing/${checkClaim.unique_key}`,
-        endPoint: site_url,
-        notificationFor: IDs
-      };
-      let createNotification = await userService.createNotification(notificationData1);
+      let createNotification = await userService.saveNotificationBulk(notificationArray);
+      const servicerRepairStatusUpdateEmailQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "claimNotification.repairStatusUpdate": true },
+              { status: true },
+              {
+                $or: [
+                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                  { metaId: new mongoose.Types.ObjectId(checkClaim?.servicerId) },
+                  { metaId: new mongoose.Types.ObjectId(checkOrder?.dealerId) },
+                  { metaId: new mongoose.Types.ObjectId(checkOrder?.customerId) },
+                  { metaId: new mongoose.Types.ObjectId(checkOrder?.resellerId) },
+                ]
+              },
+
+            ]
+          }
+        },
+      }
+      let allUser = await supportingFunction.getNotificationEligibleUser(servicerRepairStatusUpdateEmailQuery, { email: 1 })
+
       // Send Email code here
-      let notificationEmails = adminUsers.map(user => user.email)
+      let notificationEmails = allUser.map(user => user.email)
 
       // Email to Customer
       let emailData = {
