@@ -880,6 +880,7 @@ exports.editClaim = async (req, res) => {
       //Send notification to all
       //Get submitted user
       const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+      let notificationArray = []
       const site_url = `${process.env.SITE_URL}`
       const adminEditClaimQuery = {
         metaData: {
@@ -890,7 +891,6 @@ exports.editClaim = async (req, res) => {
               {
                 $or: [
                   { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                  { metaId: checkClaim?.servicerId },
                 ]
               },
 
@@ -903,22 +903,53 @@ exports.editClaim = async (req, res) => {
       let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkClaim?.servicerId, isPrimary: true } } })
       //chek servicer status
       const checkServicer = await servicerService.getServiceProviderById({ $or: [{ _id: checkClaim?.servicerId }, { dealerId: checkClaim?.servicerId }, { resellerId: checkClaim?.servicerId }] })
+      if (adminUsers.length > 0) {
+        let notificationAdmin = {
+          title: "Servicer charges added",
+          description: `Claim # ${checkClaim.unique_key} - Service charges has been updated by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+          adminMessage: `Claim # ${checkClaim.unique_key} - Service charges has been updated by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+          servicerMessage: `Claim # ${checkClaim.unique_key} - Service charges has been updated by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+          userId: req.teammateId,
+          contentId: checkClaim._id,
+          flag: 'claim',
+          endPoint: site_url,
+          redirectionId: "claim-listing/" + checkClaim.unique_key,
+          notificationFor: IDs
+        };
+        notificationArray.push(notificationAdmin)
+      }
+      const servicerEditClaimQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "claimNotification.partsUpdate": true },
+              { status: true },
+              {
+                $or: [
+                  { metaId: checkClaim?.servicerId },
+                ]
+              },
 
-      let notificationData1 = {
-        title: "Servicer charges added",
-        adminTitle: "Servicer charges added",
-        servicerTitle: "Servicer charges added",
-        description: `Claim # ${checkClaim.unique_key} - Service charges has been updated by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-        adminMessage: `Claim # ${checkClaim.unique_key} - Service charges has been updated by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-        servicerMessage: `Claim # ${checkClaim.unique_key} - Service charges has been updated by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-        userId: req.teammateId,
-        contentId: checkClaim._id,
-        flag: 'claim',
-        endPoint: site_url,
-        redirectionId: "claim-listing/" + checkClaim.unique_key,
-        notificationFor: IDs
-      };
-      let createNotification = await userService.createNotification(notificationData1);
+            ]
+          }
+        },
+      }
+      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerEditClaimQuery, { email: 1 })
+      const servicerIDs = servicerUsers.map(user => user._id)
+      if (servicerUsers.length > 0) {
+        let notificationAdmin = {
+          title: "Charges added",
+          description: `Claim # ${checkClaim.unique_key} - Service charges has been updated by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+          userId: req.teammateId,
+          contentId: checkClaim._id,
+          flag: 'claim',
+          endPoint: site_url,
+          redirectionId: "claim-listing/" + checkClaim.unique_key,
+          notificationFor: IDs
+        };
+        notificationArray.push(notificationAdmin)
+      }
+      let createNotification = await userService.saveNotificationBulk(notificationArray);
       //Save Logs edit claim
       let logData = {
         userId: req.userId,
@@ -1438,8 +1469,8 @@ exports.editClaimStatus = async (req, res) => {
         let notificationAdmin = {
           title: "Claim Repair Status Updated",
           description: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
-          
-         
+
+
           userId: req.teammateId,
           contentId: checkClaim._id,
           flag: 'claim',
@@ -1471,8 +1502,8 @@ exports.editClaimStatus = async (req, res) => {
       if (dealerUsers.length > 0) {
         //Get submitted user
         let notificationAdmin = {
-          title: "Claim Repair Status Updated",          
-          description: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,          
+          title: "Claim Repair Status Updated",
+          description: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
           userId: req.teammateId,
           contentId: checkClaim._id,
           flag: 'claim',

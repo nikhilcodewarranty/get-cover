@@ -10,7 +10,7 @@ exports.getUserIds = async () => {
 
 
 exports.getNotificationEligibleUser = async (query,projection) => {
-    const getSuperId = await userService.findUser(query,{},projection);
+    const getSuperId = await userService.findUser(query,{},{});
     return getSuperId;
 }
 
