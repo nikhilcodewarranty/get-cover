@@ -888,6 +888,36 @@ exports.changePrimaryUser = async (req, res) => {
           endPoint: base_url
         };
       }
+      if (checkDealer) {
+        adminUpdatePrimaryQuery = {
+          metaData: {
+            $elemMatch: {
+              $and: [
+                { "dealerNotifications.primaryChanged": true },
+                { status: true },
+                {
+                  $or: [
+                    { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                    { metaId: new mongoose.Types.ObjectId(checkDealer._id) },
+                  ]
+                }
+              ]
+            }
+          },
+        }
+        notificationData = {
+          title: "Dealer Primary User Updated",
+          dealerTitle: "Dealer Primary User Updated",
+          servicerTitle: "Primary User Changed",
+          description: `The Primary user for ${checkDealer.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName}.`,
+          adminMessage: `The Primary user for ${checkDealer.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName}.`,
+          dealerMessage: `The Primary user for your account has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName}  by ${checkLoginUser.metaData[0]?.firstName}.`,
+          userId: req.teammateId,
+          flag: checkRole?.role,
+          redirectionId: "servicerDetails/" + checkDealer._id,
+          endPoint: base_url
+        };
+      }
 
       let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdatePrimaryQuery, { email: 1 })
       const IDs = adminUsers.map(user => user._id)

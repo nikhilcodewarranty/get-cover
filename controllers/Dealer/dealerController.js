@@ -1177,41 +1177,61 @@ exports.updateDealerMeta = async (req, res) => {
       }, { new: true })
 
     }
-    let IDs = await supportingFunction.getUserIds()
+
+    //Send Notification to admin and dealer
+    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+    const base_url = `${process.env.SITE_URL}`
+    const adminDealerrQuery = {
+      metaData: {
+        $elemMatch: {
+          $and: [
+            { "dealerNotifications.dealerUpdate": true },
+            { status: true },
+            {
+              $or: [
+                { metaId: new mongoose.Types.ObjectId(checkDealer._id) },
+
+                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+              ]
+            }
+          ]
+        }
+      },
+    }
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerrQuery, { email: 1 })
+    const IDs = adminUsers.map(user => user._id)
     let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
     let settingData = await userService.getSetting({});
-    if (updatedData.isAccountCreate) {
-      IDs.push(getPrimary._id)
-    }
 
     let notificationData = {
-      title: "Dealer updated",
-      description: checkDealer.name + " , " + "details has been updated",
+      title: "Dealer Details Updated",
+      adminTitle: "Dealer Details Updated",
+      dealerTitle: "Dealer Details Updated",
+      description: `The details for the Dealer ${checkDealer.name} has been updated by ${checkLoginUser.metaData[0]?.firstName}.`,
+      adminMessage: `The details for the Dealer ${checkDealer.name} has been updated by ${checkLoginUser.metaData[0]?.firstName}..`,
+      dealerMessage: `The details for your account has been changed by ${checkLoginUser.metaData[0]?.firstName}..`,
       userId: req.teammateId,
       redirectionId: data.dealerId,
       flag: 'dealer',
+      endPoint: base_url,
+      redirectionId: "/dealerDetails/" + checkDealer._id,
       notificationFor: IDs
     };
 
     let createNotification = await userService.createNotification(notificationData);
     // Send Email code here 
-    let notificationEmails = await supportingFunction.getUserEmails();
+    let notificationEmails = adminUsers.map(user => user.email)
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: checkDealer.name,
-      content: "The information has been updated successfully! effective immediately.",
+      senderName: `Dear ${checkDealer.name},`,
+      content: "Your details have been updated. To view the details, please login into your account.",
       subject: "Update Info"
     }
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
 
-    if (updatedData.isAccountCreate) {
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
-    }
-    else {
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-    }
     //Save Logs update dealer
     let logData = {
       userId: req.userId,
