@@ -1,5 +1,7 @@
 require('dotenv').config()
 const USER = require('../../models/User/users')
+const randtoken = require('rand-token').generator()
+
 const dealerService = require("../../services/Dealer/dealerService");
 const dealerRelationService = require("../../services/Dealer/dealerRelationService");
 const customerService = require("../../services/Customer/customerService");
@@ -645,31 +647,36 @@ exports.changeDealerStatus = async (req, res) => {
         adminMessage: `The Dealer ${singleDealer.name} status has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName}.`,
         dealerMessage: `GetCover has updated your status to ${status_content}.`,
         userId: req.teammateId,
-        redirectionId:"/dealerDetails/"+singleDealer._id,
+        redirectionId: "/dealerDetails/" + singleDealer._id,
         flag: 'dealer',
-        endPoint:base_url,
+        endPoint: base_url,
         notificationFor: IDs
       };
 
       let createNotification = await userService.createNotification(notificationData);
+      const content = req.body.status ? 'Congratulations, you can now login to our system. Please click the following link to login to the system' : "Your account has been made inactive. If you think, this is a mistake, please contact our support team at support@getcover.com"
       // Send Email code here
-      let notificationEmails = await supportingFunction.getUserEmails();
+      let primaryUser = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.params.dealerId, isPrimary: true } } })
+
+      let notificationEmails = adminUsers.map(user => user.email)
       let settingData = await userService.getSetting({});
+      let resetPasswordCode = randtoken.generate(4, '123456789')
+
+      let resetLink = `${process.env.SITE_URL}newPassword/${primaryUser._id}/${resetPasswordCode}`
+
       let emailData = {
         senderName: singleDealer.name,
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        content: "Status has been changed to " + status_content + " " + ", effective immediately.",
+        content: content,
+        redirectId: status_content == "Active" ? resetLink : '',
         subject: "Update Status"
       }
-      if (singleDealer.isAccountCreate) {
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
-      }
-      else {
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-      }
+
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+
       let logData = {
         userId: req.teammateId,
         endpoint: "dealer/changeDealerStatus",
@@ -1423,8 +1430,8 @@ exports.addDealerUser = async (req, res) => {
         userId: req.teammateId,
         contentId: saveData._id,
         flag: 'dealer',
-        endPoint:base_url,
-        redirectionId:"/dealerDetails/"+checkDealer._id,
+        endPoint: base_url,
+        redirectionId: "/dealerDetails/" + checkDealer._id,
         notificationFor: IDs
       };
 
