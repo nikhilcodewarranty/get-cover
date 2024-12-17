@@ -436,7 +436,6 @@ exports.addClaim = async (req, res, next) => {
 
     const checkOrder = await orderService.getOrder({ _id: checkContract.orderId }, { isDeleted: false })
     let currentYear = new Date().getFullYear();
-    console.log(currentYear); // Outputs: 2024
     currentYear = "-" + currentYear + "-"
     let count = await claimService.getClaimCount({ 'unique_key': { '$regex': currentYear, '$options': 'i' } });
 
@@ -495,6 +494,15 @@ exports.addClaim = async (req, res, next) => {
     await LOG(logData).save()
 
     //Send notification to all
+    let notificationArray = []
+    //Get Dealer,reseller, customer status
+    const checkDealer = await dealerService.getDealerById(checkOrder.dealerId)
+    const checkReseller = await resellerService.getReseller({ _id: checkOrder?.resellerId }, {})
+    const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
+    //Get submitted user
+    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+    const site_url = `${process.env.SITE_URL}`
+
     const checkServicer = await servicerService.getServiceProviderById({ $or: [{ _id: data?.servicerId }, { dealerId: data?.servicerId }, { resellerId: data?.servicerId }] })
     const adminAddClaimQuery = {
       metaData: {
@@ -505,10 +513,10 @@ exports.addClaim = async (req, res, next) => {
             {
               $or: [
                 { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                { metaId: checkOrder.dealerId },
-                { metaId: checkOrder.customerId },
-                { metaId: checkOrder.resellerId },
-                { metaId: data?.servicerId },
+                // { metaId: checkOrder.dealerId },
+                // { metaId: checkOrder.customerId },
+                // { metaId: checkOrder.resellerId },
+                // { metaId: data?.servicerId },
               ]
             },
           ]
@@ -517,60 +525,152 @@ exports.addClaim = async (req, res, next) => {
     }
     let adminUsers = await supportingFunction.getNotificationEligibleUser(adminAddClaimQuery, { email: 1 })
     const IDs = adminUsers.map(user => user._id)
+    let notificationAdmin = {
+      title: "Claim Filed Successfully",
+      description: `A new claim # ${claimResponse.unique_key} for dealer ${checkDealer.name} has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+      userId: req.teammateId,
+      contentId: claimResponse._id,
+      flag: 'claim',
+      notificationFor: IDs,
+      endPoint: site_url + "claim-listing/" + claimResponse.unique_key,
+      redirectionId: "claim-listing/" + claimResponse.unique_key,
+    };
+    notificationArray.push(notificationAdmin)
+    //Dealer Notification
+    const dealerAddClaimQuery = {
+      metaData: {
+        $elemMatch: {
+          $and: [
+            { "claimNotification.newClaim": true },
+            { status: true },
+            {
+              $or: [
+                { metaId: checkOrder.dealerId },
+                // { metaId: checkOrder.customerId },
+                // { metaId: checkOrder.resellerId },
+                // { metaId: data?.servicerId },
+              ]
+            },
+          ]
+        }
+      },
+    }
+    let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerAddClaimQuery, { email: 1 })
+    const dealerIds = dealerUsers.map(user => user._id)
+    let notificationDealer = {
+      title: "Claim Filed Successfully",
+      description: `A new claim # ${claimResponse.unique_key} for customer ${checkCustomer.username} has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+      userId: req.teammateId,
+      contentId: claimResponse._id,
+      flag: 'claim',
+      notificationFor: dealerIds,
+      endPoint: site_url + "claim-listing/" + claimResponse.unique_key,
+      redirectionId: "claim-listing/" + claimResponse.unique_key,
+    };
+    notificationArray.push(notificationDealer)
+    //Reseller Notification
+    const resellerAddClaimQuery = {
+      metaData: {
+        $elemMatch: {
+          $and: [
+            { "claimNotification.newClaim": true },
+            { status: true },
+            {
+              $or: [
+                { metaId: checkOrder.resellerId },
+                // { metaId: data?.servicerId },
+              ]
+            },
+          ]
+        }
+      },
+    }
+    let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerAddClaimQuery, { email: 1 })
+    const resellerIds = resellerUsers.map(user => user._id)
+    let notificationReseller = {
+      title: "Claim Filed Successfully",
+      description: `A new claim # ${claimResponse.unique_key} for dealer ${checkCustomer.username} has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+      userId: req.teammateId,
+      contentId: claimResponse._id,
+      flag: 'claim',
+      notificationFor: resellerIds,
+      endPoint: site_url + "claim-listing/" + claimResponse.unique_key,
+      redirectionId: "claim-listing/" + claimResponse.unique_key,
+    };
+    notificationArray.push(notificationReseller)
+    //Customer Notification
+    const customerAddClaimQuery = {
+      metaData: {
+        $elemMatch: {
+          $and: [
+            { "claimNotification.newClaim": true },
+            { status: true },
+            {
+              $or: [
+                { metaId: checkOrder.customerId },
+                // { metaId: checkOrder.resellerId },
+                // { metaId: data?.servicerId },
+              ]
+            },
+          ]
+        }
+      },
+    }
+    let customerUsers = await supportingFunction.getNotificationEligibleUser(customerAddClaimQuery, { email: 1 })
+    const customerIds = customerUsers.map(user => user._id)
+    let notificationCustomer = {
+      title: "Claim Filed Successfully",
+      description: `A new claim # ${claimResponse.unique_key}  has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+      userId: req.teammateId,
+      contentId: claimResponse._id,
+      flag: 'claim',
+      notificationFor: customerIds,
+      endPoint: site_url + "claim-listing/" + claimResponse.unique_key,
+      redirectionId: "claim-listing/" + claimResponse.unique_key,
+    };
+    notificationArray.push(notificationCustomer)
+    //Servicer Notification
+    const servicerAddClaimQuery = {
+      metaData: {
+        $elemMatch: {
+          $and: [
+            { "claimNotification.newClaim": true },
+            { status: true },
+            {
+              $or: [
+                { metaId: data?.servicerId },
+              ]
+            },
+          ]
+        }
+      },
+    }
+    let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerAddClaimQuery, { email: 1 })
+    const servicerIds = servicerUsers.map(user => user._id)
+    let notificationServicer = {
+      title: "Claim Filed Successfully",
+      description:`A new claim # ${claimResponse.unique_key} for dealer ${checkDealer.name} has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+      userId: req.teammateId,
+      contentId: claimResponse._id,
+      flag: 'claim',
+      notificationFor: servicerIds,
+      endPoint: site_url + "claim-listing/" + claimResponse.unique_key,
+      redirectionId: "claim-listing/" + claimResponse.unique_key,
+    };
+    notificationArray.push(notificationServicer)
+    
     let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } })
     let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } })
     let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } })
     let servicerPrimary = await supportingFunction.getPrimaryUser({ $or: [{ metaData: { $elemMatch: { metaId: data?.servicerId, isPrimary: true } } }, { metaData: { $elemMatch: { metaId: checkServicer?.dealerId, isPrimary: true } } }, { metaData: { $elemMatch: { metaId: checkServicer?.resellerId, isPrimary: true } } }] })
 
-    //Get Dealer,reseller, customer status
-    const checkDealer = await dealerService.getDealerById(checkOrder.dealerId)
-    const checkReseller = await resellerService.getReseller({ _id: checkOrder?.resellerId }, {})
-    const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
-
-    //Get submitted user
-    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
-    const site_url = `${process.env.SITE_URL}`
-    let notificationData1 = {
-      title: "Claim Filed Successfully",
-      adminTitle: "Claim Filed Successfully",
-      dealerTitle: "Claim Filed Successfully",
-      resellerTitle: "Claim Filed Successfully",
-      customerTitle: "Claim Filed Successfully",
-      servicerTitle: "Claim Filed Successfully",
-      description: `A new claim # ${claimResponse.unique_key} for dealer ${checkDealer.name} has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-      adminMessage: `A new claim # ${claimResponse.unique_key} for dealer ${checkDealer.name} has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-      resellerMessage: `A new claim # ${claimResponse.unique_key} for dealer ${checkCustomer.username} has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-      dealerMessage: `A new claim # ${claimResponse.unique_key} for dealer ${checkCustomer.username} has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-      customerMessage: `A new claim # ${claimResponse.unique_key}  has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-      servicerMessage: `A new claim # ${claimResponse.unique_key} for dealer ${checkDealer.name} has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-      userId: req.teammateId,
-      contentId: claimResponse._id,
-      flag: 'claim',
-      // redirectionId: claimResponse.unique_key,
-      notificationFor: IDs,
-      endPoint: site_url,
-      redirectionId: "claim-listing/" + claimResponse.unique_key,
-    };
-
-    let createNotification = await userService.createNotification(notificationData1);
+    let createNotification = await userService.saveNotificationBulk(notificationArray);
 
     // Send Email code here
-    let notificationCC = await supportingFunction.getUserEmails();
-    let allUserEmail = adminUsers.map(user => user.email)
     let settingData = await userService.getSetting({});
     let adminCC = await supportingFunction.getUserEmails();
     const base_url = `${process.env.SITE_URL}claim-listing/${claimResponse.unique_key}`
 
-
-    //let cc = notificationEmails;
-    if (checkDealer.isAccountCreate) {
-      notificationCC.push(dealerPrimary.email);
-
-    }
-    if (checkReseller?.isAccountCreate) {
-      notificationCC.push(resellerPrimary.email);
-
-    }
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -634,7 +734,6 @@ exports.addClaim = async (req, res, next) => {
 
     // Email to servicer and cc to admin 
     if (servicerPrimary) {
-
       emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -671,32 +770,8 @@ exports.addClaim = async (req, res, next) => {
         emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device detailed below:`
         mailing = sgMail.send(emailConstant.sendServicerClaimNotification(sendNotificationForServicer, ["noreply@getcover.com"], emailData))
       }
-      // else {
-      //   const servicerCaseNotification = {
-      //     metaData: {
-      //       $elemMatch: {
-      //         $and: [
-      //           { "claimNotification.newClaim": true },
-      //           { status: true },
-      //           {
-      //             $or: [
-      //               { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-      //             ]
-      //           },
-      //         ]
-      //       }
-      //     },
-      //   }
-      //   let servicerCaseUser = await supportingFunction.getNotificationEligibleUser(servicerCaseNotification, { email: 1 })
-      //   const sendNotificationForServicer = servicerCaseUser.map(user => user.email)
-      //   let notificationAdmin = await supportingFunction.getUserEmails();
-      //   emailData.subject = `New Device Received for Repair - ID: ${claimResponse.unique_key}`
-      //   emailData.senderName = "Admin"
-      //   emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device detailed below:`
-      //   mailing = sgMail.send(emailConstant.sendServicerClaimNotification(sendNotificationForServicer, ["noreply@getcover.com"], emailData))
-      // }
+    
     }
-
     res.send({
       code: constant.successCode,
       message: 'Success!',
@@ -1453,8 +1528,8 @@ exports.editClaimStatus = async (req, res) => {
                     { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
                   ]
                 },
-                
-              
+
+
               ]
             }
           },
@@ -1841,7 +1916,7 @@ exports.editServicer = async (req, res) => {
                 { metaId: checkClaim?.servicerId },
               ]
             },
-           
+
           ]
         }
       },
@@ -1890,7 +1965,7 @@ exports.editServicer = async (req, res) => {
                 { metaId: checkClaim?.servicerId },
               ]
             },
-           
+
           ]
         }
       },
@@ -3330,7 +3405,7 @@ exports.sendMessages = async (req, res) => {
                 { metaId: orderData?.resellerId },
               ]
             },
-            
+
           ]
         }
       },

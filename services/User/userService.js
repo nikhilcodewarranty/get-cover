@@ -229,6 +229,14 @@ module.exports = class userService {
     }
   };
 
+  static async saveNotificationBulk(data) {
+    try {
+      const response = await notification.insertMany(data);
+      return response;
+    } catch (error) {
+      return `Could not create notification: ${error}`;
+    }
+  };
 
   // get all notifications
   static async getAllNotifications(query, skipLimit, limitData) {

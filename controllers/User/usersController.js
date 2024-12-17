@@ -1118,7 +1118,38 @@ exports.deleteUser = async (req, res) => {
       notificationData = {
         title: "Servicer User Deleted",
         adminTitle: "Servicer User Deleted",
-        servicerTitle: "User Status Changed",
+        servicerTitle: "User Deleted",
+        description: `The User ${checkUser.metaData[0].firstName} for the Servicer ${checkServicer.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName} -${req.role}..`,
+        adminMessage: `The User {{User Name}} for the Servicer ${checkServicer.name} has been deleted by ${checkLoginUser.metaData[0]?.firstName} -${req.role}..`,
+        servicerMessage: `The user ${checkUser?.metaData[0]?.firstName} has been deleted by  ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+        userId: req.teammateId,
+        flag: checkRole?.role,
+        redirectionId: "servicerDetails/" + checkServicer._id,
+        endPoint: base_url
+      }
+    }
+    if (checkDealer) {
+      adminDeleteQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "dealerNotification.userDelete": true },
+              { status: true },
+              {
+                $or: [
+                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                  { metaId: new mongoose.Types.ObjectId(checkDealer._id) },
+                ]
+              }
+            ]
+          }
+        },
+      }
+
+      notificationData = {
+        title: "Dealer User Deleted",
+        adminTitle: "Dealer User Deleted",
+        dealerTitle: "User Deleted",
         description: `The User ${checkUser.metaData[0].firstName} for the Servicer ${checkServicer.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName} -${req.role}..`,
         adminMessage: `The User {{User Name}} for the Servicer ${checkServicer.name} has been deleted by ${checkLoginUser.metaData[0]?.firstName} -${req.role}..`,
         servicerMessage: `The user ${checkUser?.metaData[0]?.firstName} has been deleted by  ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
