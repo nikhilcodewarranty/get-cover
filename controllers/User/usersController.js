@@ -1306,7 +1306,7 @@ exports.getAllNotifications1 = async (req, res) => {
 
     updatedNotifications = updatedNotifications.map(item => {
       console.log(item + "." + messageKeyToUpdate)
-      return { ...item, title: item[titleKeyToUpdate], description: item[messageKeyToUpdate] }
+      return { ...item, title: item["title"], description: item["description"] }
     })
 
     res.send({
