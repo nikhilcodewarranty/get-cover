@@ -302,12 +302,12 @@ exports.createDealer = async (req, res) => {
                 const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
 
                 let notificationData = {
-                    adminTitle: "New Dealer Approved",
-                    adminMessage: `A New Dealer ${data.name} has been approved by ${checkLoginUser.metaData[0]?.firstName} on our portal.`,
+                    title: "New Dealer Approved",
+                    description: `A New Dealer ${data.name} has been approved by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} on our portal.`,
                     userId: req.teammateId,
                     flag: 'dealer',
                     redirectionId: "dealerDetails/" + data.dealerId,
-                    endpoint: base_url,
+                    endpoint: base_url + "dealerDetails/" + data.dealerId,
                     notificationFor: IDs
                 };
 
@@ -815,7 +815,7 @@ exports.updateNotificationData = async (req, res) => {
     try {
         let data = req.body
         let getData = await userService.getUserById1({ _id: req.params.userId }, { metaData: 1 })
-        console.log("--------------------------------",getData)
+        console.log("--------------------------------", getData)
         if (!getData) {
             res.send({
                 code: constant.errorCode,
