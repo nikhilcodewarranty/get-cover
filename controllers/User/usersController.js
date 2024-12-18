@@ -788,7 +788,7 @@ exports.updateUserData = async (req, res) => {
     let notificationEmails = adminUsers.map(user => user.email)
     const content = req.body.status ? 'Congratulations, you can now login to our system. Please click the following link to login to the system' : "Your account has been made inactive. If you think, this is a mistake, please contact our support team at support@getcover.com"
     let resetPasswordCode = randtoken.generate(4, '123456789')
-   
+
     let resetLink = `${process.env.SITE_URL}newPassword/${req.params.userId}/${resetPasswordCode}`
     let emailData;
     if (data.firstName) {
@@ -810,7 +810,7 @@ exports.updateUserData = async (req, res) => {
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
         senderName: updateUser.metaData[0].firstName,
-        content:content,
+        content: content,
         subject: "Update Status",
         redirectId: status_content == "Active" ? resetLink : '',
       }
@@ -1604,6 +1604,8 @@ exports.getUserByToken = async (req, res) => {
 //Add members
 exports.addMembers = async (req, res) => {
   try {
+    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+    const base_url = `${process.env.SITE_URL}`
     let data = req.body
     let checkEmail = await userService.getSingleUserByEmail({ email: data.email })
     if (checkEmail) {
@@ -1645,19 +1647,36 @@ exports.addMembers = async (req, res) => {
     let notificationEmails = await supportingFunction.getUserEmails();
 
     let settingData = await userService.getSetting({});
-
-    let IDs = await supportingFunction.getUserIds()
-
-    let notificationData = {
-      title: "New member created",
-      description: "The new member " + data.firstName + " has been created",
-      userId: req.teammateId,
-      contentId: null,
-      flag: 'Member Created',
-      notificationFor: IDs
-    };
-
-    let createNotification = await userService.createNotification(notificationData);
+    if (req.role == "Super Admin") {
+      const adminAddMemberyQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "adminNotification.userAdded": true },
+              { status: true },
+              {
+                $or: [
+                  { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
+                ]
+              }
+            ]
+          }
+        },
+      }
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminAddMemberyQuery, { email: 1 })
+      const IDs = adminUsers.map(user => user._id)
+      let notificationData = {
+        title: "New Admin User added",
+        description: `A new admin user ${data.firstName} with Email ID ${data.email} has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        userId: req.teammateId,
+        contentId: null,
+        flag: 'Member Created',
+        notificationFor: IDs,
+        endPoint: base_url,
+        redirectionId: base_url + "manageAccount"
+      };
+      let createNotification = await userService.createNotification(notificationData);
+    }
     let resetPasswordCode = randtoken.generate(4, '123456789')
     let checkPrimaryEmail2 = await userService.updateSingleUser({ email: data.email }, { resetPasswordCode: resetPasswordCode }, { new: true });
     let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`

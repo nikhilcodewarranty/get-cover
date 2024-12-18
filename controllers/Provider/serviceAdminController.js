@@ -117,7 +117,7 @@ exports.createServiceProvider = async (req, res, next) => {
               { status: true },
               {
                 $or: [
-                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                  { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
                 ]
               }
             ]
@@ -170,15 +170,13 @@ exports.createServiceProvider = async (req, res, next) => {
       }
       //Send Notification to ,admin,,servicer 
       let notificationData = {
-        adminTitle: "New Servicer Added",
         title: "New Servicer Added",
-        adminMessage: `A New Servicer ${createServiceProvider.name} has been added and approved by ${checkLoginUser.metaData[0].firstName} on our portal`,
-        description: `A New Servicer ${createServiceProvider.name} has been added and approved by ${checkLoginUser.metaData[0].firstName} on our portal`,
+        description: `A New Servicer ${createServiceProvider.name} has been added and approved by ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName} on our portal`,
         userId: req.teammateId,
         flag: 'servicer',
         notificationFor: IDs,
         redirectionId: "servicerDetails/" + createServiceProvider._id,
-        endpoint: base_url,
+        endPoint: base_url + "servicerDetails/" + createServiceProvider._id,
       };
 
       let createNotification = await userService.createNotification(notificationData);
@@ -293,7 +291,7 @@ exports.createServiceProvider = async (req, res, next) => {
               { status: true },
               {
                 $or: [
-                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                  { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
                 ]
               }
             ]
@@ -392,15 +390,13 @@ exports.createServiceProvider = async (req, res, next) => {
       }
       //Send Notification to ,admin,,servicer 
       let notificationData = {
-        adminTitle: "New Servicer Added",
         title: "New Servicer Added",
-        adminMessage: `A New Servicer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} on our portal`,
         description: `A New Servicer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} on our portal`,
         userId: req.teammateId,
         flag: 'servicer',
         notificationFor: IDs,
         redirectionId: "servicerDetails/" + checkDetail._id,
-        endpoint: base_url,
+        endpoint: base_url + "servicerDetails/" + checkDetail._id,
       };
 
       let createNotification = await userService.createNotification(notificationData);
@@ -959,7 +955,7 @@ exports.editServicerDetail = async (req, res) => {
       content: "Information has been updated successfully! effective immediately.",
       subject: "Update Info"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails,["noreply@getcover.com"], emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
     //Save Logs
     let logData = {
       userId: req.userId,
@@ -1736,6 +1732,7 @@ exports.addServicerUser = async (req, res) => {
       // Send notification when create
       const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
       const base_url = `${process.env.SITE_URL}`
+      let notificationArray = []
       const adminServicerUserQuery = {
         metaData: {
           $elemMatch: {
@@ -1745,8 +1742,22 @@ exports.addServicerUser = async (req, res) => {
               {
                 $or: [
                   { metaId: new mongoose.Types.ObjectId(req.params.servicerId) },
-
-                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                  { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
+                ]
+              }
+            ]
+          }
+        },
+      }
+      const servicerServicerUserQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "servicerNotification.userAdded": true },
+              { status: true },
+              {
+                $or: [
+                  { metaId: new mongoose.Types.ObjectId(req.params.servicerId) },
                 ]
               }
             ]
@@ -1754,22 +1765,37 @@ exports.addServicerUser = async (req, res) => {
         },
       }
       let adminUsers = await supportingFunction.getNotificationEligibleUser(adminServicerUserQuery, { email: 1 })
+      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerServicerUserQuery, { email: 1 })
       const IDs = adminUsers.map(user => user._id)
-      let notificationData = {
-        title: "Servicer User Added",
-        adminTitle: "Servicer User Added",
-        servicerTitle: "New User Added",
-        description: `A new user for Servicer ${checkServicer.name} has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-        adminMessage: `A new user for Servicer ${checkServicer.name} has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-        servicerMessage: `A new user for you account has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-        userId: req.userId,
-        contentId: checkServicer._id,
-        flag: 'Servicer User',
-        endPoint: base_url,
-        redirectionId: "/servicerDetails/" + checkServicer._id,
-        notificationFor: IDs
-      };
-      let createNotification = await userService.createNotification(notificationData);
+      const servicerId = adminUsers.map(user => user._id)
+      if (adminUsers.length > 0) {
+        let notificationData = {
+          title: "Servicer User Added",
+          description: `A new user for Servicer ${checkServicer.name} has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+          userId: req.userId,
+          contentId: checkServicer._id,
+          flag: 'Servicer User',
+          endPoint: base_url + "servicerDetails/" + checkServicer._id,
+          redirectionId: "servicerDetails/" + checkServicer._id,
+          notificationFor: IDs
+        };
+        notificationArray.push(notificationData)
+      }
+      if (servicerUsers.length > 0) {
+        let notificationData = {
+          title: "New User Added",
+          description: `A new user for you account has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+          userId: req.userId,
+          contentId: checkServicer._id,
+          flag: 'Servicer User',
+          endPoint: base_url,
+          redirectionId: "servicerDetails/" + checkServicer._id,
+          notificationFor: servicerId
+        };
+        notificationArray.push(notificationData)
+      }
+
+      let createNotification = await userService.saveNotificationBulk(notificationArray);
       const notificationEmails = adminUsers.map(user => user.email)
 
       res.send({
