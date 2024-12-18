@@ -954,7 +954,7 @@ async function generateTC(orderData) {
                                     { metaId: checkOrder.resellerId },
                                 ]
                             },
-                            
+
                         ]
                     }
                 },
@@ -971,7 +971,7 @@ async function generateTC(orderData) {
                 lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
                 address: settingData[0]?.address,
                 websiteSetting: settingData[0],
-                senderName:'',
+                senderName: '',
                 content: `Congratulations, your order # ${checkOrder.unique_key} has been created in our system. Please login to the system and view your order details. Also, we have attached our T&C to the email for the review. Please review, if there is anything wrong here, do let us know. You can contact us at : support@getcover.com`,
                 subject: "Process Order",
                 redirectId: base_url + "orderDetails/" + checkOrder.unique_key
@@ -1067,6 +1067,7 @@ exports.createOrder1 = async (req, res) => {
         const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
         const base_url = `${process.env.SITE_URL}`
         let notificationData;
+        let notificationArrayData = []
         let notificationEmails
         let emailData;
         let projection = { isDeleted: 0 };
@@ -1148,7 +1149,7 @@ exports.createOrder1 = async (req, res) => {
 
         data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
         data.unique_key_search = "GC" + currentYearWithoutHypen + data.unique_key_number
-        data.unique_key = "GC" + currentYear  + data.unique_key_number
+        data.unique_key = "GC" + currentYear + data.unique_key_number
 
         let checkVenderOrder = await orderService.getOrder(
             { venderOrder: data.dealerPurchaseOrder, dealerId: data.dealerId },
@@ -1327,7 +1328,7 @@ exports.createOrder1 = async (req, res) => {
         returnField.push(obj);
 
         //send notification to admin and dealer 
-        const adminPendingQuery = {
+        let adminPendingQuery = {
             metaData: {
                 $elemMatch: {
                     $and: [
@@ -1336,35 +1337,81 @@ exports.createOrder1 = async (req, res) => {
                         {
                             $or: [
                                 { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                                { metaId:savedResponse.dealerId },
+                                { metaId: savedResponse.dealerId },
                                 { metaId: savedResponse.resellerId },
-                                // { roleId: new mongoose.Types.ObjectId("65bb94b4b68e5a4a62a0b563") },
-                                // { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
                             ]
                         },
                     ]
                 }
             },
         }
+        let dealerPendingQuery = {
+            metaData: {
+                $elemMatch: {
+                    $and: [
+                        { "orderNotifications.addingNewOrderPending": true },
+                        { status: true },
+                        { metaId: savedResponse.dealerId },
+
+                    ]
+                }
+            },
+        }
+        let resellerPendingQuery = {
+            metaData: {
+                $elemMatch: {
+                    $and: [
+                        { "orderNotifications.addingNewOrderPending": true },
+                        { status: true },
+                        { metaId: savedResponse.resellerId }
+                    ]
+                }
+            },
+        }
         let adminUsers = await supportingFunction.getNotificationEligibleUser(adminPendingQuery, { email: 1 })
+        let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerPendingQuery, { email: 1 })
+        let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerPendingQuery, { email: 1 })
         const IDs = adminUsers.map(user => user._id)
+        const ID1 = dealerUsers.map(user => user._id)
+        const ID2 = resellerUsers.map(user => user._id)
         let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data.dealerId, isPrimary: true } } })
-        notificationData = {
+        let adminNotificationData = {
             title: "Draft Order Created",
-            dealerTitle: "Draft Order Created",
-            adminTitle: "Draft Order Created",
-            resellerTitle: "Draft Order Created",
-            description: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  - ${req.role}.`,
-            dealerMessage: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  - ${req.role}.`,
-            resellerMessage: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  - ${req.role}.`,
-            adminMessage: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  - ${req.role}.`,
+            description: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName}  - ${req.role}.`,
             userId: req.teammateId,
             contentId: null,
             flag: 'order',
             redirectionId: "orderList/" + savedResponse.unique_key,
-            endPoint: base_url,
+            endPoint: base_url + "orderList/" + savedResponse.unique_key,
             notificationFor: IDs
         };
+        notificationArrayData.push(adminNotificationData)
+
+        let dealerNotificationData = {
+            title: "Draft Order Created",
+            description: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName}  - ${req.role}.`,
+            userId: req.teammateId,
+            contentId: null,
+            flag: 'order',
+            redirectionId: "orderList/" + savedResponse.unique_key,
+            endPoint: base_url + "orderList/" + savedResponse.unique_key,
+            notificationFor: ID1
+        };
+        notificationArrayData.push(dealerNotificationData)
+
+        let resellerNotificationData = {
+            title: "Draft Order Created",
+            description: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName}  - ${req.role}.`,
+            userId: req.teammateId,
+            contentId: null,
+            flag: 'order',
+            redirectionId: "orderList/" + savedResponse.unique_key,
+            endPoint: base_url + "orderList/" + savedResponse.unique_key,
+            notificationFor: ID2
+        };
+        notificationArrayData.push(resellerNotificationData)
+
+
         // Send Email code here
         notificationEmails = adminUsers.map(user => user.email)
         emailData = {
@@ -1493,7 +1540,7 @@ exports.createOrder1 = async (req, res) => {
                 totalDataComing.forEach((data, index1) => {
                     let unique_key_number1 = increamentNumber
                     let unique_key_search1 = "OC" + currentYearWithoutHypen + unique_key_number1
-                    let unique_key1 = "OC" + currentYear  + unique_key_number1
+                    let unique_key1 = "OC" + currentYear + unique_key_number1
                     let claimStatus = new Date(product.coverageStartDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0) ? "Waiting" : "Active"
                     claimStatus = new Date(product.coverageEndDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) ? "Expired" : claimStatus
 
@@ -1650,7 +1697,45 @@ exports.createOrder1 = async (req, res) => {
                     if (checkOrder?.termCondition) {
                         const tcResponse = await generateTC(savedResponse);
                     }
+
+                    notificationArrayData = []
                     const adminActiveOrderQuery = {
+                        metaData: {
+                            $elemMatch: {
+                                $and: [
+                                    { "orderNotifications.addingNewOrderActive": true },
+                                    { status: true },
+                                    { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                                ]
+                            }
+                        },
+                    }
+
+                    const dealerActiveOrderQuery = {
+                        metaData: {
+                            $elemMatch: {
+                                $and: [
+                                    { "orderNotifications.addingNewOrderActive": true },
+                                    { status: true },
+                                    { metaId: checkOrder.dealerId },
+                                ]
+                            }
+                        },
+                    }
+
+                    const resellerActiveOrderQuery = {
+                        metaData: {
+                            $elemMatch: {
+                                $and: [
+                                    { "orderNotifications.addingNewOrderActive": true },
+                                    { status: true },
+                                    { metaId: checkOrder.resellerId },
+                                ]
+                            }
+                        },
+                    }
+
+                    const customerActiveOrderQuery = {
                         metaData: {
                             $elemMatch: {
                                 $and: [
@@ -1664,22 +1749,34 @@ exports.createOrder1 = async (req, res) => {
                                             { metaId: checkOrder.resellerId },
                                         ]
                                     },
-                                    
+
                                 ]
                             }
                         },
                     }
                     let adminUsers = await supportingFunction.getNotificationEligibleUser(adminActiveOrderQuery, { email: 1 })
-                    const IDs = adminUsers.map(user => user._id)
+                    let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerActiveOrderQuery, { email: 1 })
+                    let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerActiveOrderQuery, { email: 1 })
+                    let customerUsers = await supportingFunction.getNotificationEligibleUser(customerActiveOrderQuery, { email: 1 })
+                    let id = adminUsers.map(user => user._id)
+                    let id1 = dealerUsers.map(user => user._id)
+                    let id2 = resellerUsers.map(user => user._id)
+                    let id3 = customerUsers.map(user => user._id)
                     let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data.dealerId, isPrimary: true } } })
                     let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data.customerId, isPrimary: true } } })
                     let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data.resellerId, isPrimary: true } } })
                     let notificationData1 = {
                         title: "Order Added Successfully",
-                        resellerTitle: "Order Added Successfully",
-                        dealerTitle: "Order Added Successfully",
-                        customerTitle: "Order Added Successfully",
-                        adminTitle: "Order Added Successfully",
+                        description: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+                        userId: req.teammateId,
+                        contentId: checkOrder._id,
+                        redirectionId: "orderDetails/" + checkOrder.unique_key,
+                        endPoint: base_url + "orderList/" + savedResponse.unique_key,
+                        flag: 'order',
+                        notificationFor: id
+                    };
+                    let notificationData2 = {
+                        title: "Order Added Successfully",
                         description: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
                         dealerMessage: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
                         customerMessage: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
@@ -1688,12 +1785,37 @@ exports.createOrder1 = async (req, res) => {
                         userId: req.teammateId,
                         contentId: checkOrder._id,
                         redirectionId: "orderDetails/" + checkOrder.unique_key,
-                        endPoint: base_url,
+                        endPoint: base_url + "orderList/" + savedResponse.unique_key,
                         flag: 'order',
-                        notificationFor: IDs
+                        notificationFor: id1
+                    };
+                    let notificationData3 = {
+                        title: "Order Added Successfully",
+                        description: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+                        userId: req.teammateId,
+                        contentId: checkOrder._id,
+                        redirectionId: "orderDetails/" + checkOrder.unique_key,
+                        endPoint: base_url + "orderList/" + savedResponse.unique_key,
+                        flag: 'order',
+                        notificationFor: id2
+                    };
+                    let notificationData4 = {
+                        title: "Order Added Successfully",
+                        description: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+                        userId: req.teammateId,
+                        contentId: checkOrder._id,
+                        redirectionId: "orderDetails/" + checkOrder.unique_key,
+                        endPoint: base_url + "orderList/" + savedResponse.unique_key,
+                        flag: 'order',
+                        notificationFor: id3
                     };
 
-                    let createNotification = await userService.createNotification(notificationData1);
+                    notificationArrayData.push(notificationData1)
+                    notificationArrayData.push(notificationData2)
+                    notificationArrayData.push(notificationData3)
+                    notificationArrayData.push(notificationData4)
+
+                    let createNotification = await userService.saveNotificationBulk(notificationArrayData);
 
                     // Send Email code here
                     if (!checkOrder?.termCondition || checkOrder?.termCondition == null || checkOrder?.termCondition == '') {
@@ -1751,7 +1873,7 @@ exports.createOrder1 = async (req, res) => {
 
         } else {
             let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-            let createNotification = await userService.createNotification(notificationData);
+            let createNotification = await userService.saveNotificationBulk(notificationArrayData);
 
             let logData = {
                 endpoint: "order/createOrder",
@@ -2386,42 +2508,80 @@ exports.editOrderDetail = async (req, res) => {
         //send notification to dealer,reseller,admin,customer
         const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
         const base_url = `${process.env.SITE_URL}`
-        const adminUpdateOrderQuery = {
+        let adminUpdateOrderQuery = {
             metaData: {
                 $elemMatch: {
                     $and: [
                         { "orderNotifications.updateOrderPending": true },
                         { status: true },
-                        {
-                            $or: [
-                                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                                { metaId: checkOrder.dealerId },
-                                { metaId: checkOrder.resellerId },
-                            ]
-                        }
+                        { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                    ]
+                }
+            },
+        }
+        let dealerUpdateOrderQuery = {
+            metaData: {
+                $elemMatch: {
+                    $and: [
+                        { "orderNotifications.updateOrderPending": true },
+                        { status: true },
+                        { metaId: checkOrder.dealerId }
+                    ]
+                }
+            },
+        }
+        let resellerUpdateOrderQuery = {
+            metaData: {
+                $elemMatch: {
+                    $and: [
+                        { "orderNotifications.updateOrderPending": true },
+                        { status: true },
+                        { metaId: checkOrder.resellerId }
                     ]
                 }
             },
         }
         let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdateOrderQuery, { email: 1 })
+        let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerUpdateOrderQuery, { email: 1 })
+        let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerUpdateOrderQuery, { email: 1 })
         const IDs = adminUsers.map(user => user._id)
+        const IDs1 = dealerUsers.map(user => user._id)
+        const IDs2 = resellerUsers.map(user => user._id)
         let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } })
         let notificationData = {
             title: "Draft Order Updated Successfully",
-            dealerTitle: "Draft Order Updated Successfully",
-            adminTitle: "Draft Order Updated Successfully",
-            resellerTitle: "Draft Order Updated Successfully",
-            description: `The draft Order # ${checkOrder.unique_key} has been updated successfully by ${checkLoginUser.metaData[0]?.firstName}.`,
-            dealerMessage: `The draft Order # ${checkOrder.unique_key} has been updated successfully by ${checkLoginUser.metaData[0]?.firstName}.`,
-            adminMessage: `The draft Order # ${checkOrder.unique_key} has been updated successfully by ${checkLoginUser.metaData[0]?.firstName}.`,
-            resellerMessage: `The draft Order # ${checkOrder.unique_key} has been updated successfully by ${checkLoginUser.metaData[0]?.firstName}.`,
+            description: `The draft Order # ${checkOrder.unique_key} has been updated successfully by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
             userId: req.teammateId,
             contentId: checkOrder._id,
             flag: 'order',
             redirectionId: "orderList/" + savedResponse.unique_key,
-            endPoint: base_url,
+            endPoint: base_url + "orderList/" + savedResponse.unique_key,
             notificationFor: IDs
         };
+        let notificationData1 = {
+            title: "Draft Order Updated Successfully",
+            description: `The draft Order # ${checkOrder.unique_key} has been updated successfully by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+            userId: req.teammateId,
+            contentId: checkOrder._id,
+            flag: 'order',
+            redirectionId: "orderList/" + savedResponse.unique_key,
+            endPoint: base_url + "orderList/" + savedResponse.unique_key,
+            notificationFor: IDs1
+        };
+        let notificationData2 = {
+            title: "Draft Order Updated Successfully",
+            description: `The draft Order # ${checkOrder.unique_key} has been updated successfully by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+            userId: req.teammateId,
+            contentId: checkOrder._id,
+            flag: 'order',
+            redirectionId: "orderList/" + savedResponse.unique_key,
+            endPoint: base_url + "orderList/" + savedResponse.unique_key,
+            notificationFor: IDs2
+        };
+        let notificationArrayData = []
+        notificationArrayData.push(notificationData)
+        notificationArrayData.push(notificationData1)
+        notificationArrayData.push(notificationData2)
 
         // Send Email code here
         let notificationEmails = adminUsers.map(user => user.email)
@@ -2700,40 +2860,65 @@ exports.editOrderDetail = async (req, res) => {
                     // send notification to dealer,admin, customer
                     const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
                     const base_url = `${process.env.SITE_URL}`
-                    const adminUpdateOrderQuery = {
+                    let adminUpdateOrderQuery = {
                         metaData: {
                             $elemMatch: {
                                 $and: [
                                     { "orderNotifications.updateOrderActive": true },
                                     { status: true },
-                                    {
-                                        $or: [
-                                            { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                                            { metaId: checkOrder.dealerId },
-                                            { metaId: checkOrder.customerId },
-                                            { metaId: checkOrder.resellerId },
-                                        ]
-                                    }
+                                    { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
                                 ]
                             }
                         },
                     }
+                    let dealerUpdateOrderQuery = {
+                        metaData: {
+                            $elemMatch: {
+                                $and: [
+                                    { "orderNotifications.updateOrderActive": true },
+                                    { status: true },
+                                    { metaId: checkOrder.dealerId },
+                                ]
+                            }
+                        },
+                    }
+                    let resellerUpdateOrderQuery = {
+                        metaData: {
+                            $elemMatch: {
+                                $and: [
+                                    { "orderNotifications.updateOrderActive": true },
+                                    { status: true },
+                                    { metaId: checkOrder.resellerId },
+                                ]
+                            }
+                        },
+                    }
+                    let customerUpdateOrderQuery = {
+                        metaData: {
+                            $elemMatch: {
+                                $and: [
+                                    { "orderNotifications.updateOrderActive": true },
+                                    { status: true },
+                                    { metaId: checkOrder.customerId },
+                                ]
+                            }
+                        },
+                    }
+
                     let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdateOrderQuery, { email: 1 })
+                    let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerUpdateOrderQuery, { email: 1 })
+                    let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerUpdateOrderQuery, { email: 1 })
+                    let customerUsers = await supportingFunction.getNotificationEligibleUser(customerUpdateOrderQuery, { email: 1 })
                     const IDs = adminUsers.map(user => user._id)
+                    const IDs1 = dealerUsers.map(user => user._id)
+                    const IDs2 = resellerUsers.map(user => user._id)
+                    const IDs3 = customerUsers.map(user => user._id)
                     let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } })
                     let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } })
                     let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } })
                     let notificationData = {
                         title: "New Active Order Created Successfully",
-                        dealerTitle: "New Active Order Created Successfully",
-                        adminTitle: "New Active Order Created Successfully",
-                        customerTitle: "New Active Order Created Successfully",
-                        resellerTitle: "New Active Order Created Successfully",
-                        description: `The draft Order # ${checkOrder.unique_key} has been marked completed successfully by ${checkLoginUser.metaData[0]?.firstName}.`,
-                        dealerMessage: `The draft Order # ${checkOrder.unique_key} has been marked completed successfully by ${checkLoginUser.metaData[0]?.firstName}.`,
-                        adminMessage: `The draft Order # ${checkOrder.unique_key} has been marked completed successfully by ${checkLoginUser.metaData[0]?.firstName}.`,
-                        resellerMessage: `The draft Order # ${checkOrder.unique_key} has been marked completed successfully by ${checkLoginUser.metaData[0]?.firstName}.`,
-                        customerMessage: `The draft Order # ${checkOrder.unique_key} has been marked completed successfully by ${checkLoginUser.metaData[0]?.firstName}.`,
+                        description: `The draft Order # ${checkOrder.unique_key} has been marked completed successfully by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
                         userId: req.teammateId,
                         contentId: checkOrder._id,
                         flag: 'order',
@@ -2741,7 +2926,42 @@ exports.editOrderDetail = async (req, res) => {
                         endPoint: base_url,
                         notificationFor: IDs
                     };
-                    let createNotification = await userService.createNotification(notificationData);
+                    let notificationData1 = {
+                        title: "New Active Order Created Successfully",
+                        description: `The draft Order # ${checkOrder.unique_key} has been marked completed successfully by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+                        userId: req.teammateId,
+                        contentId: checkOrder._id,
+                        flag: 'order',
+                        redirectionId: "orderDetails/" + checkOrder._id,
+                        endPoint: base_url,
+                        notificationFor: IDs1
+                    };
+                    let notificationData2 = {
+                        title: "New Active Order Created Successfully",
+                        description: `The draft Order # ${checkOrder.unique_key} has been marked completed successfully by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+                        userId: req.teammateId,
+                        contentId: checkOrder._id,
+                        flag: 'order',
+                        redirectionId: "orderDetails/" + checkOrder._id,
+                        endPoint: base_url,
+                        notificationFor: IDs2
+                    };
+                    let notificationData3 = {
+                        title: "New Active Order Created Successfully",
+                        description: `The draft Order # ${checkOrder.unique_key} has been marked completed successfully by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+                        userId: req.teammateId,
+                        contentId: checkOrder._id,
+                        flag: 'order',
+                        redirectionId: "orderDetails/" + checkOrder._id,
+                        endPoint: base_url,
+                        notificationFor: IDs3
+                    };
+                    notificationArrayData = []
+                    notificationArrayData.push(notificationData)
+                    notificationArrayData.push(notificationData1)
+                    notificationArrayData.push(notificationData2)
+                    notificationArrayData.push(notificationData3)
+                    let createNotification = await userService.saveNotificationBulk(notificationArrayData);
                     // Send Email code here
                     if (!checkOrder?.termCondition) {
                         let notificationEmails = adminUsers.map(user => user.email)
@@ -2793,7 +3013,7 @@ exports.editOrderDetail = async (req, res) => {
             if (data.sendNotification) {
                 let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
             }
-            let createNotification = await userService.createNotification(notificationData);
+            let createNotification = await userService.saveNotificationBulk(notificationArrayData);
 
 
             logData.response = {
