@@ -2113,7 +2113,6 @@ exports.createDeleteRelation = async (req, res) => {
     }));
     if (newRecords.length > 0) {
       let saveData = await dealerRelationService.createRelationsWithServicer(newRecords);
-
       const adminAssignServicerQuery = {
         metaData: {
           $elemMatch: {
@@ -2122,7 +2121,7 @@ exports.createDeleteRelation = async (req, res) => {
               { status: true },
               {
                 $or: [
-                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                  { roleId: new mongoose.Types.ObjectId(process.env.super) },
                   { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
                   { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
                 ]

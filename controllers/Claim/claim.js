@@ -912,7 +912,7 @@ exports.editClaim = async (req, res) => {
           userId: req.teammateId,
           contentId: checkClaim._id,
           flag: 'claim',
-          endPoint: site_url,
+          endPoint: site_url + "claim-listing/" + checkClaim.unique_key,
           redirectionId: "claim-listing/" + checkClaim.unique_key,
           notificationFor: IDs
         };
@@ -943,7 +943,7 @@ exports.editClaim = async (req, res) => {
           userId: req.teammateId,
           contentId: checkClaim._id,
           flag: 'claim',
-          endPoint: site_url,
+          endPoint: site_url + "claim-listing/" + checkClaim.unique_key,
           redirectionId: "claim-listing/" + checkClaim.unique_key,
           notificationFor: IDs
         };
@@ -1475,7 +1475,7 @@ exports.editClaimStatus = async (req, res) => {
           contentId: checkClaim._id,
           flag: 'claim',
           redirectionId: `claim-listing/${checkClaim.unique_key}`,
-          endPoint: site_url,
+          endPoint: site_url + `claim-listing/${checkClaim.unique_key}`,
           notificationFor: IDs
         };
         notificationArray.push(notificationAdmin)
@@ -1508,7 +1508,7 @@ exports.editClaimStatus = async (req, res) => {
           contentId: checkClaim._id,
           flag: 'claim',
           redirectionId: `claim-listing/${checkClaim.unique_key}`,
-          endPoint: site_url,
+          endPoint: site_url + `claim-listing/${checkClaim.unique_key}`,
           notificationFor: dealerids
         };
         notificationArray.push(notificationAdmin)
@@ -1541,7 +1541,7 @@ exports.editClaimStatus = async (req, res) => {
           contentId: checkClaim._id,
           flag: 'claim',
           redirectionId: `claim-listing/${checkClaim.unique_key}`,
-          endPoint: site_url,
+          endPoint: site_url + `claim-listing/${checkClaim.unique_key}`,
           notificationFor: reselerids
         };
         notificationArray.push(notificationAdmin)
@@ -1574,7 +1574,7 @@ exports.editClaimStatus = async (req, res) => {
           contentId: checkClaim._id,
           flag: 'claim',
           redirectionId: `claim-listing/${checkClaim.unique_key}`,
-          endPoint: site_url,
+          endPoint: site_url + `claim-listing/${checkClaim.unique_key}`,
           notificationFor: customerids
         };
         notificationArray.push(notificationAdmin)
@@ -1607,7 +1607,7 @@ exports.editClaimStatus = async (req, res) => {
           contentId: checkClaim._id,
           flag: 'claim',
           redirectionId: `claim-listing/${checkClaim.unique_key}`,
-          endPoint: site_url,
+          endPoint: site_url + `claim-listing/${checkClaim.unique_key}`,
           notificationFor: servicerids
         };
         notificationArray.push(notificationAdmin)
@@ -1686,10 +1686,71 @@ exports.editClaimStatus = async (req, res) => {
               { status: true },
               {
                 $or: [
-                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                  { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
+
+                ]
+              },
+
+            ]
+          }
+        },
+      }
+      const dealerClaimStatusUpdateQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "claimNotification.claimStatusUpdate": true },
+              { status: true },
+              {
+                $or: [
                   { metaId: checkOrder?.dealerId },
+                ]
+              },
+
+            ]
+          }
+        },
+      }
+      const resellerClaimStatusUpdateQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "claimNotification.claimStatusUpdate": true },
+              { status: true },
+              {
+                $or: [
                   { metaId: checkOrder?.customerId },
-                  { metaId: checkOrder?.resellerId },
+                ]
+              },
+
+            ]
+          }
+        },
+      }
+      const customerClaimStatusUpdateQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "claimNotification.claimStatusUpdate": true },
+              { status: true },
+              {
+                $or: [
+                  { metaId: checkOrder?.customerId },
+                ]
+              },
+
+            ]
+          }
+        },
+      }
+      const servicerClaimStatusUpdateQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "claimNotification.claimStatusUpdate": true },
+              { status: true },
+              {
+                $or: [
                   { metaId: checkClaim?.servicerId },
                 ]
               },
@@ -1698,8 +1759,20 @@ exports.editClaimStatus = async (req, res) => {
           }
         },
       }
+
       let adminUsers = await supportingFunction.getNotificationEligibleUser(adminClaimStatusUpdateQuery, { email: 1 })
+      let dealerUser = await supportingFunction.getNotificationEligibleUser(dealerClaimStatusUpdateQuery, { email: 1 })
+      let customerUsers = await supportingFunction.getNotificationEligibleUser(resellerClaimStatusUpdateQuery, { email: 1 })
+      let resellerUsers = await supportingFunction.getNotificationEligibleUser(customerClaimStatusUpdateQuery, { email: 1 })
+      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerClaimStatusUpdateQuery, { email: 1 })
+      //Get all ids 
+      let notificationArray = []
       const IDs = adminUsers.map(user => user._id)
+      const dealerIds = dealerUser.map(user => user._id)
+      const customerIDs = customerUsers.map(user => user._id)
+      const resellerIDs = resellerUsers.map(user => user._id)
+      const servicerIDs = servicerUsers.map(user => user._id)
+
       const admin = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true } } });
 
       let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } })
@@ -1710,54 +1783,79 @@ exports.editClaimStatus = async (req, res) => {
       //Get submitted user
       const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
       const site_url = `${process.env.SITE_URL}`
-      let notificationData1 = {
-        title: "Claim  Status Updated",
-        customerTitle: "Claim  Status Updated",
-        adminTitle: "Claim  Status Updated",
-        resellerTitle: "Claim  Status Updated",
-        dealerTitle: "Claim  Status Updated",
-        servicerTitle: "Claim  Status Updated",
-        description: `Claim # ${checkClaim.unique_key} claim status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
-        servicerMessage: `Claim # ${checkClaim.unique_key} claim status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-        resellerMessage: `Claim # ${checkClaim.unique_key} claim status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-        adminMessage: `Claim # ${checkClaim.unique_key} claim status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-        resellerMessage: `Claim # ${checkClaim.unique_key} claim status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-        dealerMessage: `Claim # ${checkClaim.unique_key} claim status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-        customerMessage: `Claim # ${checkClaim.unique_key} claim status has been updated to ${matchedData?.label}`,
-        userId: req.teammateId,
-        contentId: checkClaim._id,
-        flag: 'claim',
-        redirectionId: `claim-listing/${checkClaim.unique_key}`,
-        endPoint: site_url,
-        notificationFor: IDs
-      };
-      let createNotification = await userService.createNotification(notificationData1);
+      if (adminUsers.length > 0) {
+        let notificationData1 = {
+          title: "Claim  Status Updated",
+          description: `Claim # ${checkClaim.unique_key} claim status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+          userId: req.teammateId,
+          contentId: checkClaim._id,
+          flag: 'claim',
+          redirectionId: `claim-listing/${checkClaim.unique_key}`,
+          endPoint: site_url + `claim-listing/${checkClaim.unique_key}`,
+          notificationFor: IDs
+        };
+        notificationArray.push(notificationData1);
+      }
+      if (dealerUser.length > 0) {
+        let notificationData1 = {
+          title: "Claim  Status Updated",
+          description: `Claim # ${checkClaim.unique_key} claim status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+          userId: req.teammateId,
+          contentId: checkClaim._id,
+          flag: 'claim',
+          redirectionId: `claim-listing/${checkClaim.unique_key}`,
+          endPoint: site_url + `claim-listing/${checkClaim.unique_key}`,
+          notificationFor: dealerIds
+        };
+        notificationArray.push(notificationData1);
+      }
+      if (customerUsers.length > 0) {
+        let notificationData1 = {
+          title: "Claim  Status Updated",
+          description: `Claim # ${checkClaim.unique_key} claim status has been updated to ${matchedData?.label}`,
+          userId: req.teammateId,
+          contentId: checkClaim._id,
+          flag: 'claim',
+          redirectionId: `claim-listing/${checkClaim.unique_key}`,
+          endPoint: site_url + `claim-listing/${checkClaim.unique_key}`,
+          notificationFor: customerIDs
+        };
+        notificationArray.push(notificationData1);
+      }
+      if (resellerUsers.length > 0) {
+        let notificationData1 = {
+          title: "Claim  Status Updated",
+          description: `Claim # ${checkClaim.unique_key} claim status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+          userId: req.teammateId,
+          contentId: checkClaim._id,
+          flag: 'claim',
+          redirectionId: `claim-listing/${checkClaim.unique_key}`,
+          endPoint: site_url + `claim-listing/${checkClaim.unique_key}`,
+          notificationFor: resellerIDs
+        };
+        notificationArray.push(notificationData1);
+      }
+      if (servicerUsers.length > 0) {
+        let notificationData1 = {
+          title: "Claim  Status Updated",
+          description: `Claim # ${checkClaim.unique_key} claim status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+          userId: req.teammateId,
+          contentId: checkClaim._id,
+          flag: 'claim',
+          redirectionId: `claim-listing/${checkClaim.unique_key}`,
+          endPoint: site_url + `claim-listing/${checkClaim.unique_key}`,
+          notificationFor: servicerIDs
+        };
+        notificationArray.push(notificationData1);
+      }
+      let createNotification = await userService.saveNotificationBulk(notificationArray);
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
       if (data.claimStatus == 'rejected') {
         //Send notification to dealer,customer,reseller
-        const rejectionCaseQuery = {
-          metaData: {
-            $elemMatch: {
-              $and: [
-                { "claimNotification.claimStatusUpdate": true },
-                { status: true },
-                {
-                  $or: [
-                    { roleId: new mongoose.Types.ObjectId("65bb94b4b68e5a4a62a0b563") },
-                    { metaId: checkOrder?.dealerId },
-                    { metaId: checkOrder?.customerId },
-                    { metaId: checkOrder?.resellerId },
-                  ]
-                },
-
-
-              ]
-            }
-          },
-        }
-        let rejectionCaseUsers = await supportingFunction.getNotificationEligibleUser(rejectionCaseQuery, { email: 1 })
-        const sendRejectionNotification = rejectionCaseUsers.map(user => user.email);
+        let sendRejectionDealerNotification = dealerUser.map(user => user.email);
+        let sendRejectionResellerNotification = resellerUsers.map(user => user.email);
+        let sendRejectionCustomerNotification = customerUsers.map(user => user.email);
         let emailData = {
           darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
           lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -1769,34 +1867,43 @@ exports.editClaimStatus = async (req, res) => {
           content2: `If you believe there has been an error or if you would like further clarification, please feel free to reach out to our support team at support@getcover.com. Our team is here to assist you with any questions you may have.`,
           subject: `Claim Rejection Notice -Claim ID:  ${checkClaim.unique_key}`
         }
-        let mailing = sgMail.send(emailConstant.sendClaimStatusNotification(sendRejectionNotification, ["noreply@getcover.com"], emailData))
-        //Email to Servicer
-        const rejectionServicerCaseQuery = {
-          metaData: {
-            $elemMatch: {
-              $and: [
-                { "claimNotification.claimStatusUpdate": true },
-                { status: true },
-                {
-                  $or: [
-                    { metaId: checkClaim?.servicerId },
-                    { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                  ]
-                },
-
-              ]
-            }
-          },
+        let mailing = sgMail.send(emailConstant.sendClaimStatusNotification(sendRejectionDealerNotification, ["noreply@getcover.com"], emailData))
+        emailData = {
+          darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+          lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+          address: settingData[0]?.address,
+          websiteSetting: settingData[0],
+          senderName: customerPrimary.metaData[0].firstName,
+          content: `We regret to inform you that your claim ID: ${checkClaim.unique_key} has been reviewed and, unfortunately, does not meet the criteria for approval. After careful assessment, the claim has been rejected due to the following reason:`,
+          content1: `Reason for Rejection : ${data.reason}`,
+          content2: `If you believe there has been an error or if you would like further clarification, please feel free to reach out to our support team at support@getcover.com. Our team is here to assist you with any questions you may have.`,
+          subject: `Claim Rejection Notice -Claim ID:  ${checkClaim.unique_key}`
         }
-        let rejectionServicerCaseUsers = await supportingFunction.getNotificationEligibleUser(rejectionServicerCaseQuery, { email: 1 })
-        const sendRejectionServicerNotification = rejectionServicerCaseUsers.map(user => user.email);
+        mailing = sgMail.send(emailConstant.sendClaimStatusNotification(sendRejectionCustomerNotification, ["noreply@getcover.com"], emailData))
+        if (resellerPrimary) {// If reseller exist for claim
+          emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
+            senderName: resellerPrimary?.metaData[0].firstName,
+            content: `We regret to inform you that your claim ID: ${checkClaim.unique_key} has been reviewed and, unfortunately, does not meet the criteria for approval. After careful assessment, the claim has been rejected due to the following reason:`,
+            content1: `Reason for Rejection : ${data.reason}`,
+            content2: `If you believe there has been an error or if you would like further clarification, please feel free to reach out to our support team at support@getcover.com. Our team is here to assist you with any questions you may have.`,
+            subject: `Claim Rejection Notice -Claim ID:  ${checkClaim.unique_key}`
+          }
+          mailing = sgMail.send(emailConstant.sendClaimStatusNotification(sendRejectionResellerNotification, ["noreply@getcover.com"], emailData))
+        }
+
+        //Email to Servicer
+        const sendRejectionServicerNotification = servicerUsers.map(user => user.email);
         if (servicerPrimary) {
           emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
-            senderName: servicerPrimary?.metaData[0].firstName,
+            senderName: `Dear ${checkServicer.name}`,
             content: `We would like to inform you that Claim ID - ${checkClaim.unique_key} has been rejected, and no further action is needed on your part for this claim. Please halt any ongoing repair work related to this claim immediately`,
             content1: `If you have any questions or require clarification, feel free to contact us`,
             subject: "Claim Update - No Further Action Required"
@@ -1805,30 +1912,13 @@ exports.editClaimStatus = async (req, res) => {
 
         }
         //Email to admin
-        const rejectionAdminCaseQuery = {
-          metaData: {
-            $elemMatch: {
-              $and: [
-                { "claimNotification.claimStatusUpdate": true },
-                { status: true },
-                {
-                  $or: [
-                    // { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
-                    { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                  ]
-                },
-              ]
-            }
-          },
-        }
-        let rejectionAdminCaseUsers = await supportingFunction.getNotificationEligibleUser(rejectionAdminCaseQuery, { email: 1 })
-        const sendRejectionAdminNotification = rejectionAdminCaseUsers.map(user => user.email);
+        const sendRejectionAdminNotification = adminUsers.map(user => user.email);
         emailData = {
           darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
           lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
           address: settingData[0]?.address,
           websiteSetting: settingData[0],
-          senderName: admin?.metaData[0].firstName,
+          senderName: `Dear Admin`,
           content: `This is to notify you that the claim rejection process for Claim ID - ${checkClaim.unique_key} has been completed successfully. The claim has been marked as rejected, and the customer has been notified with the reason provided`,
           subject: "Action Notification – Claim Rejection Completed"
         }
@@ -1837,67 +1927,58 @@ exports.editClaimStatus = async (req, res) => {
       }
       if (data.claimStatus == 'completed') {
         //Email to dealer,customer,reseller
-        const completionAdminCaseQuery = {
-          metaData: {
-            $elemMatch: {
-              $and: [
-                { "claimNotification.claimStatusUpdate": true },
-                { status: true },
-                {
-                  $or: [
-                    // { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
-                    { metaId: checkOrder?.dealerId },
-                    { metaId: checkOrder?.customerId },
-                    { metaId: checkOrder?.resellerId },
-                    { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                  ]
-                },
-
-
-              ]
-            }
-          },
-        }
-        let completionAdminCaseUsers = await supportingFunction.getNotificationEligibleUser(completionAdminCaseQuery, { email: 1 })
-        const sendCompletionAdminNotification = completionAdminCaseUsers.map(user => user.email);
+        let sendCompletionDealerNotification = dealerUser.map(user => user.email);
+        let sendCompletionResellerNotification = resellerUsers.map(user => user.email);
+        let sendCompletionCustomerNotification = customerUsers.map(user => user.email);
         let emailData = {
           darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
           lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
           address: settingData[0]?.address,
           websiteSetting: settingData[0],
-          senderName: dealerPrimary.metaData[0].firstName,
+          senderName: `Dear ${checkDealer.name}`,
           content: `We are pleased to inform you that your claim Claim ID: - ${checkClaim.unique_key} has been successfully completed. All necessary repairs or services associated with your claim have been finalized`,
           content1: `If you have any further questions or require additional support, please feel free to contact us at support@getcover.com.`,
           content2: '',
           subject: `Claim Completion Notification – Claim ID:  ${checkClaim.unique_key}`
         }
-        let mailing = sgMail.send(emailConstant.sendClaimStatusNotification(sendCompletionAdminNotification, ["noreply@getcover.com"], emailData))
-        //Email to Servicer
-        if (servicerPrimary) {
-          const servicerCompletionAdminCaseQuery = {
-            metaData: {
-              $elemMatch: {
-                $and: [
-                  { "claimNotification.claimStatusUpdate": true },
-                  { status: true },
-                  {
-                    $or: [
-                      { metaId: checkClaim?.servicerId },
-                      { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                    ]
-                  },
-                ]
-              }
-            },
-          }
-          let completionServicerUsers = await supportingFunction.getNotificationEligibleUser(servicerCompletionAdminCaseQuery, { email: 1 })
-          const sendServicerCompletionNotification = completionServicerUsers.map(user => user.email);
+        let mailing = sgMail.send(emailConstant.sendClaimStatusNotification(sendCompletionDealerNotification, ["noreply@getcover.com"], emailData))
+        if (checkReseller) {// if reseller exist for claim
           emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
-            senderName: servicerPrimary?.metaData[0].firstName,
+            senderName: `Dear ${checkReseller.name}`,
+            content: `We are pleased to inform you that your claim Claim ID: - ${checkClaim.unique_key} has been successfully completed. All necessary repairs or services associated with your claim have been finalized`,
+            content1: `If you have any further questions or require additional support, please feel free to contact us at support@getcover.com.`,
+            content2: '',
+            subject: `Claim Completion Notification – Claim ID:  ${checkClaim.unique_key}`
+          }
+          mailing = sgMail.send(emailConstant.sendClaimStatusNotification(sendCompletionResellerNotification, ["noreply@getcover.com"], emailData))
+        }
+
+        emailData = {
+          darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+          lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+          address: settingData[0]?.address,
+          websiteSetting: settingData[0],
+          senderName: `Dear ${checkCustomer.username}`,
+          content: `We are pleased to inform you that your claim Claim ID: - ${checkClaim.unique_key} has been successfully completed. All necessary repairs or services associated with your claim have been finalized`,
+          content1: `If you have any further questions or require additional support, please feel free to contact us at support@getcover.com.`,
+          content2: '',
+          subject: `Claim Completion Notification – Claim ID:  ${checkClaim.unique_key}`
+        }
+        mailing = sgMail.send(emailConstant.sendClaimStatusNotification(sendCompletionCustomerNotification, ["noreply@getcover.com"], emailData))
+        //Email to Servicer
+        if (servicerPrimary) {
+
+          const sendServicerCompletionNotification = servicerUsers.map(user => user.email);
+          emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
+            senderName: `Dear ${checkServicer.name}`,
             content: `We are pleased to inform you that Claim ID ${checkClaim.unique_key} has been successfully completed. Thank you for your prompt and professional service in handling this claim. Your efforts have been invaluable in ensuring a smooth process for our customer.`,
             content1: `Should you have any questions or require additional information, please do not hesitate to reach out.`,
             content2: '',
@@ -1906,31 +1987,14 @@ exports.editClaimStatus = async (req, res) => {
           mailing = sgMail.send(emailConstant.sendClaimStatusNotification(sendServicerCompletionNotification, ["noreply@getcover.com"], emailData))
 
         }
-        //Email to admin
-        const completionAdminQuery = {
-          metaData: {
-            $elemMatch: {
-              $and: [
-                { "claimNotification.claimStatusUpdate": true },
-                { status: true },
-                {
-                  $or: [
-                    { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                  ]
-                },
-
-              ]
-            }
-          },
-        }
-        let completionAdminUsers = await supportingFunction.getNotificationEligibleUser(completionAdminQuery, { email: 1 })
-        const sendAdminNotification = completionAdminUsers.map(user => user.email);
+        //Email to admin       
+        const sendAdminNotification = adminUsers.map(user => user.email);
         emailData = {
           darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
           lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
           address: settingData[0]?.address,
           websiteSetting: settingData[0],
-          senderName: "Admin",
+          senderName: "Dear Admin",
           content: `This is to inform you that the completion process for Claim ID: ${checkClaim.unique_key} has been successfully carried out. All steps have been finalized, and the customer has been notified of the claim completion`,
           content2: '',
           content1: '',
@@ -3845,8 +3909,6 @@ exports.sendMessages = async (req, res) => {
             {
               $or: [
                 { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                { metaId: orderData?.dealerId },
-                { metaId: orderData?.resellerId },
               ]
             },
 
@@ -3854,35 +3916,155 @@ exports.sendMessages = async (req, res) => {
         }
       },
     }
+    const dealerCommentQuery = {
+      metaData: {
+        $elemMatch: {
+          $and: [
+            { "claimNotification.claimComment": true },
+            { status: true },
+            {
+              $or: [
+                { metaId: new mongoose.Types.ObjectId(orderData.dealerId) },
+              ]
+            },
+
+          ]
+        }
+      },
+    }
+    const resellerCommentQuery = {
+      metaData: {
+        $elemMatch: {
+          $and: [
+            { "claimNotification.claimComment": true },
+            { status: true },
+            {
+              $or: [
+                { metaId: new mongoose.Types.ObjectId(orderData?.resellerId) },
+              ]
+            },
+
+          ]
+        }
+      },
+    }
+    const customerCommentQuery = {
+      metaData: {
+        $elemMatch: {
+          $and: [
+            { "claimNotification.claimComment": true },
+            { status: true },
+            {
+              $or: [
+                { metaId: new mongoose.Types.ObjectId(orderData.customerId) },
+              ]
+            },
+
+          ]
+        }
+      },
+    }
+    const servicerCommentQuery = {
+      metaData: {
+        $elemMatch: {
+          $and: [
+            { "claimNotification.claimComment": true },
+            { status: true },
+            {
+              $or: [
+                { metaId: new mongoose.Types.ObjectId(orderData?.servicerId) },
+              ]
+            },
+
+          ]
+        }
+      },
+    }
+
     let adminUsers = await supportingFunction.getNotificationEligibleUser(adminCommentQuery, { email: 1 })
-    const IDs = adminUsers.map(user => user._id)
+    let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerCommentQuery, { email: 1 })
+    let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerCommentQuery, { email: 1 })
+    let customerUsers = await supportingFunction.getNotificationEligibleUser(customerCommentQuery, { email: 1 })
+    let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerCommentQuery, { email: 1 })
+    let notificationArray = []
+
+    let IDs = adminUsers.map(user => user._id)
+    let dealerId = dealerUsers.map(user => user._id)
+    let resellerId = resellerUsers.map(user => user._id)
+    let customerId = customerUsers.map(user => user._id)
+    let servicerId = servicerUsers.map(user => user._id)
+
     let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.dealerId, isPrimary: true } } })
     let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.customerId, isPrimary: true } } })
     let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.resellerId, isPrimary: true } } })
     let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.servicerId, isPrimary: true } } })
+    if (adminUsers.length > 0) {
+      let notificationData1 = {
+        title: "New Claim Comment added",
+        description: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+        userId: req.teammateId,
+        contentId: checkClaim._id,
+        flag: 'claim',
+        endPoint: site_url+"claim-listing/" + checkClaim.unique_key,
+        redirectionId: "claim-listing/" + checkClaim.unique_key,
+        notificationFor: IDs
+      };
+      notificationArray.push(notificationData1)
+    }
+    if (dealerUsers.length > 0) {
+      let notificationData1 = {
+        title: "New Claim Comment added",
+        description: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+        userId: req.teammateId,
+        contentId: checkClaim._id,
+        flag: 'claim',
+        endPoint: site_url+"claim-listing/" + checkClaim.unique_key,
+        redirectionId: "claim-listing/" + checkClaim.unique_key,
+        notificationFor: dealerId
+      };
+      notificationArray.push(notificationData1)
+    }
+    if (resellerUsers.length > 0) {
+      let notificationData1 = {
+        title: "New Claim Comment added",
+        description: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+        userId: req.teammateId,
+        contentId: checkClaim._id,
+        flag: 'claim',
+        endPoint: site_url+"claim-listing/" + checkClaim.unique_key,
+        redirectionId: "claim-listing/" + checkClaim.unique_key,
+        notificationFor: resellerId
+      };
+      notificationArray.push(notificationData1)
+    }
+    if (customerUsers.length > 0) {
+      let notificationData1 = {
+        title: "New Claim Comment added",
+        description: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+        userId: req.teammateId,
+        contentId: checkClaim._id,
+        flag: 'claim',
+        endPoint: site_url+"claim-listing/" + checkClaim.unique_key,
+        redirectionId: "claim-listing/" + checkClaim.unique_key,
+        notificationFor: customerId
+      };
+      notificationArray.push(notificationData1)
+    }
+    if (servicerUsers.length > 0) {
+      let notificationData1 = {
+        title: "New Claim Comment added",       
+        description: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+        userId: req.teammateId,
+        contentId: checkClaim._id,
+        flag: 'claim',
+        endPoint: site_url+"claim-listing/" + checkClaim.unique_key,
+        redirectionId: "claim-listing/" + checkClaim.unique_key,
+        notificationFor: servicerId
+      };
+      notificationArray.push(notificationData1)
+    }
 
-    let notificationData1 = {
-      title: "New Claim Comment added",
-      dealerTitle: "New Claim Comment added",
-      customerTitle: "New Claim Comment added",
-      servicerTitle: "New Claim Comment added",
-      customerTitle: "New Claim Comment added",
-      adminTitle: "New Claim Comment added",
-      dealerMessage: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-      customerMessage: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-      servicerMessage: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-      adminMessage: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-      description: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-      resellerMessage: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-      userId: req.teammateId,
-      contentId: checkClaim._id,
-      flag: 'claim',
-      endPoint: site_url,
-      redirectionId: "claim-listing/" + checkClaim.unique_key,
-      notificationFor: IDs
-    };
-
-    let createNotification = await userService.createNotification(notificationData1);
+    let createNotification = await userService.saveNotificationBulk(notificationArray);
 
     // Send Email code here
     const commentCaseQuery = {
@@ -3894,7 +4076,7 @@ exports.sendMessages = async (req, res) => {
             {
               $or: [
                 { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
+                { metaId: new mongoose.Types.ObjectId(checkClaim?.servicerId) },
               ]
             },
 
