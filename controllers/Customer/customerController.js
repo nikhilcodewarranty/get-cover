@@ -961,7 +961,6 @@ exports.changePrimaryUser = async (req, res) => {
           notificationFor: IDs
         };
         notificationArray.push(notificationData)
-
         notificationData = {
           title: "Primary User Updated",
           description: `The Primary user for your account has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName}  by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,

@@ -680,6 +680,7 @@ exports.updateUserData = async (req, res) => {
     let adminUpdatePrimaryQuery
     let notificationData;
     let notificationArray = []
+    let notificationEmails;
     if (checkServicer) {
       adminUpdatePrimaryQuery = {
         metaData: {
@@ -707,10 +708,14 @@ exports.updateUserData = async (req, res) => {
       let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerUpdatePrimaryQuery, { email: 1 })
       const IDs = adminUsers.map(user => user._id)
       const servicerId = servicerUsers.map(user => user._id)
+      const servicerEmails = servicerUsers.map(user => user.email)
+      notificationEmails = adminUsers.map(user => user.email)
+      notificationEmails.push(servicerEmails)
+
       if (data.firstName) {
         notificationData = {
           title: "Servicer User Details Changed",
-          description: `The Details for the Servicer ${checkServicer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated by  ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+          description: `The Details for the Servicer ${checkServicer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
           redirectionId: "servicerDetails/" + checkServicer._id,
@@ -720,11 +725,11 @@ exports.updateUserData = async (req, res) => {
         notificationArray.push(notificationData)
         notificationData = {
           title: "User Details Changed",
-          description: `The detail for  user ${updateUser.metaData[0]?.firstName} has been updated by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+          description: `The detail for user ${updateUser.metaData[0]?.firstName} has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
-          redirectionId: "servicerDetails/" + checkServicer._id,
-          endPoint: base_url,
+          redirectionId: "servicer/user",
+          endPoint: base_url + "servicer/user",
           notificationFor: servicerId
         };
         notificationArray.push(notificationData)
@@ -733,33 +738,24 @@ exports.updateUserData = async (req, res) => {
       else {
         notificationData = {
           title: "Servicer User Status Changed",
-          adminTitle: "Servicer User Status Changed",
-          servicerTitle: "User Status Changed",
           description: `The Status for the Servicer ${checkServicer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-          adminMessage: `The Status for the Servicer ${checkServicer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-          servicerMessage: `The Status for  user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
           redirectionId: "servicerDetails/" + checkServicer._id,
-          endPoint: base_url,
+          endPoint: base_url + "servicerDetails/" + checkServicer._id,
           notificationData: IDs
         };
         notificationArray.push(notificationData)
         notificationData = {
-          title: "Servicer User Status Changed",
-          adminTitle: "Servicer User Status Changed",
-          servicerTitle: "User Status Changed",
-          description: `The Status for the Servicer ${checkServicer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-          adminMessage: `The Status for the Servicer ${checkServicer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-          servicerMessage: `The Status for  user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+          title: "User Status Changed",
+          description: `The Status for  user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
-          redirectionId: "servicerDetails/" + checkServicer._id,
-          endPoint: base_url,
+          redirectionId: "servicer/user",
+          endPoint: base_url + "servicer/user",
           notificationData: servicerId
         };
         notificationArray.push(notificationData)
-
       }
     }
 
@@ -770,43 +766,75 @@ exports.updateUserData = async (req, res) => {
             $and: [
               { "dealerNotification.userUpdate": true },
               { status: true },
-              {
-                $or: [
-                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                  { metaId: new mongoose.Types.ObjectId(checkDealer._id) },
-                ]
-              }
+              { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
             ]
           }
         },
       }
+      let dealerUpdatePrimaryQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "dealerNotification.userUpdate": true },
+              { status: true },
+              { metaId: new mongoose.Types.ObjectId(checkDealer._id) },
+            ]
+          }
+        },
+      }
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdatePrimaryQuery, { email: 1 })
+      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerUpdatePrimaryQuery, { email: 1 })
+      const IDs = adminUsers.map(user => user._id)
+      const dealerIds = dealerUsers.map(user => user._id)
+      const servicerEmails = dealerUsers.map(user => user.email)
+      notificationEmails = adminUsers.map(user => user.email)
+      notificationEmails.push(servicerEmails)
       if (data.firstName) {
         notificationData = {
           title: "Dealer User Details Changed",
-          adminTitle: "Dealer User Details Changed",
-          dealerTitle: "User Details Changed",
           description: `The Details for the dealer ${checkDealer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated by  ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-          adminMessage: `The Details for the dealer ${checkDealer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated by  ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-          dealerMessage: `The detail for  user ${updateUser.metaData[0]?.firstName} has been updated by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
           redirectionId: "dealerDetails/" + checkDealer._id,
-          endPoint: base_url
+          endPoint: base_url + "dealerDetails/" + checkDealer._id,
+          notificationFor: IDs,
         };
+        notificationArray.push(notificationData)
+        notificationData = {
+          title: "User Details Changed",
+          description: `The detail for  user ${updateUser.metaData[0]?.firstName} has been updated by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+          userId: req.teammateId,
+          flag: checkRole?.role,
+          redirectionId: "dealer/user",
+          endPoint: base_url + "dealer/user",
+          notificationFor: dealerIds,
+
+        };
+        notificationArray.push(notificationData)
       }
       else {
         notificationData = {
           title: "Dealer User Status Changed",
-          adminTitle: "Dealer User Status Changed",
-          dealerTitle: "User Status Changed",
           description: `The Status for the dealer ${checkDealer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-          adminMessage: `The Status for the dealer ${checkDealer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-          dealerMessage: `The Status for  user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
           redirectionId: "dealerDetails/" + checkDealer._id,
-          endPoint: base_url
+          endPoint: base_url,
+          notificationFor: IDs,
+
         };
+        notificationArray.push(notificationData)
+        notificationData = {
+          title: "User Status Changed",
+          description: `The Status for  user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+          userId: req.teammateId,
+          flag: checkRole?.role,
+          redirectionId: "dealer/user",
+          endPoint: base_url + "dealer/user",
+          notificationFor: dealerIds,
+
+        };
+        notificationArray.push(notificationData)
       }
     }
 
@@ -820,7 +848,6 @@ exports.updateUserData = async (req, res) => {
     })
 
     // Send Email code here
-    let notificationEmails = adminUsers.map(user => user.email)
     const content = req.body.status ? 'Congratulations, you can now login to our system. Please click the following link to login to the system' : "Your account has been made inactive. If you think, this is a mistake, please contact our support team at support@getcover.com"
     let resetPasswordCode = randtoken.generate(4, '123456789')
 
@@ -854,7 +881,7 @@ exports.updateUserData = async (req, res) => {
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
 
 
-    let createNotification = await userService.saveNotificationBulk(notificationArray);    
+    let createNotification = await userService.saveNotificationBulk(notificationArray);
 
     //Save Logs updateUserData
     let logData = {
