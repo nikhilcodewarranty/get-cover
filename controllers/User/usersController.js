@@ -679,6 +679,7 @@ exports.updateUserData = async (req, res) => {
     const base_url = `${process.env.SITE_URL}`
     let adminUpdatePrimaryQuery
     let notificationData;
+    let notificationArray = []
     if (checkServicer) {
       adminUpdatePrimaryQuery = {
         metaData: {
@@ -686,29 +687,48 @@ exports.updateUserData = async (req, res) => {
             $and: [
               { "servicerNotification.userUpdate": true },
               { status: true },
-              {
-                $or: [
-                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                  { roleId: new mongoose.Types.ObjectId(checkServicer._id) },
-                ]
-              }
+              { roleId: new mongoose.Types.ObjectId(process.env.super_admin) }
             ]
           }
         },
       }
+      let servicerUpdatePrimaryQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "servicerNotification.userUpdate": true },
+              { status: true },
+              { metaId: new mongoose.Types.ObjectId(checkServicer._id) },
+            ]
+          }
+        },
+      }
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdatePrimaryQuery, { email: 1 })
+      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerUpdatePrimaryQuery, { email: 1 })
+      const IDs = adminUsers.map(user => user._id)
+      const servicerId = servicerUsers.map(user => user._id)
       if (data.firstName) {
         notificationData = {
           title: "Servicer User Details Changed",
-          adminTitle: "Servicer User Details Changed",
-          servicerTitle: "User Details Changed",
           description: `The Details for the Servicer ${checkServicer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated by  ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-          adminMessage: `The Details for the Servicer ${checkServicer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated by  ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-          servicerMessage: `The detail for  user ${updateUser.metaData[0]?.firstName} has been updated by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
           redirectionId: "servicerDetails/" + checkServicer._id,
-          endPoint: base_url
+          endPoint: base_url + "servicerDetails/" + checkServicer._id,
+          notificationFor: IDs
         };
+        notificationArray.push(notificationData)
+        notificationData = {
+          title: "User Details Changed",
+          description: `The detail for  user ${updateUser.metaData[0]?.firstName} has been updated by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+          userId: req.teammateId,
+          flag: checkRole?.role,
+          redirectionId: "servicerDetails/" + checkServicer._id,
+          endPoint: base_url,
+          notificationFor: servicerId
+        };
+        notificationArray.push(notificationData)
+
       }
       else {
         notificationData = {
@@ -721,8 +741,25 @@ exports.updateUserData = async (req, res) => {
           userId: req.teammateId,
           flag: checkRole?.role,
           redirectionId: "servicerDetails/" + checkServicer._id,
-          endPoint: base_url
+          endPoint: base_url,
+          notificationData: IDs
         };
+        notificationArray.push(notificationData)
+        notificationData = {
+          title: "Servicer User Status Changed",
+          adminTitle: "Servicer User Status Changed",
+          servicerTitle: "User Status Changed",
+          description: `The Status for the Servicer ${checkServicer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+          adminMessage: `The Status for the Servicer ${checkServicer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+          servicerMessage: `The Status for  user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+          userId: req.teammateId,
+          flag: checkRole?.role,
+          redirectionId: "servicerDetails/" + checkServicer._id,
+          endPoint: base_url,
+          notificationData: servicerId
+        };
+        notificationArray.push(notificationData)
+
       }
     }
 
@@ -772,9 +809,7 @@ exports.updateUserData = async (req, res) => {
         };
       }
     }
-    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdatePrimaryQuery, { email: 1 })
-    const IDs = adminUsers.map(user => user._id)
-    notificationData.notificationFor = IDs
+
     let getPrimary = await supportingFunction.getPrimaryUser({
       metaData: {
         $elemMatch: {
@@ -819,7 +854,7 @@ exports.updateUserData = async (req, res) => {
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
 
 
-    let createNotification = await userService.createNotification(notificationData);
+    let createNotification = await userService.saveNotificationBulk(notificationArray);    
 
     //Save Logs updateUserData
     let logData = {

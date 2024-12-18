@@ -857,9 +857,27 @@ exports.changePrimaryUser = async (req, res) => {
       const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
       const base_url = `${process.env.SITE_URL}`
       let adminUpdatePrimaryQuery
+      let notificationEmails
       let notificationData
+      let notificationArray
       if (checkServicer) {
         adminUpdatePrimaryQuery = {
+          metaData: {
+            $elemMatch: {
+              $and: [
+                { "servicerNotification.primaryChanged": true },
+                { status: true },
+                {
+                  $or: [
+                    { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
+                    { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
+                  ]
+                }
+              ]
+            }
+          },
+        }
+        let servicerUpdatePrimaryQuery = {
           metaData: {
             $elemMatch: {
               $and: [
@@ -875,18 +893,34 @@ exports.changePrimaryUser = async (req, res) => {
             }
           },
         }
+        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdatePrimaryQuery, { email: 1 })
+        let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerUpdatePrimaryQuery, { email: 1 })
+        let notificationEmails = adminUsers.map(user => user.email);
+        let servicerEmails = servicerUsers.map(user => user.email);
+        notificationEmails.push(servicerEmails)
+        const IDs = adminUsers.map(user => user._id)
+        const servicerId = servicerUsers.map(user => user._id)
         notificationData = {
           title: "Servicer Primary User Updated",
-          adminTitle: "Servicer Primary User Updated",
-          servicerTitle: "Primary User Changed",
-          description: `The Primary user for ${checkServicer.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName}.`,
-          adminMessage: `The Primary user for ${checkServicer.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName}.`,
-          servicerMessage: `The Primary user for your account has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName}  by ${checkLoginUser.metaData[0]?.firstName}.`,
+          description: `The Primary user for ${checkServicer.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
           redirectionId: "servicerDetails/" + checkServicer._id,
-          endPoint: base_url
+          endPoint: base_url + "servicerDetails/" + checkServicer._id,
+          notificationFor: IDs
         };
+        notificationArray.push(notificationData)
+        notificationData = {
+          title: "Primary User Changed",
+          description: `The Primary user for your account has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName}  by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+          userId: req.teammateId,
+          flag: checkRole?.role,
+          redirectionId: "servicer/user",
+          endPoint: base_url + "servicer/user",
+          notificationFor: servicerId
+        };
+        notificationArray.push(notificationData)
+
       }
       if (checkDealer) {
         adminUpdatePrimaryQuery = {
@@ -895,37 +929,56 @@ exports.changePrimaryUser = async (req, res) => {
               $and: [
                 { "dealerNotifications.primaryChanged": true },
                 { status: true },
-                {
-                  $or: [
-                    { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                    { metaId: new mongoose.Types.ObjectId(checkDealer._id) },
-                  ]
-                }
+                { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
               ]
             }
           },
         }
+        let servicerUpdatePrimaryQuery = {
+          metaData: {
+            $elemMatch: {
+              $and: [
+                { "dealerNotifications.primaryChanged": true },
+                { status: true },
+                { metaId: new mongoose.Types.ObjectId(checkDealer._id) },
+              ]
+            }
+          },
+        }
+        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdatePrimaryQuery, { email: 1 })
+        let dealerUsers = await supportingFunction.getNotificationEligibleUser(servicerUpdatePrimaryQuery, { email: 1 })
+        const IDs = adminUsers.map(user => user._id)
+        const dealerId = dealerUsers.map(user => user._id)
+        let dealerEmails = dealerUsers.map(user => user.email);
+        notificationEmails.push(dealerEmails)
         notificationData = {
           title: "Dealer Primary User Updated",
-          dealerTitle: "Dealer Primary User Updated",
-          servicerTitle: "Primary User Changed",
-          description: `The Primary user for ${checkDealer.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName}.`,
-          adminMessage: `The Primary user for ${checkDealer.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName}.`,
-          dealerMessage: `The Primary user for your account has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName}  by ${checkLoginUser.metaData[0]?.firstName}.`,
+          description: `The Primary user for ${checkDealer.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
           redirectionId: "dealerDetails/" + checkDealer._id,
-          endPoint: base_url
+          endPoint: base_url + "dealerDetails/" + checkDealer._id,
+          notificationFor: IDs
         };
+        notificationArray.push(notificationData)
+
+        notificationData = {
+          title: "Primary User Updated",
+          description: `The Primary user for your account has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName}  by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+          userId: req.teammateId,
+          flag: checkRole?.role,
+          redirectionId: "dealer/user",
+          endPoint: base_url + "dealer/user",
+          notificationFor: dealerId
+        };
+        notificationArray.push(notificationData)
+
       }
 
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdatePrimaryQuery, { email: 1 })
-      const IDs = adminUsers.map(user => user._id)
+
       let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkUser.metaData[0]?.metaId }, isPrimary: true } })
-      notificationData.notificationFor = IDs
-      let createNotification = await userService.createNotification(notificationData);
+      let createNotification = await userService.saveNotificationBulk(notificationArray);
       // Send Email code here
-      let notificationEmails = adminUsers.map(user => user.email);
       let emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
