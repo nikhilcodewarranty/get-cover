@@ -912,7 +912,7 @@ exports.editClaim = async (req, res) => {
           userId: req.teammateId,
           contentId: checkClaim._id,
           flag: 'claim',
-          endPoint: site_url,
+          endPoint: site_url + "claim-listing/" + checkClaim.unique_key,
           redirectionId: "claim-listing/" + checkClaim.unique_key,
           notificationFor: IDs
         };
@@ -943,7 +943,7 @@ exports.editClaim = async (req, res) => {
           userId: req.teammateId,
           contentId: checkClaim._id,
           flag: 'claim',
-          endPoint: site_url,
+          endPoint: site_url + "claim-listing/" + checkClaim.unique_key,
           redirectionId: "claim-listing/" + checkClaim.unique_key,
           notificationFor: IDs
         };
@@ -1475,7 +1475,7 @@ exports.editClaimStatus = async (req, res) => {
           contentId: checkClaim._id,
           flag: 'claim',
           redirectionId: `claim-listing/${checkClaim.unique_key}`,
-          endPoint: site_url,
+          endPoint: site_url + `claim-listing/${checkClaim.unique_key}`,
           notificationFor: IDs
         };
         notificationArray.push(notificationAdmin)
@@ -1508,7 +1508,7 @@ exports.editClaimStatus = async (req, res) => {
           contentId: checkClaim._id,
           flag: 'claim',
           redirectionId: `claim-listing/${checkClaim.unique_key}`,
-          endPoint: site_url,
+          endPoint: site_url + `claim-listing/${checkClaim.unique_key}`,
           notificationFor: dealerids
         };
         notificationArray.push(notificationAdmin)
@@ -1541,7 +1541,7 @@ exports.editClaimStatus = async (req, res) => {
           contentId: checkClaim._id,
           flag: 'claim',
           redirectionId: `claim-listing/${checkClaim.unique_key}`,
-          endPoint: site_url,
+          endPoint: site_url + `claim-listing/${checkClaim.unique_key}`,
           notificationFor: reselerids
         };
         notificationArray.push(notificationAdmin)
@@ -1574,7 +1574,7 @@ exports.editClaimStatus = async (req, res) => {
           contentId: checkClaim._id,
           flag: 'claim',
           redirectionId: `claim-listing/${checkClaim.unique_key}`,
-          endPoint: site_url,
+          endPoint: site_url + `claim-listing/${checkClaim.unique_key}`,
           notificationFor: customerids
         };
         notificationArray.push(notificationAdmin)
@@ -1607,7 +1607,7 @@ exports.editClaimStatus = async (req, res) => {
           contentId: checkClaim._id,
           flag: 'claim',
           redirectionId: `claim-listing/${checkClaim.unique_key}`,
-          endPoint: site_url,
+          endPoint: site_url + `claim-listing/${checkClaim.unique_key}`,
           notificationFor: servicerids
         };
         notificationArray.push(notificationAdmin)
@@ -1687,10 +1687,7 @@ exports.editClaimStatus = async (req, res) => {
               {
                 $or: [
                   { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
-                  // { metaId: checkOrder?.dealerId },
-                  // { metaId: checkOrder?.customerId },
-                  // { metaId: checkOrder?.resellerId },
-                  // { metaId: checkClaim?.servicerId },
+
                 ]
               },
 
@@ -3912,8 +3909,6 @@ exports.sendMessages = async (req, res) => {
             {
               $or: [
                 { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                { metaId: orderData?.dealerId },
-                { metaId: orderData?.resellerId },
               ]
             },
 
@@ -3921,35 +3916,155 @@ exports.sendMessages = async (req, res) => {
         }
       },
     }
+    const dealerCommentQuery = {
+      metaData: {
+        $elemMatch: {
+          $and: [
+            { "claimNotification.claimComment": true },
+            { status: true },
+            {
+              $or: [
+                { metaId: new mongoose.Types.ObjectId(orderData.dealerId) },
+              ]
+            },
+
+          ]
+        }
+      },
+    }
+    const resellerCommentQuery = {
+      metaData: {
+        $elemMatch: {
+          $and: [
+            { "claimNotification.claimComment": true },
+            { status: true },
+            {
+              $or: [
+                { metaId: new mongoose.Types.ObjectId(orderData?.resellerId) },
+              ]
+            },
+
+          ]
+        }
+      },
+    }
+    const customerCommentQuery = {
+      metaData: {
+        $elemMatch: {
+          $and: [
+            { "claimNotification.claimComment": true },
+            { status: true },
+            {
+              $or: [
+                { metaId: new mongoose.Types.ObjectId(orderData.customerId) },
+              ]
+            },
+
+          ]
+        }
+      },
+    }
+    const servicerCommentQuery = {
+      metaData: {
+        $elemMatch: {
+          $and: [
+            { "claimNotification.claimComment": true },
+            { status: true },
+            {
+              $or: [
+                { metaId: new mongoose.Types.ObjectId(orderData?.servicerId) },
+              ]
+            },
+
+          ]
+        }
+      },
+    }
+
     let adminUsers = await supportingFunction.getNotificationEligibleUser(adminCommentQuery, { email: 1 })
-    const IDs = adminUsers.map(user => user._id)
+    let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerCommentQuery, { email: 1 })
+    let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerCommentQuery, { email: 1 })
+    let customerUsers = await supportingFunction.getNotificationEligibleUser(customerCommentQuery, { email: 1 })
+    let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerCommentQuery, { email: 1 })
+    let notificationArray = []
+
+    let IDs = adminUsers.map(user => user._id)
+    let dealerId = dealerUsers.map(user => user._id)
+    let resellerId = resellerUsers.map(user => user._id)
+    let customerId = customerUsers.map(user => user._id)
+    let servicerId = servicerUsers.map(user => user._id)
+
     let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.dealerId, isPrimary: true } } })
     let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.customerId, isPrimary: true } } })
     let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.resellerId, isPrimary: true } } })
     let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.servicerId, isPrimary: true } } })
+    if (adminUsers.length > 0) {
+      let notificationData1 = {
+        title: "New Claim Comment added",
+        description: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+        userId: req.teammateId,
+        contentId: checkClaim._id,
+        flag: 'claim',
+        endPoint: site_url+"claim-listing/" + checkClaim.unique_key,
+        redirectionId: "claim-listing/" + checkClaim.unique_key,
+        notificationFor: IDs
+      };
+      notificationArray.push(notificationData1)
+    }
+    if (dealerUsers.length > 0) {
+      let notificationData1 = {
+        title: "New Claim Comment added",
+        description: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+        userId: req.teammateId,
+        contentId: checkClaim._id,
+        flag: 'claim',
+        endPoint: site_url+"claim-listing/" + checkClaim.unique_key,
+        redirectionId: "claim-listing/" + checkClaim.unique_key,
+        notificationFor: dealerId
+      };
+      notificationArray.push(notificationData1)
+    }
+    if (resellerUsers.length > 0) {
+      let notificationData1 = {
+        title: "New Claim Comment added",
+        description: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+        userId: req.teammateId,
+        contentId: checkClaim._id,
+        flag: 'claim',
+        endPoint: site_url+"claim-listing/" + checkClaim.unique_key,
+        redirectionId: "claim-listing/" + checkClaim.unique_key,
+        notificationFor: resellerId
+      };
+      notificationArray.push(notificationData1)
+    }
+    if (customerUsers.length > 0) {
+      let notificationData1 = {
+        title: "New Claim Comment added",
+        description: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+        userId: req.teammateId,
+        contentId: checkClaim._id,
+        flag: 'claim',
+        endPoint: site_url+"claim-listing/" + checkClaim.unique_key,
+        redirectionId: "claim-listing/" + checkClaim.unique_key,
+        notificationFor: customerId
+      };
+      notificationArray.push(notificationData1)
+    }
+    if (servicerUsers.length > 0) {
+      let notificationData1 = {
+        title: "New Claim Comment added",       
+        description: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+        userId: req.teammateId,
+        contentId: checkClaim._id,
+        flag: 'claim',
+        endPoint: site_url+"claim-listing/" + checkClaim.unique_key,
+        redirectionId: "claim-listing/" + checkClaim.unique_key,
+        notificationFor: servicerId
+      };
+      notificationArray.push(notificationData1)
+    }
 
-    let notificationData1 = {
-      title: "New Claim Comment added",
-      dealerTitle: "New Claim Comment added",
-      customerTitle: "New Claim Comment added",
-      servicerTitle: "New Claim Comment added",
-      customerTitle: "New Claim Comment added",
-      adminTitle: "New Claim Comment added",
-      dealerMessage: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-      customerMessage: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-      servicerMessage: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-      adminMessage: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-      description: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-      resellerMessage: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-      userId: req.teammateId,
-      contentId: checkClaim._id,
-      flag: 'claim',
-      endPoint: site_url,
-      redirectionId: "claim-listing/" + checkClaim.unique_key,
-      notificationFor: IDs
-    };
-
-    let createNotification = await userService.createNotification(notificationData1);
+    let createNotification = await userService.saveNotificationBulk(notificationArray);
 
     // Send Email code here
     const commentCaseQuery = {
@@ -3961,7 +4076,7 @@ exports.sendMessages = async (req, res) => {
             {
               $or: [
                 { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
+                { metaId: new mongoose.Types.ObjectId(checkClaim?.servicerId) },
               ]
             },
 
