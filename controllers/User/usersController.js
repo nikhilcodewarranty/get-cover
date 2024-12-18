@@ -738,7 +738,7 @@ exports.updateUserData = async (req, res) => {
       else {
         notificationData = {
           title: "Servicer User Status Changed",
-          description: `The Status for the Servicer ${checkServicer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+          description: `The Status for the Servicer ${checkServicer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
           redirectionId: "servicerDetails/" + checkServicer._id,
@@ -748,7 +748,7 @@ exports.updateUserData = async (req, res) => {
         notificationArray.push(notificationData)
         notificationData = {
           title: "User Status Changed",
-          description: `The Status for  user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+          description: `The Status for  user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
           redirectionId: "servicer/user",
@@ -786,13 +786,13 @@ exports.updateUserData = async (req, res) => {
       let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerUpdatePrimaryQuery, { email: 1 })
       const IDs = adminUsers.map(user => user._id)
       const dealerIds = dealerUsers.map(user => user._id)
-      const servicerEmails = dealerUsers.map(user => user.email)
+      const dealerEmails = dealerUsers.map(user => user.email)
       notificationEmails = adminUsers.map(user => user.email)
-      notificationEmails.push(servicerEmails)
+      notificationEmails.push(dealerEmails)
       if (data.firstName) {
         notificationData = {
           title: "Dealer User Details Changed",
-          description: `The Details for the dealer ${checkDealer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated by  ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+          description: `The Details for the dealer ${checkDealer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
           redirectionId: "dealerDetails/" + checkDealer._id,
@@ -802,7 +802,7 @@ exports.updateUserData = async (req, res) => {
         notificationArray.push(notificationData)
         notificationData = {
           title: "User Details Changed",
-          description: `The detail for  user ${updateUser.metaData[0]?.firstName} has been updated by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+          description: `The detail for  user ${updateUser.metaData[0]?.firstName} has been updated by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
           redirectionId: "dealer/user",
@@ -815,7 +815,7 @@ exports.updateUserData = async (req, res) => {
       else {
         notificationData = {
           title: "Dealer User Status Changed",
-          description: `The Status for the dealer ${checkDealer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+          description: `The Status for the dealer ${checkDealer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
           redirectionId: "dealerDetails/" + checkDealer._id,
@@ -826,7 +826,7 @@ exports.updateUserData = async (req, res) => {
         notificationArray.push(notificationData)
         notificationData = {
           title: "User Status Changed",
-          description: `The Status for  user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+          description: `The Status for  user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
           redirectionId: "dealer/user",
@@ -1159,6 +1159,8 @@ exports.deleteUser = async (req, res) => {
     //send notification to dealer when deleted
     let adminDeleteQuery
     let notificationData;
+    let notificationArray = [];
+    let notificationEmails
     if (checkServicer) {
       adminDeleteQuery = {
         metaData: {
@@ -1166,29 +1168,52 @@ exports.deleteUser = async (req, res) => {
             $and: [
               { "servicerNotification.userDelete": true },
               { status: true },
-              {
-                $or: [
-                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                  { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
-                ]
-              }
+              { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
+
+
             ]
           }
         },
       }
+      servicerDeleteQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "servicerNotification.userDelete": true },
+              { status: true },
+              { metaId: new mongoose.Types.ObjectId(checkServicer._id) },
+            ]
+          }
+        },
+      }
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDeleteQuery, { email: 1 })
+      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerDeleteQuery, { email: 1 })
+      const IDs = adminUsers.map(user => user._id)
+      const servicerIds = servicerUsers.map(user => user._id)
+      notificationEmails = adminUsers.map(user => user.email);
+      let servicerEmails = servicerUsers.map(user => user.email);
+      notificationEmails.push(servicerEmails)
 
       notificationData = {
         title: "Servicer User Deleted",
-        adminTitle: "Servicer User Deleted",
-        servicerTitle: "User Deleted",
-        description: `The User ${checkUser.metaData[0].firstName} for the Servicer ${checkServicer.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName} -${req.role}..`,
-        adminMessage: `The User {{User Name}} for the Servicer ${checkServicer.name} has been deleted by ${checkLoginUser.metaData[0]?.firstName} -${req.role}..`,
-        servicerMessage: `The user ${checkUser?.metaData[0]?.firstName} has been deleted by  ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+        description: `The User ${checkUser.metaData[0].firstName} for the Servicer ${checkServicer.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
         userId: req.teammateId,
         flag: checkRole?.role,
         redirectionId: "servicerDetails/" + checkServicer._id,
-        endPoint: base_url
+        endPoint: base_url,
+        notificationFor: IDs
       }
+      notificationArray.push(notificationData)
+      notificationData = {
+        title: "User Deleted",
+        description: `The user ${checkUser?.metaData[0]?.firstName} has been deleted by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+        userId: req.teammateId,
+        flag: checkRole?.role,
+        redirectionId: "servicer/user",
+        endPoint: base_url + "servicer/user",
+        notificationFor: servicerIds
+      }
+      notificationArray.push(notificationData)
     }
     if (checkDealer) {
       adminDeleteQuery = {
@@ -1197,39 +1222,55 @@ exports.deleteUser = async (req, res) => {
             $and: [
               { "dealerNotification.userDelete": true },
               { status: true },
-              {
-                $or: [
-                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                  { metaId: new mongoose.Types.ObjectId(checkDealer._id) },
-                ]
-              }
+              { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
             ]
           }
         },
       }
-
+      dealerDeleteQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "dealerNotification.userDelete": true },
+              { status: true },
+              { metaId: new mongoose.Types.ObjectId(checkDealer._id) },
+            ]
+          }
+        },
+      }
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDeleteQuery, { email: 1 })
+      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDeleteQuery, { email: 1 })
+      const IDs = adminUsers.map(user => user._id)
+      const dealerId = dealerUsers.map(user => user._id)
+      notificationEmails = adminUsers.map(user => user.email);
+      let dealerEmails = dealerUsers.map(user => user.email);
+      notificationEmails.push(dealerEmails)
       notificationData = {
         title: "Dealer User Deleted",
-        adminTitle: "Dealer User Deleted",
-        dealerTitle: "User Deleted",
-        description: `The User ${checkUser.metaData[0].firstName} for the Servicer ${checkServicer.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName} -${req.role}..`,
-        adminMessage: `The User {{User Name}} for the Servicer ${checkServicer.name} has been deleted by ${checkLoginUser.metaData[0]?.firstName} -${req.role}..`,
-        servicerMessage: `The user ${checkUser?.metaData[0]?.firstName} has been deleted by  ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+        description: `The User ${checkUser.metaData[0].firstName} for the dealer ${checkServicer.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName} -${req.role}..`,
         userId: req.teammateId,
         flag: checkRole?.role,
-        redirectionId: "servicerDetails/" + checkServicer._id,
-        endPoint: base_url
+        redirectionId: "dealerDetails/" + checkDealer._id,
+        endPoint: base_url + "dealerDetails/" + checkDealer._id,
+        notificationFor: IDs
+
       }
+      notificationArray.push(notificationData)
+      notificationData = {
+        title: "User Deleted",
+        description: `The user ${checkUser?.metaData[0]?.firstName} has been deleted by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+        userId: req.teammateId,
+        flag: checkRole?.role,
+        redirectionId: "dealer/user",
+        endPoint: base_url + "dealer/user",
+        notificationFor: dealerId
+
+      }
+      notificationArray.push(notificationData)
     }
-    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDeleteQuery, { email: 1 })
-    const IDs = adminUsers.map(user => user._id)
-    notificationData.notificationFor = IDs
-    let createNotification = await userService.createNotification(notificationData);
 
+    let createNotification = await userService.saveNotificationBulk(notificationArray);
     // Send Email code here
-    let notificationEmails = adminUsers.map(user => user.email);
-
-
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -1239,10 +1280,6 @@ exports.deleteUser = async (req, res) => {
       content: "Your account has been deleted by Get-Cover team.",
       subject: "Delete User"
     }
-
-
-
-
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
 
     //Save Logs delete user
