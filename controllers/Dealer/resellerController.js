@@ -90,20 +90,29 @@ exports.createReseller = async (req, res) => {
                     $and: [
                         { "resellerNotifications.resellerAdded": true },
                         { status: true },
-                        {
-                            $or: [
-                                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                                { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
-                            ]
-                        }
+                        { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+
+                    ]
+                }
+            },
+        }
+        const dealerQuery = {
+            metaData: {
+                $elemMatch: {
+                    $and: [
+                        { "resellerNotifications.resellerAdded": true },
+                        { status: true },
+                        { metaId: new mongoose.Types.ObjectId(checkDealer._id) },
                     ]
                 }
             },
         }
         let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
+        let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerQuery, { email: 1 })
         const IDs = adminUsers.map(user => user._id)
+        let notificationArray = []
+        const dealerId = dealerUsers.map(user => user._id)
         // Create the user
-
         teamMembers = teamMembers.map(member => ({
             ...member,
             metaData:
@@ -137,21 +146,28 @@ exports.createReseller = async (req, res) => {
         //Merge end
 
         let notificationData = {
-            adminTitle: "New Reseller  Added",
-            adminMessage: `A New Reseller ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} - User Role - ${req.role} on our portal.`,
-            dealerTitle: "New Reseller  Added",
-            dealerMessage: `A New Reseller ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} - User Role - ${req.role} on our portal.`,
+            title: "New Reseller  Added",
+            description: `A New Reseller ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} - User Role - ${req.role} on our portal.`,
             userId: req.teammateId,
             redirectionId: "resellerDetails/" + createdReseler._id,
-            endpoint: base_url,
+            endpoint: base_url + "resellerDetails/" + createdReseler._id,
             flag: 'reseller',
             notificationFor: IDs
         };
+        notificationArray.push(notificationData)
 
+        notificationData = {
+            title: "New Reseller  Added",
+            description: `A New Reseller ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} - User Role - ${req.role} on our portal.`,
+            userId: req.teammateId,
+            redirectionId: "resellerDetails/" + createdReseler._id,
+            endpoint: base_url + "dealer/resellerDetails/ " + createdReseler._id,
+            flag: 'reseller',
+            notificationFor: dealerId
+        };
+        notificationArray.push(notificationData)
 
-
-
-        let createNotification = await userService.createNotification(notificationData);
+        let createNotification = await userService.saveNotificationBulk(notificationArray);
         let settingData = await userService.getSetting({});
         let emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -163,7 +179,7 @@ exports.createReseller = async (req, res) => {
             content: `A New Reseller ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} - User Role - ${req.role} on our portal.`,
             subject: "New Reseller Added"
         }
- 
+
 
         // Send Email code here
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
