@@ -948,12 +948,92 @@ exports.editResellers = async (req, res) => {
         let checkDealer = await dealerService.getDealerByName({ _id: checkReseller.dealerId }, {});
         const updateServicerMeta = await providerService.updateServiceProvider({ resellerId: req.params.resellerId }, servicerMeta)
 
-        let IDs = await supportingFunction.getUserIds()
+        //Notification to dealer,admin,reseller
+        const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+        const base_url = `${process.env.SITE_URL}`
+        const adminDealerrQuery = {
+            metaData: {
+                $elemMatch: {
+                    $and: [
+                        { "resellerNotifications.resellerUpdate": true },
+                        { status: true },
+                        { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") }
+                    ]
+                }
+            },
+        }
+
+        const dealerrQuery = {
+            metaData: {
+                $elemMatch: {
+                    $and: [
+                        { "resellerNotifications.resellerUpdate": true },
+                        { status: true },
+                        { metaId: new mongoose.Types.ObjectId(checkReseller.dealerId) }
+                    ]
+                }
+            },
+        }
+
+        const reellerQuery = {
+            metaData: {
+                $elemMatch: {
+                    $and: [
+                        { "resellerNotifications.resellerUpdate": true },
+                        { status: true },
+                        { metaId: new mongoose.Types.ObjectId(checkReseller._id) }
+                    ]
+                }
+            },
+        }
+
+        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerrQuery, { email: 1 })
+        let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerrQuery, { email: 1 })
+        let resellerUsers = await supportingFunction.getNotificationEligibleUser(reellerQuery, { email: 1 })
+        let notificationArray = []
+
+        let IDs = adminUsers.map(user => user._id)
+        let dealerIds = dealerUsers.map(user => user._id)
+        let dealerEmails = dealerUsers.map(user => user.email)
+        let resellerId = resellerUsers.map(user => user._id)
+        let resellerEmail = resellerUsers.map(user => user.email)
+        
+        let notificationData = {
+            title: "Reseller Details Updated",
+            description: `The details of Reseller ${checkReseller.name} for the Dealer ${checkDealer.name} has been updated by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+            userId: req.teammateId,
+            redirectionId: "resellerDetails/" + checkReseller._id,
+            flag: 'reseller',
+            endPoint: base_url + "resellerDetails/" + checkReseller._id,
+            notificationFor: IDs
+        };
+        notificationArray.push(notificationData)
+        notificationData = {
+            title: "Reseller Details Updated",
+            description: `The details of Reseller ${checkReseller.name} for the Dealer ${checkDealer.name} has been updated by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+            userId: req.teammateId,
+            redirectionId: "resellerDetails/" + checkReseller._id,
+            flag: 'reseller',
+            endPoint: base_url + "resellerDetails/" + checkReseller._id,
+            notificationFor: dealerIds
+        };
+        notificationArray.push(notificationData)
+        notificationData = {
+            title: "Details Updated",
+            description: `The details for your account has been changed by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+            userId: req.teammateId,
+            redirectionId: "reseller/user",
+            flag: 'reseller',
+            endPoint: base_url + "reseller/user",
+            notificationFor: resellerId
+        };
+        notificationArray.push(notificationData)
         let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkReseller.dealerId, isPrimary: true } } })
 
         let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkReseller._id, isPrimary: true } } })
-        let notificationEmails = await supportingFunction.getUserEmails();
-
+        let notificationEmails =adminUsers.map(user => user.email)
+        notificationEmails.push(resellerEmail)
+        notificationEmails.push(dealerEmails)
         if (data.isServicer) {
             const checkServicer = await providerService.getServiceProviderById({ resellerId: req.params.resellerId })
             if (!checkServicer) {
@@ -1001,24 +1081,9 @@ exports.editResellers = async (req, res) => {
                 }
             }
         }
-        if (checkDealer.isAccountCreate) {
-            IDs.push(dealerPrimary._id)
-            notificationEmails.push(dealerPrimary.email);
-        }
 
         const changeResellerUser = await userService.updateUser(resellerUserCreateria, newValue, { new: true });
-        //Send notification to admin,dealer,reseller
-        IDs.push(dealerPrimary?._id)
-        IDs.push(resellerPrimary?._id)
-        let notificationData = {
-            title: "Reseller updated",
-            description: checkReseller.name + " , " + "details has been updated",
-            userId: req.teammateId,
-            flag: 'reseller',
-            notificationFor: IDs
-        };
-        // save notification
-        let createNotification = await userService.createNotification(notificationData);
+        let createNotification = await userService.saveNotificationBulk(notificationArray);
         // Send Email code here
         let settingData = await userService.getSetting({});
         //notificationEmails.push(resellerPrimary.email);
@@ -1027,18 +1092,13 @@ exports.editResellers = async (req, res) => {
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
-            senderName: checkReseller?.name,
-            content: "The information has been updated successfully! effective immediately.",
+            senderName: `Dear ${checkReseller?.name}`,
+            content: "Your details have been updated. To view the details, please login into your account.",
             subject: "Update Info"
         }
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
 
-        if (checkReseller.isAccountCreate || data.isAccountCreate) {
-            let mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary.email, notificationEmails, emailData))
-        }
-        else {
-            let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
 
-        }
         //Save Logs update reseller
         let logData = {
             userId: req.userId,

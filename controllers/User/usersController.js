@@ -758,7 +758,6 @@ exports.updateUserData = async (req, res) => {
         notificationArray.push(notificationData)
       }
     }
-
     if (checkDealer) {
       adminUpdatePrimaryQuery = {
         metaData: {
@@ -837,7 +836,120 @@ exports.updateUserData = async (req, res) => {
         notificationArray.push(notificationData)
       }
     }
+    if (checkReseller) {
+      adminUpdatePrimaryQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "resellerNotification.userUpdate": true },
+              { status: true },
+              { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+            ]
+          }
+        },
+      }
+      let dealerUpdatePrimaryQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "resellerNotification.userUpdate": true },
+              { status: true },
+              { metaId: new mongoose.Types.ObjectId(checkDealer._id) },
+            ]
+          }
+        },
+      }
+      let resellerUpdatePrimaryQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "resellerNotification.userUpdate": true },
+              { status: true },
+              { metaId: new mongoose.Types.ObjectId(checkDealer._id) },
+            ]
+          }
+        },
+      }
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdatePrimaryQuery, { email: 1 })
+      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerUpdatePrimaryQuery, { email: 1 })
+      let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerUpdatePrimaryQuery, { email: 1 })
+      const IDs = adminUsers.map(user => user._id)
+      const dealerIds = dealerUsers.map(user => user._id)
+      const resellerIds = resellerUsers.map(user => user._id)
+      const dealerEmails = dealerUsers.map(user => user.email)
+      const resellerEmails = resellerUsers.map(user => user.email)
+      notificationEmails = adminUsers.map(user => user.email)
+      notificationEmails.push(dealerEmails)
+      notificationEmails.push(resellerEmails)
+      if (data.firstName) {
+        notificationData = {
+          title: "Reseller User Details Changed",
+          description: `The Details for the reseller ${checkReseller.name} for his user ${updateUser.metaData[0]?.firstName} has been updated by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          userId: req.teammateId,
+          flag: checkRole?.role,
+          redirectionId: "resellerDetails/" + checkReseller._id,
+          endPoint: base_url + "resellerDetails/" + checkReseller._id,
+          notificationFor: IDs,
+        };
+        notificationArray.push(notificationData)
+        notificationData = {
+          title: "Reseller User Details Changed",
+          description: `The Details for the reseller ${checkReseller.name} for his user ${updateUser.metaData[0]?.firstName} has been updated by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          userId: req.teammateId,
+          flag: checkRole?.role,
+          redirectionId: "resellerDetails/" + checkReseller._id,
+          endPoint: base_url + "resellerDetails/" + checkReseller._id,
+          notificationFor: dealerIds,
+        };
+        notificationArray.push(notificationData)
+        notificationData = {
+          title: "User Details Changed",
+          description: `The detail for  user ${updateUser.metaData[0]?.firstName} has been updated by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          userId: req.teammateId,
+          flag: checkRole?.role,
+          redirectionId: "reseller/user",
+          endPoint: base_url + "reseller/user",
+          notificationFor: resellerIds,
 
+        };
+        notificationArray.push(notificationData)
+      }
+      else {
+        notificationData = {
+          title: "Reseller User Status Changed",
+          description: `The Status for the reseller ${checkReseller.name} for his user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          userId: req.teammateId,
+          flag: checkRole?.role,
+          redirectionId: "resellerDetails/" + checkReseller._id,
+          endPoint: base_url,
+          notificationFor: IDs,
+
+        };
+        notificationArray.push(notificationData)
+        notificationData = {
+          title: "Reseller User Status Changed",
+          description: `The Status for the reseller ${checkReseller.name} for his user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          userId: req.teammateId,
+          flag: checkRole?.role,
+          redirectionId: "resellerDetails/" + checkReseller._id,
+          endPoint: base_url,
+          notificationFor: dealerIds,
+
+        };
+        notificationArray.push(notificationData)
+        notificationData = {
+          title: "User Status Changed",
+          description: `The Status for  user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          userId: req.teammateId,
+          flag: checkRole?.role,
+          redirectionId: "reseller/user",
+          endPoint: base_url + "reseller/user",
+          notificationFor: resellerIds,
+
+        };
+        notificationArray.push(notificationData)
+      }
+    }
     let getPrimary = await supportingFunction.getPrimaryUser({
       metaData: {
         $elemMatch: {
@@ -1268,7 +1380,85 @@ exports.deleteUser = async (req, res) => {
       }
       notificationArray.push(notificationData)
     }
+    if (checkReseller) {
+      adminDeleteQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "resellerNotification.userDelete": true },
+              { status: true },
+              { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
+            ]
+          }
+        },
+      }
+     let dealerDeleteQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "resellerNotification.userDelete": true },
+              { status: true },
+              { metaId: new mongoose.Types.ObjectId(checkReseller.dealerId) },
+            ]
+          }
+        },
+      }
+      let resellerDeleteQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "resellerNotification.userDelete": true },
+              { status: true },
+              { metaId: new mongoose.Types.ObjectId(checkReseller._id) },
+            ]
+          }
+        },
+      }
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDeleteQuery, { email: 1 })
+      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDeleteQuery, { email: 1 })
+      let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerDeleteQuery, { email: 1 })
+      const IDs = adminUsers.map(user => user._id)
+      const dealerId = dealerUsers.map(user => user._id)
+      const resellerId = resellerUsers.map(user => user._id)
+      notificationEmails = adminUsers.map(user => user.email);
+      let dealerEmails = dealerUsers.map(user => user.email);
+      let resellerEmails = resellerUsers.map(user => user.email);
+      notificationEmails.push(dealerEmails)
+      notificationEmails.push(resellerEmails)
+      notificationData = {
+        title: "Reseller User Deleted",
+        description: `The User ${checkUser.metaData[0].firstName} for the reseller ${checkReseller.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " "+checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
+        userId: req.teammateId,
+        flag: checkRole?.role,
+        redirectionId: "resellerDetails/" + checkReseller._id,
+        endPoint: base_url + "resellerDetails/" + checkReseller._id,
+        notificationFor: IDs
 
+      }
+      notificationArray.push(notificationData)
+      notificationData = {
+        title: "Reseller User Deleted",
+        description: `The User ${checkUser.metaData[0].firstName} for the reseller ${checkReseller.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " "+checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
+        userId: req.teammateId,
+        flag: checkRole?.role,
+        redirectionId: "resellerDetails/" + checkReseller._id,
+        endPoint: base_url + "resellerDetails/" + checkReseller._id,
+        notificationFor: dealerId
+
+      }
+      notificationArray.push(notificationData)
+      notificationData = {
+        title: "User Deleted",
+        description: `The user ${checkUser?.metaData[0]?.firstName} has been deleted by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+        userId: req.teammateId,
+        flag: checkRole?.role,
+        redirectionId: "reseller/user",
+        endPoint: base_url + "reseller/user",
+        notificationFor: resellerId
+
+      }
+      notificationArray.push(notificationData)
+    }
     let createNotification = await userService.saveNotificationBulk(notificationArray);
     // Send Email code here
     let emailData = {
