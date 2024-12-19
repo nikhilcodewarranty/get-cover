@@ -787,6 +787,8 @@ exports.updateUserData = async (req, res) => {
       const dealerIds = dealerUsers.map(user => user._id)
       const dealerEmails = dealerUsers.map(user => user.email)
       notificationEmails = adminUsers.map(user => user.email)
+      console.log("dealerEmails------------------",dealerEmails)
+      console.log("notificationEmails------------------",notificationEmails)
       notificationEmails.push(dealerEmails)
       if (data.firstName) {
         notificationData = {
