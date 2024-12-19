@@ -763,7 +763,7 @@ exports.updateUserData = async (req, res) => {
         metaData: {
           $elemMatch: {
             $and: [
-              { "dealerNotification.userUpdate": true },
+              { "dealerNotifications.userUpdate": true },
               { status: true },
               { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
             ]
@@ -774,7 +774,7 @@ exports.updateUserData = async (req, res) => {
         metaData: {
           $elemMatch: {
             $and: [
-              { "dealerNotification.userUpdate": true },
+              { "dealerNotifications.userUpdate": true },
               { status: true },
               { metaId: new mongoose.Types.ObjectId(checkDealer._id) },
             ]
@@ -1508,7 +1508,7 @@ exports.deleteUser = async (req, res) => {
         metaData: {
           $elemMatch: {
             $and: [
-              { "dealerNotification.userDelete": true },
+              { "dealerNotifications.userDelete": true },
               { status: true },
               { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
             ]
@@ -1519,7 +1519,7 @@ exports.deleteUser = async (req, res) => {
         metaData: {
           $elemMatch: {
             $and: [
-              { "dealerNotification.userDelete": true },
+              { "dealerNotifications.userDelete": true },
               { status: true },
               { metaId: new mongoose.Types.ObjectId(checkDealer._id) },
             ]
