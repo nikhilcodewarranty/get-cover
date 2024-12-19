@@ -782,14 +782,13 @@ exports.updateUserData = async (req, res) => {
         },
       }
       let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdatePrimaryQuery, { email: 1 })
-      console.log("adminUsers--------------------",adminUsers)
       let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerUpdatePrimaryQuery, { email: 1 })
       const IDs = adminUsers.map(user => user._id)
       const dealerIds = dealerUsers.map(user => user._id)
       const dealerEmails = dealerUsers.map(user => user.email)
       notificationEmails = adminUsers.map(user => user.email)
       
-      let sdfdsfdsfdd = notificationEmails.concat(otherEmails);
+      let sdfdsfdsfdd = notificationEmails.concat(dealerEmails);
       console.log("notificationEmails------------------",sdfdsfdsfdd)
 
       if (data.firstName) {
