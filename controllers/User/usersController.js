@@ -1431,7 +1431,6 @@ exports.deleteUser = async (req, res) => {
     let notificationArray = [];
     let notificationEmails
 
-    console.log("Here1111111111111111111111");
     if (checkServicer) {
       adminDeleteQuery = {
         metaData: {
@@ -1727,7 +1726,6 @@ exports.deleteUser = async (req, res) => {
       }
       notificationArray.push(notificationData)
     }
-    console.log("222222222222222222222222222");
 
     let createNotification = await userService.saveNotificationBulk(notificationArray);
     // Send Email code here
