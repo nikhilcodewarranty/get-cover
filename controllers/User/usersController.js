@@ -788,8 +788,8 @@ exports.updateUserData = async (req, res) => {
       const dealerEmails = dealerUsers.map(user => user.email)
       notificationEmails = adminUsers.map(user => user.email)
       
-      let sdfdsfdsfdd = notificationEmails.concat(dealerEmails);
-      console.log("notificationEmails------------------",sdfdsfdsfdd)
+      let notificationEmails = notificationEmails.concat(dealerEmails);
+      console.log("notificationEmails------------------",notificationEmails)
 
       if (data.firstName) {
         notificationData = {
@@ -1161,7 +1161,6 @@ exports.updateUserData = async (req, res) => {
         content: `Status has been changed to  ${status_content} for ${updateUser.metaData[0].firstName + " " + updateUser.metaData[0].lastName}`,
         subject: "Update Status"
       }
-      console.log("notificationEmails-------------------",notificationEmails)
       mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
 
     }
