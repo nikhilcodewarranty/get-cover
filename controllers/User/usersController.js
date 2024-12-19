@@ -1009,9 +1009,9 @@ exports.updateUserData = async (req, res) => {
       const customerEmails = resellerUsers.map(user => user.email)
 
       notificationEmails = adminUsers.map(user => user.email)
-      notificationEmails.push(dealerEmails)
-      notificationEmails.push(resellerEmails)
-      notificationEmails.push(customerEmails)
+      notificationEmails.concat(dealerEmails)
+      notificationEmails.concat(resellerEmails)
+      notificationEmails.concat(customerEmails)
 
       if (data.firstName) {
 
