@@ -706,44 +706,123 @@ exports.editCustomer = async (req, res) => {
     }
 
     //send notification to dealer,customer,admin,reseller
-    let IDs = await supportingFunction.getUserIds()
     let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
     let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer.dealerId, isPrimary: true } } })
     let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer.resellerId, isPrimary: true } } })
-    IDs.push(customerPrimary._id)
-    IDs.push(dealerPrimary._id)
-    IDs.push(resellerPrimary?._id)
     //Merge start Singleserver
-    let notificationEmails = await supportingFunction.getUserEmails();
 
     const dealerCheck = await dealerService.getDealerById(checkDealer.dealerId)
 
     const checkReseller = await resellerService.getReseller({ _id: checkDealer.resellerId }, { isDeleted: false })
-
-    if (dealerCheck.isAccountCreate) {
-      IDs.push(dealerPrimary._id)
-      notificationEmails.push(dealerPrimary.email);
+    //Notification to dealer,admin,reseller
+    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+    const base_url = `${process.env.SITE_URL}`
+    const adminDealerrQuery = {
+      metaData: {
+        $elemMatch: {
+          $and: [
+            { "customerNotifications.customerUpdate": true },
+            { status: true },
+            { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") }
+          ]
+        }
+      },
     }
 
-    if (checkReseller?.isAccountCreate) {
-      IDs.push(resellerPrimary?._id)
-      notificationEmails.push(resellerPrimary?.email);
+    const dealerrQuery = {
+      metaData: {
+        $elemMatch: {
+          $and: [
+            { "customerNotifications.customerUpdate": true },
+            { status: true },
+            { metaId: new mongoose.Types.ObjectId(checkDealer.dealerId) }
+          ]
+        }
+      },
     }
 
-    if (checkDealer.isAccountCreate) {
-      IDs.push(customerPrimary._id)
+    const reellerQuery = {
+      metaData: {
+        $elemMatch: {
+          $and: [
+            { "customerNotifications.customerUpdate": true },
+            { status: true },
+            { metaId: new mongoose.Types.ObjectId(checkDealer?.resellerId) }
+          ]
+        }
+      },
     }
-    //Merge end
+
+    const customerQuery = {
+      metaData: {
+        $elemMatch: {
+          $and: [
+            { "customerNotifications.customerUpdate": true },
+            { status: true },
+            { metaId: new mongoose.Types.ObjectId(checkDealer._id) }
+          ]
+        }
+      },
+    }
+
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerrQuery, { email: 1 })
+    let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerrQuery, { email: 1 })
+    let resellerUsers = await supportingFunction.getNotificationEligibleUser(reellerQuery, { email: 1 })
+    let customerUsers = await supportingFunction.getNotificationEligibleUser(customerQuery, { email: 1 })
+    let notificationArray = []
+    let notificationEmails =  adminUsers.map(user => user.email)
+    let IDs = adminUsers.map(user => user._id)
+    let dealerIds = dealerUsers.map(user => user._id)
+    let customerIds = customerUsers.map(user => user._id)
+    let dealerEmails = dealerUsers.map(user => user.email)
+    let customerEmails = customerUsers.map(user => user.email)
+    let resellerId = resellerUsers.map(user => user._id)
+    let resellerEmail = resellerUsers.map(user => user.email)
+    notificationEmails.push(dealerEmails)
+    notificationEmails.push(customerEmails)
+    notificationEmails.push(resellerEmail)
     let notificationData = {
-      title: "Customer Detail Update",
-      description: "The customer information has been changed!",
+      title: "Customer Details Updated",
+      description: `The details of customer ${checkDealer.username} for the Dealer ${dealerCheck.name} has been updated by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
       userId: req.teammateId,
-      redirectionId: req.params.customerId,
-      flag: "customer",
+      redirectionId: "customerDetails/" + checkDealer._id,
+      flag: 'customer',
+      endPoint: base_url + "customerDetails/" + checkDealer._id,
       notificationFor: IDs
     };
+    notificationArray.push(notificationData)
+    notificationData = {
+      title: "Customer Details Updated",
+      description: `The details of customer ${checkDealer.username} for the Dealer ${dealerCheck.name} has been updated by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+      userId: req.teammateId,
+      redirectionId: "dealer/customerDetails/" + checkDealer._id,
+      flag: 'customer',
+      endPoint: base_url + "dealer/customerDetails/" + checkDealer._id,
+      notificationFor: dealerIds
+    };
+    notificationArray.push(notificationData)
+    notificationData = {
+      title: "Customer Details Updated",
+      description: `The details of customer ${checkDealer.username} for the Dealer ${dealerCheck.name} has been updated by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+      userId: req.teammateId,
+      redirectionId: "reseller/customerDetails/" + checkDealer._id,
+      flag: 'customer',
+      endPoint: base_url + "reseller/customerDetails/" + checkDealer._id,
+      notificationFor: resellerId
+    };
+    notificationArray.push(notificationData)
+    notificationData = {
+      title: "Details Updated",
+      description: `The details for your account has been changed by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+      userId: req.teammateId,
+      redirectionId: "customer/user",
+      flag: 'customer',
+      endPoint: base_url + "customer/user",
+      notificationFor: customerIds
+    };
+    notificationArray.push(notificationData)
 
-    let createNotification = await userService.createNotification(notificationData);
+    let createNotification = await userService.saveNotificationBulk(notificationArray);
 
     // Send Email code here
 
@@ -756,14 +835,10 @@ exports.editCustomer = async (req, res) => {
       content: "The customer " + checkDealer.username + "" + " " + "has been updated successfully.",
       subject: "Customer Update"
     }
-    if (checkDealer.isAccountCreate) {
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationEmails, emailData))
 
-    }
-    else {
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
 
-    }
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+
     //Save Logs editCustomer
     let logData = {
       userId: req.userId,
@@ -1092,6 +1167,110 @@ exports.changePrimaryUser = async (req, res) => {
         notificationArray.push(notificationData)
 
       }
+      if (checkCustomer) {
+        adminUpdatePrimaryQuery = {
+          metaData: {
+            $elemMatch: {
+              $and: [
+                { "customerNotifications.primaryChanged": true },
+                { status: true },
+                { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
+              ]
+            }
+          },
+        }
+        let dealerUpdatePrimaryQuery = {
+          metaData: {
+            $elemMatch: {
+              $and: [
+                { "customerNotifications.primaryChanged": true },
+                { status: true },
+                { metaId: new mongoose.Types.ObjectId(checkCustomer.dealerId) },
+              ]
+            }
+          },
+        }
+        let resellerUpdatePrimaryQuery = {
+          metaData: {
+            $elemMatch: {
+              $and: [
+                { "customerNotifications.primaryChanged": true },
+                { status: true },
+                { metaId: new mongoose.Types.ObjectId(checkCustomer?.resellerId) },
+              ]
+            }
+          },
+        }
+        let customerUpdatePrimaryQuery = {
+          metaData: {
+            $elemMatch: {
+              $and: [
+                { "customerNotifications.primaryChanged": true },
+                { status: true },
+                { metaId: new mongoose.Types.ObjectId(checkCustomer._id) },
+              ]
+            }
+          },
+        }
+        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdatePrimaryQuery, { email: 1 })
+        let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerUpdatePrimaryQuery, { email: 1 })
+        let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerUpdatePrimaryQuery, { email: 1 })
+        let customerUsers = await supportingFunction.getNotificationEligibleUser(customerUpdatePrimaryQuery, { email: 1 })
+        const IDs = adminUsers.map(user => user._id)
+        const dealerId = dealerUsers.map(user => user._id)
+        const resellerId = resellerUsers.map(user => user._id)
+        const customerId = customerUsers.map(user => user._id)
+        let dealerEmails = dealerUsers.map(user => user.email);
+        let resellerEmails = resellerUsers.map(user => user.email);
+        let customerEmails = resellerUsers.map(user => user.email);
+        notificationEmails.push(dealerEmails)
+        notificationEmails.push(resellerEmails)
+        notificationEmails.push(customerEmails)
+        notificationData = {
+          title: "Customer Primary User Updated",
+          description: `The Primary user of ${checkCustomer.username} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+          userId: req.teammateId,
+          flag: checkRole?.role,
+          redirectionId: "customerDetails/" + checkCustomer._id,
+          endPoint: base_url + "customerDetails/" + checkCustomer._id,
+          notificationFor: IDs
+        };
+        notificationArray.push(notificationData)
+        notificationData = {
+          title: "Customer Primary User Updated",
+          description: `The Primary user of ${checkCustomer.username} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+          userId: req.teammateId,
+          flag: checkRole?.role,
+          redirectionId: "dealer/customerDetails/" + checkCustomer._id,
+          endPoint: base_url + "dealer/customerDetails/" + checkCustomer._id,
+          notificationFor: dealerId
+        };
+        notificationArray.push(notificationData)
+        if (resellerUsers.length > 0) {
+          notificationData = {
+            title: "Customer Primary User Updated",
+            description: `The Primary user of ${checkCustomer.username} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+            userId: req.teammateId,
+            flag: checkRole?.role,
+            redirectionId: "reseller/customerDetails/" + checkCustomer._id,
+            endPoint: base_url + "reseller/customerDetails/" + checkCustomer._id,
+            notificationFor: resellerId
+          };
+          notificationArray.push(notificationData)
+        }
+
+        notificationData = {
+          title: "Primary User Updated",
+          description: `The Primary user for your account has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName}  by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+          userId: req.teammateId,
+          flag: checkRole?.role,
+          redirectionId: "customer/user",
+          endPoint: base_url + "customer/user",
+          notificationFor: customerId
+        };
+        notificationArray.push(notificationData)
+
+      }
       let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkUser.metaData[0]?.metaId }, isPrimary: true } })
       let createNotification = await userService.saveNotificationBulk(notificationArray);
       // Send Email code here
@@ -1208,6 +1387,109 @@ exports.addCustomerUser = async (req, res) => {
         message: "Unable to add the user"
       })
     } else {
+      //Send notification
+      const adminDealerQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "customerNotifications.userAdded": true },
+              { status: true },
+              { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+            ]
+          }
+        },
+      }
+      const dealerDealerQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "customerNotifications.userAdded": true },
+              { status: true },
+              { metaId: new mongoose.Types.ObjectId(checkCustomer.dealerId) },
+            ]
+          }
+        },
+      }
+      const resellerDealerQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "customerNotifications.userAdded": true },
+              { status: true },
+              { metaId: new mongoose.Types.ObjectId(checkCustomer?.resellerId1) },
+            ]
+          }
+        },
+      }
+      const customerDealerQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "customerNotifications.userAdded": true },
+              { status: true },
+              { metaId: new mongoose.Types.ObjectId(checkCustomer?._id) },
+            ]
+          }
+        },
+      }
+
+
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerQuery, { email: 1 })
+      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDealerQuery, { email: 1 })
+      let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerDealerQuery, { email: 1 })
+      let customerUsers = await supportingFunction.getNotificationEligibleUser(customerDealerQuery, { email: 1 })
+      const IDs = adminUsers.map(user => user._id)
+      let notificationArray = []
+      const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+      const base_url = `${process.env.SITE_URL}`
+      const dealerId = dealerUsers.map(user => user._id)
+      const resellerId = resellerUsers.map(user => user._id)
+      const customerId = customerUsers.map(user => user._id)
+      let notificationData = {
+        title: "Customer User Added",
+        description: `A new user for customer ${checkCustomer.username} has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+        userId: req.teammateId,
+        contentId: saveData._id,
+        flag: 'customer_user',
+        endPoint: base_url + "/customerDetails/" + checkCustomer._id,
+        redirectionId: "/customerDetails/" + checkCustomer._id,
+        notificationFor: IDs
+      };
+      notificationArray.push(notificationData)
+      notificationData = {
+        title: "Customer User Added",
+        description: `A new user for customer ${checkCustomer.username} has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+        userId: req.teammateId,
+        contentId: saveData._id,
+        flag: 'customer_user',
+        endPoint: base_url + "dealer/customerDetails/" + checkCustomer._id,
+        redirectionId: "/customerDetails/" + checkCustomer._id,
+        notificationFor: dealerId
+      };
+      notificationArray.push(notificationData)
+      notificationData = {
+        title: "Customer User Added",
+        description: `A new user for customer ${checkCustomer.username} has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+        userId: req.teammateId,
+        contentId: saveData._id,
+        flag: 'customer_user',
+        endPoint: base_url + "reseller/customerDetails/" + checkCustomer._id,
+        redirectionId: "reseller/customerDetails/" + checkCustomer._id,
+        notificationFor: resellerId
+      };
+      notificationArray.push(notificationData)
+      notificationData = {
+        title: "New User Added",
+        description: `A new user for your account has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+        userId: req.teammateId,
+        contentId: saveData._id,
+        flag: 'customer_user',
+        endPoint: base_url + "customer/user",
+        redirectionId: "customer/user",
+        notificationFor: customerId
+      };
+      notificationArray.push(notificationData)
+      let createNotification = await userService.saveNotificationBulk(notificationArray);
       //Save Logs
       let logData = {
         userId: req.userId,
