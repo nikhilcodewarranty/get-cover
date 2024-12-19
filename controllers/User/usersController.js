@@ -1158,6 +1158,7 @@ exports.updateUserData = async (req, res) => {
         content: `Status has been changed to  ${status_content} for ${updateUser.metaData[0].firstName + " " + updateUser.metaData[0].lastName}`,
         subject: "Update Status"
       }
+      console.log("notificationEmails-------------------",notificationEmails)
       mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
 
     }
