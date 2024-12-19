@@ -782,6 +782,7 @@ exports.updateUserData = async (req, res) => {
         },
       }
       let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdatePrimaryQuery, { email: 1 })
+      console.log("adminUsers--------------------",adminUsers)
       let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerUpdatePrimaryQuery, { email: 1 })
       const IDs = adminUsers.map(user => user._id)
       const dealerIds = dealerUsers.map(user => user._id)
