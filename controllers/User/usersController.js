@@ -921,7 +921,7 @@ exports.updateUserData = async (req, res) => {
           userId: req.teammateId,
           flag: checkRole?.role,
           redirectionId: "resellerDetails/" + checkReseller._id,
-          endPoint: base_url,
+          endPoint: base_url + "resellerDetails/" + checkReseller._id,
           notificationFor: IDs,
 
         };
@@ -932,7 +932,7 @@ exports.updateUserData = async (req, res) => {
           userId: req.teammateId,
           flag: checkRole?.role,
           redirectionId: "resellerDetails/" + checkReseller._id,
-          endPoint: base_url,
+          endPoint: base_url + "resellerDetails/" + checkReseller._id,
           notificationFor: dealerIds,
 
         };
@@ -945,6 +945,163 @@ exports.updateUserData = async (req, res) => {
           redirectionId: "reseller/user",
           endPoint: base_url + "reseller/user",
           notificationFor: resellerIds,
+
+        };
+        notificationArray.push(notificationData)
+      }
+    }
+    if (checkCustomer) {
+      adminUpdatePrimaryQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "customerNotifications.userUpdate": true },
+              { status: true },
+              { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+            ]
+          }
+        },
+      }
+      let dealerUpdatePrimaryQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "customerNotifications.userUpdate": true },
+              { status: true },
+              { metaId: new mongoose.Types.ObjectId(checkCustomer.dealerId) },
+            ]
+          }
+        },
+      }
+      let resellerUpdatePrimaryQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "customerNotifications.userUpdate": true },
+              { status: true },
+              { metaId: new mongoose.Types.ObjectId(checkCustomer?.resellerId1) },
+            ]
+          }
+        },
+      }
+      let customerpdatePrimaryQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "customerNotifications.userUpdate": true },
+              { status: true },
+              { metaId: new mongoose.Types.ObjectId(checkCustomer._id) },
+            ]
+          }
+        },
+      }
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdatePrimaryQuery, { email: 1 })
+      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerUpdatePrimaryQuery, { email: 1 })
+      let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerUpdatePrimaryQuery, { email: 1 })
+      let customerUsers = await supportingFunction.getNotificationEligibleUser(customerpdatePrimaryQuery, { email: 1 })
+      const IDs = adminUsers.map(user => user._id)
+
+      const dealerIds = dealerUsers.map(user => user._id)
+      const resellerIds = resellerUsers.map(user => user._id)
+      const customerIds = resellerUsers.map(user => user._id)
+      const dealerEmails = customerUsers.map(user => user.email)
+      const resellerEmails = resellerUsers.map(user => user.email)
+      const customerEmails = resellerUsers.map(user => user.email)
+
+      notificationEmails = adminUsers.map(user => user.email)
+      notificationEmails.push(dealerEmails)
+      notificationEmails.push(resellerEmails)
+      notificationEmails.push(customerEmails)
+
+      if (data.firstName) {
+
+        notificationData = {
+          title: "Customer User Details Changed",
+          description: `The Details for the customer ${checkCustomer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          userId: req.teammateId,
+          flag: checkRole?.role,
+          redirectionId: "customerDetails/" + checkCustomer._id,
+          endPoint: base_url + "customerDetails/" + checkCustomer._id,
+          notificationFor: IDs,
+        };
+        notificationArray.push(notificationData)
+
+        notificationData = {
+          title: "Customer User Details Changed",
+          description: `The Details for the customer ${checkCustomer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          userId: req.teammateId,
+          flag: checkRole?.role,
+          redirectionId: "customerDetails/" + checkCustomer._id,
+          endPoint: base_url + "customerDetails/" + checkCustomer._id,
+          notificationFor: dealerIds,
+        };
+        notificationArray.push(notificationData)
+
+        notificationData = {
+          title: "Customer User Details Changed",
+          description: `The Details for the customer ${checkCustomer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          userId: req.teammateId,
+          flag: checkRole?.role,
+          redirectionId: "customerDetails/" + checkCustomer._id,
+          endPoint: base_url + "customerDetails/" + checkCustomer._id,
+          notificationFor: resellerIds,
+        };
+        notificationArray.push(notificationData)
+
+        notificationData = {
+          title: "User Details Changed",
+          description: `The detail for  user ${updateUser.metaData[0]?.firstName} has been updated by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          userId: req.teammateId,
+          flag: checkRole?.role,
+          redirectionId: "customer/user",
+          endPoint: base_url + "customer/user",
+          notificationFor: customerIds,
+
+        };
+        notificationArray.push(notificationData)
+      }
+      else {
+        notificationData = {
+          title: "Customer User Status Changed",
+          description: `The Status for the customer ${checkCustomer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          userId: req.teammateId,
+          flag: checkRole?.role,
+          redirectionId: "customerDetails/" + checkCustomer._id,
+          endPoint: base_url + "customerDetails/" + checkCustomer._id,
+          notificationFor: IDs,
+
+        };
+        notificationArray.push(notificationData)
+        notificationData = {
+          title: "Customer User Status Changed",
+          description: `The Status for the customer ${checkCustomer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          userId: req.teammateId,
+          flag: checkRole?.role,
+          redirectionId: "customerDetails/" + checkCustomer._id,
+          endPoint: base_url + "customerDetails/" + checkCustomer._id,
+          notificationFor: dealerIds,
+
+        };
+        notificationArray.push(notificationData)
+        notificationData = {
+          title: "Customer User Status Changed",
+          description: `The Status for the customer ${checkCustomer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          userId: req.teammateId,
+          flag: checkRole?.role,
+          redirectionId: "customerDetails/" + checkCustomer._id,
+          endPoint: base_url + "customerDetails/" + checkCustomer._id,
+          notificationFor: resellerIds,
+
+        };
+        notificationArray.push(notificationData)
+        notificationData = {
+          title: "User Status Changed",
+          description: `The Status for  user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          userId: req.teammateId,
+          flag: checkRole?.role,
+          redirectionId: "customer/user",
+          endPoint: base_url + "customer/user",
+          notificationFor: customerIds,
 
         };
         notificationArray.push(notificationData)
@@ -971,7 +1128,7 @@ exports.updateUserData = async (req, res) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: updateUser.metaData[0].firstName,
+        senderName: `Dear ${updateUser.metaData[0].firstName}`,
         content: "The user information has been updated successfully!",
         subject: "Update User Info"
       }
@@ -983,7 +1140,7 @@ exports.updateUserData = async (req, res) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: updateUser.metaData[0].firstName,
+        senderName: `Dear ${updateUser.metaData[0].firstName}`,
         content: content,
         subject: "Update Status",
         redirectId: status_content == "Active" ? resetLink : '',
@@ -1091,7 +1248,7 @@ exports.getAllTerms = async (req, res) => {
 // add new roles // backend use
 exports.addRole = async (req, res) => {
   try {
-    let checkRole = await userService.getRoleById({ role: { '$regex': new RegExp(`^${req.body.role}$`, 'i') } })
+    let checkRole = await userService.getRoleById({ role: { '$regex': new RegExp(`^ ${ req.body.role } $`, 'i') } })
     if (checkRole) {
       res.send({
         code: constant.errorCode,
@@ -1141,7 +1298,7 @@ exports.sendLinkToEmail = async (req, res) => {
         })
         return;
       }
-      let resetLink = `${process.env.SITE_URL}newPassword/${checkEmail._id}/${resetPasswordCode}`
+      let resetLink = `${ process.env.SITE_URL } newPassword / ${ checkEmail._id } /${resetPasswordCode}`
 
       let settingData = await userService.getSetting({});
 
@@ -1273,6 +1430,8 @@ exports.deleteUser = async (req, res) => {
     let notificationData;
     let notificationArray = [];
     let notificationEmails
+
+    console.log("Here1111111111111111111111");
     if (checkServicer) {
       adminDeleteQuery = {
         metaData: {
@@ -1359,7 +1518,7 @@ exports.deleteUser = async (req, res) => {
       notificationEmails.push(dealerEmails)
       notificationData = {
         title: "Dealer User Deleted",
-        description: `The User ${checkUser.metaData[0].firstName} for the dealer ${checkServicer.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName} -${req.role}..`,
+        description: `The User ${checkUser.metaData[0].firstName} for the dealer ${checkDealer.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName} -${req.role}..`,
         userId: req.teammateId,
         flag: checkRole?.role,
         redirectionId: "dealerDetails/" + checkDealer._id,
@@ -1392,7 +1551,7 @@ exports.deleteUser = async (req, res) => {
           }
         },
       }
-     let dealerDeleteQuery = {
+      let dealerDeleteQuery = {
         metaData: {
           $elemMatch: {
             $and: [
@@ -1427,7 +1586,7 @@ exports.deleteUser = async (req, res) => {
       notificationEmails.push(resellerEmails)
       notificationData = {
         title: "Reseller User Deleted",
-        description: `The User ${checkUser.metaData[0].firstName} for the reseller ${checkReseller.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " "+checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
+        description: `The User ${checkUser.metaData[0].firstName} for the reseller ${checkReseller.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
         userId: req.teammateId,
         flag: checkRole?.role,
         redirectionId: "resellerDetails/" + checkReseller._id,
@@ -1438,7 +1597,7 @@ exports.deleteUser = async (req, res) => {
       notificationArray.push(notificationData)
       notificationData = {
         title: "Reseller User Deleted",
-        description: `The User ${checkUser.metaData[0].firstName} for the reseller ${checkReseller.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " "+checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
+        description: `The User ${checkUser.metaData[0].firstName} for the reseller ${checkReseller.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
         userId: req.teammateId,
         flag: checkRole?.role,
         redirectionId: "resellerDetails/" + checkReseller._id,
@@ -1459,6 +1618,117 @@ exports.deleteUser = async (req, res) => {
       }
       notificationArray.push(notificationData)
     }
+    if (checkCustomer) {
+      adminDeleteQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "customerNotifications.userDelete": true },
+              { status: true },
+              { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
+            ]
+          }
+        },
+      }
+      let dealerDeleteQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "customerNotifications.userDelete": true },
+              { status: true },
+              { metaId: new mongoose.Types.ObjectId(checkCustomer.dealerId) },
+            ]
+          }
+        },
+      }
+      let resellerDeleteQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "customerNotifications.userDelete": true },
+              { status: true },
+              { metaId: new mongoose.Types.ObjectId(checkCustomer?.resellerId1) },
+            ]
+          }
+        },
+      }
+      let customerDeleteQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "customerNotifications.userDelete": true },
+              { status: true },
+              { metaId: new mongoose.Types.ObjectId(checkCustomer._id) },
+            ]
+          }
+        },
+      }
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDeleteQuery, { email: 1 })
+      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDeleteQuery, { email: 1 })
+      let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerDeleteQuery, { email: 1 })
+      let customerUsers = await supportingFunction.getNotificationEligibleUser(customerDeleteQuery, { email: 1 })
+
+      const IDs = adminUsers.map(user => user._id)
+      const dealerId = dealerUsers.map(user => user._id)
+      const resellerId = resellerUsers.map(user => user._id)
+      const customerId = customerUsers.map(user => user._id)
+      notificationEmails = adminUsers.map(user => user.email);
+
+      let dealerEmails = dealerUsers.map(user => user.email);
+      let resellerEmails = resellerUsers.map(user => user.email);
+      let customerEmails = customerUsers.map(user => user.email);
+
+      notificationEmails.push(dealerEmails)
+      notificationEmails.push(resellerEmails)
+      notificationEmails.push(customerEmails)
+
+      notificationData = {
+        title: "Customer User Deleted",
+        description: `The User ${checkUser.metaData[0].firstName} for the customer ${checkCustomer.username} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
+        userId: req.teammateId,
+        flag: checkRole?.role,
+        redirectionId: "customerDetails/" + checkCustomer._id,
+        endPoint: base_url + "customerDetails/" + checkCustomer._id,
+        notificationFor: IDs
+
+      }
+      notificationArray.push(notificationData)
+      notificationData = {
+        title: "Customer User Deleted",
+        description: `The User ${checkUser.metaData[0].firstName} for the customer ${checkCustomer.username} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
+        userId: req.teammateId,
+        flag: checkRole?.role,
+        redirectionId: "customerDetails/" + checkCustomer._id,
+        endPoint: base_url + "customerDetails/" + checkCustomer._id,
+        notificationFor: dealerId
+
+      }
+      notificationArray.push(notificationData)
+      notificationData = {
+        title: "Customer User Deleted",
+        description: `The User ${checkUser.metaData[0].firstName} for the customer ${checkCustomer.username} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
+        userId: req.teammateId,
+        flag: checkRole?.role,
+        redirectionId: "customerDetails/" + checkCustomer._id,
+        endPoint: base_url + "customerDetails/" + checkCustomer._id,
+        notificationFor: resellerId
+
+      }
+      notificationArray.push(notificationData)
+      notificationData = {
+        title: "User Deleted",
+        description: `The user ${checkUser?.metaData[0]?.firstName} has been deleted by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+        userId: req.teammateId,
+        flag: checkRole?.role,
+        redirectionId: "customer/user",
+        endPoint: base_url + "customer/user",
+        notificationFor: customerId
+
+      }
+      notificationArray.push(notificationData)
+    }
+    console.log("222222222222222222222222222");
+
     let createNotification = await userService.saveNotificationBulk(notificationArray);
     // Send Email code here
     let emailData = {
