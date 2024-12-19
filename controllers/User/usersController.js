@@ -788,8 +788,8 @@ exports.updateUserData = async (req, res) => {
       const dealerEmails = dealerUsers.map(user => user.email)
       notificationEmails = adminUsers.map(user => user.email)
       
-      let notificationEmails = notificationEmails.concat(dealerEmails);
-      console.log("notificationEmails------------------",notificationEmails)
+      let mergedEmail = notificationEmails.concat(dealerEmails);
+      console.log("notificationEmails------------------",mergedEmail)
 
       if (data.firstName) {
         notificationData = {
@@ -1135,7 +1135,7 @@ exports.updateUserData = async (req, res) => {
         content: "The user information has been updated successfully!",
         subject: "Update User Info"
       }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ['noreply@getcover.com'], emailData))
 
     }
 
@@ -1161,7 +1161,7 @@ exports.updateUserData = async (req, res) => {
         content: `Status has been changed to  ${status_content} for ${updateUser.metaData[0].firstName + " " + updateUser.metaData[0].lastName}`,
         subject: "Update Status"
       }
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ['noreply@getcover.com'], emailData))
 
     }
 
