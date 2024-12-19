@@ -2045,13 +2045,7 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
       let IDs = await supportingFunction.getUserIds()
 
       let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.body.dealerId, isPrimary: true } } })
-      IDs.push(dealerPrimary?._id)
       //Merge start singleServer
-      // let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: req.body.dealerId, isPrimary: true })
-      if (checkDealer[0].isAccountCreate) {
-        IDs.push(dealerPrimary?._id)
-      }
-      //Merge end
 
       let notificationData = {
         title: "Dealer Price Book Uploaded",
