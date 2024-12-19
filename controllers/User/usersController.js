@@ -790,7 +790,7 @@ exports.updateUserData = async (req, res) => {
       notificationEmails = adminUsers.map(user => user.email)
       console.log("dealerEmails------------------",dealerEmails)
       console.log("notificationEmails------------------",notificationEmails)
-      notificationEmails.push(dealerEmails)
+      notificationEmails.concat(dealerEmails)
       if (data.firstName) {
         notificationData = {
           title: "Dealer User Details Changed",
