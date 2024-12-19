@@ -1433,7 +1433,6 @@ exports.addCustomerUser = async (req, res) => {
         },
       }
 
-
       let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerQuery, { email: 1 })
       let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDealerQuery, { email: 1 })
       let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerDealerQuery, { email: 1 })
@@ -1463,7 +1462,7 @@ exports.addCustomerUser = async (req, res) => {
         contentId: saveData._id,
         flag: 'customer_user',
         endPoint: base_url + "dealer/customerDetails/" + checkCustomer._id,
-        redirectionId: "/customerDetails/" + checkCustomer._id,
+        redirectionId: "dealer/customerDetails/" + checkCustomer._id,
         notificationFor: dealerId
       };
       notificationArray.push(notificationData)

@@ -1077,8 +1077,8 @@ exports.updateUserData = async (req, res) => {
           description: `The Status for the customer ${checkCustomer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
-          redirectionId: "customerDetails/" + checkCustomer._id,
-          endPoint: base_url + "customerDetails/" + checkCustomer._id,
+          redirectionId: "dealer/customerDetails/" + checkCustomer._id,
+          endPoint: base_url + "dealer/customerDetails/" + checkCustomer._id,
           notificationFor: dealerIds,
 
         };
@@ -1088,8 +1088,8 @@ exports.updateUserData = async (req, res) => {
           description: `The Status for the customer ${checkCustomer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
-          redirectionId: "customerDetails/" + checkCustomer._id,
-          endPoint: base_url + "customerDetails/" + checkCustomer._id,
+          redirectionId: "reseller/customerDetails/" + checkCustomer._id,
+          endPoint: base_url + "reseller/customerDetails/" + checkCustomer._id,
           notificationFor: resellerIds,
 
         };
@@ -1132,6 +1132,8 @@ exports.updateUserData = async (req, res) => {
         content: "The user information has been updated successfully!",
         subject: "Update User Info"
       }
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+
     }
 
     else {
@@ -1145,9 +1147,23 @@ exports.updateUserData = async (req, res) => {
         subject: "Update Status",
         redirectId: status_content == "Active" ? resetLink : '',
       }
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(updateUser.email, ['noreply@getcover.com'], emailData))
+
+      emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
+        senderName: `Dear ${updateUser.metaData[0].firstName}`,
+        content: `Status has been changed to  ${status_content} for ${updateUser.metaData[0].firstName + " " + updateUser.metaData[0].lastName}`,
+        subject: "Update Status",
+
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+
+      }
+
     }
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
 
 
     let createNotification = await userService.saveNotificationBulk(notificationArray);
@@ -1248,7 +1264,7 @@ exports.getAllTerms = async (req, res) => {
 // add new roles // backend use
 exports.addRole = async (req, res) => {
   try {
-    let checkRole = await userService.getRoleById({ role: { '$regex': new RegExp(`^ ${ req.body.role } $`, 'i') } })
+    let checkRole = await userService.getRoleById({ role: { '$regex': new RegExp(`^ ${req.body.role} $`, 'i') } })
     if (checkRole) {
       res.send({
         code: constant.errorCode,
@@ -1298,7 +1314,7 @@ exports.sendLinkToEmail = async (req, res) => {
         })
         return;
       }
-      let resetLink = `${ process.env.SITE_URL } newPassword / ${ checkEmail._id } /${resetPasswordCode}`
+      let resetLink = `${process.env.SITE_URL} newPassword / ${checkEmail._id} /${resetPasswordCode}`
 
       let settingData = await userService.getSetting({});
 
@@ -1599,8 +1615,8 @@ exports.deleteUser = async (req, res) => {
         description: `The User ${checkUser.metaData[0].firstName} for the reseller ${checkReseller.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
         userId: req.teammateId,
         flag: checkRole?.role,
-        redirectionId: "resellerDetails/" + checkReseller._id,
-        endPoint: base_url + "resellerDetails/" + checkReseller._id,
+        redirectionId: "dealer/resellerDetails/" + checkReseller._id,
+        endPoint: base_url + "dealer/resellerDetails/" + checkReseller._id,
         notificationFor: dealerId
 
       }
