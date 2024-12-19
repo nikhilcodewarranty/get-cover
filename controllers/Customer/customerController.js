@@ -961,7 +961,6 @@ exports.changePrimaryUser = async (req, res) => {
           notificationFor: IDs
         };
         notificationArray.push(notificationData)
-
         notificationData = {
           title: "Primary User Updated",
           description: `The Primary user for your account has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName}  by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
@@ -974,8 +973,82 @@ exports.changePrimaryUser = async (req, res) => {
         notificationArray.push(notificationData)
 
       }
+      if (checkReseller) {
+        adminUpdatePrimaryQuery = {
+          metaData: {
+            $elemMatch: {
+              $and: [
+                { "resellerNotifications.primaryChanged": true },
+                { status: true },
+                { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
+              ]
+            }
+          },
+        }
+        let dealerUpdatePrimaryQuery = {
+          metaData: {
+            $elemMatch: {
+              $and: [
+                { "resellerNotifications.primaryChanged": true },
+                { status: true },
+                { metaId: new mongoose.Types.ObjectId(checkReseller.dealerId) },
+              ]
+            }
+          },
+        }
+        let resellerUpdatePrimaryQuery = {
+          metaData: {
+            $elemMatch: {
+              $and: [
+                { "resellerNotifications.primaryChanged": true },
+                { status: true },
+                { metaId: new mongoose.Types.ObjectId(checkReseller._id) },
+              ]
+            }
+          },
+        }
+        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdatePrimaryQuery, { email: 1 })
+        let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerUpdatePrimaryQuery, { email: 1 })
+        let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerUpdatePrimaryQuery, { email: 1 })
+        const IDs = adminUsers.map(user => user._id)
+        const dealerId = dealerUsers.map(user => user._id)
+        const resellerId = resellerUsers.map(user => user._id)
+        let dealerEmails = dealerUsers.map(user => user.email);
+        let resellerEmails = resellerUsers.map(user => user.email);
+        notificationEmails.push(dealerEmails)
+        notificationEmails.push(resellerEmails)
+        notificationData = {
+          title: "Reseller Primary User Updated",
+          description: `The Primary user of ${checkReseller.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+          userId: req.teammateId,
+          flag: checkRole?.role,
+          redirectionId: "resellerDetails/" + checkReseller._id,
+          endPoint: base_url + "resellerDetails/" + checkReseller._id,
+          notificationFor: IDs
+        };
+        notificationArray.push(notificationData)
+        notificationData = {
+          title: "Reseller Primary User Updated",
+          description: `The Primary user of ${checkReseller.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+          userId: req.teammateId,
+          flag: checkRole?.role,
+          redirectionId: "resellerDetails/" + checkReseller._id,
+          endPoint: base_url + "resellerDetails/" + checkReseller._id,
+          notificationFor: dealerId
+        };
+        notificationArray.push(notificationData)
+        notificationData = {
+          title: "Primary User Updated",
+          description: `The Primary user for your account has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName}  by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+          userId: req.teammateId,
+          flag: checkRole?.role,
+          redirectionId: "reseller/user",
+          endPoint: base_url + "reseller/user",
+          notificationFor: resellerId
+        };
+        notificationArray.push(notificationData)
 
-
+      }
       let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkUser.metaData[0]?.metaId }, isPrimary: true } })
       let createNotification = await userService.saveNotificationBulk(notificationArray);
       // Send Email code here
@@ -984,7 +1057,7 @@ exports.changePrimaryUser = async (req, res) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: checkUser.metaData[0]?.firstName,
+        senderName: `Dear ${checkUser.metaData[0]?.firstName}`,
         content: "The primary user for your account has been changed from " + updateLastPrimary.metaData[0]?.firstName + " to " + updatePrimary.metaData[0]?.firstName + ".",
         subject: "Primary User change"
       };
