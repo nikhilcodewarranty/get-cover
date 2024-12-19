@@ -1156,11 +1156,9 @@ exports.updateUserData = async (req, res) => {
         websiteSetting: settingData[0],
         senderName: `Dear ${updateUser.metaData[0].firstName}`,
         content: `Status has been changed to  ${status_content} for ${updateUser.metaData[0].firstName + " " + updateUser.metaData[0].lastName}`,
-        subject: "Update Status",
-
-        mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
-
+        subject: "Update Status"
       }
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
 
     }
 
