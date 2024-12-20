@@ -2242,6 +2242,10 @@ exports.markAsPaid = async (req, res) => {
                 let createNotification = await userService.saveNotificationBulk(notificationArrayData);
                 // Send Email code here
                 let notificationEmails = adminUsers.map(user => user.email)
+                let dealerEmails = dealerUsers.map(user => user.email)
+                let resellerEmails = resellerUsers.map(user => user.email)
+                let customerEmails = customerUsers.map(user => user.email)
+                let mergedEmail = notificationEmails.concat(dealerEmails,resellerEmails,customerEmails)
                 //Email to Dealer
                 let settingData = await userService.getSetting({});
                 //Email to Dealer
@@ -2256,7 +2260,7 @@ exports.markAsPaid = async (req, res) => {
                     redirectId: base_url + "orderDetails/" + checkOrder._id,
                 }
                 if (checkOrder.sendNotification && !checkOrder.termCondition) {
-                    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+                    let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ["noreply@getcover.com"], emailData))
                 }
                 //Email to customer code here........
                 if (index == checkLength) {

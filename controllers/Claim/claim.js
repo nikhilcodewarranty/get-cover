@@ -685,7 +685,7 @@ exports.addClaim = async (req, res, next) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: customerPrimary.metaData[0]?.firstName,
+      senderName: `Dear ${customerPrimary.metaData[0]?.firstName}`,
       redirectId: base_url
     }
     let mailing;
@@ -726,7 +726,7 @@ exports.addClaim = async (req, res, next) => {
                 $or: [
                   { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
                   { metaId: checkOrder.dealerId },
-                  { metaId: checkOrder.resellerId },
+                  { metaId: checkOrder?.resellerId ?  checkOrder?.resellerId : "000008041eb1acda24111111" },
                 ]
               },
 
@@ -945,7 +945,7 @@ exports.editClaim = async (req, res) => {
           flag: 'claim',
           endPoint: site_url + "claim-listing/" + checkClaim.unique_key,
           redirectionId: "claim-listing/" + checkClaim.unique_key,
-          notificationFor: IDs
+          notificationFor: servicerIDs
         };
         notificationArray.push(notificationAdmin)
       }
@@ -964,6 +964,8 @@ exports.editClaim = async (req, res) => {
       await LOG(logData).save()
       // Send Email code here
       let notificationEmails = adminUsers.map(user => user.email)
+      let servicerEmails = servicerUsers.map(user => user.email)
+      let mergedEmail = notificationEmails.concat(servicerEmails)
       let settingData = await userService.getSetting({});
       const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
       const lastElement = data.repairParts.pop();
@@ -978,7 +980,7 @@ exports.editClaim = async (req, res) => {
         subject: `Update on Repair Information for Claim  ID ${checkClaim.unique_key}`
       }
 
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ["noreply@getcover.com"], emailData))
       let totalClaimQuery1 = [
         {
           $match: {
@@ -4005,7 +4007,7 @@ exports.sendMessages = async (req, res) => {
         userId: req.teammateId,
         contentId: checkClaim._id,
         flag: 'claim',
-        endPoint: site_url+"claim-listing/" + checkClaim.unique_key,
+        endPoint: site_url + "claim-listing/" + checkClaim.unique_key,
         redirectionId: "claim-listing/" + checkClaim.unique_key,
         notificationFor: IDs
       };
@@ -4018,7 +4020,7 @@ exports.sendMessages = async (req, res) => {
         userId: req.teammateId,
         contentId: checkClaim._id,
         flag: 'claim',
-        endPoint: site_url+"claim-listing/" + checkClaim.unique_key,
+        endPoint: site_url + "claim-listing/" + checkClaim.unique_key,
         redirectionId: "claim-listing/" + checkClaim.unique_key,
         notificationFor: dealerId
       };
@@ -4031,7 +4033,7 @@ exports.sendMessages = async (req, res) => {
         userId: req.teammateId,
         contentId: checkClaim._id,
         flag: 'claim',
-        endPoint: site_url+"claim-listing/" + checkClaim.unique_key,
+        endPoint: site_url + "claim-listing/" + checkClaim.unique_key,
         redirectionId: "claim-listing/" + checkClaim.unique_key,
         notificationFor: resellerId
       };
@@ -4044,7 +4046,7 @@ exports.sendMessages = async (req, res) => {
         userId: req.teammateId,
         contentId: checkClaim._id,
         flag: 'claim',
-        endPoint: site_url+"claim-listing/" + checkClaim.unique_key,
+        endPoint: site_url + "claim-listing/" + checkClaim.unique_key,
         redirectionId: "claim-listing/" + checkClaim.unique_key,
         notificationFor: customerId
       };
@@ -4052,12 +4054,12 @@ exports.sendMessages = async (req, res) => {
     }
     if (servicerUsers.length > 0) {
       let notificationData1 = {
-        title: "New Claim Comment added",       
+        title: "New Claim Comment added",
         description: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
         userId: req.teammateId,
         contentId: checkClaim._id,
         flag: 'claim',
-        endPoint: site_url+"claim-listing/" + checkClaim.unique_key,
+        endPoint: site_url + "claim-listing/" + checkClaim.unique_key,
         redirectionId: "claim-listing/" + checkClaim.unique_key,
         notificationFor: servicerId
       };
