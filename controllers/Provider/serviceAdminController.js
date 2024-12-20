@@ -836,7 +836,7 @@ exports.editServicerDetail = async (req, res) => {
     data.name = data.name.trim().replace(/\s+/g, ' ');
     data.oldName = data.oldName.trim().replace(/\s+/g, ' ');
     let checkServicer = await providerService.getServiceProviderById({ _id: req.params.servicerId })
-
+    let mergedEmail;
     let settingData = await userService.getSetting({});
     if (!checkServicer) {
       res.send({
@@ -941,12 +941,13 @@ exports.editServicerDetail = async (req, res) => {
     let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.params.servicerId, isPrimary: true } } })
     let notificationEmails = adminUsers.map(user => user.email)
     let servicerEmail = servicerUsers.map(user => user.email)
-    notificationEmails.push(servicerEmail)
+
+    mergedEmail = notificationEmails.concat(servicerEmail)
     // let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.servicerId, isPrimary: true })
     if (adminUsers.length > 0) {
       let notificationData = {
         title: "Servicer Details Updated",
-        description: `The details for the Servicer ${checkServicer.name} has been updated by  ${checkLoginUser.metaData[0]?.firstName+" "+checkLoginUser.metaData[0]?.lastName}.`,
+        description: `The details for the Servicer ${checkServicer.name} has been updated by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         endPoint: base_url + "servicerDetails/" + checkServicer._id,
         redirectionId: "servicerDetails/" + checkServicer._id,
@@ -958,7 +959,7 @@ exports.editServicerDetail = async (req, res) => {
     if (servicerUsers.length > 0) {
       let notificationData = {
         title: "Details Update",
-        description: `The details for your account has been changed by ${checkLoginUser.metaData[0]?.firstName+" "+checkLoginUser.metaData[0]?.lastName}.`,
+        description: `The details for your account has been changed by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         endPoint: base_url + "servicer/user",
         redirectionId: "servicerDetails/" + checkServicer._id,
@@ -981,7 +982,7 @@ exports.editServicerDetail = async (req, res) => {
       content: "Information has been updated successfully! effective immediately.",
       subject: "Update Info"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ["noreply@getcover.com"], emailData))
     //Save Logs
     let logData = {
       userId: req.userId,
@@ -1239,9 +1240,10 @@ exports.updateStatus = async (req, res) => {
     }
 
     // Send Email code here
+    let mergedEmail;
     let notificationEmails = adminUsers.map(user => user.email);
     const servicerEmail = servicerUsers.map(user => user.email)
-    notificationEmails.push(servicerEmail)
+    mergedEmail =  notificationEmails.concat(servicerEmail)
     let settingData = await userService.getSetting({});
 
     const status_content = req.body.status || req.body.status == "true" ? 'Active' : 'Inactive';
@@ -1256,7 +1258,7 @@ exports.updateStatus = async (req, res) => {
       subject: "Update Status"
     }
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, 'noreply@getcover.com', emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, 'noreply@getcover.com', emailData))
 
     //Save Logs
     let logData = {

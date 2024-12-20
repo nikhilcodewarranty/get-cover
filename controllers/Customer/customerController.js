@@ -51,22 +51,28 @@ exports.createCustomer = async (req, res, next) => {
         }
       },
     }
-    const resellerQuery = {
-      metaData: {
-        $elemMatch: {
-          $and: [
-            { "customerNotifications.customerAdded": true },
-            { status: true },
-            { metaId: new mongoose.Types.ObjectId(data?.resellerName) },
+    let resellerQuery
+    let resellerUsers = []
+    if (data?.resellerName) {
+      resellerQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "customerNotifications.customerAdded": true },
+              { status: true },
+              { metaId: new mongoose.Types.ObjectId(data?.resellerName) },
 
 
-          ]
-        }
-      },
+            ]
+          }
+        },
+      }
+       resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerQuery, { email: 1 })
+
     }
+
     let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
     let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerQuery, { email: 1 })
-    let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerQuery, { email: 1 })
     const IDs = adminUsers.map(user => user._id)
     const dealerId = dealerUsers.map(user => user._id)
     const resellerId = resellerUsers.map(user => user._id)
@@ -183,10 +189,10 @@ exports.createCustomer = async (req, res, next) => {
 
     // Primary User Welcoime email
     let notificationEmails = adminUsers.map(user => user.email)
+    let mergedEmail;
     let dealerEmails = dealerUsers.map(user => user.email)
     let resellerEmails = resellerUsers.map(user => user.email)
-    notificationEmails.push(dealerEmails)
-    notificationEmails.push(resellerEmails)
+    mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails)
     let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
     let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkReseller?._id, isPrimary: true } } })
 
@@ -203,7 +209,7 @@ exports.createCustomer = async (req, res, next) => {
     }
 
     // Send Email code here
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ['noreply@getcover.com'], emailData))
 
     if (saveMembers.length > 0) {
       if (data.status) {
@@ -770,7 +776,8 @@ exports.editCustomer = async (req, res) => {
     let resellerUsers = await supportingFunction.getNotificationEligibleUser(reellerQuery, { email: 1 })
     let customerUsers = await supportingFunction.getNotificationEligibleUser(customerQuery, { email: 1 })
     let notificationArray = []
-    let notificationEmails =  adminUsers.map(user => user.email)
+    let mergedEmail
+    let notificationEmails = adminUsers.map(user => user.email)
     let IDs = adminUsers.map(user => user._id)
     let dealerIds = dealerUsers.map(user => user._id)
     let customerIds = customerUsers.map(user => user._id)
@@ -778,9 +785,8 @@ exports.editCustomer = async (req, res) => {
     let customerEmails = customerUsers.map(user => user.email)
     let resellerId = resellerUsers.map(user => user._id)
     let resellerEmail = resellerUsers.map(user => user.email)
-    notificationEmails.push(dealerEmails)
-    notificationEmails.push(customerEmails)
-    notificationEmails.push(resellerEmail)
+    mergedEmail = notificationEmails.concat(dealerEmails, resellerEmail, customerEmails)
+
     let notificationData = {
       title: "Customer Details Updated",
       description: `The details of customer ${checkDealer.username} for the Dealer ${dealerCheck.name} has been updated by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
@@ -837,7 +843,7 @@ exports.editCustomer = async (req, res) => {
     }
 
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ["noreply@getcover.com"], emailData))
 
     //Save Logs editCustomer
     let logData = {
@@ -975,7 +981,7 @@ exports.changePrimaryUser = async (req, res) => {
       const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
       const base_url = `${process.env.SITE_URL}`
       let adminUpdatePrimaryQuery
-      let notificationEmails
+      let mergedEmail
       let notificationData
       let notificationArray
       if (checkServicer) {
@@ -1015,7 +1021,7 @@ exports.changePrimaryUser = async (req, res) => {
         let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerUpdatePrimaryQuery, { email: 1 })
         let notificationEmails = adminUsers.map(user => user.email);
         let servicerEmails = servicerUsers.map(user => user.email);
-        notificationEmails.push(servicerEmails)
+        mergedEmail = notificationEmails.concat(servicerEmails)
         const IDs = adminUsers.map(user => user._id)
         const servicerId = servicerUsers.map(user => user._id)
         notificationData = {
@@ -1068,7 +1074,7 @@ exports.changePrimaryUser = async (req, res) => {
         const IDs = adminUsers.map(user => user._id)
         const dealerId = dealerUsers.map(user => user._id)
         let dealerEmails = dealerUsers.map(user => user.email);
-        notificationEmails.push(dealerEmails)
+        mergedEmail = notificationEmails.concat(dealerEmails)
         notificationData = {
           title: "Dealer Primary User Updated",
           description: `The Primary user for ${checkDealer.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
@@ -1133,8 +1139,9 @@ exports.changePrimaryUser = async (req, res) => {
         const resellerId = resellerUsers.map(user => user._id)
         let dealerEmails = dealerUsers.map(user => user.email);
         let resellerEmails = resellerUsers.map(user => user.email);
-        notificationEmails.push(dealerEmails)
-        notificationEmails.push(resellerEmails)
+
+        mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails)
+
         notificationData = {
           title: "Reseller Primary User Updated",
           description: `The Primary user of ${checkReseller.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
@@ -1223,9 +1230,9 @@ exports.changePrimaryUser = async (req, res) => {
         let dealerEmails = dealerUsers.map(user => user.email);
         let resellerEmails = resellerUsers.map(user => user.email);
         let customerEmails = resellerUsers.map(user => user.email);
-        notificationEmails.push(dealerEmails)
-        notificationEmails.push(resellerEmails)
-        notificationEmails.push(customerEmails)
+
+        mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails, customerEmails)
+
         notificationData = {
           title: "Customer Primary User Updated",
           description: `The Primary user of ${checkCustomer.username} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
@@ -1284,7 +1291,7 @@ exports.changePrimaryUser = async (req, res) => {
         subject: "Primary User change"
       };
 
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ["noreply@getcover.com"], emailData))
 
       //Save Logs changePrimaryUser
       let logData = {
@@ -2823,6 +2830,7 @@ exports.createCustomerNew = async (req, res, next) => {
 
     // Primary User Welcoime email
     let notificationEmails = await supportingFunction.getUserEmails();
+    let mergedEmail;
     let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
     let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkReseller?._id, isPrimary: true })
     IDs.push(resellerPrimary?._id)
