@@ -67,7 +67,7 @@ exports.createCustomer = async (req, res, next) => {
           }
         },
       }
-       resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerQuery, { email: 1 })
+      resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerQuery, { email: 1 })
 
     }
 
@@ -79,7 +79,7 @@ exports.createCustomer = async (req, res, next) => {
     if (!checkDealer) {
       res.send({
         code: constant.errorCode,
-        message: "Invalid dealer"
+        message: "Invalid `dealer`"
       })
       return;
     };
@@ -807,16 +807,19 @@ exports.editCustomer = async (req, res) => {
       notificationFor: dealerIds
     };
     notificationArray.push(notificationData)
-    notificationData = {
-      title: "Customer Details Updated",
-      description: `The details of customer ${checkDealer.username} for the Dealer ${dealerCheck.name} has been updated by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
-      userId: req.teammateId,
-      redirectionId: "reseller/customerDetails/" + checkDealer._id,
-      flag: 'customer',
-      endPoint: base_url + "reseller/customerDetails/" + checkDealer._id,
-      notificationFor: resellerId
-    };
-    notificationArray.push(notificationData)
+    if (resellerUsers.length > 0) {
+      notificationData = {
+        title: "Customer Details Updated",
+        description: `The details of customer ${checkDealer.username} for the Dealer ${dealerCheck.name} has been updated by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+        userId: req.teammateId,
+        redirectionId: "reseller/customerDetails/" + checkDealer._id,
+        flag: 'customer',
+        endPoint: base_url + "reseller/customerDetails/" + checkDealer._id,
+        notificationFor: resellerId
+      };
+      notificationArray.push(notificationData)
+    }
+
     notificationData = {
       title: "Details Updated",
       description: `The details for your account has been changed by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
@@ -1253,6 +1256,7 @@ exports.changePrimaryUser = async (req, res) => {
           notificationFor: dealerId
         };
         notificationArray.push(notificationData)
+
         if (resellerUsers.length > 0) {
           notificationData = {
             title: "Customer Primary User Updated",
@@ -1473,17 +1477,20 @@ exports.addCustomerUser = async (req, res) => {
         notificationFor: dealerId
       };
       notificationArray.push(notificationData)
-      notificationData = {
-        title: "Customer User Added",
-        description: `A new user for customer ${checkCustomer.username} has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
-        userId: req.teammateId,
-        contentId: saveData._id,
-        flag: 'customer_user',
-        endPoint: base_url + "reseller/customerDetails/" + checkCustomer._id,
-        redirectionId: "reseller/customerDetails/" + checkCustomer._id,
-        notificationFor: resellerId
-      };
-      notificationArray.push(notificationData)
+      if (resellerUsers.length > 0) {
+        notificationData = {
+          title: "Customer User Added",
+          description: `A new user for customer ${checkCustomer.username} has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+          userId: req.teammateId,
+          contentId: saveData._id,
+          flag: 'customer_user',
+          endPoint: base_url + "reseller/customerDetails/" + checkCustomer._id,
+          redirectionId: "reseller/customerDetails/" + checkCustomer._id,
+          notificationFor: resellerId
+        };
+        notificationArray.push(notificationData)
+      }
+
       notificationData = {
         title: "New User Added",
         description: `A new user for your account has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
