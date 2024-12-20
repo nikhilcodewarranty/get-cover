@@ -763,7 +763,7 @@ exports.updateUserData = async (req, res) => {
         metaData: {
           $elemMatch: {
             $and: [
-              { "dealerNotification.userUpdate": true },
+              { "dealerNotifications.userUpdate": true },
               { status: true },
               { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
             ]
@@ -774,7 +774,7 @@ exports.updateUserData = async (req, res) => {
         metaData: {
           $elemMatch: {
             $and: [
-              { "dealerNotification.userUpdate": true },
+              { "dealerNotifications.userUpdate": true },
               { status: true },
               { metaId: new mongoose.Types.ObjectId(checkDealer._id) },
             ]
@@ -787,7 +787,10 @@ exports.updateUserData = async (req, res) => {
       const dealerIds = dealerUsers.map(user => user._id)
       const dealerEmails = dealerUsers.map(user => user.email)
       notificationEmails = adminUsers.map(user => user.email)
-      notificationEmails.push(dealerEmails)
+      
+      let mergedEmail = notificationEmails.concat(dealerEmails);
+      console.log("notificationEmails------------------",mergedEmail)
+
       if (data.firstName) {
         notificationData = {
           title: "Dealer User Details Changed",
@@ -1009,9 +1012,9 @@ exports.updateUserData = async (req, res) => {
       const customerEmails = resellerUsers.map(user => user.email)
 
       notificationEmails = adminUsers.map(user => user.email)
-      notificationEmails.push(dealerEmails)
-      notificationEmails.push(resellerEmails)
-      notificationEmails.push(customerEmails)
+      notificationEmails.concat(dealerEmails)
+      notificationEmails.concat(resellerEmails)
+      notificationEmails.concat(customerEmails)
 
       if (data.firstName) {
 
@@ -1077,8 +1080,8 @@ exports.updateUserData = async (req, res) => {
           description: `The Status for the customer ${checkCustomer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
-          redirectionId: "customerDetails/" + checkCustomer._id,
-          endPoint: base_url + "customerDetails/" + checkCustomer._id,
+          redirectionId: "dealer/customerDetails/" + checkCustomer._id,
+          endPoint: base_url + "dealer/customerDetails/" + checkCustomer._id,
           notificationFor: dealerIds,
 
         };
@@ -1088,8 +1091,8 @@ exports.updateUserData = async (req, res) => {
           description: `The Status for the customer ${checkCustomer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
-          redirectionId: "customerDetails/" + checkCustomer._id,
-          endPoint: base_url + "customerDetails/" + checkCustomer._id,
+          redirectionId: "reseller/customerDetails/" + checkCustomer._id,
+          endPoint: base_url + "reseller/customerDetails/" + checkCustomer._id,
           notificationFor: resellerIds,
 
         };
@@ -1132,6 +1135,8 @@ exports.updateUserData = async (req, res) => {
         content: "The user information has been updated successfully!",
         subject: "Update User Info"
       }
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ['noreply@getcover.com'], emailData))
+
     }
 
     else {
@@ -1145,9 +1150,21 @@ exports.updateUserData = async (req, res) => {
         subject: "Update Status",
         redirectId: status_content == "Active" ? resetLink : '',
       }
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(updateUser.email, ['noreply@getcover.com'], emailData))
+
+      emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
+        senderName: `Dear ${updateUser.metaData[0].firstName}`,
+        content: `Status has been changed to  ${status_content} for ${updateUser.metaData[0].firstName + " " + updateUser.metaData[0].lastName}`,
+        subject: "Update Status"
+      }
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ['noreply@getcover.com'], emailData))
+
     }
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
 
 
     let createNotification = await userService.saveNotificationBulk(notificationArray);
@@ -1248,7 +1265,7 @@ exports.getAllTerms = async (req, res) => {
 // add new roles // backend use
 exports.addRole = async (req, res) => {
   try {
-    let checkRole = await userService.getRoleById({ role: { '$regex': new RegExp(`^ ${ req.body.role } $`, 'i') } })
+    let checkRole = await userService.getRoleById({ role: { '$regex': new RegExp(`^ ${req.body.role} $`, 'i') } })
     if (checkRole) {
       res.send({
         code: constant.errorCode,
@@ -1298,7 +1315,7 @@ exports.sendLinkToEmail = async (req, res) => {
         })
         return;
       }
-      let resetLink = `${ process.env.SITE_URL } newPassword / ${ checkEmail._id } /${resetPasswordCode}`
+      let resetLink = `${process.env.SITE_URL} newPassword / ${checkEmail._id} /${resetPasswordCode}`
 
       let settingData = await userService.getSetting({});
 
@@ -1431,7 +1448,6 @@ exports.deleteUser = async (req, res) => {
     let notificationArray = [];
     let notificationEmails
 
-    console.log("Here1111111111111111111111");
     if (checkServicer) {
       adminDeleteQuery = {
         metaData: {
@@ -1491,7 +1507,7 @@ exports.deleteUser = async (req, res) => {
         metaData: {
           $elemMatch: {
             $and: [
-              { "dealerNotification.userDelete": true },
+              { "dealerNotifications.userDelete": true },
               { status: true },
               { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
             ]
@@ -1502,7 +1518,7 @@ exports.deleteUser = async (req, res) => {
         metaData: {
           $elemMatch: {
             $and: [
-              { "dealerNotification.userDelete": true },
+              { "dealerNotifications.userDelete": true },
               { status: true },
               { metaId: new mongoose.Types.ObjectId(checkDealer._id) },
             ]
@@ -1600,8 +1616,8 @@ exports.deleteUser = async (req, res) => {
         description: `The User ${checkUser.metaData[0].firstName} for the reseller ${checkReseller.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
         userId: req.teammateId,
         flag: checkRole?.role,
-        redirectionId: "resellerDetails/" + checkReseller._id,
-        endPoint: base_url + "resellerDetails/" + checkReseller._id,
+        redirectionId: "dealer/resellerDetails/" + checkReseller._id,
+        endPoint: base_url + "dealer/resellerDetails/" + checkReseller._id,
         notificationFor: dealerId
 
       }
@@ -1727,7 +1743,6 @@ exports.deleteUser = async (req, res) => {
       }
       notificationArray.push(notificationData)
     }
-    console.log("222222222222222222222222222");
 
     let createNotification = await userService.saveNotificationBulk(notificationArray);
     // Send Email code here

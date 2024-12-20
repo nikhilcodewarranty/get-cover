@@ -244,36 +244,85 @@ exports.createCustomer = async (req, res, next) => {
                     $and: [
                         { "customerNotifications.customerAdded": true },
                         { status: true },
-                        {
-                            $or: [
-                                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                                { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
-                                { roleId: new mongoose.Types.ObjectId("65bb94b4b68e5a4a62a0b563") },
-                            ]
-                        }
+                        { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
                     ]
                 }
             },
         }
+        const dealerQuery = {
+            metaData: {
+                $elemMatch: {
+                    $and: [
+                        { "customerNotifications.customerAdded": true },
+                        { status: true },
+                        { metaId: new mongoose.Types.ObjectId(checkReseller.dealerId) },
+                    ]
+                }
+            },
+        }
+        const resellerQuery = {
+            metaData: {
+                $elemMatch: {
+                    $and: [
+                        { "customerNotifications.customerAdded": true },
+                        { status: true },
+                        { metaId: new mongoose.Types.ObjectId(checkReseller._id) },
+
+
+                    ]
+                }
+            },
+        }
+
+        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
+        let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerQuery, { email: 1 })
+        let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerQuery, { email: 1 })
+        const IDs = adminUsers.map(user => user._id)
+        const dealerId = dealerUsers.map(user => user._id)
+        const resellerId = resellerUsers.map(user => user._id)
+        // Primary User Welcoime email
+        let notificationEmails = adminUsers.map(user => user.email)
+        let dealerEmails = dealerUsers.map(user => user.email)
+        let resellerEmails = resellerUsers.map(user => user.email)
+        notificationEmails.push(dealerEmails)
+        notificationEmails.push(resellerEmails)
         //Send Notification to customer,admin,reseller,dealer 
         let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
 
-        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
-        const IDs = adminUsers.map(user => user._id)
+        let notificationArray = []
+        //Send Notification to customer,admin,reseller,dealer 
         let notificationData = {
-            adminTitle: "New Customer  Added",
-            adminMessage: `A New Customer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} - User Role - ${req.role} on our portal.`,
-            resellerTitle: "New Customer  Added",
-            dealerTitle: "New Customer  Added",
-            resellerMessage: `A New Customer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} - User Role - ${req.role} on our portal.`,
-            dealerMessage: `A New Customer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} - User Role - ${req.role} on our portal.`,
+            title: "New Customer  Added",
+            description: `A New Customer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName} - User Role - ${req.role} on our portal.`,
             userId: req.teammateId,
             flag: 'customer',
             notificationFor: IDs,
             redirectionId: "customerDetails/" + createdCustomer._id,
-            endpoint: base_url,
+            endpoint: base_url + "customerDetails/" + createdCustomer._id,
         };
-        let createNotification = await userService.createNotification(notificationData);
+        notificationArray.push(notificationData)
+        notificationData = {
+            title: "New Customer  Added",
+            description: `A New Customer ${data.accountName} has been added and approved by $${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName} - User Role - ${req.role} on our portal.`,
+            userId: req.teammateId,
+            flag: 'customer',
+            notificationFor: dealerId,
+            redirectionId: "dealer/customerDetails/" + createdCustomer._id,
+            endpoint: base_url + "dealer/customerDetails/" + createdCustomer._id,
+        };
+        notificationArray.push(notificationData)
+        notificationData = {
+            title: "New Customer  Added",
+            description: `A New Customer ${data.accountName} has been added and approved by $${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName} - User Role - ${req.role} on our portal.`,
+            userId: req.teammateId,
+            flag: 'customer',
+            notificationFor: resellerId,
+            redirectionId: "reseller/customerDetails/" + createdCustomer._id,
+            endpoint: base_url + "reseller/customerDetails/" + createdCustomer._id,
+        };
+        notificationArray.push(notificationData)
+        let createNotification = await userService.saveNotificationBulk(notificationArray);
+
         let emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -281,10 +330,9 @@ exports.createCustomer = async (req, res, next) => {
             websiteSetting: settingData[0],
             senderName: getPrimary.metaData[0]?.firstName,
             redirectId: base_url + "customerDetails/" + createdCustomer._id,
-            content: `A New Customer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} - User Role - ${req.role} on our portal.`,
+            content: `A New Customer ${data.accountName} has been added and approved by $${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName} - User Role - ${req.role} on our portal.`,
             subject: "New Customer Added"
         }
-        let notificationEmails = adminUsers.map(user => user.email)
         // Send Email code here
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
         res.send({

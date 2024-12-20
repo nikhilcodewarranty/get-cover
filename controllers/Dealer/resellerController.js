@@ -157,7 +157,7 @@ exports.createReseller = async (req, res) => {
             title: "New Reseller  Added",
             description: `A New Reseller ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} - User Role - ${req.role} on our portal.`,
             userId: req.teammateId,
-            redirectionId: "resellerDetails/" + createdReseler._id,
+            redirectionId: "dealer/resellerDetails/" + createdReseler._id,
             endpoint: base_url + "dealer/resellerDetails/ " + createdReseler._id,
             flag: 'reseller',
             notificationFor: dealerId
@@ -997,7 +997,7 @@ exports.editResellers = async (req, res) => {
         let dealerEmails = dealerUsers.map(user => user.email)
         let resellerId = resellerUsers.map(user => user._id)
         let resellerEmail = resellerUsers.map(user => user.email)
-        
+
         let notificationData = {
             title: "Reseller Details Updated",
             description: `The details of Reseller ${checkReseller.name} for the Dealer ${checkDealer.name} has been updated by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
@@ -1012,9 +1012,9 @@ exports.editResellers = async (req, res) => {
             title: "Reseller Details Updated",
             description: `The details of Reseller ${checkReseller.name} for the Dealer ${checkDealer.name} has been updated by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
             userId: req.teammateId,
-            redirectionId: "resellerDetails/" + checkReseller._id,
+            redirectionId: "dealer/resellerDetails/" + checkReseller._id,
             flag: 'reseller',
-            endPoint: base_url + "resellerDetails/" + checkReseller._id,
+            endPoint: base_url + "dealer/resellerDetails/" + checkReseller._id,
             notificationFor: dealerIds
         };
         notificationArray.push(notificationData)
@@ -1269,8 +1269,8 @@ exports.addResellerUser = async (req, res) => {
                 userId: req.teammateId,
                 contentId: saveData._id,
                 flag: 'reseller_user',
-                endPoint: base_url + "/resellerDetails/" + checkReseller._id,
-                redirectionId: "/resellerDetails/" + checkReseller._id,
+                endPoint: base_url + "dealer/resellerDetails/" + checkReseller._id,
+                redirectionId: "dealer/resellerDetails/" + checkReseller._id,
                 notificationFor: dealerId
             };
             notificationArray.push(notificationData)
@@ -2257,9 +2257,9 @@ exports.changeResellerStatus = async (req, res) => {
                 title: "Reseller Status Updated",
                 description: `The Reseller ${singleReseller.name} status has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
                 userId: req.teammateId,
-                redirectionId: "resellerDetails/" + singleReseller._id,
+                redirectionId: "dealer/resellerDetails/" + singleReseller._id,
                 flag: 'reseller',
-                endPoint: base_url + "resellerDetails/" + singleReseller._id,
+                endPoint: base_url + "dealer/resellerDetails/" + singleReseller._id,
                 notificationFor: dealerId
             };
             notificationArray.push(notificationData)
