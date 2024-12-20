@@ -139,7 +139,7 @@ exports.createReseller = async (req, res) => {
         let notificationEmails = adminUsers.map(user => user.email)
         let mergedEmail;
         let dealerEmails = dealerUsers.map(user => user.email)
-        mergedEmail =  notificationEmails.concat(dealerEmails)
+        mergedEmail = notificationEmails.concat(dealerEmails)
         //Merge start singleServer
         let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
 
@@ -1034,7 +1034,7 @@ exports.editResellers = async (req, res) => {
         let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkReseller._id, isPrimary: true } } })
         let mergedEmail;
         let notificationEmails = adminUsers.map(user => user.email)
-        mergedEmail = notificationEmails.concat(resellerEmail,dealerEmails)
+        mergedEmail = notificationEmails.concat(resellerEmail, dealerEmails)
         if (data.isServicer) {
             const checkServicer = await providerService.getServiceProviderById({ resellerId: req.params.resellerId })
             if (!checkServicer) {
@@ -2487,6 +2487,11 @@ exports.getResellerClaims = async (req, res) => {
             }
         })
         let servicerMatch = {}
+        let dealerMatch = {}
+        let resellerMatch = {}
+        let dateMatch = {}
+        let statusMatch = {}
+
         if (data.servicerName != '' && data.servicerName != undefined) {
             const checkServicer = await providerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } });
             if (checkServicer.length > 0) {
@@ -2505,6 +2510,38 @@ exports.getResellerClaims = async (req, res) => {
                 servicerMatch = { 'servicerId': new mongoose.Types.ObjectId('5fa1c587ae2ac23e9c46510f') }
             }
         }
+
+        if (data.dealerName != "") {
+            let getDealer = await dealerService.getAllDealers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
+            let dealerIds = getDealer.map(ID => new mongoose.Types.ObjectId(ID._id))
+            dealerMatch = { dealerId: { $in: dealerIds } }
+
+        }
+
+        if (data.resellerName != "") {
+            let getReseller = await resellerService.getResellers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
+            let resellerIds = getReseller.map(ID => new mongoose.Types.ObjectId(ID._id))
+            resellerMatch = { resellerId: { $in: resellerIds } }
+        }
+
+        statusMatch = {}
+
+        if (data.dateFilter != "") {
+            data.endDate = new Date(data.endDate).setHours(11, 59, 0, 0)
+            if (data.dateFilter == "damageDate") {
+                dateMatch = { lossDate: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
+                // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
+            }
+            if (data.dateFilter == "openDate") {
+                dateMatch = { createdAt: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
+                // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
+            }
+            if (data.dateFilter == "closeDate") {
+                dateMatch = { claimDate: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
+                statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
+            }
+        }
+
         let claimPaidStatus = {}
         const dynamicOption = await userService.getOptions({ name: 'coverage_type' })
 
@@ -2531,7 +2568,11 @@ exports.getResellerClaims = async (req, res) => {
                         { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                        servicerMatch
+                        servicerMatch,
+                        resellerMatch,
+                        dealerMatch,
+                        dateMatch,
+                        statusMatch,
                     ]
                 },
             },

@@ -119,6 +119,7 @@ exports.exportDataForClaim = async (req, res) => {
     let dealerMatch = {}
     let resellerMatch = {}
     let dateMatch = {}
+    let statusMatch = {}
     // checking the user type from token
     if (req.role == 'Dealer') {
       match = { 'contracts.orders.dealerId': new mongoose.Types.ObjectId(req.userId) }
@@ -283,7 +284,9 @@ exports.exportDataForClaim = async (req, res) => {
     }
 
     statusMatch = {}
+
     if (data.dateFilter != "") {
+      data.endDate = new Date(data.endDate).setHours(11, 59, 0, 0)
       if (data.dateFilter == "damageDate") {
         dateMatch = { lossDate: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
         // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }

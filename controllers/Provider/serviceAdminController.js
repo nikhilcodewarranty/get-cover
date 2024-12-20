@@ -1243,7 +1243,7 @@ exports.updateStatus = async (req, res) => {
     let mergedEmail;
     let notificationEmails = adminUsers.map(user => user.email);
     const servicerEmail = servicerUsers.map(user => user.email)
-    mergedEmail =  notificationEmails.concat(servicerEmail)
+    mergedEmail = notificationEmails.concat(servicerEmail)
     let settingData = await userService.getSetting({});
 
     const status_content = req.body.status || req.body.status == "true" ? 'Active' : 'Inactive';
@@ -2391,6 +2391,8 @@ exports.getServicerClaims = async (req, res) => {
         ]
       }
     })
+
+
     const dynamicOption = await userService.getOptions({ name: 'coverage_type' })
 
     let claimPaidStatus = {}
@@ -2403,6 +2405,41 @@ exports.getServicerClaims = async (req, res) => {
           { "claimPaymentStatus": "Paid" },
           { "claimPaymentStatus": "Unpaid" },
         ]
+      }
+    }
+    let dealerMatch = {}
+    let dateMatch = {}
+    let statusMatch = {}
+    let resellerMatch = {}
+
+    if (data.dealerName != "") {
+      let getDealer = await dealerService.getAllDealers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
+      let dealerIds = getDealer.map(ID => new mongoose.Types.ObjectId(ID._id))
+      dealerMatch = { dealerId: { $in: dealerIds } }
+
+    }
+
+    if (data.resellerName != "") {
+      let getReseller = await resellerService.getResellers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
+      let resellerIds = getReseller.map(ID => new mongoose.Types.ObjectId(ID._id))
+      resellerMatch = { resellerId: { $in: resellerIds } }
+    }
+
+    statusMatch = {}
+
+    if (data.dateFilter != "") {
+      data.endDate = new Date(data.endDate).setHours(11, 59, 0, 0)
+      if (data.dateFilter == "damageDate") {
+        dateMatch = { lossDate: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
+        // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
+      }
+      if (data.dateFilter == "openDate") {
+        dateMatch = { createdAt: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
+        // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
+      }
+      if (data.dateFilter == "closeDate") {
+        dateMatch = { claimDate: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
+        statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
       }
     }
 
@@ -2419,6 +2456,10 @@ exports.getServicerClaims = async (req, res) => {
             { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus : '', '$options': 'i' } },
             { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { 'servicerId': new mongoose.Types.ObjectId(req.params.servicerId) },
+            dealerMatch,
+            resellerMatch,
+            dateMatch,
+            statusMatch,
           ]
         },
       },
