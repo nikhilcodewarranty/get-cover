@@ -680,6 +680,7 @@ exports.updateUserData = async (req, res) => {
     let adminUpdatePrimaryQuery
     let notificationData;
     let notificationArray = []
+    let mergedEmail
     let notificationEmails;
     if (checkServicer) {
       adminUpdatePrimaryQuery = {
@@ -710,7 +711,7 @@ exports.updateUserData = async (req, res) => {
       const servicerId = servicerUsers.map(user => user._id)
       const servicerEmails = servicerUsers.map(user => user.email)
       notificationEmails = adminUsers.map(user => user.email)
-      notificationEmails.push(servicerEmails)
+      mergedEmail = notificationEmails.concat(servicerEmails);
 
       if (data.firstName) {
         notificationData = {
@@ -787,9 +788,7 @@ exports.updateUserData = async (req, res) => {
       const dealerIds = dealerUsers.map(user => user._id)
       const dealerEmails = dealerUsers.map(user => user.email)
       notificationEmails = adminUsers.map(user => user.email)
-      
-      let mergedEmail = notificationEmails.concat(dealerEmails);
-      console.log("notificationEmails------------------",mergedEmail)
+      mergedEmail = notificationEmails.concat(dealerEmails);
 
       if (data.firstName) {
         notificationData = {
@@ -882,8 +881,8 @@ exports.updateUserData = async (req, res) => {
       const dealerEmails = dealerUsers.map(user => user.email)
       const resellerEmails = resellerUsers.map(user => user.email)
       notificationEmails = adminUsers.map(user => user.email)
-      notificationEmails.push(dealerEmails)
-      notificationEmails.push(resellerEmails)
+      mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails);
+
       if (data.firstName) {
         notificationData = {
           title: "Reseller User Details Changed",
@@ -1012,9 +1011,9 @@ exports.updateUserData = async (req, res) => {
       const customerEmails = resellerUsers.map(user => user.email)
 
       notificationEmails = adminUsers.map(user => user.email)
-      notificationEmails.concat(dealerEmails)
-      notificationEmails.concat(resellerEmails)
-      notificationEmails.concat(customerEmails)
+
+      mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails, customerEmails);
+
 
       if (data.firstName) {
 
@@ -1447,7 +1446,7 @@ exports.deleteUser = async (req, res) => {
     let notificationData;
     let notificationArray = [];
     let notificationEmails
-
+    let mergedEmail
     if (checkServicer) {
       adminDeleteQuery = {
         metaData: {
@@ -1479,7 +1478,8 @@ exports.deleteUser = async (req, res) => {
       const servicerIds = servicerUsers.map(user => user._id)
       notificationEmails = adminUsers.map(user => user.email);
       let servicerEmails = servicerUsers.map(user => user.email);
-      notificationEmails.push(servicerEmails)
+      mergedEmail = notificationEmails.concat(servicerEmails)
+
 
       notificationData = {
         title: "Servicer User Deleted",
@@ -1531,7 +1531,7 @@ exports.deleteUser = async (req, res) => {
       const dealerId = dealerUsers.map(user => user._id)
       notificationEmails = adminUsers.map(user => user.email);
       let dealerEmails = dealerUsers.map(user => user.email);
-      notificationEmails.push(dealerEmails)
+      mergedEmail = notificationEmails.concat(dealerEmails)
       notificationData = {
         title: "Dealer User Deleted",
         description: `The User ${checkUser.metaData[0].firstName} for the dealer ${checkDealer.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName} -${req.role}..`,
@@ -1598,8 +1598,8 @@ exports.deleteUser = async (req, res) => {
       notificationEmails = adminUsers.map(user => user.email);
       let dealerEmails = dealerUsers.map(user => user.email);
       let resellerEmails = resellerUsers.map(user => user.email);
-      notificationEmails.push(dealerEmails)
-      notificationEmails.push(resellerEmails)
+ 
+      mergedEmail = notificationEmails.concat(dealerEmails,resellerEmails)
       notificationData = {
         title: "Reseller User Deleted",
         description: `The User ${checkUser.metaData[0].firstName} for the reseller ${checkReseller.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
@@ -1694,9 +1694,7 @@ exports.deleteUser = async (req, res) => {
       let resellerEmails = resellerUsers.map(user => user.email);
       let customerEmails = customerUsers.map(user => user.email);
 
-      notificationEmails.push(dealerEmails)
-      notificationEmails.push(resellerEmails)
-      notificationEmails.push(customerEmails)
+      mergedEmail = notificationEmails.concat(dealerEmails,resellerEmails,customerEmails)
 
       notificationData = {
         title: "Customer User Deleted",
@@ -1755,7 +1753,7 @@ exports.deleteUser = async (req, res) => {
       content: "Your account has been deleted by Get-Cover team.",
       subject: "Delete User"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ["noreply@getcover.com"], emailData))
 
     //Save Logs delete user
     let logData = {

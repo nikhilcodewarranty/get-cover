@@ -137,8 +137,9 @@ exports.createReseller = async (req, res) => {
         let saveMembers = await userService.insertManyUser(teamMembers)
         // Primary User Welcoime email
         let notificationEmails = adminUsers.map(user => user.email)
+        let mergedEmail;
         let dealerEmails = dealerUsers.map(user => user.email)
-        notificationEmails.push(dealerEmails)
+        mergedEmail =  notificationEmails.concat(dealerEmails)
         //Merge start singleServer
         let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
 
@@ -178,7 +179,7 @@ exports.createReseller = async (req, res) => {
 
 
         // Send Email code here
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ['noreply@getcover.com'], emailData))
 
         if (data.status) {
             for (let i = 0; i < saveMembers.length; i++) {
@@ -1031,9 +1032,9 @@ exports.editResellers = async (req, res) => {
         let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkReseller.dealerId, isPrimary: true } } })
 
         let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkReseller._id, isPrimary: true } } })
-        let notificationEmails =adminUsers.map(user => user.email)
-        notificationEmails.push(resellerEmail)
-        notificationEmails.push(dealerEmails)
+        let mergedEmail;
+        let notificationEmails = adminUsers.map(user => user.email)
+        mergedEmail = notificationEmails.concat(resellerEmail,dealerEmails)
         if (data.isServicer) {
             const checkServicer = await providerService.getServiceProviderById({ resellerId: req.params.resellerId })
             if (!checkServicer) {
@@ -1096,7 +1097,7 @@ exports.editResellers = async (req, res) => {
             content: "Your details have been updated. To view the details, please login into your account.",
             subject: "Update Info"
         }
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ['noreply@getcover.com'], emailData))
 
 
         //Save Logs update reseller
@@ -2142,15 +2143,9 @@ exports.changeResellerStatus = async (req, res) => {
         let IDs = await supportingFunction.getUserIds()
         let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: singleReseller.dealerId, isPrimary: true })
         let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.resellerId, isPrimary: true })
-        let notificationEmails = await supportingFunction.getUserEmails();
         //check Reseller dealer
         let checkDealer = await dealerService.getDealerByName({ _id: singleReseller.dealerId }, {})
-        if (checkDealer.isAccountCreate) {
-            IDs.push(dealerPrimary._id)
-            notificationEmails.push(dealerPrimary.email);
-        }
-        let toEmail = notificationEmails;
-        let ccEmail = "noreply@getcover.com";
+        let mergedEmail;
         if (!singleReseller) {
             res.send({
                 code: constant.errorCode,

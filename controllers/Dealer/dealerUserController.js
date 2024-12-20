@@ -530,32 +530,38 @@ exports.createCustomer = async (req, res, next) => {
                 }
             },
         }
-        const resellerQuery = {
+        let resellerQuery
+        let resellerUsers = []
+        if (data?.resellerName) {
+          resellerQuery = {
             metaData: {
-                $elemMatch: {
-                    $and: [
-                        { "customerNotifications.customerAdded": true },
-                        { status: true },
-                        { metaId: new mongoose.Types.ObjectId(data?.resellerName) },
-
-
-                    ]
-                }
+              $elemMatch: {
+                $and: [
+                  { "customerNotifications.customerAdded": true },
+                  { status: true },
+                  { metaId: new mongoose.Types.ObjectId(data?.resellerName) },
+    
+    
+                ]
+              }
             },
+          }
+           resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerQuery, { email: 1 })
+    
         }
+        
 
         let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
         let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerQuery, { email: 1 })
-        let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerQuery, { email: 1 })
         const IDs = adminUsers.map(user => user._id)
         const dealerId = dealerUsers.map(user => user._id)
         const resellerId = resellerUsers.map(user => user._id)
         // Primary User Welcoime email
         let notificationEmails = adminUsers.map(user => user.email)
+        let mergedEmail;
         let dealerEmails = dealerUsers.map(user => user.email)
         let resellerEmails = resellerUsers.map(user => user.email)
-        notificationEmails.push(dealerEmails)
-        notificationEmails.push(resellerEmails)
+        mergedEmail = notificationEmails.concat(dealerEmails,resellerEmails)
         // check customer acccount name 
         let checkAccountName = await customerService.getCustomerByName({
             username: new RegExp(`^${data.accountName}$`, 'i'), dealerId: req.userId
@@ -658,7 +664,7 @@ exports.createCustomer = async (req, res, next) => {
         }
 
         // Send Email code here
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ['noreply@getcover.com'], emailData))
 
         if (saveMembers.length > 0) {
             if (data.status) {
@@ -900,7 +906,7 @@ exports.createReseller = async (req, res) => {
         const dealerId = dealerUsers.map(user => user._id)
         let notificationEmails = adminUsers.map(user => user.email)
         let dealerEmails = dealerUsers.map(user => user.email)
-        notificationEmails.push(dealerEmails)
+       let mergedEmail =  notificationEmails.concat(dealerEmails)
         let notificationData = {
             title: "New Reseller  Added",
             description: `A New Reseller ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName + " " + " " + checkLoginUser.metaData[0].lastName} - User Role - ${req.role} on our portal.`,
@@ -939,7 +945,7 @@ exports.createReseller = async (req, res) => {
         }
 
         // Send Email code here
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ['noreply@getcover.com'], emailData))
 
 
         if (data.status) {
