@@ -3044,7 +3044,7 @@ exports.saveOptions = async (req, res) => {
 exports.getOptions = async (req, res) => {
   try {
     let filterOption = req.params.name
-    const query = { name: filterOption, 'value.status': true }
+    const query = { name: filterOption, value:{$elemMatch:{status:true}} }
     const getOptions = await userService.getOptions(query, { "value._id": 0, _id: 0 });
     if (!getOptions) {
       res.send({

@@ -1103,14 +1103,8 @@ exports.rejectDealer = async (req, res) => {
 
     //if status is rejected
     if (req.body.status == 'Rejected') {
-      let IDs = await supportingFunction.getUserIds()
       let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: singleDealer._id, isPrimary: true } } })
-      IDs.push(getPrimary._id)
       const deleteUser = await userService.deleteUser({ metaData: { $elemMatch: { metaId: req.params.dealerId } } })
-      //Merge start singleServer
-      if (singleDealer.isAccountCreate) {
-        IDs.push(getPrimary._id)
-      }
       // const deleteUser = await userService.deleteUser({ metaId: req.params.dealerId })
       //Merge end
       if (!deleteUser) {
@@ -1130,11 +1124,30 @@ exports.rejectDealer = async (req, res) => {
         })
         return;
       }
+
+      //Send Notification to dealer 
+      const adminQuery = {
+        metaData: {
+          $elemMatch: {
+            roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"),
+            status: true,
+            "registerNotifications.dealerDisapproved": true,
+          }
+        },
+
+      }
+
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
+      const IDs = adminUsers.map(user => user._id)
+      const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+
       let notificationData = {
-        title: "Rejection Dealer Account",
-        description: "The " + singleDealer.name + " account has been rejected!",
+        title: "Dealer Rejected",
+        description: `Request for the new dealer ${singleDealer.name} has been rejected by ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName}.`,
         userId: req.teammateId,
         flag: 'dealer',
+        base_url:null,
+        redirectionId:null,
         notificationFor: IDs
       };
 
