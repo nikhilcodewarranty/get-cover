@@ -1146,7 +1146,7 @@ exports.rejectDealer = async (req, res) => {
         description: `Request for the new dealer ${singleDealer.name} has been rejected by ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName}.`,
         userId: req.teammateId,
         flag: 'dealer',
-        base_url:null,
+        endPoint:null,
         redirectionId:null,
         notificationFor: IDs
       };
