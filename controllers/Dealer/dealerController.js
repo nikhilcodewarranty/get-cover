@@ -443,18 +443,27 @@ exports.statusUpdate = async (req, res) => {
           $and: [
             { "dealerNotifications.dealerPriceBookUpdate": true },
             { status: true },
-            {
-              $or: [
-                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
-              ]
-            }
+            { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") }
+          ]
+        }
+      },
+    }
+
+    const dealerPriceUpdateQuery = {
+      metaData: {
+        $elemMatch: {
+          $and: [
+            { "dealerNotifications.dealerPriceBookUpdate": true },
+            { status: true },
+            { metaId: new mongoose.Types.ObjectId(data.dealerId) },
           ]
         }
       },
     }
     let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerPriceUpdateQuery, { email: 1 })
+    let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerPriceUpdateQuery, { email: 1 })
     const IDs = adminUsers.map(user => user._id)
+    const IDs1 = dealerUsers.map(user => user._id)
     let settingData = await userService.getSetting({});
 
     let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: existingDealerPriceBook.dealerId, isPrimary: true } } })
@@ -462,39 +471,57 @@ exports.statusUpdate = async (req, res) => {
     // let getPrimary = await supportingFunction.getPrimaryUser({ metaId: existingDealerPriceBook.dealerId, isPrimary: true })
     //Merge end
     let getDealerDetail = await dealerService.getDealerByName({ _id: existingDealerPriceBook.dealerId })
-    let notificationData
+    let notificationArrayData = []
     if (existingDealerPriceBook.status == data.status) {
-      notificationData = {
-        title: "Dealer price book updated",
-        adminTitle: "Dealer price book updated",
-        description: `Dealer Pricebook  for ${priceBookData[0]?.pName} has been updated by ${checkLoginUser.metaData[0]?.firstName}.`,
-        adminMessage: `Dealer Pricebook  for ${priceBookData[0]?.pName} has been updated by ${checkLoginUser.metaData[0]?.firstName}.`,
-        dealerMessage: `Pricebook has been updated by ${checkLoginUser.metaData[0]?.firstName}.`,
+      let notificationData = {
+        title: "Dealer Price Book Updated",
+        description: `Dealer Pricebook  for ${priceBookData[0]?.pName} has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         contentId: req.params.dealerPriceBookId,
         flag: 'Dealer Price Book',
-        redirectionId: "/dealerPriceList/" + priceBookData[0].name,
+        redirectionId: "dealerPriceList/" + priceBookData[0].name,
         notificationFor: IDs,
-        endPoint: base_url,
+        endPoint: base_url + "dealerPriceList/" + priceBookData[0].name,
       };
+      let notificationData1 = {
+        title: "Price Book Updated",
+        description: `Pricebook has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        userId: req.teammateId,
+        contentId: req.params.dealerPriceBookId,
+        flag: 'Dealer Price Book',
+        redirectionId: "dealer/priceBook" + priceBookData[0].name,
+        notificationFor: IDs1,
+        endPoint: base_url + "dealer/priceBook" + priceBookData[0].name,
+      };
+
+      notificationArrayData.push(notificationData)
+      notificationArrayData.push(notificationData1)
     }
     else {
-      notificationData = {
-        title: "Dealer Pricebook Status Updated",
-        adminTitle: "Dealer Pricebook  Status updated",
-        description: `Dealer Pricebook  for ${priceBookData[0]?.pName} has been updated to ${data.status ? "Active" : "Inactive"} by ${checkLoginUser.metaData[0]?.firstName}.`,
-        adminMessage: `Dealer Pricebook  for ${priceBookData[0]?.pName} has been updated to ${data.status ? "Active" : "Inactive"} by ${checkLoginUser.metaData[0]?.firstName}.`,
-        dealerMessage: `Pricebook has been updated by ${checkLoginUser.metaData[0]?.firstName}.`,
+      let notificationData2 = {
+        title: "Dealer Pricebook  Status updated",
+        description: `Dealer Pricebook  for ${priceBookData[0]?.pName} has been updated to ${data.status ? "Active" : "Inactive"} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         contentId: req.params.dealerPriceBookId,
         flag: 'Dealer Price Book',
-        redirectionId: "/dealerPriceList/" + priceBookData[0].name,
-        notificationFor: IDs,
-        endPoint: base_url,
+        redirectionId: "dealer/priceBook" + priceBookData[0].name,
+        notificationFor: IDs1,
+        endPoint: base_url + "dealer/priceBook" + priceBookData[0].name,
+      };
+
+      let notificationData3 = {
+        title: "Pricebook  Status updated",
+        description: `Pricebook has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        userId: req.teammateId,
+        contentId: req.params.dealerPriceBookId,
+        flag: 'Dealer Price Book',
+        redirectionId: "dealer/priceBook" + priceBookData[0].name,
+        notificationFor: IDs1,
+        endPoint: base_url + "dealer/priceBook" + priceBookData[0].name,
       };
     }
 
-    let createNotification = await userService.createNotification(notificationData);
+    let createNotification = await userService.saveNotificationBulk(notificationArrayData);
     // Send Email code here
     let notificationEmails = adminUsers.map(user => user.email)
     let emailData = {
@@ -824,38 +851,56 @@ exports.createDealerPriceBook = async (req, res) => {
             $and: [
               { "dealerNotifications.dealerPriceBookAdd": true },
               { status: true },
-              {
-                $or: [
-                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                  { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
-
-                ]
-              }
+              { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+            ]
+          }
+        },
+      }
+      const dealerPriceBookQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "dealerNotifications.dealerPriceBookAdd": true },
+              { status: true },
+              { metaId: new mongoose.Types.ObjectId(data.dealerId) }
             ]
           }
         },
       }
       let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerPriceBookQuery, { email: 1 })
+      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerPriceBookQuery, { email: 1 })
       const IDs = adminUsers.map(user => user._id)
+      const IDs1 = dealerUsers.map(user => user._id)
       let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data.dealerId, isPrimary: true } } })
       let settingData = await userService.getSetting({})
       let notificationData = {
         title: "New Dealer Pricebook Added",
-        adminTitle: "New Dealer Pricebook Added",
-        dealerTitle: "New Pricebook Added",
         description: `A new Dealer Pricebook ${checkPriceBookMain.name} for ${checkDealer.name} has been added under category ${checkCategory.name} by ${checkLoginUser.metaData[0]?.firstName}.`,
-        adminMessage: `A new Dealer Pricebook ${checkPriceBookMain.name} for ${checkDealer.name} has been added under category ${checkCategory.name} by ${checkLoginUser.metaData[0]?.firstName}.`,
-        dealerMessage: `A new  Pricebook ${checkPriceBookMain.name} has been added under category ${checkCategory.name} by ${checkLoginUser.metaData[0]?.firstName}.`,
         userId: req.teammateId,
         flag: 'Dealer Price Book',
         contentId: createDealerPrice._id,
-        redirectionId: "/dealerPriceList/" + checkPriceBookMain.name,
+        redirectionId: "dealerPriceList/" + checkPriceBookMain.name,
         notificationFor: IDs,
-        endPoint: base_url,
+        endPoint: base_url + "dealerPriceList/" + checkPriceBookMain.name,
 
       };
 
-      let createNotification = await userService.createNotification(notificationData);
+      let notificationData1 = {
+        title: "New Pricebook Added",
+        description: `A new  Pricebook ${checkPriceBookMain.name} has been added under category ${checkCategory.name} by ${checkLoginUser.metaData[0]?.firstName}.`,
+        userId: req.teammateId,
+        flag: 'Dealer Price Book',
+        contentId: createDealerPrice._id,
+        redirectionId: "dealer/priceBook",
+        notificationFor: IDs,
+        endPoint: base_url + "dealer/priceBook",
+
+      };
+      let notificationArrayData = [];
+      notificationArrayData.push(notificationData);
+      notificationArrayData.push(notificationData1);
+
+      let createNotification = await userService.saveNotificationBulk(notificationArrayData);
       // Send Email code here
       let notificationEmails = adminUsers.map(user => user.email)
       let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
@@ -2042,20 +2087,58 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
 
       //Send notification to admin,dealer,reseller
 
-      let IDs = await supportingFunction.getUserIds()
+      const adminUploadQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "dealerNotifications.dealerPriceBookUpload": true },
+              { status: true },
+              { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+            ]
+          }
+        },
+      }
 
-      let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.body.dealerId, isPrimary: true } } })
-      //Merge start singleServer
-
+      const dealerUploadQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "dealerNotifications.dealerPriceBookUpload": true },
+              { status: true },
+              { metaId: new mongoose.Types.ObjectId(req.body.dealerId) },
+            ]
+          }
+        },
+      }
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUploadQuery, { email: 1 })
+      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerUploadQuery, { email: 1 })
+      const IDs = adminUsers.map(user => user._id)
+      const IDs1 = dealerUsers.map(user => user._id)
+      let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: req.body.dealerId, isPrimary: true })
       let notificationData = {
-        title: "Dealer Price Book Uploaded",
-        description: "The priceBook has been successfully uploaded",
+        title: "Dealer Pricebook file added successfully",
+        description: `The Bulk file ${file.fieldName} of dealer pricebook has been uploaded and processed successfully for dealer ${checkDealer.name}. The file has been uploaded by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         flag: 'Dealer Price Book',
-        notificationFor: IDs
+        notificationFor: IDs,
+        endPoint: base_url + "dealerDetails/" + req.body.dealerId,
+        redirectionId: "dealerDetails/" + req.body.dealerId
+      };
+      let notificationData1 = {
+        title: "Pricebook added successfully",
+        description: `The Bulk file ${file.fieldName} of  pricebook has been uploaded and processed successfully. The file has been uploaded by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        userId: req.teammateId,
+        flag: 'Dealer Price Book',
+        notificationFor: IDs,
+        endPoint: base_url + "dealer/priceBook",
+        redirectionId: "dealer/priceBook"
       };
 
-      let createNotification = await userService.createNotification(notificationData);
+      let notificationArrayData = []
+      notificationArrayData.push(notificationData)
+      notificationArrayData.push(notificationData1)
+
+      let createNotification = await userService.saveNotificationBulk(notificationArrayData);
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
       console.log(dealerPrimary.email, checkDealer[0].isAccountCreate)
