@@ -60,15 +60,15 @@ const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, d
       sheetName = "dealer"
     }
     if (index == 2) {
-      sheetName = "reseller"
+      sheetName = "servicer"
     }
     if (index == 3) {
-      sheetName = "servicer"
+      sheetName = "reseller"
     }
     if (index == 4) {
       sheetName = "customer"
     }
-    const sheet = workbook.addWorksheet(`${sheetName}-${index + 1}`);
+    const sheet = workbook.addWorksheet(`${sheetName}`);
 
     if (sheetData.length > 0) {
       const headers = Object.keys(sheetData[0]); // Get keys from the first object as column headers
@@ -706,7 +706,7 @@ exports.exportDataForClaim = async (req, res) => {
     const groupDataByServicer = (resultArray) => {
       return resultArray.reduce((acc, item) => {
         // Extract servicer name
-        const servicerName = item?.contracts?.orders?.servicers?.[0]?.name;
+        const servicerName = item?.servicerId;
 
         // Only process entries with valid servicer names
         if (!servicerName) {
