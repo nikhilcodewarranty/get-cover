@@ -119,6 +119,7 @@ exports.exportDataForClaim = async (req, res) => {
     let dealerMatch = {}
     let resellerMatch = {}
     let dateMatch = {}
+    let statusMatch = {}
     // checking the user type from token
     if (req.role == 'Dealer') {
       match = { 'contracts.orders.dealerId': new mongoose.Types.ObjectId(req.userId) }
