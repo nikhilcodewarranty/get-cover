@@ -2951,11 +2951,12 @@ exports.saveBulkClaim = async (req, res) => {
           item.claimType = ''
           item.servicerData = servicerData;
           item.orderData = allDataArray[0]
+
           if (!contractData || allDataArray.length == 0) {
             item.status = "Contract not found"
             item.exit = true;
           }
-
+          console.log("contractData-------------------",contractData)
           if (checkSerialCache[contractData.unique_key?.toLowerCase()]) {
             item.status  = "Alreday open for the claim for this contract"
             item.exit = true;
