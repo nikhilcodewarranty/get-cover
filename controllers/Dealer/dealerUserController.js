@@ -530,23 +530,29 @@ exports.createCustomer = async (req, res, next) => {
                 }
             },
         }
-        const resellerQuery = {
+        let resellerQuery
+        let resellerUsers = []
+        if (data?.resellerName) {
+          resellerQuery = {
             metaData: {
-                $elemMatch: {
-                    $and: [
-                        { "customerNotifications.customerAdded": true },
-                        { status: true },
-                        { metaId: new mongoose.Types.ObjectId(data?.resellerName) },
-
-
-                    ]
-                }
+              $elemMatch: {
+                $and: [
+                  { "customerNotifications.customerAdded": true },
+                  { status: true },
+                  { metaId: new mongoose.Types.ObjectId(data?.resellerName) },
+    
+    
+                ]
+              }
             },
+          }
+           resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerQuery, { email: 1 })
+    
         }
+        
 
         let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
         let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerQuery, { email: 1 })
-        let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerQuery, { email: 1 })
         const IDs = adminUsers.map(user => user._id)
         const dealerId = dealerUsers.map(user => user._id)
         const resellerId = resellerUsers.map(user => user._id)
