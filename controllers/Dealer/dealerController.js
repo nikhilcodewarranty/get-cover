@@ -310,6 +310,7 @@ exports.registerDealer = async (req, res) => {
       role: "Dealer"
     }
     let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
+
     const admin = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true } } })
     const notificationEmail = adminUsers.map(user => user.email)
     emailData = {
@@ -318,9 +319,8 @@ exports.registerDealer = async (req, res) => {
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
       senderName: admin.metaData[0]?.firstName,
-      subject: "New Dealer Request",
-      redirectId: base_url,
-      content: "A new dealer " + createdDealer.name + " has registered with us on the portal."
+      subject: "Notification of New Dealer Registration",
+      content: "A new dealer " + createdDealer.name + " has been registered"
     }
     mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmail, [], emailData))
     let logData = {
