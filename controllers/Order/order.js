@@ -1432,7 +1432,7 @@ exports.archiveOrder = async (req, res) => {
                     $and: [
                         { "orderNotifications.archivinOrder": true },
                         { status: true },
-                        { metaId: checkOrder.resellerId },
+                        { metaId: checkOrder.resellerId ? checkOrder.resellerId : "000008041eb1acda24111111" },
                     ]
                 }
             },
@@ -1497,6 +1497,9 @@ exports.archiveOrder = async (req, res) => {
         await LOG(logData).save()
         // Send Email code here
         let notificationEmails = adminUsers.map(user => user.email)
+        let dealerEmails = dealerUsers.map(user => user.email)
+        let resellerEmails = resellerUsers.map(user => user.email)
+        let mergedEmail = notificationEmails.concat(dealerEmails,resellerEmails)
         let settingData = await userService.getSetting({});
         let emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -1508,7 +1511,7 @@ exports.archiveOrder = async (req, res) => {
             subject: "Archeive Order"
         }
         if (checkOrder.sendNotification) {
-            let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ["noreply@getcover.com"], emailData))
         }
         //  }
         res.send({
