@@ -704,9 +704,11 @@ exports.exportDataForClaim = async (req, res) => {
 
 
     const groupDataByServicer = (resultArray) => {
-      return resultArray.reduce((acc, item) => {
+      return resultArray.reduce(async (acc, item) => {
         // Extract servicer name
         const servicerName = item?.servicerId;
+        let getServicerName = await servicerService.getServiceProviderById({ _id: servicerName })
+        servicerName = getServicerName.name
 
         // Only process entries with valid servicer names
         if (!servicerName) {
