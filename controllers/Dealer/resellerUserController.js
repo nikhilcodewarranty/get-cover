@@ -284,8 +284,7 @@ exports.createCustomer = async (req, res, next) => {
         let notificationEmails = adminUsers.map(user => user.email)
         let dealerEmails = dealerUsers.map(user => user.email)
         let resellerEmails = resellerUsers.map(user => user.email)
-        notificationEmails.push(dealerEmails)
-        notificationEmails.push(resellerEmails)
+        let mergedEmail = notificationEmails.concat(dealerEmails,resellerEmails)
         //Send Notification to customer,admin,reseller,dealer 
         let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
 
@@ -334,7 +333,7 @@ exports.createCustomer = async (req, res, next) => {
             subject: "New Customer Added"
         }
         // Send Email code here
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ['noreply@getcover.com'], emailData))
         res.send({
             code: constant.successCode,
             message: "Customer created successfully",

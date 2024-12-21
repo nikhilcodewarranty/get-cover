@@ -685,7 +685,7 @@ exports.addClaim = async (req, res, next) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: customerPrimary.metaData[0]?.firstName,
+      senderName: `Dear ${customerPrimary.metaData[0]?.firstName}`,
       redirectId: base_url
     }
     let mailing;
@@ -726,7 +726,7 @@ exports.addClaim = async (req, res, next) => {
                 $or: [
                   { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
                   { metaId: checkOrder.dealerId },
-                  { metaId: checkOrder.resellerId },
+                  { metaId: checkOrder?.resellerId ? checkOrder?.resellerId : "000008041eb1acda24111111" },
                 ]
               },
 
@@ -945,7 +945,7 @@ exports.editClaim = async (req, res) => {
           flag: 'claim',
           endPoint: site_url + "claim-listing/" + checkClaim.unique_key,
           redirectionId: "claim-listing/" + checkClaim.unique_key,
-          notificationFor: IDs
+          notificationFor: servicerIDs
         };
         notificationArray.push(notificationAdmin)
       }
@@ -964,6 +964,8 @@ exports.editClaim = async (req, res) => {
       await LOG(logData).save()
       // Send Email code here
       let notificationEmails = adminUsers.map(user => user.email)
+      let servicerEmails = servicerUsers.map(user => user.email)
+      let mergedEmail = notificationEmails.concat(servicerEmails)
       let settingData = await userService.getSetting({});
       const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
       const lastElement = data.repairParts.pop();
@@ -978,7 +980,7 @@ exports.editClaim = async (req, res) => {
         subject: `Update on Repair Information for Claim  ID ${checkClaim.unique_key}`
       }
 
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ["noreply@getcover.com"], emailData))
       let totalClaimQuery1 = [
         {
           $match: {
@@ -2771,7 +2773,6 @@ exports.saveBulkClaim = async (req, res) => {
 
       })
 
-
       //check duplicasy of the contract id
       totalDataComing.forEach((data, i) => {
         if (!data.exit) {
@@ -2931,11 +2932,10 @@ exports.saveBulkClaim = async (req, res) => {
         }
       })
 
-
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
 
-
       let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
+      let checkSerialCache = {};
       //Filter data which is contract , servicer and not active
       for (let k = 0; k < totalDataComing.length; k++) {
         let item = totalDataComing[k]
@@ -2946,14 +2946,84 @@ exports.saveBulkClaim = async (req, res) => {
           const claimData = claimArray;
           const servicerData = servicerArray == undefined || servicerArray == null ? allDataArray[0]?.order?.servicer : servicerArray[i]
           let flag;
+
           item.contractData = contractData;
           item.claimType = ''
           item.servicerData = servicerData;
           item.orderData = allDataArray[0]
+
           if (!contractData || allDataArray.length == 0) {
             item.status = "Contract not found"
             item.exit = true;
+            //check contract eligibility reason
+            let checkContractData = await contractService.getContractById({
+              $and: [
+                {
+                  $or: [
+                    { unique_key: item.contractId },
+                    { serial: item.contractId },
+                  ],
+                },
+              ],
+            })
+            if (checkContractData) {
+              item.status = " "
+
+              if (checkContractData.status != "Active") {
+                item.status = "Contract is not active"
+                item.exit = true;
+
+              }
+
+              if (new Date(checkContractData.minDate) > new Date()) {
+                const options = {
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit'
+                };
+                const formattedDate = new Date(checkContractData.minDate).toLocaleDateString('en-US', options)
+                item.status = "Contract will be eligible on " + " " + formattedDate
+                item.exit = true;
+              }
+
+              let claimQuery = [
+                {
+                  $match: { contractId: new mongoose.Types.ObjectId(checkContractData._id) }
+                },
+                {
+                  $group: {
+                    _id: null,
+                    totalAmount: { $sum: "$totalAmount" }, // Calculate total amount from all claims
+                    openFileClaimsCount: { // Count of claims where claimfile is "Open"
+                      $sum: {
+                        $cond: {
+                          if: { $eq: ["$claimFile", "open"] }, // Assuming "claimFile" field is correct
+                          then: 1,
+                          else: 0
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+
+              let checkClaims = await claimService.getClaimWithAggregate(claimQuery)
+
+              if (checkClaims[0]) {
+                if (checkClaims[0].openFileClaimsCount > 0) {
+                  item.status = "Contract has open claim"
+                  item.exit = true;
+
+                }
+                if (checkClaims[0].totalAmount >= checkContractData.productValue) {
+                  item.status = "Claim value exceed the product value limit"
+                  item.exit = true;
+                }
+              }
+            }
           }
+
+
           if (item.coverageType) {
             if (item.coverageType != null || item.coverageType != "") {
               if (contractData) {
@@ -3060,148 +3130,22 @@ exports.saveBulkClaim = async (req, res) => {
           if (contractData && contractData.status != "Active") {
             item.status = "Contract is not active";
             item.exit = true;
+            if (checkSerialCache[contractData?.unique_key?.toLowerCase()]) {
+              item.status = "Duplicate contract id/serial number"
+              item.exit = true;
+            } else {
+              checkSerialCache[contractData.unique_key?.toLowerCase()] = true;
+            }
+            
           }
+          
+        
 
         } else {
           item.contractData = null
           item.servicerData = null
         }
       }
-
-
-
-      // totalDataComing.forEach(async (item, i) => {
-      //   if (!item.exit) {
-      //     const contractData = contractArray[i];
-      //     const allDataArray = contractAllDataArray[i];
-      //     const claimData = claimArray;
-      //     const servicerData = servicerArray == undefined || servicerArray == null ? allDataArray[0]?.order?.servicer : servicerArray[i]
-      //     let flag;
-      //     item.contractData = contractData;
-      //     item.claimType = ''
-      //     item.servicerData = servicerData;
-      //     item.orderData = allDataArray[0]
-
-      //     if (!contractData || allDataArray.length == 0) {
-      //       item.status = "Contract not found"
-      //       item.exit = true;
-      //     }
-      //     if (item.coverageType) {
-      //       if (item.coverageType != null || item.coverageType != "") {
-      //         if (contractData) {
-      //           let checkCoverageTypeForContract = contractData?.coverageType.find(item1 => item1.label == item?.coverageType)
-      //           if (!checkCoverageTypeForContract) {
-      //             item.status = "Coverage type is not available for this contract!";
-      //             item.exit = true;
-      //           }
-      //           const checkCoverageValue = getCoverageTypeFromOption.value.filter(option => option.label === item?.coverageType).map(item1 => item1.value);
-      //           let startDateToCheck = new Date(contractData.coverageStartDate)
-      //           let coverageTypeDays = contractData?.adhDays
-      //           let getDeductible = coverageTypeDays?.filter(coverageType => coverageType.value == checkCoverageValue[0])
-
-      //           let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0]?.waitingDays))
-      //           checkCoverageTypeDate = new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0)
-      //           let checkLossDate = new Date(item.lossDate).setHours(0, 0, 0, 0)
-      //           const result = getCoverageTypeFromOption?.value.filter(option => option.label === item?.coverageType).map(item1 => item1.label);
-
-      //           if (new Date(checkCoverageTypeDate) > new Date(checkLossDate)) {
-      //             item.status = `Claim not eligible for ${result[0]}.`
-      //             item.exit = true;
-      //           }
-      //           item.claimType = checkCoverageValue[0]
-      //         }
-
-
-      //       }
-      //     }
-      //     // check login email
-      //     if (item.userEmail != '') {
-      //       item.submittedBy = item.userEmail
-      //       let memberEmail = await userService.getMembers({
-      //         metaData: { $elemMatch: { metaId: data.orderData?.order?.customerId } }
-      //       }, {})
-      //       console.log("memberEmail-------------------", memberEmail)
-      //       // if (memberEmail.length > 0) {
-      //       const validEmail = memberEmail?.find(member => member.email === item.userEmail);
-      //       console.log("validEmail-------------------", validEmail)
-
-      //       if (!validEmail || validEmail == undefined) {
-      //         item.status = "Invalid Email"
-      //         item.exit = true;
-      //       }
-      //       // }
-
-      //     }
-      //     // check Shipping address
-      //     if (item.shippingTo != '') {
-      //       if (allDataArray[0]?.order.customers) {
-      //         let shipingAddress = item.shippingTo.split(',');   // Split the string by commas
-      //         let userZip = shipingAddress[shipingAddress.length - 1];
-      //         let addresses = allDataArray[0]?.order.customers.addresses
-      //         addresses.push(
-      //           {
-      //             zip: allDataArray[0]?.order.customers.zip,
-      //             state: allDataArray[0]?.order.customers.zip,
-      //             city: allDataArray[0]?.order.customers.city,
-      //             street: allDataArray[0]?.order.customers.street,
-      //             country: allDataArray[0]?.order.customers.country,
-      //           })
-
-      //         const validAddress = addresses?.find(address => Number(address.zip) === Number(userZip));
-      //         if (!validAddress) {
-      //           item.status = "Invalid user address!"
-      //           item.exit = true;
-      //         }
-      //       }
-      //       item.shippingTo = item.shippingTo
-      //     }
-
-      //     let checkCoverageStartDate = new Date(contractData?.coverageStartDate).setHours(0, 0, 0, 0)
-      //     if (contractData && new Date(checkCoverageStartDate) > new Date(item.lossDate)) {
-      //       item.status = "Loss date should be in between coverage start date and present date!"
-      //       item.exit = true;
-      //     }
-
-
-      //     if (allDataArray.length > 0 && servicerData) {
-
-      //       flag = false;
-      //       if (allDataArray[0]?.order.dealer.dealerServicer.length > 0) {
-      //         //Find Servicer with dealer Servicer
-      //         const servicerCheck = allDataArray[0]?.order.dealer.dealerServicer.find(item => item.servicerId?.toString() === servicerData._id?.toString())
-      //         if (servicerCheck) {
-
-      //           flag = true
-      //         }
-      //       }
-      //       //Check dealer itself servicer
-      //       if (allDataArray[0]?.order.dealer?.isServicer && allDataArray[0]?.order.dealer?.accountStatus && allDataArray[0]?.order.dealer._id?.toString() === servicerData.dealerId?.toString()) {
-
-      //         flag = true
-      //       }
-
-      //       if (allDataArray[0]?.order.reseller?.isServicer && allDataArray[0]?.order.reseller?.status && allDataArray[0]?.order.reseller?._id?.toString() === servicerData.resellerId?.toString()) {
-
-      //         flag = true
-      //       }
-      //     }
-      //     if ((item.servicerName != '' && !servicerData)) {
-      //       flag = false
-      //     }
-      //     if ((!flag && flag != undefined && item.hasOwnProperty("servicerName") && req.role == "Admin")) {
-      //       item.status = "Servicer not found"
-      //     }
-      //     if (contractData && contractData.status != "Active") {
-      //       item.status = "Contract is not active";
-      //       item.exit = true;
-      //     }
-
-      //   } else {
-      //     item.contractData = null
-      //     item.servicerData = null
-      //   }
-      // })
-
       let finalArray = []
       //Save bulk claim
 
@@ -3214,6 +3158,8 @@ exports.saveBulkClaim = async (req, res) => {
 
       //Update eligibility when contract is open
 
+      // console.log("totalDataComing--------------------------",totalDataComing);
+      // return;
       const updateArrayPromise = totalDataComing.map(item => {
         if (!item.exit && item.contractData) return contractService.updateContract({ _id: item.contractData._id }, { eligibilty: false }, { new: true });
         else {
@@ -4005,7 +3951,7 @@ exports.sendMessages = async (req, res) => {
         userId: req.teammateId,
         contentId: checkClaim._id,
         flag: 'claim',
-        endPoint: site_url+"claim-listing/" + checkClaim.unique_key,
+        endPoint: site_url + "claim-listing/" + checkClaim.unique_key,
         redirectionId: "claim-listing/" + checkClaim.unique_key,
         notificationFor: IDs
       };
@@ -4018,7 +3964,7 @@ exports.sendMessages = async (req, res) => {
         userId: req.teammateId,
         contentId: checkClaim._id,
         flag: 'claim',
-        endPoint: site_url+"claim-listing/" + checkClaim.unique_key,
+        endPoint: site_url + "claim-listing/" + checkClaim.unique_key,
         redirectionId: "claim-listing/" + checkClaim.unique_key,
         notificationFor: dealerId
       };
@@ -4031,7 +3977,7 @@ exports.sendMessages = async (req, res) => {
         userId: req.teammateId,
         contentId: checkClaim._id,
         flag: 'claim',
-        endPoint: site_url+"claim-listing/" + checkClaim.unique_key,
+        endPoint: site_url + "claim-listing/" + checkClaim.unique_key,
         redirectionId: "claim-listing/" + checkClaim.unique_key,
         notificationFor: resellerId
       };
@@ -4044,7 +3990,7 @@ exports.sendMessages = async (req, res) => {
         userId: req.teammateId,
         contentId: checkClaim._id,
         flag: 'claim',
-        endPoint: site_url+"claim-listing/" + checkClaim.unique_key,
+        endPoint: site_url + "claim-listing/" + checkClaim.unique_key,
         redirectionId: "claim-listing/" + checkClaim.unique_key,
         notificationFor: customerId
       };
@@ -4052,12 +3998,12 @@ exports.sendMessages = async (req, res) => {
     }
     if (servicerUsers.length > 0) {
       let notificationData1 = {
-        title: "New Claim Comment added",       
+        title: "New Claim Comment added",
         description: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
         userId: req.teammateId,
         contentId: checkClaim._id,
         flag: 'claim',
-        endPoint: site_url+"claim-listing/" + checkClaim.unique_key,
+        endPoint: site_url + "claim-listing/" + checkClaim.unique_key,
         redirectionId: "claim-listing/" + checkClaim.unique_key,
         notificationFor: servicerId
       };

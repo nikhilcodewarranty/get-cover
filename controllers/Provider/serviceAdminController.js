@@ -758,21 +758,9 @@ exports.getServiceProviderById = async (req, res, next) => {
 exports.rejectServicer = async (req, res) => {
   try {
     let data = req.body
-    let IDs = await supportingFunction.getUserIds()
     let getServicer = await providerService.getServiceProviderById({ _id: req.params.servicerId });
     let checkServicer = await providerService.deleteServicer({ _id: req.params.servicerId })
     let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.params.servicerId, isPrimary: true } } })
-
-    IDs.push(getPrimary._id)
-    let notificationEmails = await supportingFunction.getUserEmails();
-    // let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.servicerId, isPrimary: true })
-    let toEmail = notificationEmails;
-    let ccEmail = "noreply@getcover.com";
-    if (getServicer.isAccountCreate) {
-      toEmail = getPrimary.email
-      ccEmail = notificationEmails
-      IDs.push(getPrimary._id)
-    }
 
     if (!checkServicer) {
       res.send({
@@ -781,13 +769,30 @@ exports.rejectServicer = async (req, res) => {
       })
       return;
     };
+    //Send Notification to dealer 
+    const adminQuery = {
+      metaData: {
+        $elemMatch: {
+          roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"),
+          status: true,
+          "registerNotifications.servicerDisapproved": true,
+        }
+      },
+
+    }
+
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
+    const IDs = adminUsers.map(user => user._id)
+    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
 
     let deleteUser = await userService.deleteUser({ metaData: { $elemMatch: { metaId: getServicer._id } } })
     let notificationData = {
-      title: "Rejection Servicer Account",
-      description: "The " + getServicer.name + " account has been rejected",
+      title: "Servicer Rejected",
+      description: `Request for the new Servicer ${getServicer.name} has been rejected by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
       userId: req.teammateId,
       flag: 'servicer',
+      endPoint: null,
+      redirectionId: null,
       notificationFor: IDs
     };
 
@@ -802,8 +807,9 @@ exports.rejectServicer = async (req, res) => {
       content: "Dear " + getServicer.name + ",\n\nWe regret to inform you that your registration as an authorized dealer has been rejected by our admin team. If you have any questions or require further assistance, please feel free to contact us.\n\nBest regards,\nAdmin Team",
       subject: "Rejection Account"
     }
+    const notificationEmails = adminUsers.map(user => user._id)
     // Send Email code here
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(toEmail, ccEmail, emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
     res.send({
       code: constant.successCode,
       message: "Deleted Successfully!"
@@ -1527,9 +1533,8 @@ exports.registerServiceProvider = async (req, res) => {
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
       senderName: admin.metaData[0]?.firstName,
-      redirectId: base_url,
-      content: `A New Servicer ${data.name} has registered with us on the portal`,
-      subject: 'New Servicer Request'
+      content: "A new servicer " + ServicerMeta.name + " has been registered",
+      subject: 'New Servicer Registration'
     }
     mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmail, ["noreply@getcover.com"], emailData))
     let logData = {

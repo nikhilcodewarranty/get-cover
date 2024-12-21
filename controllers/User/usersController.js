@@ -1598,8 +1598,8 @@ exports.deleteUser = async (req, res) => {
       notificationEmails = adminUsers.map(user => user.email);
       let dealerEmails = dealerUsers.map(user => user.email);
       let resellerEmails = resellerUsers.map(user => user.email);
- 
-      mergedEmail = notificationEmails.concat(dealerEmails,resellerEmails)
+
+      mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails)
       notificationData = {
         title: "Reseller User Deleted",
         description: `The User ${checkUser.metaData[0].firstName} for the reseller ${checkReseller.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
@@ -1694,7 +1694,7 @@ exports.deleteUser = async (req, res) => {
       let resellerEmails = resellerUsers.map(user => user.email);
       let customerEmails = customerUsers.map(user => user.email);
 
-      mergedEmail = notificationEmails.concat(dealerEmails,resellerEmails,customerEmails)
+      mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails, customerEmails)
 
       notificationData = {
         title: "Customer User Deleted",
@@ -3044,7 +3044,7 @@ exports.saveOptions = async (req, res) => {
 exports.getOptions = async (req, res) => {
   try {
     let filterOption = req.params.name
-    const query = { name: filterOption, 'value.status': true }
+    const query = { name: filterOption, value: { $elemMatch: { status: true } } }
     const getOptions = await userService.getOptions(query, { "value._id": 0, _id: 0 });
     if (!getOptions) {
       res.send({

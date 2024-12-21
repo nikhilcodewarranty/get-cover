@@ -664,7 +664,7 @@ exports.createCustomer = async (req, res, next) => {
         }
 
         // Send Email code here
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ['noreply@getcover.com'], emailData))
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ['noreply@getcover.com'], emailData))
 
         if (saveMembers.length > 0) {
             if (data.status) {
@@ -1271,7 +1271,7 @@ exports.createOrder = async (req, res) => {
                     $and: [
                         { "orderNotifications.addingNewOrderPending": true },
                         { status: true },
-                        { metaId: savedResponse.resellerId }
+                        { metaId: savedResponse?.resellerId ? savedResponse?.resellerId : "000008041eb1acda24111111" }
                     ]
                 }
             },
@@ -1280,8 +1280,8 @@ exports.createOrder = async (req, res) => {
         let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerPendingQuery, { email: 1 })
         let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerPendingQuery, { email: 1 })
         let IDs = adminUsers.map(user => user._id)
-        let IDs1 = adminUsers.map(user => user._id)
-        let IDs2 = adminUsers.map(user => user._id)
+        let IDs1 = dealerUsers.map(user => user._id)
+        let IDs2 = resellerUsers.map(user => user._id)
         let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.userId, isPrimary: true } } })
 
         let settingData = await userService.getSetting({});
@@ -1304,7 +1304,7 @@ exports.createOrder = async (req, res) => {
             flag: 'order',
             redirectionId: "orderList/" + savedResponse.unique_key,
             endPoint: base_url + "orderList/" + savedResponse.unique_key,
-            notificationFor: IDs
+            notificationFor: IDs1
         };
         let notificationData2 = {
             title: "Draft Order Created",
@@ -1314,7 +1314,7 @@ exports.createOrder = async (req, res) => {
             flag: 'order',
             redirectionId: "orderList/" + savedResponse.unique_key,
             endPoint: base_url + "orderList/" + savedResponse.unique_key,
-            notificationFor: IDs
+            notificationFor: IDs2
         };
         let notificationArrayData = []
         notificationArrayData.push(notificationData)
@@ -1323,6 +1323,9 @@ exports.createOrder = async (req, res) => {
         let createNotification = await userService.saveNotificationBulk(notificationArrayData);
         // Send Email code here
         let notificationEmails = adminUsers.map(user => user.email)
+        let dealerEmails = dealerUsers.map(user => user.email)
+        let resellerEmails = resellerUsers.map(user => user.email)
+        let mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails)
         let emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -1334,7 +1337,7 @@ exports.createOrder = async (req, res) => {
             redirectId: base_url + "orderList/" + savedResponse.unique_key,
         }
         if (req.body.sendNotification) {
-            let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ["noreply@getcover.com"], emailData))
         }
 
 
@@ -1988,6 +1991,10 @@ exports.editOrderDetail = async (req, res) => {
                     // Send Email code here
                     if (!checkOrder?.termCondition || checkOrder?.termCondition == null || checkOrder?.termCondition == '') {
                         let notificationEmails = adminUsers.map(user => user.email)
+                        let dealerEmails = dealerUsers.map(user => user.email)
+                        let resellerEmails = resellerUsers.map(user => user.email)
+                        let customerEmails = customerUsers.map(user => user.email)
+                        let mergedEmail = notificationEmails.concat(dealerEmails,resellerEmails,customerEmails)
                         let emailData = {
                             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
                             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -1999,7 +2006,7 @@ exports.editOrderDetail = async (req, res) => {
                             redirectId: base_url + "orderDetails/" + savedResponse._id,
                         }
                         if (req.body.sendNotification) {
-                            let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+                            let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ["noreply@getcover.com"], emailData))
                         }
 
                     }
@@ -2113,6 +2120,9 @@ exports.editOrderDetail = async (req, res) => {
 
             // Send Email code here
             let notificationEmails = adminUsers.map(user => user.email)
+            let dealerEmails = dealerUsers.map(user => user.email)
+            let resellerEmails = resellerUsers.map(user => user.email)
+            let mergedEmail = notificationEmails.concat(dealerEmails,resellerEmails)
             let settingData = await userService.getSetting({});
 
             let emailData = {
@@ -2127,7 +2137,7 @@ exports.editOrderDetail = async (req, res) => {
                 redirectId: base_url + "editOrder/" + savedResponse.unique_key,
             }
             if (req.body.sendNotification) {
-                let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+                let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ["noreply@getcover.com"], emailData))
             }
             logData.response = {
                 code: constant.successCode,

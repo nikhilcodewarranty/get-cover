@@ -1373,7 +1373,9 @@ exports.createOrder1 = async (req, res) => {
         let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerPendingQuery, { email: 1 })
         const IDs = adminUsers.map(user => user._id)
         const ID1 = dealerUsers.map(user => user._id)
+        const dealerEmails = dealerUsers.map(user => user.email)
         const ID2 = resellerUsers.map(user => user._id)
+        const resellerEmails = resellerUsers.map(user => user.email)
         let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data.dealerId, isPrimary: true } } })
         let adminNotificationData = {
             title: "Draft Order Created",
@@ -1414,6 +1416,7 @@ exports.createOrder1 = async (req, res) => {
 
         // Send Email code here
         notificationEmails = adminUsers.map(user => user.email)
+        let mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails)
         emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -1729,7 +1732,7 @@ exports.createOrder1 = async (req, res) => {
                                 $and: [
                                     { "orderNotifications.addingNewOrderActive": true },
                                     { status: true },
-                                    { metaId: checkOrder.resellerId },
+                                    { metaId: checkOrder.resellerId ? checkOrder.resellerId : "000008041eb1acda24111111" },
                                 ]
                             }
                         },
@@ -1820,6 +1823,10 @@ exports.createOrder1 = async (req, res) => {
                     // Send Email code here
                     if (!checkOrder?.termCondition || checkOrder?.termCondition == null || checkOrder?.termCondition == '') {
                         let notificationEmails = adminUsers.map(user => user.email)
+                        let dealerEmails = dealerUsers.map(user => user.email)
+                        let resellerEmails = resellerUsers.map(user => user.email)
+                        let customerEmails = customerUsers.map(user => user.email)
+                        let mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails, customerEmails)
                         //Email to Dealer
                         let emailData = {
                             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -1832,7 +1839,7 @@ exports.createOrder1 = async (req, res) => {
                             redirectId: base_url + "orderDetails/" + checkOrder.unique_key
                         }
 
-                        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+                        let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ["noreply@getcover.com"], emailData))
                     }
 
 
@@ -1872,7 +1879,7 @@ exports.createOrder1 = async (req, res) => {
             return
 
         } else {
-            let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ["noreply@getcover.com"], emailData))
             let createNotification = await userService.saveNotificationBulk(notificationArrayData);
 
             let logData = {
@@ -2536,7 +2543,7 @@ exports.editOrderDetail = async (req, res) => {
                     $and: [
                         { "orderNotifications.updateOrderPending": true },
                         { status: true },
-                        { metaId: checkOrder.resellerId }
+                        { metaId: checkOrder.resellerId ? checkOrder.resellerId : "000008041eb1acda24111111" }
                     ]
                 }
             },
@@ -2585,7 +2592,10 @@ exports.editOrderDetail = async (req, res) => {
 
         // Send Email code here
         let notificationEmails = adminUsers.map(user => user.email)
+        let dealerEmails = dealerUsers.map(user => user.email)
+        let resellerEmails = adminUsers.map(user => user.email)
         let settingData = await userService.getSetting({});
+        let mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails)
         //Email to Dealer
         let emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -2888,7 +2898,7 @@ exports.editOrderDetail = async (req, res) => {
                                 $and: [
                                     { "orderNotifications.updateOrderActive": true },
                                     { status: true },
-                                    { metaId: checkOrder.resellerId },
+                                    { metaId: checkOrder.resellerId ? checkOrder.resellerId : "000008041eb1acda24111111" },
                                 ]
                             }
                         },
@@ -2965,6 +2975,10 @@ exports.editOrderDetail = async (req, res) => {
                     // Send Email code here
                     if (!checkOrder?.termCondition) {
                         let notificationEmails = adminUsers.map(user => user.email)
+                        let dealerEmails = dealerUsers.map(user => user.email)
+                        let resellerEmails = resellerUsers.map(user => user.email)
+                        let customermails = customerUsers.map(user => user.email)
+                        let mergedEmail = notificationEmails.concat(dealerEmails,resellerEmails,customermails)
                         //Email to Dealer
                         let emailData = {
                             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -2977,7 +2991,7 @@ exports.editOrderDetail = async (req, res) => {
                             redirectId: base_url + "orderDetails/" + checkOrder._id,
                         }
 
-                        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+                        let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ["noreply@getcover.com"], emailData))
                     }
 
                     //Email to customer code here........
@@ -3011,7 +3025,7 @@ exports.editOrderDetail = async (req, res) => {
             });
         } else {
             if (data.sendNotification) {
-                let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+                let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ["noreply@getcover.com"], emailData))
             }
             let createNotification = await userService.saveNotificationBulk(notificationArrayData);
 
