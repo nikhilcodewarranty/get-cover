@@ -3130,14 +3130,16 @@ exports.saveBulkClaim = async (req, res) => {
           if (contractData && contractData.status != "Active") {
             item.status = "Contract is not active";
             item.exit = true;
+            if (checkSerialCache[contractData?.unique_key?.toLowerCase()]) {
+              item.status = "Duplicate contract id/serial number"
+              item.exit = true;
+            } else {
+              checkSerialCache[contractData.unique_key?.toLowerCase()] = true;
+            }
+            
           }
-          if (checkSerialCache[contractData.unique_key?.toLowerCase()]) {
-            item.status = "Duplicate contract id/serial number"
-            item.exit = true;
-          } else {
-            checkSerialCache[contractData.unique_key?.toLowerCase()] = true;
-          }
-
+          
+        
 
         } else {
           item.contractData = null
