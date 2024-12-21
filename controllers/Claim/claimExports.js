@@ -709,7 +709,7 @@ exports.exportDataForClaim = async (req, res) => {
         let servicerName = item?.servicerId;
         console.log("servicer name from file+++++++++++",servicerName)
         let getServicerName = await servicerService.getServiceProviderById({ _id: servicerName })
-        console.log("servicer data",getSsrvicerName?._id)
+        console.log("servicer data",getServicerName?._id)
         servicerName = getServicerName.name
 
         // Only process entries with valid servicer names
