@@ -704,11 +704,11 @@ exports.exportDataForClaim = async (req, res) => {
 
 
     const groupDataByServicer = (resultArray) => {
-      return resultArray.reduce(async (acc, item) => {
+      return resultArray.reduce( (acc, item) => {
         // Extract servicer name
         let servicerName = item?.servicerId;
         console.log("servicer name from file+++++++++++",servicerName)
-        let getServicerName = await servicerService.getServiceProviderById({ _id: servicerName })
+        let getServicerName =  servicerService.getServiceProviderById({ _id: servicerName })
         console.log("servicer data",getServicerName?._id)
         servicerName = getServicerName.name
 
