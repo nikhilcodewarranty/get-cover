@@ -2955,13 +2955,74 @@ exports.saveBulkClaim = async (req, res) => {
           if (!contractData || allDataArray.length == 0) {
             item.status = "Contract not found"
             item.exit = true;
+            //check contract eligibility reason
+            let checkContractData = await contractService.getContractById({
+              $and: [
+                {
+                  $or: [
+                    { unique_key: item.contractId },
+                    { serial: item.contractId },
+                  ],
+                },
+              ],
+            })
+            if (checkContractData) {
+              item.status = " "
+
+              if (checkContractData.status != "Active") {
+                item.status = "Contract is not active"
+                item.exit = true;
+
+              }
+
+              if (new Date(checkContractData.minDate) > new Date()) {
+                const options = {
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit'
+                };
+                const formattedDate = new Date(checkContractData.minDate).toLocaleDateString('en-US', options)
+                item.status = "Contract will be eligible on " + " " + formattedDate
+                item.exit = true;
+              }
+
+              let claimQuery = [
+                {
+                  $match: { contractId: new mongoose.Types.ObjectId(checkContractData._id) }
+                },
+                {
+                  $group: {
+                    _id: null,
+                    totalAmount: { $sum: "$totalAmount" }, // Calculate total amount from all claims
+                    openFileClaimsCount: { // Count of claims where claimfile is "Open"
+                      $sum: {
+                        $cond: {
+                          if: { $eq: ["$claimFile", "open"] }, // Assuming "claimFile" field is correct
+                          then: 1,
+                          else: 0
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+
+              let checkClaims = await claimService.getClaimWithAggregate(claimQuery)
+
+              if (checkClaims[0]) {
+                if (checkClaims[0].openFileClaimsCount > 0) {
+                  item.status = "Contract has open claim"
+                  item.exit = true;
+
+                }
+                if (checkClaims[0].totalAmount >= checkContractData.productValue) {
+                  item.status = "Claim value exceed the product value limit"
+                  item.exit = true;
+                }
+              }
+            }
           }
-          if (checkSerialCache[contractData.unique_key?.toLowerCase()]) {
-            item.status = "Alreday open for the claim for this contract!"
-            item.exit = true;
-          } else {
-            checkSerialCache[contractData.unique_key?.toLowerCase()] = true;
-          }
+
 
           if (item.coverageType) {
             if (item.coverageType != null || item.coverageType != "") {
@@ -3070,6 +3131,13 @@ exports.saveBulkClaim = async (req, res) => {
             item.status = "Contract is not active";
             item.exit = true;
           }
+          if (checkSerialCache[contractData.unique_key?.toLowerCase()]) {
+            item.status = "Duplicate contract id/serial number"
+            item.exit = true;
+          } else {
+            checkSerialCache[contractData.unique_key?.toLowerCase()] = true;
+          }
+
 
         } else {
           item.contractData = null
@@ -3088,6 +3156,8 @@ exports.saveBulkClaim = async (req, res) => {
 
       //Update eligibility when contract is open
 
+      console.log("totalDataComing--------------------------",totalDataComing);
+      return;
       const updateArrayPromise = totalDataComing.map(item => {
         if (!item.exit && item.contractData) return contractService.updateContract({ _id: item.contractData._id }, { eligibilty: false }, { new: true });
         else {
