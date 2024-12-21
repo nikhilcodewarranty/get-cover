@@ -2956,9 +2956,8 @@ exports.saveBulkClaim = async (req, res) => {
             item.status = "Contract not found"
             item.exit = true;
           }
-          console.log("contractData-------------------",contractData)
           if (checkSerialCache[contractData.unique_key?.toLowerCase()]) {
-            item.status  = "Alreday open for the claim for this contract"
+            item.status = "Alreday open for the claim for this contract!"
             item.exit = true;
           } else {
             checkSerialCache[contractData.unique_key?.toLowerCase()] = true;
@@ -3077,9 +3076,6 @@ exports.saveBulkClaim = async (req, res) => {
           item.servicerData = null
         }
       }
-
-      console.log("totalDataComing-------------------------",totalDataComing)
-      return;
       let finalArray = []
       //Save bulk claim
 
