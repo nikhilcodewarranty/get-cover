@@ -619,6 +619,25 @@ exports.exportDataForClaim = async (req, res) => {
       })
     );
 
+    let dataForClaimReporting = {
+      fileName: "claim-report-" + dateString,
+      userId: req.teammateId,
+      filePath: "claimReporting/claim-report-" + dateString + ".xlsx",
+      date: new Date(),
+      status: "Pending",
+      reportName: data.reportName,
+      remark: data.remark,
+      category: "claimReporting"
+    }
+    let createReporting = await claimReportingService.createReporting(dataForClaimReporting)
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: dataArray,
+      summary: result_Array,
+      totalCount
+    })
+
     // const groupedData = result_Array.reduce((acc, item) => {
     //   // Extract dealer name and claim information
     //   const dealerName = item.servicerData?.name || "Unknown Dealer";
@@ -985,24 +1004,7 @@ exports.exportDataForClaim = async (req, res) => {
     }
     let dateString = Date.now()
     // let fileName = "claim-report-" + dateString
-    let dataForClaimReporting = {
-      fileName: "claim-report-" + dateString,
-      userId: req.teammateId,
-      filePath: "claimReporting/claim-report-" + dateString + ".xlsx",
-      date: new Date(),
-      status: "Pending",
-      reportName: data.reportName,
-      remark: data.remark,
-      category: "claimReporting"
-    }
-    let createReporting = await claimReportingService.createReporting(dataForClaimReporting)
-    res.send({
-      code: constant.successCode,
-      message: "Success",
-      result: dataArray,
-      summary: result_Array,
-      totalCount
-    })
+   
     await createExcelFileWithMultipleSheets(dataArray, process.env.bucket_name, 'claimReporting', dateString, req.role)
       .then((res) => {
         claimReportingService.updateReporting({ _id: createReporting._id }, { status: "Active" }, { new: true })
