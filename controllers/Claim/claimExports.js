@@ -634,9 +634,6 @@ exports.exportDataForClaim = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: "Success",
-      result: dataArray,
-      summary: result_Array,
-      totalCount
     })
 
     // const groupedData = result_Array.reduce((acc, item) => {
@@ -1004,7 +1001,7 @@ exports.exportDataForClaim = async (req, res) => {
       dataArray = [customerArray]
     }
     // let fileName = "claim-report-" + dateString
-   
+
     await createExcelFileWithMultipleSheets(dataArray, process.env.bucket_name, 'claimReporting', dateString, req.role)
       .then((res) => {
         claimReportingService.updateReporting({ _id: createReporting._id }, { status: "Active" }, { new: true })
