@@ -1382,9 +1382,9 @@ exports.createOrder1 = async (req, res) => {
             description: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName}  - ${req.role}.`,
             userId: req.teammateId,
             contentId: null,
-            flag: 'order',
-            redirectionId: "orderList/" + savedResponse.unique_key,
-            endPoint: base_url + "orderList/" + savedResponse.unique_key,
+            flag: 'edit_order',
+            redirectionId: "editOrder/" + savedResponse._id,
+            endPoint: base_url + "editOrder/" + savedResponse._id,
             notificationFor: IDs
         };
         notificationArrayData.push(adminNotificationData)
@@ -1394,9 +1394,9 @@ exports.createOrder1 = async (req, res) => {
             description: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName}  - ${req.role}.`,
             userId: req.teammateId,
             contentId: null,
-            flag: 'order',
-            redirectionId: "orderList/" + savedResponse.unique_key,
-            endPoint: base_url + "orderList/" + savedResponse.unique_key,
+            flag: 'edit_order',
+            redirectionId: "editOrder/" + savedResponse._id,
+            endPoint: base_url + "editOrder/" + savedResponse._id,
             notificationFor: ID1
         };
         notificationArrayData.push(dealerNotificationData)
@@ -1406,9 +1406,9 @@ exports.createOrder1 = async (req, res) => {
             description: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName}  - ${req.role}.`,
             userId: req.teammateId,
             contentId: null,
-            flag: 'order',
-            redirectionId: "orderList/" + savedResponse.unique_key,
-            endPoint: base_url + "orderList/" + savedResponse.unique_key,
+            flag: 'edit_order',
+            redirectionId: "editOrder/" + savedResponse._id,
+            endPoint: base_url + "editOrder/" + savedResponse._id,
             notificationFor: ID2
         };
         notificationArrayData.push(resellerNotificationData)
@@ -2560,9 +2560,9 @@ exports.editOrderDetail = async (req, res) => {
             description: `The draft Order # ${checkOrder.unique_key} has been updated successfully by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
             userId: req.teammateId,
             contentId: checkOrder._id,
-            flag: 'order',
-            redirectionId: "orderList/" + savedResponse.unique_key,
-            endPoint: base_url + "orderList/" + savedResponse.unique_key,
+            flag: 'edit_order',
+            redirectionId: "editOrder/" + savedResponse._id,
+            endPoint: base_url + "editOrder/" + savedResponse._id,
             notificationFor: IDs
         };
         let notificationData1 = {
@@ -2570,9 +2570,9 @@ exports.editOrderDetail = async (req, res) => {
             description: `The draft Order # ${checkOrder.unique_key} has been updated successfully by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
             userId: req.teammateId,
             contentId: checkOrder._id,
-            flag: 'order',
-            redirectionId: "orderList/" + savedResponse.unique_key,
-            endPoint: base_url + "orderList/" + savedResponse.unique_key,
+            flag: 'edit_order',
+            redirectionId: "editOrder/" + savedResponse._id,
+            endPoint: base_url + "editOrder/" + savedResponse._id,
             notificationFor: IDs1
         };
         let notificationData2 = {
@@ -2580,9 +2580,9 @@ exports.editOrderDetail = async (req, res) => {
             description: `The draft Order # ${checkOrder.unique_key} has been updated successfully by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
             userId: req.teammateId,
             contentId: checkOrder._id,
-            flag: 'order',
-            redirectionId: "orderList/" + savedResponse.unique_key,
-            endPoint: base_url + "orderList/" + savedResponse.unique_key,
+            flag: 'edit_order',
+            redirectionId: "editOrder/" + savedResponse._id,
+            endPoint: base_url + "editOrder/" + savedResponse._id,
             notificationFor: IDs2
         };
         let notificationArrayData = []
