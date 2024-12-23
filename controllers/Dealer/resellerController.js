@@ -2236,8 +2236,11 @@ exports.changeResellerStatus = async (req, res) => {
             let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: singleReseller.dealerId, isPrimary: true } } })
             let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.params.resellerId, isPrimary: true } } })
             let IDs = adminUsers.map(user => user._id)
+            let adminEmail = adminUsers.map(user => user.email)
             let dealerId = dealerUsers.map(user => user._id)
+            let dealerEmails = dealerUsers.map(user => user.email)
             let resellerId = resellerUsers.map(user => user._id)
+            let mergedEmail = adminEmail.concat(dealerEmails)
             let notificationData = {
                 title: "Reseller Status Updated",
                 description: `The Reseller ${singleReseller.name} status has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
@@ -2279,7 +2282,7 @@ exports.changeResellerStatus = async (req, res) => {
             let resetLink = `${process.env.SITE_URL}newPassword/${getPrimary._id}/${resetPasswordCode}`
 
             let emailData = {
-                senderName: singleReseller.name,
+                senderName: `Dear ${singleReseller.name}`,
                 darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
                 lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
                 address: settingData[0]?.address,
@@ -2290,6 +2293,19 @@ exports.changeResellerStatus = async (req, res) => {
             }
 
             let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, ["noreply@getcover.com"], emailData))
+
+            emailData = {
+                senderName: singleReseller.name,
+                darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                address: settingData[0]?.address,
+                websiteSetting: settingData[0],
+                content: `Reseller status has been changed to ${status_content}`,
+                redirectId: '',
+                subject: "Update Status"
+            }
+
+            mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ["noreply@getcover.com"], emailData))
 
             //Save Logs change reseller status
             let logData = {

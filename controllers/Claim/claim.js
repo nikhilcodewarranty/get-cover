@@ -3022,8 +3022,6 @@ exports.saveBulkClaim = async (req, res) => {
               }
             }
           }
-
-
           if (item.coverageType) {
             if (item.coverageType != null || item.coverageType != "") {
               if (contractData) {
@@ -3136,11 +3134,8 @@ exports.saveBulkClaim = async (req, res) => {
             } else {
               checkSerialCache[contractData.unique_key?.toLowerCase()] = true;
             }
-            
-          }
-          
-        
 
+          }
         } else {
           item.contractData = null
           item.servicerData = null
@@ -3158,7 +3153,6 @@ exports.saveBulkClaim = async (req, res) => {
 
       //Update eligibility when contract is open
 
-      
       const updateArrayPromise = totalDataComing.map(item => {
         if (!item.exit && item.contractData) return contractService.updateContract({ _id: item.contractData._id }, { eligibilty: false }, { new: true });
         else {
