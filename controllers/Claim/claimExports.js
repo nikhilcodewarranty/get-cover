@@ -75,13 +75,13 @@ const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, d
       if (index == 0) {
         sheetName = "summary"
       }
-      if (index == 2) {
+      if (index == 1) {
         sheetName = "servicer"
       }
-      if (index == 3) {
+      if (index == 2) {
         sheetName = "reseller"
       }
-      if (index == 4) {
+      if (index == 3) {
         sheetName = "customer"
       }
     }
@@ -89,13 +89,13 @@ const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, d
       if (index == 0) {
         sheetName = "summary"
       }
-      if (index == 2) {
+      if (index == 1) {
         sheetName = "dealer"
       }
-      if (index == 3) {
+      if (index == 2) {
         sheetName = "servicer"
       }
-      if (index == 4) {
+      if (index == 3) {
         sheetName = "customer"
       }
     }
