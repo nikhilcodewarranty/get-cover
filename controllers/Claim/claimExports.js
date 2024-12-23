@@ -474,6 +474,7 @@ exports.exportDataForClaim = async (req, res) => {
       lookupQuery = lookupQuery.concat(newQuery);
     }
     let allClaims = await claimService.getClaimWithAggregate(lookupQuery);
+    console.log("filtered data +++++++++++++++++",getAllClaims.length)
     let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
 
     let allServicerIds = [];
@@ -791,7 +792,6 @@ exports.exportDataForClaim = async (req, res) => {
 
         // Check if servicer already exists in the accumulator
         let servicerEntry = acc.find(entry => entry["Servicer Name"] === servicerName);
-        console.log("sjdhfsjdfsjh------------", servicerEntry)
 
         if (!servicerEntry) {
           // If servicer does not exist, create a new entry
@@ -825,67 +825,6 @@ exports.exportDataForClaim = async (req, res) => {
       return acc;
     };
 
-
-    // const groupDataByServicer = (resultArray) => {
-    //   return resultArray.reduce((acc, item) => {
-    //     // Extract servicer name
-    //     let servicerName = item?.servicerId;
-    //     servicerService.getServiceProviderById({ _id: servicerName })
-    //       .then((result) => {
-    //         console.log(result.name,"----------------")
-    //         servicerName = result?.name
-    //         console.log(result.name,"----------------",servicerName)
-
-    //       })
-    //       .catch((err) => console.error(err))
-
-    //       console.log("----------------",servicerName)
-
-
-
-    //     // Only process entries with valid servicer names
-    //     if (!servicerName) {
-    //       return acc; // Skip entries with no valid servicer name
-    //     }
-
-    //     const claimAmount = item.totalAmount || 0;
-    //     const isCompleted = item.claimStatus.some(status => status.status === "completed");
-    //     const isRejected = item.claimStatus.some(status => status.status === "rejected");
-
-    //     // Check if servicer already exists in the accumulator
-    //     let servicerEntry = acc.find(entry => entry["Servicer Name"] === servicerName);
-
-    //     if (!servicerEntry) {
-    //       // If servicer does not exist, create a new entry
-    //       servicerEntry = {
-    //         "Servicer Name": servicerName,
-    //         "Total Claims": 0,
-    //         "Completed Claims": 0,
-    //         "Rejected Claims": 0,
-    //         "Total Amount of Claims": 0,
-    //         "Average Claim Amount": 0, // Initialize average claim amount
-    //       };
-    //       acc.push(servicerEntry);
-    //     }
-
-    //     // Update servicer entry
-    //     servicerEntry["Total Claims"] += 1;
-    //     servicerEntry["Total Amount of Claims"] += claimAmount;
-    //     if (isCompleted) {
-    //       servicerEntry["Completed Claims"] += 1;
-    //     }
-    //     if (isRejected) {
-    //       servicerEntry["Rejected Claims"] += 1;
-    //     }
-
-    //     // Calculate average claim amount for completed claims
-    //     servicerEntry["Average Claim Amount"] = servicerEntry["Completed Claims"]
-    //       ? (servicerEntry["Total Amount of Claims"] / servicerEntry["Completed Claims"]).toFixed(2)
-    //       : 0;
-
-    //     return acc;
-    //   }, []);
-    // };
 
     const groupDataByReseller = (resultArray) => {
       return resultArray.reduce((acc, item) => {
