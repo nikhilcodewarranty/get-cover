@@ -47,26 +47,73 @@ const s3Client1 = new S3Client({
 })
 
 
-const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, dateString) => {
+const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, dateString, role) => {
   const workbook = new ExcelJS.Workbook();
   // Loop through data to create sheets dynamically
   data.forEach((sheetData, index) => {
     let sheetName;
-    if (index == 0) {
-      sheetName = "summary"
+
+
+    if (role == "Super Admin") {
+      if (index == 0) {
+        sheetName = "summary"
+      }
+      if (index == 1) {
+        sheetName = "dealer"
+      }
+      if (index == 2) {
+        sheetName = "servicer"
+      }
+      if (index == 3) {
+        sheetName = "reseller"
+      }
+      if (index == 4) {
+        sheetName = "customer"
+      }
     }
-    if (index == 1) {
-      sheetName = "dealer"
+    if (role == "Dealer") {
+      if (index == 0) {
+        sheetName = "summary"
+      }
+      if (index == 2) {
+        sheetName = "servicer"
+      }
+      if (index == 3) {
+        sheetName = "reseller"
+      }
+      if (index == 4) {
+        sheetName = "customer"
+      }
     }
-    if (index == 2) {
-      sheetName = "servicer"
+    if (role == "Reseller") {
+      if (index == 0) {
+        sheetName = "summary"
+      }
+      if (index == 2) {
+        sheetName = "dealer"
+      }
+      if (index == 3) {
+        sheetName = "servicer"
+      }
+      if (index == 4) {
+        sheetName = "customer"
+      }
     }
-    if (index == 3) {
-      sheetName = "reseller"
+    if (role == "Servicer") {
+      if (index == 0) {
+        sheetName = "summary"
+      }
+      if (index == 1) {
+        sheetName = "customer"
+      }
     }
-    if (index == 4) {
-      sheetName = "customer"
+    if (role == "Customer") {
+
+      if (index == 0) {
+        sheetName = "customer"
+      }
     }
+
     const sheet = workbook.addWorksheet(`${sheetName}`);
 
     if (sheetData.length > 0) {
@@ -874,8 +921,8 @@ exports.exportDataForClaim = async (req, res) => {
     const resellerData = groupDataByReseller(result_Array);
     let customerArray = groupDataByCustomer(result_Array)
 
-    console.log("9999999999999999------------", servicerData)
-    console.log("7777777777777777------------", resellerData)
+    // console.log("9999999999999999------------", servicerData)
+    // console.log("7777777777777777------------", resellerData)
 
 
     let summary = result_Array.reduce(
@@ -921,6 +968,21 @@ exports.exportDataForClaim = async (req, res) => {
 
     summary = [summary]
     let dataArray = [summary, dealerData, servicerData, resellerData, customerArray]
+    if (req.role == "Super Admin") {
+      dataArray = [summary, dealerData, servicerData, resellerData, customerArray]
+    }
+    if (req.role == "Dealer") {
+      dataArray = [dealerData, servicerData, resellerData, customerArray]
+    }
+    if (req.role == "Reseller") {
+      dataArray = [resellerData, dealerData, servicerData, customerArray]
+    }
+    if (req.role == "Servicer") {
+      dataArray = [servicerData, customerArray]
+    }
+    if (req.role == "Customer") {
+      dataArray = [customerArray]
+    }
     let dateString = Date.now()
     // let fileName = "claim-report-" + dateString
     let dataForClaimReporting = {
@@ -934,8 +996,14 @@ exports.exportDataForClaim = async (req, res) => {
       category: "claimReporting"
     }
     let createReporting = await claimReportingService.createReporting(dataForClaimReporting)
-
-    await createExcelFileWithMultipleSheets(dataArray, process.env.bucket_name, 'claimReporting', dateString)
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: dataArray,
+      summary: result_Array,
+      totalCount
+    })
+    await createExcelFileWithMultipleSheets(dataArray, process.env.bucket_name, 'claimReporting', dateString, req.role)
       .then((res) => {
         claimReportingService.updateReporting({ _id: createReporting._id }, { status: "Active" }, { new: true })
       })
@@ -944,13 +1012,7 @@ exports.exportDataForClaim = async (req, res) => {
         claimReportingService.updateReporting({ _id: createReporting._id }, { status: "Failed" }, { new: true })
 
       })
-    res.send({
-      code: constant.successCode,
-      message: "Success",
-      result: dataArray,
-      summary: result_Array,
-      totalCount
-    })
+
 
   } catch (err) {
     res.send({
