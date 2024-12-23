@@ -75,13 +75,13 @@ const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, d
       if (index == 0) {
         sheetName = "summary"
       }
-      if (index == 2) {
+      if (index == 1) {
         sheetName = "servicer"
       }
-      if (index == 3) {
+      if (index == 2) {
         sheetName = "reseller"
       }
-      if (index == 4) {
+      if (index == 3) {
         sheetName = "customer"
       }
     }
@@ -89,13 +89,13 @@ const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, d
       if (index == 0) {
         sheetName = "summary"
       }
-      if (index == 2) {
+      if (index == 1) {
         sheetName = "dealer"
       }
-      if (index == 3) {
+      if (index == 2) {
         sheetName = "servicer"
       }
-      if (index == 4) {
+      if (index == 3) {
         sheetName = "customer"
       }
     }
@@ -155,6 +155,321 @@ const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, d
 
 exports.exportDataForClaim = async (req, res) => {
   try {
+    // let data = req.body
+    // let query = { isDeleted: false };
+    // let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+    // let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+    // let limitData = Number(pageLimit)
+    // let match = {};
+    // let servicerMatch = {}
+    // let dealerMatch = {}
+    // let resellerMatch = {}
+    // let dateMatch = {}
+    // let statusMatch = {}
+    // // checking the user type from token
+    // if (req.role == 'Dealer') {
+    //   match = { 'contracts.orders.dealerId': new mongoose.Types.ObjectId(req.userId) }
+    // }
+    // if (req.role == 'Customer') {
+    //   match = { 'contracts.orders.customerId': new mongoose.Types.ObjectId(req.userId) }
+    // }
+    // // Get Claim for servicer
+    // if (req.role == 'Servicer') {
+    //   servicerMatch = { servicerId: new mongoose.Types.ObjectId(req.userId) }
+    // }
+    // // building the query for claims
+    // let newQuery = [];
+    // newQuery.push({
+    //   $facet: {
+    //     totalRecords: [
+    //       {
+    //         $count: "total"
+    //       }
+    //     ],
+    //     data: [
+    //       {
+    //         $skip: skipLimit
+    //       },
+    //       {
+    //         $limit: 10000000
+    //       },
+    //       {
+    //         $lookup: {
+    //           from: "servicer_dealer_relations",
+    //           localField: "contracts.orders.dealers._id",
+    //           foreignField: "dealerId",
+    //           as: "contracts.orders.dealers.dealerServicer",
+    //         }
+    //       },
+    //       {
+    //         $lookup: {
+    //           from: "resellers",
+    //           localField: "contracts.orders.resellerId",
+    //           foreignField: "_id",
+    //           as: "contracts.orders.resellers",
+    //         }
+    //       },
+    //       {
+    //         $project: {
+    //           "contractId": 1,
+    //           "claimFile": 1,
+    //           "lossDate": 1,
+    //           submittedBy: 1,
+    //           "receiptImage": 1,
+    //           reason: 1,
+    //           "unique_key": 1,
+    //           note: 1,
+    //           totalAmount: 1,
+    //           servicerId: 1,
+    //           dealerSku: 1,
+    //           customerStatus: 1,
+    //           trackingNumber: 1,
+    //           trackingType: 1,
+    //           getcoverOverAmount: 1,
+    //           customerOverAmount: 1,
+    //           customerClaimAmount: 1,
+    //           getCoverClaimAmount: 1,
+    //           claimType: 1,
+    //           repairParts: 1,
+    //           diagnosis: 1,
+    //           claimStatus: 1,
+    //           repairStatus: 1,
+    //           "contracts.unique_key": 1,
+    //           "contracts.productName": 1,
+    //           "contracts.productValue": 1,
+    //           "contracts.claimAmount": 1,
+    //           "contracts.coverageType": 1,
+    //           "contracts.model": 1,
+    //           "contracts.pName": 1,
+    //           "contracts.manufacture": 1,
+    //           "contracts.serial": 1,
+    //           "contracts.orders.dealerId": 1,
+    //           "contracts.orders._id": 1,
+    //           "contracts.orders.servicerId": 1,
+    //           "contracts.orders.serviceCoverageType": 1,
+    //           "contracts.orders.coverageType": 1,
+    //           "contracts.orders.customerId": 1,
+    //           "contracts.orders.dealers.isShippingAllowed": 1,
+    //           "contracts.orders.resellerId": 1,
+    //           "contracts.orders.dealers.name": 1,
+    //           "contracts.orders.dealers.isServicer": 1,
+    //           "contracts.orders.dealers.accountStatus": 1,
+    //           "contracts.orders.dealers._id": 1,
+    //           "contracts.orders.customer.username": 1,
+    //           "contracts.orders.customer._id": 1,
+    //           "contracts.orders.dealers.dealerServicer": {
+    //             $map: {
+    //               input: "$contracts.orders.dealers.dealerServicer",
+    //               as: "dealerServicer",
+    //               in: {
+    //                 "_id": "$$dealerServicer._id",
+    //                 "servicerId": "$$dealerServicer.servicerId",
+    //               }
+    //             }
+    //           },
+    //           "contracts.orders.servicers": {
+    //             $map: {
+    //               input: "$contracts.orders.servicers",
+    //               as: "servicer",
+    //               in: {
+    //                 "_id": "$$servicer._id",
+    //                 "name": "$$servicer.name",
+    //               }
+    //             }
+    //           },
+    //           "contracts.orders.resellers": {
+    //             $map: {
+    //               input: "$contracts.orders.resellers",
+    //               as: "reseller",
+    //               in: {
+    //                 "_id": "$$reseller._id",
+    //                 "name": "$$reseller.name",
+    //                 "isServicer": "$$reseller.isServicer",
+    //                 "status": "$$reseller.status"
+    //               }
+    //             }
+    //           }
+    //         }
+    //       },
+    //     ]
+    //   }
+    // })
+
+    // if (data.servicerName != '' && data.servicerName != undefined) {
+    //   const checkServicer = await providerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } });
+    //   if (checkServicer.length > 0) {
+    //     let servicerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer._id))
+    //     let dealerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer.dealerId))
+    //     let resellerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer.resellerId))
+    //     servicerMatch = {
+    //       $or: [
+    //         { "servicerId": { $in: servicerIds } },
+    //         { "servicerId": { $in: dealerIds } },
+    //         { "servicerId": { $in: resellerIds } }
+    //       ]
+    //     };
+    //   }
+    //   else {
+    //     servicerMatch = { 'servicerId': new mongoose.Types.ObjectId('5fa1c587ae2ac23e9c46510f') }
+    //   }
+    // }
+    // data.dealerName = data.dealerName ? data.dealerName : ""
+    // data.resellerMatch = data.resellerMatch ? data.resellerMatch : ""
+    // data.dateFilter = data.dateFilter ? data.dateFilter : ""
+    // if (data.dealerName != "") {
+    //   let getDealer = await dealerService.getAllDealers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
+    //   let dealerIds = getDealer.map(ID => new mongoose.Types.ObjectId(ID._id))
+    //   dealerMatch = { dealerId: { $in: dealerIds } }
+
+    // }
+
+    // if (data.resellerName != "") {
+    //   let getReseller = await resellerService.getResellers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
+    //   let resellerIds = getReseller.map(ID => new mongoose.Types.ObjectId(ID._id))
+    //   resellerMatch = { resellerId: { $in: resellerIds } }
+    // }
+
+    // statusMatch = {}
+
+    // if (data.dateFilter != "") {
+    //   data.endDate = new Date(data.endDate).setHours(11, 59, 0, 0)
+    //   if (data.dateFilter == "damageDate") {
+    //     dateMatch = { lossDate: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
+    //     // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
+    //   }
+    //   if (data.dateFilter == "openDate") {
+    //     dateMatch = { createdAt: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
+    //     // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
+    //   }
+    //   if (data.dateFilter == "closeDate") {
+    //     dateMatch = { claimDate: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
+    //     statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
+    //   }
+    // }
+
+    // let claimPaidStatus = {}
+    // if (data.claimPaidStatus != '' && data.claimPaidStatus != undefined) {
+    //   claimPaidStatus = { "claimPaymentStatus": data.claimPaidStatus }
+    // }
+    // else {
+    //   claimPaidStatus = {
+    //     $or: [
+    //       { "claimPaymentStatus": "Paid" },
+    //       { "claimPaymentStatus": "Unpaid" },
+    //     ]
+    //   }
+    // }
+    // let lookupQuery = [
+    //   { $sort: { unique_key_number: -1 } },
+    //   {
+    //     $match:
+    //     {
+    //       $and: [
+    //         { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+    //         claimPaidStatus,
+    //         { 'productName': { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+    //         { 'dealerSku': { '$regex': data.dealerSku ? data.dealerSku.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+    //         { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+    //         { 'customerStatus.status': { '$regex': data.customerStatusValue ? data.customerStatusValue : '', '$options': 'i' } },
+    //         { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
+    //         { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus : '', '$options': 'i' } },
+    //         servicerMatch,
+    //         dealerMatch,
+    //         resellerMatch,
+    //         dateMatch,
+    //         statusMatch
+    //       ]
+    //     },
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: "contracts",
+    //       localField: "contractId",
+    //       foreignField: "_id",
+    //       as: "contracts",
+    //     }
+    //   },
+    //   {
+    //     $unwind: "$contracts"
+    //   },
+    //   {
+    //     $match:
+    //     {
+    //       $and: [
+    //         { 'contracts.unique_key': { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+    //         { "contracts.serial": { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+    //         { "contracts.productName": { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+    //       ]
+    //     },
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: "orders",
+    //       localField: "contracts.orderId",
+    //       foreignField: "_id",
+    //       as: "contracts.orders",
+    //     },
+    //   },
+    //   {
+    //     $unwind: "$contracts.orders"
+    //   },
+    //   {
+    //     $match:
+    //     {
+    //       $and: [
+    //         { "contracts.orders.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+    //         { "contracts.orders.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+    //         { "contracts.orders.isDeleted": false },
+    //         match
+    //       ]
+    //     },
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: "dealers",
+    //       localField: "contracts.orders.dealerId",
+    //       foreignField: "_id",
+    //       as: "contracts.orders.dealers",
+    //     }
+    //   },
+    //   {
+    //     $unwind: "$contracts.orders.dealers"
+    //   },
+    //   {
+    //     $match:
+    //     {
+    //       "contracts.orders.dealers.name": { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' },
+    //     }
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: "serviceproviders",
+    //       localField: "contracts.orders.servicerId",
+    //       foreignField: "_id",
+    //       as: "contracts.orders.servicers",
+    //     }
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: "customers",
+    //       localField: "contracts.orders.customerId",
+    //       foreignField: "_id",
+    //       as: "contracts.orders.customer",
+    //     }
+    //   },
+    //   {
+    //     $unwind: "$contracts.orders.customer"
+    //   },
+    //   {
+    //     $match:
+    //     {
+    //       $and: [
+    //         { "contracts.orders.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+    //       ]
+    //     },
+    //   },
+    // ]
+
     let data = req.body
     let query = { isDeleted: false };
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
@@ -165,7 +480,6 @@ exports.exportDataForClaim = async (req, res) => {
     let dealerMatch = {}
     let resellerMatch = {}
     let dateMatch = {}
-    let statusMatch = {}
     // checking the user type from token
     if (req.role == 'Dealer') {
       match = { 'contracts.orders.dealerId': new mongoose.Types.ObjectId(req.userId) }
@@ -176,6 +490,9 @@ exports.exportDataForClaim = async (req, res) => {
     // Get Claim for servicer
     if (req.role == 'Servicer') {
       servicerMatch = { servicerId: new mongoose.Types.ObjectId(req.userId) }
+    }
+    if (req.role == 'Reseller') {
+      match = { resellerId: new mongoose.Types.ObjectId(req.userId) }
     }
     // building the query for claims
     let newQuery = [];
@@ -191,7 +508,7 @@ exports.exportDataForClaim = async (req, res) => {
             $skip: skipLimit
           },
           {
-            $limit: 10000000
+            $limit: pageLimit
           },
           {
             $lookup: {
@@ -320,19 +637,19 @@ exports.exportDataForClaim = async (req, res) => {
       let getDealer = await dealerService.getAllDealers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
       let dealerIds = getDealer.map(ID => new mongoose.Types.ObjectId(ID._id))
       dealerMatch = { dealerId: { $in: dealerIds } }
+      console.log(dealerMatch)
 
     }
 
     if (data.resellerName != "") {
-      let getReseller = await resellerService.getResellers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
+      let getReseller = await resellerService.getResellers({ name: { '$regex': data.resellerName ? data.resellerName : '', '$options': 'i' } }, { _id: 1 })
       let resellerIds = getReseller.map(ID => new mongoose.Types.ObjectId(ID._id))
       resellerMatch = { resellerId: { $in: resellerIds } }
+
     }
 
     statusMatch = {}
-
     if (data.dateFilter != "") {
-      data.endDate = new Date(data.endDate).setHours(11, 59, 0, 0)
       if (data.dateFilter == "damageDate") {
         dateMatch = { lossDate: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
         // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
@@ -474,6 +791,7 @@ exports.exportDataForClaim = async (req, res) => {
       lookupQuery = lookupQuery.concat(newQuery);
     }
     let allClaims = await claimService.getClaimWithAggregate(lookupQuery);
+    console.log("filtered data +++++++++++++++++", allClaims)
     let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
 
     let allServicerIds = [];
@@ -618,6 +936,23 @@ exports.exportDataForClaim = async (req, res) => {
         };
       })
     );
+    let dateString = Date.now()
+
+    let dataForClaimReporting = {
+      fileName: "claim-report-" + dateString,
+      userId: req.teammateId,
+      filePath: "claimReporting/claim-report-" + dateString + ".xlsx",
+      date: new Date(),
+      status: "Pending",
+      reportName: data.reportName,
+      remark: data.remark,
+      category: "claimReporting"
+    }
+    let createReporting = await claimReportingService.createReporting(dataForClaimReporting)
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+    })
 
     // const groupedData = result_Array.reduce((acc, item) => {
     //   // Extract dealer name and claim information
@@ -774,7 +1109,6 @@ exports.exportDataForClaim = async (req, res) => {
 
         // Check if servicer already exists in the accumulator
         let servicerEntry = acc.find(entry => entry["Servicer Name"] === servicerName);
-        console.log("sjdhfsjdfsjh------------", servicerEntry)
 
         if (!servicerEntry) {
           // If servicer does not exist, create a new entry
@@ -808,67 +1142,6 @@ exports.exportDataForClaim = async (req, res) => {
       return acc;
     };
 
-
-    // const groupDataByServicer = (resultArray) => {
-    //   return resultArray.reduce((acc, item) => {
-    //     // Extract servicer name
-    //     let servicerName = item?.servicerId;
-    //     servicerService.getServiceProviderById({ _id: servicerName })
-    //       .then((result) => {
-    //         console.log(result.name,"----------------")
-    //         servicerName = result?.name
-    //         console.log(result.name,"----------------",servicerName)
-
-    //       })
-    //       .catch((err) => console.error(err))
-
-    //       console.log("----------------",servicerName)
-
-
-
-    //     // Only process entries with valid servicer names
-    //     if (!servicerName) {
-    //       return acc; // Skip entries with no valid servicer name
-    //     }
-
-    //     const claimAmount = item.totalAmount || 0;
-    //     const isCompleted = item.claimStatus.some(status => status.status === "completed");
-    //     const isRejected = item.claimStatus.some(status => status.status === "rejected");
-
-    //     // Check if servicer already exists in the accumulator
-    //     let servicerEntry = acc.find(entry => entry["Servicer Name"] === servicerName);
-
-    //     if (!servicerEntry) {
-    //       // If servicer does not exist, create a new entry
-    //       servicerEntry = {
-    //         "Servicer Name": servicerName,
-    //         "Total Claims": 0,
-    //         "Completed Claims": 0,
-    //         "Rejected Claims": 0,
-    //         "Total Amount of Claims": 0,
-    //         "Average Claim Amount": 0, // Initialize average claim amount
-    //       };
-    //       acc.push(servicerEntry);
-    //     }
-
-    //     // Update servicer entry
-    //     servicerEntry["Total Claims"] += 1;
-    //     servicerEntry["Total Amount of Claims"] += claimAmount;
-    //     if (isCompleted) {
-    //       servicerEntry["Completed Claims"] += 1;
-    //     }
-    //     if (isRejected) {
-    //       servicerEntry["Rejected Claims"] += 1;
-    //     }
-
-    //     // Calculate average claim amount for completed claims
-    //     servicerEntry["Average Claim Amount"] = servicerEntry["Completed Claims"]
-    //       ? (servicerEntry["Total Amount of Claims"] / servicerEntry["Completed Claims"]).toFixed(2)
-    //       : 0;
-
-    //     return acc;
-    //   }, []);
-    // };
 
     const groupDataByReseller = (resultArray) => {
       return resultArray.reduce((acc, item) => {
@@ -983,26 +1256,8 @@ exports.exportDataForClaim = async (req, res) => {
     if (req.role == "Customer") {
       dataArray = [customerArray]
     }
-    let dateString = Date.now()
     // let fileName = "claim-report-" + dateString
-    let dataForClaimReporting = {
-      fileName: "claim-report-" + dateString,
-      userId: req.teammateId,
-      filePath: "claimReporting/claim-report-" + dateString + ".xlsx",
-      date: new Date(),
-      status: "Pending",
-      reportName: data.reportName,
-      remark: data.remark,
-      category: "claimReporting"
-    }
-    let createReporting = await claimReportingService.createReporting(dataForClaimReporting)
-    res.send({
-      code: constant.successCode,
-      message: "Success",
-      result: dataArray,
-      summary: result_Array,
-      totalCount
-    })
+
     await createExcelFileWithMultipleSheets(dataArray, process.env.bucket_name, 'claimReporting', dateString, req.role)
       .then((res) => {
         claimReportingService.updateReporting({ _id: createReporting._id }, { status: "Active" }, { new: true })
