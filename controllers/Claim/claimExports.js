@@ -618,6 +618,7 @@ exports.exportDataForClaim = async (req, res) => {
         };
       })
     );
+    let dateString = Date.now()
 
     let dataForClaimReporting = {
       fileName: "claim-report-" + dateString,
@@ -1002,7 +1003,6 @@ exports.exportDataForClaim = async (req, res) => {
     if (req.role == "Customer") {
       dataArray = [customerArray]
     }
-    let dateString = Date.now()
     // let fileName = "claim-report-" + dateString
    
     await createExcelFileWithMultipleSheets(dataArray, process.env.bucket_name, 'claimReporting', dateString, req.role)
