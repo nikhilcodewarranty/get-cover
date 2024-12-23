@@ -643,7 +643,6 @@ exports.changeDealerStatus = async (req, res) => {
     const changedDealerStatus = await dealerService.updateDealerStatus({ _id: req.params.dealerId }, newValue, option);
     if (changedDealerStatus) {
       const status_content = req.body.status ? 'Active' : 'Inactive';
-
       const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
       const base_url = `${process.env.SITE_URL}`
       const adminDealerrQuery = {
@@ -672,6 +671,7 @@ exports.changeDealerStatus = async (req, res) => {
       let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerrQuery, { email: 1 })
       let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerrQuery, { email: 1 })
       let IDs = adminUsers.map(user => user._id)
+      let adminEmails = adminUsers.map(user => user.email)
       let IDs1 = dealerUsers.map(user => user._id)
 
       let notificationData = {
@@ -721,6 +721,18 @@ exports.changeDealerStatus = async (req, res) => {
       }
 
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(primaryUser.email, ["noreply@getcover.com"], emailData))
+      emailData = {
+        senderName: singleDealer.name,
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
+        content: `Dealer status has been changed to ${status_content}`,
+        redirectId: '',
+        subject: "Update Status"
+      }
+
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(adminEmails, ["noreply@getcover.com"], emailData))
 
       let logData = {
         userId: req.teammateId,
@@ -1146,8 +1158,8 @@ exports.rejectDealer = async (req, res) => {
         description: `Request for the new dealer ${singleDealer.name} has been rejected by ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName}.`,
         userId: req.teammateId,
         flag: 'dealer',
-        endPoint:null,
-        redirectionId:null,
+        endPoint: null,
+        redirectionId: null,
         notificationFor: IDs
       };
 

@@ -1455,8 +1455,8 @@ exports.archiveOrder = async (req, res) => {
             userId: req.teammateId,
             contentId: checkOrder._id,
             flag: 'Order Archieved',
-            redirectionId: "/archiveOrder",
-            endPoint: base_url,
+            redirectionId: "archiveOrder",
+            endPoint: base_url +`archiveOrder/${checkOrder.unique_key}`,
             notificationFor: IDs
         };
         let notificationData2 = {
@@ -1465,8 +1465,8 @@ exports.archiveOrder = async (req, res) => {
             userId: req.teammateId,
             contentId: checkOrder._id,
             flag: 'Order Archieved',
-            redirectionId: "/archiveOrder",
-            endPoint: base_url,
+            redirectionId: "archiveOrder",
+            endPoint: base_url +`dealer/archiveOrder/${checkOrder.unique_key}`,
             notificationFor: IDs1
         };
         let notificationData3 = {
@@ -1476,7 +1476,7 @@ exports.archiveOrder = async (req, res) => {
             contentId: checkOrder._id,
             flag: 'Order Archieved',
             redirectionId: "/archiveOrder",
-            endPoint: base_url,
+            endPoint: base_url +`reseller/archiveOrder/${checkOrder.unique_key}`,
             notificationFor: IDs2
         };
         let notificationArrayData = [];
@@ -1499,7 +1499,7 @@ exports.archiveOrder = async (req, res) => {
         let notificationEmails = adminUsers.map(user => user.email)
         let dealerEmails = dealerUsers.map(user => user.email)
         let resellerEmails = resellerUsers.map(user => user.email)
-        let mergedEmail = notificationEmails.concat(dealerEmails,resellerEmails)
+        let mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails)
         let settingData = await userService.getSetting({});
         let emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -1508,7 +1508,8 @@ exports.archiveOrder = async (req, res) => {
             websiteSetting: settingData[0],
             senderName: '',
             content: "The order " + checkOrder.unique_key + " has been archeived!.",
-            subject: "Archeive Order"
+            subject: "Archeive Order",
+            redirectId: base_url +`archiveOrder/${checkOrder.unique_key}`
         }
         if (checkOrder.sendNotification) {
             let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ["noreply@getcover.com"], emailData))
@@ -2245,7 +2246,7 @@ exports.markAsPaid = async (req, res) => {
                 let dealerEmails = dealerUsers.map(user => user.email)
                 let resellerEmails = resellerUsers.map(user => user.email)
                 let customerEmails = customerUsers.map(user => user.email)
-                let mergedEmail = notificationEmails.concat(dealerEmails,resellerEmails,customerEmails)
+                let mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails, customerEmails)
                 //Email to Dealer
                 let settingData = await userService.getSetting({});
                 //Email to Dealer

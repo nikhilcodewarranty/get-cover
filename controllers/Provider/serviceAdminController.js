@@ -1253,6 +1253,7 @@ exports.updateStatus = async (req, res) => {
     let settingData = await userService.getSetting({});
 
     const status_content = req.body.status || req.body.status == "true" ? 'Active' : 'Inactive';
+    const content = req.body.status ? 'Congratulations, you can now login to our system. Please click the following link to login to the system' : "Your account has been made inactive. If you think, this is a mistake, please contact our support team at support@getcover.com"
 
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -1260,7 +1261,8 @@ exports.updateStatus = async (req, res) => {
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
       senderName: checkServicer.metaData[0]?.name,
-      content: "Status has been changed to " + status_content + " " + ", effective immediately.",
+      content: content,
+      redirectId: status_content == "Active" ? resetLink : '',
       subject: "Update Status"
     }
 
