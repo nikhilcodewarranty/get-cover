@@ -47,27 +47,73 @@ const s3Client1 = new S3Client({
 })
 
 
-const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, dateString) => {
+const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, dateString, role) => {
   const workbook = new ExcelJS.Workbook();
-  console.log("+++++++++++++++++++++++++++++++++++", data)
   // Loop through data to create sheets dynamically
   data.forEach((sheetData, index) => {
     let sheetName;
-    if (index == 0) {
-      sheetName = "summary"
+
+
+    if (role == "Super Admin") {
+      if (index == 0) {
+        sheetName = "summary"
+      }
+      if (index == 1) {
+        sheetName = "dealer"
+      }
+      if (index == 2) {
+        sheetName = "servicer"
+      }
+      if (index == 3) {
+        sheetName = "reseller"
+      }
+      if (index == 4) {
+        sheetName = "customer"
+      }
     }
-    if (index == 1) {
-      sheetName = "dealer"
+    if (role == "Dealer") {
+      if (index == 0) {
+        sheetName = "summary"
+      }
+      if (index == 2) {
+        sheetName = "servicer"
+      }
+      if (index == 3) {
+        sheetName = "reseller"
+      }
+      if (index == 4) {
+        sheetName = "customer"
+      }
     }
-    if (index == 2) {
-      sheetName = "servicer"
+    if (role == "Reseller") {
+      if (index == 0) {
+        sheetName = "summary"
+      }
+      if (index == 2) {
+        sheetName = "dealer"
+      }
+      if (index == 3) {
+        sheetName = "servicer"
+      }
+      if (index == 4) {
+        sheetName = "customer"
+      }
     }
-    if (index == 3) {
-      sheetName = "reseller"
+    if (role == "Servicer") {
+      if (index == 0) {
+        sheetName = "summary"
+      }
+      if (index == 1) {
+        sheetName = "customer"
+      }
     }
-    if (index == 4) {
-      sheetName = "customer"
+    if (role == "Customer") {
+
+      if (index == 0) {
+        sheetName = "customer"
+      }
     }
+
     const sheet = workbook.addWorksheet(`${sheetName}`);
 
     if (sheetData.length > 0) {
@@ -701,20 +747,25 @@ exports.exportDataForClaim = async (req, res) => {
       }, []);
     };
 
+    const groupDataByServicer = async (resultArray) => {
+      const acc = [];
 
-
-    const groupDataByServicer = (resultArray) => {
-      return resultArray.reduce( (acc, item) => {
+      for (const item of resultArray) {
         // Extract servicer name
         let servicerName = item?.servicerId;
-        console.log("servicer name from file+++++++++++",servicerName)
-        let getServicerName =  servicerService.getServiceProviderById({ _id: servicerName })
-        console.log("servicer data",getServicerName?._id)
-        servicerName = getServicerName.name
 
+        try {
+          const result = await servicerService.getServiceProviderById({ _id: servicerName });
+          servicerName = result?.name;
+        } catch (err) {
+          console.error("Error fetching servicer name:", err);
+          continue; // Skip this item if there's an error fetching servicer name
+        }
+
+        console.log("sjdhfsjdfsjh------------", servicerName)
         // Only process entries with valid servicer names
         if (!servicerName) {
-          return acc; // Skip entries with no valid servicer name
+          continue; // Skip entries with no valid servicer name
         }
 
         const claimAmount = item.totalAmount || 0;
@@ -723,6 +774,7 @@ exports.exportDataForClaim = async (req, res) => {
 
         // Check if servicer already exists in the accumulator
         let servicerEntry = acc.find(entry => entry["Servicer Name"] === servicerName);
+        console.log("sjdhfsjdfsjh------------", servicerEntry)
 
         if (!servicerEntry) {
           // If servicer does not exist, create a new entry
@@ -751,10 +803,72 @@ exports.exportDataForClaim = async (req, res) => {
         servicerEntry["Average Claim Amount"] = servicerEntry["Completed Claims"]
           ? (servicerEntry["Total Amount of Claims"] / servicerEntry["Completed Claims"]).toFixed(2)
           : 0;
+      }
 
-        return acc;
-      }, []);
+      return acc;
     };
+
+
+    // const groupDataByServicer = (resultArray) => {
+    //   return resultArray.reduce((acc, item) => {
+    //     // Extract servicer name
+    //     let servicerName = item?.servicerId;
+    //     servicerService.getServiceProviderById({ _id: servicerName })
+    //       .then((result) => {
+    //         console.log(result.name,"----------------")
+    //         servicerName = result?.name
+    //         console.log(result.name,"----------------",servicerName)
+
+    //       })
+    //       .catch((err) => console.error(err))
+
+    //       console.log("----------------",servicerName)
+
+
+
+    //     // Only process entries with valid servicer names
+    //     if (!servicerName) {
+    //       return acc; // Skip entries with no valid servicer name
+    //     }
+
+    //     const claimAmount = item.totalAmount || 0;
+    //     const isCompleted = item.claimStatus.some(status => status.status === "completed");
+    //     const isRejected = item.claimStatus.some(status => status.status === "rejected");
+
+    //     // Check if servicer already exists in the accumulator
+    //     let servicerEntry = acc.find(entry => entry["Servicer Name"] === servicerName);
+
+    //     if (!servicerEntry) {
+    //       // If servicer does not exist, create a new entry
+    //       servicerEntry = {
+    //         "Servicer Name": servicerName,
+    //         "Total Claims": 0,
+    //         "Completed Claims": 0,
+    //         "Rejected Claims": 0,
+    //         "Total Amount of Claims": 0,
+    //         "Average Claim Amount": 0, // Initialize average claim amount
+    //       };
+    //       acc.push(servicerEntry);
+    //     }
+
+    //     // Update servicer entry
+    //     servicerEntry["Total Claims"] += 1;
+    //     servicerEntry["Total Amount of Claims"] += claimAmount;
+    //     if (isCompleted) {
+    //       servicerEntry["Completed Claims"] += 1;
+    //     }
+    //     if (isRejected) {
+    //       servicerEntry["Rejected Claims"] += 1;
+    //     }
+
+    //     // Calculate average claim amount for completed claims
+    //     servicerEntry["Average Claim Amount"] = servicerEntry["Completed Claims"]
+    //       ? (servicerEntry["Total Amount of Claims"] / servicerEntry["Completed Claims"]).toFixed(2)
+    //       : 0;
+
+    //     return acc;
+    //   }, []);
+    // };
 
     const groupDataByReseller = (resultArray) => {
       return resultArray.reduce((acc, item) => {
@@ -803,9 +917,13 @@ exports.exportDataForClaim = async (req, res) => {
 
     // Group data for Dealer, Servicer, Reseller, and Customer
     const dealerData = groupByRole(result_Array, "contracts.orders.dealers", "Dealer");
-    const servicerData = groupDataByServicer(result_Array);
+    const servicerData = await groupDataByServicer(result_Array);
     const resellerData = groupDataByReseller(result_Array);
     let customerArray = groupDataByCustomer(result_Array)
+
+    // console.log("9999999999999999------------", servicerData)
+    // console.log("7777777777777777------------", resellerData)
+
 
     let summary = result_Array.reduce(
       (acc, item) => {
@@ -850,6 +968,21 @@ exports.exportDataForClaim = async (req, res) => {
 
     summary = [summary]
     let dataArray = [summary, dealerData, servicerData, resellerData, customerArray]
+    if (req.role == "Super Admin") {
+      dataArray = [summary, dealerData, servicerData, resellerData, customerArray]
+    }
+    if (req.role == "Dealer") {
+      dataArray = [dealerData, servicerData, resellerData, customerArray]
+    }
+    if (req.role == "Reseller") {
+      dataArray = [resellerData, dealerData, servicerData, customerArray]
+    }
+    if (req.role == "Servicer") {
+      dataArray = [servicerData, customerArray]
+    }
+    if (req.role == "Customer") {
+      dataArray = [customerArray]
+    }
     let dateString = Date.now()
     // let fileName = "claim-report-" + dateString
     let dataForClaimReporting = {
@@ -863,8 +996,14 @@ exports.exportDataForClaim = async (req, res) => {
       category: "claimReporting"
     }
     let createReporting = await claimReportingService.createReporting(dataForClaimReporting)
-
-    await createExcelFileWithMultipleSheets(dataArray, process.env.bucket_name, 'claimReporting', dateString)
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: dataArray,
+      summary: result_Array,
+      totalCount
+    })
+    await createExcelFileWithMultipleSheets(dataArray, process.env.bucket_name, 'claimReporting', dateString, req.role)
       .then((res) => {
         claimReportingService.updateReporting({ _id: createReporting._id }, { status: "Active" }, { new: true })
       })
@@ -873,13 +1012,7 @@ exports.exportDataForClaim = async (req, res) => {
         claimReportingService.updateReporting({ _id: createReporting._id }, { status: "Failed" }, { new: true })
 
       })
-    res.send({
-      code: constant.successCode,
-      message: "Success",
-      result: dataArray,
-      summary: result_Array,
-      totalCount
-    })
+
 
   } catch (err) {
     res.send({
