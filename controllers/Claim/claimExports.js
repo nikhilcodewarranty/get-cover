@@ -491,6 +491,9 @@ exports.exportDataForClaim = async (req, res) => {
     if (req.role == 'Servicer') {
       servicerMatch = { servicerId: new mongoose.Types.ObjectId(req.userId) }
     }
+    if (req.role == 'Reseller') {
+      match = { resellerId: new mongoose.Types.ObjectId(req.userId) }
+    }
     // building the query for claims
     let newQuery = [];
     newQuery.push({
