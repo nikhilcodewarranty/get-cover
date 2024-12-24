@@ -2967,8 +2967,14 @@ exports.saveBulkClaim = async (req, res) => {
               ],
             })
             if (checkContractData && checkContractData != null) {
-              console.log("fdsdfsdfsdfsfdsdffdssdf", item.contractId);
               item.status = " "
+
+              if (checkSerialCache[contractData?.unique_key?.toLowerCase()]) {
+                item.status = "Duplicate contract id/serial number"
+                item.exit = true;
+              } else {
+                checkSerialCache[contractData.unique_key?.toLowerCase()] = true;
+              }
 
               if (checkContractData.status != "Active") {
                 item.status = "Contract is not active"
@@ -3132,14 +3138,8 @@ exports.saveBulkClaim = async (req, res) => {
           if (contractData && contractData.status != "Active") {
             item.status = "Contract is not active";
             item.exit = true;
-            if (checkSerialCache[contractData?.unique_key?.toLowerCase()]) {
-              item.status = "Duplicate contract id/serial number"
-              item.exit = true;
-            } else {
-              checkSerialCache[contractData.unique_key?.toLowerCase()] = true;
-            }
-
           }
+
         } else {
           item.contractData = null
           item.servicerData = null
@@ -3155,9 +3155,6 @@ exports.saveBulkClaim = async (req, res) => {
       let unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
 
       //Update eligibility when contract is open
-      console.log("totalDataComing------------------------", totalDataComing)
-      return;
-
       const updateArrayPromise = totalDataComing.map(item => {
         if (!item.exit && item.contractData) return contractService.updateContract({ _id: item.contractData._id }, { eligibilty: false }, { new: true });
         else {
