@@ -248,7 +248,7 @@ exports.getAllClaims = async (req, res, next) => {
 
     statusMatch = {}
     if (data.dateFilter != "") {
-      let endDate1 = new Date(data.endDate).setHours()
+      let endDate1 = new Date(data.endDate)
       endDate1.setHours(23, 59, 59, 999)
       if (data.dateFilter == "damageDate") {
         dateMatch = { lossDate: { $gte: new Date(data.startDate), $lte: new Date(endDate1) } }
