@@ -2967,7 +2967,7 @@ exports.saveBulkClaim = async (req, res) => {
               ],
             })
             if (checkContractData && checkContractData != null) {
-              console.log("fdsdfsdfsdfsfdsdffdssdf",item.contractId);
+              console.log("fdsdfsdfsdfsfdsdffdssdf", item.contractId);
               item.status = " "
 
               if (checkContractData.status != "Active") {
@@ -3054,18 +3054,21 @@ exports.saveBulkClaim = async (req, res) => {
           // check login email
           if (item.userEmail != '') {
             item.submittedBy = item.userEmail
-            let memberEmail = await userService.getMembers({
-              metaData: { $elemMatch: { metaId: item.orderData?.order?.customers._id } }
-            }, {})
+            if (item.orderData?.order?.customers) {
+              let memberEmail = await userService.getMembers({
+                metaData: { $elemMatch: { metaId: item.orderData?.order?.customers._id } }
+              }, {})
 
-            if (memberEmail.length > 0) {
-              const validEmail = memberEmail?.find(member => member.email === item.userEmail);
+              if (memberEmail.length > 0) {
+                const validEmail = memberEmail?.find(member => member.email === item.userEmail);
 
-              if (!validEmail || validEmail == undefined) {
-                item.status = "Invalid Email"
-                item.exit = true;
+                if (!validEmail || validEmail == undefined) {
+                  item.status = "Invalid Email"
+                  item.exit = true;
+                }
               }
             }
+
 
           }
           // check Shipping address
