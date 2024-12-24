@@ -37,7 +37,7 @@ router.get("/updateClaimDate", claimController.updateClaimDate); // check claim 
 router.get("/checkNumberOfCertainPeriod", claimController.checkNumberOfCertainPeriod); // check claim amount in edit claim and change coverage type
 
 
-router.post("/exportDataForClaim/:flag", [verifyToken], claimExportController.exportDataForClaim); // check claim amount in edit claim and change coverage type
+router.post("/exportDataForClaim", [verifyToken], claimExportController.exportDataForClaim); // check claim amount in edit claim and change coverage type
 router.get("/getClaimReportings", [verifyToken], claimExportController.getClaimReportings); // check claim amount in edit claim and change coverage type
 router.get("/getClaimReporting/:reportingId", [verifyToken], claimExportController.getClaimReporting); // check claim amount in edit claim and change coverage type
 router.get("/updateReportingDownloadTime/:reportingId", [verifyToken], claimExportController.updateReportingDownloadTime); // check claim amount in edit claim and change coverage type
