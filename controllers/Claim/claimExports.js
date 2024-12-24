@@ -491,7 +491,7 @@ exports.exportDataForClaim = async (req, res) => {
     if (req.role == 'Servicer') {
       servicerMatch = { servicerId: new mongoose.Types.ObjectId(req.userId) }
     }
-    
+
     // building the query for claims
     let newQuery = [];
     newQuery.push({
@@ -1037,7 +1037,87 @@ exports.exportDataForClaim = async (req, res) => {
     };
 
 
-    const groupDataByCustomer = (resultArray) => {
+    // const groupDataByCustomer = (resultArray) => {
+    //   return resultArray.reduce((acc, item) => {
+    //     // Extract customer username and claim information
+    //     const customerName = item?.contracts?.orders?.customer?.username || "Unknown Customer";
+    //     const claimAmount = item.totalAmount || 0;
+    //     const isCompleted = item.claimStatus.some(status => status.status === "completed");
+    //     const isRejected = item.claimStatus.some(status => status.status === "rejected");
+
+    //     // Check if customer already exists in the accumulator
+    //     let customerEntry = acc.find(entry => entry["Customer Name"] === customerName);
+
+    //     if (!customerEntry) {
+    //       // If customer does not exist, create a new entry
+    //       customerEntry = {
+    //         "Customer Name": customerName,
+    //         "Total Claims": 0,
+    //         "Completed Claims": 0,
+    //         "Rejected Claims": 0,
+    //         "Total Amount of Claims": 0,
+    //         "Average Claim Amount": 0, // Initialize average claim amount
+    //       };
+    //       acc.push(customerEntry);
+    //     }
+
+    //     // Update customer entry
+    //     customerEntry["Total Claims"] += 1;
+    //     customerEntry["Total Amount of Claims"] += claimAmount;
+    //     if (isCompleted) {
+    //       customerEntry["Completed Claims"] += 1;
+    //     }
+    //     if (isRejected) {
+    //       customerEntry["Rejected Claims"] += 1;
+    //     }
+
+    //     // Calculate average claim amount for completed claims
+    //     customerEntry["Average Claim Amount"] = customerEntry["Completed Claims"]
+    //       ? (customerEntry["Total Amount of Claims"] / customerEntry["Completed Claims"]).toFixed(2)
+    //       : 0;
+
+    //     return acc;
+    //   }, []);
+    // };
+
+
+    const groupDataByCustomer = (resultArray, req) => {
+      // Check if the role is 'customer'
+      if (req.role === "customer") {
+        return resultArray.reduce((acc, item) => {
+          // Extract customer username and claim status information only
+          const customerName = item?.contracts?.orders?.customer?.username || "Unknown Customer";
+          const isCompleted = item.claimStatus.some(status => status.status === "completed");
+          const isRejected = item.claimStatus.some(status => status.status === "rejected");
+
+          // Check if customer already exists in the accumulator
+          let customerEntry = acc.find(entry => entry["Customer Name"] === customerName);
+
+          if (!customerEntry) {
+            // If customer does not exist, create a new entry
+            customerEntry = {
+              "Customer Name": customerName,
+              "Total Claims": 0,
+              "Completed Claims": 0,
+              "Rejected Claims": 0,
+            };
+            acc.push(customerEntry);
+          }
+
+          // Update customer entry
+          customerEntry["Total Claims"] += 1;
+          if (isCompleted) {
+            customerEntry["Completed Claims"] += 1;
+          }
+          if (isRejected) {
+            customerEntry["Rejected Claims"] += 1;
+          }
+
+          return acc;
+        }, []);
+      }
+
+      // Default behavior for roles other than 'customer'
       return resultArray.reduce((acc, item) => {
         // Extract customer username and claim information
         const customerName = item?.contracts?.orders?.customer?.username || "Unknown Customer";
@@ -1079,6 +1159,12 @@ exports.exportDataForClaim = async (req, res) => {
         return acc;
       }, []);
     };
+
+
+
+
+
+
 
     const groupDataByServicer = async (resultArray) => {
       const acc = [];
