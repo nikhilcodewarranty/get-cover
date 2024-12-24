@@ -2966,8 +2966,8 @@ exports.saveBulkClaim = async (req, res) => {
                 },
               ],
             })
-            console.log("checkContractData---------------------",checkContractData)
-            if (checkContractData) {
+            console.log("checkContractData---------------------", checkContractData)
+            if (checkContractData && checkContractData != null) {
               item.status = " "
 
               if (checkContractData.status != "Active") {
@@ -3061,9 +3061,9 @@ exports.saveBulkClaim = async (req, res) => {
             if (memberEmail.length > 0) {
               const validEmail = memberEmail?.find(member => member.email === item.userEmail);
 
-              console.log("memberEmail----------------",memberEmail)
-              console.log("item.userEmail----------------",item.userEmail)
-              console.log("validEmail----------------",validEmail)
+              console.log("memberEmail----------------", memberEmail)
+              console.log("item.userEmail----------------", item.userEmail)
+              console.log("validEmail----------------", validEmail)
 
               if (!validEmail || validEmail == undefined) {
                 item.status = "Invalid Email"
@@ -3156,7 +3156,7 @@ exports.saveBulkClaim = async (req, res) => {
       let unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
 
       //Update eligibility when contract is open
-      console.log("totalDataComing------------------------",totalDataComing)
+      console.log("totalDataComing------------------------", totalDataComing)
       return;
 
       const updateArrayPromise = totalDataComing.map(item => {
