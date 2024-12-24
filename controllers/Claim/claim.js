@@ -2966,6 +2966,7 @@ exports.saveBulkClaim = async (req, res) => {
                 },
               ],
             })
+            console.log("checkContractData---------------------",checkContractData)
             if (checkContractData) {
               item.status = " "
 
