@@ -3145,7 +3145,6 @@ exports.saveBulkClaim = async (req, res) => {
       //Save bulk claim
 
       let currentYear = new Date().getFullYear();
-      console.log(currentYear); // Outputs: 2024
       currentYear = "-" + currentYear + "-"
 
       let count = await claimService.getClaimCount({ 'unique_key': { '$regex': currentYear, '$options': 'i' } });
@@ -3216,8 +3215,6 @@ exports.saveBulkClaim = async (req, res) => {
       //  let new_admin_array = adminEmail
       let toMail = [];
       let ccMail;
-
-
       const userId = req.userId;
       let resellerData
       // Get Reseller by id
@@ -3229,8 +3226,7 @@ exports.saveBulkClaim = async (req, res) => {
         // Get dealer info
         let dealerData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: dealer._id, isPrimary: true } } }, {});
         new_admin_array.push(dealerData?.email);
-        IDs.push(req.teammateId);
-        IDs.push(dealerData._id);
+
       }
       if (req.role == "Customer") {
         const userId = req.userId;
@@ -3241,7 +3237,6 @@ exports.saveBulkClaim = async (req, res) => {
           const reseller = await resellerService.getReseller({ _id: customer.resellerId }, {});
           resellerData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: reseller._id, isPrimary: true } } }, {});
           new_admin_array.push(resellerData?.email);
-          IDs.push(resellerData?._id);
         }
         // Get dealer by customer
         const dealer = await dealerService.getDealerById(customer.dealerId, {});
@@ -3252,8 +3247,7 @@ exports.saveBulkClaim = async (req, res) => {
         var userData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: userId, isPrimary: true } } }, {});
 
         new_admin_array.push(dealerData.email);
-        IDs.push(req.teammateId);
-        IDs.push(dealerData._id);
+
       }
 
       //Get Fail and Passes Entries
@@ -3267,7 +3261,10 @@ exports.saveBulkClaim = async (req, res) => {
         return acc;
       }, { trueCount: 0, falseCount: 0 });
 
-
+    let getDealerIds = []
+    let getResellerIds = []
+    let getCustomerIds = []
+    let getServicerIds = []
       const csvArray = await Promise.all(totalDataComing.map(async (item, i) => {
         // Build bulk csv for dealer only
         let localDateString = new Date(item.lossDate)
@@ -3276,6 +3273,9 @@ exports.saveBulkClaim = async (req, res) => {
           day: "2-digit",
           year: "numeric"
         })
+        getDealerIds.push(item.orderData?.order?.dealerId)
+        getResellerIds.push(item.orderData?.order?.resellerId)
+        getCustomerIds.push(item.orderData?.order?.customerId)
         let servicerId = item.servicerData?._id
         if (item.servicerData?.dealerId) {
           servicerId = item.servicerData?.dealerId
@@ -3283,10 +3283,11 @@ exports.saveBulkClaim = async (req, res) => {
         if (item.servicerData?.resellerId) {
           servicerId = item.servicerData?.resellerId
         }
+        getServicerIds.push(servicerId)
+
         if (req.role === 'Dealer') {
           const userId = req.userId;
           ccMail = new_admin_array;
-          IDs.push(req.teammateId);
           let userData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: userId, isPrimary: true } } }, {});
           toMail = userData.email;
           if (req.userId.toString() === item.orderData?.order?.dealerId?.toString()) {
@@ -3430,7 +3431,6 @@ exports.saveBulkClaim = async (req, res) => {
       let emailServicer = await userService.getMembers({ metaData: { $elemMatch: { metaId: { $in: emailServicerId }, isPrimary: true } } }, {});
       // If you need to convert existArray.data to a flat array format
       if (emailServicer.length > 0) {
-        IDs = IDs.concat(emailServicerId)
         let flatArray = [];
         for (let servicerId in existArray.data) {
           let matchData = emailServicer.find(matchServicer => matchServicer.metaData[0].metaId?.toString() === servicerId.toString());
@@ -3723,14 +3723,138 @@ exports.saveBulkClaim = async (req, res) => {
 
       }
       if (saveBulkClaim.length > 0) {
-        let notificationData1 = {
-          title: "Bulk Report",
-          description: "The Bulk claim file has been registered!",
-          userId: req.teammateId,
-          flag: 'Bulk Claim',
-          notificationFor: IDs
-        };
-        let createNotification = await userService.createNotification(notificationData1);
+        let adminBulkQuery = {
+          metaData: {
+            $elemMatch: {
+              $and: [
+                { "claimNotification.fileBulkClaim": true },
+                { status: true },
+                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") }
+              ]
+            }
+          },
+        }
+        let dealerBulkQuery = {
+          metaData: {
+            $elemMatch: {
+              $and: [
+                { "claimNotification.fileBulkClaim": true },
+                { status: true },
+                { metaId: { $in: getDealerIds }},
+              ]
+            }
+          },
+        }
+        let resellerBulkQuery = {
+          metaData: {
+            $elemMatch: {
+              $and: [
+                { "claimNotification.fileBulkClaim": true },
+                { status: true },
+                { metaId: { $in: getResellerIds }},
+              ]
+            }
+          },
+        }
+        let customerBulkQuery = {
+          metaData: {
+            $elemMatch: {
+              $and: [
+                { "claimNotification.fileBulkClaim": true },
+                { metaId: { $in: getCustomerIds }},
+                { status: true },
+              ]
+            }
+          },
+        }
+        let servicerrBulkQuery = {
+          metaData: {
+            $elemMatch: {
+              $and: [
+                { "claimNotification.fileBulkClaim": true },
+                { status: true },
+                { metaId: { $in: getServicerIds }},
+
+              ]
+            }
+          },
+        }
+        
+        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminBulkQuery, { email: 1 })
+        let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerBulkQuery, { email: 1 })
+        let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerBulkQuery, { email: 1 })
+        let customerUsers = await supportingFunction.getNotificationEligibleUser(customerBulkQuery, { email: 1 })
+        let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerrBulkQuery, { email: 1 })
+        let notificationArray = []
+        let adminId = adminUsers.map(user => user._id);
+        let dealerId = dealerUsers.map(user => user._id);
+        let resellerId = resellerUsers.map(user => user._id);
+        let customerId = customerUsers.map(user => user._id);
+        let servicerId = servicerUsers.map(user => user._id);
+        const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+        const base_url = `${process.env.SITE_URL}`
+        let notificationData1;
+        if (adminUsers.length > 0) {
+          notificationData1 = {
+            title: "Bulk Claim added successfully",
+            description: `Bulk claim file ${req.file.key} has been uploaded and successfully processed by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+            userId: req.teammateId,
+            flag: 'Bulk Claim',
+            notificationFor: adminId,
+            redirectionId: "/claimList",
+            endPoint: base_url + "claimList"
+          };
+          notificationArray.push(notificationData1)
+        }
+        if (dealerUsers.length > 0) {
+          notificationData1 = {
+            title: "Bulk Claim added successfully",
+            description: `Bulk claim file ${req.file.key} has been uploaded and successfully processed by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+            userId: req.teammateId,
+            flag: 'Bulk Claim',
+            notificationFor: dealerId,
+            redirectionId: "/claimList",
+            endPoint: base_url + "claimList"
+          };
+          notificationArray.push(notificationData1)
+        }
+        if (resellerUsers.length > 0) {
+          notificationData1 = {
+            title: "Bulk Claim added successfully",
+            description: `Bulk claim file ${req.file.key} has been uploaded and successfully processed by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+            userId: req.teammateId,
+            flag: 'Bulk Claim',
+            notificationFor: resellerId,
+            redirectionId: "/claimList",
+            endPoint: base_url + "claimList"
+          };
+          notificationArray.push(notificationData1)
+        }
+        if (customerUsers.length > 0) {
+          notificationData1 = {
+            title: "Bulk Claim added successfully",
+            description: `Bulk claim file ${req.file.key} has been uploaded and successfully processed by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+            userId: req.teammateId,
+            flag: 'Bulk Claim',
+            notificationFor: customerId,
+            redirectionId: "/claimList",
+            endPoint: base_url + "claimList"
+          };
+          notificationArray.push(notificationData1)
+        }
+        if (servicerUsers.length > 0) {
+          notificationData1 = {
+            title: "Bulk Claim added successfully",
+            description: `Bulk claim file ${req.file.key} has been uploaded and successfully processed by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+            userId: req.teammateId,
+            flag: 'Bulk Claim',
+            notificationFor: servicerId,
+            redirectionId: "/claimList",
+            endPoint: base_url + "claimList"
+          };
+          notificationArray.push(notificationData1)
+        }
+        let createNotification = await userService.saveNotificationBulk(notificationArray);
       }
 
       res.send({

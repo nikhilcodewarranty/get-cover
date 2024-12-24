@@ -1266,7 +1266,19 @@ exports.updateStatus = async (req, res) => {
       subject: "Update Status"
     }
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, 'noreply@getcover.com', emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, 'noreply@getcover.com', emailData))
+    emailData = {
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
+      websiteSetting: settingData[0],
+      senderName: checkServicer.metaData[0]?.name,
+      content: `Servicer Status has been changed to ${status_content}`,
+      redirectId: '',
+      subject: "Update Status"
+    }
+
+     mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, 'noreply@getcover.com', emailData))
 
     //Save Logs
     let logData = {
