@@ -3819,7 +3819,7 @@ exports.saveBulkClaim = async (req, res) => {
         if (adminUsers.length > 0) {
           notificationData1 = {
             title: "Bulk Claim added successfully",
-            description: `Bulk claim file ${req.file.key} has been uploaded and successfully processed by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+            description: `Bulk claim file ${req.file.originalname} has been uploaded and successfully processed by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
             userId: req.teammateId,
             flag: 'Bulk Claim',
             notificationFor: adminId,
@@ -3831,7 +3831,7 @@ exports.saveBulkClaim = async (req, res) => {
         if (dealerUsers.length > 0) {
           notificationData1 = {
             title: "Bulk Claim added successfully",
-            description: `Bulk claim file ${req.file.key} has been uploaded and successfully processed by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+            description: `Bulk claim file ${req.file.originalname} has been uploaded and successfully processed by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
             userId: req.teammateId,
             flag: 'Bulk Claim',
             notificationFor: dealerId,
@@ -3843,7 +3843,7 @@ exports.saveBulkClaim = async (req, res) => {
         if (resellerUsers.length > 0) {
           notificationData1 = {
             title: "Bulk Claim added successfully",
-            description: `Bulk claim file ${req.file.key} has been uploaded and successfully processed by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+            description: `Bulk claim file ${req.file.originalname} has been uploaded and successfully processed by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
             userId: req.teammateId,
             flag: 'Bulk Claim',
             notificationFor: resellerId,
@@ -3855,7 +3855,7 @@ exports.saveBulkClaim = async (req, res) => {
         if (customerUsers.length > 0) {
           notificationData1 = {
             title: "Bulk Claim added successfully",
-            description: `Bulk claim file ${req.file.key} has been uploaded and successfully processed by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+            description: `Bulk claim file ${req.file.originalname} has been uploaded and successfully processed by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
             userId: req.teammateId,
             flag: 'Bulk Claim',
             notificationFor: customerId,
@@ -3867,7 +3867,7 @@ exports.saveBulkClaim = async (req, res) => {
         if (servicerUsers.length > 0) {
           notificationData1 = {
             title: "Bulk Claim added successfully",
-            description: `Bulk claim file ${req.file.key} has been uploaded and successfully processed by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+            description: `Bulk claim file ${req.file.originalname} has been uploaded and successfully processed by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
             userId: req.teammateId,
             flag: 'Bulk Claim',
             notificationFor: servicerId,
