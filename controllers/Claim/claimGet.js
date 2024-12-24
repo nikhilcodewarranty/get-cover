@@ -262,6 +262,8 @@ exports.getAllClaims = async (req, res, next) => {
       }
     }
 
+    console.log("date check match++++++++++++++", dateMatch)
+
     let claimPaidStatus = {}
     if (data.claimPaidStatus != '' && data.claimPaidStatus != undefined) {
       claimPaidStatus = { "claimPaymentStatus": data.claimPaidStatus }
