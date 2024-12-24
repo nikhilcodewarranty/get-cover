@@ -2967,7 +2967,7 @@ exports.saveBulkClaim = async (req, res) => {
               ],
             })
             if (checkContractData && checkContractData != null) {
-              console.log("fdsdfsdfsdfsfdsdffdssdf");
+              console.log("fdsdfsdfsdfsfdsdffdssdf",item.contractId);
               item.status = " "
 
               if (checkContractData.status != "Active") {
