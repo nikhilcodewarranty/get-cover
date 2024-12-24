@@ -1,5 +1,6 @@
 const { serviceProvider } = require("../../models/Provider/serviceProvider");
 const providerService = require("../../services/Provider/providerService");
+const resellerService = require("../../services/Dealer/resellerService");
 const dealerRelationService = require("../../services/Dealer/dealerRelationService");
 const role = require("../../models/User/role");
 const claimService = require("../../services/Claim/claimService");
