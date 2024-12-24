@@ -251,15 +251,21 @@ exports.getAllClaims = async (req, res, next) => {
       let endDate1 = new Date(data.endDate)
       endDate1.setHours(23, 59, 59, 999)
       if (data.dateFilter == "damageDate") {
-        dateMatch = { lossDate: { $gte: new Date(data.startDate), $lte: new Date(endDate1) } }
+        // {
+        //   createdAt: {
+        //     $gt: new Date("2023-12-23T00:00:00.000Z"),
+        //     $lte: new Date("2024-12-24T23:59:59.999Z"),
+        //   },
+        // }
+        dateMatch = { lossDate: { $gt: new Date(data.startDate), $lte: new Date(endDate1) } }
         // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
       }
       if (data.dateFilter == "openDate") {
-        dateMatch = { createdAt: { $gte: new Date(data.startDate), $lte: new Date(endDate1) } }
+        dateMatch = { createdAt: { $gt: new Date(data.startDate), $lte: new Date(endDate1) } }
         // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
       }
       if (data.dateFilter == "closeDate") {
-        dateMatch = { claimDate: { $gte: new Date(data.startDate), $lte: new Date(endDate1) } }
+        dateMatch = { claimDate: { $gt: new Date(data.startDate), $lte: new Date(endDate1) } }
         statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
       }
     }
