@@ -1279,7 +1279,7 @@ exports.updateStatus = async (req, res) => {
       subject: "Update Status"
     }
 
-     mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, 'noreply@getcover.com', emailData))
+    mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, 'noreply@getcover.com', emailData))
 
     //Save Logs
     let logData = {
@@ -2431,6 +2431,8 @@ exports.getServicerClaims = async (req, res) => {
     let dateMatch = {}
     let statusMatch = {}
     let resellerMatch = {}
+    data.resellerMatch = data.resellerMatch ? data.resellerMatch : ""
+    data.dealerName = data.dealerName ? data.dealerName : ""
 
     if (data.dealerName != "") {
       let getDealer = await dealerService.getAllDealers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
