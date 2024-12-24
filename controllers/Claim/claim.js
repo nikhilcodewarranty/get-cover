@@ -2955,6 +2955,7 @@ exports.saveBulkClaim = async (req, res) => {
           if (!contractData || allDataArray.length == 0) {
             item.status = "Contract not found"
             item.exit = true;
+
             //check contract eligibility reason
             let checkContractData = await contractService.getContractById({
               $and: [
@@ -2968,14 +2969,6 @@ exports.saveBulkClaim = async (req, res) => {
             })
             if (checkContractData && checkContractData != null) {
               item.status = " "
-
-              if (checkSerialCache[contractData?.unique_key?.toLowerCase()]) {
-                item.status = "Duplicate contract id/serial number"
-                item.exit = true;
-              } else {
-                checkSerialCache[contractData.unique_key?.toLowerCase()] = true;
-              }
-
               if (checkContractData.status != "Active") {
                 item.status = "Contract is not active"
                 item.exit = true;
@@ -3029,6 +3022,15 @@ exports.saveBulkClaim = async (req, res) => {
               }
             }
           }
+          if (contractData) {
+            if (checkSerialCache[contractData?.unique_key?.toLowerCase()]) {
+              item.status = "Duplicate contract id/serial number"
+              item.exit = true;
+            } else {
+              checkSerialCache[contractData.unique_key?.toLowerCase()] = true;
+            }
+          }
+
           if (item.coverageType) {
             if (item.coverageType != null || item.coverageType != "") {
               if (contractData) {
