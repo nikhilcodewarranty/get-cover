@@ -89,7 +89,10 @@ exports.getAllClaims = async (req, res, next) => {
     }
     // Get Claim for servicer
     if (req.role == 'Servicer') {
-      servicerMatch = { servicerId: new mongoose.Types.ObjectId(req.userId) }
+      match = { servicerId: new mongoose.Types.ObjectId(req.userId) }
+    }
+    if (req.role == 'Reseller') {
+      match = { resellerId: new mongoose.Types.ObjectId(req.userId) }
     }
     // building the query for claims
     let newQuery = [];
@@ -284,6 +287,11 @@ exports.getAllClaims = async (req, res, next) => {
         ]
       }
     }
+    console.log("query================", servicerMatch,
+      dealerMatch,
+      resellerMatch,
+      dateMatch,
+      statusMatch)
     let lookupQuery = [
       { $sort: { unique_key_number: -1 } },
       {

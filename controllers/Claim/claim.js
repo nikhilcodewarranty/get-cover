@@ -3060,6 +3060,10 @@ exports.saveBulkClaim = async (req, res) => {
             if (memberEmail.length > 0) {
               const validEmail = memberEmail?.find(member => member.email === item.userEmail);
 
+              console.log("memberEmail----------------",memberEmail)
+              console.log("item.userEmail----------------",item.userEmail)
+              console.log("validEmail----------------",validEmail)
+
               if (!validEmail || validEmail == undefined) {
                 item.status = "Invalid Email"
                 item.exit = true;
@@ -3151,6 +3155,8 @@ exports.saveBulkClaim = async (req, res) => {
       let unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
 
       //Update eligibility when contract is open
+      console.log("totalDataComing------------------------",totalDataComing)
+      return;
 
       const updateArrayPromise = totalDataComing.map(item => {
         if (!item.exit && item.contractData) return contractService.updateContract({ _id: item.contractData._id }, { eligibilty: false }, { new: true });
