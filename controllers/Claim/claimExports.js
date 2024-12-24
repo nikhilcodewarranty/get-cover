@@ -183,19 +183,19 @@ exports.exportDataForClaim = async (req, res) => {
       match = { resellerId: new mongoose.Types.ObjectId(req.userId) }
     }
 
-    if (req.params.flag == "dealer") {
+    if (data.flag == "dealer") {
       match1 = { dealerId: new mongoose.Types.ObjectId(data.userId) }
 
     }
-    if (req.params.flag == "reseller") {
+    if (data.flag == "reseller") {
       match1 = { resellerId: new mongoose.Types.ObjectId(data.userId) }
 
     }
-    if (req.params.flag == "servicer") {
+    if (data.flag == "servicer") {
       match1 = { servicerId: new mongoose.Types.ObjectId(data.userId) }
 
     }
-    if (req.params.flag == "customer") {
+    if (data.flag == "customer") {
       match1 = { customerId: new mongoose.Types.ObjectId(data.userId) }
 
     }
