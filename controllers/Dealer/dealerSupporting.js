@@ -871,6 +871,7 @@ exports.getDealerClaims = async (req, res) => {
             dealerMatch = { dealerId: { $in: dealerIds } }
 
         }
+        data.resellerName = data.resellerName ? data.resellerName : ""
 
         if (data.resellerName != "") {
             let getReseller = await resellerService.getResellers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })

@@ -4479,6 +4479,20 @@ exports.getAllClaims = async (req, res, next) => {
       }
     }
 
+    if (data.dealerName != "") {
+      let getDealer = await dealerService.getAllDealers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
+      let dealerIds = getDealer.map(ID => new mongoose.Types.ObjectId(ID._id))
+      dealerMatch = { dealerId: { $in: dealerIds } }
+      console.log(dealerMatch)
+
+    }
+
+    if (data.resellerName != "") {
+      let getReseller = await resellerService.getResellers({ name: { '$regex': data.resellerName ? data.resellerName : '', '$options': 'i' } }, { _id: 1 })
+      let resellerIds = getReseller.map(ID => new mongoose.Types.ObjectId(ID._id))
+      resellerMatch = { resellerId: { $in: resellerIds } }
+
+    }
     let claimPaidStatus = {}
     if (data.claimPaidStatus != '' && data.claimPaidStatus != undefined) {
       claimPaidStatus = { "claimPaymentStatus": data.claimPaidStatus }

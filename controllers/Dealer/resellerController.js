@@ -2526,6 +2526,8 @@ exports.getResellerClaims = async (req, res) => {
                 servicerMatch = { 'servicerId': new mongoose.Types.ObjectId('5fa1c587ae2ac23e9c46510f') }
             }
         }
+        data.dealerName = data.dealerName ? data.dealerName : ""
+
 
         if (data.dealerName != "") {
             let getDealer = await dealerService.getAllDealers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
@@ -2533,7 +2535,7 @@ exports.getResellerClaims = async (req, res) => {
             dealerMatch = { dealerId: { $in: dealerIds } }
 
         }
-
+        data.resellerMatch = data.resellerMatch ? data.resellerMatch : ""
         if (data.resellerName != "") {
             let getReseller = await resellerService.getResellers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
             let resellerIds = getReseller.map(ID => new mongoose.Types.ObjectId(ID._id))

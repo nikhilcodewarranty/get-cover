@@ -245,7 +245,6 @@ exports.getAllClaims = async (req, res, next) => {
       let getReseller = await resellerService.getResellers({ name: { '$regex': data.resellerName ? data.resellerName : '', '$options': 'i' } }, { _id: 1 })
       let resellerIds = getReseller.map(ID => new mongoose.Types.ObjectId(ID._id))
       resellerMatch = { resellerId: { $in: resellerIds } }
-      console.log(dealerMatch)
 
     }
 
@@ -273,7 +272,6 @@ exports.getAllClaims = async (req, res, next) => {
       }
     }
 
-    console.log("date check match++++++++++++++", dateMatch)
 
     let claimPaidStatus = {}
     if (data.claimPaidStatus != '' && data.claimPaidStatus != undefined) {
@@ -287,11 +285,6 @@ exports.getAllClaims = async (req, res, next) => {
         ]
       }
     }
-    console.log("query================", servicerMatch,
-      dealerMatch,
-      resellerMatch,
-      dateMatch,
-      statusMatch)
     let lookupQuery = [
       { $sort: { unique_key_number: -1 } },
       {
