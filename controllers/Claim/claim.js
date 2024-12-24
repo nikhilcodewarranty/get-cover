@@ -2967,6 +2967,7 @@ exports.saveBulkClaim = async (req, res) => {
               ],
             })
             if (checkContractData && checkContractData != null) {
+              console.log("fdsdfsdfsdfsfdsdffdssdf");
               item.status = " "
 
               if (checkContractData.status != "Active") {
@@ -3059,10 +3060,6 @@ exports.saveBulkClaim = async (req, res) => {
 
             if (memberEmail.length > 0) {
               const validEmail = memberEmail?.find(member => member.email === item.userEmail);
-
-              console.log("memberEmail----------------", memberEmail)
-              console.log("item.userEmail----------------", item.userEmail)
-              console.log("validEmail----------------", validEmail)
 
               if (!validEmail || validEmail == undefined) {
                 item.status = "Invalid Email"
