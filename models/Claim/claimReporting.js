@@ -30,7 +30,6 @@ const claimReporting = new Schema({
     },
     lastDownloadTime: {
         type: Date,
-        default: () => new Date()
     },
     date: {
         type: Date,
