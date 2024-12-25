@@ -91,9 +91,28 @@ exports.getAllClaims = async (req, res, next) => {
     if (req.role == 'Servicer') {
       match = { servicerId: new mongoose.Types.ObjectId(req.userId) }
     }
+
     if (req.role == 'Reseller') {
       match = { resellerId: new mongoose.Types.ObjectId(req.userId) }
     }
+
+    if (data.flag == "dealer") {
+      match1 = { dealerId: new mongoose.Types.ObjectId(data.userId) }
+
+    }
+    if (data.flag == "reseller") {
+      match1 = { resellerId: new mongoose.Types.ObjectId(data.userId) }
+
+    }
+    if (data.flag == "servicer") {
+      match1 = { servicerId: new mongoose.Types.ObjectId(data.userId) }
+
+    }
+    if (data.flag == "customer") {
+      match1 = { customerId: new mongoose.Types.ObjectId(data.userId) }
+
+    }
+
     // building the query for claims
     let newQuery = [];
     newQuery.push({
@@ -141,12 +160,12 @@ exports.getAllClaims = async (req, res, next) => {
               dealerSku: 1,
               customerStatus: 1,
               trackingNumber: 1,
+              claimPaymentStatus: 1,
               trackingType: 1,
               getcoverOverAmount: 1,
               customerOverAmount: 1,
               customerClaimAmount: 1,
               getCoverClaimAmount: 1,
-              claimPaymentStatus:1,
               claimType: 1,
               repairParts: 1,
               diagnosis: 1,
@@ -212,7 +231,7 @@ exports.getAllClaims = async (req, res, next) => {
         ]
       }
     })
-
+    data.servicerName = data.servicerName ? data.servicerName : ""
     if (data.servicerName != '' && data.servicerName != undefined) {
       const checkServicer = await providerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } });
       if (checkServicer.length > 0) {
@@ -251,28 +270,19 @@ exports.getAllClaims = async (req, res, next) => {
 
     statusMatch = {}
     if (data.dateFilter != "") {
-      let endDate1 = new Date(data.endDate)
-      endDate1.setDate(endDate1.getDate() + 1)
       if (data.dateFilter == "damageDate") {
-        // {
-        //   createdAt: {
-        //     $gt: new Date("2023-12-23T00:00:00.000Z"),
-        //     $lte: new Date("2024-12-24T23:59:59.999Z"),
-        //   },
-        // }
-        dateMatch = { lossDate: { $gt: new Date(data.startDate), $lte: new Date(endDate1) } }
+        dateMatch = { lossDate: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
         // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
       }
       if (data.dateFilter == "openDate") {
-        dateMatch = { createdAt: { $gt: new Date(data.startDate), $lte: new Date(endDate1) } }
+        dateMatch = { createdAt: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
         // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
       }
       if (data.dateFilter == "closeDate") {
-        dateMatch = { claimDate: { $gt: new Date(data.startDate), $lte: new Date(endDate1) } }
+        dateMatch = { claimDate: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
         statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
       }
     }
-
 
     let claimPaidStatus = {}
     if (data.claimPaidStatus != '' && data.claimPaidStatus != undefined) {
@@ -304,7 +314,8 @@ exports.getAllClaims = async (req, res, next) => {
             dealerMatch,
             resellerMatch,
             dateMatch,
-            statusMatch
+            statusMatch,
+            match1
           ]
         },
       },
