@@ -3084,8 +3084,9 @@ exports.getOptions1 = async (req, res) => {
     const reorderedData = query.name['$in'].map(key => {
       return getOptions.find(item => item.name === key);
     });
-
+  console.log("  req.params.query=------------",  req.params)
     if (req.params.filter == 1) {
+      console.log("filtering the data")
       for (let v = 0; v < reorderedData.length; v++) {
         reorderedData[v].value = reorderedData[v].value.filter(item => item.status === true)
       }

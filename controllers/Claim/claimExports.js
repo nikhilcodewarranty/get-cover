@@ -761,7 +761,13 @@ exports.exportDataForClaim = async (req, res) => {
         let servicerName = item?.servicerId;
     
         try {
-          const result = await servicerService.getServiceProviderById({ _id: servicerName });
+          const result = await servicerService.getServiceProviderById({
+            $or:[
+              { _id: servicerName },
+              { dealerId: servicerName },
+              { resellerId: servicerName },
+            ]
+          });
           servicerName = result?.name;
         } catch (err) {
           console.error("Error fetching servicer name:", err);
