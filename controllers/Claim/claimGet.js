@@ -232,7 +232,7 @@ exports.getAllClaims = async (req, res, next) => {
       }
     }
     data.dealerName = data.dealerName ? data.dealerName : ""
-    data.resellerMatch = data.resellerMatch ? data.resellerMatch : ""
+    data.resellerName = data.resellerName ? data.resellerName : ""
     data.dateFilter = data.dateFilter ? data.dateFilter : ""
     if (data.dealerName != "") {
       let getDealer = await dealerService.getAllDealers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
