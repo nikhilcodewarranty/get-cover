@@ -2865,7 +2865,7 @@ exports.paidUnpaidClaim = async (req, res) => {
       }
     })
     data.dealerName = data.dealerName ? data.dealerName : ""
-    // data.servicerName = data.servicerName ? data.servicerName : ""
+    data.servicerName = data.servicerName ? data.servicerName : ""
     let servicerMatch = {}
 
     if (data.servicerName != '' && data.servicerName != undefined) {
@@ -3025,7 +3025,7 @@ exports.paidUnpaidClaim = async (req, res) => {
     let servicer;
     let servicerName = '';
 
-    allServicer = await providerService.getAllServiceProvider(
+   let allServicer = await providerService.getAllServiceProvider(
       { _id: { $in: allServicerIds }, status: true },
       {}
     );
