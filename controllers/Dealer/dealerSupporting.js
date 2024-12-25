@@ -864,6 +864,7 @@ exports.getDealerClaims = async (req, res) => {
                 servicerMatch = { 'servicerId': new mongoose.Types.ObjectId('5fa1c587ae2ac23e9c46510f') }
             }
         }
+        data.dealerName = data.dealerName ? data.dealerName : ""
 
         if (data.dealerName != "") {
             let getDealer = await dealerService.getAllDealers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
@@ -1165,10 +1166,11 @@ exports.getDealerClaims = async (req, res) => {
                     item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
                 );
             }
+
             let servicerName = '';
             let selfServicer = false;
             let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
-                const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId.toString());
+                const dealerOfServicer = allServicer.find(servicer => servicer?._id.toString() === matched?.servicerId.toString());
                 servicer.push(dealerOfServicer)
             });
             if (item1.contracts.orders.servicers[0]?.length > 0) {
@@ -1181,7 +1183,7 @@ exports.getDealerClaims = async (req, res) => {
                 servicer.unshift(item1.contracts.orders.dealers)
             }
             if (item1.servicerId != null) {
-                servicerName = servicer.find(servicer => servicer._id?.toString() === item1.servicerId?.toString());
+                servicerName = servicer.find(servicer => servicer?._id?.toString() === item1.servicerId?.toString());
                 const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
                 selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() || item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString() ? true : false
             }
@@ -1196,6 +1198,7 @@ exports.getDealerClaims = async (req, res) => {
                 }
             }
         })
+
         let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0
         let getTheThresholdLimit = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
 
@@ -1203,7 +1206,7 @@ exports.getDealerClaims = async (req, res) => {
             const { productValue, claimAmount } = claimObject.contracts;
 
             // Calculate the threshold limit value
-            const thresholdLimitValue = (getTheThresholdLimit.threshHoldLimit.value / 100) * productValue;
+            const thresholdLimitValue = (getTheThresholdLimit.threshHoldLimit?.value ? getTheThresholdLimit.threshHoldLimit?.value : 1000/ 100) * productValue;
 
             // Check if claimAmount exceeds the threshold limit value
             let overThreshold = claimAmount > thresholdLimitValue;
