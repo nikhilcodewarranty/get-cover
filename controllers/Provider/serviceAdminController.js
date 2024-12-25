@@ -2703,6 +2703,8 @@ exports.paidUnpaidClaim = async (req, res) => {
   try {
     let data = req.body
     let dateQuery = {}
+    const flag = req.body.flag == 1 ? 'Paid' : 'Unpaid'
+
     if (data.noOfDays) {
       const end = moment().startOf('day')
       const start = moment().subtract(data.noOfDays, 'days').startOf('day')
@@ -2715,7 +2717,7 @@ exports.paidUnpaidClaim = async (req, res) => {
     }
 
     let approveQuery = {}
-    if (data.startDate && data.endDate) {
+    if (data.startDate && data.endDate & flag == 1) {
       const start = new Date(data.startDate); // Replace with your start date
       let end = new Date(data.endDate);
       // Add one day to the end date
@@ -2730,7 +2732,6 @@ exports.paidUnpaidClaim = async (req, res) => {
 
     }
 
-    const flag = req.body.flag == 1 ? 'Paid' : 'Unpaid'
     let query = { isDeleted: false };
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
@@ -3025,7 +3026,7 @@ exports.paidUnpaidClaim = async (req, res) => {
     let servicer;
     let servicerName = '';
 
-   let allServicer = await providerService.getAllServiceProvider(
+    let allServicer = await providerService.getAllServiceProvider(
       { _id: { $in: allServicerIds }, status: true },
       {}
     );
