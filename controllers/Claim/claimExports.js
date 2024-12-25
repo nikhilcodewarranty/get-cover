@@ -247,6 +247,7 @@ exports.exportDataForClaim = async (req, res) => {
               dealerSku: 1,
               customerStatus: 1,
               trackingNumber: 1,
+              claimPaymentStatus: 1,
               trackingType: 1,
               getcoverOverAmount: 1,
               customerOverAmount: 1,
