@@ -401,6 +401,8 @@ exports.getAllClaims = async (req, res, next) => {
       lookupQuery = lookupQuery.concat(newQuery);
     }
     let allClaims = await claimService.getClaimWithAggregate(lookupQuery);
+    res.json(allClaims);
+    return;
     let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
 
     let allServicerIds = [];

@@ -2864,7 +2864,8 @@ exports.paidUnpaidClaim = async (req, res) => {
         ]
       }
     })
-
+    data.dealerName = data.dealerName ? data.dealerName : ""
+    // data.servicerName = data.servicerName ? data.servicerName : ""
     let servicerMatch = {}
 
     if (data.servicerName != '' && data.servicerName != undefined) {
