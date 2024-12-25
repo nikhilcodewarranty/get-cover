@@ -837,14 +837,19 @@ exports.exportDataForClaim = async (req, res) => {
     const groupDataByReseller = (resultArray) => {
       return resultArray.reduce((acc, item) => {
         // Extract reseller name and claim information
-        const resellerName = item?.contracts?.orders?.resellers?.[0]?.name || "Unknown Reseller";
+        const resellerName = item?.contracts?.orders?.resellers?.[0]?.name;
+        if (!resellerName) {
+          // Skip this item if there's no reseller name
+          return acc;
+        }
+    
         const claimAmount = item.totalAmount || 0;
         const isCompleted = item.claimStatus.some(status => status.status === "completed");
         const isRejected = item.claimStatus.some(status => status.status === "rejected");
-
+    
         // Check if reseller already exists in the accumulator
         let resellerEntry = acc.find(entry => entry["Reseller Name"] === resellerName);
-
+    
         if (!resellerEntry) {
           // If reseller does not exist, create a new entry
           resellerEntry = {
@@ -857,7 +862,7 @@ exports.exportDataForClaim = async (req, res) => {
           };
           acc.push(resellerEntry);
         }
-
+    
         // Update reseller entry
         resellerEntry["Total Claims"] += 1;
         resellerEntry["Total Amount of Claims"] += claimAmount;
@@ -867,15 +872,16 @@ exports.exportDataForClaim = async (req, res) => {
         if (isRejected) {
           resellerEntry["Rejected Claims"] += 1;
         }
-
+    
         // Calculate average claim amount for completed claims
         resellerEntry["Average Claim Amount"] = resellerEntry["Completed Claims"]
           ? (resellerEntry["Total Amount of Claims"] / resellerEntry["Completed Claims"]).toFixed(2)
           : 0;
-
+    
         return acc;
       }, []);
     };
+    
 
 
     // Group data for Dealer, Servicer, Reseller, and Customer
