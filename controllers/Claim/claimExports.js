@@ -899,8 +899,8 @@ exports.exportDataForClaim = async (req, res) => {
     
         // Categorize paid and unpaid claims using claimPaymentStatus
         if (hasCompletedStatus && item.claimFile && Array.isArray(item.claimFile.completed)) {
-          const paidClaims = item.claimFile.completed.filter(file => file.claimPaymentStatus === "paid").length;
-          const unpaidClaims = item.claimFile.completed.filter(file => file.claimPaymentStatus === "unpaid").length;
+          const paidClaims = item.claimFile.completed.filter(file => file.claimPaymentStatus === "Paid").length;
+          const unpaidClaims = item.claimFile.completed.filter(file => file.claimPaymentStatus === "Unpaid").length;
     
           acc["Total Paid Claims"] += paidClaims;
           acc["Total Unpaid Claims"] += unpaidClaims;
