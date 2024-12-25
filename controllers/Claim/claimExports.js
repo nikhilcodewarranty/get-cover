@@ -158,7 +158,7 @@ exports.exportDataForClaim = async (req, res) => {
 
     let data = req.body
     let query = { isDeleted: false };
-    let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+    let pageLimit = 1000000
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
     let match = {};
@@ -247,6 +247,7 @@ exports.exportDataForClaim = async (req, res) => {
               dealerSku: 1,
               customerStatus: 1,
               trackingNumber: 1,
+              claimPaymentStatus: 1,
               trackingType: 1,
               getcoverOverAmount: 1,
               customerOverAmount: 1,
@@ -754,11 +755,11 @@ exports.exportDataForClaim = async (req, res) => {
 
     const groupDataByServicer = async (resultArray) => {
       const acc = [];
-
+    
       for (const item of resultArray) {
         // Extract servicer name
         let servicerName = item?.servicerId;
-
+    
         try {
           const result = await servicerService.getServiceProviderById({ _id: servicerName });
           servicerName = result?.name;
@@ -766,22 +767,33 @@ exports.exportDataForClaim = async (req, res) => {
           console.error("Error fetching servicer name:", err);
           continue; // Skip this item if there's an error fetching servicer name
         }
-
+    
         console.log("Servicer Name:", servicerName);
-
+    
         // Only process entries with valid servicer names
         if (!servicerName) {
           continue; // Skip entries with no valid servicer name
         }
-
+    
         const claimAmount = item.totalAmount || 0;
         const isCompleted = item.claimStatus.some(status => status.status === "completed");
         const isRejected = item.claimStatus.some(status => status.status === "rejected");
-        const isPaid = claimAmount > 0; // Paid claim based on totalAmount being greater than 0
-
+    
+        // Categorize Paid and Unpaid Claims based on claimFile and claimPaymentStatus
+        let paidClaims = 0;
+        let unpaidClaims = 0;
+    
+        if (item.claimFile === "completed") {
+          if (item.claimPaymentStatus === "Paid") {
+            paidClaims = 1;
+          } else if (item.claimPaymentStatus === "Unpaid") {
+            unpaidClaims = 1;
+          }
+        }
+    
         // Check if servicer already exists in the accumulator
         let servicerEntry = acc.find(entry => entry["Servicer Name"] === servicerName);
-
+    
         if (!servicerEntry) {
           // If servicer does not exist, create a new entry
           servicerEntry = {
@@ -789,39 +801,37 @@ exports.exportDataForClaim = async (req, res) => {
             "Total Claims": 0,
             "Completed Claims": 0,
             "Rejected Claims": 0,
-            "Paid Claims": 0, // Initialize Paid Claims
-            "Unpaid Claims": 0, // Initialize Unpaid Claims
+            "Paid Claims": 0,
+            "Unpaid Claims": 0,
             "Total Amount of Claims": 0,
             "Average Claim Amount": 0, // Initialize average claim amount
           };
           acc.push(servicerEntry);
         }
-
+    
         // Update servicer entry
         servicerEntry["Total Claims"] += 1;
         servicerEntry["Total Amount of Claims"] += claimAmount;
-
+    
         if (isCompleted) {
           servicerEntry["Completed Claims"] += 1;
-          if (isPaid) {
-            servicerEntry["Paid Claims"] += 1;
-          } else {
-            servicerEntry["Unpaid Claims"] += 1;
-          }
+          servicerEntry["Paid Claims"] += paidClaims;
+          servicerEntry["Unpaid Claims"] += unpaidClaims;
         }
-
+    
         if (isRejected) {
           servicerEntry["Rejected Claims"] += 1;
         }
-
+    
         // Calculate average claim amount for completed claims
         servicerEntry["Average Claim Amount"] = servicerEntry["Completed Claims"]
           ? (servicerEntry["Total Amount of Claims"] / servicerEntry["Completed Claims"]).toFixed(2)
           : 0;
       }
-
+    
       return acc;
     };
+    
 
 
     const groupDataByReseller = (resultArray) => {
@@ -882,12 +892,11 @@ exports.exportDataForClaim = async (req, res) => {
       (acc, item) => {
         // Increment total claims
         acc["Total Claims"] += 1;
-
+    
         // Check claim statuses
         const hasRejectedStatus = item.claimStatus.some(status => status.status === "rejected");
         const hasCompletedStatus = item.claimStatus.some(status => status.status === "completed");
-        const isPaid = item.totalAmount > 0; // Paid claim based on totalAmount being greater than 0
-
+    
         // Categorize claims
         if (hasRejectedStatus) {
           acc["Total Rejected Claims"] += 1;
@@ -896,16 +905,16 @@ exports.exportDataForClaim = async (req, res) => {
         } else {
           acc["Total Open Claims"] += 1;
         }
-
-        // Categorize paid and unpaid claims, but only for completed claims
-        if (hasCompletedStatus) {
-          if (isPaid) {
+    
+        // Categorize paid and unpaid claims using claimPaymentStatus
+        if (item.claimFile === "completed") {
+          if (item.claimPaymentStatus === "Paid") {
             acc["Total Paid Claims"] += 1;
-          } else {
+          } else if (item.claimPaymentStatus === "Unpaid") {
             acc["Total Unpaid Claims"] += 1;
           }
         }
-
+    
         return acc;
       },
       {
@@ -917,6 +926,10 @@ exports.exportDataForClaim = async (req, res) => {
         "Total Unpaid Claims": 0,
       }
     );
+    
+    
+    
+    
 
 
     summary = [summary]

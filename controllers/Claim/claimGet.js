@@ -146,6 +146,7 @@ exports.getAllClaims = async (req, res, next) => {
               customerOverAmount: 1,
               customerClaimAmount: 1,
               getCoverClaimAmount: 1,
+              claimPaymentStatus:1,
               claimType: 1,
               repairParts: 1,
               diagnosis: 1,
