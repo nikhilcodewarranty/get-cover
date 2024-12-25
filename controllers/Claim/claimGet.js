@@ -76,6 +76,7 @@ exports.getAllClaims = async (req, res, next) => {
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
     let match = {};
+    let match1 = {};
     let servicerMatch = {}
     let dealerMatch = {}
     let resellerMatch = {}
