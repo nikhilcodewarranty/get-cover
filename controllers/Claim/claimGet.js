@@ -528,6 +528,8 @@ exports.getAllClaims = async (req, res, next) => {
           console.log("unique_key----------------", claimObject.unique_key);
           query = { email: claimObject?.submittedBy };
         } else {
+          console.log("else----------------",  claimObject.contracts.orders.customerId);
+
           query = await supportingFunction.getPrimaryUser({
             metaData: { $elemMatch: { metaId: claimObject.contracts.orders.customerId, isPrimary: true } }
           });
