@@ -1012,8 +1012,12 @@ exports.editClaim = async (req, res) => {
         content: `We would like to inform you that the repair information for Claim ID  ${checkClaim.unique_key} has been successfully updated in our system. Please review the updated details and proceed accordingly.`,
         subject: `Update on Repair Information for Claim  ID ${checkClaim.unique_key}`
       }
+      emailData.senderName = "Admin"
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+      emailData.senderName = servicerPrimary ? servicerPrimary.metaData[0]?.firstName : '',
+       mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmails, ["noreply@getcover.com"], emailData))
 
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ["noreply@getcover.com"], emailData))
+
       let totalClaimQuery1 = [
         {
           $match: {
