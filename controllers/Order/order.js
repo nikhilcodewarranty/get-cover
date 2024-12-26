@@ -1450,8 +1450,8 @@ exports.archiveOrder = async (req, res) => {
         let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } })
 
         let notificationData1 = {
-            title: "Order Archieved Successfully",
-            description: `The Order # ${checkOrder.unique_key} has been archieved successfully by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0].lastName}.`,
+            title: "Order Archived Successfully",
+            description: `The Order # ${checkOrder.unique_key} has been archived successfully by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0].lastName}.`,
             userId: req.teammateId,
             contentId: checkOrder._id,
             flag: 'Order Archieved',
@@ -1460,8 +1460,8 @@ exports.archiveOrder = async (req, res) => {
             notificationFor: IDs
         };
         let notificationData2 = {
-            title: "Order Archieved Successfully",
-            description: `The Order # ${checkOrder.unique_key} has been archieved successfully by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0].lastName}.`,
+            title: "Order Archived Successfully",
+            description: `The Order # ${checkOrder.unique_key} has been archived successfully by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0].lastName}.`,
             userId: req.teammateId,
             contentId: checkOrder._id,
             flag: 'Order Archieved',
@@ -1470,8 +1470,8 @@ exports.archiveOrder = async (req, res) => {
             notificationFor: IDs1
         };
         let notificationData3 = {
-            title: "Order Archieved Successfully",
-            description: `The Order # ${checkOrder.unique_key} has been archieved successfully by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0].lastName}.`,
+            title: "Order Archived Successfully",
+            description: `The Order # ${checkOrder.unique_key} has been archived successfully by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0].lastName}.`,
             userId: req.teammateId,
             contentId: checkOrder._id,
             flag: 'Order Archieved',
@@ -2202,8 +2202,8 @@ exports.markAsPaid = async (req, res) => {
                     userId: req.teammateId,
                     contentId: checkOrder._id,
                     flag: 'order',
-                    redirectionId: "orderDetails/" + checkOrder.unique_key,
-                    endPoint: base_url + "orderDetails/" + checkOrder.unique_key,
+                    redirectionId: "orderDetails/" + checkOrder._id,
+                    endPoint: base_url + "orderDetails/" + checkOrder._id,
                     notificationFor: IDs
                 };
                 let notificationData2 = {
@@ -2212,8 +2212,8 @@ exports.markAsPaid = async (req, res) => {
                     userId: req.teammateId,
                     contentId: checkOrder._id,
                     flag: 'order',
-                    redirectionId: "orderDetails/" + checkOrder.unique_key,
-                    endPoint: base_url + "orderDetails/" + checkOrder.unique_key,
+                    redirectionId: "orderDetails/" + checkOrder._id,
+                    endPoint: base_url + "orderDetails/" + checkOrder._id,
                     notificationFor: IDs1
                 };
                 let notificationData3 = {
@@ -2222,8 +2222,8 @@ exports.markAsPaid = async (req, res) => {
                     userId: req.teammateId,
                     contentId: checkOrder._id,
                     flag: 'order',
-                    redirectionId: "orderDetails/" + checkOrder.unique_key,
-                    endPoint: base_url + "orderDetails/" + checkOrder.unique_key,
+                    redirectionId: "orderDetails/" + checkOrder._id,
+                    endPoint: base_url + "orderDetails/" + checkOrder._id,
                     notificationFor: IDs2
                 };
                 let notificationData4 = {
@@ -2232,8 +2232,8 @@ exports.markAsPaid = async (req, res) => {
                     userId: req.teammateId,
                     contentId: checkOrder._id,
                     flag: 'order',
-                    redirectionId: "orderDetails/" + checkOrder.unique_key,
-                    endPoint: base_url + "orderDetails/" + checkOrder.unique_key,
+                    redirectionId: "orderDetails/" + checkOrder._id,
+                    endPoint: base_url + "orderDetails/" + checkOrder._id,
                     notificationFor: IDs3
                 };
                 notificationArrayData.push(notificationData1);
