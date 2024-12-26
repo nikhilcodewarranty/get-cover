@@ -974,7 +974,7 @@ async function generateTC(orderData) {
                 senderName: '',
                 content: `Congratulations, your order # ${checkOrder.unique_key} has been created in our system. Please login to the system and view your order details. Also, we have attached our T&C to the email for the review. Please review, if there is anything wrong here, do let us know. You can contact us at : support@getcover.com`,
                 subject: "Process Order",
-                redirectId: base_url + "orderDetails/" + checkOrder.unique_key
+                redirectId: base_url + "orderDetails/" + checkOrder._id
             }
 
             let mailing = sgMail.send(emailConstant.sendTermAndCondition(notificationEmails, ["noreply@getcover.com"], emailData, attachment))
@@ -1772,8 +1772,8 @@ exports.createOrder1 = async (req, res) => {
                         description: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
                         userId: req.teammateId,
                         contentId: checkOrder._id,
-                        redirectionId: "orderDetails/" + checkOrder.unique_key,
-                        endPoint: base_url + "orderList/" + savedResponse.unique_key,
+                        redirectionId: "orderDetails/" + checkOrder._id,
+                        endPoint: base_url + "orderDetails/" + savedResponse._id,
                         flag: 'order',
                         notificationFor: id
                     };
@@ -1786,8 +1786,8 @@ exports.createOrder1 = async (req, res) => {
                         resellerMessage: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
                         userId: req.teammateId,
                         contentId: checkOrder._id,
-                        redirectionId: "orderDetails/" + checkOrder.unique_key,
-                        endPoint: base_url + "orderList/" + savedResponse.unique_key,
+                        redirectionId: "orderDetails/" + checkOrder._id,
+                        endPoint: base_url + "orderDetails/" + savedResponse._id,
                         flag: 'order',
                         notificationFor: id1
                     };
@@ -1796,8 +1796,8 @@ exports.createOrder1 = async (req, res) => {
                         description: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
                         userId: req.teammateId,
                         contentId: checkOrder._id,
-                        redirectionId: "orderDetails/" + checkOrder.unique_key,
-                        endPoint: base_url + "orderList/" + savedResponse.unique_key,
+                        redirectionId: "orderDetails/" + checkOrder._id,
+                        endPoint: base_url + "orderDetails/" + savedResponse._id,
                         flag: 'order',
                         notificationFor: id2
                     };
@@ -1806,8 +1806,8 @@ exports.createOrder1 = async (req, res) => {
                         description: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
                         userId: req.teammateId,
                         contentId: checkOrder._id,
-                        redirectionId: "orderDetails/" + checkOrder.unique_key,
-                        endPoint: base_url + "orderList/" + savedResponse.unique_key,
+                        redirectionId: "orderDetails/" + checkOrder._id,
+                        endPoint: base_url + "orderDetails/" + checkOrder._id,
                         flag: 'order',
                         notificationFor: id3
                     };
@@ -1835,7 +1835,7 @@ exports.createOrder1 = async (req, res) => {
                             senderName: '',
                             content: `Congratulations, your order # ${checkOrder.unique_key} has been created in our system. Please login to the system and view your order details. Please review, if there is anything wrong here, do let us know. You can contact us at : support@getcover.com`,
                             subject: "Process Order",
-                            redirectId: base_url + "orderDetails/" + checkOrder.unique_key
+                            redirectId: base_url + "orderDetails/" + checkOrder._id
                         }
 
                         let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ["noreply@getcover.com"], emailData))
