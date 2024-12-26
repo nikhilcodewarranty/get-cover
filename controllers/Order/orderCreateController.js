@@ -2587,8 +2587,13 @@ exports.editOrderDetail = async (req, res) => {
 
         // Send Email code here
         let notificationEmails = adminUsers.map(user => user.email)
+        console.log("notificationEmails-----------------------",notificationEmails)
         let dealerEmails = dealerUsers.map(user => user.email)
+        console.log("dealerEmails-----------------------",dealerEmails)
+
         let resellerEmails = adminUsers.map(user => user.email)
+        console.log("resellerEmails-----------------------",resellerEmails)
+
         let settingData = await userService.getSetting({});
         let mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails)
         //Email to Dealer
