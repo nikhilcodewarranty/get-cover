@@ -2591,7 +2591,7 @@ exports.editOrderDetail = async (req, res) => {
         let dealerEmails = dealerUsers.map(user => user.email)
         console.log("dealerEmails-----------------------",dealerEmails)
 
-        let resellerEmails = adminUsers.map(user => user.email)
+        let resellerEmails = resellerUsers.map(user => user.email)
         console.log("resellerEmails-----------------------",resellerEmails)
 
         let settingData = await userService.getSetting({});
