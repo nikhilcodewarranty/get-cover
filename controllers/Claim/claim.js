@@ -719,7 +719,7 @@ exports.addClaim = async (req, res, next) => {
       const dealerEmail = dealerUser.map(user => user.email)
       const resellerEmail = resellerUser.map(user => user.email)
       const customerEmail = customerUser.map(user => user.email)
-   
+
       emailData.subject = `Claim Received -${claimResponse.unique_key}`
       emailData.content = `The Claim # ${claimResponse.unique_key} has been successfully filed for the Contract # ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here :`
       emailData.senderName = `Dear Admin`
@@ -758,7 +758,7 @@ exports.addClaim = async (req, res, next) => {
       const adminEmail = adminUser.map(user => user.email)
       const dealerEmail = dealerUser.map(user => user.email)
       const resellerEmail = resellerUser.map(user => user.email)
-    
+
       emailData.subject = `Claim Received - ${claimResponse.unique_key}`
       emailData.content = `The Claim # ${claimResponse.unique_key} has been successfully filed for the Contract #  ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here :`
       emailData.senderName = `Dear Admin`
@@ -2514,7 +2514,10 @@ exports.editServicer = async (req, res) => {
       },
     }
     let servicerCaseUser = await supportingFunction.getNotificationEligibleUser(servicerCaseNotification, { email: 1 })
-    const sendNotificationForServicer = servicerCaseUser.map(user => user.email)
+    let adminUser = servicerCaseUser.filter(user => user.metaData[0]?.roleId.toString() === process.env.super_admin.toString());
+    let servicerUser = servicerCaseUser.filter(user => user.metaData[0]?.roleId.toString() === process.env.servicer.toString());
+    const adminEmail = adminUser.map(user => user.email)
+    const servicerEmail = servicerUser.map(user => user.email)
 
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -2530,8 +2533,10 @@ exports.editServicer = async (req, res) => {
       content: `We want to inform you that ${checkCustomer.username} has requested for the repair of a device detailed below:`
 
     }
-
-    let mailing = sgMail.send(emailConstant.sendServicerClaimNotification(sendNotificationForServicer, ["noreply@getcover.com"], emailData))
+    emailData.senderName = "Admin"
+    let mailing = sgMail.send(emailConstant.sendServicerClaimNotification(adminEmail, ["noreply@getcover.com"], emailData))
+    emailData.senderName = getPrimary ? getPrimary.metaData[0].firstName : ""
+    let mailing = sgMail.send(emailConstant.sendServicerClaimNotification(servicerEmail, ["noreply@getcover.com"], emailData))
     res.send({
       code: constant.successCode,
       message: 'Success!',
