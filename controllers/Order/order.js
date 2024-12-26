@@ -1456,7 +1456,7 @@ exports.archiveOrder = async (req, res) => {
             contentId: checkOrder._id,
             flag: 'Order Archieved',
             redirectionId: "archiveOrder",
-            endPoint: base_url +`archiveOrder/${checkOrder.unique_key}`,
+            endPoint: base_url + `archiveOrder/${checkOrder.unique_key}`,
             notificationFor: IDs
         };
         let notificationData2 = {
@@ -1466,7 +1466,7 @@ exports.archiveOrder = async (req, res) => {
             contentId: checkOrder._id,
             flag: 'Order Archieved',
             redirectionId: "archiveOrder",
-            endPoint: base_url +`dealer/archiveOrder/${checkOrder.unique_key}`,
+            endPoint: base_url + `dealer/archiveOrder/${checkOrder.unique_key}`,
             notificationFor: IDs1
         };
         let notificationData3 = {
@@ -1476,7 +1476,7 @@ exports.archiveOrder = async (req, res) => {
             contentId: checkOrder._id,
             flag: 'Order Archieved',
             redirectionId: "/archiveOrder",
-            endPoint: base_url +`reseller/archiveOrder/${checkOrder.unique_key}`,
+            endPoint: base_url + `reseller/archiveOrder/${checkOrder.unique_key}`,
             notificationFor: IDs2
         };
         let notificationArrayData = [];
@@ -1509,7 +1509,7 @@ exports.archiveOrder = async (req, res) => {
             senderName: '',
             content: "The order " + checkOrder.unique_key + " has been archeived!.",
             subject: "Archeive Order",
-            redirectId: base_url +`archiveOrder/${checkOrder.unique_key}`
+            redirectId: base_url + `archiveOrder/${checkOrder.unique_key}`
         }
         if (checkOrder.sendNotification) {
             let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ["noreply@getcover.com"], emailData))
@@ -2261,7 +2261,10 @@ exports.markAsPaid = async (req, res) => {
                     redirectId: base_url + "orderDetails/" + checkOrder._id,
                 }
                 if (checkOrder.sendNotification && !checkOrder.termCondition) {
-                    let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ["noreply@getcover.com"], emailData))
+                    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+                    mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
+                    mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ["noreply@getcover.com"], emailData))
+                    mailing = sgMail.send(emailConstant.sendEmailTemplate(customerEmails, ["noreply@getcover.com"], emailData))
                 }
                 //Email to customer code here........
                 if (index == checkLength) {
@@ -2842,8 +2845,33 @@ async function generateTC(orderData) {
             let attachment = data.Body.toString('base64');
             //sendTermAndCondition
             // Send Email code here
-            const base_url = `${process.env.SITE_URL}`
-            const adminMarkAsPaidQuery = {
+         
+         
+            const dealerActiveOrderQuery = {
+                metaData: {
+                    $elemMatch: {
+                        $and: [
+                            { "orderNotifications.makingOrderPaid": true },
+                            { status: true },
+                            { metaId: checkOrder.dealerId },
+                        ]
+                    }
+                },
+            }
+
+            const resellerActiveOrderQuery = {
+                metaData: {
+                    $elemMatch: {
+                        $and: [
+                            { "orderNotifications.makingOrderPaid": true },
+                            { status: true },
+                            { metaId: checkOrder.resellerId ? checkOrder.resellerId : "000008041eb1acda24111111" },
+                        ]
+                    }
+                },
+            }
+
+            const customerActiveOrderQuery = {
                 metaData: {
                     $elemMatch: {
                         $and: [
@@ -2851,19 +2879,25 @@ async function generateTC(orderData) {
                             { status: true },
                             {
                                 $or: [
-                                    { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-
-                                    { metaId: checkOrder.dealerId },
                                     { metaId: checkOrder.customerId },
-                                    { metaId: checkOrder.resellerId },
                                 ]
-                            }
+                            },
+
                         ]
                     }
                 },
             }
-            let adminUsers = await supportingFunction.getNotificationEligibleUser(adminMarkAsPaidQuery, { email: 1 })
+            let adminUsers = await supportingFunction.getNotificationEligibleUser(adminActiveOrderQuery, { email: 1 })
+            let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerActiveOrderQuery, { email: 1 })
+            let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerActiveOrderQuery, { email: 1 })
+            let customerUsers = await supportingFunction.getNotificationEligibleUser(customerActiveOrderQuery, { email: 1 })
+
             let notificationEmails = adminUsers.map(user => user.email)
+            let dealerEmails = dealerUsers.map(user => user.email)
+            let resellerEmails = resellerUsers.map(user => user.email)
+            let customerEmails = customerUsers.map(user => user.email)
+            const base_url = `${process.env.SITE_URL}`
+
             let settingData = await userService.getSetting({});
             let emailData = {
                 darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -2871,13 +2905,21 @@ async function generateTC(orderData) {
                 address: settingData[0]?.address,
                 websiteSetting: settingData[0],
                 senderName: '',
-                content: `Congratulations, your order # ${checkOrder.unique_key} has been created in our system. Please login to the system and view your order details.Also, we have attached our T&C to the email for the review. Please review, if there is anything wrong here, do let us know. You can contact us at : support@getcover.com`,
-                subject: "Mark as paid",
-                redirectId: base_url + "orderDetails/" + checkOrder._id,
+                content: `Congratulations, your order # ${checkOrder.unique_key} has been created in our system. Please login to the system and view your order details. Also, we have attached our T&C to the email for the review. Please review, if there is anything wrong here, do let us know. You can contact us at : support@getcover.com`,
+                subject: "Process Order",
+                redirectId: base_url + "orderDetails/" + checkOrder._id
             }
-            if (checkOrder.sendNotification) {
-                let mailing = await sgMail.send(emailConstant.sendTermAndCondition(notificationEmails, ["noreply@getcover.com"], emailData, attachment))
-            }
+
+            let mailing = sgMail.send(emailConstant.sendTermAndCondition(notificationEmails, ["noreply@getcover.com"], emailData, attachment))
+            emailData.redirectId = base_url + "dealer/orderDetails/" + checkOrder._id
+            mailing = sgMail.send(emailConstant.sendTermAndCondition(dealerEmails, ["noreply@getcover.com"], emailData, attachment))
+            emailData.redirectId = base_url + "customer/orderDetails/" + checkOrder._id
+
+            mailing = sgMail.send(emailConstant.sendTermAndCondition(customerEmails, ["noreply@getcover.com"], emailData, attachment))
+            emailData.redirectId = base_url + "reseller/orderDetails/" + checkOrder._id
+            mailing = sgMail.send(emailConstant.sendTermAndCondition(resellerEmails, ["noreply@getcover.com"], emailData, attachment))
+
+
         })
         return 1
 
