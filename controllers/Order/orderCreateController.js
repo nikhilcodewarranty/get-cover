@@ -1337,8 +1337,6 @@ exports.createOrder1 = async (req, res) => {
                         {
                             $or: [
                                 { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                                { metaId: savedResponse.dealerId },
-                                { metaId: savedResponse.resellerId },
                             ]
                         },
                     ]
@@ -1416,9 +1414,7 @@ exports.createOrder1 = async (req, res) => {
 
         // Send Email code here
         notificationEmails = adminUsers.map(user => user.email)
-        console.log("notificationEmails------------------",notificationEmails)
-        console.log("dealerEmails------------------",dealerEmails)
-        console.log("resellerEmails------------------",resellerEmails)
+       
         let mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails)
         emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -1882,7 +1878,6 @@ exports.createOrder1 = async (req, res) => {
             return
 
         } else {
-            console.log("mergedEmail-------------------",mergedEmail)
             let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ["noreply@getcover.com"], emailData))
             let createNotification = await userService.saveNotificationBulk(notificationArrayData);
 
