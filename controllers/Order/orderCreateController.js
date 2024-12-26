@@ -1879,6 +1879,7 @@ exports.createOrder1 = async (req, res) => {
             return
 
         } else {
+            console.log("mergedEmail-------------------",mergedEmail)
             let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ["noreply@getcover.com"], emailData))
             let createNotification = await userService.saveNotificationBulk(notificationArrayData);
 
