@@ -516,66 +516,76 @@ exports.getAllClaims = async (req, res, next) => {
 
     let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0 // getting the total count 
     let getTheThresholdLimit = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
-
-    for (let i = 0; i < result_Array.length; i++) {
-      const claimObject = result_Array[i];
-      const { productValue, claimAmount } = claimObject.contracts;
-      let query;
-
-      claimObject.contracts.orders.customer.username = claimObject.contracts.orders.customer.username;
-      if (req.role === "Customer") {
-        if (claimObject?.submittedBy !== '') {
-
-          query = { email: claimObject?.submittedBy };
-        } else {
-          query = {
-            metaData: { $elemMatch: { metaId: claimObject.contracts.orders.customerId, isPrimary: true } }
+    console.log("result_Array---------------------",result_Array);
+    result_Array = await Promise.all(
+      result_Array.map(async (claimObject) => {
+        const { productValue, claimAmount } = claimObject.contracts;
+        let query;
+        claimObject.contracts.orders.customer.username = claimObject.contracts.orders.customer.username
+        if (req.role == "Customer") {
+          if (claimObject?.submittedBy != '') {
+            console.log("unique_key----------------", claimObject.unique_key)
+            query = { email: claimObject?.submittedBy }
           }
-        
+          else {
+            query ={ metaData: { $elemMatch: { metaId: claimObject.contracts.orders.customerId, isPrimary: true } } }
+          }
+          const customerDetail = await userService.getUserById1(query)
+          console.log("customerDetail----------------------------", customerDetail)
 
-      }
-      let customerDetail = await userService.getUserById1(query);
+          claimObject.contracts.orders.customer.username = customerDetail?.metaData[0]?.firstName + " " + customerDetail?.metaData[0]?.lastName
+        }
 
-      claimObject.contracts.orders.customer.username = customerDetail?.metaData[0]?.firstName + " " + customerDetail?.metaData[0]?.lastName;
-    }
+        // Simulate an async operation if needed (e.g., fetching data)
+        const thresholdLimitValue = (getTheThresholdLimit?.threshHoldLimit.value / 100) * productValue;
 
-    // Calculate the threshold limit value
-    const thresholdLimitValue = (getTheThresholdLimit?.threshHoldLimit.value / 100) * productValue;
+        // Check if claimAmount exceeds the threshold limit value
+        let overThreshold = claimAmount > thresholdLimitValue;
+        let threshHoldMessage = "Claim amount exceeds the allowed limit. This might lead to claim rejection. To proceed further with claim please contact admin.";
+        if (!overThreshold) {
+          threshHoldMessage = "";
+        }
+        if (claimObject.claimStatus.status === "rejected") {
+          threshHoldMessage = "";
+        }
+        if (!getTheThresholdLimit.isThreshHoldLimit) {
+          overThreshold = false;
+          threshHoldMessage = "";
+        }
 
-    // Check if claimAmount exceeds the threshold limit value
-    let overThreshold = claimAmount > thresholdLimitValue;
-    let threshHoldMessage = "Claim amount exceeds the allowed limit. This might lead to claim rejection. To proceed further with claim please contact admin.";
+        // Return the updated object with the new key 'overThreshold'
+        return {
+          ...claimObject,
+          overThreshold,
+          threshHoldMessage,
+        };
+      })
+    );
 
-    if (!overThreshold) {
-      threshHoldMessage = "";
-    }
-    if (claimObject.claimStatus.status === "rejected") {
-      threshHoldMessage = "";
-    }
-    if (!getTheThresholdLimit.isThreshHoldLimit) {
-      overThreshold = false;
-      threshHoldMessage = "";
-    }
 
-    // Update the object with the new keys
-    claimObject.overThreshold = overThreshold;
-    claimObject.threshHoldMessage = threshHoldMessage;
-  }
 
     res.send({
+<<<<<<< HEAD
     code: constant.successCode,
     message: "Success",
     result: result_Array,
     totalCount,lookupQuery
   });
+=======
+      code: constant.successCode,
+      message: "Success",
+      result: result_Array,
+      totalCount
+    })
+>>>>>>> c8819393efcc37ae5d20b411a1619e23845cbae7
 
-}
+  }
   catch (err) {
-  res.send({
-    code: constant.errorCode,
-    message: err.message
-  })
-}
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
 }
 
 // get claims api admin
