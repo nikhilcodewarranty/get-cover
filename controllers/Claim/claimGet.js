@@ -516,15 +516,13 @@ exports.getAllClaims = async (req, res, next) => {
 
     let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0 // getting the total count 
     let getTheThresholdLimit = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
-    console.log("result_Array---------------------", result_Array);
 
     for (let i = 0; i < result_Array.length; i++) {
       const claimObject = result_Array[i];
       const { productValue, claimAmount } = claimObject.contracts;
       let query;
-    
+
       claimObject.contracts.orders.customer.username = claimObject.contracts.orders.customer.username;
-    
       if (req.role === "Customer") {
         if (claimObject?.submittedBy !== '') {
           console.log("unique_key----------------", claimObject.unique_key);
@@ -534,20 +532,19 @@ exports.getAllClaims = async (req, res, next) => {
             metaData: { $elemMatch: { metaId: claimObject.contracts.orders.customerId, isPrimary: true } }
           });
         }
-    
+        console.log("unique_key------------------------", claimObject.unique_key)
         const customerDetail = await userService.getUserById1(query);
-        console.log("customerDetail----------------------------", customerDetail);
-    
+
         claimObject.contracts.orders.customer.username = customerDetail?.metaData[0]?.firstName + " " + customerDetail?.metaData[0]?.lastName;
       }
-    
+
       // Calculate the threshold limit value
       const thresholdLimitValue = (getTheThresholdLimit?.threshHoldLimit.value / 100) * productValue;
-    
+
       // Check if claimAmount exceeds the threshold limit value
       let overThreshold = claimAmount > thresholdLimitValue;
       let threshHoldMessage = "Claim amount exceeds the allowed limit. This might lead to claim rejection. To proceed further with claim please contact admin.";
-    
+
       if (!overThreshold) {
         threshHoldMessage = "";
       }
@@ -558,19 +555,19 @@ exports.getAllClaims = async (req, res, next) => {
         overThreshold = false;
         threshHoldMessage = "";
       }
-    
+
       // Update the object with the new keys
       claimObject.overThreshold = overThreshold;
       claimObject.threshHoldMessage = threshHoldMessage;
     }
-    
+
     res.send({
       code: constant.successCode,
       message: "Success",
       result: result_Array,
       totalCount
     });
-    
+
   }
   catch (err) {
     res.send({
