@@ -5154,7 +5154,6 @@ exports.getCoverageType = async (req, res) => {
   }
 }
 
-
 exports.checkNumberOfCertainPeriod = async (req, res) => {
   try {
     const query = { eligibilty: true };
@@ -5285,7 +5284,6 @@ exports.checkNumberOfCertainPeriod = async (req, res) => {
     })
   }
 }
-
 
 exports.updateClaimDate = async (req, res) => {
   try {
