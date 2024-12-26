@@ -1769,7 +1769,7 @@ exports.createOrder1 = async (req, res) => {
                     let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data.resellerId, isPrimary: true } } })
                     let notificationData1 = {
                         title: "Order Added Successfully",
-                        description: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+                        description: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
                         userId: req.teammateId,
                         contentId: checkOrder._id,
                         redirectionId: "orderDetails/" + checkOrder._id,
@@ -1779,11 +1779,7 @@ exports.createOrder1 = async (req, res) => {
                     };
                     let notificationData2 = {
                         title: "Order Added Successfully",
-                        description: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-                        dealerMessage: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-                        customerMessage: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-                        adminMessage: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
-                        resellerMessage: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+                        description: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
                         userId: req.teammateId,
                         contentId: checkOrder._id,
                         redirectionId: "orderDetails/" + checkOrder._id,
@@ -1793,7 +1789,7 @@ exports.createOrder1 = async (req, res) => {
                     };
                     let notificationData3 = {
                         title: "Order Added Successfully",
-                        description: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+                        description: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
                         userId: req.teammateId,
                         contentId: checkOrder._id,
                         redirectionId: "orderDetails/" + checkOrder._id,
@@ -1803,7 +1799,7 @@ exports.createOrder1 = async (req, res) => {
                     };
                     let notificationData4 = {
                         title: "Order Added Successfully",
-                        description: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+                        description: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
                         userId: req.teammateId,
                         contentId: checkOrder._id,
                         redirectionId: "orderDetails/" + checkOrder._id,
