@@ -709,7 +709,8 @@ exports.addClaim = async (req, res, next) => {
         },
       }
 
-      let customerCaseUser = await supportingFunction.getNotificationEligibleUser(customerCaseNotification, { email: 1 })
+      let customerCaseUser = await supportingFunction.getNotificationEligibleUser(customerCaseNotification, { email: 1, metaData: 1 })
+
       let adminUser = customerCaseUser.map(user => user.metaData[0]?.roleId.toString() === process.env.super_admin.toString())
       let dealerUser = customerCaseUser.map(user => user.metaData[0]?.roleId.toString() === process.env.dealer.toString())
       let resellerUser = customerCaseUser.map(user => user.metaData[0]?.roleId.toString() === process.env.reseller.toString())
@@ -718,10 +719,10 @@ exports.addClaim = async (req, res, next) => {
       const dealerEmail = dealerUser.map(user => user.email)
       const resellerEmail = resellerUser.map(user => user.email)
       const customerEmail = customerUser.map(user => user.email)
-      console.log("adminEmail--------------------",adminEmail)
-      console.log("dealerEmail--------------------",dealerEmail)
-      console.log("resellerEmail--------------------",resellerEmail)
-      console.log("customerEmail--------------------",customerEmail)
+      console.log("adminEmail--------------------", adminEmail)
+      console.log("dealerEmail--------------------", dealerEmail)
+      console.log("resellerEmail--------------------", resellerEmail)
+      console.log("customerEmail--------------------", customerEmail)
       emailData.subject = `Claim Received -${claimResponse.unique_key}`
       emailData.content = `The Claim # ${claimResponse.unique_key} has been successfully filed for the Contract # ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here :`
       emailData.senderName = `Dear Admin`
@@ -752,16 +753,16 @@ exports.addClaim = async (req, res, next) => {
           }
         },
       }
-      let customerCaseUser = await supportingFunction.getNotificationEligibleUser(customerCaseNotification, { email: 1 })
+      let customerCaseUser = await supportingFunction.getNotificationEligibleUser(customerCaseNotification, { email: 1, metaData: 1 })
       let adminUser = customerCaseUser.map(user => user.metaData[0]?.roleId.toString() === process.env.super_admin.toString())
       let dealerUser = customerCaseUser.map(user => user.metaData[0]?.roleId.toString() === process.env.dealer.toString())
       let resellerUser = customerCaseUser.map(user => user.metaData[0]?.roleId.toString() === process.env.reseller.toString())
       const adminEmail = adminUser.map(user => user.email)
       const dealerEmail = dealerUser.map(user => user.email)
       const resellerEmail = resellerUser.map(user => user.email)
-      console.log("adminEmail--------------------",adminEmail)
-      console.log("dealerEmail--------------------",dealerEmail)
-      console.log("resellerEmail--------------------",resellerEmail)
+      console.log("adminEmail--------------------", adminEmail)
+      console.log("dealerEmail--------------------", dealerEmail)
+      console.log("resellerEmail--------------------", resellerEmail)
       emailData.subject = `Claim Received - ${claimResponse.unique_key}`
       emailData.content = `The Claim # ${claimResponse.unique_key} has been successfully filed for the Contract #  ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here :`
       emailData.senderName = `Dear Admin`
@@ -801,14 +802,14 @@ exports.addClaim = async (req, res, next) => {
             }
           },
         }
-        let servicerCaseUser = await supportingFunction.getNotificationEligibleUser(servicerCaseNotification, { email: 1 })
+        let servicerCaseUser = await supportingFunction.getNotificationEligibleUser(servicerCaseNotification, { email: 1, metaData: 1 })
         let adminUser = servicerCaseUser.map(user => user.metaData[0]?.roleId.toString() === process.env.super_admin.toString())
         let servicerUser = servicerCaseUser.map(user => user.metaData[0]?.roleId.toString() === process.env.servicer.toString())
         const adminEmail = adminUser.map(user => user.email)
         const servicerEmail = servicerUser.map(user => user.email)
-        console.log("adminEmail--------------------",adminEmail)
-        console.log("servicerEmail--------------------",servicerEmail)
-    
+        console.log("adminEmail--------------------", adminEmail)
+        console.log("servicerEmail--------------------", servicerEmail)
+
         let notificationAdmin = await supportingFunction.getUserEmails();
         emailData.subject = `New Device Received for Repair - ID: ${claimResponse.unique_key}`
         emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device detailed below:`
