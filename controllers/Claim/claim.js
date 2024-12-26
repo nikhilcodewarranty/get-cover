@@ -2536,7 +2536,7 @@ exports.editServicer = async (req, res) => {
     emailData.senderName = "Admin"
     let mailing = sgMail.send(emailConstant.sendServicerClaimNotification(adminEmail, ["noreply@getcover.com"], emailData))
     emailData.senderName = getPrimary ? getPrimary.metaData[0].firstName : ""
-    let mailing = sgMail.send(emailConstant.sendServicerClaimNotification(servicerEmail, ["noreply@getcover.com"], emailData))
+     mailing = sgMail.send(emailConstant.sendServicerClaimNotification(servicerEmail, ["noreply@getcover.com"], emailData))
     res.send({
       code: constant.successCode,
       message: 'Success!',
