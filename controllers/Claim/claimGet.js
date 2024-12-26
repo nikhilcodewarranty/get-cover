@@ -532,7 +532,7 @@ exports.getAllClaims = async (req, res, next) => {
             metaData: { $elemMatch: { metaId: claimObject.contracts.orders.customerId, isPrimary: true } }
           });
         }
-        console.log("unique_key------------------------", claimObject.unique_key)
+        console.log("unique_key------------------------", claimObject?.submittedBy)
         const customerDetail = await userService.getUserById1(query);
 
         claimObject.contracts.orders.customer.username = customerDetail?.metaData[0]?.firstName + " " + customerDetail?.metaData[0]?.lastName;
