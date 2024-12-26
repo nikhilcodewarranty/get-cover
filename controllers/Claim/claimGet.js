@@ -566,7 +566,7 @@ exports.getAllClaims = async (req, res, next) => {
     code: constant.successCode,
     message: "Success",
     result: result_Array,
-    totalCount
+    totalCount,lookupQuery
   });
 
 }
