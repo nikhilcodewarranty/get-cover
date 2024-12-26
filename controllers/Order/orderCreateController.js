@@ -1809,7 +1809,7 @@ exports.createOrder1 = async (req, res) => {
                     notificationArrayData.push(notificationData2)
                     notificationArrayData.push(notificationData3)
                     notificationArrayData.push(notificationData4)
-
+                    console.log("notificationArrayData-------------------",notificationArrayData)
                     let createNotification = await userService.saveNotificationBulk(notificationArrayData);
 
                     // Send Email code here
