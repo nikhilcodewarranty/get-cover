@@ -712,9 +712,12 @@ exports.addClaim = async (req, res, next) => {
       let customerCaseUser = await supportingFunction.getNotificationEligibleUser(customerCaseNotification, { email: 1, metaData: 1 })
       console.log("customerCaseUser---------------",customerCaseUser)
       let adminUser = customerCaseUser.map(user => user.metaData[0]?.roleId.toString() === process.env.super_admin.toString())
+      console.log("adminUser-------------",adminUser)
       let dealerUser = customerCaseUser.map(user => user.metaData[0]?.roleId.toString() === process.env.dealer.toString())
       let resellerUser = customerCaseUser.map(user => user.metaData[0]?.roleId.toString() === process.env.reseller.toString())
       let customerUser = customerCaseUser.map(user => user.metaData[0]?.roleId.toString() === process.env.customer.toString())
+      console.log("customerCaseUser---------------",customerCaseUser)
+
       const adminEmail = adminUser.map(user => user.email)
       const dealerEmail = dealerUser.map(user => user.email)
       const resellerEmail = resellerUser.map(user => user.email)
