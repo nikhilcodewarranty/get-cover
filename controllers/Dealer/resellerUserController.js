@@ -657,7 +657,7 @@ exports.createOrder = async (req, res) => {
             contentId: null,
             flag: 'order',
             redirectionId: "editOrder/" + checkOrder._id,
-            endPoint: base_url,
+            endPoint: base_url + "editOrder/" + checkOrder._id,
             notificationFor: IDs
         };
         let notificationData1 = {
@@ -666,8 +666,8 @@ exports.createOrder = async (req, res) => {
             userId: req.teammateId,
             contentId: null,
             flag: 'order',
-            redirectionId: "editOrder/" + checkOrder._id,
-            endPoint: base_url,
+            redirectionId: "dealer/editOrder/" + checkOrder._id,
+            endPoint: base_url + "dealer/editOrder/" + checkOrder._id,
             notificationFor: IDs1
         };
         let notificationData2 = {
@@ -676,15 +676,14 @@ exports.createOrder = async (req, res) => {
             userId: req.teammateId,
             contentId: null,
             flag: 'order',
-            redirectionId: "editOrder/" + checkOrder._id,
-            endPoint: base_url,
+            redirectionId: "reseller/editOrder/" + checkOrder._id,
+            endPoint: base_url + "reseller/editOrder/" + checkOrder._id,
             notificationFor: IDs2
         };
         notificationArrayData.push(notificationData)
         notificationArrayData.push(notificationData1)
         notificationArrayData.push(notificationData2)
 
-        let createNotification = await userService.saveNotificationBulk(notificationArrayData);
         // Send Email code here
         let notificationEmails = adminUsers.map(user => user.email)
         let dealerEmail = dealerUsers.map(user => user.email)
@@ -701,14 +700,7 @@ exports.createOrder = async (req, res) => {
             subject: "New Order",
             redirectId: base_url + "editOrder/" + checkOrder._id,
         }
-        if (req.body.sendNotification) {
 
-            let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails["noreply@getcover.com"], emailData))
-            emailData.redirectId = base_url + "dealer/editOrder/" + checkOrder._id
-            mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmail["noreply@getcover.com"], emailData))
-            emailData.redirectId = base_url + "reseller/editOrder/" + checkOrder._id
-            mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmail["noreply@getcover.com"], emailData))
-        }
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
             let savedResponse = await orderService.updateOrder(
                 { _id: checkOrder._id },
@@ -892,6 +884,16 @@ exports.createOrder = async (req, res) => {
                 message: "Success",
             });
         } else {
+            let createNotification = await userService.saveNotificationBulk(notificationArrayData);
+            if (req.body.sendNotification) {
+
+                let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+                emailData.redirectId = base_url + "dealer/editOrder/" + checkOrder._id
+                mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.com"], emailData))
+                emailData.redirectId = base_url + "reseller/editOrder/" + checkOrder._id
+                mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ["noreply@getcover.com"], emailData))
+            }
+
             let logData = {
                 endpoint: "resellerPortal/createOrder",
                 body: data,
@@ -1677,8 +1679,8 @@ exports.editOrderDetail = async (req, res) => {
                 userId: req.teammateId,
                 contentId: checkOrder._id,
                 flag: 'order',
-                redirectionId: "editOrder/" + savedResponse._id,
-                endPoint: base_url + "editOrder/" + savedResponse._id,
+                redirectionId: "dealer/editOrder/" + savedResponse._id,
+                endPoint: base_url + "dealer/editOrder/" + savedResponse._id,
                 notificationFor: IDs1
             };
             let notificationData2 = {
@@ -1687,8 +1689,8 @@ exports.editOrderDetail = async (req, res) => {
                 userId: req.teammateId,
                 contentId: checkOrder._id,
                 flag: 'order',
-                redirectionId: "editOrder/" + savedResponse._id,
-                endPoint: base_url + "editOrder/" + savedResponse._id,
+                redirectionId: "reseller/editOrder/" + savedResponse._id,
+                endPoint: base_url + "reseller/editOrder/" + savedResponse._id,
                 notificationFor: IDs2
             };
             notificationArrayData.push(notificationData)
