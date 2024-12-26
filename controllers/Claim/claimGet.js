@@ -531,55 +531,56 @@ exports.getAllClaims = async (req, res, next) => {
           query = { email: claimObject?.submittedBy };
         } else {
           console.log("else----------------", claimObject.contracts.orders.customerId);
-          query = await supportingFunction.getPrimaryUser({
+          query = {
             metaData: { $elemMatch: { metaId: claimObject.contracts.orders.customerId, isPrimary: true } }
-          });
-          console.log("query----------------",query);
+          }
+        
+        console.log("query----------------", query);
 
-        }
-        let customerDetail = await userService.getUserById1(query);
-        console.log("customerDetail------------------------", customerDetail)
-
-        claimObject.contracts.orders.customer.username = customerDetail?.metaData[0]?.firstName + " " + customerDetail?.metaData[0]?.lastName;
       }
+      let customerDetail = await userService.getUserById1(query);
+      console.log("customerDetail------------------------", customerDetail)
 
-      // Calculate the threshold limit value
-      const thresholdLimitValue = (getTheThresholdLimit?.threshHoldLimit.value / 100) * productValue;
-
-      // Check if claimAmount exceeds the threshold limit value
-      let overThreshold = claimAmount > thresholdLimitValue;
-      let threshHoldMessage = "Claim amount exceeds the allowed limit. This might lead to claim rejection. To proceed further with claim please contact admin.";
-
-      if (!overThreshold) {
-        threshHoldMessage = "";
-      }
-      if (claimObject.claimStatus.status === "rejected") {
-        threshHoldMessage = "";
-      }
-      if (!getTheThresholdLimit.isThreshHoldLimit) {
-        overThreshold = false;
-        threshHoldMessage = "";
-      }
-
-      // Update the object with the new keys
-      claimObject.overThreshold = overThreshold;
-      claimObject.threshHoldMessage = threshHoldMessage;
+      claimObject.contracts.orders.customer.username = customerDetail?.metaData[0]?.firstName + " " + customerDetail?.metaData[0]?.lastName;
     }
 
-    res.send({
-      code: constant.successCode,
-      message: "Success",
-      result: result_Array,
-      totalCount
-    });
+    // Calculate the threshold limit value
+    const thresholdLimitValue = (getTheThresholdLimit?.threshHoldLimit.value / 100) * productValue;
 
+    // Check if claimAmount exceeds the threshold limit value
+    let overThreshold = claimAmount > thresholdLimitValue;
+    let threshHoldMessage = "Claim amount exceeds the allowed limit. This might lead to claim rejection. To proceed further with claim please contact admin.";
+
+    if (!overThreshold) {
+      threshHoldMessage = "";
+    }
+    if (claimObject.claimStatus.status === "rejected") {
+      threshHoldMessage = "";
+    }
+    if (!getTheThresholdLimit.isThreshHoldLimit) {
+      overThreshold = false;
+      threshHoldMessage = "";
+    }
+
+    // Update the object with the new keys
+    claimObject.overThreshold = overThreshold;
+    claimObject.threshHoldMessage = threshHoldMessage;
   }
-  catch (err) {
+
     res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  }
+    code: constant.successCode,
+    message: "Success",
+    result: result_Array,
+    totalCount
+  });
+
+}
+  catch (err) {
+  res.send({
+    code: constant.errorCode,
+    message: err.message
+  })
+}
 }
 
 // get claims api admin
