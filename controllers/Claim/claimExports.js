@@ -106,6 +106,12 @@ const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, d
       if (index == 1) {
         sheetName = "customer"
       }
+      if (index == 2) {
+        sheetName = "dealer"
+      }
+      if (index == 3) {
+        sheetName = "reseller"
+      }
     }
     if (role == "Customer") {
 
@@ -755,14 +761,14 @@ exports.exportDataForClaim = async (req, res) => {
 
     const groupDataByServicer = async (resultArray) => {
       const acc = [];
-    
+
       for (const item of resultArray) {
         // Extract servicer name
         let servicerName = item?.servicerId;
-    
+
         try {
           const result = await servicerService.getServiceProviderById({
-            $or:[
+            $or: [
               { _id: servicerName },
               { dealerId: servicerName },
               { resellerId: servicerName },
@@ -773,22 +779,22 @@ exports.exportDataForClaim = async (req, res) => {
           console.error("Error fetching servicer name:", err);
           continue; // Skip this item if there's an error fetching servicer name
         }
-    
+
         console.log("Servicer Name:", servicerName);
-    
+
         // Only process entries with valid servicer names
         if (!servicerName) {
           continue; // Skip entries with no valid servicer name
         }
-    
+
         const claimAmount = item.totalAmount || 0;
         const isCompleted = item.claimStatus.some(status => status.status === "completed");
         const isRejected = item.claimStatus.some(status => status.status === "rejected");
-    
+
         // Categorize Paid and Unpaid Claims based on claimFile and claimPaymentStatus
         let paidClaims = 0;
         let unpaidClaims = 0;
-    
+
         if (item.claimFile === "completed") {
           if (item.claimPaymentStatus === "Paid") {
             paidClaims = 1;
@@ -796,10 +802,10 @@ exports.exportDataForClaim = async (req, res) => {
             unpaidClaims = 1;
           }
         }
-    
+
         // Check if servicer already exists in the accumulator
         let servicerEntry = acc.find(entry => entry["Servicer Name"] === servicerName);
-    
+
         if (!servicerEntry) {
           // If servicer does not exist, create a new entry
           servicerEntry = {
@@ -814,30 +820,30 @@ exports.exportDataForClaim = async (req, res) => {
           };
           acc.push(servicerEntry);
         }
-    
+
         // Update servicer entry
         servicerEntry["Total Claims"] += 1;
         servicerEntry["Total Amount of Claims"] += claimAmount;
-    
+
         if (isCompleted) {
           servicerEntry["Completed Claims"] += 1;
           servicerEntry["Paid Claims"] += paidClaims;
           servicerEntry["Unpaid Claims"] += unpaidClaims;
         }
-    
+
         if (isRejected) {
           servicerEntry["Rejected Claims"] += 1;
         }
-    
+
         // Calculate average claim amount for completed claims
         servicerEntry["Average Claim Amount"] = servicerEntry["Completed Claims"]
           ? (servicerEntry["Total Amount of Claims"] / servicerEntry["Completed Claims"]).toFixed(2)
           : 0;
       }
-    
+
       return acc;
     };
-    
+
 
 
     const groupDataByReseller = (resultArray) => {
@@ -848,14 +854,14 @@ exports.exportDataForClaim = async (req, res) => {
           // Skip this item if there's no reseller name
           return acc;
         }
-    
+
         const claimAmount = item.totalAmount || 0;
         const isCompleted = item.claimStatus.some(status => status.status === "completed");
         const isRejected = item.claimStatus.some(status => status.status === "rejected");
-    
+
         // Check if reseller already exists in the accumulator
         let resellerEntry = acc.find(entry => entry["Reseller Name"] === resellerName);
-    
+
         if (!resellerEntry) {
           // If reseller does not exist, create a new entry
           resellerEntry = {
@@ -868,7 +874,7 @@ exports.exportDataForClaim = async (req, res) => {
           };
           acc.push(resellerEntry);
         }
-    
+
         // Update reseller entry
         resellerEntry["Total Claims"] += 1;
         resellerEntry["Total Amount of Claims"] += claimAmount;
@@ -878,16 +884,16 @@ exports.exportDataForClaim = async (req, res) => {
         if (isRejected) {
           resellerEntry["Rejected Claims"] += 1;
         }
-    
+
         // Calculate average claim amount for completed claims
         resellerEntry["Average Claim Amount"] = resellerEntry["Completed Claims"]
           ? (resellerEntry["Total Amount of Claims"] / resellerEntry["Completed Claims"]).toFixed(2)
           : 0;
-    
+
         return acc;
       }, []);
     };
-    
+
 
 
     // Group data for Dealer, Servicer, Reseller, and Customer
@@ -904,11 +910,11 @@ exports.exportDataForClaim = async (req, res) => {
       (acc, item) => {
         // Increment total claims
         acc["Total Claims"] += 1;
-    
+
         // Check claim statuses
         const hasRejectedStatus = item.claimStatus.some(status => status.status === "rejected");
         const hasCompletedStatus = item.claimStatus.some(status => status.status === "completed");
-    
+
         // Categorize claims
         if (hasRejectedStatus) {
           acc["Total Rejected Claims"] += 1;
@@ -917,7 +923,7 @@ exports.exportDataForClaim = async (req, res) => {
         } else {
           acc["Total Open Claims"] += 1;
         }
-    
+
         // Categorize paid and unpaid claims using claimPaymentStatus
         if (item.claimFile === "completed") {
           if (item.claimPaymentStatus === "Paid") {
@@ -926,7 +932,7 @@ exports.exportDataForClaim = async (req, res) => {
             acc["Total Unpaid Claims"] += 1;
           }
         }
-    
+
         return acc;
       },
       {
@@ -938,10 +944,10 @@ exports.exportDataForClaim = async (req, res) => {
         "Total Unpaid Claims": 0,
       }
     );
-    
-    
-    
-    
+
+
+
+
 
 
     summary = [summary]
@@ -956,7 +962,7 @@ exports.exportDataForClaim = async (req, res) => {
       dataArray = [resellerData, dealerData, servicerData, customerArray]
     }
     if (req.role == "Servicer") {
-      dataArray = [servicerData, customerArray]
+      dataArray = [servicerData, customerArray, dealerData, resellerData]
     }
     if (req.role == "Customer") {
       dataArray = [customerArray]
