@@ -652,7 +652,7 @@ exports.createOrder = async (req, res) => {
         let notificationArrayData = []
         let notificationData = {
             title: "Draft Order Created",
-            description: `A new draft Order # ${checkOrder.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  - ${req.role}.`,
+            description: `A new draft Order # ${checkOrder.unique_key} has been created by ${checkLoginUser.metaData[0].firstName + " "+checkLoginUser.metaData[0].lastName}  - ${req.role}.`,
             userId: req.teammateId,
             contentId: null,
             flag: 'order',
@@ -662,7 +662,7 @@ exports.createOrder = async (req, res) => {
         };
         let notificationData1 = {
             title: "Draft Order Created",
-            description: `A new draft Order # ${checkOrder.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  - ${req.role}.`,
+            description: `A new draft Order # ${checkOrder.unique_key} has been created by ${checkLoginUser.metaData[0].firstName + " "+checkLoginUser.metaData[0].lastName}  - ${req.role}.`,
             userId: req.teammateId,
             contentId: null,
             flag: 'order',
@@ -672,7 +672,7 @@ exports.createOrder = async (req, res) => {
         };
         let notificationData2 = {
             title: "Draft Order Created",
-            description: `A new draft Order # ${checkOrder.unique_key} has been created by ${checkLoginUser.metaData[0].firstName}  - ${req.role}.`,
+            description: `A new draft Order # ${checkOrder.unique_key} has been created by ${checkLoginUser.metaData[0].firstName + " "+checkLoginUser.metaData[0].lastName}  - ${req.role}.`,
             userId: req.teammateId,
             contentId: null,
             flag: 'order',
