@@ -722,11 +722,11 @@ exports.addClaim = async (req, res, next) => {
       emailData.content = `The Claim # ${claimResponse.unique_key} has been successfully filed for the Contract # ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here :`
       emailData.senderName = `Dear Admin`
       mailing = sgMail.send(emailConstant.sendEmailTemplate(adminEmail, ["noreply@getcover.com"], emailData))
-      emailData.senderName =`Dear ${dealerPrimary.metaData[0]?.firstName}`
+      emailData.senderName = `Dear ${dealerPrimary.metaData[0]?.firstName}`
       mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.com"], emailData))
-      emailData.senderName =`Dear ${resellerPrimary.metaData[0]?.firstName}`
+      emailData.senderName = `Dear ${resellerPrimary.metaData[0]?.firstName}`
       mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ["noreply@getcover.com"], emailData))
-      emailData.senderName =`Dear ${customerPrimary.metaData[0]?.firstName}`
+      emailData.senderName = `Dear ${customerPrimary.metaData[0]?.firstName}`
       mailing = sgMail.send(emailConstant.sendEmailTemplate(customerEmail, ["noreply@getcover.com"], emailData))
     }
     else {
@@ -759,9 +759,9 @@ exports.addClaim = async (req, res, next) => {
       emailData.content = `The Claim # ${claimResponse.unique_key} has been successfully filed for the Contract #  ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here :`
       emailData.senderName = `Dear Admin`
       mailing = sgMail.send(emailConstant.sendEmailTemplate(adminEmail, ["noreply@getcover.com"], emailData))
-      emailData.senderName =`Dear ${dealerPrimary.metaData[0]?.firstName}`
+      emailData.senderName = `Dear ${dealerPrimary.metaData[0]?.firstName}`
       mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.com"], emailData))
-      emailData.senderName =`Dear ${resellerPrimary.metaData[0]?.firstName}`
+      emailData.senderName = `Dear ${resellerPrimary.metaData[0]?.firstName}`
       mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ["noreply@getcover.com"], emailData))
     }
     // Email to servicer and cc to admin 
@@ -795,12 +795,17 @@ exports.addClaim = async (req, res, next) => {
           },
         }
         let servicerCaseUser = await supportingFunction.getNotificationEligibleUser(servicerCaseNotification, { email: 1 })
-        const sendNotificationForServicer = servicerCaseUser.map(user => user.email)
+        let adminUser = servicerCaseUser.map(user => user.metaData[0]?.roleId.toString() === process.env.super_admin.toString())
+        let servicerUser = servicerCaseUser.map(user => user.metaData[0]?.roleId.toString() === process.env.servicer.toString())
+        const adminEmail = adminUser.map(user => user.email)
+        const servicerEmail = servicerUser.map(user => user.email)
         let notificationAdmin = await supportingFunction.getUserEmails();
         emailData.subject = `New Device Received for Repair - ID: ${claimResponse.unique_key}`
-        emailData.senderName = servicerPrimary?.metaData[0]?.firstName
         emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device detailed below:`
-        mailing = sgMail.send(emailConstant.sendServicerClaimNotification(sendNotificationForServicer, ["noreply@getcover.com"], emailData))
+        emailData.senderName = "Admin"
+        mailing = sgMail.send(emailConstant.sendServicerClaimNotification(adminEmail, ["noreply@getcover.com"], emailData))
+        emailData.senderName = servicerPrimary?.metaData[0]?.firstName
+        mailing = sgMail.send(emailConstant.sendServicerClaimNotification(servicerEmail, ["noreply@getcover.com"], emailData))
       }
 
     }
