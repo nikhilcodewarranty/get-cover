@@ -1745,10 +1745,7 @@ exports.createOrder1 = async (req, res) => {
                                     { status: true },
                                     {
                                         $or: [
-                                            { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                                            { metaId: checkOrder.dealerId },
                                             { metaId: checkOrder.customerId },
-                                            { metaId: checkOrder.resellerId },
                                         ]
                                     },
 
