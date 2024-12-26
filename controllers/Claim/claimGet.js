@@ -271,16 +271,18 @@ exports.getAllClaims = async (req, res, next) => {
 
     statusMatch = {}
     if (data.dateFilter != "") {
+      let newEndDate = new Date(data.endDate)
+      newEndDate.setHours(23, 59, 59, 999);
       if (data.dateFilter == "damageDate") {
-        dateMatch = { lossDate: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
+        dateMatch = { lossDate: { $gte: new Date(data.startDate), $lte: newEndDate} }
         // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
       }
       if (data.dateFilter == "openDate") {
-        dateMatch = { createdAt: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
+        dateMatch = { createdAt: { $gte: new Date(data.startDate), $lte: newEndDate} }
         // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
       }
       if (data.dateFilter == "closeDate") {
-        dateMatch = { claimDate: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
+        dateMatch = { claimDate: { $gte: new Date(data.startDate), $lte: newEndDate} }
         statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
       }
     }
@@ -526,7 +528,7 @@ exports.getAllClaims = async (req, res, next) => {
             query = { email: claimObject?.submittedBy }
           }
           else {
-            query ={ metaData: { $elemMatch: { metaId: claimObject.contracts.orders.customerId, isPrimary: true } } }
+            query = { metaData: { $elemMatch: { metaId: claimObject.contracts.orders.customerId, isPrimary: true } } }
           }
           const customerDetail = await userService.getUserById1(query)
 
@@ -566,7 +568,7 @@ exports.getAllClaims = async (req, res, next) => {
       message: "Success",
       result: result_Array,
       totalCount
-    })
+    });
 
   }
   catch (err) {
