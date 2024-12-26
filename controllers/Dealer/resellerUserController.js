@@ -1653,8 +1653,8 @@ exports.editOrderDetail = async (req, res) => {
                 userId: req.teammateId,
                 contentId: checkOrder._id,
                 flag: 'order',
-                redirectionId: "orderList/" + savedResponse.unique_key,
-                endPoint: base_url + "orderList/" + savedResponse.unique_key,
+                redirectionId: "editOrder/" + savedResponse._id,
+                endPoint: base_url + "editOrder/" + savedResponse._id,
                 notificationFor: IDs
             };
             let notificationData1 = {
@@ -1663,8 +1663,8 @@ exports.editOrderDetail = async (req, res) => {
                 userId: req.teammateId,
                 contentId: checkOrder._id,
                 flag: 'order',
-                redirectionId: "orderList/" + savedResponse.unique_key,
-                endPoint: base_url + "orderList/" + savedResponse.unique_key,
+                redirectionId: "editOrder/" + savedResponse._id,
+                endPoint: base_url + "editOrder/" + savedResponse._id,
                 notificationFor: IDs1
             };
             let notificationData2 = {
@@ -1673,8 +1673,8 @@ exports.editOrderDetail = async (req, res) => {
                 userId: req.teammateId,
                 contentId: checkOrder._id,
                 flag: 'order',
-                redirectionId: "orderList/" + savedResponse.unique_key,
-                endPoint: base_url + "orderList/" + savedResponse.unique_key,
+                redirectionId: "editOrder/" + savedResponse._id,
+                endPoint: base_url + "editOrder/" + savedResponse._id,
                 notificationFor: IDs2
             };
             notificationArrayData.push(notificationData)
@@ -1696,7 +1696,7 @@ exports.editOrderDetail = async (req, res) => {
                 senderName: dealerPrimary.metaData[0]?.firstName,
                 content: "Your order " + checkOrder.unique_key + " has been updated in our system. The order is still pending, as there is some data missing.Please update the data using the link here",
                 subject: "Order Updated",
-                redirectId: base_url + "editOrder/" + checkOrder.unique_key,
+                redirectId: base_url + "editOrder/" + checkOrder._id,
             }
             if (req.body.sendNotification) {
                 let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails["noreply@getcover.com"], emailData))

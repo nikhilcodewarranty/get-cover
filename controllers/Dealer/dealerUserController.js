@@ -2003,7 +2003,7 @@ exports.editOrderDetail = async (req, res) => {
                             senderName: dealerPrimary.metaData[0]?.firstName,
                             content: `Congratulations, your order # ${checkOrder.unique_key} has been created in our system. Please login to the system and view your order details. Please review, if there is anything wrong here, do let us know. You can contact us at : support@getcover.com`,
                             subject: "Process Order",
-                            redirectId: base_url + "orderDetails/" + savedResponse._id,
+                            redirectId: base_url + "orderDetails/" + checkOrder._id,
                         }
                         if (req.body.sendNotification) {
                             let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ["noreply@getcover.com"], emailData))
