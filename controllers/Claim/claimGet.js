@@ -524,14 +524,16 @@ exports.getAllClaims = async (req, res, next) => {
         claimObject.contracts.orders.customer.username = claimObject.contracts.orders.customer.username
         if (req.role == "Customer") {
           if (claimObject?.submittedBy != '') {
+            console.log("claimObject1-----------------------",claimObject)
             query = { email: claimObject?.submittedBy }
           }
           else {
-            query = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: claimObject.contracts.orders.customer._id, isPrimary: true } } })
 
+            query = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: claimObject.contracts.orders.customer._id, isPrimary: true } } })
           }
-          console.log("query----------------------------",query)
           const customerDetail = await userService.getUserById1(query)
+          console.log("query----------------------------", query)
+
           claimObject.contracts.orders.customer.username = customerDetail?.metaData[0]?.firstName + " " + customerDetail?.metaData[0]?.lastName
         }
 
