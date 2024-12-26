@@ -1016,12 +1016,12 @@ async function generateTC(orderData) {
             }
 
             let mailing = sgMail.send(emailConstant.sendTermAndCondition(notificationEmails, ["noreply@getcover.com"], emailData, attachment))
-            emailData.redirectId =  base_url + "dealer/orderDetails/" + checkOrder._id
+            emailData.redirectId = base_url + "dealer/orderDetails/" + checkOrder._id
             mailing = sgMail.send(emailConstant.sendTermAndCondition(dealerEmails, ["noreply@getcover.com"], emailData, attachment))
-            emailData.redirectId =  base_url + "customer/orderDetails/" + checkOrder._id
+            emailData.redirectId = base_url + "customer/orderDetails/" + checkOrder._id
 
             mailing = sgMail.send(emailConstant.sendTermAndCondition(customerEmails, ["noreply@getcover.com"], emailData, attachment))
-            emailData.redirectId =  base_url + "reseller/orderDetails/" + checkOrder._id
+            emailData.redirectId = base_url + "reseller/orderDetails/" + checkOrder._id
             mailing = sgMail.send(emailConstant.sendTermAndCondition(resellerEmails, ["noreply@getcover.com"], emailData, attachment))
 
 
@@ -1438,8 +1438,8 @@ exports.createOrder1 = async (req, res) => {
             userId: req.teammateId,
             contentId: null,
             flag: 'edit_order',
-            redirectionId: "editOrder/" + savedResponse._id,
-            endPoint: base_url + "editOrder/" + savedResponse._id,
+            redirectionId: "dealer/editOrder/" + savedResponse._id,
+            endPoint: base_url + "dealer/editOrder/" + savedResponse._id,
             notificationFor: ID1
         };
         notificationArrayData.push(dealerNotificationData)
@@ -1450,8 +1450,8 @@ exports.createOrder1 = async (req, res) => {
             userId: req.teammateId,
             contentId: null,
             flag: 'edit_order',
-            redirectionId: "editOrder/" + savedResponse._id,
-            endPoint: base_url + "editOrder/" + savedResponse._id,
+            redirectionId: "reseller/editOrder/" + savedResponse._id,
+            endPoint: base_url + "reseller/editOrder/" + savedResponse._id,
             notificationFor: ID2
         };
         notificationArrayData.push(resellerNotificationData)
@@ -1824,8 +1824,8 @@ exports.createOrder1 = async (req, res) => {
                         description: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
                         userId: req.teammateId,
                         contentId: checkOrder._id,
-                        redirectionId: "orderDetails/" + checkOrder._id,
-                        endPoint: base_url + "orderDetails/" + savedResponse._id,
+                        redirectionId: "dealer/orderDetails/" + checkOrder._id,
+                        endPoint: base_url + "dealer/orderDetails/" + savedResponse._id,
                         flag: 'order',
                         notificationFor: id1
                     };
@@ -1834,8 +1834,8 @@ exports.createOrder1 = async (req, res) => {
                         description: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
                         userId: req.teammateId,
                         contentId: checkOrder._id,
-                        redirectionId: "orderDetails/" + checkOrder._id,
-                        endPoint: base_url + "orderDetails/" + savedResponse._id,
+                        redirectionId: "reseller/orderDetails/" + checkOrder._id,
+                        endPoint: base_url + "reseller/orderDetails/" + savedResponse._id,
                         flag: 'order',
                         notificationFor: id2
                     };
@@ -1844,8 +1844,8 @@ exports.createOrder1 = async (req, res) => {
                         description: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
                         userId: req.teammateId,
                         contentId: checkOrder._id,
-                        redirectionId: "orderDetails/" + checkOrder._id,
-                        endPoint: base_url + "orderDetails/" + checkOrder._id,
+                        redirectionId: "customer/orderDetails/" + checkOrder._id,
+                        endPoint: base_url + "customer/orderDetails/" + checkOrder._id,
                         flag: 'order',
                         notificationFor: id3
                     };
@@ -2613,8 +2613,8 @@ exports.editOrderDetail = async (req, res) => {
             userId: req.teammateId,
             contentId: checkOrder._id,
             flag: 'edit_order',
-            redirectionId: "editOrder/" + savedResponse._id,
-            endPoint: base_url + "editOrder/" + savedResponse._id,
+            redirectionId: "dealer/editOrder/" + savedResponse._id,
+            endPoint: base_url + "dealer/editOrder/" + savedResponse._id,
             notificationFor: IDs1
         };
         let notificationData2 = {
@@ -2623,8 +2623,8 @@ exports.editOrderDetail = async (req, res) => {
             userId: req.teammateId,
             contentId: checkOrder._id,
             flag: 'edit_order',
-            redirectionId: "editOrder/" + savedResponse._id,
-            endPoint: base_url + "editOrder/" + savedResponse._id,
+            redirectionId: "reseller/editOrder/" + savedResponse._id,
+            endPoint: base_url + "reseller/editOrder/" + savedResponse._id,
             notificationFor: IDs2
         };
         let notificationArrayData = []
@@ -2986,8 +2986,8 @@ exports.editOrderDetail = async (req, res) => {
                         userId: req.teammateId,
                         contentId: checkOrder._id,
                         flag: 'order',
-                        redirectionId: "orderDetails/" + checkOrder._id,
-                        endPoint: base_url,
+                        redirectionId: "dealer/orderDetails/" + checkOrder._id,
+                        endPoint: base_url + "dealer/orderDetails/" + checkOrder._id,
                         notificationFor: IDs1
                     };
                     let notificationData2 = {
@@ -2996,8 +2996,8 @@ exports.editOrderDetail = async (req, res) => {
                         userId: req.teammateId,
                         contentId: checkOrder._id,
                         flag: 'order',
-                        redirectionId: "orderDetails/" + checkOrder._id,
-                        endPoint: base_url,
+                        redirectionId: "reseller/orderDetails/" + checkOrder._id,
+                        endPoint: base_url + "reseller/orderDetails/" + checkOrder._id,
                         notificationFor: IDs2
                     };
                     let notificationData3 = {
@@ -3006,8 +3006,8 @@ exports.editOrderDetail = async (req, res) => {
                         userId: req.teammateId,
                         contentId: checkOrder._id,
                         flag: 'order',
-                        redirectionId: "orderDetails/" + checkOrder._id,
-                        endPoint: base_url,
+                        redirectionId: "customer/orderDetails/" + checkOrder._id,
+                        endPoint: base_url + "customer/orderDetails/" + checkOrder._id,
                         notificationFor: IDs3
                     };
                     notificationArrayData = []
@@ -3036,8 +3036,13 @@ exports.editOrderDetail = async (req, res) => {
                         }
 
                         let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+                        emailData.redirectId = base_url + "dealer/orderDetails/" + checkOrder._id
                         mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
+                        emailData.redirectId = base_url + "reseller/orderDetails/" + checkOrder._id
+
                         mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ["noreply@getcover.com"], emailData))
+                        emailData.redirectId = base_url + "customer/orderDetails/" + checkOrder._id
+
                         mailing = sgMail.send(emailConstant.sendEmailTemplate(customermails, ["noreply@getcover.com"], emailData))
                     }
 

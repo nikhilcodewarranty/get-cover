@@ -667,7 +667,6 @@ exports.addClaim = async (req, res, next) => {
       notificationArray.push(notificationServicer)
     }
 
-
     let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } })
     let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } })
     let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } })
@@ -709,11 +708,26 @@ exports.addClaim = async (req, res, next) => {
           }
         },
       }
+
       let customerCaseUser = await supportingFunction.getNotificationEligibleUser(customerCaseNotification, { email: 1 })
-      const sendNotificationForCustomer = customerCaseUser.map(user => user.email)
+      let adminUser = customerCaseUser.map(user => user.metaData[0]?.roleId.toString() === process.env.super_admin.toString())
+      let dealerUser = customerCaseUser.map(user => user.metaData[0]?.roleId.toString() === process.env.dealer.toString())
+      let resellerUser = customerCaseUser.map(user => user.metaData[0]?.roleId.toString() === process.env.reseller.toString())
+      let customerUser = customerCaseUser.map(user => user.metaData[0]?.roleId.toString() === process.env.customer.toString())
+      const adminEmail = adminUser.map(user => user.email)
+      const dealerEmail = dealerUser.map(user => user.email)
+      const resellerEmail = resellerUser.map(user => user.email)
+      const customerEmail = customerUser.map(user => user.email)
       emailData.subject = `Claim Received -${claimResponse.unique_key}`
       emailData.content = `The Claim # ${claimResponse.unique_key} has been successfully filed for the Contract # ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here :`
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(sendNotificationForCustomer, ["noreply@getcover.com"], emailData))
+      emailData.senderName = `Dear Admin`
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(adminEmail, ["noreply@getcover.com"], emailData))
+      emailData.senderName =`Dear ${dealerPrimary.metaData[0]?.firstName}`
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.com"], emailData))
+      emailData.senderName =`Dear ${resellerPrimary.metaData[0]?.firstName}`
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ["noreply@getcover.com"], emailData))
+      emailData.senderName =`Dear ${customerPrimary.metaData[0]?.firstName}`
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(customerEmail, ["noreply@getcover.com"], emailData))
     }
     else {
       const customerCaseNotification = {
@@ -735,10 +749,20 @@ exports.addClaim = async (req, res, next) => {
         },
       }
       let customerCaseUser = await supportingFunction.getNotificationEligibleUser(customerCaseNotification, { email: 1 })
-      const sendNotificationForCustomer = customerCaseUser.map(user => user.email)
+      let adminUser = customerCaseUser.map(user => user.metaData[0]?.roleId.toString() === process.env.super_admin.toString())
+      let dealerUser = customerCaseUser.map(user => user.metaData[0]?.roleId.toString() === process.env.dealer.toString())
+      let resellerUser = customerCaseUser.map(user => user.metaData[0]?.roleId.toString() === process.env.reseller.toString())
+      const adminEmail = adminUser.map(user => user.email)
+      const dealerEmail = dealerUser.map(user => user.email)
+      const resellerEmail = resellerUser.map(user => user.email)
       emailData.subject = `Claim Received - ${claimResponse.unique_key}`
       emailData.content = `The Claim # ${claimResponse.unique_key} has been successfully filed for the Contract #  ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here :`
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(sendNotificationForCustomer, ["noreply@getcover.com"], emailData))
+      emailData.senderName = `Dear Admin`
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(adminEmail, ["noreply@getcover.com"], emailData))
+      emailData.senderName =`Dear ${dealerPrimary.metaData[0]?.firstName}`
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.com"], emailData))
+      emailData.senderName =`Dear ${resellerPrimary.metaData[0]?.firstName}`
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ["noreply@getcover.com"], emailData))
     }
     // Email to servicer and cc to admin 
     if (servicerPrimary) {

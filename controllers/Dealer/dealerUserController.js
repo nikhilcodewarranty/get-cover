@@ -1302,7 +1302,7 @@ exports.createOrder = async (req, res) => {
             userId: req.teammateId,
             contentId: null,
             flag: 'edit_order',
-            redirectionId: "editOrder/" + savedResponse._id,
+            redirectionId: "dealer/editOrder/" + savedResponse._id,
             endPoint: base_url + "editOrder/" + savedResponse._id,
             notificationFor: IDs1
         };
@@ -1312,7 +1312,7 @@ exports.createOrder = async (req, res) => {
             userId: req.teammateId,
             contentId: null,
             flag: 'edit_order',
-            redirectionId: "editOrder/" + savedResponse._id,
+            redirectionId: "reseller/editOrder/" + savedResponse._id,
             endPoint: base_url + "editOrder/" + savedResponse._id,
             notificationFor: IDs2
         };
@@ -1952,7 +1952,7 @@ exports.editOrderDetail = async (req, res) => {
                         contentId: checkOrder._id,
                         flag: 'order',
                         redirectionId: "orderDetails/" + checkOrder._id,
-                        endPoint: base_url,
+                        endPoint: base_url + "orderDetails/" + checkOrder._id,
                         notificationFor: IDs
                     };
                     let notificationData1 = {
@@ -1961,8 +1961,8 @@ exports.editOrderDetail = async (req, res) => {
                         userId: req.teammateId,
                         contentId: checkOrder._id,
                         flag: 'order',
-                        redirectionId: "orderDetails/" + checkOrder._id,
-                        endPoint: base_url,
+                        redirectionId: "dealer/orderDetails/" + checkOrder._id,
+                        endPoint: base_url + "dealer/orderDetails/" + checkOrder._id,
                         notificationFor: IDs1
                     };
                     let notificationData2 = {
@@ -1972,7 +1972,7 @@ exports.editOrderDetail = async (req, res) => {
                         contentId: checkOrder._id,
                         flag: 'order',
                         redirectionId: "orderDetails/" + checkOrder._id,
-                        endPoint: base_url,
+                        endPoint: base_url + "reseller/orderDetails/" + checkOrder._id,
                         notificationFor: IDs2
                     };
                     let notificationData3 = {
@@ -1982,7 +1982,7 @@ exports.editOrderDetail = async (req, res) => {
                         contentId: checkOrder._id,
                         flag: 'order',
                         redirectionId: "orderDetails/" + checkOrder._id,
-                        endPoint: base_url,
+                        endPoint: base_url + "customer/orderDetails/" + checkOrder._id,
                         notificationFor: IDs3
                     };
                     notificationArrayData = []
@@ -2108,8 +2108,8 @@ exports.editOrderDetail = async (req, res) => {
                 userId: req.teammateId,
                 contentId: checkOrder._id,
                 flag: 'edit_order',
-                redirectionId: "editOrder/" + checkOrder._id,
-                endPoint: base_url + "editOrder/" + checkOrder._id,
+                redirectionId: "dealer/editOrder/" + checkOrder._id,
+                endPoint: base_url + "dealer/editOrder/" + checkOrder._id,
                 notificationFor: IDs1
             };
             let notificationData2 = {
@@ -2118,8 +2118,8 @@ exports.editOrderDetail = async (req, res) => {
                 userId: req.teammateId,
                 contentId: checkOrder._id,
                 flag: 'edit_order',
-                redirectionId: "editOrder/" + checkOrder._id,
-                endPoint: base_url + "editOrder/" + checkOrder._id,
+                redirectionId: "reseller/editOrder/" + checkOrder._id,
+                endPoint: base_url + "reseller/editOrder/" + checkOrder._id,
                 notificationFor: IDs2
             };
             notificationArrayData.push(notificationData)
@@ -2148,11 +2148,11 @@ exports.editOrderDetail = async (req, res) => {
                 redirectId: base_url + "editOrder/" + checkOrder._id,
             }
             if (req.body.sendNotification) {
-                emailData.redirectId =  base_url + "dealer/editOrder/" + checkOrder._id
+                emailData.redirectId = base_url + "dealer/editOrder/" + checkOrder._id
                 let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
-                emailData.redirectId =  base_url + "reseller/editOrder/" + checkOrder._id
+                emailData.redirectId = base_url + "reseller/editOrder/" + checkOrder._id
                 mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ["noreply@getcover.com"], emailData))
-                emailData.redirectId =  base_url + "editOrder/" + checkOrder._id
+                emailData.redirectId = base_url + "editOrder/" + checkOrder._id
                 mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
             }
             logData.response = {
