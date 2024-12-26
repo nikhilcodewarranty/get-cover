@@ -529,7 +529,7 @@ exports.getAllClaims = async (req, res, next) => {
           }
           else {
 
-            query = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: claimObject.contracts.orders.customerId isPrimary: true } } })
+            query = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: claimObject.contracts.orders.customerId, isPrimary: true } } })
           }
           const customerDetail = await userService.getUserById1(query)
           console.log("query----------------------------", query)
