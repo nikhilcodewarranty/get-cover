@@ -3444,7 +3444,44 @@ async function generateTC(orderData) {
 
             //sendTermAndCondition
             // Send Email code here
+
             const adminActiveOrderQuery = {
+                metaData: {
+                    $elemMatch: {
+                        $and: [
+                            { "orderNotifications.updateOrderActive": true },
+                            { status: true },
+                            { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                        ]
+                    }
+                },
+            }
+
+            const dealerActiveOrderQuery = {
+                metaData: {
+                    $elemMatch: {
+                        $and: [
+                            { "orderNotifications.updateOrderActive": true },
+                            { status: true },
+                            { metaId: checkOrder.dealerId },
+                        ]
+                    }
+                },
+            }
+
+            const resellerActiveOrderQuery = {
+                metaData: {
+                    $elemMatch: {
+                        $and: [
+                            { "orderNotifications.updateOrderActive": true },
+                            { status: true },
+                            { metaId: checkOrder.resellerId ? checkOrder.resellerId : "000008041eb1acda24111111" },
+                        ]
+                    }
+                },
+            }
+
+            const customerActiveOrderQuery = {
                 metaData: {
                     $elemMatch: {
                         $and: [
@@ -3452,10 +3489,7 @@ async function generateTC(orderData) {
                             { status: true },
                             {
                                 $or: [
-                                    { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                                    { metaId: checkOrder.dealerId },
                                     { metaId: checkOrder.customerId },
-                                    { metaId: checkOrder.resellerId },
                                 ]
                             },
 
@@ -3464,23 +3498,38 @@ async function generateTC(orderData) {
                 },
             }
             let adminUsers = await supportingFunction.getNotificationEligibleUser(adminActiveOrderQuery, { email: 1 })
-            const base_url = `${process.env.SITE_URL}`
+            let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerActiveOrderQuery, { email: 1 })
+            let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerActiveOrderQuery, { email: 1 })
+            let customerUsers = await supportingFunction.getNotificationEligibleUser(customerActiveOrderQuery, { email: 1 })
 
             let notificationEmails = adminUsers.map(user => user.email)
+            let dealerEmails = dealerUsers.map(user => user.email)
+            let resellerEmails = resellerUsers.map(user => user.email)
+            let customerEmails = customerUsers.map(user => user.email)
+            const base_url = `${process.env.SITE_URL}`
+
             let settingData = await userService.getSetting({});
+
             let emailData = {
                 darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
                 lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
                 address: settingData[0]?.address,
                 websiteSetting: settingData[0],
-                senderName: customerUser.metaData[0]?.firstName,
-                content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
-                subject: 'Order Term and Condition-' + checkOrder.unique_key,
+                senderName: '',
+                content: `Congratulations, your order # ${checkOrder.unique_key} has been created in our system. Please login to the system and view your order details. Also, we have attached our T&C to the email for the review. Please review, if there is anything wrong here, do let us know. You can contact us at : support@getcover.com`,
+                subject: "Process Order",
+                redirectId: base_url + "orderDetails/" + checkOrder._id
             }
-            if (checkOrder.sendNotification) {
-                let mailing = await sgMail.send(emailConstant.sendTermAndCondition(notificationEmails, ["noreply@getcover.com"], emailData, attachment))
 
-            }
+            let mailing = sgMail.send(emailConstant.sendTermAndCondition(notificationEmails, ["noreply@getcover.com"], emailData, attachment))
+            emailData.redirectId = base_url + "dealer/orderDetails/" + checkOrder._id
+            mailing = sgMail.send(emailConstant.sendTermAndCondition(dealerEmails, ["noreply@getcover.com"], emailData, attachment))
+            emailData.redirectId = base_url + "customer/orderDetails/" + checkOrder._id
+
+            mailing = sgMail.send(emailConstant.sendTermAndCondition(customerEmails, ["noreply@getcover.com"], emailData, attachment))
+            emailData.redirectId = base_url + "reseller/orderDetails/" + checkOrder._id
+            mailing = sgMail.send(emailConstant.sendTermAndCondition(resellerEmails, ["noreply@getcover.com"], emailData, attachment))
+
 
         })
         return 1
