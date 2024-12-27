@@ -1465,7 +1465,7 @@ exports.archiveOrder = async (req, res) => {
             userId: req.teammateId,
             contentId: checkOrder._id,
             flag: 'Order Archieved',
-            redirectionId: "archiveOrder",
+            redirectionId: "dealer/archiveOrder",
             endPoint: base_url + `dealer/archiveOrder/${checkOrder.unique_key}`,
             notificationFor: IDs1
         };
@@ -1475,7 +1475,7 @@ exports.archiveOrder = async (req, res) => {
             userId: req.teammateId,
             contentId: checkOrder._id,
             flag: 'Order Archieved',
-            redirectionId: "/archiveOrder",
+            redirectionId: "reseller/archiveOrder",
             endPoint: base_url + `reseller/archiveOrder/${checkOrder.unique_key}`,
             notificationFor: IDs2
         };
