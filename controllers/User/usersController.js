@@ -2244,8 +2244,8 @@ exports.addMembers = async (req, res) => {
         contentId: null,
         flag: 'Member Created',
         notificationFor: IDs,
-        endPoint: base_url,
-        redirectionId: base_url + "manageAccount"
+        endPoint:  base_url + "manageAccount",
+        redirectionId: "manageAccount"
       };
       let createNotification = await userService.createNotification(notificationData);
     }

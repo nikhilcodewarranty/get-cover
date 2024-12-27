@@ -996,12 +996,16 @@ async function generateTC(orderData) {
             let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerActiveOrderQuery, { email: 1 })
             let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerActiveOrderQuery, { email: 1 })
             let customerUsers = await supportingFunction.getNotificationEligibleUser(customerActiveOrderQuery, { email: 1 })
-
+            console.log("dfsfddfssfdsdfsdfsdfsdf123333",customerUsers)
             let notificationEmails = adminUsers.map(user => user.email)
             let dealerEmails = dealerUsers.map(user => user.email)
             let resellerEmails = resellerUsers.map(user => user.email)
             let customerEmails = customerUsers.map(user => user.email)
             const base_url = `${process.env.SITE_URL}`
+            console.log("notificationEmails",notificationEmails)
+            console.log("dealerEmails",dealerEmails)
+            console.log("resellerEmails",resellerEmails)
+            console.log("customerEmails",customerEmails)
 
             let settingData = await userService.getSetting({});
             let emailData = {
@@ -1019,7 +1023,6 @@ async function generateTC(orderData) {
             emailData.redirectId = base_url + "dealer/orderDetails/" + checkOrder._id
             mailing = sgMail.send(emailConstant.sendTermAndCondition(dealerEmails, ["noreply@getcover.com"], emailData, attachment))
             emailData.redirectId = base_url + "customer/orderDetails/" + checkOrder._id
-
             mailing = sgMail.send(emailConstant.sendTermAndCondition(customerEmails, ["noreply@getcover.com"], emailData, attachment))
             emailData.redirectId = base_url + "reseller/orderDetails/" + checkOrder._id
             mailing = sgMail.send(emailConstant.sendTermAndCondition(resellerEmails, ["noreply@getcover.com"], emailData, attachment))
@@ -2676,7 +2679,6 @@ exports.editOrderDetail = async (req, res) => {
             var pricebookDetail = []
             let currentYear = new Date().getFullYear();
             let currentYearWithoutHypen = new Date().getFullYear();
-            console.log(currentYear); // Outputs: 2024
             currentYear = "-" + currentYear + "-"
             let count1 = await contractService.getContractsCountNew({ 'unique_key': { '$regex': currentYear, '$options': 'i' } });
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
@@ -2977,7 +2979,7 @@ exports.editOrderDetail = async (req, res) => {
                         contentId: checkOrder._id,
                         flag: 'order',
                         redirectionId: "orderDetails/" + checkOrder._id,
-                        endPoint: base_url,
+                        endPoint: base_url + "orderDetails/" + checkOrder._id,
                         notificationFor: IDs
                     };
                     let notificationData1 = {
@@ -3002,7 +3004,7 @@ exports.editOrderDetail = async (req, res) => {
                     };
                     let notificationData3 = {
                         title: "New Active Order Created Successfully",
-                        description: `The draft Order # ${checkOrder.unique_key} has been marked completed successfully by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+                        description: `A new Order #${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
                         userId: req.teammateId,
                         contentId: checkOrder._id,
                         flag: 'order',
@@ -3022,7 +3024,6 @@ exports.editOrderDetail = async (req, res) => {
                         let dealerEmails = dealerUsers.map(user => user.email)
                         let resellerEmails = resellerUsers.map(user => user.email)
                         let customermails = customerUsers.map(user => user.email)
-                        let mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails, customermails)
                         //Email to Dealer
                         let emailData = {
                             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,

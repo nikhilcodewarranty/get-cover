@@ -1465,7 +1465,7 @@ exports.archiveOrder = async (req, res) => {
             userId: req.teammateId,
             contentId: checkOrder._id,
             flag: 'Order Archieved',
-            redirectionId: "archiveOrder",
+            redirectionId: "dealer/archiveOrder",
             endPoint: base_url + `dealer/archiveOrder/${checkOrder.unique_key}`,
             notificationFor: IDs1
         };
@@ -1475,7 +1475,7 @@ exports.archiveOrder = async (req, res) => {
             userId: req.teammateId,
             contentId: checkOrder._id,
             flag: 'Order Archieved',
-            redirectionId: "/archiveOrder",
+            redirectionId: "reseller/archiveOrder",
             endPoint: base_url + `reseller/archiveOrder/${checkOrder.unique_key}`,
             notificationFor: IDs2
         };
@@ -1512,7 +1512,13 @@ exports.archiveOrder = async (req, res) => {
             redirectId: base_url + `archiveOrder/${checkOrder.unique_key}`
         }
         if (checkOrder.sendNotification) {
-            let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ["noreply@getcover.com"], emailData))
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+            emailData.redirectId = base_url + `archiveOrder/${checkOrder.unique_key}`
+            mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
+            emailData.redirectId = base_url + `dealer/archiveOrder/${checkOrder.unique_key}`
+            mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ["noreply@getcover.com"], emailData))
+            emailData.redirectId = base_url + `reseller/archiveOrder/${checkOrder.unique_key}`
+
         }
         //  }
         res.send({
@@ -2187,7 +2193,7 @@ exports.markAsPaid = async (req, res) => {
                 let adminUsers = await supportingFunction.getNotificationEligibleUser(adminMarkAsPaidQuery, { email: 1 })
                 let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerMarkAsPaidQuery, { email: 1 })
                 let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerMarkAsPaidQuery, { email: 1 })
-                let customerUsers = await supportingFunction.getNotificationEligibleUser(adminMarkAsPaidQuery, { email: 1 })
+                let customerUsers = await supportingFunction.getNotificationEligibleUser(customerMarkAsPaidQuery, { email: 1 })
                 let IDs = adminUsers.map(user => user._id)
                 let IDs1 = dealerUsers.map(user => user._id)
                 let IDs2 = resellerUsers.map(user => user._id)
@@ -2212,8 +2218,8 @@ exports.markAsPaid = async (req, res) => {
                     userId: req.teammateId,
                     contentId: checkOrder._id,
                     flag: 'order',
-                    redirectionId: "orderDetails/" + checkOrder._id,
-                    endPoint: base_url + "orderDetails/" + checkOrder._id,
+                    redirectionId: "dealer/orderDetails/" + checkOrder._id,
+                    endPoint: base_url + "dealer/orderDetails/" + checkOrder._id,
                     notificationFor: IDs1
                 };
                 let notificationData3 = {
@@ -2222,8 +2228,8 @@ exports.markAsPaid = async (req, res) => {
                     userId: req.teammateId,
                     contentId: checkOrder._id,
                     flag: 'order',
-                    redirectionId: "orderDetails/" + checkOrder._id,
-                    endPoint: base_url + "orderDetails/" + checkOrder._id,
+                    redirectionId: "reseller/orderDetails/" + checkOrder._id,
+                    endPoint: base_url + "reseller/orderDetails/" + checkOrder._id,
                     notificationFor: IDs2
                 };
                 let notificationData4 = {
@@ -2232,8 +2238,8 @@ exports.markAsPaid = async (req, res) => {
                     userId: req.teammateId,
                     contentId: checkOrder._id,
                     flag: 'order',
-                    redirectionId: "orderDetails/" + checkOrder._id,
-                    endPoint: base_url + "orderDetails/" + checkOrder._id,
+                    redirectionId: "customer/orderDetails/" + checkOrder._id,
+                    endPoint: base_url + "customer/orderDetails/" + checkOrder._id,
                     notificationFor: IDs3
                 };
                 notificationArrayData.push(notificationData1);
@@ -2262,8 +2268,11 @@ exports.markAsPaid = async (req, res) => {
                 }
                 if (checkOrder.sendNotification && !checkOrder.termCondition) {
                     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+                    emailData.redirectId = base_url + "dealer/orderDetails/" + checkOrder._id
                     mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
+                    emailData.redirectId = base_url + "reseller/orderDetails/" + checkOrder._id
                     mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ["noreply@getcover.com"], emailData))
+                    emailData.redirectId = base_url + "customer/orderDetails/" + checkOrder._id
                     mailing = sgMail.send(emailConstant.sendEmailTemplate(customerEmails, ["noreply@getcover.com"], emailData))
                 }
                 //Email to customer code here........
@@ -2845,8 +2854,8 @@ async function generateTC(orderData) {
             let attachment = data.Body.toString('base64');
             //sendTermAndCondition
             // Send Email code here
-         
-         
+
+
             const dealerActiveOrderQuery = {
                 metaData: {
                     $elemMatch: {
