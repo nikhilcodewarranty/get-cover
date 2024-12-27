@@ -991,7 +991,19 @@ exports.exportDataForClaim = async (req, res) => {
 exports.getClaimReportings = async (req, res) => {
   try {
     let data = req.body
-    let getClaimReporting = await claimReportingService.getClaimReportings({ userId: req.teammateId }, { createdAt: -1 })
+    data.category = data.category ? data.category : ""
+    if (data.category == "All") {
+      data.category = ""
+    }
+
+    let claimReportingQuery = {
+      $and: [
+        { userId: req.teammateId },
+        { category: { '$regex': data.category ? data.category.replace(/\s+/g, ' ').trim() : '' } },
+      ]
+    }
+
+    let getClaimReporting = await claimReportingService.getClaimReportings(claimReportingQuery, { createdAt: -1 })
     if (!getClaimReporting) {
       res.send({
         code: constant.errorCode,
