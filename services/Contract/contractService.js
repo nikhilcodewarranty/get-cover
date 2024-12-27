@@ -14,7 +14,7 @@ module.exports = class contractService {
   // Fetch all contracts based on a query without pagination
   static async getAllContracts2(query, pageLimit, page) {
     try {
-      const allContracts = await contract.aggregate(query)
+      const allContracts = await contract.aggregate(query,{ allowDiskUse: true })
       return allContracts;
     } catch (error) {
       return `Could not fetch contracts ${error}`
