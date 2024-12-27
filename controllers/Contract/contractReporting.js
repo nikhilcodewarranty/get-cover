@@ -821,16 +821,16 @@ exports.exportContractReporting = async (req, res) => {
         if (req.role == "Customer") {
             dataArray = [customerSummary]
         }
-        let dataForClaimReporting = {
-            fileName: "contract-report-" + dateString,
-            userId: req.teammateId,
-            filePath: "contractReporting/contract-report-" + dateString + ".xlsx",
-            date: new Date(),
-            status: "Pending",
-            reportName: data.reportName,
-            remark: data.remark,
-            category: "contractReporting"
-        }
+        // let dataForClaimReporting = {
+        //     fileName: "contract-report-" + dateString,
+        //     userId: req.teammateId,
+        //     filePath: "contractReporting/contract-report-" + dateString + ".xlsx",
+        //     date: new Date(),
+        //     status: "Pending",
+        //     reportName: data.reportName,
+        //     remark: data.remark,
+        //     category: "contractReporting"
+        // }
         // let createReporting = await claimReportingService.createReporting(dataForClaimReporting)
         // res.send({
         //     code: constant.successCode,
