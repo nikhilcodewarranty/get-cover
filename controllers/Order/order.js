@@ -2195,7 +2195,52 @@ exports.markAsPaid = async (req, res) => {
                 let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } })
                 let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } })
                 let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } })
-        
+                let notificationArrayData = []
+                let notificationData1 = {
+                    title: "Order Marked Paid Successfully",
+                    description: `The Order # ${checkOrder.unique_key} has been marked completed in the system by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}`,
+                    userId: req.teammateId,
+                    contentId: checkOrder._id,
+                    flag: 'order',
+                    redirectionId: "orderDetails/" + checkOrder._id,
+                    endPoint: base_url + "orderDetails/" + checkOrder._id,
+                    notificationFor: IDs
+                };
+                let notificationData2 = {
+                    title: "Order Marked Paid Successfully",
+                    description: `The Order # ${checkOrder.unique_key} has been marked completed in the system by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}`,
+                    userId: req.teammateId,
+                    contentId: checkOrder._id,
+                    flag: 'order',
+                    redirectionId: "orderDetails/" + checkOrder._id,
+                    endPoint: base_url + "orderDetails/" + checkOrder._id,
+                    notificationFor: IDs1
+                };
+                let notificationData3 = {
+                    title: "Order Marked Paid Successfully",
+                    description: `The Order # ${checkOrder.unique_key} has been marked completed in the system by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}`,
+                    userId: req.teammateId,
+                    contentId: checkOrder._id,
+                    flag: 'order',
+                    redirectionId: "orderDetails/" + checkOrder._id,
+                    endPoint: base_url + "orderDetails/" + checkOrder._id,
+                    notificationFor: IDs2
+                };
+                let notificationData4 = {
+                    title: "Order Marked Paid Successfully",
+                    description: `The Order # ${checkOrder.unique_key} has been marked completed in the system by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}`,
+                    userId: req.teammateId,
+                    contentId: checkOrder._id,
+                    flag: 'order',
+                    redirectionId: "orderDetails/" + checkOrder._id,
+                    endPoint: base_url + "orderDetails/" + checkOrder._id,
+                    notificationFor: IDs3
+                };
+                notificationArrayData.push(notificationData1);
+                notificationArrayData.push(notificationData2);
+                notificationArrayData.push(notificationData3);
+                notificationArrayData.push(notificationData4);
+                let createNotification = await userService.saveNotificationBulk(notificationArrayData);
                 // Send Email code here
                 let notificationEmails = adminUsers.map(user => user.email)
                 let dealerEmails = dealerUsers.map(user => user.email)
