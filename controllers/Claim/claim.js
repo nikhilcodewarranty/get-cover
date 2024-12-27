@@ -939,9 +939,9 @@ exports.editClaim = async (req, res) => {
       if (adminUsers.length > 0) {
         let notificationAdmin = {
           title: "Servicer charges added",
-          description: `Claim # ${checkClaim.unique_key} - Service charges has been updated by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-          adminMessage: `Claim # ${checkClaim.unique_key} - Service charges has been updated by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
-          servicerMessage: `Claim # ${checkClaim.unique_key} - Service charges has been updated by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+          description: `Claim # ${checkClaim.unique_key} - Service charges has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+          adminMessage: `Claim # ${checkClaim.unique_key} - Service charges has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+          servicerMessage: `Claim # ${checkClaim.unique_key} - Service charges has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
           userId: req.teammateId,
           contentId: checkClaim._id,
           flag: 'claim',
@@ -972,7 +972,7 @@ exports.editClaim = async (req, res) => {
       if (servicerUsers.length > 0) {
         let notificationAdmin = {
           title: "Charges added",
-          description: `Claim # ${checkClaim.unique_key} - Service charges has been updated by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}`,
+          description: `Claim # ${checkClaim.unique_key} - Service charges has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
           userId: req.teammateId,
           contentId: checkClaim._id,
           flag: 'claim',
@@ -1015,7 +1015,7 @@ exports.editClaim = async (req, res) => {
       emailData.senderName = "Admin"
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
       emailData.senderName = servicerPrimary ? servicerPrimary.metaData[0]?.firstName : '',
-       mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmails, ["noreply@getcover.com"], emailData))
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmails, ["noreply@getcover.com"], emailData))
 
 
       let totalClaimQuery1 = [
@@ -1425,31 +1425,12 @@ exports.editClaimStatus = async (req, res) => {
 
       let createNotification = await userService.saveNotificationBulk(notificationArray);
       // Send Email code here
-      const servicerRepairStatusUpdateEmailQuery = {
-        metaData: {
-          $elemMatch: {
-            $and: [
-              { "claimNotification.customerStatusUpdate": true },
-              { status: true },
-              {
-                $or: [
-                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                  { metaId: new mongoose.Types.ObjectId(checkClaim?.servicerId) },
-                  { metaId: new mongoose.Types.ObjectId(checkOrder?.dealerId) },
-                  { metaId: new mongoose.Types.ObjectId(checkOrder?.customerId) },
-                  { metaId: new mongoose.Types.ObjectId(checkOrder?.resellerId) },
-                ]
-              },
 
-            ]
-          }
-        },
-      }
-
-      let allUser = await supportingFunction.getNotificationEligibleUser(servicerRepairStatusUpdateEmailQuery, { email: 1 })
-
-      // Send Email code here
-      let notificationEmails = allUser.map(user => user.email)
+      let adminEmail = adminUsers.map(user => user.email)
+      let dealerEmail = dealerUsers.map(user => user.email)
+      let customerEmail = customerUsers.map(user => user.email)
+      let resellerEmail = resellerUsers.map(user => user.email)
+      let servicerEmail = servicerUsers.map(user => user.email)
       const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
 
       //Email to customer
@@ -1458,12 +1439,17 @@ exports.editClaimStatus = async (req, res) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: customerPrimary?.metaData[0].firstName,
+        senderName: '',
         content: `The Customer Status has been updated on the claim # ${checkClaim.unique_key} to be ${matchedData?.label}. Please review the information on the following url.`,
         subject: `Customer Status Updated for ${checkClaim.unique_key}`,
         redirectId: base_url
       }
-      let mailing = checkCustomer.isAccountCreate ? sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData)) : sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(adminEmail, ["noreply@getcover.com"], emailData))
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.com"], emailData))
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(customerEmail, ["noreply@getcover.com"], emailData))
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ["noreply@getcover.com"], emailData))
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, ["noreply@getcover.com"], emailData))
+
     }
     if (data.hasOwnProperty("repairStatus")) {
       const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
@@ -1657,30 +1643,14 @@ exports.editClaimStatus = async (req, res) => {
       let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkClaim?.servicerId, isPrimary: true } } })
 
       let createNotification = await userService.saveNotificationBulk(notificationArray);
-      const servicerRepairStatusUpdateEmailQuery = {
-        metaData: {
-          $elemMatch: {
-            $and: [
-              { "claimNotification.repairStatusUpdate": true },
-              { status: true },
-              {
-                $or: [
-                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                  { metaId: new mongoose.Types.ObjectId(checkClaim?.servicerId) },
-                  { metaId: new mongoose.Types.ObjectId(checkOrder?.dealerId) },
-                  { metaId: new mongoose.Types.ObjectId(checkOrder?.customerId) },
-                  { metaId: new mongoose.Types.ObjectId(checkOrder?.resellerId) },
-                ]
-              },
 
-            ]
-          }
-        },
-      }
-      let allUser = await supportingFunction.getNotificationEligibleUser(servicerRepairStatusUpdateEmailQuery, { email: 1 })
 
       // Send Email code here
-      let notificationEmails = allUser.map(user => user.email)
+      let notificationEmails = adminUsers.map(user => user.email)
+      let dealerEmail = dealerUsers.map(user => user.email)
+      let customerEmail = customerUsers.map(user => user.email)
+      let resellerEmail = resellerUsers.map(user => user.email)
+      let servicerEmail = servicerUsers.map(user => user.email)
 
       // Email to Customer
       let emailData = {
@@ -1688,12 +1658,16 @@ exports.editClaimStatus = async (req, res) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: customerPrimary?.metaData[0].firstName,
-        content: `The Repair Status has been updated on the claim #  ${checkClaim.unique_key} to be ${matchedData?.label} .Please review the information at`,
+        senderName: ''
+,        content: `The Repair Status has been updated on the claim #  ${checkClaim.unique_key} to be ${matchedData?.label} .Please review the information at`,
         subject: `Repair Status Updated for ${checkClaim.unique_key}`,
         redirectId: base_url
       }
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.cover"], emailData))
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.cover"], emailData))
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(customerEmail, ["noreply@getcover.cover"], emailData))
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ["noreply@getcover.cover"], emailData))
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, ["noreply@getcover.cover"], emailData))
 
     }
     if (data.hasOwnProperty("claimStatus")) {
@@ -2540,7 +2514,7 @@ exports.editServicer = async (req, res) => {
     emailData.senderName = "Admin"
     let mailing = sgMail.send(emailConstant.sendServicerClaimNotification(adminEmail, ["noreply@getcover.com"], emailData))
     emailData.senderName = getPrimary ? getPrimary.metaData[0].firstName : ""
-     mailing = sgMail.send(emailConstant.sendServicerClaimNotification(servicerEmail, ["noreply@getcover.com"], emailData))
+    mailing = sgMail.send(emailConstant.sendServicerClaimNotification(servicerEmail, ["noreply@getcover.com"], emailData))
     res.send({
       code: constant.successCode,
       message: 'Success!',
@@ -4219,16 +4193,16 @@ exports.sendMessages = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      commentBy: commentByUser.metaData[0].firstName,
+      commentBy: commentByUser.metaData[0].firstName + " " + commentByUser.metaData[0].lastName,
       date: new Date().toLocaleDateString("en-US"),
-      senderName: emailTo?.metaData[0].firstName,
+      senderName: emailTo?.metaData[0].firstName + " " + emailTo?.metaData[0].lastName,
       comment: data.content,
       content: `A new comment has been added to Claim #${checkClaim.unique_key}. Here are the details:`,
       subject: `New Comment on Claim #${checkClaim.unique_key}`,
       redirectId: base_url
     }
 
-    let mailing = sgMail.send(emailConstant.sendCommentNotification(notificationEmails, ["noreply@getcover.com"], emailData))
+    let mailing = sgMail.send(emailConstant.sendCommentNotification(emailTo?.email, ["noreply@getcover.com"], emailData))
     res.send({
       code: constant.successCode,
       messages: 'Message Sent!',
