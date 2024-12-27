@@ -170,6 +170,7 @@ exports.exportContractReporting = async (req, res) => {
         let dealerIds = [];
         let customerIds = [];
         let resellerIds = [];
+        let dateString = Date.now()
         let servicerIds = [];
         let userSearchCheck = 0
         if (req.role == 'Dealer') {
@@ -256,6 +257,23 @@ exports.exportContractReporting = async (req, res) => {
                 resellerIds.push("1111121ccf9d400000000000")
             }
         };
+
+        let dataForClaimReporting = {
+            fileName: "contract-report-" + dateString,
+            userId: req.teammateId,
+            filePath: "contractReporting/contract-report-" + dateString + ".xlsx",
+            date: new Date(),
+            status: "Pending",
+            reportName: data.reportName,
+            remark: data.remark,
+            category: "contractReporting"
+        }
+        let createReporting = await claimReportingService.createReporting(dataForClaimReporting)
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            // result: result1,
+        })
 
         let orderAndCondition = []
 
@@ -569,7 +587,6 @@ exports.exportContractReporting = async (req, res) => {
             result1[e].threshHoldMessage = threshHoldMessage
             result1[e].overThreshold = overThreshold
         }
-        let dateString = Date.now()
 
 
         const getDealerContractsSummary = (resultData) => {
@@ -786,16 +803,7 @@ exports.exportContractReporting = async (req, res) => {
         const customerSummary = getCustomerContractsSummary(result1);
         let Summary = getContractsSummary(result1);
 
-        let dataForClaimReporting = {
-            fileName: "contract-report-" + dateString,
-            userId: req.teammateId,
-            filePath: "contractReporting/contract-report-" + dateString + ".xlsx",
-            date: new Date(),
-            status: "Pending",
-            reportName: data.reportName,
-            remark: data.remark,
-            category: "contractReporting"
-        }
+
         let dataArray = [Summary, dealerSummary, servicerSummary, resellerSummary, customerSummary]
         Summary = [Summary]
         if (req.role == "Super Admin") {
@@ -813,17 +821,27 @@ exports.exportContractReporting = async (req, res) => {
         if (req.role == "Customer") {
             dataArray = [customerSummary]
         }
-        let createReporting = await claimReportingService.createReporting(dataForClaimReporting)
-        res.send({
-            code: constant.successCode,
-            message: "Success",
-            // result: result1,
-            dealerSummary,
-            servicerSummary,
-            resellerSummary,
-            customerSummary,
-            dataArray
-        })
+        let dataForClaimReporting = {
+            fileName: "contract-report-" + dateString,
+            userId: req.teammateId,
+            filePath: "contractReporting/contract-report-" + dateString + ".xlsx",
+            date: new Date(),
+            status: "Pending",
+            reportName: data.reportName,
+            remark: data.remark,
+            category: "contractReporting"
+        }
+        // let createReporting = await claimReportingService.createReporting(dataForClaimReporting)
+        // res.send({
+        //     code: constant.successCode,
+        //     message: "Success",
+        //     // result: result1,
+        //     dealerSummary,
+        //     servicerSummary,
+        //     resellerSummary,
+        //     customerSummary,
+        //     dataArray
+        // })
         await createExcelFileWithMultipleSheets(dataArray, process.env.bucket_name, 'contractReporting', dateString, req.role)
             .then((res) => {
                 claimReportingService.updateReporting({ _id: createReporting._id }, { status: "Active" }, { new: true })
