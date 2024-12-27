@@ -1002,6 +1002,10 @@ async function generateTC(orderData) {
             let resellerEmails = resellerUsers.map(user => user.email)
             let customerEmails = customerUsers.map(user => user.email)
             const base_url = `${process.env.SITE_URL}`
+            console.log("notificationEmails",notificationEmails)
+            console.log("dealerEmails",dealerEmails)
+            console.log("resellerEmails",resellerEmails)
+            console.log("customerEmails",customerEmails)
 
             let settingData = await userService.getSetting({});
             let emailData = {
