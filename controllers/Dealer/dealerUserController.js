@@ -1998,6 +1998,10 @@ exports.editOrderDetail = async (req, res) => {
                         let dealerEmails = dealerUsers.map(user => user.email)
                         let resellerEmails = resellerUsers.map(user => user.email)
                         let customerEmails = customerUsers.map(user => user.email)
+                        console.log("notificationEmails---------------",notificationEmails)
+                        console.log("dealerEmails---------------",dealerEmails)
+                        console.log("resellerEmails---------------",resellerEmails)
+                        console.log("customerEmails---------------",customerEmails)
                         let mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails, customerEmails)
                         let emailData = {
                             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,

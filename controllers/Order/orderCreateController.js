@@ -996,7 +996,7 @@ async function generateTC(orderData) {
             let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerActiveOrderQuery, { email: 1 })
             let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerActiveOrderQuery, { email: 1 })
             let customerUsers = await supportingFunction.getNotificationEligibleUser(customerActiveOrderQuery, { email: 1 })
-
+            console.log("dfsfddfssfdsdfsdfsdfsdf123333",customerUsers)
             let notificationEmails = adminUsers.map(user => user.email)
             let dealerEmails = dealerUsers.map(user => user.email)
             let resellerEmails = resellerUsers.map(user => user.email)
