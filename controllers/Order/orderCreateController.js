@@ -1019,7 +1019,6 @@ async function generateTC(orderData) {
             emailData.redirectId = base_url + "dealer/orderDetails/" + checkOrder._id
             mailing = sgMail.send(emailConstant.sendTermAndCondition(dealerEmails, ["noreply@getcover.com"], emailData, attachment))
             emailData.redirectId = base_url + "customer/orderDetails/" + checkOrder._id
-
             mailing = sgMail.send(emailConstant.sendTermAndCondition(customerEmails, ["noreply@getcover.com"], emailData, attachment))
             emailData.redirectId = base_url + "reseller/orderDetails/" + checkOrder._id
             mailing = sgMail.send(emailConstant.sendTermAndCondition(resellerEmails, ["noreply@getcover.com"], emailData, attachment))
