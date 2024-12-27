@@ -54,17 +54,70 @@ const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, d
     data.forEach((sheetData, index) => {
         let sheetName;
 
-        if (index == 0) {
-            sheetName = "dealer"
+        if (role == "Super Admin") {
+            if (index == 0) {
+                sheetName = "summary"
+            }
+            if (index == 1) {
+                sheetName = "dealer"
+            }
+            if (index == 2) {
+                sheetName = "servicer"
+            }
+            if (index == 3) {
+                sheetName = "reseller"
+            }
+            if (index == 4) {
+                sheetName = "customer"
+            }
         }
-        if (index == 1) {
-            sheetName = "servicer"
+        if (role == "Dealer") {
+            if (index == 0) {
+                sheetName = "summary"
+            }
+            if (index == 1) {
+                sheetName = "servicer"
+            }
+            if (index == 2) {
+                sheetName = "reseller"
+            }
+            if (index == 3) {
+                sheetName = "customer"
+            }
         }
-        if (index == 2) {
-            sheetName = "reseller"
+        if (role == "Reseller") {
+            if (index == 0) {
+                sheetName = "summary"
+            }
+            if (index == 1) {
+                sheetName = "dealer"
+            }
+            if (index == 2) {
+                sheetName = "servicer"
+            }
+            if (index == 3) {
+                sheetName = "customer"
+            }
         }
-        if (index == 3) {
-            sheetName = "customer"
+        if (role == "Servicer") {
+            if (index == 0) {
+                sheetName = "summary"
+            }
+            if (index == 1) {
+                sheetName = "customer"
+            }
+            if (index == 2) {
+                sheetName = "dealer"
+            }
+            if (index == 3) {
+                sheetName = "reseller"
+            }
+        }
+        if (role == "Customer") {
+
+            if (index == 0) {
+                sheetName = "customer"
+            }
         }
 
         const sheet = workbook.addWorksheet(`${sheetName}`);
@@ -528,6 +581,10 @@ exports.exportContractReporting = async (req, res) => {
                 const dealer = item?.order?.[0]?.dealer?.[0];
                 const dealerName = dealer?.name || "Unknown Dealer";
 
+                // Optional fields: servicer and reseller
+                const servicer = dealer?.servicer || "Unknown Servicer";
+                const reseller = dealer?.reseller || "Unknown Reseller";
+
                 // If no dealer object is found, skip this item
                 if (!dealer) {
                     console.warn("Missing dealer information for item:", item);
@@ -540,11 +597,11 @@ exports.exportContractReporting = async (req, res) => {
                 // If not, create a new entry
                 if (!dealerEntry) {
                     dealerEntry = {
-                        "Dealer Name": dealerName,
-                        "Total": 0,
-                        "Waiting": 0,
-                        "Active": 0,
-                        "Expired": 0,
+                        "dealerName": dealerName,
+                        total: 0,
+                        waiting: 0,
+                        active: 0,
+                        expired: 0,
                     };
                     result.push(dealerEntry);
                 }
@@ -552,11 +609,11 @@ exports.exportContractReporting = async (req, res) => {
                 // Increment counts based on contract status
                 dealerEntry.total += 1;
                 if (item.status === "Waiting") {
-                    dealerEntry.Waiting += 1;
+                    dealerEntry.waiting += 1;
                 } else if (item.status === "Active") {
-                    dealerEntry.Active += 1;
+                    dealerEntry.active += 1;
                 } else if (item.status === "Expired") {
-                    dealerEntry.Expired += 1;
+                    dealerEntry.expired += 1;
                 }
             });
 
@@ -584,11 +641,11 @@ exports.exportContractReporting = async (req, res) => {
                 // If not, create a new entry
                 if (!servicerEntry) {
                     servicerEntry = {
-                        "Servicer Name": servicerName,
-                        Total: 0,
-                        Waiting: 0,
-                        Active: 0,
-                        Expired: 0,
+                        servicerName: servicerName,
+                        total: 0,
+                        waiting: 0,
+                        active: 0,
+                        expired: 0,
                     };
                     result.push(servicerEntry);
                 }
@@ -596,11 +653,11 @@ exports.exportContractReporting = async (req, res) => {
                 // Increment counts based on contract status
                 servicerEntry.total += 1;
                 if (item.status === "Waiting") {
-                    servicerEntry.Waiting += 1;
+                    servicerEntry.waiting += 1;
                 } else if (item.status === "Active") {
-                    servicerEntry.Active += 1;
+                    servicerEntry.active += 1;
                 } else if (item.status === "Expired") {
-                    servicerEntry.Expired += 1;
+                    servicerEntry.expired += 1;
                 }
             });
 
@@ -628,11 +685,11 @@ exports.exportContractReporting = async (req, res) => {
                 // If not, create a new entry
                 if (!resellerEntry) {
                     resellerEntry = {
-                        "Reseller Name": resellerName,
-                        Total: 0,
-                        Waiting: 0,
-                        Active: 0,
-                        Expired: 0,
+                        resellerName: resellerName,
+                        total: 0,
+                        waiting: 0,
+                        active: 0,
+                        expired: 0,
                     };
                     result.push(resellerEntry);
                 }
@@ -640,11 +697,11 @@ exports.exportContractReporting = async (req, res) => {
                 // Increment counts based on contract status
                 resellerEntry.total += 1;
                 if (item.status === "Waiting") {
-                    resellerEntry.Waiting += 1;
+                    resellerEntry.waiting += 1;
                 } else if (item.status === "Active") {
-                    resellerEntry.Active += 1;
+                    resellerEntry.active += 1;
                 } else if (item.status === "Expired") {
-                    resellerEntry.Expired += 1;
+                    resellerEntry.expired += 1;
                 }
             });
 
@@ -672,11 +729,11 @@ exports.exportContractReporting = async (req, res) => {
                 // If not, create a new entry
                 if (!customerEntry) {
                     customerEntry = {
-                        "Customer Name": customerName,
-                        Total: 0,
-                        Waiting: 0,
-                        Active: 0,
-                        Expired: 0,
+                        customerName: customerName,
+                        total: 0,
+                        waiting: 0,
+                        active: 0,
+                        expired: 0,
                     };
                     result.push(customerEntry);
                 }
@@ -684,11 +741,11 @@ exports.exportContractReporting = async (req, res) => {
                 // Increment counts based on contract status
                 customerEntry.total += 1;
                 if (item.status === "Waiting") {
-                    customerEntry.Waiting += 1;
+                    customerEntry.waiting += 1;
                 } else if (item.status === "Active") {
-                    customerEntry.Active += 1;
+                    customerEntry.active += 1;
                 } else if (item.status === "Expired") {
-                    customerEntry.Expired += 1;
+                    customerEntry.expired += 1;
                 }
             });
 
@@ -699,21 +756,21 @@ exports.exportContractReporting = async (req, res) => {
         let getContractsSummary = (resultData) => {
             // Initialize a summary object
             const summary = {
-                Total: 0,
-                Waiting: 0,
-                Active: 0,
-                Expired: 0,
+                total: 0,
+                waiting: 0,
+                active: 0,
+                expired: 0,
             };
 
             resultData.forEach(item => {
                 // Increment counts based on contract status
                 summary.total += 1;
                 if (item.status === "Waiting") {
-                    summary.Waiting += 1;
+                    summary.waiting += 1;
                 } else if (item.status === "Active") {
-                    summary.Active += 1;
+                    summary.active += 1;
                 } else if (item.status === "Expired") {
-                    summary.Expired += 1;
+                    summary.expired += 1;
                 }
             });
 
@@ -741,6 +798,21 @@ exports.exportContractReporting = async (req, res) => {
         }
         let createReporting = await claimReportingService.createReporting(dataForClaimReporting)
 
+        if (req.role == "Super Admin") {
+            dataArray = [Summary, dealerSummary, servicerSummary, resellerSummary, customerSummary]
+        }
+        if (req.role == "Dealer") {
+            dataArray = [dealerSummary, servicerSummary, resellerSummary, customerSummary]
+        }
+        if (req.role == "Reseller") {
+            dataArray = [resellerSummary, dealerSummary, servicerSummary, customerSummary]
+        }
+        if (req.role == "Servicer") {
+            dataArray = [servicerSummary, customerSummary, dealerSummary, resellerSummary]
+        }
+        if (req.role == "Customer") {
+            dataArray = [customerSummary]
+        }
 
         let dataArray = [Summary, dealerSummary, servicerSummary, resellerSummary, customerSummary]
         await createExcelFileWithMultipleSheets(dataArray, process.env.bucket_name, 'contractReporting', dateString, req.role)
@@ -750,7 +822,6 @@ exports.exportContractReporting = async (req, res) => {
             .catch((err) => {
                 console.log("err:---------", err)
                 claimReportingService.updateReporting({ _id: createReporting._id }, { status: "Failed" }, { new: true })
-
             })
 
 
