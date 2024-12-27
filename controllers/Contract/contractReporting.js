@@ -797,6 +797,7 @@ exports.exportContractReporting = async (req, res) => {
             category: "contractReporting"
         }
         let createReporting = await claimReportingService.createReporting(dataForClaimReporting)
+        let dataArray = [Summary, dealerSummary, servicerSummary, resellerSummary, customerSummary]
 
         if (req.role == "Super Admin") {
             dataArray = [Summary, dealerSummary, servicerSummary, resellerSummary, customerSummary]
@@ -814,7 +815,6 @@ exports.exportContractReporting = async (req, res) => {
             dataArray = [customerSummary]
         }
 
-        let dataArray = [Summary, dealerSummary, servicerSummary, resellerSummary, customerSummary]
         await createExcelFileWithMultipleSheets(dataArray, process.env.bucket_name, 'contractReporting', dateString, req.role)
             .then((res) => {
                 claimReportingService.updateReporting({ _id: createReporting._id }, { status: "Active" }, { new: true })
