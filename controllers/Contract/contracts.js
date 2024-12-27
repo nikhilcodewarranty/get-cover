@@ -181,7 +181,8 @@ exports.getContracts = async (req, res) => {
                   eligibilty: 1,
                   orderUniqueKey: 1,
                   venderOrder: 1,
-                  totalRecords: 1
+                  totalRecords: 1,
+                  createdAt:1
                 }
               }
             ],
@@ -229,7 +230,8 @@ exports.getContracts = async (req, res) => {
                 eligibilty: 1,
                 orderUniqueKey: 1,
                 venderOrder: 1,
-                totalRecords: 1
+                totalRecords: 1,
+                createdAt:1
               }
             }
           ],
