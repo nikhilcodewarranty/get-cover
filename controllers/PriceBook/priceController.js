@@ -315,11 +315,11 @@ exports.createPriceBook = async (req, res, next) => {
       const IDs = adminUsers.map(user => user._id)
       let notificationData = {
         title: "New GetCover Pricebook Added",
-        description: `A new GetCover Pricebook ${data.name} has been added under category ${checkCat.name} by ${checkLoginUser.metaData[0]?.firstName + " "+ checkLoginUser.metaData[0]?.lastName}.`,
+        description: `A new GetCover Pricebook ${data.name} has been added under category ${checkCat.name} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.userId,
         contentId: savePriceBook._id,
         flag: 'priceBook',
-        endPoint: base_url,
+        endPoint: base_url + "companyPriceBook/" + data.name,
         redirectionId: "/companyPriceBook/" + data.name,
         notificationFor: IDs
       };
@@ -621,11 +621,11 @@ exports.updatePriceBookById = async (req, res, next) => {
 
     let notificationData = {
       title: "GetCover Pricebook updated",
-      description: `GetCover Pricebook ${existingPriceBook[0]?.name} has been updated by ${checkLoginUser.metaData[0]?.firstName + " "+ checkLoginUser.metaData[0]?.lastName}.`,
+      description: `GetCover Pricebook ${existingPriceBook[0]?.name} has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
       userId: req.userId,
       flag: 'priceBook',
       notificationFor: IDs,
-      endPoint: base_url,
+      endPoint: base_url + "companyPriceBook/" + existingPriceBook[0]?.name,
       redirectionId: "companyPriceBook/" + existingPriceBook[0]?.name
     };
 
@@ -804,7 +804,7 @@ exports.createPriceBookCat = async (req, res) => {
     const IDs = adminUsers.map(user => user._id)
     let notificationData = {
       title: "New Pricebook Category Added",
-      description: `A new Pricebook Category ${req.body.name} has been added by ${checkLoginUser.metaData[0]?.firstName + " "+ checkLoginUser.metaData[0]?.lastName}.`,
+      description: `A new Pricebook Category ${req.body.name} has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
       userId: req.userId,
       flag: 'category',
       endPoint: base_url + "category",
@@ -823,7 +823,7 @@ exports.createPriceBookCat = async (req, res) => {
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
       senderName: admin.metaData[0]?.firstName,
-      content: `A new Price Book Category ${data.name} has been added to the system by ${checkLoginUser.metaData[0]?.firstName + " "+ checkLoginUser.metaData[0]?.lastName}.`,
+      content: `A new Price Book Category ${data.name} has been added to the system by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
       subject: "New Category Added"
     }
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
@@ -1120,19 +1120,19 @@ exports.updatePriceBookCat = async (req, res) => {
     if (isValid.status == data.status) {
       notificationData = {
         title: "Pricebook Category Updated",
-        description: `Pricebook Category ${isValid.name} has been updated by ${checkLoginUser.metaData[0]?.firstName + " "+ checkLoginUser.metaData[0]?.lastName}.`,
+        description: `Pricebook Category ${isValid.name} has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.userId,
         contentId: req.params.catId,
         flag: 'category',
         notificationFor: IDs,
-        endPoint: base_url,
+        endPoint: base_url + "/category",
         redirectionId: "/category"
       };
     }
     else {
       notificationData = {
         title: "Pricebook Category Status Updated",
-        description: `Pricebook Category ${isValid.name} status has been updated to ${data.status == true ? "Active" : "Inactive"} ${checkLoginUser.metaData[0]?.firstName + " "+ checkLoginUser.metaData[0]?.lastName}..`,
+        description: `Pricebook Category ${isValid.name} status has been updated to ${data.status == true ? "Active" : "Inactive"} ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}..`,
         userId: req.userId,
         contentId: req.params.catId,
         flag: 'category',
