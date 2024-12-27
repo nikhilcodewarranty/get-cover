@@ -969,9 +969,9 @@ exports.editServicerDetail = async (req, res) => {
         description: `The details for your account has been changed by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         endPoint: base_url + "servicer/user",
-        redirectionId: "servicerDetails/" + checkServicer._id,
+        redirectionId: "servicer/user",
         flag: "Servicer Details",
-        notificationFor: IDs
+        notificationFor: servicerIds
       };
       notificationArray.push(notificationData)
 
@@ -1146,8 +1146,8 @@ exports.updateStatus = async (req, res) => {
             userId: req.teammateId,
             flag: 'servicer',
             notificationFor: IDs,
-            endPoint: base_url,
-            redirectionId: "/servicerDetails/" + checkServicer._id
+            endPoint: base_url + "servicerDetails/" + checkServicer._id,
+            redirectionId: "servicerDetails/" + checkServicer._id
           };
           notificationArray.push(notificationData)
         }
@@ -1217,7 +1217,7 @@ exports.updateStatus = async (req, res) => {
               userId: req.teammateId,
               flag: 'servicer',
               notificationFor: IDs,
-              endPoint: base_url,
+              endPoint: base_url + "servicerDetails/" + checkServicer._id,
               redirectionId: "/servicerDetails/" + checkServicer._id
             };
             notificationArray.push(notificationData)
@@ -1279,7 +1279,7 @@ exports.updateStatus = async (req, res) => {
       subject: "Update Status"
     }
 
-    mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, 'noreply@getcover.com', emailData))
+    mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, 'noreply@getcover.com', emailData))
 
     //Save Logs
     let logData = {
@@ -1864,6 +1864,7 @@ exports.addServicerUser = async (req, res) => {
           userId: req.userId,
           contentId: checkServicer._id,
           flag: 'Servicer User',
+          tabAction: "user",
           endPoint: base_url + "servicerDetails/" + checkServicer._id,
           redirectionId: "servicerDetails/" + checkServicer._id,
           notificationFor: IDs

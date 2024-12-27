@@ -77,6 +77,10 @@ const notificationSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  tabAction:{
+    type: String,
+    default: ''
+  },
   redirectionId: {
     type: String,
     default: ''

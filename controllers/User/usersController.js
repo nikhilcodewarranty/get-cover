@@ -1485,6 +1485,7 @@ exports.deleteUser = async (req, res) => {
         title: "Servicer User Deleted",
         description: `The User ${checkUser.metaData[0].firstName} for the Servicer ${checkServicer.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
         userId: req.teammateId,
+        tabAction: "user",
         flag: checkRole?.role,
         redirectionId: "servicerDetails/" + checkServicer._id,
         endPoint: base_url,
@@ -1536,6 +1537,8 @@ exports.deleteUser = async (req, res) => {
         title: "Dealer User Deleted",
         description: `The User ${checkUser.metaData[0].firstName} for the dealer ${checkDealer.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName} -${req.role}..`,
         userId: req.teammateId,
+        tabAction: "user",
+
         flag: checkRole?.role,
         redirectionId: "dealerDetails/" + checkDealer._id,
         endPoint: base_url + "dealerDetails/" + checkDealer._id,
@@ -1604,6 +1607,8 @@ exports.deleteUser = async (req, res) => {
         title: "Reseller User Deleted",
         description: `The User ${checkUser.metaData[0].firstName} for the reseller ${checkReseller.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
         userId: req.teammateId,
+        tabAction: "user",
+
         flag: checkRole?.role,
         redirectionId: "resellerDetails/" + checkReseller._id,
         endPoint: base_url + "resellerDetails/" + checkReseller._id,
@@ -1615,6 +1620,8 @@ exports.deleteUser = async (req, res) => {
         title: "Reseller User Deleted",
         description: `The User ${checkUser.metaData[0].firstName} for the reseller ${checkReseller.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
         userId: req.teammateId,
+        tabAction: "user",
+
         flag: checkRole?.role,
         redirectionId: "dealer/resellerDetails/" + checkReseller._id,
         endPoint: base_url + "dealer/resellerDetails/" + checkReseller._id,
@@ -1700,6 +1707,8 @@ exports.deleteUser = async (req, res) => {
         title: "Customer User Deleted",
         description: `The User ${checkUser.metaData[0].firstName} for the customer ${checkCustomer.username} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
         userId: req.teammateId,
+        tabAction: "user",
+
         flag: checkRole?.role,
         redirectionId: "customerDetails/" + checkCustomer._id,
         endPoint: base_url + "customerDetails/" + checkCustomer._id,
@@ -1711,9 +1720,11 @@ exports.deleteUser = async (req, res) => {
         title: "Customer User Deleted",
         description: `The User ${checkUser.metaData[0].firstName} for the customer ${checkCustomer.username} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
         userId: req.teammateId,
+        tabAction: "user",
+
         flag: checkRole?.role,
-        redirectionId: "customerDetails/" + checkCustomer._id,
-        endPoint: base_url + "customerDetails/" + checkCustomer._id,
+        redirectionId: "dealer/customerDetails/" + checkCustomer._id,
+        endPoint: base_url + "dealer/customerDetails/" + checkCustomer._id,
         notificationFor: dealerId
 
       }
@@ -1723,8 +1734,9 @@ exports.deleteUser = async (req, res) => {
         description: `The User ${checkUser.metaData[0].firstName} for the customer ${checkCustomer.username} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
         userId: req.teammateId,
         flag: checkRole?.role,
-        redirectionId: "customerDetails/" + checkCustomer._id,
-        endPoint: base_url + "customerDetails/" + checkCustomer._id,
+        tabAction: "user",
+        redirectionId: "reseller/customerDetails/" + checkCustomer._id,
+        endPoint: base_url + "reseller/customerDetails/" + checkCustomer._id,
         notificationFor: resellerId
 
       }
@@ -1753,7 +1765,10 @@ exports.deleteUser = async (req, res) => {
       content: "Your account has been deleted by Get-Cover team.",
       subject: "Delete User"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ["noreply@getcover.com"], emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+     mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
+     mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ["noreply@getcover.com"], emailData))
+     mailing = sgMail.send(emailConstant.sendEmailTemplate(customerEmails, ["noreply@getcover.com"], emailData))
 
     //Save Logs delete user
     let logData = {
@@ -2244,7 +2259,7 @@ exports.addMembers = async (req, res) => {
         contentId: null,
         flag: 'Member Created',
         notificationFor: IDs,
-        endPoint:  base_url + "manageAccount",
+        endPoint: base_url + "manageAccount",
         redirectionId: "manageAccount"
       };
       let createNotification = await userService.createNotification(notificationData);
@@ -3084,7 +3099,7 @@ exports.getOptions1 = async (req, res) => {
     const reorderedData = query.name['$in'].map(key => {
       return getOptions.find(item => item.name === key);
     });
-  console.log("  req.params.query=------------",  req.params)
+    console.log("  req.params.query=------------", req.params)
     if (req.params.filter == 1) {
       console.log("filtering the data")
       for (let v = 0; v < reorderedData.length; v++) {
