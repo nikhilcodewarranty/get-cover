@@ -119,6 +119,42 @@ exports.exportContractReporting = async (req, res) => {
         let resellerIds = [];
         let servicerIds = [];
         let userSearchCheck = 0
+        if (req.role == 'Dealer') {
+            // match = { 'contracts.orders.dealerId': new mongoose.Types.ObjectId(req.userId) }
+            dealerIds = [new mongoose.Types.ObjectId(req.userId)]
+        }
+        if (req.role == 'Customer') {
+            match = { 'contracts.orders.customerId': new mongoose.Types.ObjectId(req.userId) }
+            customerIds = [new mongoose.Types.ObjectId(req.userId)]
+        }
+        if (req.role == 'Servicer') {
+            servicerIds = [new mongoose.Types.ObjectId(req.userId)]
+            // match = { servicerId: new mongoose.Types.ObjectId(req.userId) }
+        }
+        if (req.role == 'Reseller') {
+            // match = { resellerId: new mongoose.Types.ObjectId(req.userId) }
+            resellerIds = [new mongoose.Types.ObjectId(req.userId)]
+
+        }
+
+        if (data.flag == "dealer") {
+            dealerIds = [new mongoose.Types.ObjectId(data.userId)]
+
+        }
+        if (data.flag == "reseller") {
+            resellerIds = [new mongoose.Types.ObjectId(data.userId)]
+
+        }
+        if (data.flag == "servicer") {
+            servicerIds = [new mongoose.Types.ObjectId(data.userId)]
+
+        }
+        if (data.flag == "customer") {
+            // match1 = { customerId: new mongoose.Types.ObjectId(data.userId) }
+            customerIds = [new mongoose.Types.ObjectId(data.userId)]
+
+        }
+
         if (data.dealerName != "") {
             userSearchCheck = 1
             let getData = await dealerService.getAllDealers({ name: { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
