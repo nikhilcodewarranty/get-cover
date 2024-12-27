@@ -1512,7 +1512,13 @@ exports.archiveOrder = async (req, res) => {
             redirectId: base_url + `archiveOrder/${checkOrder.unique_key}`
         }
         if (checkOrder.sendNotification) {
-            let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ["noreply@getcover.com"], emailData))
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+            emailData.redirectId = base_url + `archiveOrder/${checkOrder.unique_key}`
+            mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
+            emailData.redirectId = base_url + `dealer/archiveOrder/${checkOrder.unique_key}`
+            mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ["noreply@getcover.com"], emailData))
+            emailData.redirectId = base_url + `reseller/archiveOrder/${checkOrder.unique_key}`
+
         }
         //  }
         res.send({
@@ -2262,11 +2268,11 @@ exports.markAsPaid = async (req, res) => {
                 }
                 if (checkOrder.sendNotification && !checkOrder.termCondition) {
                     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-                    emailData.redirectId =  base_url + "dealer/orderDetails/" + checkOrder._id
+                    emailData.redirectId = base_url + "dealer/orderDetails/" + checkOrder._id
                     mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
-                    emailData.redirectId =  base_url + "reseller/orderDetails/" + checkOrder._id
+                    emailData.redirectId = base_url + "reseller/orderDetails/" + checkOrder._id
                     mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ["noreply@getcover.com"], emailData))
-                    emailData.redirectId =  base_url + "customer/orderDetails/" + checkOrder._id
+                    emailData.redirectId = base_url + "customer/orderDetails/" + checkOrder._id
                     mailing = sgMail.send(emailConstant.sendEmailTemplate(customerEmails, ["noreply@getcover.com"], emailData))
                 }
                 //Email to customer code here........
@@ -2848,8 +2854,8 @@ async function generateTC(orderData) {
             let attachment = data.Body.toString('base64');
             //sendTermAndCondition
             // Send Email code here
-         
-         
+
+
             const dealerActiveOrderQuery = {
                 metaData: {
                     $elemMatch: {

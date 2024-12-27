@@ -2676,7 +2676,6 @@ exports.editOrderDetail = async (req, res) => {
             var pricebookDetail = []
             let currentYear = new Date().getFullYear();
             let currentYearWithoutHypen = new Date().getFullYear();
-            console.log(currentYear); // Outputs: 2024
             currentYear = "-" + currentYear + "-"
             let count1 = await contractService.getContractsCountNew({ 'unique_key': { '$regex': currentYear, '$options': 'i' } });
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
@@ -3022,7 +3021,6 @@ exports.editOrderDetail = async (req, res) => {
                         let dealerEmails = dealerUsers.map(user => user.email)
                         let resellerEmails = resellerUsers.map(user => user.email)
                         let customermails = customerUsers.map(user => user.email)
-                        let mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails, customermails)
                         //Email to Dealer
                         let emailData = {
                             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
