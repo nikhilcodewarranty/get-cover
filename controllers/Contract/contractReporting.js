@@ -164,7 +164,7 @@ exports.exportContractReporting = async (req, res) => {
     try {
         let data = req.body
         let getTheThresholdLimir = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
-        let pageLimit = 100
+        let pageLimit = 1000
         let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
         let limitData = Number(pageLimit)
         let dealerIds = [];
@@ -784,7 +784,7 @@ exports.exportContractReporting = async (req, res) => {
         const servicerSummary = getServicerContractsSummary(result1);
         const resellerSummary = getResellerContractsSummary(result1);
         const customerSummary = getCustomerContractsSummary(result1);
-        const Summary = getContractsSummary(result1);
+        let Summary = getContractsSummary(result1);
 
         let dataForClaimReporting = {
             fileName: "contract-report-" + dateString,
@@ -796,9 +796,8 @@ exports.exportContractReporting = async (req, res) => {
             remark: data.remark,
             category: "contractReporting"
         }
-        let createReporting = await claimReportingService.createReporting(dataForClaimReporting)
         let dataArray = [Summary, dealerSummary, servicerSummary, resellerSummary, customerSummary]
-
+        Summary = [Summary]
         if (req.role == "Super Admin") {
             dataArray = [Summary, dealerSummary, servicerSummary, resellerSummary, customerSummary]
         }
@@ -814,7 +813,17 @@ exports.exportContractReporting = async (req, res) => {
         if (req.role == "Customer") {
             dataArray = [customerSummary]
         }
-
+        let createReporting = await claimReportingService.createReporting(dataForClaimReporting)
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            // result: result1,
+            dealerSummary,
+            servicerSummary,
+            resellerSummary,
+            customerSummary,
+            dataArray
+        })
         await createExcelFileWithMultipleSheets(dataArray, process.env.bucket_name, 'contractReporting', dateString, req.role)
             .then((res) => {
                 claimReportingService.updateReporting({ _id: createReporting._id }, { status: "Active" }, { new: true })
@@ -823,18 +832,6 @@ exports.exportContractReporting = async (req, res) => {
                 console.log("err:---------", err)
                 claimReportingService.updateReporting({ _id: createReporting._id }, { status: "Failed" }, { new: true })
             })
-
-
-
-        res.send({
-            code: constant.successCode,
-            message: "Success",
-            // result: result1,
-            dealerSummary,
-            servicerSummary,
-            resellerSummary,
-            customerSummary
-        })
 
     } catch (err) {
         res.send({
