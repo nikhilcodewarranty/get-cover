@@ -997,7 +997,6 @@ exports.changePrimaryUser = async (req, res) => {
                 {
                   $or: [
                     { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
-                    { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
                   ]
                 }
               ]
@@ -1012,7 +1011,6 @@ exports.changePrimaryUser = async (req, res) => {
                 { status: true },
                 {
                   $or: [
-                    { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
                     { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
                   ]
                 }
@@ -1032,6 +1030,7 @@ exports.changePrimaryUser = async (req, res) => {
           description: `The Primary user for ${checkServicer.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
+          tabAction: "user",
           redirectionId: "servicerDetails/" + checkServicer._id,
           endPoint: base_url + "servicerDetails/" + checkServicer._id,
           notificationFor: IDs
@@ -1083,6 +1082,7 @@ exports.changePrimaryUser = async (req, res) => {
           description: `The Primary user for ${checkDealer.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
+          tabAction: "user",
           redirectionId: "dealerDetails/" + checkDealer._id,
           endPoint: base_url + "dealerDetails/" + checkDealer._id,
           notificationFor: IDs
@@ -1149,6 +1149,7 @@ exports.changePrimaryUser = async (req, res) => {
           title: "Reseller Primary User Updated",
           description: `The Primary user of ${checkReseller.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
           userId: req.teammateId,
+          tabAction: "user",
           flag: checkRole?.role,
           redirectionId: "resellerDetails/" + checkReseller._id,
           endPoint: base_url + "resellerDetails/" + checkReseller._id,
@@ -1159,9 +1160,10 @@ exports.changePrimaryUser = async (req, res) => {
           title: "Reseller Primary User Updated",
           description: `The Primary user of ${checkReseller.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
           userId: req.teammateId,
+          tabAction: "user",
           flag: checkRole?.role,
-          redirectionId: "resellerDetails/" + checkReseller._id,
-          endPoint: base_url + "resellerDetails/" + checkReseller._id,
+          redirectionId: "dealer/resellerDetails/" + checkReseller._id,
+          endPoint: base_url + "dealer/resellerDetails/" + checkReseller._id,
           notificationFor: dealerId
         };
         notificationArray.push(notificationData)
@@ -1240,6 +1242,7 @@ exports.changePrimaryUser = async (req, res) => {
           title: "Customer Primary User Updated",
           description: `The Primary user of ${checkCustomer.username} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
           userId: req.teammateId,
+          tabAction: "user",
           flag: checkRole?.role,
           redirectionId: "customerDetails/" + checkCustomer._id,
           endPoint: base_url + "customerDetails/" + checkCustomer._id,
@@ -1250,6 +1253,7 @@ exports.changePrimaryUser = async (req, res) => {
           title: "Customer Primary User Updated",
           description: `The Primary user of ${checkCustomer.username} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
           userId: req.teammateId,
+          tabAction: "user",
           flag: checkRole?.role,
           redirectionId: "dealer/customerDetails/" + checkCustomer._id,
           endPoint: base_url + "dealer/customerDetails/" + checkCustomer._id,
@@ -1263,6 +1267,7 @@ exports.changePrimaryUser = async (req, res) => {
             description: `The Primary user of ${checkCustomer.username} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
             userId: req.teammateId,
             flag: checkRole?.role,
+            tabAction: "user",
             redirectionId: "reseller/customerDetails/" + checkCustomer._id,
             endPoint: base_url + "reseller/customerDetails/" + checkCustomer._id,
             notificationFor: resellerId
@@ -1295,7 +1300,10 @@ exports.changePrimaryUser = async (req, res) => {
         subject: "Primary User change"
       };
 
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ["noreply@getcover.com"], emailData))
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ["noreply@getcover.com"], emailData))
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(customerEmails, ["noreply@getcover.com"], emailData))
 
       //Save Logs changePrimaryUser
       let logData = {
