@@ -713,5 +713,5 @@ exports.updateContract = async (req, res) => {
       message: err.statck
     })
   }
-}
+};
 
