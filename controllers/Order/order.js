@@ -2218,8 +2218,8 @@ exports.markAsPaid = async (req, res) => {
                     userId: req.teammateId,
                     contentId: checkOrder._id,
                     flag: 'order',
-                    redirectionId: "orderDetails/" + checkOrder._id,
-                    endPoint: base_url + "orderDetails/" + checkOrder._id,
+                    redirectionId: "dealer/orderDetails/" + checkOrder._id,
+                    endPoint: base_url + "dealer/orderDetails/" + checkOrder._id,
                     notificationFor: IDs1
                 };
                 let notificationData3 = {
@@ -2228,8 +2228,8 @@ exports.markAsPaid = async (req, res) => {
                     userId: req.teammateId,
                     contentId: checkOrder._id,
                     flag: 'order',
-                    redirectionId: "orderDetails/" + checkOrder._id,
-                    endPoint: base_url + "orderDetails/" + checkOrder._id,
+                    redirectionId: "reseller/orderDetails/" + checkOrder._id,
+                    endPoint: base_url + "reseller/orderDetails/" + checkOrder._id,
                     notificationFor: IDs2
                 };
                 let notificationData4 = {
@@ -2238,8 +2238,8 @@ exports.markAsPaid = async (req, res) => {
                     userId: req.teammateId,
                     contentId: checkOrder._id,
                     flag: 'order',
-                    redirectionId: "orderDetails/" + checkOrder._id,
-                    endPoint: base_url + "orderDetails/" + checkOrder._id,
+                    redirectionId: "customer/orderDetails/" + checkOrder._id,
+                    endPoint: base_url + "customer/orderDetails/" + checkOrder._id,
                     notificationFor: IDs3
                 };
                 notificationArrayData.push(notificationData1);
