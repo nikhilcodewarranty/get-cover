@@ -628,6 +628,7 @@ exports.exportDataForClaim = async (req, res) => {
         // Simulate an async operation if needed (e.g., fetching data)
         const thresholdLimitValue = (getTheThresholdLimit?.threshHoldLimit.value / 100) * productValue;
 
+        
         // Check if claimAmount exceeds the threshold limit value
         let overThreshold = claimAmount > thresholdLimitValue;
         let threshHoldMessage = "Claim amount exceeds the allowed limit. This might lead to claim rejection. To proceed further with claim please contact admin.";
