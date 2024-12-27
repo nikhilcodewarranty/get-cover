@@ -2187,7 +2187,7 @@ exports.markAsPaid = async (req, res) => {
                 let adminUsers = await supportingFunction.getNotificationEligibleUser(adminMarkAsPaidQuery, { email: 1 })
                 let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerMarkAsPaidQuery, { email: 1 })
                 let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerMarkAsPaidQuery, { email: 1 })
-                let customerUsers = await supportingFunction.getNotificationEligibleUser(adminMarkAsPaidQuery, { email: 1 })
+                let customerUsers = await supportingFunction.getNotificationEligibleUser(customerMarkAsPaidQuery, { email: 1 })
                 let IDs = adminUsers.map(user => user._id)
                 let IDs1 = dealerUsers.map(user => user._id)
                 let IDs2 = resellerUsers.map(user => user._id)
