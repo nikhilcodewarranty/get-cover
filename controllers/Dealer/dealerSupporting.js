@@ -860,6 +860,42 @@ exports.getDealerClaims = async (req, res) => {
                 servicerMatch = { 'servicerId': new mongoose.Types.ObjectId('5fa1c587ae2ac23e9c46510f') }
             }
         }
+        let dealerMatch = {}
+        let resellerMatch = {}
+        let dateMatch = {}
+        data.dealerName = data.dealerName ? data.dealerName : ""
+        data.resellerName = data.resellerName ? data.resellerName : ""
+        data.dateFilter = data.dateFilter ? data.dateFilter : ""
+        if (data.dealerName != "") {
+            let getDealer = await dealerService.getAllDealers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
+            let dealerIds = getDealer.map(ID => new mongoose.Types.ObjectId(ID._id))
+            dealerMatch = { dealerId: { $in: dealerIds } }
+            console.log(dealerMatch)
+
+        }
+
+        if (data.resellerName != "") {
+            let getReseller = await resellerService.getResellers({ name: { '$regex': data.resellerName ? data.resellerName : '', '$options': 'i' } }, { _id: 1 })
+            let resellerIds = getReseller.map(ID => new mongoose.Types.ObjectId(ID._id))
+            resellerMatch = { resellerId: { $in: resellerIds } }
+
+        }
+
+        statusMatch = {}
+        if (data.dateFilter != "") {
+            if (data.dateFilter == "damageDate") {
+                dateMatch = { lossDate: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
+                // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
+            }
+            if (data.dateFilter == "openDate") {
+                dateMatch = { createdAt: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
+                // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
+            }
+            if (data.dateFilter == "closeDate") {
+                dateMatch = { claimDate: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
+                statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
+            }
+        }
         let claimPaidStatus = {}
         if (data.claimPaidStatus != '' && data.claimPaidStatus != undefined) {
             claimPaidStatus = { "claimPaymentStatus": data.claimPaidStatus }
@@ -1340,12 +1376,12 @@ exports.getDealerServicers = async (req, res) => {
 
         let filteredData = result_Array.filter(entry => {
             return (
-                nameRegex.test(entry.servicerData?.name)&&
-                emailRegex.test(entry.email)&&
+                nameRegex.test(entry.servicerData?.name) &&
+                emailRegex.test(entry.email) &&
                 phoneRegex.test(entry.phoneNumber)
             );
         });
- 
+
         res.send({
             code: constant.successCode,
             message: "Success",
