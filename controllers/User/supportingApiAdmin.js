@@ -800,44 +800,44 @@ exports.getUserNotificationData = async (req, res) => {
         }
 
         if (req.role == "Dealer") {
-            getData.metaData[0].orderNotifications = null
-            getData.metaData[0].claimNotification = null
-            // getData.metaData[0].adminNotification = null
-            getData.metaData[0].servicerNotification = null
-            getData.metaData[0].dealerNotifications = null
-            getData.metaData[0].resellerNotifications = null
-            getData.metaData[0].customerNotifications = null
-            // getData.metaData[0].registerNotifications = null
-        }
-        if (req.role == "Reseller") {
-            getData.metaData[0].orderNotifications = null
-            getData.metaData[0].claimNotification = null
-            // getData.metaData[0].adminNotification = null
-            getData.metaData[0].servicerNotification = null
-            getData.metaData[0].dealerNotifications = null
-            getData.metaData[0].resellerNotifications = null
-            getData.metaData[0].customerNotifications = null
-            // getData.metaData[0].registerNotifications = null
-        }
-        if (req.role == "Customer") {
-            getData.metaData[0].orderNotifications = null
-            getData.metaData[0].claimNotification = null
-            // getData.metaData[0].adminNotification = null
+            // getData.metaData[0].orderNotifications = null
+            // getData.metaData[0].claimNotification = null
+            getData.metaData[0].adminNotification = null
             // getData.metaData[0].servicerNotification = null
             // getData.metaData[0].dealerNotifications = null
             // getData.metaData[0].resellerNotifications = null
-            getData.metaData[0].customerNotifications = null
-            // getData.metaData[0].registerNotifications = null
+            // getData.metaData[0].customerNotifications = null
+            getData.metaData[0].registerNotifications = null
         }
-        if (req.role == "Servicer") {
-            getData.metaData[0].orderNotifications = null
-            getData.metaData[0].claimNotification = null
-            // getData.metaData[0].adminNotification = null
-            getData.metaData[0].servicerNotification = null
+        if (req.role == "Reseller") {
+            // getData.metaData[0].orderNotifications = null
+            // getData.metaData[0].claimNotification = null
+            getData.metaData[0].adminNotification = null
+            // getData.metaData[0].servicerNotification = null
             // getData.metaData[0].dealerNotifications = null
             // getData.metaData[0].resellerNotifications = null
-            getData.metaData[0].customerNotifications = null
-            // getData.metaData[0].registerNotifications = null
+            // getData.metaData[0].customerNotifications = null
+            getData.metaData[0].registerNotifications = null
+        }
+        if (req.role == "Customer") {
+            // getData.metaData[0].orderNotifications = null
+            // getData.metaData[0].claimNotification = null
+            getData.metaData[0].adminNotification = null
+            getData.metaData[0].servicerNotification = null
+            getData.metaData[0].dealerNotifications = null
+            getData.metaData[0].resellerNotifications = null
+            // getData.metaData[0].customerNotifications = null
+            getData.metaData[0].registerNotifications = null
+        }
+        if (req.role == "Servicer") {
+            // getData.metaData[0].orderNotifications = null
+            // getData.metaData[0].claimNotification = null
+            getData.metaData[0].adminNotification = null
+            // getData.metaData[0].servicerNotification = null
+            getData.metaData[0].dealerNotifications = null
+            getData.metaData[0].resellerNotifications = null
+            // getData.metaData[0].customerNotifications = null
+            getData.metaData[0].registerNotifications = null
         }
 
         res.send({
