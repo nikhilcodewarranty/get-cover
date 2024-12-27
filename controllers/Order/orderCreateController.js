@@ -2976,7 +2976,7 @@ exports.editOrderDetail = async (req, res) => {
                         contentId: checkOrder._id,
                         flag: 'order',
                         redirectionId: "orderDetails/" + checkOrder._id,
-                        endPoint: base_url,
+                        endPoint: base_url + "orderDetails/" + checkOrder._id,
                         notificationFor: IDs
                     };
                     let notificationData1 = {
@@ -3033,7 +3033,6 @@ exports.editOrderDetail = async (req, res) => {
                             redirectId: base_url + "orderDetails/" + checkOrder._id,
                         }
 
-                        console.log("dfdfdsfdsfsdsdfdfsdfssdfsdfsdfsdf",notificationEmails)
                         let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
                         emailData.redirectId = base_url + "dealer/orderDetails/" + checkOrder._id
                         mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
