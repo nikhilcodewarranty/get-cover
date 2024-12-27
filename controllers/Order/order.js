@@ -2262,8 +2262,11 @@ exports.markAsPaid = async (req, res) => {
                 }
                 if (checkOrder.sendNotification && !checkOrder.termCondition) {
                     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+                    emailData.redirectId =  base_url + "dealer/orderDetails/" + checkOrder._id
                     mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
+                    emailData.redirectId =  base_url + "reseller/orderDetails/" + checkOrder._id
                     mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ["noreply@getcover.com"], emailData))
+                    emailData.redirectId =  base_url + "customer/orderDetails/" + checkOrder._id
                     mailing = sgMail.send(emailConstant.sendEmailTemplate(customerEmails, ["noreply@getcover.com"], emailData))
                 }
                 //Email to customer code here........
