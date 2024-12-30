@@ -744,7 +744,7 @@ exports.exportDataForClaim = async (req, res) => {
           };
           if (req.role == "Customer") {
             customerEntry = {
-              // "Customer Name": customerName,
+              "Customer Name": customerName,
               "Total Claims": 0,
               "Completed Claims": 0,
               "Open Claims": 0,
