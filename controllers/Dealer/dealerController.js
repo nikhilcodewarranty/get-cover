@@ -475,7 +475,7 @@ exports.statusUpdate = async (req, res) => {
     if (existingDealerPriceBook.status == data.status) {
       let notificationData = {
         title: "Dealer PriceBook Updated",
-        description: `Dealer Pricebook ${priceBookData[0]?.pName} for ${getDealerDetail.name} has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        description: `Dealer Pricebook ${priceBookData[0]?.name} for ${getDealerDetail.name} has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         contentId: req.params.dealerPriceBookId,
         flag: 'Dealer Price Book',
@@ -484,8 +484,8 @@ exports.statusUpdate = async (req, res) => {
         endPoint: base_url + "dealerPriceList/" + priceBookData[0].name,
       };
       let notificationData1 = {
-        title: "Price Book Updated",
-        description: `Pricebook has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        title: "PriceBook Updated",
+        description: `Pricebook ${priceBookData[0]?.name} has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         contentId: req.params.dealerPriceBookId,
         flag: 'Dealer Price Book',
