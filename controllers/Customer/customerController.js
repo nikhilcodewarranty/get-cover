@@ -1087,7 +1087,6 @@ exports.changePrimaryUser = async (req, res) => {
         let dealerEmails = dealerUsers.map(user => user.email);
         let notificationEmails = adminUsers.map(user => user.email);
 
-        mergedEmail = notificationEmails.concat(dealerEmails)
         notificationData = {
           title: "Dealer Primary User Updated",
           description: `The Primary user for ${checkDealer.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
@@ -1109,7 +1108,7 @@ exports.changePrimaryUser = async (req, res) => {
           notificationFor: dealerId
         };
         notificationArray.push(notificationData)
-
+        console.log("notificationEmails--------------------------",notificationEmails)
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
         mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
 
