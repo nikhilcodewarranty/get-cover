@@ -834,6 +834,7 @@ exports.exportDataForClaim = async (req, res) => {
             "Servicer Name": servicerName,
             "Total Claims": 0,
             "Completed Claims": 0,
+            "Open Claims": 0,
             "Rejected Claims": 0,
             "Paid Claims": 0,
             "Unpaid Claims": 0,
@@ -881,6 +882,7 @@ exports.exportDataForClaim = async (req, res) => {
 
         const claimAmount = item.totalAmount || 0;
         const isCompleted = item.claimStatus.some(status => status.status === "completed");
+        const isOpen = item.claimStatus.some(status => status.status === "open");
         const isRejected = item.claimStatus.some(status => status.status === "rejected");
 
         // Check if reseller already exists in the accumulator
@@ -892,6 +894,7 @@ exports.exportDataForClaim = async (req, res) => {
             "Reseller Name": resellerName,
             "Total Claims": 0,
             "Completed Claims": 0,
+            "Open Claims": 0,
             "Rejected Claims": 0,
             "Total Amount of Claims": 0,
             "Average Claim Amount": 0, // Initialize average claim amount
@@ -907,6 +910,9 @@ exports.exportDataForClaim = async (req, res) => {
         }
         if (isRejected) {
           resellerEntry["Rejected Claims"] += 1;
+        }
+        if (isOpen) {
+          resellerEntry["Open Claims"] += 1;
         }
 
         // Calculate average claim amount for completed claims
