@@ -1085,6 +1085,8 @@ exports.changePrimaryUser = async (req, res) => {
         const IDs = adminUsers.map(user => user._id)
         const dealerId = dealerUsers.map(user => user._id)
         let dealerEmails = dealerUsers.map(user => user.email);
+        let notificationEmails = adminUsers.map(user => user.email);
+
         mergedEmail = notificationEmails.concat(dealerEmails)
         notificationData = {
           title: "Dealer Primary User Updated",
@@ -1155,6 +1157,7 @@ exports.changePrimaryUser = async (req, res) => {
         const resellerId = resellerUsers.map(user => user._id)
         let dealerEmails = dealerUsers.map(user => user.email);
         let resellerEmails = resellerUsers.map(user => user.email);
+        let notificationEmails = adminUsers.map(user => user.email);
 
         mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails)
 
@@ -1250,6 +1253,8 @@ exports.changePrimaryUser = async (req, res) => {
         const dealerId = dealerUsers.map(user => user._id)
         const resellerId = resellerUsers.map(user => user._id)
         const customerId = customerUsers.map(user => user._id)
+        let notificationEmails = adminUsers.map(user => user.email);
+
         let dealerEmails = dealerUsers.map(user => user.email);
         let resellerEmails = resellerUsers.map(user => user.email);
         let customerEmails = customerUsers.map(user => user.email);
