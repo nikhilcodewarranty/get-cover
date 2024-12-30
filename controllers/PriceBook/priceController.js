@@ -338,7 +338,7 @@ exports.createPriceBook = async (req, res, next) => {
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
         priceBookData: priceBookData,
-        senderName: admin.metaData[0]?.firstName,
+        senderName: "Dear Admin",
         content: `A new company pricebook ${data.name} has been added with the following data:`,
         subject: "Create Price Book"
       }
@@ -644,7 +644,7 @@ exports.updatePriceBookById = async (req, res, next) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: admin.metaData[0]?.firstName,
+        senderName: "Dear Admin",
         content: `A company Pricebook ${existingPriceBook[0]?.name} has been updated. To view the changes, please click here."`,
         subject: "Update Price Book",
         redirectId: base_url + "companyPriceBook/" + existingPriceBook[0]?.name
@@ -656,7 +656,8 @@ exports.updatePriceBookById = async (req, res, next) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: admin.metaData[0]?.firstName,
+        senderName: "Dear Admin",
+
         content: `The Company Pricebook ${existingPriceBook[0]?.name} has been made ${body.status ? 'Active' : "Inactive"} in the system. To review the changes, please click here."`,
         subject: "Update Status",
         redirectId: base_url + "companyPriceBook/" + existingPriceBook[0]?.name
@@ -822,7 +823,8 @@ exports.createPriceBookCat = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: admin.metaData[0]?.firstName,
+      senderName: "Dear Admin",
+
       content: `A new Price Book Category ${data.name} has been added to the system by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
       subject: "New Category Added"
     }
@@ -1152,7 +1154,8 @@ exports.updatePriceBookCat = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: admin.metaData[0]?.firstName,
+      senderName: "Dear Admin",
+
       content: "The category " + data.name + " updated successfully.",
       subject: "Update Category"
     }
