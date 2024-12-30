@@ -1554,6 +1554,10 @@ exports.deleteUser = async (req, res) => {
     let notificationData;
     let notificationArray = [];
     let notificationEmails
+    let resellerEmails;
+    let dealerEmails
+    let servicerEmails
+    let customerEmails
     let mergedEmail
     if (checkServicer) {
       adminDeleteQuery = {
@@ -1585,10 +1589,9 @@ exports.deleteUser = async (req, res) => {
       const IDs = adminUsers.map(user => user._id)
       const servicerIds = servicerUsers.map(user => user._id)
       notificationEmails = adminUsers.map(user => user.email);
-      let servicerEmails = servicerUsers.map(user => user.email);
+       servicerEmails = servicerUsers.map(user => user.email);
+      
       mergedEmail = notificationEmails.concat(servicerEmails)
-
-
       notificationData = {
         title: "Servicer User Deleted",
         description: `The User ${checkUser.metaData[0].firstName} for the Servicer ${checkServicer.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
@@ -1639,7 +1642,7 @@ exports.deleteUser = async (req, res) => {
       const IDs = adminUsers.map(user => user._id)
       const dealerId = dealerUsers.map(user => user._id)
       notificationEmails = adminUsers.map(user => user.email);
-      let dealerEmails = dealerUsers.map(user => user.email);
+       dealerEmails = dealerUsers.map(user => user.email);
       mergedEmail = notificationEmails.concat(dealerEmails)
       notificationData = {
         title: "Dealer User Deleted",
@@ -1707,8 +1710,8 @@ exports.deleteUser = async (req, res) => {
       const dealerId = dealerUsers.map(user => user._id)
       const resellerId = resellerUsers.map(user => user._id)
       notificationEmails = adminUsers.map(user => user.email);
-      let dealerEmails = dealerUsers.map(user => user.email);
-      let resellerEmails = resellerUsers.map(user => user.email);
+       dealerEmails = dealerUsers.map(user => user.email);
+       resellerEmails = resellerUsers.map(user => user.email);
 
       mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails)
       notificationData = {
@@ -1805,9 +1808,9 @@ exports.deleteUser = async (req, res) => {
       const customerId = customerUsers.map(user => user._id)
       notificationEmails = adminUsers.map(user => user.email);
 
-      let dealerEmails = dealerUsers.map(user => user.email);
-      let resellerEmails = resellerUsers.map(user => user.email);
-      let customerEmails = customerUsers.map(user => user.email);
+       dealerEmails = dealerUsers.map(user => user.email);
+       resellerEmails = resellerUsers.map(user => user.email);
+       customerEmails = customerUsers.map(user => user.email);
 
       mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails, customerEmails)
 
