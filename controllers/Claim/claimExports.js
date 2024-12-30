@@ -723,7 +723,6 @@ exports.exportDataForClaim = async (req, res) => {
       return resultArray.reduce((acc, item) => {
         // Extract customer username and claim information
         const customerName = item?.contracts?.orders?.customer?.username || "Unknown Customer";
-        const claimAmount = item.totalAmount || 0;
         const isCompleted = item.claimStatus.some(status => status.status === "completed");
         const isOpen = item.claimStatus.some(status => status.status === "open");
         const isRejected = item.claimStatus.some(status => status.status === "rejected");
@@ -737,15 +736,9 @@ exports.exportDataForClaim = async (req, res) => {
             "Customer Name": customerName,
             "Total Claims": 0,
             "Completed Claims": 0,
+            "Open Claims": 0,
             "Rejected Claims": 0
           };
-    
-          if (req.role !== "Customer") {
-            customerEntry["Open Claims"] = 0; // Include "Open Claims" only for non-customer roles
-            customerEntry["Total Amount of Claims"] = 0;
-            customerEntry["Average Claim Amount"] = 0; // Initialize average claim amount
-          }
-    
           acc.push(customerEntry);
         }
     
@@ -758,20 +751,14 @@ exports.exportDataForClaim = async (req, res) => {
         if (isRejected) {
           customerEntry["Rejected Claims"] += 1;
         }
-    
-        if (req.role !== "Customer") {
-          if (isOpen) {
-            customerEntry["Open Claims"] += 1;
-          }
-          customerEntry["Total Amount of Claims"] += claimAmount;
-          customerEntry["Average Claim Amount"] = customerEntry["Completed Claims"]
-            ? (customerEntry["Total Amount of Claims"] / customerEntry["Completed Claims"]).toFixed(2)
-            : 0;
+        if (isOpen) {
+          customerEntry["Open Claims"] += 1;
         }
     
         return acc;
       }, []);
     };
+    
 
     const groupDataByServicer = async (resultArray) => {
       const acc = [];
