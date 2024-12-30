@@ -1007,12 +1007,12 @@ exports.editClaim = async (req, res) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: servicerPrimary ? servicerPrimary.metaData[0]?.firstName : '',
+        senderName: `Dear ${servicerPrimary ? servicerPrimary.metaData[0]?.firstName : ''}`,
         redirectId: base_url,
         content: `We would like to inform you that the repair information for Claim ID  ${checkClaim.unique_key} has been successfully updated in our system. Please review the updated details and proceed accordingly.`,
         subject: `Update on Repair Information for Claim  ID ${checkClaim.unique_key}`
       }
-      emailData.senderName = "Admin"
+      emailData.senderName = "Dear Admin"
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
       emailData.senderName = servicerPrimary ? servicerPrimary.metaData[0]?.firstName : '',
         mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmails, ["noreply@getcover.com"], emailData))
