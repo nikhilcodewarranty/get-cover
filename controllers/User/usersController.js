@@ -682,6 +682,10 @@ exports.updateUserData = async (req, res) => {
     let notificationArray = []
     let mergedEmail
     let notificationEmails;
+    const content = req.body.status ? 'Congratulations, you can now login to our system. Please click the following link to login to the system' : "Your account has been made inactive. If you think, this is a mistake, please contact our support team at support@getcover.com"
+    let resetPasswordCode = randtoken.generate(4, '123456789')
+
+    let resetLink = `${process.env.SITE_URL}newPassword/${req.params.userId}/${resetPasswordCode}`
     if (checkServicer) {
       adminUpdatePrimaryQuery = {
         metaData: {
@@ -712,7 +716,6 @@ exports.updateUserData = async (req, res) => {
       const servicerEmails = servicerUsers.map(user => user.email)
       notificationEmails = adminUsers.map(user => user.email)
       mergedEmail = notificationEmails.concat(servicerEmails);
-
       if (data.firstName) {
         notificationData = {
           title: "Servicer User Details Changed",
@@ -734,6 +737,19 @@ exports.updateUserData = async (req, res) => {
           notificationFor: servicerId
         };
         notificationArray.push(notificationData)
+
+        let emailData = {
+          darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+          lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+          address: settingData[0]?.address,
+          websiteSetting: settingData[0],
+          senderName: `Dear ${updateUser.metaData[0].firstName}`,
+          content: "The user information has been updated successfully!",
+          subject: "Update User Info"
+        }
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+        // emailData.senderName = `Dear ${updateUser.metaData[0].firstName}`
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmails, ['noreply@getcover.com'], emailData))
 
       }
       else {
@@ -758,6 +774,28 @@ exports.updateUserData = async (req, res) => {
         };
         notificationArray.push(notificationData)
       }
+      let emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
+        senderName: `Dear ${updateUser.metaData[0].firstName}`,
+        content: content,
+        subject: "Update Status",
+        redirectId: status_content == "Active" ? resetLink : '',
+      }
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(updateUser.email, ['noreply@getcover.com'], emailData))
+      emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
+        senderName: `Dear ${updateUser.metaData[0].firstName}`,
+        content: `Status has been changed to  ${status_content} for ${updateUser.metaData[0].firstName + " " + updateUser.metaData[0].lastName}`,
+        subject: "Update Status"
+      }
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmails, ['noreply@getcover.com'], emailData))
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
     }
     if (checkDealer) {
       adminUpdatePrimaryQuery = {
@@ -812,6 +850,18 @@ exports.updateUserData = async (req, res) => {
 
         };
         notificationArray.push(notificationData)
+        let emailData = {
+          darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+          lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+          address: settingData[0]?.address,
+          websiteSetting: settingData[0],
+          senderName: `Dear ${updateUser.metaData[0].firstName}`,
+          content: "The user information has been updated successfully!",
+          subject: "Update User Info"
+        }
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+        // emailData.senderName = `Dear ${updateUser.metaData[0].firstName}`
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
       }
       else {
         notificationData = {
@@ -836,6 +886,28 @@ exports.updateUserData = async (req, res) => {
 
         };
         notificationArray.push(notificationData)
+        let emailData = {
+          darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+          lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+          address: settingData[0]?.address,
+          websiteSetting: settingData[0],
+          senderName: `Dear ${updateUser.metaData[0].firstName}`,
+          content: content,
+          subject: "Update Status",
+          redirectId: status_content == "Active" ? resetLink : '',
+        }
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(updateUser.email, ['noreply@getcover.com'], emailData))
+        emailData = {
+          darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+          lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+          address: settingData[0]?.address,
+          websiteSetting: settingData[0],
+          senderName: `Dear ${updateUser.metaData[0].firstName}`,
+          content: `Status has been changed to  ${status_content} for ${updateUser.metaData[0].firstName + " " + updateUser.metaData[0].lastName}`,
+          subject: "Update Status"
+        }
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
       }
     }
     if (checkReseller) {
@@ -915,6 +987,20 @@ exports.updateUserData = async (req, res) => {
 
         };
         notificationArray.push(notificationData)
+        let emailData = {
+          darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+          lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+          address: settingData[0]?.address,
+          websiteSetting: settingData[0],
+          senderName: `Dear ${updateUser.metaData[0].firstName}`,
+          content: "The user information has been updated successfully!",
+          subject: "Update User Info"
+        }
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+        emailData.senderName = ``
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
+        // emailData.senderName = `Dear ${updateUser.metaData[0].firstName}`
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ['noreply@getcover.com'], emailData))
       }
       else {
         notificationData = {
@@ -950,6 +1036,29 @@ exports.updateUserData = async (req, res) => {
 
         };
         notificationArray.push(notificationData)
+        let emailData = {
+          darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+          lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+          address: settingData[0]?.address,
+          websiteSetting: settingData[0],
+          senderName: `Dear ${updateUser.metaData[0].firstName}`,
+          content: content,
+          subject: "Update Status",
+          redirectId: status_content == "Active" ? resetLink : '',
+        }
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(updateUser.email, ['noreply@getcover.com'], emailData))
+        emailData = {
+          darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+          lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+          address: settingData[0]?.address,
+          websiteSetting: settingData[0],
+          senderName: `Dear ${updateUser.metaData[0].firstName}`,
+          content: `Status has been changed to  ${status_content} for ${updateUser.metaData[0].firstName + " " + updateUser.metaData[0].lastName}`,
+          subject: "Update Status"
+        }
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ['noreply@getcover.com'], emailData))
       }
     }
     if (checkCustomer) {
@@ -1061,6 +1170,23 @@ exports.updateUserData = async (req, res) => {
 
         };
         notificationArray.push(notificationData)
+        let emailData = {
+          darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+          lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+          address: settingData[0]?.address,
+          websiteSetting: settingData[0],
+          senderName: `Dear ${updateUser.metaData[0].firstName}`,
+          content: "The user information has been updated successfully!",
+          subject: "Update User Info"
+        }
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+        // emailData.senderName = `Dear ${updateUser.metaData[0].firstName}`
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
+        // emailData.senderName = `Dear ${updateUser.metaData[0].firstName}`
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ['noreply@getcover.com'], emailData))
+        // emailData.senderName = `Dear ${updateUser.metaData[0].firstName}`
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(customerEmails, ['noreply@getcover.com'], emailData))
+
       }
       else {
         notificationData = {
@@ -1107,6 +1233,30 @@ exports.updateUserData = async (req, res) => {
 
         };
         notificationArray.push(notificationData)
+        let emailData = {
+          darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+          lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+          address: settingData[0]?.address,
+          websiteSetting: settingData[0],
+          senderName: `Dear ${updateUser.metaData[0].firstName}`,
+          content: content,
+          subject: "Update Status",
+          redirectId: status_content == "Active" ? resetLink : '',
+        }
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(updateUser.email, ['noreply@getcover.com'], emailData))
+        emailData = {
+          darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+          lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+          address: settingData[0]?.address,
+          websiteSetting: settingData[0],
+          senderName: `Dear ${updateUser.metaData[0].firstName}`,
+          content: `Status has been changed to  ${status_content} for ${updateUser.metaData[0].firstName + " " + updateUser.metaData[0].lastName}`,
+          subject: "Update Status"
+        }
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ['noreply@getcover.com'], emailData))
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(customerEmails, ['noreply@getcover.com'], emailData))
       }
     }
     let getPrimary = await supportingFunction.getPrimaryUser({
@@ -1118,51 +1268,9 @@ exports.updateUserData = async (req, res) => {
       }
     })
 
-    // Send Email code here
-    const content = req.body.status ? 'Congratulations, you can now login to our system. Please click the following link to login to the system' : "Your account has been made inactive. If you think, this is a mistake, please contact our support team at support@getcover.com"
-    let resetPasswordCode = randtoken.generate(4, '123456789')
+ 
 
-    let resetLink = `${process.env.SITE_URL}newPassword/${req.params.userId}/${resetPasswordCode}`
-    let emailData;
-    if (data.firstName) {
-      emailData = {
-        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        address: settingData[0]?.address,
-        websiteSetting: settingData[0],
-        senderName: `Dear ${updateUser.metaData[0].firstName}`,
-        content: "The user information has been updated successfully!",
-        subject: "Update User Info"
-      }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ['noreply@getcover.com'], emailData))
-
-    }
-
-    else {
-      emailData = {
-        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        address: settingData[0]?.address,
-        websiteSetting: settingData[0],
-        senderName: `Dear ${updateUser.metaData[0].firstName}`,
-        content: content,
-        subject: "Update Status",
-        redirectId: status_content == "Active" ? resetLink : '',
-      }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(updateUser.email, ['noreply@getcover.com'], emailData))
-
-      emailData = {
-        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        address: settingData[0]?.address,
-        websiteSetting: settingData[0],
-        senderName: `Dear ${updateUser.metaData[0].firstName}`,
-        content: `Status has been changed to  ${status_content} for ${updateUser.metaData[0].firstName + " " + updateUser.metaData[0].lastName}`,
-        subject: "Update Status"
-      }
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ['noreply@getcover.com'], emailData))
-
-    }
+ 
 
 
 
@@ -1446,6 +1554,10 @@ exports.deleteUser = async (req, res) => {
     let notificationData;
     let notificationArray = [];
     let notificationEmails
+    let resellerEmails;
+    let dealerEmails
+    let servicerEmails
+    let customerEmails
     let mergedEmail
     if (checkServicer) {
       adminDeleteQuery = {
@@ -1477,10 +1589,9 @@ exports.deleteUser = async (req, res) => {
       const IDs = adminUsers.map(user => user._id)
       const servicerIds = servicerUsers.map(user => user._id)
       notificationEmails = adminUsers.map(user => user.email);
-      let servicerEmails = servicerUsers.map(user => user.email);
+       servicerEmails = servicerUsers.map(user => user.email);
+      
       mergedEmail = notificationEmails.concat(servicerEmails)
-
-
       notificationData = {
         title: "Servicer User Deleted",
         description: `The User ${checkUser.metaData[0].firstName} for the Servicer ${checkServicer.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
@@ -1531,7 +1642,7 @@ exports.deleteUser = async (req, res) => {
       const IDs = adminUsers.map(user => user._id)
       const dealerId = dealerUsers.map(user => user._id)
       notificationEmails = adminUsers.map(user => user.email);
-      let dealerEmails = dealerUsers.map(user => user.email);
+       dealerEmails = dealerUsers.map(user => user.email);
       mergedEmail = notificationEmails.concat(dealerEmails)
       notificationData = {
         title: "Dealer User Deleted",
@@ -1599,8 +1710,8 @@ exports.deleteUser = async (req, res) => {
       const dealerId = dealerUsers.map(user => user._id)
       const resellerId = resellerUsers.map(user => user._id)
       notificationEmails = adminUsers.map(user => user.email);
-      let dealerEmails = dealerUsers.map(user => user.email);
-      let resellerEmails = resellerUsers.map(user => user.email);
+       dealerEmails = dealerUsers.map(user => user.email);
+       resellerEmails = resellerUsers.map(user => user.email);
 
       mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails)
       notificationData = {
@@ -1697,9 +1808,9 @@ exports.deleteUser = async (req, res) => {
       const customerId = customerUsers.map(user => user._id)
       notificationEmails = adminUsers.map(user => user.email);
 
-      let dealerEmails = dealerUsers.map(user => user.email);
-      let resellerEmails = resellerUsers.map(user => user.email);
-      let customerEmails = customerUsers.map(user => user.email);
+       dealerEmails = dealerUsers.map(user => user.email);
+       resellerEmails = resellerUsers.map(user => user.email);
+       customerEmails = customerUsers.map(user => user.email);
 
       mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails, customerEmails)
 
@@ -1766,9 +1877,9 @@ exports.deleteUser = async (req, res) => {
       subject: "Delete User"
     }
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-     mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
-     mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ["noreply@getcover.com"], emailData))
-     mailing = sgMail.send(emailConstant.sendEmailTemplate(customerEmails, ["noreply@getcover.com"], emailData))
+    mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
+    mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ["noreply@getcover.com"], emailData))
+    mailing = sgMail.send(emailConstant.sendEmailTemplate(customerEmails, ["noreply@getcover.com"], emailData))
 
     //Save Logs delete user
     let logData = {
