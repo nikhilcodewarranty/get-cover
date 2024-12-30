@@ -1139,7 +1139,7 @@ exports.updatePriceBookCat = async (req, res) => {
         contentId: req.params.catId,
         flag: 'category',
         notificationFor: IDs,
-        endPoint: base_url,
+        endPoint: base_url + "/category",
         redirectionId: "/category"
       };
     }
