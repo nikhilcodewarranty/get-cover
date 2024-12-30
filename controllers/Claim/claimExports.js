@@ -737,11 +737,11 @@ exports.exportDataForClaim = async (req, res) => {
             "Customer Name": customerName,
             "Total Claims": 0,
             "Completed Claims": 0,
-            "Open Claims": 0,
             "Rejected Claims": 0
           };
-          
+    
           if (req.role !== "Customer") {
+            customerEntry["Open Claims"] = 0; // Include "Open Claims" only for non-customer roles
             customerEntry["Total Amount of Claims"] = 0;
             customerEntry["Average Claim Amount"] = 0; // Initialize average claim amount
           }
@@ -758,11 +758,11 @@ exports.exportDataForClaim = async (req, res) => {
         if (isRejected) {
           customerEntry["Rejected Claims"] += 1;
         }
-        if (isOpen) {
-          customerEntry["Open Claims"] += 1;
-        }
     
         if (req.role !== "Customer") {
+          if (isOpen) {
+            customerEntry["Open Claims"] += 1;
+          }
           customerEntry["Total Amount of Claims"] += claimAmount;
           customerEntry["Average Claim Amount"] = customerEntry["Completed Claims"]
             ? (customerEntry["Total Amount of Claims"] / customerEntry["Completed Claims"]).toFixed(2)
@@ -772,7 +772,6 @@ exports.exportDataForClaim = async (req, res) => {
         return acc;
       }, []);
     };
-    
 
     const groupDataByServicer = async (resultArray) => {
       const acc = [];
