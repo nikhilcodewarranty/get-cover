@@ -519,6 +519,9 @@ exports.statusUpdate = async (req, res) => {
         notificationFor: IDs1,
         endPoint: base_url + "dealer/priceBook" + priceBookData[0].name,
       };
+
+      notificationArrayData.push(notificationData2)
+      notificationArrayData.push(notificationData3)
     }
 
     let createNotification = await userService.saveNotificationBulk(notificationArrayData);
@@ -889,6 +892,7 @@ exports.createDealerPriceBook = async (req, res) => {
         description: `A new Dealer Pricebook ${checkPriceBookMain.name} for ${checkDealer.name} has been added under category ${checkCategory.name} by ${checkLoginUser.metaData[0]?.firstName}.`,
         userId: req.teammateId,
         flag: 'Dealer Price Book',
+        tabAction: "priceBook",
         contentId: createDealerPrice._id,
         redirectionId: "dealerPriceList/" + checkPriceBookMain.name,
         notificationFor: IDs,
@@ -903,7 +907,7 @@ exports.createDealerPriceBook = async (req, res) => {
         flag: 'Dealer Price Book',
         contentId: createDealerPrice._id,
         redirectionId: "dealer/priceBook",
-        notificationFor: IDs,
+        notificationFor: IDs1,
         endPoint: base_url + "dealer/priceBook",
 
       };
@@ -914,17 +918,19 @@ exports.createDealerPriceBook = async (req, res) => {
       let createNotification = await userService.saveNotificationBulk(notificationArrayData);
       // Send Email code here
       let notificationEmails = adminUsers.map(user => user.email)
+      let dealerEmails = dealerUsers.map(user => user.email)
       let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
       let emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: checkDealer.name,
+        senderName: `Dear ${checkDealer.name}`,
         content: "The price book name" + " " + checkPriceBookMain[0]?.pName + " has been created successfully! effective immediately.",
         subject: "New Price Book"
       }
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
 
       let logData = {
         userId: req.teammateId,

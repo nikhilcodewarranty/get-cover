@@ -806,8 +806,8 @@ exports.addClaim = async (req, res, next) => {
         let notificationAdmin = await supportingFunction.getUserEmails();
         emailData.subject = `New Device Received for Repair - ID: ${claimResponse.unique_key}`
         emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device detailed below:`
-        emailData.senderName = "Admin"
-        mailing = sgMail.send(emailConstant.sendServicerClaimNotification(adminEmail, ["noreply@getcover.com"], emailData))
+        // emailData.senderName = "Admin"
+        // mailing = sgMail.send(emailConstant.sendServicerClaimNotification(adminEmail, ["noreply@getcover.com"], emailData))
         emailData.senderName = servicerPrimary?.metaData[0]?.firstName
         mailing = sgMail.send(emailConstant.sendServicerClaimNotification(servicerEmail, ["noreply@getcover.com"], emailData))
       }
@@ -1344,7 +1344,7 @@ exports.editClaimStatus = async (req, res) => {
       if (resellerUsers.length > 0) {
         let notificationReseller = {
           title: "Claim Customer Status Updated",
-          resellerMessage: `Claim # ${checkClaim.unique_key} customer status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+          description: `Claim # ${checkClaim.unique_key} customer status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
           userId: req.teammateId,
           contentId: checkClaim._id,
           flag: 'claim',
@@ -1395,7 +1395,7 @@ exports.editClaimStatus = async (req, res) => {
               { status: true },
               {
                 $or: [
-                  { metaId: checkOrder?.servicerId },
+                  { metaId: checkClaim?.servicerId },
                 ]
               },
             ]
@@ -1659,7 +1659,7 @@ exports.editClaimStatus = async (req, res) => {
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
         senderName: ''
-,        content: `The Repair Status has been updated on the claim #  ${checkClaim.unique_key} to be ${matchedData?.label} .Please review the information at`,
+        , content: `The Repair Status has been updated on the claim #  ${checkClaim.unique_key} to be ${matchedData?.label} .Please review the information at`,
         subject: `Repair Status Updated for ${checkClaim.unique_key}`,
         redirectId: base_url
       }
@@ -1732,7 +1732,7 @@ exports.editClaimStatus = async (req, res) => {
               { status: true },
               {
                 $or: [
-                  { metaId: checkOrder?.customerId },
+                  { metaId: checkOrder?.resellerId },
                 ]
               },
 
@@ -1775,8 +1775,8 @@ exports.editClaimStatus = async (req, res) => {
 
       let adminUsers = await supportingFunction.getNotificationEligibleUser(adminClaimStatusUpdateQuery, { email: 1 })
       let dealerUser = await supportingFunction.getNotificationEligibleUser(dealerClaimStatusUpdateQuery, { email: 1 })
-      let customerUsers = await supportingFunction.getNotificationEligibleUser(resellerClaimStatusUpdateQuery, { email: 1 })
-      let resellerUsers = await supportingFunction.getNotificationEligibleUser(customerClaimStatusUpdateQuery, { email: 1 })
+      let customerUsers = await supportingFunction.getNotificationEligibleUser(customerClaimStatusUpdateQuery, { email: 1 })
+      let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerClaimStatusUpdateQuery, { email: 1 })
       let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerClaimStatusUpdateQuery, { email: 1 })
       //Get all ids 
       let notificationArray = []
@@ -1799,7 +1799,7 @@ exports.editClaimStatus = async (req, res) => {
       if (adminUsers.length > 0) {
         let notificationData1 = {
           title: "Claim  Status Updated",
-          description: `Claim # ${checkClaim.unique_key} claim status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+          description: `Claim # ${checkClaim.unique_key} claim status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}`,
           userId: req.teammateId,
           contentId: checkClaim._id,
           flag: 'claim',
@@ -1812,7 +1812,7 @@ exports.editClaimStatus = async (req, res) => {
       if (dealerUser.length > 0) {
         let notificationData1 = {
           title: "Claim  Status Updated",
-          description: `Claim # ${checkClaim.unique_key} claim status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+          description: `Claim # ${checkClaim.unique_key} claim status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}`,
           userId: req.teammateId,
           contentId: checkClaim._id,
           flag: 'claim',
@@ -1851,7 +1851,7 @@ exports.editClaimStatus = async (req, res) => {
       if (servicerUsers.length > 0) {
         let notificationData1 = {
           title: "Claim  Status Updated",
-          description: `Claim # ${checkClaim.unique_key} claim status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+          description: `Claim # ${checkClaim.unique_key} claim status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} `,
           userId: req.teammateId,
           contentId: checkClaim._id,
           flag: 'claim',
@@ -4073,7 +4073,7 @@ exports.sendMessages = async (req, res) => {
             { status: true },
             {
               $or: [
-                { metaId: new mongoose.Types.ObjectId(orderData?.servicerId) },
+                { metaId: new mongoose.Types.ObjectId(checkClaim?.servicerId ? checkClaim?.servicerId : orderData?.servicerId) },
               ]
             },
 
@@ -4090,6 +4090,7 @@ exports.sendMessages = async (req, res) => {
     let notificationArray = []
 
     let IDs = adminUsers.map(user => user._id)
+    let adminEmail = adminUsers.map(user => user.email)
     let dealerId = dealerUsers.map(user => user._id)
     let resellerId = resellerUsers.map(user => user._id)
     let customerId = customerUsers.map(user => user._id)
@@ -4193,7 +4194,7 @@ exports.sendMessages = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      commentBy: commentByUser.metaData[0].firstName + " " + commentByUser.metaData[0].lastName,
+      commentBy: commentByUser.metaData[0].firstName + " " + commentByUser.metaData[0].lastName + "-" + req.role,
       date: new Date().toLocaleDateString("en-US"),
       senderName: emailTo?.metaData[0].firstName + " " + emailTo?.metaData[0].lastName,
       comment: data.content,
@@ -4203,6 +4204,7 @@ exports.sendMessages = async (req, res) => {
     }
 
     let mailing = sgMail.send(emailConstant.sendCommentNotification(emailTo?.email, ["noreply@getcover.com"], emailData))
+     mailing = sgMail.send(emailConstant.sendCommentNotification(adminEmail, ["noreply@getcover.com"], emailData))
     res.send({
       code: constant.successCode,
       messages: 'Message Sent!',
