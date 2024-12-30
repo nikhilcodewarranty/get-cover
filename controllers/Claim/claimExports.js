@@ -184,7 +184,6 @@ exports.exportDataForClaim = async (req, res) => {
     if (req.role == 'Servicer') {
       match = { servicerId: new mongoose.Types.ObjectId(req.userId) }
     }
-
     if (req.role == 'Reseller') {
       match = { resellerId: new mongoose.Types.ObjectId(req.userId) }
     }
@@ -535,7 +534,6 @@ exports.exportDataForClaim = async (req, res) => {
       servicer = []
       let mergedData = []
 
-
       let servicerName = ''
       let selfServicer = false;
       let selfResellerServicer = false;
@@ -628,7 +626,7 @@ exports.exportDataForClaim = async (req, res) => {
         // Simulate an async operation if needed (e.g., fetching data)
         const thresholdLimitValue = (getTheThresholdLimit?.threshHoldLimit.value / 100) * productValue;
 
-        
+
         // Check if claimAmount exceeds the threshold limit value
         let overThreshold = claimAmount > thresholdLimitValue;
         let threshHoldMessage = "Claim amount exceeds the allowed limit. This might lead to claim rejection. To proceed further with claim please contact admin.";
@@ -676,6 +674,7 @@ exports.exportDataForClaim = async (req, res) => {
         const claimAmount = item.totalAmount || 0;
         const isCompleted = item.claimStatus.some(status => status.status === "completed");
         const isRejected = item.claimStatus.some(status => status.status === "rejected");
+        const isOpen = item.claimStatus.some(status => status.status === "open");
 
         // Check if dealer already exists in the accumulator
         let dealerEntry = acc.find(entry => entry["Dealer Name"] === dealerName);
@@ -686,6 +685,7 @@ exports.exportDataForClaim = async (req, res) => {
             "Dealer Name": dealerName,
             "Total Claims": 0,
             "Completed Claims": 0,
+            "Open Claims": 0,
             "Rejected Claims": 0,
             "Total Amount of Claims": 0,
             "Average Claim Amount": 0, // Initialize average claim amount
@@ -702,6 +702,9 @@ exports.exportDataForClaim = async (req, res) => {
         if (isRejected) {
           dealerEntry["Rejected Claims"] += 1;
         }
+        if (isOpen) {
+          dealerEntry["Open Claims"] += 1;
+        }
 
         return acc;
       }, []);
@@ -716,13 +719,13 @@ exports.exportDataForClaim = async (req, res) => {
       return groupedData;
     };
 
-
     const groupDataByCustomer = (resultArray) => {
       return resultArray.reduce((acc, item) => {
         // Extract customer username and claim information
         const customerName = item?.contracts?.orders?.customer?.username || "Unknown Customer";
         const claimAmount = item.totalAmount || 0;
         const isCompleted = item.claimStatus.some(status => status.status === "completed");
+        const isOpen = item.claimStatus.some(status => status.status === "open");
         const isRejected = item.claimStatus.some(status => status.status === "rejected");
 
         // Check if customer already exists in the accumulator
@@ -734,6 +737,7 @@ exports.exportDataForClaim = async (req, res) => {
             "Customer Name": customerName,
             "Total Claims": 0,
             "Completed Claims": 0,
+            "Open Claims": 0,
             "Rejected Claims": 0,
             "Total Amount of Claims": 0,
             "Average Claim Amount": 0, // Initialize average claim amount
@@ -751,12 +755,17 @@ exports.exportDataForClaim = async (req, res) => {
 
         // Update customer entry
         customerEntry["Total Claims"] += 1;
-        customerEntry["Total Amount of Claims"] += claimAmount;
+        if (req.role != "Customer") {
+          customerEntry["Total Amount of Claims"] += claimAmount;
+        }
         if (isCompleted) {
           customerEntry["Completed Claims"] += 1;
         }
         if (isRejected) {
           customerEntry["Rejected Claims"] += 1;
+        }
+        if (isOpen) {
+          customerEntry["Open Claims"] += 1;
         }
 
         // Calculate average claim amount for completed claims
@@ -801,6 +810,7 @@ exports.exportDataForClaim = async (req, res) => {
 
         const claimAmount = item.totalAmount || 0;
         const isCompleted = item.claimStatus.some(status => status.status === "completed");
+        const isOpen = item.claimStatus.some(status => status.status === "open");
         const isRejected = item.claimStatus.some(status => status.status === "rejected");
 
         // Categorize Paid and Unpaid Claims based on claimFile and claimPaymentStatus
@@ -847,6 +857,10 @@ exports.exportDataForClaim = async (req, res) => {
           servicerEntry["Rejected Claims"] += 1;
         }
 
+        if (isOpen) {
+          servicerEntry["Open Claims"] += 1;
+        }
+
         // Calculate average claim amount for completed claims
         servicerEntry["Average Claim Amount"] = servicerEntry["Completed Claims"]
           ? (servicerEntry["Total Amount of Claims"] / servicerEntry["Completed Claims"]).toFixed(2)
@@ -855,8 +869,6 @@ exports.exportDataForClaim = async (req, res) => {
 
       return acc;
     };
-
-
 
     const groupDataByReseller = (resultArray) => {
       return resultArray.reduce((acc, item) => {

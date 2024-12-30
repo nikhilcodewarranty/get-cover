@@ -862,5 +862,5 @@ exports.exportContractReporting = async (req, res) => {
             message: err.stack
         })
     }
-}
+};
 
