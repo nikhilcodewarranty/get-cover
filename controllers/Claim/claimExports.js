@@ -747,6 +747,7 @@ exports.exportDataForClaim = async (req, res) => {
               "Customer Name": customerName,
               "Total Claims": 0,
               "Completed Claims": 0,
+              "Open Claims": 0,
               "Rejected Claims": 0
             };
           }
