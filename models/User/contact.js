@@ -28,7 +28,7 @@ const contactUs = new Schema({
         default: ""
     },
     products: {
-        type: array,
+        type: Array,
     }
 
 }, { timestamps: true })
