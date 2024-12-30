@@ -338,7 +338,7 @@ exports.createPriceBook = async (req, res, next) => {
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
         priceBookData: priceBookData,
-        senderName: "Dear Admin",
+        senderName: "Admin",
         content: `A new company pricebook ${data.name} has been added with the following data:`,
         subject: "Create Price Book"
       }
@@ -1134,7 +1134,7 @@ exports.updatePriceBookCat = async (req, res) => {
     else {
       notificationData = {
         title: "Pricebook Category Status Updated",
-        description: `Pricebook Category ${isValid.name} status has been updated to ${data.status == true ? "Active" : "Inactive"} ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}..`,
+        description: `Pricebook Category ${isValid.name} status has been updated to ${data.status == true ? "Active" : "Inactive"} ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.userId,
         contentId: req.params.catId,
         flag: 'category',
