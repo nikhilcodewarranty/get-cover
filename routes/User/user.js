@@ -41,7 +41,7 @@ router.get('/setting/preLoginData', userController.preLoginData);
 router.get('/setting/setDefault', [verifyToken], userController.setDefault);
 
 //Save Contact form 
-router.post('/contact-us', validator("filer_contact_us"), userController.contactUs);
+router.post('/contact-us',  userController.contactUs);
 
 //Option Dropdown 
 router.post('/saveOptions', [verifyToken], userController.saveOptions);

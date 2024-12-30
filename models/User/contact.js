@@ -15,7 +15,7 @@ const contactUs = new Schema({
         type: String,
         default: ""
     },
-    description: { 
+    description: {
         type: String,
         default: ""
     },
@@ -26,8 +26,11 @@ const contactUs = new Schema({
     category: {
         type: String,
         default: ""
+    },
+    products: {
+        type: Array,
     }
-    
+
 }, { timestamps: true })
 
 module.exports = connection.userConnection.model('contact', contactUs)
