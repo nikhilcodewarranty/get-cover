@@ -474,8 +474,8 @@ exports.statusUpdate = async (req, res) => {
     let notificationArrayData = []
     if (existingDealerPriceBook.status == data.status) {
       let notificationData = {
-        title: "Dealer Price Book Updated",
-        description: `Dealer Pricebook  for ${priceBookData[0]?.pName} has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        title: "Dealer PriceBook Updated",
+        description: `Dealer Pricebook ${priceBookData[0]?.pName} for ${getDealerDetail.name} has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         contentId: req.params.dealerPriceBookId,
         flag: 'Dealer Price Book',
@@ -1913,7 +1913,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
         let notificationEmails = adminUsers.map(user => user.email)
         let dealerEmails = dealerUsers.map(user => user.email)
         let mailing = sgMail.send(emailConstant.sendCsvFile(notificationEmails, ["noreply@getcover.com"], htmlTableString));
-         mailing = sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlTableString));
+        mailing = sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlTableString));
       }
       res.send({
         code: constant.successCode,
@@ -2177,7 +2177,7 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
         title: "Dealer Pricebook file added successfully",
         description: `The Bulk file ${file.fieldName} of dealer pricebook has been uploaded and processed successfully for dealer ${checkDealer.name}. The file has been uploaded by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
-        tabAction:"priceBook",
+        tabAction: "priceBook",
         flag: 'Dealer Price Book',
         notificationFor: IDs,
         endPoint: base_url + "dealerDetails/" + req.body.dealerId,
