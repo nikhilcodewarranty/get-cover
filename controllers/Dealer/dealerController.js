@@ -1854,11 +1854,10 @@ exports.uploadDealerPriceBook = async (req, res) => {
           metaData: {
             $elemMatch: {
               $and: [
-                { "adminNotification.userAdded": true },
+                { "dealerNotifications.dealerPriceBookUpload": true },
                 { status: true },
                 {
                   $or: [
-                    { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
                     { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
                   ]
                 }
@@ -1866,27 +1865,55 @@ exports.uploadDealerPriceBook = async (req, res) => {
             }
           },
         }
+        const dealerUploadQuery = {
+          metaData: {
+            $elemMatch: {
+              $and: [
+                { "dealerNotifications.dealerPriceBookUpload": true },
+                { status: true },
+                {
+                  $or: [
+                    { metaId: new mongoose.Types.ObjectId(checkDealer._id) },
+                  ]
+                }
+              ]
+            }
+          },
+        }
         let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUploadQuery, { email: 1 })
+        let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerUploadQuery, { email: 1 })
+
+
         const IDs = adminUsers.map(user => user._id)
+        const dealerId = dealerUsers.map(user => user._id)
         let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: req.body.dealerId, isPrimary: true })
         let notificationData = {
           title: "Dealer Pricebook file added successfully",
-          adminTitle: "Dealer Pricebook file added successfully",
-          dealerTitle: "Pricebook added successfully",
-          dealerMessage: `The Bulk file ${file.fieldName} of  pricebook has been uploaded and processed successfully. The file has been uploaded by ${checkLoginUser.metaData[0]?.firstName}.`,
-          adminMessage: `The Bulk file ${file.fieldName} of dealer pricebook has been uploaded and processed successfully for dealer ${checkDealer.name}. The file has been uploaded by ${checkLoginUser.metaData[0]?.firstName}.`,
-          description: `The Bulk file ${file.fieldName} of dealer pricebook has been uploaded and processed successfully for dealer ${checkDealer.name}. The file has been uploaded by ${checkLoginUser.metaData[0]?.firstName}.`,
+          description: `The Bulk file ${file.fieldName} of dealer pricebook has been uploaded and processed successfully for dealer ${checkDealer.name}. The file has been uploaded by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
           userId: req.teammateId,
           flag: 'Dealer Price Book',
+          tabAction: "priceBook",
           notificationFor: IDs,
-          endPoint: base_url,
-          redirectionId: "/  /" + req.body.dealerId
+          endPoint: base_url + "dealerDetails/" + req.body.dealerId,
+          redirectionId: "/dealerDetails/" + req.body.dealerId
         };
-
         let createNotification = await userService.createNotification(notificationData);
+
+        notificationData = {
+          title: "Pricebook added successfully",
+          description: `The Bulk file ${file.fieldName} of  pricebook has been uploaded and processed successfully. The file has been uploaded by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+          userId: req.teammateId,
+          flag: 'Dealer Price Book',
+          notificationFor: dealerId,
+          endPoint: base_url + "dealer/priceBook",
+          redirectionId: "/dealer/priceBook"
+        };
+        createNotification = await userService.createNotification(notificationData);
         // Send Email code here
         let notificationEmails = adminUsers.map(user => user.email)
-        const mailing = sgMail.send(emailConstant.sendCsvFile(notificationEmails, ["noreply@getcover.com"], htmlTableString));
+        let dealerEmails = dealerUsers.map(user => user.email)
+        let mailing = sgMail.send(emailConstant.sendCsvFile(notificationEmails, ["noreply@getcover.com"], htmlTableString));
+         mailing = sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlTableString));
       }
       res.send({
         code: constant.successCode,
