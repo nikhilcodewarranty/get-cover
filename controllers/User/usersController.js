@@ -1118,6 +1118,7 @@ exports.updateUserData = async (req, res) => {
       const dealerEmails = customerUsers.map(user => user.email)
       const resellerEmails = resellerUsers.map(user => user.email)
       const customerEmails = resellerUsers.map(user => user.email)
+
       notificationEmails = adminUsers.map(user => user.email)
 
       mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails, customerEmails);
@@ -1267,77 +1268,76 @@ exports.updateUserData = async (req, res) => {
       }
     })
 
+ 
 
-
-
-  }
+ 
 
 
 
     let createNotification = await userService.saveNotificationBulk(notificationArray);
 
-  //Save Logs updateUserData
-  let logData = {
-    endpoint: "user/updateUserData",
-    userId: req.userId,
-    body: data,
-    response: {
-      code: constant.successCode,
-      message: "Updated Successfully",
-      result: updateUser
-    }
-  }
-
-  await logs(logData).save()
-
-  let updateInformation = await userService.findUserforCustomer1([
-    {
-      $match: { _id: new mongoose.Types.ObjectId(req.params.userId) }
-    },
-    {
-      $project: {
-        email: 1,
-        password: 1,
-        'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
-        'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
-        'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
-        'position': { $arrayElemAt: ["$metaData.position", 0] },
-        'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
-        'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
-        'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
-        'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
-        'status': { $arrayElemAt: ["$metaData.status", 0] },
-        resetPasswordCode: 1,
-        isResetPassword: 1,
-        approvedStatus: 1,
-        createdAt: 1,
-        updatedAt: 1
+    //Save Logs updateUserData
+    let logData = {
+      endpoint: "user/updateUserData",
+      userId: req.userId,
+      body: data,
+      response: {
+        code: constant.successCode,
+        message: "Updated Successfully",
+        result: updateUser
       }
     }
-  ])
 
-  res.send({
-    code: constant.successCode,
-    message: "Updated Successfully",
-    result: updateInformation[0]
-  });
-} catch (err) {
-  //Save Logs updateUserData
-  let logData = {
-    endpoint: "user/updateUserData catch",
-    userId: req.userId,
-    body: req.body,
-    response: {
+    await logs(logData).save()
+
+    let updateInformation = await userService.findUserforCustomer1([
+      {
+        $match: { _id: new mongoose.Types.ObjectId(req.params.userId) }
+      },
+      {
+        $project: {
+          email: 1,
+          password: 1,
+          'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+          'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+          'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+          'position': { $arrayElemAt: ["$metaData.position", 0] },
+          'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+          'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+          'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+          'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+          'status': { $arrayElemAt: ["$metaData.status", 0] },
+          resetPasswordCode: 1,
+          isResetPassword: 1,
+          approvedStatus: 1,
+          createdAt: 1,
+          updatedAt: 1
+        }
+      }
+    ])
+
+    res.send({
+      code: constant.successCode,
+      message: "Updated Successfully",
+      result: updateInformation[0]
+    });
+  } catch (err) {
+    //Save Logs updateUserData
+    let logData = {
+      endpoint: "user/updateUserData catch",
+      userId: req.userId,
+      body: req.body,
+      response: {
+        code: constant.errorCode,
+        message: err.message
+      }
+    }
+    await logs(logData).save()
+    res.send({
       code: constant.errorCode,
       message: err.message
-    }
-  }
-  await logs(logData).save()
-  res.send({
-    code: constant.errorCode,
-    message: err.message
-  });
-};
+    });
+  };
 };
 
 // get all terms 
