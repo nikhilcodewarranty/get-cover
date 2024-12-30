@@ -164,7 +164,7 @@ exports.exportContractReporting = async (req, res) => {
     try {
         let data = req.body
         let getTheThresholdLimir = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
-        let pageLimit = 1000
+        let pageLimit = 1000000
         let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
         let limitData = Number(pageLimit)
         let dealerIds = [];
@@ -863,3 +863,4 @@ exports.exportContractReporting = async (req, res) => {
         })
     }
 }
+
