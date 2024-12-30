@@ -665,6 +665,7 @@ exports.exportDataForClaim = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: "Success",
+      result_Array,lookupQuery
     })
 
     const groupByRole = (resultArray, roleKey, roleName) => {
