@@ -902,7 +902,7 @@ exports.createDealerPriceBook = async (req, res) => {
 
       let notificationData1 = {
         title: "New Pricebook Added",
-        description: `A new  Pricebook ${checkPriceBookMain.name} has been added under category ${checkCategory.name} by ${checkLoginUser.metaData[0]?.firstName}.`,
+        description: `A new  Pricebook ${checkPriceBookMain[0].name} has been added under category ${checkCategory.name} by ${checkLoginUser.metaData[0]?.firstName}.`,
         userId: req.teammateId,
         flag: 'Dealer Price Book',
         contentId: createDealerPrice._id,
@@ -2177,6 +2177,7 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
         title: "Dealer Pricebook file added successfully",
         description: `The Bulk file ${file.fieldName} of dealer pricebook has been uploaded and processed successfully for dealer ${checkDealer.name}. The file has been uploaded by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
+        tabAction:"priceBook",
         flag: 'Dealer Price Book',
         notificationFor: IDs,
         endPoint: base_url + "dealerDetails/" + req.body.dealerId,
