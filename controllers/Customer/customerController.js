@@ -987,6 +987,15 @@ exports.changePrimaryUser = async (req, res) => {
       let mergedEmail
       let notificationData
       let notificationArray
+      let emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
+        senderName: ``,
+        content: "The primary user for your account has been changed from " + updateLastPrimary.metaData[0]?.firstName + " to " + updatePrimary.metaData[0]?.firstName + ".",
+        subject: "Primary User change"
+      };
       if (checkServicer) {
         adminUpdatePrimaryQuery = {
           metaData: {
@@ -1022,7 +1031,6 @@ exports.changePrimaryUser = async (req, res) => {
         let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerUpdatePrimaryQuery, { email: 1 })
         let notificationEmails = adminUsers.map(user => user.email);
         let servicerEmails = servicerUsers.map(user => user.email);
-        mergedEmail = notificationEmails.concat(servicerEmails)
         const IDs = adminUsers.map(user => user._id)
         const servicerId = servicerUsers.map(user => user._id)
         notificationData = {
@@ -1046,7 +1054,8 @@ exports.changePrimaryUser = async (req, res) => {
           notificationFor: servicerId
         };
         notificationArray.push(notificationData)
-
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmails, ["noreply@getcover.com"], emailData))
       }
       if (checkDealer) {
         adminUpdatePrimaryQuery = {
@@ -1098,6 +1107,10 @@ exports.changePrimaryUser = async (req, res) => {
           notificationFor: dealerId
         };
         notificationArray.push(notificationData)
+
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
+
 
       }
       if (checkReseller) {
@@ -1178,6 +1191,11 @@ exports.changePrimaryUser = async (req, res) => {
         };
         notificationArray.push(notificationData)
 
+
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ["noreply@getcover.com"], emailData))
+
       }
       if (checkCustomer) {
         adminUpdatePrimaryQuery = {
@@ -1234,7 +1252,7 @@ exports.changePrimaryUser = async (req, res) => {
         const customerId = customerUsers.map(user => user._id)
         let dealerEmails = dealerUsers.map(user => user.email);
         let resellerEmails = resellerUsers.map(user => user.email);
-        let customerEmails = resellerUsers.map(user => user.email);
+        let customerEmails = customerUsers.map(user => user.email);
 
         mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails, customerEmails)
 
@@ -1285,25 +1303,15 @@ exports.changePrimaryUser = async (req, res) => {
           notificationFor: customerId
         };
         notificationArray.push(notificationData)
-
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ["noreply@getcover.com"], emailData))
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(customerEmails, ["noreply@getcover.com"], emailData))
       }
       let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkUser.metaData[0]?.metaId }, isPrimary: true } })
       let createNotification = await userService.saveNotificationBulk(notificationArray);
       // Send Email code here
-      let emailData = {
-        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        address: settingData[0]?.address,
-        websiteSetting: settingData[0],
-        senderName: `Dear ${checkUser.metaData[0]?.firstName}`,
-        content: "The primary user for your account has been changed from " + updateLastPrimary.metaData[0]?.firstName + " to " + updatePrimary.metaData[0]?.firstName + ".",
-        subject: "Primary User change"
-      };
 
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ["noreply@getcover.com"], emailData))
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(customerEmails, ["noreply@getcover.com"], emailData))
 
       //Save Logs changePrimaryUser
       let logData = {

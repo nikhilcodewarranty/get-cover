@@ -624,8 +624,6 @@ exports.changeDealerStatus = async (req, res) => {
           }
         }, { new: true })
 
-
-
       }
     }
     option = { new: true };
@@ -691,7 +689,7 @@ exports.changeDealerStatus = async (req, res) => {
         redirectionId: null,
         flag: 'dealer',
         endPoint: null,
-        notificationFor: IDs
+        notificationFor: IDs1
       };
 
       let notificationArrayData = [];
@@ -703,7 +701,7 @@ exports.changeDealerStatus = async (req, res) => {
       // Send Email code here
       let primaryUser = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.params.dealerId, isPrimary: true } } })
 
-      let notificationEmails = adminUsers.map(user => user.email)
+      let dealerEmails = dealerUsers.map(user => user.email)
       let settingData = await userService.getSetting({});
       let resetPasswordCode = randtoken.generate(4, '123456789')
 
@@ -733,6 +731,7 @@ exports.changeDealerStatus = async (req, res) => {
       }
 
       mailing = sgMail.send(emailConstant.sendEmailTemplate(adminEmails, ["noreply@getcover.com"], emailData))
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
 
       let logData = {
         userId: req.teammateId,
@@ -1558,6 +1557,7 @@ exports.addDealerUser = async (req, res) => {
         description: `A new user for Dealer ${checkDealer.name} has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
         userId: req.teammateId,
         contentId: saveData._id,
+        tabAction: "user",
         flag: 'dealer',
         endPoint: base_url + "/dealerDetails/" + checkDealer._id,
         redirectionId: "/dealerDetails/" + checkDealer._id,
@@ -1572,7 +1572,7 @@ exports.addDealerUser = async (req, res) => {
         flag: 'dealer',
         endPoint: base_url + "dealer/user",
         redirectionId: "dealer/user",
-        notificationFor: IDs
+        notificationFor: IDs1
       };
 
       let notificationArrayData = [];
