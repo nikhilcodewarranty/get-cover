@@ -592,209 +592,214 @@ exports.exportContractReporting = async (req, res) => {
         const getDealerContractsSummary = (resultData) => {
             // Initialize a result array
             const result = [];
-
+        
             resultData.forEach(item => {
                 // Safely extract dealer information
                 const dealer = item?.order?.[0]?.dealer?.[0];
                 const dealerName = dealer?.name || "Unknown Dealer";
-
+        
                 // Optional fields: servicer and reseller
                 const servicer = dealer?.servicer || "Unknown Servicer";
                 const reseller = dealer?.reseller || "Unknown Reseller";
-
+        
                 // If no dealer object is found, skip this item
                 if (!dealer) {
                     console.warn("Missing dealer information for item:", item);
                     return;
                 }
-
+        
                 // Check if the dealer is already in the result
-                let dealerEntry = result.find(entry => entry.dealerName === dealerName);
-
+                let dealerEntry = result.find(entry => entry["Dealer Name"] === dealerName);
+        
                 // If not, create a new entry
                 if (!dealerEntry) {
                     dealerEntry = {
-                        "dealerName": dealerName,
-                        total: 0,
-                        waiting: 0,
-                        active: 0,
-                        expired: 0,
+                        "Dealer Name": dealerName,
+                        "Total Contracts": 0,
+                        "Waiting Contracts": 0,
+                        "Active Contracts": 0,
+                        "Expired Contracts": 0,
                     };
                     result.push(dealerEntry);
                 }
-
+        
                 // Increment counts based on contract status
-                dealerEntry.total += 1;
+                dealerEntry["Total Contracts"] += 1;
+        
                 if (item.status === "Waiting") {
-                    dealerEntry.waiting += 1;
+                    dealerEntry["Waiting Contracts"] += 1;
                 } else if (item.status === "Active") {
-                    dealerEntry.active += 1;
+                    dealerEntry["Active Contracts"] += 1;
                 } else if (item.status === "Expired") {
-                    dealerEntry.expired += 1;
+                    dealerEntry["Expired Contracts"] += 1;
                 }
             });
-
+        
             return result;
         };
+        
 
         const getServicerContractsSummary = (resultData) => {
             // Initialize a result array for servicers
             const result = [];
-
+        
             resultData.forEach(item => {
                 // Safely extract servicer information
                 const servicer = item?.order?.[0]?.servicer?.[0];
                 const servicerName = servicer?.name || "Unknown Servicer";
-
+        
                 // If no servicer object is found, skip this item
                 if (!servicer) {
                     console.warn("Missing servicer information for item:", item);
                     return;
                 }
-
+        
                 // Check if the servicer is already in the result
-                let servicerEntry = result.find(entry => entry.servicerName === servicerName);
-
+                let servicerEntry = result.find(entry => entry["Servicer Name"] === servicerName);
+        
                 // If not, create a new entry
                 if (!servicerEntry) {
                     servicerEntry = {
-                        servicerName: servicerName,
-                        total: 0,
-                        waiting: 0,
-                        active: 0,
-                        expired: 0,
+                        "Servicer Name": servicerName,
+                        "Total Contracts": 0,
+                        "Waiting Contracts": 0,
+                        "Active Contracts": 0,
+                        "Expired Contracts": 0,
                     };
                     result.push(servicerEntry);
                 }
-
+        
                 // Increment counts based on contract status
-                servicerEntry.total += 1;
+                servicerEntry["Total Contracts"] += 1;
+        
                 if (item.status === "Waiting") {
-                    servicerEntry.waiting += 1;
+                    servicerEntry["Waiting Contracts"] += 1;
                 } else if (item.status === "Active") {
-                    servicerEntry.active += 1;
+                    servicerEntry["Active Contracts"] += 1;
                 } else if (item.status === "Expired") {
-                    servicerEntry.expired += 1;
+                    servicerEntry["Expired Contracts"] += 1;
                 }
             });
-
+        
             return result;
         };
-
+        
         const getResellerContractsSummary = (resultData) => {
             // Initialize a result array for resellers
             const result = [];
-
+        
             resultData.forEach(item => {
                 // Safely extract reseller information
                 const reseller = item?.order?.[0]?.reseller?.[0];
                 const resellerName = reseller?.name || "Unknown Reseller";
-
+        
                 // If no reseller object is found, skip this item
                 if (!reseller) {
                     console.warn("Missing reseller information for item:", item);
                     return;
                 }
-
+        
                 // Check if the reseller is already in the result
-                let resellerEntry = result.find(entry => entry.resellerName === resellerName);
-
+                let resellerEntry = result.find(entry => entry["Reseller Name"] === resellerName);
+        
                 // If not, create a new entry
                 if (!resellerEntry) {
                     resellerEntry = {
-                        resellerName: resellerName,
-                        total: 0,
-                        waiting: 0,
-                        active: 0,
-                        expired: 0,
+                        "Reseller Name": resellerName,
+                        "Total Contracts": 0,
+                        "Waiting Contracts": 0,
+                        "Active Contracts": 0,
+                        "Expired Contracts": 0,
                     };
                     result.push(resellerEntry);
                 }
-
+        
                 // Increment counts based on contract status
-                resellerEntry.total += 1;
+                resellerEntry["Total Contracts"] += 1;
+        
                 if (item.status === "Waiting") {
-                    resellerEntry.waiting += 1;
+                    resellerEntry["Waiting Contracts"] += 1;
                 } else if (item.status === "Active") {
-                    resellerEntry.active += 1;
+                    resellerEntry["Active Contracts"] += 1;
                 } else if (item.status === "Expired") {
-                    resellerEntry.expired += 1;
+                    resellerEntry["Expired Contracts"] += 1;
                 }
             });
-
+        
             return result;
         };
+        
 
         const getCustomerContractsSummary = (resultData) => {
             // Initialize a result array for customers
             const result = [];
-
+        
             resultData.forEach(item => {
                 // Safely extract customer information
                 const customer = item?.order?.[0]?.customer?.[0];
                 const customerName = customer?.username || "Unknown Customer";
-
+        
                 // If no customer object is found, skip this item
                 if (!customer) {
                     console.warn("Missing customer information for item:", item);
                     return;
                 }
-
+        
                 // Check if the customer is already in the result
-                let customerEntry = result.find(entry => entry.customerName === customerName);
-
+                let customerEntry = result.find(entry => entry["Customer Name"] === customerName);
+        
                 // If not, create a new entry
                 if (!customerEntry) {
                     customerEntry = {
-                        customerName: customerName,
-                        total: 0,
-                        waiting: 0,
-                        active: 0,
-                        expired: 0,
+                        "Customer Name": customerName,
+                        "Total Contracts": 0,
+                        "Waiting Contracts": 0,
+                        "Active Contracts": 0,
+                        "Expired Contracts": 0,
                     };
                     result.push(customerEntry);
                 }
-
+        
                 // Increment counts based on contract status
-                customerEntry.total += 1;
+                customerEntry["Total Contracts"] += 1;
+        
                 if (item.status === "Waiting") {
-                    customerEntry.waiting += 1;
+                    customerEntry["Waiting Contracts"] += 1;
                 } else if (item.status === "Active") {
-                    customerEntry.active += 1;
+                    customerEntry["Active Contracts"] += 1;
                 } else if (item.status === "Expired") {
-                    customerEntry.expired += 1;
+                    customerEntry["Expired Contracts"] += 1;
                 }
             });
-
+        
             return result;
-        }
-
+        };
+        
 
         let getContractsSummary = (resultData) => {
             // Initialize a summary object
             const summary = {
-                total: 0,
-                waiting: 0,
-                active: 0,
-                expired: 0,
+                "Total Contracts": 0,
+                "Waiting Contracts": 0,
+                "Active Contracts": 0,
+                "Expired Contracts": 0,
             };
-
+        
             resultData.forEach(item => {
                 // Increment counts based on contract status
-                summary.total += 1;
+                summary["Total Contracts"] += 1;
                 if (item.status === "Waiting") {
-                    summary.waiting += 1;
+                    summary["Waiting Contracts"] += 1;
                 } else if (item.status === "Active") {
-                    summary.active += 1;
+                    summary["Active Contracts"] += 1;
                 } else if (item.status === "Expired") {
-                    summary.expired += 1;
+                    summary["Expired Contracts"] += 1;
                 }
             });
-
+        
             return summary;
         };
-
-
+        
 
         // Example Usage
         const dealerSummary = getDealerContractsSummary(result1);
