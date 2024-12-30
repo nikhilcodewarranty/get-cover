@@ -986,7 +986,7 @@ exports.changePrimaryUser = async (req, res) => {
       let adminUpdatePrimaryQuery
       let mergedEmail
       let notificationData
-      let notificationArray
+      let notificationArray = []
       let emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
