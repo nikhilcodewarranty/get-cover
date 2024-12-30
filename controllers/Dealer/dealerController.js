@@ -889,14 +889,14 @@ exports.createDealerPriceBook = async (req, res) => {
       let settingData = await userService.getSetting({})
       let notificationData = {
         title: "New Dealer Pricebook Added",
-        description: `A new Dealer Pricebook ${checkPriceBookMain.name} for ${checkDealer.name} has been added under category ${checkCategory.name} by ${checkLoginUser.metaData[0]?.firstName}.`,
+        description: `A new Dealer Pricebook ${checkPriceBookMain[0].name} for ${checkDealer.name} has been added under category ${checkCategory.name} by ${checkLoginUser.metaData[0]?.firstName}.`,
         userId: req.teammateId,
         flag: 'Dealer Price Book',
         tabAction: "priceBook",
         contentId: createDealerPrice._id,
-        redirectionId: "dealerPriceList/" + checkPriceBookMain.name,
+        redirectionId: "dealerPriceList/" + checkPriceBookMain[0].name,
         notificationFor: IDs,
-        endPoint: base_url + "dealerPriceList/" + checkPriceBookMain.name,
+        endPoint: base_url + "dealerPriceList/" + checkPriceBookMain[0].name,
 
       };
 
