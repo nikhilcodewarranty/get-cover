@@ -889,7 +889,7 @@ exports.createDealerPriceBook = async (req, res) => {
       let settingData = await userService.getSetting({})
       let notificationData = {
         title: "New Dealer Pricebook Added",
-        description: `A new Dealer Pricebook ${checkPriceBookMain[0].name} for ${checkDealer.name} has been added under category ${checkCategory.name} by ${checkLoginUser.metaData[0]?.firstName}.`,
+        description: `A new Dealer Pricebook ${checkPriceBookMain[0].name} for ${checkDealer.name} has been added under category ${checkCategory.name} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         flag: 'Dealer Price Book',
         tabAction: "priceBook",
@@ -902,7 +902,7 @@ exports.createDealerPriceBook = async (req, res) => {
 
       let notificationData1 = {
         title: "New Pricebook Added",
-        description: `A new  Pricebook ${checkPriceBookMain[0].name} has been added under category ${checkCategory.name} by ${checkLoginUser.metaData[0]?.firstName}.`,
+        description: `A new  Pricebook ${checkPriceBookMain[0].name} has been added under category ${checkCategory.name} by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         flag: 'Dealer Price Book',
         contentId: createDealerPrice._id,
@@ -1305,7 +1305,7 @@ exports.updateDealerMeta = async (req, res) => {
 
     let notificationData = {
       title: "Dealer Details Updated",
-      description: `The details for the Dealer ${checkDealer.name} has been updated by ${checkLoginUser.metaData[0]?.firstName}.`,
+      description: `The details for the Dealer ${checkDealer.name} has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
       userId: req.teammateId,
       redirectionId: data.dealerId,
       flag: 'dealer',
@@ -1315,7 +1315,7 @@ exports.updateDealerMeta = async (req, res) => {
     };
     let notificationData1 = {
       title: "Details Updated",
-      description: `The details for your account has been changed by ${checkLoginUser.metaData[0]?.firstName}.`,
+      description: `The details for your account has been changed by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
       userId: req.teammateId,
       redirectionId: data.dealerId,
       flag: 'dealer',
@@ -1572,7 +1572,7 @@ exports.addDealerUser = async (req, res) => {
 
       let notificationData1 = {
         title: "New User Added",
-        description: `A new user for you account has been added by ${checkLoginUser.metaData[0]?.firstName} - ${req.role}.`,
+        description: `A new user for you account has been added by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
         userId: req.teammateId,
         contentId: saveData._id,
         flag: 'dealer',
@@ -2329,10 +2329,10 @@ exports.createDeleteRelation = async (req, res) => {
         adminTitle: "Servicer Assigned to Dealer",
         dealerTitle: "Servicer Assigned",
         servicerTitle: "Dealer Assigned",
-        adminMessage: `We have successfully assigned the servicer to Dealer ${checkDealer.name} by ${checkLoginUser.metaData[0]?.firstName}.`,
-        dealerMessage: `You have been assigned a new servicer by ${checkLoginUser.metaData[0]?.firstName}.`,
-        servicerMessage: `You have been assigned a new dealer ${checkDealer.name} by ${checkLoginUser.metaData[0]?.firstName}.`,
-        description: `We have successfully assigned the servicer to Dealer ${checkDealer.name} by ${checkLoginUser.metaData[0]?.firstName}.`,
+        adminMessage: `We have successfully assigned the servicer to Dealer ${checkDealer.name} by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        dealerMessage: `You have been assigned a new servicer by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        servicerMessage: `You have been assigned a new dealer ${checkDealer.name} by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        description: `We have successfully assigned the servicer to Dealer ${checkDealer.name} by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         contentId: null,
         flag: 'Assigned Servicer',
