@@ -22,7 +22,7 @@ const filer_contact_us = Joi.object({
     category: Joi.string().allow(null).allow('').optional(),
     siteURL: Joi.string().allow(null).allow('').optional(),
     ipAddress: Joi.string().allow(null).allow('').optional(),
-    products: Joi.array().allow(null).allow([]).optional(),
+    // products: Joi.array().allow(null).allow([]).optional(),
     server: Joi.string().allow(null).allow('').optional(),
 })
 module.exports = filer_contact_us   
