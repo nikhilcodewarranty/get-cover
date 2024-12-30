@@ -723,28 +723,42 @@ exports.exportDataForClaim = async (req, res) => {
       return resultArray.reduce((acc, item) => {
         // Extract customer username and claim information
         const customerName = item?.contracts?.orders?.customer?.username || "Unknown Customer";
+        const claimAmount = item.totalAmount || 0;
         const isCompleted = item.claimStatus.some(status => status.status === "completed");
         const isOpen = item.claimStatus.some(status => status.status === "open");
         const isRejected = item.claimStatus.some(status => status.status === "rejected");
-    
+
         // Check if customer already exists in the accumulator
         let customerEntry = acc.find(entry => entry["Customer Name"] === customerName);
-    
+
         if (!customerEntry) {
-          // Initialize a new customer entry
+          // If customer does not exist, create a new entry
           customerEntry = {
             "Customer Name": customerName,
             "Total Claims": 0,
             "Completed Claims": 0,
             "Open Claims": 0,
-            "Rejected Claims": 0
+            "Rejected Claims": 0,
+            "Total Amount of Claims": 0,
+            "Average Claim Amount": 0, // Initialize average claim amount
           };
+          if (req.role == "Customer") {
+            customerEntry = {
+              "Customer Name": customerName,
+              "Total Claims": 0,
+              "Completed Claims": 0,
+              "Open Claims": 0,
+              "Rejected Claims": 0
+            };
+          }
           acc.push(customerEntry);
         }
-    
+
         // Update customer entry
         customerEntry["Total Claims"] += 1;
-    
+        if (req.role != "Customer") {
+          customerEntry["Total Amount of Claims"] += claimAmount;
+        }
         if (isCompleted) {
           customerEntry["Completed Claims"] += 1;
         }
@@ -754,11 +768,18 @@ exports.exportDataForClaim = async (req, res) => {
         if (isOpen) {
           customerEntry["Open Claims"] += 1;
         }
-    
+
+        // Calculate average claim amount for completed claims
+        if (req.role != "Customer") {
+          customerEntry["Average Claim Amount"] = customerEntry["Completed Claims"]
+            ? (customerEntry["Total Amount of Claims"] / customerEntry["Completed Claims"]).toFixed(2)
+            : 0;
+        }
+
+
         return acc;
       }, []);
     };
-    
 
     const groupDataByServicer = async (resultArray) => {
       const acc = [];
