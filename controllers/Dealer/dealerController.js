@@ -504,9 +504,9 @@ exports.statusUpdate = async (req, res) => {
         userId: req.teammateId,
         contentId: req.params.dealerPriceBookId,
         flag: 'Dealer Price Book',
-        redirectionId: "dealerPriceList" + data.dealerSku + "/" + getDealerDetail.name,
+        redirectionId: "dealerPriceList" + existingDealerPriceBook.dealerSku + "/" + getDealerDetail.name,
         notificationFor: IDs,
-        endPoint: base_url + "dealerPriceList" + data.dealerSku + "/" + getDealerDetail.name,
+        endPoint: base_url + "dealerPriceList" + existingDealerPriceBook.dealerSku + "/" + getDealerDetail.name,
       };
 
       let notificationData3 = {
@@ -515,9 +515,9 @@ exports.statusUpdate = async (req, res) => {
         userId: req.teammateId,
         contentId: req.params.dealerPriceBookId,
         flag: 'Dealer Price Book',
-        redirectionId: "dealer/priceBook/" + data.dealerSku,
+        redirectionId: "dealer/priceBook/" + existingDealerPriceBook.dealerSku,
         notificationFor: IDs1,
-        endPoint: base_url + "dealer/priceBook/" + data.dealerSku
+        endPoint: base_url + "dealer/priceBook/" + existingDealerPriceBook.dealerSku
       };
 
       notificationArrayData.push(notificationData2)
@@ -898,9 +898,9 @@ exports.createDealerPriceBook = async (req, res) => {
         flag: 'Dealer Price Book',
         tabAction: "priceBook",
         contentId: createDealerPrice._id,
-        redirectionId: "dealerPriceList/" + checkDealer.name + "/" + checkPriceBookMain[0].name,
+        redirectionId: "dealerPriceList/" + data.dealerSku + "/" + checkDealer.name,
         notificationFor: IDs,
-        endPoint: base_url + "dealerPriceList/" + checkPriceBookMain[0].name,
+        endPoint: base_url + "dealerPriceList/" + data.dealerSku + "/" + checkDealer.name
 
       };
 
