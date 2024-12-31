@@ -287,8 +287,8 @@ exports.registerDealer = async (req, res) => {
     let settingData = await userService.getSetting({});
 
     let notificationData = {
-      adminTitle: "New Dealer Request",
-      adminMessage: "A New Dealer " + data.name + " has registered with us on the portal",
+      title: "New Dealer Request",
+      description: "A New Dealer " + data.name + " has registered with us on the portal",
       userId: req.teammateId,
       redirectionId: base_url,
       flag: 'Dealer Request',
@@ -2206,7 +2206,6 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
       let createNotification = await userService.saveNotificationBulk(notificationArrayData);
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
-      console.log(dealerPrimary.email, checkDealer[0].isAccountCreate)
 
       let mailing = sgMail.send(emailConstant.sendCsvFile(dealerEmail, "noreply@getcover.com", htmlTableString));
 
