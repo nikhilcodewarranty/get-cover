@@ -1121,7 +1121,7 @@ exports.changePrimaryUser = async (req, res) => {
           metaData: {
             $elemMatch: {
               $and: [
-                { "resellerNotifications.primaryChanged": true },
+                { "resellerNotifications.primaryChange": true },
                 { status: true },
                 { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
               ]
@@ -1132,7 +1132,7 @@ exports.changePrimaryUser = async (req, res) => {
           metaData: {
             $elemMatch: {
               $and: [
-                { "resellerNotifications.primaryChanged": true },
+                { "resellerNotifications.primaryChange": true },
                 { status: true },
                 { metaId: new mongoose.Types.ObjectId(checkReseller.dealerId) },
               ]
@@ -1143,7 +1143,7 @@ exports.changePrimaryUser = async (req, res) => {
           metaData: {
             $elemMatch: {
               $and: [
-                { "resellerNotifications.primaryChanged": true },
+                { "resellerNotifications.primaryChange": true },
                 { status: true },
                 { metaId: new mongoose.Types.ObjectId(checkReseller._id) },
               ]
@@ -1206,7 +1206,7 @@ exports.changePrimaryUser = async (req, res) => {
           metaData: {
             $elemMatch: {
               $and: [
-                { "customerNotifications.primaryChanged": true },
+                { "customerNotifications.primaryChange": true },
                 { status: true },
                 { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
               ]
@@ -1217,7 +1217,7 @@ exports.changePrimaryUser = async (req, res) => {
           metaData: {
             $elemMatch: {
               $and: [
-                { "customerNotifications.primaryChanged": true },
+                { "customerNotifications.primaryChange": true },
                 { status: true },
                 { metaId: new mongoose.Types.ObjectId(checkCustomer.dealerId) },
               ]
@@ -1228,7 +1228,7 @@ exports.changePrimaryUser = async (req, res) => {
           metaData: {
             $elemMatch: {
               $and: [
-                { "customerNotifications.primaryChanged": true },
+                { "customerNotifications.primaryChange": true },
                 { status: true },
                 { metaId: new mongoose.Types.ObjectId(checkCustomer?.resellerId) },
               ]
@@ -1239,7 +1239,7 @@ exports.changePrimaryUser = async (req, res) => {
           metaData: {
             $elemMatch: {
               $and: [
-                { "customerNotifications.primaryChanged": true },
+                { "customerNotifications.primaryChange": true },
                 { status: true },
                 { metaId: new mongoose.Types.ObjectId(checkCustomer._id) },
               ]
