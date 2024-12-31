@@ -1507,7 +1507,7 @@ exports.registerServiceProvider = async (req, res) => {
 
     const IDs = adminUsers.map(user => user._id)
 
-    const base_url = `${process.env.SITE_URL}servicerRequestList/`
+    const base_url = `${process.env.SITE_URL}servicerRequestList/${req.body.name}`
 
     const notificationData = {
       title: "New Servicer Request",
@@ -1515,6 +1515,7 @@ exports.registerServiceProvider = async (req, res) => {
       userId: req.teammateId,
       flag: 'servicer',
       redirectionId: base_url,
+      endPoint:base_url,
       notificationFor: IDs
     };
 
