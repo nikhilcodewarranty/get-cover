@@ -840,6 +840,47 @@ exports.getUserNotificationData = async (req, res) => {
             getData.metaData[0].registerNotifications = null
         }
 
+        if (data.flag == "Dealer") {
+            // getData.metaData[0].orderNotifications = null
+            // getData.metaData[0].claimNotification = null
+            getData.metaData[0].adminNotification = null
+            // getData.metaData[0].servicerNotification = null
+            // getData.metaData[0].dealerNotifications = null
+            // getData.metaData[0].resellerNotifications = null
+            // getData.metaData[0].customerNotifications = null
+            getData.metaData[0].registerNotifications = null
+        }
+        if (data.flag == "Reseller") {
+            // getData.metaData[0].orderNotifications = null
+            // getData.metaData[0].claimNotification = null
+            getData.metaData[0].adminNotification = null
+            // getData.metaData[0].servicerNotification = null
+            // getData.metaData[0].dealerNotifications = null
+            // getData.metaData[0].resellerNotifications = null
+            // getData.metaData[0].customerNotifications = null
+            getData.metaData[0].registerNotifications = null
+        }
+        if (data.flag == "Customer") {
+            // getData.metaData[0].orderNotifications = null
+            // getData.metaData[0].claimNotification = null
+            getData.metaData[0].adminNotification = null
+            getData.metaData[0].servicerNotification = null
+            getData.metaData[0].dealerNotifications = null
+            getData.metaData[0].resellerNotifications = null
+            // getData.metaData[0].customerNotifications = null
+            getData.metaData[0].registerNotifications = null
+        }
+        if (data.flag == "Servicer") {
+            // getData.metaData[0].orderNotifications = null
+            // getData.metaData[0].claimNotification = null
+            getData.metaData[0].adminNotification = null
+            // getData.metaData[0].servicerNotification = null
+            getData.metaData[0].dealerNotifications = null
+            getData.metaData[0].resellerNotifications = null
+            // getData.metaData[0].customerNotifications = null
+            getData.metaData[0].registerNotifications = null
+        }
+
         res.send({
             code: constant.successCode,
             message: "Success",
