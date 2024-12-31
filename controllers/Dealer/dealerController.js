@@ -500,7 +500,7 @@ exports.statusUpdate = async (req, res) => {
     else {
       let notificationData2 = {
         title: "Dealer Pricebook  Status updated",
-        description: `Dealer Pricebook ${priceBookData[0]?.name} for ${getDealerDetail.name} has been updated to ${data.status ? "Active" : "Inactive"} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        description: `Dealer Pricebook ${priceBookData[0]?.name} for ${getDealerDetail.name} status has been updated to ${data.status ? "Active" : "Inactive"} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         contentId: req.params.dealerPriceBookId,
         flag: 'Dealer Price Book',
@@ -511,7 +511,7 @@ exports.statusUpdate = async (req, res) => {
 
       let notificationData3 = {
         title: "Pricebook  Status updated",
-        description: `Pricebook has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        description: `Pricebook ${priceBookData[0]?.name} status has been updated to ${data.status ? "Active" : "Inactive"} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}`,
         userId: req.teammateId,
         contentId: req.params.dealerPriceBookId,
         flag: 'Dealer Price Book',
@@ -536,7 +536,7 @@ exports.statusUpdate = async (req, res) => {
       senderName: getPrimary.metaData[0]?.firstName,
       content: "The price book " + priceBookData[0]?.name + " has been updated",
       subject: "Update Price Book"
-    } 
+    }
     //check if account create true
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
     mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
