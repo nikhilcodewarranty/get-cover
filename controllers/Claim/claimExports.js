@@ -46,7 +46,6 @@ const s3Client1 = new S3Client({
   },
 })
 
-
 const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, dateString, role) => {
   const workbook = new ExcelJS.Workbook();
   // Loop through data to create sheets dynamically
@@ -532,8 +531,6 @@ exports.exportDataForClaim = async (req, res) => {
 
     const dynamicOption = await userService.getOptions({ name: 'coverage_type' })
 
-
-
     let result_Array = resultFiter.map((item1) => {
       servicer = []
       let mergedData = []
@@ -930,8 +927,6 @@ exports.exportDataForClaim = async (req, res) => {
       }, []);
     };
 
-
-
     // Group data for Dealer, Servicer, Reseller, and Customer
     const dealerData = groupByRole(result_Array, "contracts.orders.dealers", "Dealer");
     const servicerData = await groupDataByServicer(result_Array);
@@ -980,11 +975,6 @@ exports.exportDataForClaim = async (req, res) => {
         "Total Unpaid Claims": 0,
       }
     );
-
-
-
-
-
 
     summary = [summary]
     let dataArray = [summary, dealerData, servicerData, resellerData, customerArray]
