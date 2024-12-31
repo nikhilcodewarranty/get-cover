@@ -996,16 +996,16 @@ async function generateTC(orderData) {
             let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerActiveOrderQuery, { email: 1 })
             let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerActiveOrderQuery, { email: 1 })
             let customerUsers = await supportingFunction.getNotificationEligibleUser(customerActiveOrderQuery, { email: 1 })
-            console.log("dfsfddfssfdsdfsdfsdfsdf123333",customerUsers)
+            console.log("dfsfddfssfdsdfsdfsdfsdf123333", customerUsers)
             let notificationEmails = adminUsers.map(user => user.email)
             let dealerEmails = dealerUsers.map(user => user.email)
             let resellerEmails = resellerUsers.map(user => user.email)
             let customerEmails = customerUsers.map(user => user.email)
             const base_url = `${process.env.SITE_URL}`
-            console.log("notificationEmails",notificationEmails)
-            console.log("dealerEmails",dealerEmails)
-            console.log("resellerEmails",resellerEmails)
-            console.log("customerEmails",customerEmails)
+            console.log("notificationEmails", notificationEmails)
+            console.log("dealerEmails", dealerEmails)
+            console.log("resellerEmails", resellerEmails)
+            console.log("customerEmails", customerEmails)
 
             let settingData = await userService.getSetting({});
             let emailData = {
@@ -1476,6 +1476,7 @@ exports.createOrder1 = async (req, res) => {
         }
 
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
+            console.log("inside active contitions")
             let paidDate = {
                 name: "processOrder",
                 date: new Date()
@@ -1705,14 +1706,14 @@ exports.createOrder1 = async (req, res) => {
                         unique_key_search: unique_key_search1,
                         unique_key_number: unique_key_number1,
                     };
-
+                    console.log(contractObject);
                     increamentNumber++
 
                     contractArray.push(contractObject);
                 });
 
                 let saveContracts = await contractService.createBulkContracts(contractArray);
-
+                console.log("saveContracts++++++++++++++++++++++++++++++++++++", saveContracts)
                 if (saveContracts.length == 0) {
                     let logData = {
                         endpoint: "order/createOrder",
