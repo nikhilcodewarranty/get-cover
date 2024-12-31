@@ -47,7 +47,6 @@ const s3Client1 = new S3Client({
     },
 })
 
-
 const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, dateString, role) => {
     const workbook = new ExcelJS.Workbook();
     // Loop through data to create sheets dynamically
@@ -159,7 +158,6 @@ const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, d
     }
 };
 
-
 exports.exportContractReporting = async (req, res) => {
     try {
         let data = req.body
@@ -174,6 +172,7 @@ exports.exportContractReporting = async (req, res) => {
         let orderIds = []
         let servicerIds = [];
         let userSearchCheck = 0
+        
         if (req.role == 'Dealer') {
             // match = { 'contracts.orders.dealerId': new mongoose.Types.ObjectId(req.userId) }
             dealerIds = [new mongoose.Types.ObjectId(req.userId)]
