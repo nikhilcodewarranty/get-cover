@@ -166,7 +166,7 @@ exports.exportContractReporting = async (req, res) => {
         let page = 0;
         let totalContractData = []
         let hasMore = true;
-        let limitData = Number(pageLimit)
+        let limitData = Number(limit)
         let dealerIds = [];
         let customerIds = [];
         let resellerIds = [];
