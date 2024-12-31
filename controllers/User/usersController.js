@@ -1599,7 +1599,7 @@ exports.deleteUser = async (req, res) => {
         tabAction: "servicerUser",
         flag: checkRole?.role,
         redirectionId: "servicerDetails/" + checkServicer._id,
-        endPoint: base_url,
+        endPoint: base_url + "servicerDetails/" + checkServicer._id,
         notificationFor: IDs
       }
       notificationArray.push(notificationData)
