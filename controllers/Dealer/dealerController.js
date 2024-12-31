@@ -479,7 +479,7 @@ exports.statusUpdate = async (req, res) => {
         userId: req.teammateId,
         contentId: req.params.dealerPriceBookId,
         flag: 'Dealer Price Book',
-        redirectionId:  base_url + "dealerPriceList" + data.dealerSku + "/" + getDealerDetail.name,
+        redirectionId: "dealerPriceList" + data.dealerSku + "/" + getDealerDetail.name,
         notificationFor: IDs,
         endPoint: base_url + "dealerPriceList" + data.dealerSku + "/" + getDealerDetail.name,
       };
