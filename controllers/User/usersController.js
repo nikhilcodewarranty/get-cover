@@ -928,7 +928,7 @@ exports.updateUserData = async (req, res) => {
             $and: [
               { "resellerNotifications.userUpdate": true },
               { status: true },
-              { metaId: new mongoose.Types.ObjectId(checkDealer.dealerId) },
+              { metaId: new mongoose.Types.ObjectId(checkReseller.dealerId) },
             ]
           }
         },
