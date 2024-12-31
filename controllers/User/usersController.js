@@ -1268,9 +1268,9 @@ exports.updateUserData = async (req, res) => {
       }
     })
 
- 
 
- 
+
+
 
 
 
@@ -1589,12 +1589,12 @@ exports.deleteUser = async (req, res) => {
       const IDs = adminUsers.map(user => user._id)
       const servicerIds = servicerUsers.map(user => user._id)
       notificationEmails = adminUsers.map(user => user.email);
-       servicerEmails = servicerUsers.map(user => user.email);
-      
+      servicerEmails = servicerUsers.map(user => user.email);
+
       mergedEmail = notificationEmails.concat(servicerEmails)
       notificationData = {
         title: "Servicer User Deleted",
-        description: `The User ${checkUser.metaData[0].firstName} for the Servicer ${checkServicer.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
+        description: `The User ${checkUser.metaData[0].firstName + " " + checkUser.metaData[0].lastName} for the Servicer ${checkServicer.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}.`,
         userId: req.teammateId,
         tabAction: "servicerUser",
         flag: checkRole?.role,
@@ -1642,11 +1642,11 @@ exports.deleteUser = async (req, res) => {
       const IDs = adminUsers.map(user => user._id)
       const dealerId = dealerUsers.map(user => user._id)
       notificationEmails = adminUsers.map(user => user.email);
-       dealerEmails = dealerUsers.map(user => user.email);
+      dealerEmails = dealerUsers.map(user => user.email);
       mergedEmail = notificationEmails.concat(dealerEmails)
       notificationData = {
         title: "Dealer User Deleted",
-        description: `The User ${checkUser.metaData[0].firstName} for the dealer ${checkDealer.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName} -${req.role}..`,
+        description: `The User ${checkUser.metaData[0].firstName + " " + checkUser.metaData[0].lastName} for the dealer ${checkDealer.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName} -${req.role}.`,
         userId: req.teammateId,
         tabAction: "dealerUser",
 
@@ -1659,7 +1659,7 @@ exports.deleteUser = async (req, res) => {
       notificationArray.push(notificationData)
       notificationData = {
         title: "User Deleted",
-        description: `The user ${checkUser?.metaData[0]?.firstName} has been deleted by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+        description: `The user ${checkUser.metaData[0].firstName + " " + checkUser.metaData[0].lastName} has been deleted by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
         userId: req.teammateId,
         flag: checkRole?.role,
         redirectionId: "dealer/user",
@@ -1710,13 +1710,13 @@ exports.deleteUser = async (req, res) => {
       const dealerId = dealerUsers.map(user => user._id)
       const resellerId = resellerUsers.map(user => user._id)
       notificationEmails = adminUsers.map(user => user.email);
-       dealerEmails = dealerUsers.map(user => user.email);
-       resellerEmails = resellerUsers.map(user => user.email);
+      dealerEmails = dealerUsers.map(user => user.email);
+      resellerEmails = resellerUsers.map(user => user.email);
 
       mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails)
       notificationData = {
         title: "Reseller User Deleted",
-        description: `The User ${checkUser.metaData[0].firstName} for the reseller ${checkReseller.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
+        description: `The User ${checkUser.metaData[0].firstName + " " + checkUser.metaData[0].lastName} for the reseller ${checkReseller.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}.`,
         userId: req.teammateId,
         tabAction: "resellerUser",
 
@@ -1729,7 +1729,7 @@ exports.deleteUser = async (req, res) => {
       notificationArray.push(notificationData)
       notificationData = {
         title: "Reseller User Deleted",
-        description: `The User ${checkUser.metaData[0].firstName} for the reseller ${checkReseller.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
+        description: `The User ${checkUser.metaData[0].firstName + " " + checkUser.metaData[0].lastName} for the reseller ${checkReseller.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}.`,
         userId: req.teammateId,
         tabAction: "resellerUser",
 
@@ -1742,7 +1742,7 @@ exports.deleteUser = async (req, res) => {
       notificationArray.push(notificationData)
       notificationData = {
         title: "User Deleted",
-        description: `The user ${checkUser?.metaData[0]?.firstName} has been deleted by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+        description: `The user ${checkUser.metaData[0].firstName + " " + checkUser.metaData[0].lastName} has been deleted by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
         userId: req.teammateId,
         flag: checkRole?.role,
         redirectionId: "reseller/user",
@@ -1808,15 +1808,15 @@ exports.deleteUser = async (req, res) => {
       const customerId = customerUsers.map(user => user._id)
       notificationEmails = adminUsers.map(user => user.email);
 
-       dealerEmails = dealerUsers.map(user => user.email);
-       resellerEmails = resellerUsers.map(user => user.email);
-       customerEmails = customerUsers.map(user => user.email);
+      dealerEmails = dealerUsers.map(user => user.email);
+      resellerEmails = resellerUsers.map(user => user.email);
+      customerEmails = customerUsers.map(user => user.email);
 
       mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails, customerEmails)
 
       notificationData = {
         title: "Customer User Deleted",
-        description: `The User ${checkUser.metaData[0].firstName} for the customer ${checkCustomer.username} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
+        description: `The User ${checkUser.metaData[0].firstName + " " + checkUser.metaData[0].lastName} for the customer ${checkCustomer.username} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}.`,
         userId: req.teammateId,
         tabAction: "customerUser",
 
@@ -1829,7 +1829,7 @@ exports.deleteUser = async (req, res) => {
       notificationArray.push(notificationData)
       notificationData = {
         title: "Customer User Deleted",
-        description: `The User ${checkUser.metaData[0].firstName} for the customer ${checkCustomer.username} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
+        description: `The User ${checkUser.metaData[0].firstName + " " + checkUser.metaData[0].lastName} for the customer ${checkCustomer.username} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}.`,
         userId: req.teammateId,
         tabAction: "customerUser",
 
@@ -1842,7 +1842,7 @@ exports.deleteUser = async (req, res) => {
       notificationArray.push(notificationData)
       notificationData = {
         title: "Customer User Deleted",
-        description: `The User ${checkUser.metaData[0].firstName} for the customer ${checkCustomer.username} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
+        description: `The User ${checkUser.metaData[0].firstName + " " + checkUser.metaData[0].lastName} for the customer ${checkCustomer.username} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}.`,
         userId: req.teammateId,
         flag: checkRole?.role,
         tabAction: "customerUser",
@@ -1854,7 +1854,7 @@ exports.deleteUser = async (req, res) => {
       notificationArray.push(notificationData)
       notificationData = {
         title: "User Deleted",
-        description: `The user ${checkUser?.metaData[0]?.firstName} has been deleted by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+        description: `The user ${checkUser.metaData[0].firstName + " " + checkUser.metaData[0].lastName} has been deleted by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
         userId: req.teammateId,
         flag: checkRole?.role,
         redirectionId: "customer/user",
