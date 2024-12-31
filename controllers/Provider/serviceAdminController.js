@@ -397,7 +397,7 @@ exports.createServiceProvider = async (req, res, next) => {
         flag: 'servicer',
         notificationFor: IDs,
         redirectionId: "servicerDetails/" + checkDetail._id,
-        endpoint: base_url + "servicerDetails/" + checkDetail._id,
+        endPoint: base_url + "servicerDetails/" + checkDetail._id,
       };
 
       let createNotification = await userService.createNotification(notificationData);
@@ -1514,8 +1514,8 @@ exports.registerServiceProvider = async (req, res) => {
       description: `A New Servicer ${data.name} has registered with us on the portal.`,
       userId: req.teammateId,
       flag: 'servicer',
-      redirectionId: "servicerRequestList/"+req.body.name,
-      endPoint:base_url,
+      redirectionId: "servicerRequestList/" + req.body.name,
+      endPoint: base_url + "servicerRequestList/" + req.body.name,
       notificationFor: IDs
     };
 
