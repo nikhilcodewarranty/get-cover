@@ -475,23 +475,23 @@ exports.statusUpdate = async (req, res) => {
     if (existingDealerPriceBook.status == data.status) {
       let notificationData = {
         title: "Dealer PriceBook Updated",
-        description: `Dealer Pricebook ${priceBookData[0]?.name} for ${getDealerDetail.name} has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        description: `Dealer Pricebook ${priceBookData[0]?.pName} for ${getDealerDetail.name} has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         contentId: req.params.dealerPriceBookId,
         flag: 'Dealer Price Book',
-        redirectionId: "dealerPriceList/" + priceBookData[0].name,
+        redirectionId: "dealerPriceList/" + getDealerDetail.name + "/" + priceBookData[0].pName,
         notificationFor: IDs,
-        endPoint: base_url + "dealerPriceList/" + priceBookData[0].name,
+        endPoint: base_url + "dealerPriceList/" + getDealerDetail.name + "/" + priceBookData[0].pName,
       };
       let notificationData1 = {
         title: "PriceBook Updated",
-        description: `Pricebook ${priceBookData[0]?.name} has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        description: `Pricebook ${priceBookData[0]?.pName} has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         contentId: req.params.dealerPriceBookId,
         flag: 'Dealer Price Book',
-        redirectionId: "dealer/priceBook/" + priceBookData[0].name,
+        redirectionId: "dealer/priceBook/" + priceBookData[0].pName,
         notificationFor: IDs1,
-        endPoint: base_url + "dealer/priceBook/" + priceBookData[0].name,
+        endPoint: base_url + "dealer/priceBook/" + priceBookData[0].pName,
       };
 
       notificationArrayData.push(notificationData)
@@ -500,24 +500,24 @@ exports.statusUpdate = async (req, res) => {
     else {
       let notificationData2 = {
         title: "Dealer Pricebook  Status updated",
-        description: `Dealer Pricebook ${priceBookData[0]?.name} for ${getDealerDetail.name} status has been updated to ${data.status ? "Active" : "Inactive"} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        description: `Dealer Pricebook ${priceBookData[0]?.pName} for ${getDealerDetail.name} status has been updated to ${data.status ? "Active" : "Inactive"} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         contentId: req.params.dealerPriceBookId,
         flag: 'Dealer Price Book',
-        redirectionId: "dealer/priceBook/" + priceBookData[0].name,
+        redirectionId: "dealerPriceList/" + getDealerDetail.name + "/" + priceBookData[0].pName,
         notificationFor: IDs,
-        endPoint: base_url + "dealer/priceBook/" + priceBookData[0].name,
+        endPoint: base_url + "dealerPriceList/" + priceBookData[0].pName,
       };
 
       let notificationData3 = {
         title: "Pricebook  Status updated",
-        description: `Pricebook ${priceBookData[0]?.name} status has been updated to ${data.status ? "Active" : "Inactive"} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}`,
+        description: `Pricebook ${priceBookData[0]?.pName} status has been updated to ${data.status ? "Active" : "Inactive"} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}`,
         userId: req.teammateId,
         contentId: req.params.dealerPriceBookId,
         flag: 'Dealer Price Book',
-        redirectionId: "dealer/priceBook/" + priceBookData[0].name,
+        redirectionId: "dealer/priceBook/" + priceBookData[0].pName,
         notificationFor: IDs1,
-        endPoint: base_url + "dealer/priceBook/" + priceBookData[0].name,
+        endPoint: base_url + "dealer/priceBook/" + priceBookData[0].pName,
       };
 
       notificationArrayData.push(notificationData2)
@@ -534,7 +534,7 @@ exports.statusUpdate = async (req, res) => {
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
       senderName: getPrimary.metaData[0]?.firstName,
-      content: "The price book " + priceBookData[0]?.name + " has been updated",
+      content: "The price book " + priceBookData[0]?.pName + " has been updated",
       subject: "Update Price Book"
     }
     //check if account create true
@@ -893,26 +893,26 @@ exports.createDealerPriceBook = async (req, res) => {
       let settingData = await userService.getSetting({})
       let notificationData = {
         title: "New Dealer Pricebook Added",
-        description: `A new Dealer Pricebook ${checkPriceBookMain[0].name} for ${checkDealer.name} has been added under category ${checkCategory.name} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        description: `A new Dealer Pricebook ${checkPriceBookMain[0].pName} for ${checkDealer.name} has been added under category ${checkCategory.name} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         flag: 'Dealer Price Book',
         tabAction: "priceBook",
         contentId: createDealerPrice._id,
-        redirectionId: "dealerPriceList/" + checkPriceBookMain[0].name,
+        redirectionId: "dealerPriceList/" + checkPriceBookMain[0].pName,
         notificationFor: IDs,
-        endPoint: base_url + "dealerPriceList/" + checkPriceBookMain[0].name,
+        endPoint: base_url + "dealerPriceList/" + checkPriceBookMain[0].pName,
 
       };
 
       let notificationData1 = {
         title: "New Pricebook Added",
-        description: `A new  Pricebook ${checkPriceBookMain[0].name} has been added under category ${checkCategory.name} by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        description: `A new  Pricebook ${checkPriceBookMain[0].pName} has been added under category ${checkCategory.name} by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         flag: 'Dealer Price Book',
         contentId: createDealerPrice._id,
-        redirectionId: "dealer/priceBook",
+        redirectionId: "dealer/priceBook/" + checkPriceBookMain[0].pName,
         notificationFor: IDs1,
-        endPoint: base_url + "dealer/priceBook",
+        endPoint: base_url + "dealer/priceBook/" + checkPriceBookMain[0].pName,
 
       };
       let notificationArrayData = [];
