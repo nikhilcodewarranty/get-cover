@@ -1514,7 +1514,7 @@ exports.registerServiceProvider = async (req, res) => {
       description: `A New Servicer ${data.name} has registered with us on the portal.`,
       userId: req.teammateId,
       flag: 'servicer',
-      redirectionId: base_url,
+      redirectionId: "servicerRequestList/"+req.body.name,
       endPoint:base_url,
       notificationFor: IDs
     };
