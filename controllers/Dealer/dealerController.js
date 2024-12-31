@@ -647,6 +647,7 @@ exports.changeDealerStatus = async (req, res) => {
 
     const changedDealerStatus = await dealerService.updateDealerStatus({ _id: req.params.dealerId }, newValue, option);
     if (changedDealerStatus) {
+      console.log("dfsdfsdfsdffsdfdssdf");
       const status_content = req.body.status ? 'Active' : 'Inactive';
       const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
       const base_url = `${process.env.SITE_URL}`
@@ -678,6 +679,8 @@ exports.changeDealerStatus = async (req, res) => {
       let IDs = adminUsers.map(user => user._id)
       let adminEmails = adminUsers.map(user => user.email)
       let IDs1 = dealerUsers.map(user => user._id)
+      console.log("IDs",IDs);
+      console.log("IDs1",IDs1);
 
       let notificationData = {
         title: "Dealer Status Updated",
