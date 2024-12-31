@@ -291,6 +291,7 @@ exports.registerDealer = async (req, res) => {
       description: "A New Dealer " + data.name + " has registered with us on the portal",
       userId: req.teammateId,
       redirectionId: base_url,
+      endPoint:base_url,
       flag: 'Dealer Request',
       notificationFor: IDs
     };

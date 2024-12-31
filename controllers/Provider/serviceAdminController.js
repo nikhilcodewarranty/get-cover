@@ -1515,6 +1515,7 @@ exports.registerServiceProvider = async (req, res) => {
       userId: req.teammateId,
       flag: 'servicer',
       redirectionId: base_url,
+      endPoint:base_url,
       notificationFor: IDs
     };
 
