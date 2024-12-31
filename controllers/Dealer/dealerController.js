@@ -155,7 +155,7 @@ exports.uploadTermAndCondition = async (req, res, next) => {
 exports.registerDealer = async (req, res) => {
   try {
     const data = req.body;
-    const base_url = `${process.env.SITE_URL}newDealerList/`
+    const base_url = `${process.env.SITE_URL}newDealerList/${req.body.name}`
 
     // Check if the specified role exists
     const checkRole = await role.findOne({ role: { '$regex': new RegExp(`^${req.body.role}$`, 'i') } });
