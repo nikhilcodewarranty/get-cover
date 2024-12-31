@@ -328,7 +328,7 @@ exports.createCustomer = async (req, res, next) => {
         notificationArray.push(notificationData)
         notificationData = {
             title: "New Customer  Added",
-            description: `A New Customer ${data.accountName} has been added and approved by $${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName} - User Role - ${req.role} on our portal.`,
+            description: `A New Customer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName} - User Role - ${req.role} on our portal.`,
             userId: req.teammateId,
             flag: 'customer',
             notificationFor: dealerId,
@@ -338,7 +338,7 @@ exports.createCustomer = async (req, res, next) => {
         notificationArray.push(notificationData)
         notificationData = {
             title: "New Customer  Added",
-            description: `A New Customer ${data.accountName} has been added and approved by $${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName} - User Role - ${req.role} on our portal.`,
+            description: `A New Customer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName} - User Role - ${req.role} on our portal.`,
             userId: req.teammateId,
             flag: 'customer',
             notificationFor: resellerId,
