@@ -915,7 +915,7 @@ exports.updateUserData = async (req, res) => {
         metaData: {
           $elemMatch: {
             $and: [
-              { "resellerNotification.userUpdate": true },
+              { "resellerNotifications.userUpdate": true },
               { status: true },
               { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
             ]
@@ -926,7 +926,7 @@ exports.updateUserData = async (req, res) => {
         metaData: {
           $elemMatch: {
             $and: [
-              { "resellerNotification.userUpdate": true },
+              { "resellerNotifications.userUpdate": true },
               { status: true },
               { metaId: new mongoose.Types.ObjectId(checkDealer._id) },
             ]
@@ -937,7 +937,7 @@ exports.updateUserData = async (req, res) => {
         metaData: {
           $elemMatch: {
             $and: [
-              { "resellerNotification.userUpdate": true },
+              { "resellerNotifications.userUpdate": true },
               { status: true },
               { metaId: new mongoose.Types.ObjectId(checkDealer._id) },
             ]
