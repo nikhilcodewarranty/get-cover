@@ -1258,6 +1258,7 @@ exports.addResellerUser = async (req, res) => {
                 title: "Reseller User Added",
                 description: `A new user for reseller ${checkReseller.name} has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
                 userId: req.teammateId,
+                tabAction:"user",
                 contentId: saveData._id,
                 flag: 'reseller_user',
                 endPoint: base_url + "/resellerDetails/" + checkReseller._id,
@@ -1270,6 +1271,7 @@ exports.addResellerUser = async (req, res) => {
                 description: `A new user for reseller ${checkReseller.name} has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
                 userId: req.teammateId,
                 contentId: saveData._id,
+                tabAction:"user",
                 flag: 'reseller_user',
                 endPoint: base_url + "dealer/resellerDetails/" + checkReseller._id,
                 redirectionId: "dealer/resellerDetails/" + checkReseller._id,
@@ -2306,7 +2308,8 @@ exports.changeResellerStatus = async (req, res) => {
                 subject: "Update Status"
             }
 
-            mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ["noreply@getcover.com"], emailData))
+            mailing = sgMail.send(emailConstant.sendEmailTemplate(adminEmail, ["noreply@getcover.com"], emailData))
+            mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
 
             //Save Logs change reseller status
             let logData = {
