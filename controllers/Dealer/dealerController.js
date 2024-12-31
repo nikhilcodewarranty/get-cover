@@ -287,8 +287,8 @@ exports.registerDealer = async (req, res) => {
     let settingData = await userService.getSetting({});
 
     let notificationData = {
-      adminTitle: "New Dealer Request",
-      adminMessage: "A New Dealer " + data.name + " has registered with us on the portal",
+      title: "New Dealer Request",
+      description: "A New Dealer " + data.name + " has registered with us on the portal",
       userId: req.teammateId,
       redirectionId: base_url,
       flag: 'Dealer Request',
@@ -489,9 +489,9 @@ exports.statusUpdate = async (req, res) => {
         userId: req.teammateId,
         contentId: req.params.dealerPriceBookId,
         flag: 'Dealer Price Book',
-        redirectionId: "dealer/priceBook" + priceBookData[0].name,
+        redirectionId: "dealer/priceBook/" + priceBookData[0].name,
         notificationFor: IDs1,
-        endPoint: base_url + "dealer/priceBook" + priceBookData[0].name,
+        endPoint: base_url + "dealer/priceBook/" + priceBookData[0].name,
       };
 
       notificationArrayData.push(notificationData)
@@ -500,24 +500,24 @@ exports.statusUpdate = async (req, res) => {
     else {
       let notificationData2 = {
         title: "Dealer Pricebook  Status updated",
-        description: `Dealer Pricebook  for ${priceBookData[0]?.pName} has been updated to ${data.status ? "Active" : "Inactive"} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        description: `Dealer Pricebook ${priceBookData[0]?.name} for ${getDealerDetail.name} status has been updated to ${data.status ? "Active" : "Inactive"} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         contentId: req.params.dealerPriceBookId,
         flag: 'Dealer Price Book',
-        redirectionId: "dealer/priceBook" + priceBookData[0].name,
-        notificationFor: IDs1,
-        endPoint: base_url + "dealer/priceBook" + priceBookData[0].name,
+        redirectionId: "dealer/priceBook/" + priceBookData[0].name,
+        notificationFor: IDs,
+        endPoint: base_url + "dealer/priceBook/" + priceBookData[0].name,
       };
 
       let notificationData3 = {
         title: "Pricebook  Status updated",
-        description: `Pricebook has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        description: `Pricebook ${priceBookData[0]?.name} status has been updated to ${data.status ? "Active" : "Inactive"} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}`,
         userId: req.teammateId,
         contentId: req.params.dealerPriceBookId,
         flag: 'Dealer Price Book',
-        redirectionId: "dealer/priceBook" + priceBookData[0].name,
+        redirectionId: "dealer/priceBook/" + priceBookData[0].name,
         notificationFor: IDs1,
-        endPoint: base_url + "dealer/priceBook" + priceBookData[0].name,
+        endPoint: base_url + "dealer/priceBook/" + priceBookData[0].name,
       };
 
       notificationArrayData.push(notificationData2)
@@ -527,17 +527,21 @@ exports.statusUpdate = async (req, res) => {
     let createNotification = await userService.saveNotificationBulk(notificationArrayData);
     // Send Email code here
     let notificationEmails = adminUsers.map(user => user.email)
+    let dealerEmails = dealerUsers.map(user => user.email)
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
       senderName: getPrimary.metaData[0]?.firstName,
-      content: "The price book " + priceBookData[0]?.pName + " has been updated",
+      content: "The price book " + priceBookData[0]?.name + " has been updated",
       subject: "Update Price Book"
     }
     //check if account create true
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+    mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
+
+
     let logData = {
       userId: req.teammateId,
       endpoint: "dealer/statusUpdate",
@@ -2171,7 +2175,9 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
       let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUploadQuery, { email: 1 })
       let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerUploadQuery, { email: 1 })
       const IDs = adminUsers.map(user => user._id)
+      const adminEmail = adminUsers.map(user => user.email)
       const IDs1 = dealerUsers.map(user => user._id)
+      const dealerEmail = dealerUsers.map(user => user.email)
       let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: req.body.dealerId, isPrimary: true })
       let notificationData = {
         title: "Dealer Pricebook file added successfully",
@@ -2188,7 +2194,7 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
         description: `The Bulk file ${file.fieldName} of  pricebook has been uploaded and processed successfully. The file has been uploaded by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         flag: 'Dealer Price Book',
-        notificationFor: IDs,
+        notificationFor: IDs1,
         endPoint: base_url + "dealer/priceBook",
         redirectionId: "dealer/priceBook"
       };
@@ -2200,14 +2206,13 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
       let createNotification = await userService.saveNotificationBulk(notificationArrayData);
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
-      console.log(dealerPrimary.email, checkDealer[0].isAccountCreate)
-      if (checkDealer[0].isAccountCreate) {
-        const mailing = sgMail.send(emailConstant.sendCsvFile(dealerPrimary.email, notificationEmails, htmlTableString));
-      }
-      else {
-        const mailing = sgMail.send(emailConstant.sendCsvFile(notificationEmails, "noreply@getcover.com", htmlTableString));
 
-      }
+      let mailing = sgMail.send(emailConstant.sendCsvFile(dealerEmail, "noreply@getcover.com", htmlTableString));
+
+
+      mailing = sgMail.send(emailConstant.sendCsvFile(adminEmail, "noreply@getcover.com", htmlTableString));
+
+
 
       res.send({
         code: constant.successCode,
