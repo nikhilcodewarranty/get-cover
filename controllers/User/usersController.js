@@ -960,7 +960,7 @@ exports.updateUserData = async (req, res) => {
       if (data.firstName) {
         notificationData = {
           title: "Reseller User Details Changed",
-          description: `The Details for the reseller ${checkReseller.name} for his user ${updateUser.metaData[0]?.firstName} has been updated by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The Details for the reseller ${checkReseller.name} for the dealer ${resellerDealer.name} for his user ${updateUser.metaData[0]?.firstName + " "+ updateUser.metaData[0]?.lastName} has been updated by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
           redirectionId: "resellerDetails/" + checkReseller._id,
@@ -970,7 +970,7 @@ exports.updateUserData = async (req, res) => {
         notificationArray.push(notificationData)
         notificationData = {
           title: "Reseller User Details Changed",
-          description: `The Details for the reseller ${checkReseller.name} for his user ${updateUser.metaData[0]?.firstName} has been updated by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The Details for the reseller ${checkReseller.name} for his user ${updateUser.metaData[0]?.firstName + " " + updateUser.metaData[0]?.lastName} has been updated by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
           redirectionId: "resellerDetails/" + checkReseller._id,
@@ -1022,7 +1022,7 @@ exports.updateUserData = async (req, res) => {
           userId: req.teammateId,
           flag: checkRole?.role,
           redirectionId: "resellerDetails/" + checkReseller._id,
-          endPoint: base_url + "resellerDetails/" + checkReseller._id,
+          endPoint: base_url + "dealer/resellerDetails/" + checkReseller._id,
           notificationFor: dealerIds,
 
         };
