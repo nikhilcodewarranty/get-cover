@@ -1574,9 +1574,9 @@ exports.addDealerUser = async (req, res) => {
         description: `A new user for Dealer ${checkDealer.name} has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
         userId: req.teammateId,
         contentId: saveData._id,
-        tabAction: "user",
+        tabAction: "dealerUser",
         flag: 'dealer',
-        endPoint: base_url + "/dealerDetails/" + checkDealer._id,
+        endPoint: base_url + "dealerDetails/" + checkDealer._id,
         redirectionId: "/dealerDetails/" + checkDealer._id,
         notificationFor: IDs
       };
