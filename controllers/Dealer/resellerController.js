@@ -1098,7 +1098,9 @@ exports.editResellers = async (req, res) => {
             content: "Your details have been updated. To view the details, please login into your account.",
             subject: "Update Info"
         }
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ['noreply@getcover.com'], emailData))
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+         mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
+         mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ['noreply@getcover.com'], emailData))
 
 
         //Save Logs update reseller
