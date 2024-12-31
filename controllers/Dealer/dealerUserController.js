@@ -972,7 +972,7 @@ exports.createReseller = async (req, res) => {
                         }))
                 }
             }
-        }
+        } 
         //Save Logs for create reseller 
         let logData = {
             userId: req.userId,
