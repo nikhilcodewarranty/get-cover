@@ -489,9 +489,9 @@ exports.statusUpdate = async (req, res) => {
         userId: req.teammateId,
         contentId: req.params.dealerPriceBookId,
         flag: 'Dealer Price Book',
-        redirectionId: "dealer/priceBook" + priceBookData[0].name,
+        redirectionId: "dealer/priceBook/" + priceBookData[0].name,
         notificationFor: IDs1,
-        endPoint: base_url + "dealer/priceBook" + priceBookData[0].name,
+        endPoint: base_url + "dealer/priceBook/" + priceBookData[0].name,
       };
 
       notificationArrayData.push(notificationData)
@@ -504,9 +504,9 @@ exports.statusUpdate = async (req, res) => {
         userId: req.teammateId,
         contentId: req.params.dealerPriceBookId,
         flag: 'Dealer Price Book',
-        redirectionId: "dealer/priceBook" + priceBookData[0].name,
-        notificationFor: IDs1,
-        endPoint: base_url + "dealer/priceBook" + priceBookData[0].name,
+        redirectionId: "dealer/priceBook/" + priceBookData[0].name,
+        notificationFor: IDs,
+        endPoint: base_url + "dealer/priceBook/" + priceBookData[0].name,
       };
 
       let notificationData3 = {
@@ -515,9 +515,9 @@ exports.statusUpdate = async (req, res) => {
         userId: req.teammateId,
         contentId: req.params.dealerPriceBookId,
         flag: 'Dealer Price Book',
-        redirectionId: "dealer/priceBook" + priceBookData[0].name,
+        redirectionId: "dealer/priceBook/" + priceBookData[0].name,
         notificationFor: IDs1,
-        endPoint: base_url + "dealer/priceBook" + priceBookData[0].name,
+        endPoint: base_url + "dealer/priceBook/" + priceBookData[0].name,
       };
 
       notificationArrayData.push(notificationData2)
@@ -527,6 +527,7 @@ exports.statusUpdate = async (req, res) => {
     let createNotification = await userService.saveNotificationBulk(notificationArrayData);
     // Send Email code here
     let notificationEmails = adminUsers.map(user => user.email)
+    let dealerEmails = dealerUsers.map(user => user.email)
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -538,6 +539,9 @@ exports.statusUpdate = async (req, res) => {
     }
     //check if account create true
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+    mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
+
+
     let logData = {
       userId: req.teammateId,
       endpoint: "dealer/statusUpdate",
