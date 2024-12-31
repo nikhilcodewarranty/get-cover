@@ -241,32 +241,32 @@ exports.createCustomer = async (req, res, next) => {
     //Send Notification to customer,admin,reseller,dealer 
     let notificationData = {
       title: "New Customer  Added",
-      description: `A New Customer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} - User Role - ${req.role} on our portal.`,
+      description: `A New Customer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName + " " +checkLoginUser.metaData[0].lastName} - User Role - ${req.role} on our portal.`,
       userId: req.teammateId,
       flag: 'customer',
       notificationFor: IDs,
       redirectionId: "customerDetails/" + createdCustomer._id,
-      endpoint: base_url + "customerDetails/" + createdCustomer._id,
+      endPoint: base_url + "customerDetails/" + createdCustomer._id,
     };
     notificationArray.push(notificationData)
     notificationData = {
       title: "New Customer  Added",
-      description: `A New Customer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} - User Role - ${req.role} on our portal.`,
+      description: `A New Customer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName} - User Role - ${req.role} on our portal.`,
       userId: req.teammateId,
       flag: 'customer',
       notificationFor: dealerId,
       redirectionId: "dealer/customerDetails/" + createdCustomer._id,
-      endpoint: base_url + "dealer/customerDetails/" + createdCustomer._id,
+      endPoint: base_url + "dealer/customerDetails/" + createdCustomer._id,
     };
     notificationArray.push(notificationData)
     notificationData = {
       title: "New Customer  Added",
-      description: `A New Customer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} - User Role - ${req.role} on our portal.`,
+      description: `A New Customer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName} - User Role - ${req.role} on our portal.`,
       userId: req.teammateId,
       flag: 'customer',
       notificationFor: resellerId,
       redirectionId: "reseller/customerDetails/" + createdCustomer._id,
-      endpoint: base_url + "reseller/customerDetails/" + createdCustomer._id,
+      endPoint: base_url + "reseller/customerDetails/" + createdCustomer._id,
     };
     notificationArray.push(notificationData)
     let createNotification = await userService.saveNotificationBulk(notificationArray);

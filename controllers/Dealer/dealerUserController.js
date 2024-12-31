@@ -659,7 +659,7 @@ exports.createCustomer = async (req, res, next) => {
             websiteSetting: settingData[0],
             senderName: getPrimary.metaData[0]?.firstName,
             redirectId: base_url + "customerDetails/" + createdCustomer._id,
-            content: `A New Customer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName} - User Role - ${req.role} on our portal.`,
+            content: `A New Customer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName}  - ${req.role} on our portal.`,
             subject: "New Customer Added"
         }
 
@@ -698,32 +698,32 @@ exports.createCustomer = async (req, res, next) => {
         //Send Notification to customer,admin,reseller,dealer 
         let notificationData = {
             title: "New Customer  Added",
-            description: `A New Customer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} - User Role - ${req.role} on our portal.`,
+            description: `A New Customer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName} - User Role - ${req.role} on our portal.`,
             userId: req.teammateId,
             flag: 'customer',
             notificationFor: IDs,
             redirectionId: "customerDetails/" + createdCustomer._id,
-            endpoint: base_url + "customerDetails/" + createdCustomer._id,
+            endPoint: base_url + "customerDetails/" + createdCustomer._id,
         };
         notificationArray.push(notificationData)
         notificationData = {
             title: "New Customer  Added",
-            description: `A New Customer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} - User Role - ${req.role} on our portal.`,
+            description: `A New Customer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName} - User Role - ${req.role} on our portal.`,
             userId: req.teammateId,
             flag: 'customer',
             notificationFor: dealerId,
             redirectionId: "dealer/customerDetails/" + createdCustomer._id,
-            endpoint: base_url + "dealer/customerDetails/" + createdCustomer._id,
+            endPoint: base_url + "dealer/customerDetails/" + createdCustomer._id,
         };
         notificationArray.push(notificationData)
         notificationData = {
             title: "New Customer  Added",
-            description: `A New Customer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} - User Role - ${req.role} on our portal.`,
+            description: `A New Customer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName} - User Role - ${req.role} on our portal.`,
             userId: req.teammateId,
             flag: 'customer',
             notificationFor: resellerId,
             redirectionId: "reseller/customerDetails/" + createdCustomer._id,
-            endpoint: base_url + "reseller/customerDetails/" + createdCustomer._id,
+            endPoint: base_url + "reseller/customerDetails/" + createdCustomer._id,
         };
         notificationArray.push(notificationData)
         let createNotification = await userService.saveNotificationBulk(notificationArray);
@@ -911,10 +911,10 @@ exports.createReseller = async (req, res) => {
         let mergedEmail = notificationEmails.concat(dealerEmails)
         let notificationData = {
             title: "New Reseller  Added",
-            description: `A New Reseller ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName + " " + " " + checkLoginUser.metaData[0].lastName} - User Role - ${req.role} on our portal.`,
+            description: `A New Reseller ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName + " " + " " + checkLoginUser.metaData[0].lastName} - ${req.role} on our portal.`,
             userId: req.teammateId,
             redirectionId: "resellerDetails/" + createdReseler._id,
-            endpoint: base_url + "resellerDetails/" + createdReseler._id,
+            endPoint: base_url + "resellerDetails/" + createdReseler._id,
             flag: 'reseller',
             notificationFor: IDs
         };
@@ -922,10 +922,10 @@ exports.createReseller = async (req, res) => {
 
         notificationData = {
             title: "New Reseller  Added",
-            description: `A New Reseller ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName} - User Role - ${req.role} on our portal.`,
+            description: `A New Reseller ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName} - ${req.role} on our portal.`,
             userId: req.teammateId,
             redirectionId: "resellerDetails/" + createdReseler._id,
-            endpoint: base_url + "dealer/resellerDetails/ " + createdReseler._id,
+            endPoint: base_url + "dealer/resellerDetails/ " + createdReseler._id,
             flag: 'reseller',
             notificationFor: dealerId
         };
@@ -972,7 +972,7 @@ exports.createReseller = async (req, res) => {
                         }))
                 }
             }
-        }
+        } 
         //Save Logs for create reseller 
         let logData = {
             userId: req.userId,

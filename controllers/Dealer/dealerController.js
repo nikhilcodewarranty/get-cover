@@ -475,23 +475,23 @@ exports.statusUpdate = async (req, res) => {
     if (existingDealerPriceBook.status == data.status) {
       let notificationData = {
         title: "Dealer PriceBook Updated",
-        description: `Dealer Pricebook ${priceBookData[0]?.name} for ${getDealerDetail.name} has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        description: `Dealer Pricebook ${priceBookData[0]?.pName} for ${getDealerDetail.name} has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         contentId: req.params.dealerPriceBookId,
         flag: 'Dealer Price Book',
-        redirectionId: "dealerPriceList/" + priceBookData[0].name,
+        redirectionId: "dealerPriceList/" + data.dealerSku + "/" + getDealerDetail.name,
         notificationFor: IDs,
-        endPoint: base_url + "dealerPriceList/" + priceBookData[0].name,
+        endPoint: base_url + "dealerPriceList/" + data.dealerSku + "/" + getDealerDetail.name,
       };
       let notificationData1 = {
         title: "PriceBook Updated",
-        description: `Pricebook ${priceBookData[0]?.name} has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        description: `Pricebook ${priceBookData[0]?.pName} has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         contentId: req.params.dealerPriceBookId,
         flag: 'Dealer Price Book',
-        redirectionId: "dealer/priceBook/" + priceBookData[0].name,
+        redirectionId: "dealer/priceBook/" + data.dealerSku,
         notificationFor: IDs1,
-        endPoint: base_url + "dealer/priceBook/" + priceBookData[0].name,
+        endPoint: base_url + "dealer/priceBook/" + data.dealerSku
       };
 
       notificationArrayData.push(notificationData)
@@ -500,24 +500,24 @@ exports.statusUpdate = async (req, res) => {
     else {
       let notificationData2 = {
         title: "Dealer Pricebook  Status updated",
-        description: `Dealer Pricebook ${priceBookData[0]?.name} for ${getDealerDetail.name} status has been updated to ${data.status ? "Active" : "Inactive"} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        description: `Dealer Pricebook ${priceBookData[0]?.pName} for ${getDealerDetail.name} status has been updated to ${data.status ? "Active" : "Inactive"} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         contentId: req.params.dealerPriceBookId,
         flag: 'Dealer Price Book',
-        redirectionId: "dealer/priceBook/" + priceBookData[0].name,
+        redirectionId: "dealerPriceList/" + existingDealerPriceBook.dealerSku + "/" + getDealerDetail.name,
         notificationFor: IDs,
-        endPoint: base_url + "dealer/priceBook/" + priceBookData[0].name,
+        endPoint: base_url + "dealerPriceList/" + existingDealerPriceBook.dealerSku + "/" + getDealerDetail.name,
       };
 
       let notificationData3 = {
         title: "Pricebook  Status updated",
-        description: `Pricebook ${priceBookData[0]?.name} status has been updated to ${data.status ? "Active" : "Inactive"} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}`,
+        description: `Pricebook ${priceBookData[0]?.pName} status has been updated to ${data.status ? "Active" : "Inactive"} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}`,
         userId: req.teammateId,
         contentId: req.params.dealerPriceBookId,
         flag: 'Dealer Price Book',
-        redirectionId: "dealer/priceBook/" + priceBookData[0].name,
+        redirectionId: "dealer/priceBook/" + existingDealerPriceBook.dealerSku,
         notificationFor: IDs1,
-        endPoint: base_url + "dealer/priceBook/" + priceBookData[0].name,
+        endPoint: base_url + "dealer/priceBook/" + existingDealerPriceBook.dealerSku
       };
 
       notificationArrayData.push(notificationData2)
@@ -534,7 +534,7 @@ exports.statusUpdate = async (req, res) => {
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
       senderName: getPrimary.metaData[0]?.firstName,
-      content: "The price book " + priceBookData[0]?.name + " has been updated",
+      content: "The price book " + priceBookData[0]?.pName + " has been updated",
       subject: "Update Price Book"
     }
     //check if account create true
@@ -647,6 +647,7 @@ exports.changeDealerStatus = async (req, res) => {
 
     const changedDealerStatus = await dealerService.updateDealerStatus({ _id: req.params.dealerId }, newValue, option);
     if (changedDealerStatus) {
+      console.log("dfsdfsdfsdffsdfdssdf");
       const status_content = req.body.status ? 'Active' : 'Inactive';
       const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
       const base_url = `${process.env.SITE_URL}`
@@ -656,129 +657,136 @@ exports.changeDealerStatus = async (req, res) => {
             $and: [
               { "dealerNotifications.dealerUpdate": true },
               { status: true },
-              { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") }
+              {
+                $or: [
+                  { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
+                ]
+              }
             ]
-          }
-        },
-      }
+            
+    }
+  },
+}
 
-      const dealerrQuery = {
-        metaData: {
-          $elemMatch: {
-            $and: [
-              { "dealerNotifications.dealerUpdate": true },
-              { status: true },
-              { metaId: new mongoose.Types.ObjectId(req.params.dealerId) }
-            ]
-          }
-        },
-      }
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerrQuery, { email: 1 })
-      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerrQuery, { email: 1 })
-      let IDs = adminUsers.map(user => user._id)
-      let adminEmails = adminUsers.map(user => user.email)
-      let IDs1 = dealerUsers.map(user => user._id)
+const dealerrQuery = {
+  metaData: {
+    $elemMatch: {
+      $and: [
+        { "dealerNotifications.dealerUpdate": true },
+        { status: true },
+        { metaId: new mongoose.Types.ObjectId(req.params.dealerId) }
+      ]
+    }
+  },
+}
+let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerrQuery, { email: 1 })
+let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerrQuery, { email: 1 })
+let IDs = adminUsers.map(user => user._id)
+let adminEmails = adminUsers.map(user => user.email)
+let IDs1 = dealerUsers.map(user => user._id)
+console.log("IDs", IDs);
+console.log("IDs1", IDs1);
 
-      let notificationData = {
-        title: "Dealer Status Updated",
-        description: `The Dealer ${singleDealer.name} status has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
-        userId: req.teammateId,
-        redirectionId: "dealerDetails/" + singleDealer._id,
-        flag: 'dealer',
-        endPoint: base_url + "dealerDetails/" + singleDealer._id,
-        notificationFor: IDs
-      };
+let notificationData = {
+  title: "Dealer Status Updated",
+  description: `The Dealer ${singleDealer.name} status has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+  userId: req.teammateId,
+  redirectionId: "dealerDetails/" + singleDealer._id,
+  flag: 'dealer',
+  endPoint: base_url + "dealerDetails/" + singleDealer._id,
+  notificationFor: IDs
+};
 
-      let notificationData1 = {
-        title: "Status Updated",
-        description: `GetCover has updated your status to ${status_content}.`,
-        userId: req.teammateId,
-        redirectionId: null,
-        flag: 'dealer',
-        endPoint: null,
-        notificationFor: IDs1
-      };
+let notificationData1 = {
+  title: "Status Updated",
+  description: `GetCover has updated your status to ${status_content}.`,
+  userId: req.teammateId,
+  redirectionId: null,
+  flag: 'dealer',
+  endPoint: null,
+  notificationFor: IDs1
+};
 
-      let notificationArrayData = [];
-      notificationArrayData.push(notificationData)
-      notificationArrayData.push(notificationData1)
+let notificationArrayData = [];
+notificationArrayData.push(notificationData)
+notificationArrayData.push(notificationData1)
+console.log("notificationArrayData------------------", notificationArrayData)
+let createNotification = await userService.saveNotificationBulk(notificationArrayData);
+const content = req.body.status ? 'Congratulations, you can now login to our system. Please click the following link to login to the system' : "Your account has been made inactive. If you think, this is a mistake, please contact our support team at support@getcover.com"
+// Send Email code here
+let primaryUser = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.params.dealerId, isPrimary: true } } })
 
-      let createNotification = await userService.saveNotificationBulk(notificationArrayData);
-      const content = req.body.status ? 'Congratulations, you can now login to our system. Please click the following link to login to the system' : "Your account has been made inactive. If you think, this is a mistake, please contact our support team at support@getcover.com"
-      // Send Email code here
-      let primaryUser = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.params.dealerId, isPrimary: true } } })
+let dealerEmails = dealerUsers.map(user => user.email)
+let settingData = await userService.getSetting({});
+let resetPasswordCode = randtoken.generate(4, '123456789')
 
-      let dealerEmails = dealerUsers.map(user => user.email)
-      let settingData = await userService.getSetting({});
-      let resetPasswordCode = randtoken.generate(4, '123456789')
+let resetLink = `${process.env.SITE_URL}newPassword/${primaryUser._id}/${resetPasswordCode}`
 
-      let resetLink = `${process.env.SITE_URL}newPassword/${primaryUser._id}/${resetPasswordCode}`
+let emailData = {
+  senderName: singleDealer.name,
+  darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+  lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+  address: settingData[0]?.address,
+  websiteSetting: settingData[0],
+  content: content,
+  redirectId: status_content == "Active" ? resetLink : '',
+  subject: "Update Status"
+}
 
-      let emailData = {
-        senderName: singleDealer.name,
-        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        address: settingData[0]?.address,
-        websiteSetting: settingData[0],
-        content: content,
-        redirectId: status_content == "Active" ? resetLink : '',
-        subject: "Update Status"
-      }
+let mailing = sgMail.send(emailConstant.sendEmailTemplate(primaryUser.email, ["noreply@getcover.com"], emailData))
+emailData = {
+  senderName: singleDealer.name,
+  darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+  lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+  address: settingData[0]?.address,
+  websiteSetting: settingData[0],
+  content: `Dealer status has been changed to ${status_content}`,
+  redirectId: '',
+  subject: "Update Status"
+}
 
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(primaryUser.email, ["noreply@getcover.com"], emailData))
-      emailData = {
-        senderName: singleDealer.name,
-        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        address: settingData[0]?.address,
-        websiteSetting: settingData[0],
-        content: `Dealer status has been changed to ${status_content}`,
-        redirectId: '',
-        subject: "Update Status"
-      }
+mailing = sgMail.send(emailConstant.sendEmailTemplate(adminEmails, ["noreply@getcover.com"], emailData))
+mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
 
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(adminEmails, ["noreply@getcover.com"], emailData))
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
-
-      let logData = {
-        userId: req.teammateId,
-        endpoint: "dealer/changeDealerStatus",
-        body: changedDealerStatus,
-        response: {
-          code: constant.successCode,
-          message: 'Updated Successfully!',
-        }
-      }
-      await LOG(logData).save()
-      res.send({
-        code: constant.successCode,
-        message: 'Updated Successfully!',
-        data: changedDealerStatus
-      })
+let logData = {
+  userId: req.teammateId,
+  endpoint: "dealer/changeDealerStatus",
+  body: changedDealerStatus,
+  response: {
+    code: constant.successCode,
+    message: 'Updated Successfully!',
+  }
+}
+await LOG(logData).save()
+res.send({
+  code: constant.successCode,
+  message: 'Updated Successfully!',
+  data: changedDealerStatus
+})
     }
     else {
-      res.send({
-        code: constant.errorCode,
-        message: 'Unable to update dealer status!',
-      })
-    }
+  res.send({
+    code: constant.errorCode,
+    message: 'Unable to update dealer status!',
+  })
+}
   } catch (err) {
-    let logData = {
-      endpoint: "dealer/changeDealerStatus",
-      body: {
-        type: "catch error"
-      },
-      response: {
-        code: constant.errorCode,
-        message: err.message,
-      }
-    }
-    await LOG(logData).save()
-    res.send({
+  let logData = {
+    endpoint: "dealer/changeDealerStatus",
+    body: {
+      type: "catch error"
+    },
+    response: {
       code: constant.errorCode,
-      message: err.message
-    })
+      message: err.message,
+    }
   }
+  await LOG(logData).save()
+  res.send({
+    code: constant.errorCode,
+    message: err.message
+  })
+}
 }
 
 //Create Dealer Price Book
@@ -893,26 +901,26 @@ exports.createDealerPriceBook = async (req, res) => {
       let settingData = await userService.getSetting({})
       let notificationData = {
         title: "New Dealer Pricebook Added",
-        description: `A new Dealer Pricebook ${checkPriceBookMain[0].name} for ${checkDealer.name} has been added under category ${checkCategory.name} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        description: `A new Dealer Pricebook ${checkPriceBookMain[0].pName} for ${checkDealer.name} has been added under category ${checkCategory.name} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         flag: 'Dealer Price Book',
         tabAction: "priceBook",
         contentId: createDealerPrice._id,
-        redirectionId: "dealerPriceList/" + checkPriceBookMain[0].name,
+        redirectionId: "dealerPriceList/" + data.dealerSku + "/" + checkDealer.name,
         notificationFor: IDs,
-        endPoint: base_url + "dealerPriceList/" + checkPriceBookMain[0].name,
+        endPoint: base_url + "dealerPriceList/" + data.dealerSku + "/" + checkDealer.name
 
       };
 
       let notificationData1 = {
         title: "New Pricebook Added",
-        description: `A new  Pricebook ${checkPriceBookMain[0].name} has been added under category ${checkCategory.name} by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        description: `A new  Pricebook ${checkPriceBookMain[0].pName} has been added under category ${checkCategory.name} by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         flag: 'Dealer Price Book',
         contentId: createDealerPrice._id,
-        redirectionId: "dealer/priceBook",
+        redirectionId: "dealer/priceBook/" + data.dealerSku,
         notificationFor: IDs1,
-        endPoint: base_url + "dealer/priceBook",
+        endPoint: base_url + "dealer/priceBook/" + data.dealerSku,
 
       };
       let notificationArrayData = [];

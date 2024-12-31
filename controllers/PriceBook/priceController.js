@@ -315,7 +315,7 @@ exports.createPriceBook = async (req, res, next) => {
       const IDs = adminUsers.map(user => user._id)
       let notificationData = {
         title: "New GetCover Pricebook Added",
-        description: `A new GetCover Pricebook ${data.name} has been added under category ${checkCat.name} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        description: `A new GetCover Pricebook ${data.pName} has been added under category ${checkCat.name} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.userId,
         contentId: savePriceBook._id,
         flag: 'priceBook',
@@ -339,7 +339,7 @@ exports.createPriceBook = async (req, res, next) => {
         websiteSetting: settingData[0],
         priceBookData: priceBookData,
         senderName: "Admin",
-        content: `A new company pricebook ${data.name} has been added with the following data:`,
+        content: `A new company pricebook ${data.pName} has been added with the following data:`,
         subject: "Create Price Book"
       }
 
