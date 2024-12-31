@@ -290,8 +290,8 @@ exports.registerDealer = async (req, res) => {
       title: "New Dealer Request",
       description: "A New Dealer " + data.name + " has registered with us on the portal",
       userId: req.teammateId,
-      redirectionId: "newDealerList/"+req.body.name,
-      endPoint:base_url,
+      redirectionId: "newDealerList/" + req.body.name,
+      endPoint: base_url,
       flag: 'Dealer Request',
       notificationFor: IDs
     };
@@ -680,8 +680,8 @@ exports.changeDealerStatus = async (req, res) => {
       let IDs = adminUsers.map(user => user._id)
       let adminEmails = adminUsers.map(user => user.email)
       let IDs1 = dealerUsers.map(user => user._id)
-      console.log("adminUsers-------------------",adminUsers)
-      console.log("dealerUsers-------------------",dealerUsers)
+      console.log("adminUsers-------------------", adminUsers)
+      console.log("dealerUsers-------------------", dealerUsers)
       console.log("IDs", IDs);
       console.log("IDs1", IDs1);
 
@@ -742,8 +742,9 @@ exports.changeDealerStatus = async (req, res) => {
         redirectId: '',
         subject: "Update Status"
       }
-
+      emailData.senderName = "Dear Admin"
       mailing = sgMail.send(emailConstant.sendEmailTemplate(adminEmails, ["noreply@getcover.com"], emailData))
+      emailData.senderName = `Dear ${primaryUser.firstName + "" + primaryUser.lastName}`
       mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
 
       let logData = {
