@@ -505,7 +505,7 @@ exports.createDealer = async (req, res) => {
                     userId: req.teammateId,
                     flag: 'dealer',
                     redirectionId: "dealerDetails/" + createMetaData._id,
-                    endpoint: base_url,
+                    endpoint: base_url + "dealerDetails/" + createMetaData._id,
                     notificationFor: IDs
                 };
                 let createNotification = await userService.createNotification(notificationData);
