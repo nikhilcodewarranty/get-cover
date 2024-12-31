@@ -500,7 +500,7 @@ exports.statusUpdate = async (req, res) => {
     else {
       let notificationData2 = {
         title: "Dealer Pricebook  Status updated",
-        description: `Dealer Pricebook  for ${priceBookData[0]?.name} has been updated to ${data.status ? "Active" : "Inactive"} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        description: `Dealer Pricebook ${priceBookData[0]?.name} for ${getDealerDetail.name} has been updated to ${data.status ? "Active" : "Inactive"} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         contentId: req.params.dealerPriceBookId,
         flag: 'Dealer Price Book',
