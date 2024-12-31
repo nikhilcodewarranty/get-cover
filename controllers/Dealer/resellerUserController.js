@@ -5,6 +5,8 @@ const orderService = require("../../services/Order/orderService");
 const contractService = require("../../services/Contract/contractService");
 const resellerService = require("../../services/Dealer/resellerService");
 let claimService = require('../../services/Claim/claimService')
+const randtoken = require('rand-token').generator()
+
 const LOG = require('../../models/User/logs')
 const supportingFunction = require('../../config/supportingFunction')
 const dealerRelationService = require("../../services/Dealer/dealerRelationService");
@@ -237,7 +239,31 @@ exports.createCustomer = async (req, res, next) => {
         );
         // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
+        if (saveMembers.length > 0) {
+            if (data.status) {
+                for (let i = 0; i < saveMembers.length; i++) {
+                    if (saveMembers[i].status) {
+                        let email = saveMembers[i].email
+                        let userId = saveMembers[i]._id
+                        let resetPasswordCode = randtoken.generate(4, '123456789')
+                        let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
+                        let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
+                        const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email,
+                            {
+                                flag: "created",
+                                title: settingData[0]?.title,
+                                darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                                lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                                address: settingData[0]?.address,
+                                link: resetLink,
+                                subject: "Set Password", role: "Customer",
+                                servicerName: saveMembers[i].firstName
+                            }))
+                    }
 
+                }
+            }
+        }
         const adminQuery = {
             metaData: {
                 $elemMatch: {
@@ -333,7 +359,9 @@ exports.createCustomer = async (req, res, next) => {
             subject: "New Customer Added"
         }
         // Send Email code here
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ['noreply@getcover.com'], emailData))
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ['noreply@getcover.com'], emailData))
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
         res.send({
             code: constant.successCode,
             message: "Customer created successfully",
@@ -652,7 +680,7 @@ exports.createOrder = async (req, res) => {
         let notificationArrayData = []
         let notificationData = {
             title: "Draft Order Created",
-            description: `A new draft Order # ${checkOrder.unique_key} has been created by ${checkLoginUser.metaData[0].firstName + " "+checkLoginUser.metaData[0].lastName}  - ${req.role}.`,
+            description: `A new draft Order # ${checkOrder.unique_key} has been created by ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName}  - ${req.role}.`,
             userId: req.teammateId,
             contentId: null,
             flag: 'order',
@@ -662,7 +690,7 @@ exports.createOrder = async (req, res) => {
         };
         let notificationData1 = {
             title: "Draft Order Created",
-            description: `A new draft Order # ${checkOrder.unique_key} has been created by ${checkLoginUser.metaData[0].firstName + " "+checkLoginUser.metaData[0].lastName}  - ${req.role}.`,
+            description: `A new draft Order # ${checkOrder.unique_key} has been created by ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName}  - ${req.role}.`,
             userId: req.teammateId,
             contentId: null,
             flag: 'order',
@@ -672,7 +700,7 @@ exports.createOrder = async (req, res) => {
         };
         let notificationData2 = {
             title: "Draft Order Created",
-            description: `A new draft Order # ${checkOrder.unique_key} has been created by ${checkLoginUser.metaData[0].firstName + " "+checkLoginUser.metaData[0].lastName}  - ${req.role}.`,
+            description: `A new draft Order # ${checkOrder.unique_key} has been created by ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName}  - ${req.role}.`,
             userId: req.teammateId,
             contentId: null,
             flag: 'order',
