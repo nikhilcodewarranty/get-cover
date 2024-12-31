@@ -302,7 +302,7 @@ exports.createDealer = async (req, res) => {
                 const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
 
                 let notificationData = {
-                    title: "New Dealer Approved",
+                    title: "New Dealer Added",
                     description: `A New Dealer ${data.name} has been added and approved by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} on our portal.`,
                     userId: req.teammateId,
                     flag: 'dealer',
