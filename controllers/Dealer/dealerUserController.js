@@ -911,7 +911,7 @@ exports.createReseller = async (req, res) => {
         let mergedEmail = notificationEmails.concat(dealerEmails)
         let notificationData = {
             title: "New Reseller  Added",
-            description: `A New Reseller ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName + " " + " " + checkLoginUser.metaData[0].lastName} - User Role - ${req.role} on our portal.`,
+            description: `A New Reseller ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName + " " + " " + checkLoginUser.metaData[0].lastName} - ${req.role} on our portal.`,
             userId: req.teammateId,
             redirectionId: "resellerDetails/" + createdReseler._id,
             endPoint: base_url + "resellerDetails/" + createdReseler._id,
@@ -922,7 +922,7 @@ exports.createReseller = async (req, res) => {
 
         notificationData = {
             title: "New Reseller  Added",
-            description: `A New Reseller ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName} - User Role - ${req.role} on our portal.`,
+            description: `A New Reseller ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName} - ${req.role} on our portal.`,
             userId: req.teammateId,
             redirectionId: "resellerDetails/" + createdReseler._id,
             endPoint: base_url + "dealer/resellerDetails/ " + createdReseler._id,
