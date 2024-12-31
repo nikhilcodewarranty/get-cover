@@ -162,7 +162,7 @@ exports.exportContractReporting = async (req, res) => {
     try {
         let data = req.body
         let getTheThresholdLimir = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
-        const limit = 800; // Adjust the limit based on your needs
+        const limit = 1000; // Adjust the limit based on your needs
         let page = 0;
         let totalContractData = []
         let hasMore = true;
@@ -520,13 +520,13 @@ exports.exportContractReporting = async (req, res) => {
             })
         }
 
-        while (hasMore) {
+        // while (hasMore) {
             console.log("page+++++++++++++++++++++++++++++++++",page)
             let getContracts = await contractService.getAllContracts2(mainQuery, { maxTimeMS: 100000 })
             var result1 = getContracts[0]?.data ? getContracts[0]?.data : []
-            totalContractData.concat(result1)
+            // totalContractData.concat(result1)
 
-        }
+        // }
         // let getContracts = await contractService.getAllContracts2(mainQuery, { maxTimeMS: 100000 })
         // let totalCount = getContracts[0]?.totalRecords[0]?.total ? getContracts[0]?.totalRecords[0].total : 0
         // let result1 = getContracts[0]?.data ? getContracts[0]?.data : []
@@ -812,7 +812,7 @@ exports.exportContractReporting = async (req, res) => {
             return summary;
         };
 
-        result1 = totalContractData
+        // result1 = totalContractData
         // Example Usage
         const dealerSummary = getDealerContractsSummary(result1);
         const servicerSummary = getServicerContractsSummary(result1);
