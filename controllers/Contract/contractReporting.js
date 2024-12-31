@@ -162,9 +162,11 @@ exports.exportContractReporting = async (req, res) => {
     try {
         let data = req.body
         let getTheThresholdLimir = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
-        let pageLimit = 1000000
-        let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
-        let limitData = Number(pageLimit)
+        const limit = 800; // Adjust the limit based on your needs
+        let page = 0;
+        let totalContractData = []
+        let hasMore = true;
+        let limitData = Number(limit)
         let dealerIds = [];
         let customerIds = [];
         let resellerIds = [];
@@ -172,7 +174,7 @@ exports.exportContractReporting = async (req, res) => {
         let orderIds = []
         let servicerIds = [];
         let userSearchCheck = 0
-        
+
         if (req.role == 'Dealer') {
             // match = { 'contracts.orders.dealerId': new mongoose.Types.ObjectId(req.userId) }
             dealerIds = [new mongoose.Types.ObjectId(req.userId)]
@@ -518,9 +520,15 @@ exports.exportContractReporting = async (req, res) => {
             })
         }
 
-        let getContracts = await contractService.getAllContracts2(mainQuery, { maxTimeMS: 100000 })
+        while (hasMore) {
+            let getContracts = await contractService.getAllContracts2(mainQuery, { maxTimeMS: 100000 })
+            var result1 = getContracts[0]?.data ? getContracts[0]?.data : []
+            totalContractData.concat(result1)
+
+        }
+        // let getContracts = await contractService.getAllContracts2(mainQuery, { maxTimeMS: 100000 })
         // let totalCount = getContracts[0]?.totalRecords[0]?.total ? getContracts[0]?.totalRecords[0].total : 0
-        let result1 = getContracts[0]?.data ? getContracts[0]?.data : []
+        // let result1 = getContracts[0]?.data ? getContracts[0]?.data : []
 
         for (let e = 0; e < result1.length; e++) {
             result1[e].reason = " "
@@ -803,7 +811,7 @@ exports.exportContractReporting = async (req, res) => {
             return summary;
         };
 
-
+        result1 = totalContractData
         // Example Usage
         const dealerSummary = getDealerContractsSummary(result1);
         const servicerSummary = getServicerContractsSummary(result1);

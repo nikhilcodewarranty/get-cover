@@ -29,29 +29,20 @@ router.get("/getCountNotification", [verifyToken], userController.getCountNotifi
 
 router.post('/setting', [verifyToken], userController.accountSetting);
 router.get('/updateDataBase', userController.updateDataBase);
-
 router.post('/resetSetting', [verifyToken], userController.resetSetting)
-
 router.post('/setting/uploadLogo', [verifyToken], userController.uploadLogo);
-
 router.get('/setting/getSetting', [verifyToken], userController.getSetting);
-
 router.get('/setting/preLoginData', userController.preLoginData);
-
 router.get('/setting/setDefault', [verifyToken], userController.setDefault);
 
 //Save Contact form 
 router.post('/contact-us',  userController.contactUs);
-
 //Option Dropdown 
 router.post('/saveOptions', [verifyToken], userController.saveOptions);
 //edit Dropdown
 router.put('/editOption', [verifyToken], userController.editOption);
-
 router.get('/getOption/:name', [verifyToken], userController.getOptions)
-
 router.get('/getOptions/:filter', [verifyToken], userController.getOptions1)
-
 router.post("/createSuperAdmin", userController.createSuperAdmin); // create super admin credentials
 router.post("/addMember", [verifyToken], userController.addMembers); // add member
 router.post("/getMembers", [verifyToken], userController.getMembers); // get members
