@@ -250,7 +250,7 @@ exports.createReseller = async (req, res) => {
             body: req.body ? req.body : { "type": "Catch Error" },
             response: {
                 code: constant.errorCode,
-                message: err.message
+                message: err.message 
             }
         }
         await LOG(logData).save()
