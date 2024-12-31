@@ -1248,12 +1248,9 @@ exports.addResellerUser = async (req, res) => {
                 },
             }
             let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerQuery, { email: 1 })
-            console.log("adminUsers-------------------",adminUsers)
             let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDealerQuery, { email: 1 })
-            console.log("dealerUsers-------------------",dealerUsers)
 
             let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerDealerQuery, { email: 1 })
-            console.log("resellerUsers-------------------",resellerUsers)
 
             const IDs = adminUsers.map(user => user._id)
             let notificationArray = []
@@ -1268,8 +1265,8 @@ exports.addResellerUser = async (req, res) => {
                 tabAction: "resellerUser",
                 contentId: saveData._id,
                 flag: 'reseller_user',
-                endPoint: base_url + "/resellerDetails/" + checkReseller._id,
-                redirectionId: "/resellerDetails/" + checkReseller._id,
+                endPoint: base_url + "resellerDetails/" + checkReseller._id,
+                redirectionId: "resellerDetails/" + checkReseller._id,
                 notificationFor: IDs
             };
             notificationArray.push(notificationData)

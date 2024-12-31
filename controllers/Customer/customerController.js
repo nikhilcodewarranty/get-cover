@@ -1483,8 +1483,8 @@ exports.addCustomerUser = async (req, res) => {
         userId: req.teammateId,
         contentId: saveData._id,
         flag: 'customer_user',
-        endPoint: base_url + "/customerDetails/" + checkCustomer._id,
-        redirectionId: "/customerDetails/" + checkCustomer._id,
+        endPoint: base_url + "customerDetails/" + checkCustomer._id,
+        redirectionId: "customerDetails/" + checkCustomer._id,
         notificationFor: IDs
       };
       notificationArray.push(notificationData)
