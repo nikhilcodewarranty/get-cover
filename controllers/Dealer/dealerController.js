@@ -657,131 +657,136 @@ exports.changeDealerStatus = async (req, res) => {
             $and: [
               { "dealerNotifications.dealerUpdate": true },
               { status: true },
-              { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") }
+              {
+                $or: [
+                  { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
+                ]
+              }
             ]
-          }
-        },
-      }
+            
+    }
+  },
+}
 
-      const dealerrQuery = {
-        metaData: {
-          $elemMatch: {
-            $and: [
-              { "dealerNotifications.dealerUpdate": true },
-              { status: true },
-              { metaId: new mongoose.Types.ObjectId(req.params.dealerId) }
-            ]
-          }
-        },
-      }
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerrQuery, { email: 1 })
-      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerrQuery, { email: 1 })
-      let IDs = adminUsers.map(user => user._id)
-      let adminEmails = adminUsers.map(user => user.email)
-      let IDs1 = dealerUsers.map(user => user._id)
-      console.log("IDs",IDs);
-      console.log("IDs1",IDs1);
+const dealerrQuery = {
+  metaData: {
+    $elemMatch: {
+      $and: [
+        { "dealerNotifications.dealerUpdate": true },
+        { status: true },
+        { metaId: new mongoose.Types.ObjectId(req.params.dealerId) }
+      ]
+    }
+  },
+}
+let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerrQuery, { email: 1 })
+let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerrQuery, { email: 1 })
+let IDs = adminUsers.map(user => user._id)
+let adminEmails = adminUsers.map(user => user.email)
+let IDs1 = dealerUsers.map(user => user._id)
+console.log("IDs", IDs);
+console.log("IDs1", IDs1);
 
-      let notificationData = {
-        title: "Dealer Status Updated",
-        description: `The Dealer ${singleDealer.name} status has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
-        userId: req.teammateId,
-        redirectionId: "dealerDetails/" + singleDealer._id,
-        flag: 'dealer',
-        endPoint: base_url + "dealerDetails/" + singleDealer._id,
-        notificationFor: IDs
-      };
+let notificationData = {
+  title: "Dealer Status Updated",
+  description: `The Dealer ${singleDealer.name} status has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+  userId: req.teammateId,
+  redirectionId: "dealerDetails/" + singleDealer._id,
+  flag: 'dealer',
+  endPoint: base_url + "dealerDetails/" + singleDealer._id,
+  notificationFor: IDs
+};
 
-      let notificationData1 = {
-        title: "Status Updated",
-        description: `GetCover has updated your status to ${status_content}.`,
-        userId: req.teammateId,
-        redirectionId: null,
-        flag: 'dealer',
-        endPoint: null,
-        notificationFor: IDs1
-      };
+let notificationData1 = {
+  title: "Status Updated",
+  description: `GetCover has updated your status to ${status_content}.`,
+  userId: req.teammateId,
+  redirectionId: null,
+  flag: 'dealer',
+  endPoint: null,
+  notificationFor: IDs1
+};
 
-      let notificationArrayData = [];
-      notificationArrayData.push(notificationData)
-      notificationArrayData.push(notificationData1)
-      console.log("notificationArrayData------------------",notificationArrayData)
-      let createNotification = await userService.saveNotificationBulk(notificationArrayData);
-      const content = req.body.status ? 'Congratulations, you can now login to our system. Please click the following link to login to the system' : "Your account has been made inactive. If you think, this is a mistake, please contact our support team at support@getcover.com"
-      // Send Email code here
-      let primaryUser = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.params.dealerId, isPrimary: true } } })
+let notificationArrayData = [];
+notificationArrayData.push(notificationData)
+notificationArrayData.push(notificationData1)
+console.log("notificationArrayData------------------", notificationArrayData)
+let createNotification = await userService.saveNotificationBulk(notificationArrayData);
+const content = req.body.status ? 'Congratulations, you can now login to our system. Please click the following link to login to the system' : "Your account has been made inactive. If you think, this is a mistake, please contact our support team at support@getcover.com"
+// Send Email code here
+let primaryUser = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.params.dealerId, isPrimary: true } } })
 
-      let dealerEmails = dealerUsers.map(user => user.email)
-      let settingData = await userService.getSetting({});
-      let resetPasswordCode = randtoken.generate(4, '123456789')
+let dealerEmails = dealerUsers.map(user => user.email)
+let settingData = await userService.getSetting({});
+let resetPasswordCode = randtoken.generate(4, '123456789')
 
-      let resetLink = `${process.env.SITE_URL}newPassword/${primaryUser._id}/${resetPasswordCode}`
+let resetLink = `${process.env.SITE_URL}newPassword/${primaryUser._id}/${resetPasswordCode}`
 
-      let emailData = {
-        senderName: singleDealer.name,
-        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        address: settingData[0]?.address,
-        websiteSetting: settingData[0],
-        content: content,
-        redirectId: status_content == "Active" ? resetLink : '',
-        subject: "Update Status"
-      }
+let emailData = {
+  senderName: singleDealer.name,
+  darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+  lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+  address: settingData[0]?.address,
+  websiteSetting: settingData[0],
+  content: content,
+  redirectId: status_content == "Active" ? resetLink : '',
+  subject: "Update Status"
+}
 
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(primaryUser.email, ["noreply@getcover.com"], emailData))
-      emailData = {
-        senderName: singleDealer.name,
-        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        address: settingData[0]?.address,
-        websiteSetting: settingData[0],
-        content: `Dealer status has been changed to ${status_content}`,
-        redirectId: '',
-        subject: "Update Status"
-      }
+let mailing = sgMail.send(emailConstant.sendEmailTemplate(primaryUser.email, ["noreply@getcover.com"], emailData))
+emailData = {
+  senderName: singleDealer.name,
+  darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+  lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+  address: settingData[0]?.address,
+  websiteSetting: settingData[0],
+  content: `Dealer status has been changed to ${status_content}`,
+  redirectId: '',
+  subject: "Update Status"
+}
 
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(adminEmails, ["noreply@getcover.com"], emailData))
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
+mailing = sgMail.send(emailConstant.sendEmailTemplate(adminEmails, ["noreply@getcover.com"], emailData))
+mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
 
-      let logData = {
-        userId: req.teammateId,
-        endpoint: "dealer/changeDealerStatus",
-        body: changedDealerStatus,
-        response: {
-          code: constant.successCode,
-          message: 'Updated Successfully!',
-        }
-      }
-      await LOG(logData).save()
-      res.send({
-        code: constant.successCode,
-        message: 'Updated Successfully!',
-        data: changedDealerStatus
-      })
+let logData = {
+  userId: req.teammateId,
+  endpoint: "dealer/changeDealerStatus",
+  body: changedDealerStatus,
+  response: {
+    code: constant.successCode,
+    message: 'Updated Successfully!',
+  }
+}
+await LOG(logData).save()
+res.send({
+  code: constant.successCode,
+  message: 'Updated Successfully!',
+  data: changedDealerStatus
+})
     }
     else {
-      res.send({
-        code: constant.errorCode,
-        message: 'Unable to update dealer status!',
-      })
-    }
+  res.send({
+    code: constant.errorCode,
+    message: 'Unable to update dealer status!',
+  })
+}
   } catch (err) {
-    let logData = {
-      endpoint: "dealer/changeDealerStatus",
-      body: {
-        type: "catch error"
-      },
-      response: {
-        code: constant.errorCode,
-        message: err.message,
-      }
-    }
-    await LOG(logData).save()
-    res.send({
+  let logData = {
+    endpoint: "dealer/changeDealerStatus",
+    body: {
+      type: "catch error"
+    },
+    response: {
       code: constant.errorCode,
-      message: err.message
-    })
+      message: err.message,
+    }
   }
+  await LOG(logData).save()
+  res.send({
+    code: constant.errorCode,
+    message: err.message
+  })
+}
 }
 
 //Create Dealer Price Book
