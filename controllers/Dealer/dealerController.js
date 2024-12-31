@@ -680,6 +680,8 @@ exports.changeDealerStatus = async (req, res) => {
       let IDs = adminUsers.map(user => user._id)
       let adminEmails = adminUsers.map(user => user.email)
       let IDs1 = dealerUsers.map(user => user._id)
+      console.log("adminUsers-------------------",adminUsers)
+      console.log("dealerUsers-------------------",dealerUsers)
       console.log("IDs", IDs);
       console.log("IDs1", IDs1);
 
