@@ -479,9 +479,9 @@ exports.statusUpdate = async (req, res) => {
         userId: req.teammateId,
         contentId: req.params.dealerPriceBookId,
         flag: 'Dealer Price Book',
-        redirectionId: "dealerPriceList" + data.dealerSku + "/" + getDealerDetail.name,
+        redirectionId: "dealerPriceList/" + data.dealerSku + "/" + getDealerDetail.name,
         notificationFor: IDs,
-        endPoint: base_url + "dealerPriceList" + data.dealerSku + "/" + getDealerDetail.name,
+        endPoint: base_url + "dealerPriceList/" + data.dealerSku + "/" + getDealerDetail.name,
       };
       let notificationData1 = {
         title: "PriceBook Updated",
@@ -504,9 +504,9 @@ exports.statusUpdate = async (req, res) => {
         userId: req.teammateId,
         contentId: req.params.dealerPriceBookId,
         flag: 'Dealer Price Book',
-        redirectionId: "dealerPriceList" + existingDealerPriceBook.dealerSku + "/" + getDealerDetail.name,
+        redirectionId: "dealerPriceList/" + existingDealerPriceBook.dealerSku + "/" + getDealerDetail.name,
         notificationFor: IDs,
-        endPoint: base_url + "dealerPriceList" + existingDealerPriceBook.dealerSku + "/" + getDealerDetail.name,
+        endPoint: base_url + "dealerPriceList/" + existingDealerPriceBook.dealerSku + "/" + getDealerDetail.name,
       };
 
       let notificationData3 = {
