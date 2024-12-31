@@ -840,7 +840,7 @@ exports.getUserNotificationData = async (req, res) => {
             getData.metaData[0].registerNotifications = null
         }
 
-        if (data.flag == "Dealer") {
+        if (req.params.flag == "Dealer") {
             // getData.metaData[0].orderNotifications = null
             // getData.metaData[0].claimNotification = null
             getData.metaData[0].adminNotification = null
@@ -850,7 +850,7 @@ exports.getUserNotificationData = async (req, res) => {
             // getData.metaData[0].customerNotifications = null
             getData.metaData[0].registerNotifications = null
         }
-        if (data.flag == "Reseller") {
+        if (req.params.flag == "Reseller") {
             // getData.metaData[0].orderNotifications = null
             // getData.metaData[0].claimNotification = null
             getData.metaData[0].adminNotification = null
@@ -860,7 +860,7 @@ exports.getUserNotificationData = async (req, res) => {
             // getData.metaData[0].customerNotifications = null
             getData.metaData[0].registerNotifications = null
         }
-        if (data.flag == "Customer") {
+        if (req.params.flag == "Customer") {
             // getData.metaData[0].orderNotifications = null
             // getData.metaData[0].claimNotification = null
             getData.metaData[0].adminNotification = null
@@ -870,7 +870,7 @@ exports.getUserNotificationData = async (req, res) => {
             // getData.metaData[0].customerNotifications = null
             getData.metaData[0].registerNotifications = null
         }
-        if (data.flag == "Servicer") {
+        if (req.params.flag == "Servicer") {
             // getData.metaData[0].orderNotifications = null
             // getData.metaData[0].claimNotification = null
             getData.metaData[0].adminNotification = null
