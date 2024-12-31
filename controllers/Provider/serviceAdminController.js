@@ -1510,8 +1510,8 @@ exports.registerServiceProvider = async (req, res) => {
     const base_url = `${process.env.SITE_URL}servicerRequestList/`
 
     const notificationData = {
-      adminTitle: "New Servicer Request",
-      adminMessage: `A New Servicer ${data.name} has registered with us on the portal.`,
+      title: "New Servicer Request",
+      description: `A New Servicer ${data.name} has registered with us on the portal.`,
       userId: req.teammateId,
       flag: 'servicer',
       redirectionId: base_url,
