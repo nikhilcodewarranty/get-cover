@@ -2175,7 +2175,9 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
       let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUploadQuery, { email: 1 })
       let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerUploadQuery, { email: 1 })
       const IDs = adminUsers.map(user => user._id)
+      const adminEmail = adminUsers.map(user => user.email)
       const IDs1 = dealerUsers.map(user => user._id)
+      const dealerEmail = dealerUsers.map(user => user.email)
       let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: req.body.dealerId, isPrimary: true })
       let notificationData = {
         title: "Dealer Pricebook file added successfully",
@@ -2192,7 +2194,7 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
         description: `The Bulk file ${file.fieldName} of  pricebook has been uploaded and processed successfully. The file has been uploaded by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         flag: 'Dealer Price Book',
-        notificationFor: IDs,
+        notificationFor: IDs1,
         endPoint: base_url + "dealer/priceBook",
         redirectionId: "dealer/priceBook"
       };
@@ -2205,13 +2207,13 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
       console.log(dealerPrimary.email, checkDealer[0].isAccountCreate)
-      if (checkDealer[0].isAccountCreate) {
-        const mailing = sgMail.send(emailConstant.sendCsvFile(dealerPrimary.email, notificationEmails, htmlTableString));
-      }
-      else {
-        const mailing = sgMail.send(emailConstant.sendCsvFile(notificationEmails, "noreply@getcover.com", htmlTableString));
+   
+        let mailing = sgMail.send(emailConstant.sendCsvFile(dealerEmail,"noreply@getcover.com", , htmlTableString));
+      
+ 
+         mailing = sgMail.send(emailConstant.sendCsvFile(adminEmail, "noreply@getcover.com", htmlTableString));
 
-      }
+ 
 
       res.send({
         code: constant.successCode,
