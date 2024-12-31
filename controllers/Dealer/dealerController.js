@@ -705,7 +705,7 @@ exports.changeDealerStatus = async (req, res) => {
       let notificationArrayData = [];
       notificationArrayData.push(notificationData)
       notificationArrayData.push(notificationData1)
-
+      console.log("notificationArrayData------------------",notificationArrayData)
       let createNotification = await userService.saveNotificationBulk(notificationArrayData);
       const content = req.body.status ? 'Congratulations, you can now login to our system. Please click the following link to login to the system' : "Your account has been made inactive. If you think, this is a mistake, please contact our support team at support@getcover.com"
       // Send Email code here
