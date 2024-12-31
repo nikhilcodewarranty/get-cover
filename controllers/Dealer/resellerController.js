@@ -1218,7 +1218,7 @@ exports.addResellerUser = async (req, res) => {
                 metaData: {
                     $elemMatch: {
                         $and: [
-                            { "resellerNotifications.userAdded": true },
+                            { "resellerNotifications.userAdd": true },
                             { status: true },
                             { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
                         ]
@@ -1229,7 +1229,7 @@ exports.addResellerUser = async (req, res) => {
                 metaData: {
                     $elemMatch: {
                         $and: [
-                            { "resellerNotifications.userAdded": true },
+                            { "resellerNotifications.userAdd": true },
                             { status: true },
                             { metaId: new mongoose.Types.ObjectId(checkReseller.dealerId) },
                         ]
@@ -1240,7 +1240,7 @@ exports.addResellerUser = async (req, res) => {
                 metaData: {
                     $elemMatch: {
                         $and: [
-                            { "resellerNotifications.userAdded": true },
+                            { "resellerNotifications.userAdd": true },
                             { status: true },
                             { metaId: new mongoose.Types.ObjectId(checkReseller._id) },
                         ]
@@ -1296,7 +1296,6 @@ exports.addResellerUser = async (req, res) => {
                 notificationFor: resellerId
             };
             notificationArray.push(notificationData)
-            console.log("notificationArray------------------------",notificationArray);
             let createNotification = await userService.saveNotificationBulk(notificationArray);
 
             //Save Logs add reseller user

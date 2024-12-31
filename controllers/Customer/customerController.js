@@ -1425,7 +1425,7 @@ exports.addCustomerUser = async (req, res) => {
         metaData: {
           $elemMatch: {
             $and: [
-              { "customerNotifications.userAdded": true },
+              { "customerNotifications.userAdd": true },
               { status: true },
               { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
             ]
@@ -1436,7 +1436,7 @@ exports.addCustomerUser = async (req, res) => {
         metaData: {
           $elemMatch: {
             $and: [
-              { "customerNotifications.userAdded": true },
+              { "customerNotifications.userAdd": true },
               { status: true },
               { metaId: new mongoose.Types.ObjectId(checkCustomer.dealerId) },
             ]
@@ -1447,7 +1447,7 @@ exports.addCustomerUser = async (req, res) => {
         metaData: {
           $elemMatch: {
             $and: [
-              { "customerNotifications.userAdded": true },
+              { "customerNotifications.userAdd": true },
               { status: true },
               { metaId: new mongoose.Types.ObjectId(checkCustomer?.resellerId1) },
             ]
@@ -1458,7 +1458,7 @@ exports.addCustomerUser = async (req, res) => {
         metaData: {
           $elemMatch: {
             $and: [
-              { "customerNotifications.userAdded": true },
+              { "customerNotifications.userAdd": true },
               { status: true },
               { metaId: new mongoose.Types.ObjectId(checkCustomer?._id) },
             ]
