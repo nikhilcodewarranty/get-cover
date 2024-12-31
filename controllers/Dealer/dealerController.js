@@ -2207,13 +2207,13 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
       console.log(dealerPrimary.email, checkDealer[0].isAccountCreate)
-   
-        let mailing = sgMail.send(emailConstant.sendCsvFile(dealerEmail,"noreply@getcover.com", , htmlTableString));
-      
- 
-         mailing = sgMail.send(emailConstant.sendCsvFile(adminEmail, "noreply@getcover.com", htmlTableString));
 
- 
+      let mailing = sgMail.send(emailConstant.sendCsvFile(dealerEmail, "noreply@getcover.com", htmlTableString));
+
+
+      mailing = sgMail.send(emailConstant.sendCsvFile(adminEmail, "noreply@getcover.com", htmlTableString));
+
+
 
       res.send({
         code: constant.successCode,
