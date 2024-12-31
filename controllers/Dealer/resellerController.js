@@ -1248,8 +1248,13 @@ exports.addResellerUser = async (req, res) => {
                 },
             }
             let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerQuery, { email: 1 })
+            console.log("adminUsers-------------------",adminUsers)
             let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDealerQuery, { email: 1 })
+            console.log("dealerUsers-------------------",dealerUsers)
+
             let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerDealerQuery, { email: 1 })
+            console.log("resellerUsers-------------------",resellerUsers)
+
             const IDs = adminUsers.map(user => user._id)
             let notificationArray = []
             const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
@@ -1291,6 +1296,7 @@ exports.addResellerUser = async (req, res) => {
                 notificationFor: resellerId
             };
             notificationArray.push(notificationData)
+            console.log("notificationArray------------------------",notificationArray);
             let createNotification = await userService.saveNotificationBulk(notificationArray);
 
             //Save Logs add reseller user
