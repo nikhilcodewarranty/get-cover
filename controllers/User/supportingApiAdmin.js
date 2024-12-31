@@ -303,7 +303,7 @@ exports.createDealer = async (req, res) => {
 
                 let notificationData = {
                     title: "New Dealer Approved",
-                    description: `A New Dealer ${data.name} has been approved by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} on our portal.`,
+                    description: `A New Dealer ${data.name} has been added and approved by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} on our portal.`,
                     userId: req.teammateId,
                     flag: 'dealer',
                     redirectionId: "dealerDetails/" + data.dealerId,
@@ -500,10 +500,8 @@ exports.createDealer = async (req, res) => {
                 const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
 
                 let notificationData = {
-                    adminTitle: "New Dealer Added",
                     title: "New Dealer Added",
-                    adminMessage: `A New Dealer ${createMetaData.name} has been added by ${checkLoginUser.metaData[0]?.firstName} on our portal.`,
-                    description: `A New Dealer ${createMetaData.name} has been added by ${checkLoginUser.metaData[0]?.firstName} on our portal.`,
+                    description: `A New Dealer ${createMetaData.name} has been added and approved by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} on our portal.`,
                     userId: req.teammateId,
                     flag: 'dealer',
                     redirectionId: "dealerDetails/" + createMetaData._id,
