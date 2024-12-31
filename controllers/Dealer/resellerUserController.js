@@ -323,7 +323,7 @@ exports.createCustomer = async (req, res, next) => {
             flag: 'customer',
             notificationFor: IDs,
             redirectionId: "customerDetails/" + createdCustomer._id,
-            endpoint: base_url + "customerDetails/" + createdCustomer._id,
+            endPoint: base_url + "customerDetails/" + createdCustomer._id,
         };
         notificationArray.push(notificationData)
         notificationData = {
@@ -333,7 +333,7 @@ exports.createCustomer = async (req, res, next) => {
             flag: 'customer',
             notificationFor: dealerId,
             redirectionId: "dealer/customerDetails/" + createdCustomer._id,
-            endpoint: base_url + "dealer/customerDetails/" + createdCustomer._id,
+            endPoint: base_url + "dealer/customerDetails/" + createdCustomer._id,
         };
         notificationArray.push(notificationData)
         notificationData = {
@@ -343,7 +343,7 @@ exports.createCustomer = async (req, res, next) => {
             flag: 'customer',
             notificationFor: resellerId,
             redirectionId: "reseller/customerDetails/" + createdCustomer._id,
-            endpoint: base_url + "reseller/customerDetails/" + createdCustomer._id,
+            endPoint: base_url + "reseller/customerDetails/" + createdCustomer._id,
         };
         notificationArray.push(notificationData)
         let createNotification = await userService.saveNotificationBulk(notificationArray);
