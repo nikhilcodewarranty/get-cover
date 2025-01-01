@@ -1135,7 +1135,7 @@ exports.updateUserData = async (req, res) => {
 
       const dealerIds = dealerUsers.map(user => user._id)
       const resellerIds = resellerUsers.map(user => user._id)
-      const customerIds = resellerUsers.map(user => user._id)
+      const customerIds = customerUsers.map(user => user._id)
       const dealerEmails = customerUsers.map(user => user.email)
       const resellerEmails = resellerUsers.map(user => user.email)
       const customerEmails = resellerUsers.map(user => user.email)
@@ -1235,7 +1235,6 @@ exports.updateUserData = async (req, res) => {
           userId: req.teammateId,
           flag: checkRole?.role,
           tabAction: "customerUser",
-
           redirectionId: "dealer/customerDetails/" + checkCustomer._id,
           endPoint: base_url + "dealer/customerDetails/" + checkCustomer._id,
           notificationFor: dealerIds,
