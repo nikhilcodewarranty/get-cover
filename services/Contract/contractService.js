@@ -53,9 +53,9 @@ module.exports = class contractService {
   }
 
   // Get the latest contract based on unique_key_number
-  static async getContractsCountNew() {
+  static async getContractsCountNew(query) {
     try {
-      const count = await contract.find().sort({ unique_key_number: -1 }).limit(1);
+      const count = await contract.find(query).sort({ unique_key_number: -1 }).limit(1);
       return count;
     } catch (error) {
       return `Could not fetch contract count: ${error}`;

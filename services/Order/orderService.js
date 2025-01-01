@@ -173,9 +173,9 @@ module.exports = class orderService {
     }
   }
   // Get orders count
-  static async getOrdersCount() {
+  static async getOrdersCount(query) {
     try {
-      const count = await order.find({}, { unique_key_number: 1 }).sort({ unique_key_number: -1 });
+      const count = await order.find(query, { unique_key_number: 1 }).sort({ unique_key_number: -1 });
       return count.sort((a, b) => b.unique_key_number - a.unique_key_number);;
     } catch (error) {
       return `Could not fetch order count: ${error}`;
