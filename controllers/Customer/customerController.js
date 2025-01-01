@@ -1372,6 +1372,7 @@ exports.addCustomerUser = async (req, res) => {
     let data = req.body
 
     let checkCustomer = await customerService.getCustomerByName({ _id: data.customerId })
+    let checkDealer = await dealerService.getDealerByName({ _id: checkCustomer.dealerId }, {})
     if (!checkCustomer) {
       res.send({
         code: constant.errorCode,
@@ -1486,7 +1487,7 @@ exports.addCustomerUser = async (req, res) => {
       const customerId = customerUsers.map(user => user._id)
       let notificationData = {
         title: "Customer User Added",
-        description: `A new user for customer ${checkCustomer.username} has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+        description: `A new user for customer ${checkCustomer.username} under ${checkDealer.name} has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
         userId: req.teammateId,
         contentId: saveData._id,
         flag: 'customer_user',
