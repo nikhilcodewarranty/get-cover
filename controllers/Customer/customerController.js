@@ -1040,7 +1040,7 @@ exports.changePrimaryUser = async (req, res) => {
           description: `The Primary user for ${checkServicer.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
-          tabAction: "user",
+          tabAction: "servicerUser",
           redirectionId: "servicerDetails/" + checkServicer._id,
           endPoint: base_url + "servicerDetails/" + checkServicer._id,
           notificationFor: IDs
@@ -1094,7 +1094,7 @@ exports.changePrimaryUser = async (req, res) => {
           description: `The Primary user for ${checkDealer.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
-          tabAction: "user",
+          tabAction: "dealerUser",
           redirectionId: "dealerDetails/" + checkDealer._id,
           endPoint: base_url + "dealerDetails/" + checkDealer._id,
           notificationFor: IDs
@@ -1117,11 +1117,13 @@ exports.changePrimaryUser = async (req, res) => {
 
       }
       if (checkReseller) {
+        let resellerDealer = await dealerService.getDealerById(checkReseller.dealerId)
+
         adminUpdatePrimaryQuery = {
           metaData: {
             $elemMatch: {
               $and: [
-                { "resellerNotifications.primaryChanged": true },
+                { "resellerNotifications.primaryChange": true },
                 { status: true },
                 { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
               ]
@@ -1132,7 +1134,7 @@ exports.changePrimaryUser = async (req, res) => {
           metaData: {
             $elemMatch: {
               $and: [
-                { "resellerNotifications.primaryChanged": true },
+                { "resellerNotifications.primaryChange": true },
                 { status: true },
                 { metaId: new mongoose.Types.ObjectId(checkReseller.dealerId) },
               ]
@@ -1143,7 +1145,7 @@ exports.changePrimaryUser = async (req, res) => {
           metaData: {
             $elemMatch: {
               $and: [
-                { "resellerNotifications.primaryChanged": true },
+                { "resellerNotifications.primaryChange": true },
                 { status: true },
                 { metaId: new mongoose.Types.ObjectId(checkReseller._id) },
               ]
@@ -1164,9 +1166,9 @@ exports.changePrimaryUser = async (req, res) => {
 
         notificationData = {
           title: "Reseller Primary User Updated",
-          description: `The Primary user of ${checkReseller.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+          description: `The Primary user of ${checkReseller.name} for ${resellerDealer.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName + " " +updateLastPrimary.metaData[0]?.lastName} to ${updatePrimary.metaData[0]?.firstName + " " + updatePrimary.metaData[0]?.lastName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
-          tabAction: "user",
+          tabAction: "resellerUser",
           flag: checkRole?.role,
           redirectionId: "resellerDetails/" + checkReseller._id,
           endPoint: base_url + "resellerDetails/" + checkReseller._id,
@@ -1175,9 +1177,9 @@ exports.changePrimaryUser = async (req, res) => {
         notificationArray.push(notificationData)
         notificationData = {
           title: "Reseller Primary User Updated",
-          description: `The Primary user of ${checkReseller.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+          description: `The Primary user of ${checkReseller.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName + " " +updateLastPrimary.metaData[0]?.lastName} to ${updatePrimary.metaData[0]?.firstName + " " + updatePrimary.metaData[0]?.lastName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
-          tabAction: "user",
+          tabAction: "resellerUser",
           flag: checkRole?.role,
           redirectionId: "dealer/resellerDetails/" + checkReseller._id,
           endPoint: base_url + "dealer/resellerDetails/" + checkReseller._id,
@@ -1186,7 +1188,7 @@ exports.changePrimaryUser = async (req, res) => {
         notificationArray.push(notificationData)
         notificationData = {
           title: "Primary User Updated",
-          description: `The Primary user for your account has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName}  by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+          description: `The Primary user for your account has been changed from  ${updateLastPrimary.metaData[0]?.firstName + " " +updateLastPrimary.metaData[0]?.lastName} to ${updatePrimary.metaData[0]?.firstName + " " + updatePrimary.metaData[0]?.lastName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
           redirectionId: "reseller/user",
@@ -1206,7 +1208,7 @@ exports.changePrimaryUser = async (req, res) => {
           metaData: {
             $elemMatch: {
               $and: [
-                { "customerNotifications.primaryChanged": true },
+                { "customerNotifications.primaryChange": true },
                 { status: true },
                 { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
               ]
@@ -1217,7 +1219,7 @@ exports.changePrimaryUser = async (req, res) => {
           metaData: {
             $elemMatch: {
               $and: [
-                { "customerNotifications.primaryChanged": true },
+                { "customerNotifications.primaryChange": true },
                 { status: true },
                 { metaId: new mongoose.Types.ObjectId(checkCustomer.dealerId) },
               ]
@@ -1228,7 +1230,7 @@ exports.changePrimaryUser = async (req, res) => {
           metaData: {
             $elemMatch: {
               $and: [
-                { "customerNotifications.primaryChanged": true },
+                { "customerNotifications.primaryChange": true },
                 { status: true },
                 { metaId: new mongoose.Types.ObjectId(checkCustomer?.resellerId) },
               ]
@@ -1239,7 +1241,7 @@ exports.changePrimaryUser = async (req, res) => {
           metaData: {
             $elemMatch: {
               $and: [
-                { "customerNotifications.primaryChanged": true },
+                { "customerNotifications.primaryChange": true },
                 { status: true },
                 { metaId: new mongoose.Types.ObjectId(checkCustomer._id) },
               ]
@@ -1266,7 +1268,7 @@ exports.changePrimaryUser = async (req, res) => {
           title: "Customer Primary User Updated",
           description: `The Primary user of ${checkCustomer.username} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
           userId: req.teammateId,
-          tabAction: "user",
+          tabAction: "customerUser",
           flag: checkRole?.role,
           redirectionId: "customerDetails/" + checkCustomer._id,
           endPoint: base_url + "customerDetails/" + checkCustomer._id,
@@ -1277,7 +1279,7 @@ exports.changePrimaryUser = async (req, res) => {
           title: "Customer Primary User Updated",
           description: `The Primary user of ${checkCustomer.username} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
           userId: req.teammateId,
-          tabAction: "user",
+          tabAction: "customerUser",
           flag: checkRole?.role,
           redirectionId: "dealer/customerDetails/" + checkCustomer._id,
           endPoint: base_url + "dealer/customerDetails/" + checkCustomer._id,
@@ -1291,7 +1293,7 @@ exports.changePrimaryUser = async (req, res) => {
             description: `The Primary user of ${checkCustomer.username} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
             userId: req.teammateId,
             flag: checkRole?.role,
-            tabAction: "user",
+            tabAction: "customerUser",
             redirectionId: "reseller/customerDetails/" + checkCustomer._id,
             endPoint: base_url + "reseller/customerDetails/" + checkCustomer._id,
             notificationFor: resellerId
@@ -1425,7 +1427,7 @@ exports.addCustomerUser = async (req, res) => {
         metaData: {
           $elemMatch: {
             $and: [
-              { "customerNotifications.userAdded": true },
+              { "customerNotifications.userAdd": true },
               { status: true },
               { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
             ]
@@ -1436,7 +1438,7 @@ exports.addCustomerUser = async (req, res) => {
         metaData: {
           $elemMatch: {
             $and: [
-              { "customerNotifications.userAdded": true },
+              { "customerNotifications.userAdd": true },
               { status: true },
               { metaId: new mongoose.Types.ObjectId(checkCustomer.dealerId) },
             ]
@@ -1447,7 +1449,7 @@ exports.addCustomerUser = async (req, res) => {
         metaData: {
           $elemMatch: {
             $and: [
-              { "customerNotifications.userAdded": true },
+              { "customerNotifications.userAdd": true },
               { status: true },
               { metaId: new mongoose.Types.ObjectId(checkCustomer?.resellerId1) },
             ]
@@ -1458,7 +1460,7 @@ exports.addCustomerUser = async (req, res) => {
         metaData: {
           $elemMatch: {
             $and: [
-              { "customerNotifications.userAdded": true },
+              { "customerNotifications.userAdd": true },
               { status: true },
               { metaId: new mongoose.Types.ObjectId(checkCustomer?._id) },
             ]
@@ -1483,8 +1485,8 @@ exports.addCustomerUser = async (req, res) => {
         userId: req.teammateId,
         contentId: saveData._id,
         flag: 'customer_user',
-        endPoint: base_url + "/customerDetails/" + checkCustomer._id,
-        redirectionId: "/customerDetails/" + checkCustomer._id,
+        endPoint: base_url + "customerDetails/" + checkCustomer._id,
+        redirectionId: "customerDetails/" + checkCustomer._id,
         notificationFor: IDs
       };
       notificationArray.push(notificationData)

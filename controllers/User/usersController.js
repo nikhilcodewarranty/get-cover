@@ -719,8 +719,10 @@ exports.updateUserData = async (req, res) => {
       if (data.firstName) {
         notificationData = {
           title: "Servicer User Details Changed",
-          description: `The Details for the Servicer ${checkServicer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The Details for the Servicer ${checkServicer.name} for his user ${updateUser.metaData[0]?.firstName + " " + updateUser.metaData[0]?.lastName} has been updated by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
+          tabAction: "servicerUser",
+
           flag: checkRole?.role,
           redirectionId: "servicerDetails/" + checkServicer._id,
           endPoint: base_url + "servicerDetails/" + checkServicer._id,
@@ -729,8 +731,9 @@ exports.updateUserData = async (req, res) => {
         notificationArray.push(notificationData)
         notificationData = {
           title: "User Details Changed",
-          description: `The detail for user ${updateUser.metaData[0]?.firstName} has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The detail for user ${updateUser.metaData[0]?.firstName + " " + updateUser.metaData[0]?.lastName} has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
+
           flag: checkRole?.role,
           redirectionId: "servicer/user",
           endPoint: base_url + "servicer/user",
@@ -758,6 +761,8 @@ exports.updateUserData = async (req, res) => {
           description: `The Status for the Servicer ${checkServicer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
+          tabAction: "servicerUser",
+
           redirectionId: "servicerDetails/" + checkServicer._id,
           endPoint: base_url + "servicerDetails/" + checkServicer._id,
           notificationData: IDs
@@ -831,8 +836,10 @@ exports.updateUserData = async (req, res) => {
       if (data.firstName) {
         notificationData = {
           title: "Dealer User Details Changed",
-          description: `The Details for the dealer ${checkDealer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The Details for the dealer ${checkDealer.name} for his user ${updateUser.metaData[0]?.firstName + " " + updateUser.metaData[0]?.lastName} has been updated by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
+          tabAction: "dealerUser",
+
           flag: checkRole?.role,
           redirectionId: "dealerDetails/" + checkDealer._id,
           endPoint: base_url + "dealerDetails/" + checkDealer._id,
@@ -841,7 +848,7 @@ exports.updateUserData = async (req, res) => {
         notificationArray.push(notificationData)
         notificationData = {
           title: "User Details Changed",
-          description: `The detail for  user ${updateUser.metaData[0]?.firstName} has been updated by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The detail for  user ${updateUser.metaData[0]?.firstName + " " + updateUser.metaData[0]?.lastName} has been updated by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
           redirectionId: "dealer/user",
@@ -866,8 +873,10 @@ exports.updateUserData = async (req, res) => {
       else {
         notificationData = {
           title: "Dealer User Status Changed",
-          description: `The Status for the dealer ${checkDealer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The Status for the dealer ${checkDealer.name} for his user ${updateUser.metaData[0]?.firstName + " " + updateUser.metaData[0]?.lastName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
+          tabAction: "dealerUser",
+
           flag: checkRole?.role,
           redirectionId: "dealerDetails/" + checkDealer._id,
           endPoint: base_url,
@@ -877,7 +886,7 @@ exports.updateUserData = async (req, res) => {
         notificationArray.push(notificationData)
         notificationData = {
           title: "User Status Changed",
-          description: `The Status for  user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The Status for  user ${updateUser.metaData[0]?.firstName + " " + updateUser.metaData[0]?.lastName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
           redirectionId: "dealer/user",
@@ -911,11 +920,13 @@ exports.updateUserData = async (req, res) => {
       }
     }
     if (checkReseller) {
+      let resellerDealer = await dealerService.getDealerById(checkReseller.dealerId)
+
       adminUpdatePrimaryQuery = {
         metaData: {
           $elemMatch: {
             $and: [
-              { "resellerNotification.userUpdate": true },
+              { "resellerNotifications.userUpdate": true },
               { status: true },
               { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
             ]
@@ -926,9 +937,9 @@ exports.updateUserData = async (req, res) => {
         metaData: {
           $elemMatch: {
             $and: [
-              { "resellerNotification.userUpdate": true },
+              { "resellerNotifications.userUpdate": true },
               { status: true },
-              { metaId: new mongoose.Types.ObjectId(checkDealer._id) },
+              { metaId: new mongoose.Types.ObjectId(checkReseller.dealerId) },
             ]
           }
         },
@@ -937,9 +948,9 @@ exports.updateUserData = async (req, res) => {
         metaData: {
           $elemMatch: {
             $and: [
-              { "resellerNotification.userUpdate": true },
+              { "resellerNotifications.userUpdate": true },
               { status: true },
-              { metaId: new mongoose.Types.ObjectId(checkDealer._id) },
+              { metaId: new mongoose.Types.ObjectId(checkReseller._id) },
             ]
           }
         },
@@ -958,8 +969,10 @@ exports.updateUserData = async (req, res) => {
       if (data.firstName) {
         notificationData = {
           title: "Reseller User Details Changed",
-          description: `The Details for the reseller ${checkReseller.name} for his user ${updateUser.metaData[0]?.firstName} has been updated by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The Details of Reseller ${checkReseller.name} for the dealer ${resellerDealer.name} for his user ${updateUser.metaData[0]?.firstName + " " + updateUser.metaData[0]?.lastName} has been updated by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
+          tabAction: "resellerUser",
+
           flag: checkRole?.role,
           redirectionId: "resellerDetails/" + checkReseller._id,
           endPoint: base_url + "resellerDetails/" + checkReseller._id,
@@ -968,17 +981,19 @@ exports.updateUserData = async (req, res) => {
         notificationArray.push(notificationData)
         notificationData = {
           title: "Reseller User Details Changed",
-          description: `The Details for the reseller ${checkReseller.name} for his user ${updateUser.metaData[0]?.firstName} has been updated by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The Details of Reseller ${checkReseller.name} for his user ${updateUser.metaData[0]?.firstName + " " + updateUser.metaData[0]?.lastName} has been updated by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
+          tabAction: "resellerUser",
+
           flag: checkRole?.role,
-          redirectionId: "resellerDetails/" + checkReseller._id,
-          endPoint: base_url + "resellerDetails/" + checkReseller._id,
+          redirectionId: "dealer/resellerDetails/" + checkReseller._id,
+          endPoint: base_url + "dealer/resellerDetails/" + checkReseller._id,
           notificationFor: dealerIds,
         };
         notificationArray.push(notificationData)
         notificationData = {
           title: "User Details Changed",
-          description: `The detail for  user ${updateUser.metaData[0]?.firstName} has been updated by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The details for  user ${updateUser.metaData[0]?.firstName} has been updated by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
           redirectionId: "reseller/user",
@@ -1005,8 +1020,10 @@ exports.updateUserData = async (req, res) => {
       else {
         notificationData = {
           title: "Reseller User Status Changed",
-          description: `The Status for the reseller ${checkReseller.name} for his user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The Status of Reseller ${checkReseller.name} for the dealer ${resellerDealer.name} for his user ${updateUser.metaData[0]?.firstName + " " + updateUser.metaData[0]?.lastName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
+          tabAction: "resellerUser",
+
           flag: checkRole?.role,
           redirectionId: "resellerDetails/" + checkReseller._id,
           endPoint: base_url + "resellerDetails/" + checkReseller._id,
@@ -1016,18 +1033,20 @@ exports.updateUserData = async (req, res) => {
         notificationArray.push(notificationData)
         notificationData = {
           title: "Reseller User Status Changed",
-          description: `The Status for the reseller ${checkReseller.name} for his user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The Status of Reseller ${checkReseller.name} for his user ${updateUser.metaData[0]?.firstName + " " + updateUser.metaData[0]?.lastName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
-          redirectionId: "resellerDetails/" + checkReseller._id,
-          endPoint: base_url + "resellerDetails/" + checkReseller._id,
+          tabAction: "resellerUser",
+
+          redirectionId: "dealer/resellerDetails/" + checkReseller._id,
+          endPoint: base_url + "dealer/resellerDetails/" + checkReseller._id,
           notificationFor: dealerIds,
 
         };
         notificationArray.push(notificationData)
         notificationData = {
           title: "User Status Changed",
-          description: `The Status for  user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The Status for  user ${updateUser.metaData[0]?.firstName + " " + updateUser.metaData[0]?.lastName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
           redirectionId: "reseller/user",
@@ -1062,6 +1081,8 @@ exports.updateUserData = async (req, res) => {
       }
     }
     if (checkCustomer) {
+      let resellerDealer = await dealerService.getDealerById(checkCustomer.dealerId)
+
       adminUpdatePrimaryQuery = {
         metaData: {
           $elemMatch: {
@@ -1128,8 +1149,10 @@ exports.updateUserData = async (req, res) => {
 
         notificationData = {
           title: "Customer User Details Changed",
-          description: `The Details for the customer ${checkCustomer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The Details for the customer ${checkCustomer.username} for the Dealer ${resellerDealer.name} for his user ${updateUser.metaData[0]?.firstName + " " + updateUser.metaData[0]?.lastName} has been updated by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
+          tabAction: "customerUser",
+
           flag: checkRole?.role,
           redirectionId: "customerDetails/" + checkCustomer._id,
           endPoint: base_url + "customerDetails/" + checkCustomer._id,
@@ -1139,29 +1162,33 @@ exports.updateUserData = async (req, res) => {
 
         notificationData = {
           title: "Customer User Details Changed",
-          description: `The Details for the customer ${checkCustomer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The Details for the customer ${checkCustomer.username} for his user ${updateUser.metaData[0]?.firstName + " " + updateUser.metaData[0]?.lastName} has been updated by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
-          redirectionId: "customerDetails/" + checkCustomer._id,
-          endPoint: base_url + "customerDetails/" + checkCustomer._id,
+          tabAction: "customerUser",
+
+          redirectionId: "dealer/customerDetails/" + checkCustomer._id,
+          endPoint: base_url + "dealer/customerDetails/" + checkCustomer._id,
           notificationFor: dealerIds,
         };
         notificationArray.push(notificationData)
 
         notificationData = {
           title: "Customer User Details Changed",
-          description: `The Details for the customer ${checkCustomer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The Details for the customer ${checkCustomer.username} for his user ${updateUser.metaData[0]?.firstName + " " + updateUser.metaData[0]?.lastName} has been updated by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
-          redirectionId: "customerDetails/" + checkCustomer._id,
-          endPoint: base_url + "customerDetails/" + checkCustomer._id,
+          tabAction: "customerUser",
+
+          redirectionId: "reseller/customerDetails/" + checkCustomer._id,
+          endPoint: base_url + "reseller/customerDetails/" + checkCustomer._id,
           notificationFor: resellerIds,
         };
         notificationArray.push(notificationData)
 
         notificationData = {
           title: "User Details Changed",
-          description: `The detail for  user ${updateUser.metaData[0]?.firstName} has been updated by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The detail for user ${updateUser.metaData[0]?.firstName + " " + updateUser.metaData[0]?.lastName} has been updated by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
           redirectionId: "customer/user",
@@ -1191,8 +1218,10 @@ exports.updateUserData = async (req, res) => {
       else {
         notificationData = {
           title: "Customer User Status Changed",
-          description: `The Status for the customer ${checkCustomer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The Status of customer ${checkCustomer.username} for the Dealer ${resellerDealer.name} for his user ${updateUser.metaData[0]?.firstName + " " + updateUser.metaData[0]?.lastName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
+          tabAction: "customerUser",
+
           flag: checkRole?.role,
           redirectionId: "customerDetails/" + checkCustomer._id,
           endPoint: base_url + "customerDetails/" + checkCustomer._id,
@@ -1202,9 +1231,11 @@ exports.updateUserData = async (req, res) => {
         notificationArray.push(notificationData)
         notificationData = {
           title: "Customer User Status Changed",
-          description: `The Status for the customer ${checkCustomer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The Status of customer ${checkCustomer.username} for his user ${updateUser.metaData[0]?.firstName + " " + updateUser.metaData[0]?.lastName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
+          tabAction: "customerUser",
+
           redirectionId: "dealer/customerDetails/" + checkCustomer._id,
           endPoint: base_url + "dealer/customerDetails/" + checkCustomer._id,
           notificationFor: dealerIds,
@@ -1213,8 +1244,10 @@ exports.updateUserData = async (req, res) => {
         notificationArray.push(notificationData)
         notificationData = {
           title: "Customer User Status Changed",
-          description: `The Status for the customer ${checkCustomer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The Status of customer ${checkCustomer.username} for his user ${updateUser.metaData[0]?.firstName + " " + updateUser.metaData[0]?.lastName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
+          tabAction: "customerUser",
+
           flag: checkRole?.role,
           redirectionId: "reseller/customerDetails/" + checkCustomer._id,
           endPoint: base_url + "reseller/customerDetails/" + checkCustomer._id,
@@ -1224,7 +1257,7 @@ exports.updateUserData = async (req, res) => {
         notificationArray.push(notificationData)
         notificationData = {
           title: "User Status Changed",
-          description: `The Status for  user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The Status for  user ${updateUser.metaData[0]?.firstName + " " + updateUser.metaData[0]?.lastName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
           redirectionId: "customer/user",
@@ -1268,9 +1301,9 @@ exports.updateUserData = async (req, res) => {
       }
     })
 
- 
 
- 
+
+
 
 
 
@@ -1589,17 +1622,17 @@ exports.deleteUser = async (req, res) => {
       const IDs = adminUsers.map(user => user._id)
       const servicerIds = servicerUsers.map(user => user._id)
       notificationEmails = adminUsers.map(user => user.email);
-       servicerEmails = servicerUsers.map(user => user.email);
-      
+      servicerEmails = servicerUsers.map(user => user.email);
+
       mergedEmail = notificationEmails.concat(servicerEmails)
       notificationData = {
         title: "Servicer User Deleted",
-        description: `The User ${checkUser.metaData[0].firstName} for the Servicer ${checkServicer.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
+        description: `The User ${checkUser.metaData[0].firstName + " " + checkUser.metaData[0].lastName} for the Servicer ${checkServicer.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}.`,
         userId: req.teammateId,
-        tabAction: "user",
+        tabAction: "servicerUser",
         flag: checkRole?.role,
         redirectionId: "servicerDetails/" + checkServicer._id,
-        endPoint: base_url,
+        endPoint: base_url + "servicerDetails/" + checkServicer._id,
         notificationFor: IDs
       }
       notificationArray.push(notificationData)
@@ -1642,13 +1675,13 @@ exports.deleteUser = async (req, res) => {
       const IDs = adminUsers.map(user => user._id)
       const dealerId = dealerUsers.map(user => user._id)
       notificationEmails = adminUsers.map(user => user.email);
-       dealerEmails = dealerUsers.map(user => user.email);
+      dealerEmails = dealerUsers.map(user => user.email);
       mergedEmail = notificationEmails.concat(dealerEmails)
       notificationData = {
         title: "Dealer User Deleted",
-        description: `The User ${checkUser.metaData[0].firstName} for the dealer ${checkDealer.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName} -${req.role}..`,
+        description: `The User ${checkUser.metaData[0].firstName + " " + checkUser.metaData[0].lastName} for the dealer ${checkDealer.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName} -${req.role}.`,
         userId: req.teammateId,
-        tabAction: "user",
+        tabAction: "dealerUser",
 
         flag: checkRole?.role,
         redirectionId: "dealerDetails/" + checkDealer._id,
@@ -1659,7 +1692,7 @@ exports.deleteUser = async (req, res) => {
       notificationArray.push(notificationData)
       notificationData = {
         title: "User Deleted",
-        description: `The user ${checkUser?.metaData[0]?.firstName} has been deleted by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+        description: `The user ${checkUser.metaData[0].firstName + " " + checkUser.metaData[0].lastName} has been deleted by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
         userId: req.teammateId,
         flag: checkRole?.role,
         redirectionId: "dealer/user",
@@ -1670,11 +1703,13 @@ exports.deleteUser = async (req, res) => {
       notificationArray.push(notificationData)
     }
     if (checkReseller) {
+      const dealerData = await dealerService.getDealerById(checkReseller.dealerId)
+
       adminDeleteQuery = {
         metaData: {
           $elemMatch: {
             $and: [
-              { "resellerNotification.userDelete": true },
+              { "resellerNotifications.userDelete": true },
               { status: true },
               { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
             ]
@@ -1685,7 +1720,7 @@ exports.deleteUser = async (req, res) => {
         metaData: {
           $elemMatch: {
             $and: [
-              { "resellerNotification.userDelete": true },
+              { "resellerNotifications.userDelete": true },
               { status: true },
               { metaId: new mongoose.Types.ObjectId(checkReseller.dealerId) },
             ]
@@ -1696,7 +1731,7 @@ exports.deleteUser = async (req, res) => {
         metaData: {
           $elemMatch: {
             $and: [
-              { "resellerNotification.userDelete": true },
+              { "resellerNotifications.userDelete": true },
               { status: true },
               { metaId: new mongoose.Types.ObjectId(checkReseller._id) },
             ]
@@ -1706,19 +1741,22 @@ exports.deleteUser = async (req, res) => {
       let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDeleteQuery, { email: 1 })
       let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDeleteQuery, { email: 1 })
       let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerDeleteQuery, { email: 1 })
+      console.log("adminUsers------------------",adminUsers)
+      console.log("dealerUsers------------------",dealerUsers)
+      console.log("resellerUsers------------------",resellerUsers)
       const IDs = adminUsers.map(user => user._id)
       const dealerId = dealerUsers.map(user => user._id)
       const resellerId = resellerUsers.map(user => user._id)
       notificationEmails = adminUsers.map(user => user.email);
-       dealerEmails = dealerUsers.map(user => user.email);
-       resellerEmails = resellerUsers.map(user => user.email);
+      dealerEmails = dealerUsers.map(user => user.email);
+      resellerEmails = resellerUsers.map(user => user.email);
 
       mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails)
       notificationData = {
         title: "Reseller User Deleted",
-        description: `The User ${checkUser.metaData[0].firstName} for the reseller ${checkReseller.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
+        description: `The User ${checkUser.metaData[0].firstName + " " + checkUser.metaData[0].lastName} of Reseller ${checkReseller.name} for the dealer ${dealerData.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}.`,
         userId: req.teammateId,
-        tabAction: "user",
+        tabAction: "resellerUser",
 
         flag: checkRole?.role,
         redirectionId: "resellerDetails/" + checkReseller._id,
@@ -1729,9 +1767,9 @@ exports.deleteUser = async (req, res) => {
       notificationArray.push(notificationData)
       notificationData = {
         title: "Reseller User Deleted",
-        description: `The User ${checkUser.metaData[0].firstName} for the reseller ${checkReseller.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
+        description: `The User ${checkUser.metaData[0].firstName + " " + checkUser.metaData[0].lastName} for the reseller ${checkReseller.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}.`,
         userId: req.teammateId,
-        tabAction: "user",
+        tabAction: "resellerUser",
 
         flag: checkRole?.role,
         redirectionId: "dealer/resellerDetails/" + checkReseller._id,
@@ -1742,7 +1780,7 @@ exports.deleteUser = async (req, res) => {
       notificationArray.push(notificationData)
       notificationData = {
         title: "User Deleted",
-        description: `The user ${checkUser?.metaData[0]?.firstName} has been deleted by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+        description: `The User ${checkUser.metaData[0].firstName + " " + checkUser.metaData[0].lastName} has been deleted by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
         userId: req.teammateId,
         flag: checkRole?.role,
         redirectionId: "reseller/user",
@@ -1808,17 +1846,17 @@ exports.deleteUser = async (req, res) => {
       const customerId = customerUsers.map(user => user._id)
       notificationEmails = adminUsers.map(user => user.email);
 
-       dealerEmails = dealerUsers.map(user => user.email);
-       resellerEmails = resellerUsers.map(user => user.email);
-       customerEmails = customerUsers.map(user => user.email);
+      dealerEmails = dealerUsers.map(user => user.email);
+      resellerEmails = resellerUsers.map(user => user.email);
+      customerEmails = customerUsers.map(user => user.email);
 
       mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails, customerEmails)
 
       notificationData = {
         title: "Customer User Deleted",
-        description: `The User ${checkUser.metaData[0].firstName} for the customer ${checkCustomer.username} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
+        description: `The User ${checkUser.metaData[0].firstName + " " + checkUser.metaData[0].lastName} for the customer ${checkCustomer.username} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}.`,
         userId: req.teammateId,
-        tabAction: "user",
+        tabAction: "customerUser",
 
         flag: checkRole?.role,
         redirectionId: "customerDetails/" + checkCustomer._id,
@@ -1829,9 +1867,9 @@ exports.deleteUser = async (req, res) => {
       notificationArray.push(notificationData)
       notificationData = {
         title: "Customer User Deleted",
-        description: `The User ${checkUser.metaData[0].firstName} for the customer ${checkCustomer.username} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
+        description: `The User ${checkUser.metaData[0].firstName + " " + checkUser.metaData[0].lastName} for the customer ${checkCustomer.username} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}.`,
         userId: req.teammateId,
-        tabAction: "user",
+        tabAction: "customerUser",
 
         flag: checkRole?.role,
         redirectionId: "dealer/customerDetails/" + checkCustomer._id,
@@ -1842,10 +1880,10 @@ exports.deleteUser = async (req, res) => {
       notificationArray.push(notificationData)
       notificationData = {
         title: "Customer User Deleted",
-        description: `The User ${checkUser.metaData[0].firstName} for the customer ${checkCustomer.username} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}..`,
+        description: `The User ${checkUser.metaData[0].firstName + " " + checkUser.metaData[0].lastName} for the customer ${checkCustomer.username} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}.`,
         userId: req.teammateId,
         flag: checkRole?.role,
-        tabAction: "user",
+        tabAction: "customerUser",
         redirectionId: "reseller/customerDetails/" + checkCustomer._id,
         endPoint: base_url + "reseller/customerDetails/" + checkCustomer._id,
         notificationFor: resellerId
@@ -1854,7 +1892,7 @@ exports.deleteUser = async (req, res) => {
       notificationArray.push(notificationData)
       notificationData = {
         title: "User Deleted",
-        description: `The user ${checkUser?.metaData[0]?.firstName} has been deleted by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+        description: `The user ${checkUser.metaData[0].firstName + " " + checkUser.metaData[0].lastName} has been deleted by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
         userId: req.teammateId,
         flag: checkRole?.role,
         redirectionId: "customer/user",

@@ -1218,7 +1218,7 @@ exports.addResellerUser = async (req, res) => {
                 metaData: {
                     $elemMatch: {
                         $and: [
-                            { "resellerNotifications.userAdded": true },
+                            { "resellerNotifications.userAdd": true },
                             { status: true },
                             { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
                         ]
@@ -1229,7 +1229,7 @@ exports.addResellerUser = async (req, res) => {
                 metaData: {
                     $elemMatch: {
                         $and: [
-                            { "resellerNotifications.userAdded": true },
+                            { "resellerNotifications.userAdd": true },
                             { status: true },
                             { metaId: new mongoose.Types.ObjectId(checkReseller.dealerId) },
                         ]
@@ -1240,7 +1240,7 @@ exports.addResellerUser = async (req, res) => {
                 metaData: {
                     $elemMatch: {
                         $and: [
-                            { "resellerNotifications.userAdded": true },
+                            { "resellerNotifications.userAdd": true },
                             { status: true },
                             { metaId: new mongoose.Types.ObjectId(checkReseller._id) },
                         ]
@@ -1249,7 +1249,9 @@ exports.addResellerUser = async (req, res) => {
             }
             let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerQuery, { email: 1 })
             let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDealerQuery, { email: 1 })
+
             let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerDealerQuery, { email: 1 })
+
             const IDs = adminUsers.map(user => user._id)
             let notificationArray = []
             const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
@@ -1260,11 +1262,11 @@ exports.addResellerUser = async (req, res) => {
                 title: "Reseller User Added",
                 description: `A new user for reseller ${checkReseller.name} has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
                 userId: req.teammateId,
-                tabAction: "user",
+                tabAction: "resellerUser",
                 contentId: saveData._id,
                 flag: 'reseller_user',
-                endPoint: base_url + "/resellerDetails/" + checkReseller._id,
-                redirectionId: "/resellerDetails/" + checkReseller._id,
+                endPoint: base_url + "resellerDetails/" + checkReseller._id,
+                redirectionId: "resellerDetails/" + checkReseller._id,
                 notificationFor: IDs
             };
             notificationArray.push(notificationData)
@@ -1273,7 +1275,7 @@ exports.addResellerUser = async (req, res) => {
                 description: `A new user for reseller ${checkReseller.name} has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
                 userId: req.teammateId,
                 contentId: saveData._id,
-                tabAction: "user",
+                tabAction: "resellerUser",
                 flag: 'reseller_user',
                 endPoint: base_url + "dealer/resellerDetails/" + checkReseller._id,
                 redirectionId: "dealer/resellerDetails/" + checkReseller._id,

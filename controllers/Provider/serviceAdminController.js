@@ -1515,7 +1515,7 @@ exports.registerServiceProvider = async (req, res) => {
       userId: req.teammateId,
       flag: 'servicer',
       redirectionId: "servicerRequestList/" + req.body.name,
-      endPoint: base_url + "servicerRequestList/" + req.body.name,
+      endPoint: base_url,
       notificationFor: IDs
     };
 
@@ -1865,7 +1865,7 @@ exports.addServicerUser = async (req, res) => {
           userId: req.userId,
           contentId: checkServicer._id,
           flag: 'Servicer User',
-          tabAction: "user",
+          tabAction: "servicerUser",
           endPoint: base_url + "servicerDetails/" + checkServicer._id,
           redirectionId: "servicerDetails/" + checkServicer._id,
           notificationFor: IDs

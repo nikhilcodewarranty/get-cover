@@ -2983,12 +2983,12 @@ exports.saveBulkClaim = async (req, res) => {
                 },
               ],
             })
+            console.log("checkContractData====================",checkContractData)
             if (checkContractData && checkContractData != null) {
               item.status = " "
               if (checkContractData.status != "Active") {
                 item.status = "Contract is not active"
                 item.exit = true;
-
               }
 
               if (new Date(checkContractData.minDate) > new Date()) {
@@ -3024,7 +3024,7 @@ exports.saveBulkClaim = async (req, res) => {
               ]
 
               let checkClaims = await claimService.getClaimWithAggregate(claimQuery)
-
+              console.log("checkClaims-------------------",checkClaims)
               if (checkClaims[0]) {
                 if (checkClaims[0].openFileClaimsCount > 0) {
                   item.status = "Contract has open claim"
@@ -3166,9 +3166,11 @@ exports.saveBulkClaim = async (req, res) => {
       let finalArray = []
       //Save bulk claim
 
+
+      
       let currentYear = new Date().getFullYear();
       currentYear = "-" + currentYear + "-"
-
+    
       let count = await claimService.getClaimCount({ 'unique_key': { '$regex': currentYear, '$options': 'i' } });
       let unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
 
