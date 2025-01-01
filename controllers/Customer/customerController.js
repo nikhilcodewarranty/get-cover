@@ -1259,7 +1259,9 @@ exports.changePrimaryUser = async (req, res) => {
         const resellerId = resellerUsers.map(user => user._id)
         const customerId = customerUsers.map(user => user._id)
         let notificationEmails = adminUsers.map(user => user.email);
-
+        console.log("adminUsers-----------------------",adminUsers)
+        console.log("dealerUsers-----------------------",dealerUsers)
+        console.log("resellerUsers-----------------------",resellerUsers)
         let dealerEmails = dealerUsers.map(user => user.email);
         let resellerEmails = resellerUsers.map(user => user.email);
         let customerEmails = customerUsers.map(user => user.email);
