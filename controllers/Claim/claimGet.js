@@ -72,7 +72,7 @@ exports.getAllClaims = async (req, res, next) => {
   try {
     let data = req.body
     let query = { isDeleted: false };
-    let pageLimit = 1000000
+    let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
     let match = {};
