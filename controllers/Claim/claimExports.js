@@ -660,7 +660,7 @@ exports.exportDataForClaim = async (req, res) => {
       status: "Pending",
       reportName: data.reportName,
       remark: data.remark,
-      category: "claimReporting"
+      category: "Claim Reporting"
     }
     let createReporting = await claimReportingService.createReporting(dataForClaimReporting)
     res.send({

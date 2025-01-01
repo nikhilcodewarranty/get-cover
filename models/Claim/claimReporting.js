@@ -17,7 +17,7 @@ const claimReporting = new Schema({
     },
     category: {
         type: String,
-        enum: ["claimReporting", "contractReporting"],
+        enum: ["Claim Reporting", "Contract Reporting"],
     },
     subCategory: {
         type: String,
