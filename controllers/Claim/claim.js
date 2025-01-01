@@ -2983,7 +2983,6 @@ exports.saveBulkClaim = async (req, res) => {
                 },
               ],
             })
-            console.log("checkContractData====================",checkContractData)
             if (checkContractData && checkContractData != null) {
               item.status = " "
               if (checkContractData.status != "Active") {
@@ -3024,7 +3023,6 @@ exports.saveBulkClaim = async (req, res) => {
               ]
 
               let checkClaims = await claimService.getClaimWithAggregate(claimQuery)
-              console.log("checkClaims-------------------",checkClaims)
               if (checkClaims[0]) {
                 if (checkClaims[0].openFileClaimsCount > 0) {
                   item.status = "Contract has open claim"
@@ -3166,11 +3164,9 @@ exports.saveBulkClaim = async (req, res) => {
       let finalArray = []
       //Save bulk claim
 
-
-      
       let currentYear = new Date().getFullYear();
       currentYear = "-" + currentYear + "-"
-    
+
       let count = await claimService.getClaimCount({ 'unique_key': { '$regex': currentYear, '$options': 'i' } });
       let unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
 
@@ -3251,39 +3247,7 @@ exports.saveBulkClaim = async (req, res) => {
       let toMail = [];
       let ccMail;
       const userId = req.userId;
-      let resellerData
-      // Get Reseller by id
-      if (req.role == "Reseller") {
-        const reseller = await resellerService.getReseller({ _id: req.userId }, {});
-        // Get dealer by id
-        const dealer = await dealerService.getDealerById(reseller.dealerId, {});
-        resellerData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: userId, isPrimary: true } } }, {});
-        // Get dealer info
-        let dealerData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: dealer._id, isPrimary: true } } }, {});
-        new_admin_array.push(dealerData?.email);
-
-      }
-      if (req.role == "Customer") {
-        const userId = req.userId;
-        // Get customer
-        const customer = await customerService.getCustomerById({ _id: req.userId });
-        if (customer?.resellerId) {
-          // Get Reseller by id
-          const reseller = await resellerService.getReseller({ _id: customer.resellerId }, {});
-          resellerData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: reseller._id, isPrimary: true } } }, {});
-          new_admin_array.push(resellerData?.email);
-        }
-        // Get dealer by customer
-        const dealer = await dealerService.getDealerById(customer.dealerId, {});
-        // Get dealer info
-        let dealerData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: dealer._id, isPrimary: true } } }, {});
-
-        // Get customer user info
-        var userData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: userId, isPrimary: true } } }, {});
-
-        new_admin_array.push(dealerData.email);
-
-      }
+      let resellerData 
 
       //Get Fail and Passes Entries
       const counts = totalDataComing.reduce((acc, obj) => {
@@ -3324,7 +3288,6 @@ exports.saveBulkClaim = async (req, res) => {
           const userId = req.userId;
           ccMail = new_admin_array;
           let userData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: userId, isPrimary: true } } }, {});
-          toMail = userData.email;
           if (req.userId.toString() === item.orderData?.order?.dealerId?.toString()) {
             // For servicer
             if (!existArray.data[servicerId] && servicerId != undefined && !item.exit && item?.claimType != "theft_and_lost") {
@@ -3359,8 +3322,6 @@ exports.saveBulkClaim = async (req, res) => {
         }
         // Build bulk csv for Reseller only
         else if (req.role === 'Reseller') {
-
-          toMail = resellerData?.email;
           ccMail = new_admin_array;
           if (req.userId.toString() === item.orderData?.order?.resellerId?.toString()) {
             // For servicer
@@ -3396,8 +3357,6 @@ exports.saveBulkClaim = async (req, res) => {
         }
         // Build bulk csv for Customer only
         else if (req.role === 'Customer') {
-
-          toMail = userData.email;
           ccMail = new_admin_array;
 
           if (req.userId.toString() === item.orderData?.order?.customerId?.toString()) {
@@ -3583,185 +3542,6 @@ exports.saveBulkClaim = async (req, res) => {
 
       }
 
-      //Get Failure Claims 
-      const successEntries = csvArray.filter(entry => entry.exit === false);
-      const failureEntries = csvArray.filter(entry => entry.exit === true);
-
-      let mailing;
-      let htmlTableString;
-      // Send Email notification for all roles user
-      if (req.role == "Dealer") {
-        if (failureEntries.length > 0) {
-          htmlTableString = convertArrayToHTMLTable([], failureEntries);
-          mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
-        }
-
-        else {
-          let htmlContent = `
-          <html>
-            <head>
-                <style>
-                    table {
-                        border-collapse: collapse;
-                        width: 100%;
-                    }
-                    th, td {
-                        border: 1px solid #dddddd;
-                        text-align: left;
-                        padding: 8px;
-                    }
-                    th {
-                        background-color: #f2f2f2;
-                    }
-                </style>
-            </head>         
-            <body>
-                <table>
-                <tr>
-                <td colspan="2" style="text-align:center">Total filed claims: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</td>
-                </tr>
-                <tr>
-                    <td span="1" style="text-align:center">Failure claims: ${counts.trueCount}</td>
-                    <td span="1" style="text-align:center">Successful added claims: ${counts.falseCount}</td>
-                </tr>
-                </table>
-            </body>
-          </html>`;
-
-          //htmlTableString = convertArrayToHTMLTable([], failureEntries);
-          mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlContent));
-        }
-        // mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
-      }
-      if (req.role == "Reseller") {
-        if (failureEntries.length > 0) {
-          htmlTableString = convertArrayToHTMLTable([], failureEntries);
-          mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
-        }
-
-        else {
-          let htmlContent = `
-          <html>
-            <head>
-                <style>
-                    table {
-                        border-collapse: collapse;
-                        width: 100%;
-                    }
-                    th, td {
-                        border: 1px solid #dddddd;
-                        text-align: left;
-                        padding: 8px;
-                    }
-                    th {
-                        background-color: #f2f2f2;
-                    }
-                </style>
-            </head>         
-            <body>
-                <table>
-                <tr>
-                <td colspan="2" style="text-align:center">Total filed claims: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</td>
-                </tr>
-                <tr>
-                    <td span="1" style="text-align:center">Failure claims: ${counts.trueCount}</td>
-                    <td span="1" style="text-align:center">Successful added claims: ${counts.falseCount}</td>
-                </tr>
-                </table>
-            </body>
-          </html>`;
-
-          //htmlTableString = convertArrayToHTMLTable([], failureEntries);
-          mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlContent));
-        }
-      }
-      if (req.role == "Customer") {
-        if (failureEntries.length > 0) {
-          htmlTableString = convertArrayToHTMLTable([], failureEntries);
-          mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
-        }
-
-        else {
-          let htmlContent = `
-          <html>
-            <head>
-                <style>
-                    table {
-                        border-collapse: collapse;
-                        width: 100%;
-                    }
-                    th, td {
-                        border: 1px solid #dddddd;
-                        text-align: left;
-                        padding: 8px;
-                    }
-                    th {
-                        background-color: #f2f2f2;
-                    }
-                </style>
-            </head>         
-            <body>
-                <table>
-                <tr>
-                <td colspan="2" style="text-align:center">Total filed claims: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</td>
-                </tr>
-                <tr>
-                    <td span="1" style="text-align:center">Failure claims: ${counts.trueCount}</td>
-                    <td span="1" style="text-align:center">Successful added claims: ${counts.falseCount}</td>
-                </tr>
-                </table>
-            </body>
-          </html>`;
-
-          //htmlTableString = convertArrayToHTMLTable([], failureEntries);
-          mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlContent));
-        }
-      }
-      //send Email to admin
-      if (req.role == "Super Admin") {
-        if (failureEntries.length > 0) {
-          htmlTableString = convertArrayToHTMLTable([], failureEntries);
-          mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
-        }
-
-        else {
-          let htmlContent = `
-          <html>
-            <head>
-                <style>
-                    table {
-                        border-collapse: collapse;
-                        width: 100%;
-                    }
-                    th, td {
-                        border: 1px solid #dddddd;
-                        text-align: left;
-                        padding: 8px;
-                    }
-                    th {
-                        background-color: #f2f2f2;
-                    }
-                </style>
-            </head>         
-            <body>
-                <table>
-                <tr>
-                <td colspan="2" style="text-align:center">Total filed claims: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</td>
-                </tr>
-                <tr>
-                    <td span="1" style="text-align:center">Failure claims: ${counts.trueCount}</td>
-                    <td span="1" style="text-align:center">Successful added claims: ${counts.falseCount}</td>
-                </tr>
-                </table>
-            </body>
-          </html>`;
-
-          //htmlTableString = convertArrayToHTMLTable([], failureEntries);
-          mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlContent));
-        }
-
-
-      }
       if (saveBulkClaim.length > 0) {
         let adminBulkQuery = {
           metaData: {
@@ -3896,6 +3676,282 @@ exports.saveBulkClaim = async (req, res) => {
         }
         let createNotification = await userService.saveNotificationBulk(notificationArray);
       }
+      //Get Failure Claims 
+      const successEntries = csvArray.filter(entry => entry.exit === false);
+      const failureEntries = csvArray.filter(entry => entry.exit === true);
+
+      let mailing;
+      let htmlTableString;
+      // Send Email notification for all roles user
+      if (req.role == "Dealer") {
+        let dealerEmailBulkQuery = {
+          metaData: {
+            $elemMatch: {
+              $and: [
+                { "claimNotification.fileBulkClaim": true },
+                { metaId: req.userId },
+                { status: true },
+              ]
+            }
+          },
+        }
+        let allDealer = await supportingFunction.getNotificationEligibleUser(dealerEmailBulkQuery, { email: 1 })
+
+        let adminEmail = adminUsers.map(user => user.email);
+        let dealerEmail= allDealer.map(user => user.email);
+
+        if (failureEntries.length > 0) {
+          htmlTableString = convertArrayToHTMLTable([], failureEntries);
+          mailing = sgMail.send(emailConstant.sendCsvFile(dealerEmail, ["noreply@getcover.com"], htmlTableString));
+          mailing = sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlTableString));
+        }
+
+        else {
+          let htmlContent = `
+          <html>
+            <head>
+                <style>
+                    table {
+                        border-collapse: collapse;
+                        width: 100%;
+                    }
+                    th, td {
+                        border: 1px solid #dddddd;
+                        text-align: left;
+                        padding: 8px;
+                    }
+                    th {
+                        background-color: #f2f2f2;
+                    }
+                </style>
+            </head>         
+            <body>
+                <table>
+                <tr>
+                <td colspan="2" style="text-align:center">Total filed claims: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</td>
+                </tr>
+                <tr>
+                    <td span="1" style="text-align:center">Failure claims: ${counts.trueCount}</td>
+                    <td span="1" style="text-align:center">Successful added claims: ${counts.falseCount}</td>
+                </tr>
+                </table>
+            </body>
+          </html>`;
+
+          //htmlTableString = convertArrayToHTMLTable([], failureEntries);
+          mailing = sgMail.send(emailConstant.sendCsvFile(dealerEmail, ["noreply@getcover.com"], htmlContent));
+          mailing = sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlContent));
+        }
+        // mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
+      }
+      if (req.role == "Reseller") {
+        const loginReseller = await resellerService.getReseller({ _id: req.userId }, {});
+
+        let resellerEmailBulkQuery = {
+          metaData: {
+            $elemMatch: {
+              $and: [
+                { "claimNotification.fileBulkClaim": true },
+                { metaId: req.userId },
+                { status: true },
+              ]
+            }
+          },
+        }
+        let resellerDealerEmailBulkQuery = {
+          metaData: {
+            $elemMatch: {
+              $and: [
+                { "claimNotification.fileBulkClaim": true },
+                { metaId: loginReseller?.dealerId },
+                { status: true },
+              ]
+            }
+          },
+        }
+
+        let allReseller = await supportingFunction.getNotificationEligibleUser(resellerEmailBulkQuery, { email: 1 })
+        let allResellersDealer = await supportingFunction.getNotificationEligibleUser(resellerDealerEmailBulkQuery, { email: 1 })
+        let resellerEmails = allReseller.map(customer => customer.email);
+        let dealerEmails = allResellersDealer.map(customer => customer.email);
+        if (failureEntries.length > 0) {
+          htmlTableString = convertArrayToHTMLTable([], failureEntries);
+          mailing = sgMail.send(emailConstant.sendCsvFile(resellerEmails, ["noreply@getcover.com"], htmlTableString));
+          mailing = sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlTableString));
+        }
+
+        else {
+          let htmlContent = `
+          <html>
+            <head>
+                <style>
+                    table {
+                        border-collapse: collapse;
+                        width: 100%;
+                    }
+                    th, td {
+                        border: 1px solid #dddddd;
+                        text-align: left;
+                        padding: 8px;
+                    }
+                    th {
+                        background-color: #f2f2f2;
+                    }
+                </style>
+            </head>         
+            <body>
+                <table>
+                <tr>
+                <td colspan="2" style="text-align:center">Total filed claims: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</td>
+                </tr>
+                <tr>
+                    <td span="1" style="text-align:center">Failure claims: ${counts.trueCount}</td>
+                    <td span="1" style="text-align:center">Successful added claims: ${counts.falseCount}</td>
+                </tr>
+                </table>
+            </body>
+          </html>`;
+
+          //htmlTableString = convertArrayToHTMLTable([], failureEntries);
+          mailing = sgMail.send(emailConstant.sendCsvFile(resellerEmails, ["noreply@getcover.com"], htmlContent));
+          mailing = sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlContent));
+        }
+      }
+      if (req.role == "Customer") {
+        let loginCustomer = await customerService.getCustomerById({ _id: req.userId });
+
+        let customerEmailBulkQuery = {
+          metaData: {
+            $elemMatch: {
+              $and: [
+                { "claimNotification.fileBulkClaim": true },
+                { metaId: req.userId },
+                { status: true },
+              ]
+            }
+          },
+        }
+        let customerDealerEmailBulkQuery = {
+          metaData: {
+            $elemMatch: {
+              $and: [
+                { "claimNotification.fileBulkClaim": true },
+                { metaId: loginCustomer?.dealerId },
+                { status: true },
+              ]
+            }
+          },
+        }
+        let customerResellerEmailBulkQuery = {
+          metaData: {
+            $elemMatch: {
+              $and: [
+                { "claimNotification.fileBulkClaim": true },
+                { metaId: loginCustomer?.resellerId1 },
+                { status: true },
+              ]
+            }
+          },
+        }
+        let allCustomers = await supportingFunction.getNotificationEligibleUser(customerEmailBulkQuery, { email: 1 })
+        let allCustomersDealer = await supportingFunction.getNotificationEligibleUser(customerDealerEmailBulkQuery, { email: 1 })
+        let allCustomersReseller = await supportingFunction.getNotificationEligibleUser(customerResellerEmailBulkQuery, { email: 1 })
+        let customerEmails = allCustomers.map(customer => customer.email);
+        let dealerEmails = allCustomersDealer.map(customer => customer.email);
+        let resellerEmails = allCustomersReseller.map(customer => customer.email);
+        if (failureEntries.length > 0) {
+          htmlTableString = convertArrayToHTMLTable([], failureEntries);
+          mailing = sgMail.send(emailConstant.sendCsvFile(customerEmails, ["noreply@getcover.com"], htmlTableString));
+          mailing = sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlTableString));
+          mailing = sgMail.send(emailConstant.sendCsvFile(resellerEmails, ["noreply@getcover.com"], htmlTableString));
+        }
+
+        else {
+          let htmlContent = `
+          <html>
+            <head>
+                <style>
+                    table {
+                        border-collapse: collapse;
+                        width: 100%;
+                    }
+                    th, td {
+                        border: 1px solid #dddddd;
+                        text-align: left;
+                        padding: 8px;
+                    }
+                    th {
+                        background-color: #f2f2f2;
+                    }
+                </style>
+            </head>         
+            <body>
+                <table>
+                <tr>
+                <td colspan="2" style="text-align:center">Total filed claims: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</td>
+                </tr>
+                <tr>
+                    <td span="1" style="text-align:center">Failure claims: ${counts.trueCount}</td>
+                    <td span="1" style="text-align:center">Successful added claims: ${counts.falseCount}</td>
+                </tr>
+                </table>
+            </body>
+          </html>`;
+
+          //htmlTableString = convertArrayToHTMLTable([], failureEntries);
+          mailing = sgMail.send(emailConstant.sendCsvFile(customerEmails, ["noreply@getcover.com"], htmlContent));
+          mailing = sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlContent));
+          mailing = sgMail.send(emailConstant.sendCsvFile(resellerEmails, ["noreply@getcover.com"], htmlContent));
+        }
+      }
+      //send Email to admin
+      if (req.role == "Super Admin") {
+        let adminEmail = adminUsers.map(user => user.email);
+        if (failureEntries.length > 0) {
+          htmlTableString = convertArrayToHTMLTable([], failureEntries);
+          // let adminEmail = adminUsers.map
+          mailing = sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlTableString));
+        }
+
+        else {
+          let htmlContent = `
+          <html>
+            <head>
+                <style>
+                    table {
+                        border-collapse: collapse;
+                        width: 100%;
+                    }
+                    th, td {
+                        border: 1px solid #dddddd;
+                        text-align: left;
+                        padding: 8px;
+                    }
+                    th {
+                        background-color: #f2f2f2;
+                    }
+                </style>
+            </head>         
+            <body>
+                <table>
+                <tr>
+                <td colspan="2" style="text-align:center">Total filed claims: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</td>
+                </tr>
+                <tr>
+                    <td span="1" style="text-align:center">Failure claims: ${counts.trueCount}</td>
+                    <td span="1" style="text-align:center">Successful added claims: ${counts.falseCount}</td>
+                </tr>
+                </table>
+            </body>
+          </html>`;
+
+          //htmlTableString = convertArrayToHTMLTable([], failureEntries);
+          mailing = sgMail.send(emailConstant.sendCsvFile(adminEmail, ccMail, htmlContent));
+        }
+
+
+      }
+
 
       res.send({
         code: constant.successCode,
@@ -4206,7 +4262,7 @@ exports.sendMessages = async (req, res) => {
     }
 
     let mailing = sgMail.send(emailConstant.sendCommentNotification(emailTo?.email, ["noreply@getcover.com"], emailData))
-     mailing = sgMail.send(emailConstant.sendCommentNotification(adminEmail, ["noreply@getcover.com"], emailData))
+    mailing = sgMail.send(emailConstant.sendCommentNotification(adminEmail, ["noreply@getcover.com"], emailData))
     res.send({
       code: constant.successCode,
       messages: 'Message Sent!',
