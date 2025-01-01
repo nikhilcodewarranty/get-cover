@@ -3541,70 +3541,70 @@ exports.saveBulkClaim = async (req, res) => {
         return htmlContent;
 
       }
+      let adminBulkQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "claimNotification.fileBulkClaim": true },
+              { status: true },
+              { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") }
+            ]
+          }
+        },
+      }
+      let dealerBulkQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "claimNotification.fileBulkClaim": true },
+              { status: true },
+              { metaId: { $in: getDealerIds } },
+            ]
+          }
+        },
+      }
+      let resellerBulkQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "claimNotification.fileBulkClaim": true },
+              { status: true },
+              { metaId: { $in: getResellerIds } },
+            ]
+          }
+        },
+      }
+      let customerBulkQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "claimNotification.fileBulkClaim": true },
+              { metaId: { $in: getCustomerIds } },
+              { status: true },
+            ]
+          }
+        },
+      }
+      let servicerrBulkQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "claimNotification.fileBulkClaim": true },
+              { status: true },
+              { metaId: { $in: getServicerIds } },
 
+            ]
+          }
+        },
+      }
+
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminBulkQuery, { email: 1 })
+      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerBulkQuery, { email: 1 })
+      let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerBulkQuery, { email: 1 })
+      let customerUsers = await supportingFunction.getNotificationEligibleUser(customerBulkQuery, { email: 1 })
+      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerrBulkQuery, { email: 1 })
       if (saveBulkClaim.length > 0) {
-        let adminBulkQuery = {
-          metaData: {
-            $elemMatch: {
-              $and: [
-                { "claimNotification.fileBulkClaim": true },
-                { status: true },
-                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") }
-              ]
-            }
-          },
-        }
-        let dealerBulkQuery = {
-          metaData: {
-            $elemMatch: {
-              $and: [
-                { "claimNotification.fileBulkClaim": true },
-                { status: true },
-                { metaId: { $in: getDealerIds } },
-              ]
-            }
-          },
-        }
-        let resellerBulkQuery = {
-          metaData: {
-            $elemMatch: {
-              $and: [
-                { "claimNotification.fileBulkClaim": true },
-                { status: true },
-                { metaId: { $in: getResellerIds } },
-              ]
-            }
-          },
-        }
-        let customerBulkQuery = {
-          metaData: {
-            $elemMatch: {
-              $and: [
-                { "claimNotification.fileBulkClaim": true },
-                { metaId: { $in: getCustomerIds } },
-                { status: true },
-              ]
-            }
-          },
-        }
-        let servicerrBulkQuery = {
-          metaData: {
-            $elemMatch: {
-              $and: [
-                { "claimNotification.fileBulkClaim": true },
-                { status: true },
-                { metaId: { $in: getServicerIds } },
 
-              ]
-            }
-          },
-        }
-
-        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminBulkQuery, { email: 1 })
-        let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerBulkQuery, { email: 1 })
-        let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerBulkQuery, { email: 1 })
-        let customerUsers = await supportingFunction.getNotificationEligibleUser(customerBulkQuery, { email: 1 })
-        let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerrBulkQuery, { email: 1 })
         let notificationArray = []
         let adminId = adminUsers.map(user => user._id);
         let dealerId = dealerUsers.map(user => user._id);
