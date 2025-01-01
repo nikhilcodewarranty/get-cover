@@ -1881,7 +1881,7 @@ exports.addServicerUser = async (req, res) => {
           flag: 'Servicer User',
           endPoint: base_url + "servicer/user",
           redirectionId: "servicer/user",
-          notificationFor: servicerId
+          notificationFor: servicerId 
         };
         notificationArray.push(notificationData)
       }
