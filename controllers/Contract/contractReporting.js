@@ -524,7 +524,7 @@ exports.exportContractReporting = async (req, res) => {
             console.log("page+++++++++++++++++++++++++++++++++", page)
             let getContracts = await contractService.getAllContracts2(mainQuery, { maxTimeMS: 100000 })
             var result1 = getContracts[0]?.data ? getContracts[0]?.data : []
-            console.log(result1,"================================")
+            console.log(result1.length,"================================")
             if (result1.length === 0) {
                 hasMore = false;
                 break;
