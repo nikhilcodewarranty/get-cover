@@ -797,7 +797,7 @@ exports.rejectServicer = async (req, res) => {
       notificationFor: IDs
     };
 
-    let createNotification = await userService.createNotification(notificationData);
+    let createNotification = await userService.createNotification(notificationData); 
     let settingData = await userService.getSetting({});
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
