@@ -1149,7 +1149,7 @@ exports.updateUserData = async (req, res) => {
 
         notificationData = {
           title: "Customer User Details Changed",
-          description: `The Details for the customer ${checkCustomer.username} for the Dealer ${resellerDealer.name} for his user ${updateUser.metaData[0]?.firstName + " " + updateUser.metaData[0]?.lastName} has been updated by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The Details of customer ${checkCustomer.username} for the Dealer ${resellerDealer.name} for his user ${updateUser.metaData[0]?.firstName + " " + updateUser.metaData[0]?.lastName} has been updated by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           tabAction: "customerUser",
 
@@ -1162,7 +1162,7 @@ exports.updateUserData = async (req, res) => {
 
         notificationData = {
           title: "Customer User Details Changed",
-          description: `The Details for the customer ${checkCustomer.username} for his user ${updateUser.metaData[0]?.firstName + " " + updateUser.metaData[0]?.lastName} has been updated by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The Details of customer ${checkCustomer.username} for his user ${updateUser.metaData[0]?.firstName + " " + updateUser.metaData[0]?.lastName} has been updated by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
           tabAction: "customerUser",
@@ -1175,7 +1175,7 @@ exports.updateUserData = async (req, res) => {
 
         notificationData = {
           title: "Customer User Details Changed",
-          description: `The Details for the customer ${checkCustomer.username} for his user ${updateUser.metaData[0]?.firstName + " " + updateUser.metaData[0]?.lastName} has been updated by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The Details of customer ${checkCustomer.username} for his user ${updateUser.metaData[0]?.firstName + " " + updateUser.metaData[0]?.lastName} has been updated by  ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
           tabAction: "customerUser",
