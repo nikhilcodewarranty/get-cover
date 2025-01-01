@@ -1583,7 +1583,7 @@ exports.addDealerUser = async (req, res) => {
 
       let notificationData1 = {
         title: "New User Added",
-        description: `A new user for you account has been added by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+        description: `A new user for your account has been added by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
         userId: req.teammateId,
         contentId: saveData._id,
         flag: 'dealer',
