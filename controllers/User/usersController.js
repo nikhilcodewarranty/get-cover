@@ -1709,7 +1709,7 @@ exports.deleteUser = async (req, res) => {
         metaData: {
           $elemMatch: {
             $and: [
-              { "resellerNotification.userDelete": true },
+              { "resellerNotifications.userDelete": true },
               { status: true },
               { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
             ]
@@ -1720,7 +1720,7 @@ exports.deleteUser = async (req, res) => {
         metaData: {
           $elemMatch: {
             $and: [
-              { "resellerNotification.userDelete": true },
+              { "resellerNotifications.userDelete": true },
               { status: true },
               { metaId: new mongoose.Types.ObjectId(checkReseller.dealerId) },
             ]
@@ -1731,7 +1731,7 @@ exports.deleteUser = async (req, res) => {
         metaData: {
           $elemMatch: {
             $and: [
-              { "resellerNotification.userDelete": true },
+              { "resellerNotifications.userDelete": true },
               { status: true },
               { metaId: new mongoose.Types.ObjectId(checkReseller._id) },
             ]
