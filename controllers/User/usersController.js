@@ -731,7 +731,7 @@ exports.updateUserData = async (req, res) => {
         notificationArray.push(notificationData)
         notificationData = {
           title: "User Details Changed",
-          description: `The detail for user ${updateUser.metaData[0]?.firstName + " " + updateUser.metaData[0]?.lastName} has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The details for user ${updateUser.metaData[0]?.firstName + " " + updateUser.metaData[0]?.lastName} has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
 
           flag: checkRole?.role,
@@ -848,7 +848,7 @@ exports.updateUserData = async (req, res) => {
         notificationArray.push(notificationData)
         notificationData = {
           title: "User Details Changed",
-          description: `The detail for  user ${updateUser.metaData[0]?.firstName + " " + updateUser.metaData[0]?.lastName} has been updated by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The details for  user ${updateUser.metaData[0]?.firstName + " " + updateUser.metaData[0]?.lastName} has been updated by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
           redirectionId: "dealer/user",
@@ -1188,7 +1188,7 @@ exports.updateUserData = async (req, res) => {
 
         notificationData = {
           title: "User Details Changed",
-          description: `The detail for user ${updateUser.metaData[0]?.firstName + " " + updateUser.metaData[0]?.lastName} has been updated by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The details for user ${updateUser.metaData[0]?.firstName + " " + updateUser.metaData[0]?.lastName} has been updated by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
           redirectionId: "customer/user",
