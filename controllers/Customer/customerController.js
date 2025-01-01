@@ -1204,7 +1204,7 @@ exports.changePrimaryUser = async (req, res) => {
 
       }
       if (checkCustomer) {
-        let customerDealer = await dealerService.getDealerById(checkReseller.dealerId)
+        let customerDealer = await dealerService.getDealerById(checkCustomer.dealerId)
 
         adminUpdatePrimaryQuery = {
           metaData: {
