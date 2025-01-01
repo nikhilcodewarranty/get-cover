@@ -332,11 +332,16 @@ exports.createOrder = async (req, res) => {
         data.resellerId = req.userId;
         data.dealerId = checkReseller.dealerId;
         data.customerId = data.customerId != "" ? data.customerId : null;
-        let count = await orderService.getOrdersCount();
+        let currentYear = new Date().getFullYear();
+        let currentYearWithoutHypen = new Date().getFullYear();
+        console.log(currentYear); // Outputs: 2024
+        currentYear = "-" + currentYear + "-"
+
+        let count = await orderService.getOrdersCount({ 'unique_key': { '$regex': currentYear, '$options': 'i' } });
 
         data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
-        data.unique_key_search = "GC" + "2024" + data.unique_key_number
-        data.unique_key = "GC-" + "2024-" + data.unique_key_number
+        data.unique_key_search = "GC" + currentYearWithoutHypen + data.unique_key_number
+        data.unique_key = "GC" + currentYear + data.unique_key_number
 
         let checkVenderOrder = await orderService.getOrder(
             { venderOrder: data.dealerPurchaseOrder, dealerId: checkDealer._id },
@@ -1084,8 +1089,17 @@ exports.editOrderDetail = async (req, res) => {
             let contractArray = [];
             var pricebookDetail = [];
             let dealerBookDetail = [];
-            let count1 = await contractService.getContractsCountNew();
+            let currentYear = new Date().getFullYear();
+            let currentYearWithoutHypen = new Date().getFullYear();
+            console.log(currentYear); // Outputs: 2024
+            currentYear = "-" + currentYear + "-"
+
+            let count1 = await contractService.getContractsCountNew({ 'unique_key': { '$regex': currentYear, '$options': 'i' } });
+
+            // let count1 = await contractService.getContractsCountNew();
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
+
+
             let checkLength = savedResponse.productsArray.length - 1
             await savedResponse.productsArray.map(async (product, index) => {
                 let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: checkOrder.dealerId, priceBook: product.priceBookId })
@@ -1160,8 +1174,8 @@ exports.editOrderDetail = async (req, res) => {
                 });
                 totalDataComing.forEach((data, index) => {
                     let unique_key_number1 = increamentNumber
-                    let unique_key_search1 = "OC" + "2024" + unique_key_number1
-                    let unique_key1 = "OC-" + "2024-" + unique_key_number1
+                    let unique_key_search1 = "OC" + currentYearWithoutHypen + unique_key_number1
+                    let unique_key1 = "OC" + currentYear + unique_key_number1
                     let claimStatus = new Date(product.coverageStartDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0) ? "Waiting" : "Active"
                     claimStatus = new Date(product.coverageEndDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) ? "Expired" : claimStatus
                     // -------------------------------------------------  copy from -----------------------------------------//
@@ -1392,7 +1406,6 @@ exports.editOrderDetail = async (req, res) => {
         });
     }
 };
-
 
 //edit order details
 // exports.editOrderDetail = async (req, res) => {

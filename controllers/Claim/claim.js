@@ -325,11 +325,11 @@ exports.uploadCommentImage = async (req, res, next) => {
 exports.addClaim = async (req, res, next) => {
   try {
     let data = req.body;
-    
+
     let checkContract = await contractService.getContractById({ _id: data.contractId })
     // data.lossDate = new Date(data.lossDate).setDate(new Date(data.lossDate).getDate() + 1)
     // data.lossDate = new Date(data.lossDate)
-    const submittedUser = await userService.getUserById1({ _id: data.submittedBy },{})
+    const submittedUser = await userService.getUserById1({ _id: data.submittedBy }, {})
     data.submittedBy = submittedUser?.email || ''
     data.shippingTo = data.shippingTo || ''
     if (!checkContract) {
@@ -435,11 +435,13 @@ exports.addClaim = async (req, res, next) => {
     data.servicerId = data.servicerId ? data.servicerId : null
 
     const checkOrder = await orderService.getOrder({ _id: checkContract.orderId }, { isDeleted: false })
-    let count = await claimService.getClaimCount();
+    let currentYear = new Date().getFullYear();
+    currentYear = "-" + currentYear + "-"
+    let count = await claimService.getClaimCount({ 'unique_key': { '$regex': currentYear, '$options': 'i' } });
 
     data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
-    data.unique_key_search = "CC" + "2024" + data.unique_key_number
-    data.unique_key = "CC-" + "2024-" + data.unique_key_number
+    data.unique_key_search = "CC" + currentYear + data.unique_key_number
+    data.unique_key = "CC" + currentYear + data.unique_key_number
     data.orderId = checkOrder.unique_key
     data.venderOrder = checkOrder.venderOrder
     data.serial = checkContract.serial
@@ -4315,7 +4317,7 @@ exports.checkNumberOfCertainPeriod = async (req, res) => {
             const updateContract = await contractService.updateContract({ _id: checkContract._id }, { eligibilty: eligibility }, { new: true })
           }
         }
-        
+
       }
       page++;
     }
