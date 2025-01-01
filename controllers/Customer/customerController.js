@@ -210,8 +210,8 @@ exports.createCustomer = async (req, res, next) => {
 
     // Send Email code here
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
-     mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
-     mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ['noreply@getcover.com'], emailData))
+    mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
+    mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ['noreply@getcover.com'], emailData))
 
     if (saveMembers.length > 0) {
       if (data.status) {
@@ -241,7 +241,7 @@ exports.createCustomer = async (req, res, next) => {
     //Send Notification to customer,admin,reseller,dealer 
     let notificationData = {
       title: "New Customer  Added",
-      description: `A New Customer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName + " " +checkLoginUser.metaData[0].lastName} - User Role - ${req.role} on our portal.`,
+      description: `A New Customer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName} - User Role - ${req.role} on our portal.`,
       userId: req.teammateId,
       flag: 'customer',
       notificationFor: IDs,
@@ -1110,7 +1110,7 @@ exports.changePrimaryUser = async (req, res) => {
           notificationFor: dealerId
         };
         notificationArray.push(notificationData)
-        console.log("notificationEmails--------------------------",notificationEmails)
+        console.log("notificationEmails--------------------------", notificationEmails)
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
         mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
 
@@ -1166,7 +1166,7 @@ exports.changePrimaryUser = async (req, res) => {
 
         notificationData = {
           title: "Reseller Primary User Updated",
-          description: `The Primary user of ${checkReseller.name} for ${resellerDealer.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName + " " +updateLastPrimary.metaData[0]?.lastName} to ${updatePrimary.metaData[0]?.firstName + " " + updatePrimary.metaData[0]?.lastName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The Primary user of ${checkReseller.name} for ${resellerDealer.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName + " " + updateLastPrimary.metaData[0]?.lastName} to ${updatePrimary.metaData[0]?.firstName + " " + updatePrimary.metaData[0]?.lastName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           tabAction: "resellerUser",
           flag: checkRole?.role,
@@ -1177,7 +1177,7 @@ exports.changePrimaryUser = async (req, res) => {
         notificationArray.push(notificationData)
         notificationData = {
           title: "Reseller Primary User Updated",
-          description: `The Primary user of ${checkReseller.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName + " " +updateLastPrimary.metaData[0]?.lastName} to ${updatePrimary.metaData[0]?.firstName + " " + updatePrimary.metaData[0]?.lastName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The Primary user of ${checkReseller.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName + " " + updateLastPrimary.metaData[0]?.lastName} to ${updatePrimary.metaData[0]?.firstName + " " + updatePrimary.metaData[0]?.lastName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           tabAction: "resellerUser",
           flag: checkRole?.role,
@@ -1188,7 +1188,7 @@ exports.changePrimaryUser = async (req, res) => {
         notificationArray.push(notificationData)
         notificationData = {
           title: "Primary User Updated",
-          description: `The Primary user for your account has been changed from  ${updateLastPrimary.metaData[0]?.firstName + " " +updateLastPrimary.metaData[0]?.lastName} to ${updatePrimary.metaData[0]?.firstName + " " + updatePrimary.metaData[0]?.lastName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+          description: `The Primary user for your account has been changed from  ${updateLastPrimary.metaData[0]?.firstName + " " + updateLastPrimary.metaData[0]?.lastName} to ${updatePrimary.metaData[0]?.firstName + " " + updatePrimary.metaData[0]?.lastName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
           redirectionId: "reseller/user",
@@ -1204,6 +1204,8 @@ exports.changePrimaryUser = async (req, res) => {
 
       }
       if (checkCustomer) {
+        let customerDealer = await dealerService.getDealerById(checkReseller.dealerId)
+
         adminUpdatePrimaryQuery = {
           metaData: {
             $elemMatch: {
@@ -1266,7 +1268,7 @@ exports.changePrimaryUser = async (req, res) => {
 
         notificationData = {
           title: "Customer Primary User Updated",
-          description: `The Primary user of ${checkCustomer.username} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+          description: `The Primary user of Customer ${checkCustomer.username} for ${customerDealer.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName + " " + updateLastPrimary.metaData[0]?.lastName} to ${updatePrimary.metaData[0]?.firstName + " " + updatePrimary.metaData[0]?.lastName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}-${req.role}.`,
           userId: req.teammateId,
           tabAction: "customerUser",
           flag: checkRole?.role,
@@ -1277,7 +1279,8 @@ exports.changePrimaryUser = async (req, res) => {
         notificationArray.push(notificationData)
         notificationData = {
           title: "Customer Primary User Updated",
-          description: `The Primary user of ${checkCustomer.username} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+          description: `The Primary user of Customer ${checkCustomer.username} has been changed from ${updateLastPrimary.metaData[0]?.firstName + " " + updateLastPrimary.metaData[0]?.lastName} to ${updatePrimary.metaData[0]?.firstName + " " + updatePrimary.metaData[0]?.lastName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}-${req.role}.`,
+
           userId: req.teammateId,
           tabAction: "customerUser",
           flag: checkRole?.role,
@@ -1290,7 +1293,7 @@ exports.changePrimaryUser = async (req, res) => {
         if (resellerUsers.length > 0) {
           notificationData = {
             title: "Customer Primary User Updated",
-            description: `The Primary user of ${checkCustomer.username} has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+            description: `The Primary user of ${checkCustomer.username} has been changed from ${updateLastPrimary.metaData[0]?.firstName + " " + updateLastPrimary.metaData[0]?.lastName} to ${updatePrimary.metaData[0]?.firstName + " " + updatePrimary.metaData[0]?.lastName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}-${req.role}.`,
             userId: req.teammateId,
             flag: checkRole?.role,
             tabAction: "customerUser",
