@@ -253,7 +253,7 @@ exports.getAllClaims = async (req, res, next) => {
     }
     data.dealerName = data.dealerName ? data.dealerName : ""
     data.resellerName = data.resellerName ? data.resellerName : ""
-    data.dateFilter = data.dateFilter ? data.dateFilter : ""
+    // data.dateFilter = data.dateFilter ? data.dateFilter : ""
     if (data.dealerName != "") {
       let getDealer = await dealerService.getAllDealers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
       let dealerIds = getDealer.map(ID => new mongoose.Types.ObjectId(ID._id))
@@ -270,20 +270,20 @@ exports.getAllClaims = async (req, res, next) => {
     }
 
     statusMatch = {}
-    if (data.dateFilter != "") {
-      if (data.dateFilter == "damageDate") {
-        dateMatch = { lossDate: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
-        // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
-      }
-      if (data.dateFilter == "openDate") {
-        dateMatch = { createdAt: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
-        // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
-      }
-      if (data.dateFilter == "closeDate") {
-        dateMatch = { claimDate: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
-        statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
-      }
-    }
+    // if (data.dateFilter != "") {
+    //   if (data.dateFilter == "damageDate") {
+    //     dateMatch = { lossDate: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
+    //     // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
+    //   }
+    //   if (data.dateFilter == "openDate") {
+    //     dateMatch = { createdAt: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
+    //     // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
+    //   }
+    //   if (data.dateFilter == "closeDate") {
+    //     dateMatch = { claimDate: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
+    //     statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
+    //   }
+    // }
 
     let claimPaidStatus = {}
     if (data.claimPaidStatus != '' && data.claimPaidStatus != undefined) {
