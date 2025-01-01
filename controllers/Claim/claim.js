@@ -2351,7 +2351,10 @@ exports.saveBulkClaim = async (req, res) => {
 
       let finalArray = []
       //Save bulk claim
-      let count = await claimService.getClaimCount();
+      let currentYear = new Date().getFullYear();
+      currentYear = "-" + currentYear + "-"
+
+      let count = await claimService.getClaimCount({ 'unique_key': { '$regex': currentYear, '$options': 'i' } });
       let unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
 
       //Update eligibility when contract is open
@@ -2398,8 +2401,8 @@ exports.saveBulkClaim = async (req, res) => {
             model: data.contractData.model,
             manufacture: data.contractData.manufacture,
             unique_key_number: unique_key_number,
-            unique_key_search: "CC" + "2024" + unique_key_number,
-            unique_key: "CC-" + "2024-" + unique_key_number,
+            unique_key_search: "CC" + currentYear + unique_key_number,
+            unique_key: "CC" + currentYear + unique_key_number,
             diagnosis: issue,
             lossDate: data.lossDate,
             claimFile: 'open',
