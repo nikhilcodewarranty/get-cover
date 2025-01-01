@@ -2988,7 +2988,6 @@ exports.saveBulkClaim = async (req, res) => {
               if (checkContractData.status != "Active") {
                 item.status = "Contract is not active"
                 item.exit = true;
-
               }
 
               if (new Date(checkContractData.minDate) > new Date()) {
@@ -3166,6 +3165,9 @@ exports.saveBulkClaim = async (req, res) => {
       let finalArray = []
       //Save bulk claim
 
+
+      console.log("totalDataComing-----------------------------",totalDataComing);
+      return;
       let currentYear = new Date().getFullYear();
       currentYear = "-" + currentYear + "-"
 
