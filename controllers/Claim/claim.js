@@ -2983,6 +2983,7 @@ exports.saveBulkClaim = async (req, res) => {
                 },
               ],
             })
+            console.log("checkContractData====================",checkContractData)
             if (checkContractData && checkContractData != null) {
               item.status = " "
               if (checkContractData.status != "Active") {
@@ -3170,7 +3171,7 @@ exports.saveBulkClaim = async (req, res) => {
       return;
       let currentYear = new Date().getFullYear();
       currentYear = "-" + currentYear + "-"
-
+    
       let count = await claimService.getClaimCount({ 'unique_key': { '$regex': currentYear, '$options': 'i' } });
       let unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
 
