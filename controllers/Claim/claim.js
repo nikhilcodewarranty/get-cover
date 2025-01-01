@@ -3024,7 +3024,7 @@ exports.saveBulkClaim = async (req, res) => {
               ]
 
               let checkClaims = await claimService.getClaimWithAggregate(claimQuery)
-
+              console.log("checkClaims-------------------",checkClaims)
               if (checkClaims[0]) {
                 if (checkClaims[0].openFileClaimsCount > 0) {
                   item.status = "Contract has open claim"
@@ -3167,8 +3167,7 @@ exports.saveBulkClaim = async (req, res) => {
       //Save bulk claim
 
 
-      console.log("totalDataComing-----------------------------",totalDataComing);
-      return;
+      
       let currentYear = new Date().getFullYear();
       currentYear = "-" + currentYear + "-"
     
