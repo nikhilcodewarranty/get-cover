@@ -398,10 +398,10 @@ exports.exportContractReporting = async (req, res) => {
                         ],
                         data: [
                             {
-                                $skip: skipLimit
+                                $skip: page
                             },
                             {
-                                $limit: pageLimit
+                                $limit: limit
                             },
                             // {
                             // $project: {
@@ -490,10 +490,10 @@ exports.exportContractReporting = async (req, res) => {
                     ],
                     data: [
                         {
-                            $skip: skipLimit
+                            $skip: page
                         },
                         {
-                            $limit: pageLimit
+                            $limit: limit
                         },
                         // {
                         // $project: {
