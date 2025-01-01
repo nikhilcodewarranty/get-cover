@@ -520,13 +520,17 @@ exports.exportContractReporting = async (req, res) => {
             })
         }
 
-        // while (hasMore) {
+        while (hasMore) {
             console.log("page+++++++++++++++++++++++++++++++++",page)
             let getContracts = await contractService.getAllContracts2(mainQuery, { maxTimeMS: 100000 })
             var result1 = getContracts[0]?.data ? getContracts[0]?.data : []
-            // totalContractData.concat(result1)
+            if (result1.length === 0) {
+                hasMore = false;
+                break;
+              }
+            totalContractData.concat(result1)
 
-        // }
+        }
         // let getContracts = await contractService.getAllContracts2(mainQuery, { maxTimeMS: 100000 })
         // let totalCount = getContracts[0]?.totalRecords[0]?.total ? getContracts[0]?.totalRecords[0].total : 0
         // let result1 = getContracts[0]?.data ? getContracts[0]?.data : []
