@@ -345,6 +345,8 @@ exports.exportContractReporting = async (req, res) => {
         }
 
         let mainQuery = []
+        while (hasMore) {
+
         if (data.contractId === "" && data.productName === "" && data.dealerSku === "" && data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
             mainQuery = [
                 { $sort: { unique_key_number: -1 } },
@@ -532,8 +534,8 @@ exports.exportContractReporting = async (req, res) => {
         //     result1
         // })
         // return;
+        console.log("page+++++++++++++++++++++++++++++++++", skipLimit)
 
-        while (hasMore) {
             console.log("page+++++++++++++++++++++++++++++++++", skipLimit)
             let getContracts = await contractService.getAllContracts2(mainQuery, { maxTimeMS: 100000 })
             var result1 = getContracts[0]?.data ? getContracts[0]?.data : []
