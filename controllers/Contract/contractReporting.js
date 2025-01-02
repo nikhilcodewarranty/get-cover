@@ -841,11 +841,11 @@ exports.exportContractReporting = async (req, res) => {
 
         // result1 = totalContractData
         // Example Usage
-        const dealerSummary = getDealerContractsSummary(result1);
-        const servicerSummary = getServicerContractsSummary(result1);
-        const resellerSummary = getResellerContractsSummary(result1);
-        const customerSummary = getCustomerContractsSummary(result1);
-        let Summary = getContractsSummary(result1);
+        const dealerSummary = getDealerContractsSummary(totalContractData);
+        const servicerSummary = getServicerContractsSummary(totalContractData);
+        const resellerSummary = getResellerContractsSummary(totalContractData);
+        const customerSummary = getCustomerContractsSummary(totalContractData);
+        let Summary = getContractsSummary(totalContractData);
 
 
         let dataArray = [Summary, dealerSummary, servicerSummary, resellerSummary, customerSummary]
