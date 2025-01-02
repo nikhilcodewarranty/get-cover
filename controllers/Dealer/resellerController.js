@@ -1148,6 +1148,9 @@ exports.addResellerUser = async (req, res) => {
     try {
         let data = req.body
         let checkReseller = await resellerService.getReseller({ _id: data.resellerId }, {})
+        // let checkDealer = await resellerService.getReseller({ _id: checkReseller.dealerId }, {})
+        let checkDealer = await dealerService.getDealerByName({ _id: checkReseller.dealerId }, {})
+
         if (!checkReseller) {
             res.send({
                 code: constant.errorCode,
@@ -1260,7 +1263,7 @@ exports.addResellerUser = async (req, res) => {
             const resellerId = resellerUsers.map(user => user._id)
             let notificationData = {
                 title: "Reseller User Added",
-                description: `A new user for reseller ${checkReseller.name} has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+                description: `A new user for reseller ${checkReseller.name} under Dealer ${checkDealer.name} has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
                 userId: req.teammateId,
                 tabAction: "resellerUser",
                 contentId: saveData._id,
