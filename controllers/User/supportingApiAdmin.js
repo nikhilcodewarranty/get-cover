@@ -796,93 +796,114 @@ exports.getUserNotificationData = async (req, res) => {
             })
             return
         }
+        let metaData = getData.metaData[0]
+        let newMetaData = JSON.parse(JSON.stringify(metaData));
 
         if (req.role == "Dealer") {
-            // getData.metaData[0].orderNotifications = null
-            // getData.metaData[0].claimNotification = null
-            getData.metaData[0].adminNotification = null
-            // getData.metaData[0].servicerNotification = null
-            // getData.metaData[0].dealerNotifications = null
-            // getData.metaData[0].resellerNotifications = null
-            // getData.metaData[0].customerNotifications = null
-            getData.metaData[0].registerNotifications = null
+            delete newMetaData.adminNotification.userAdded
+            delete newMetaData.adminNotification.categoryUpdate
+            delete newMetaData.adminNotification.priceBookUpdate
+            delete newMetaData.adminNotification.priceBookAdd
+            delete newMetaData.adminNotification.categoryAdded
+            delete newMetaData.claimNotification.repairStatusUpdate
+            delete newMetaData.servicerNotification
+            delete newMetaData.dealerNotifications.dealerAdded
+            delete newMetaData.registerNotifications
+            metaData = newMetaData
+
         }
         if (req.role == "Reseller") {
-            // getData.metaData[0].orderNotifications = null
-            // getData.metaData[0].claimNotification = null
-            getData.metaData[0].adminNotification = null
-            // getData.metaData[0].servicerNotification = null
-            // getData.metaData[0].dealerNotifications = null
-            // getData.metaData[0].resellerNotifications = null
-            // getData.metaData[0].customerNotifications = null
-            getData.metaData[0].registerNotifications = null
+            delete newMetaData.claimNotification.repairStatusUpdate
+            delete newMetaData.servicerNotification
+            delete newMetaData.dealerNotifications
+            delete newMetaData.resellerNotifications.resellerAdded
+            delete newMetaData.adminNotification
+            delete newMetaData.registerNotifications
+            metaData = newMetaData
         }
         if (req.role == "Customer") {
-            // getData.metaData[0].orderNotifications = null
-            // getData.metaData[0].claimNotification = null
-            getData.metaData[0].adminNotification = null
-            getData.metaData[0].servicerNotification = null
-            getData.metaData[0].dealerNotifications = null
-            getData.metaData[0].resellerNotifications = null
-            // getData.metaData[0].customerNotifications = null
-            getData.metaData[0].registerNotifications = null
+            delete newMetaData.adminNotification
+            delete newMetaData.orderNotifications.addingNewOrderPending
+            delete newMetaData.orderNotifications.updateOrderPending
+            delete newMetaData.orderNotifications.archivinOrder
+            delete newMetaData.claimNotification.repairStatusUpdate
+            delete newMetaData.customerNotifications.customerAdded
+            delete newMetaData.servicerNotification
+            delete newMetaData.dealerNotifications
+            delete newMetaData.resellerNotifications
+            delete newMetaData.registerNotifications
+            metaData = newMetaData
         }
         if (req.role == "Servicer") {
-            // getData.metaData[0].orderNotifications = null
-            // getData.metaData[0].claimNotification = null
-            getData.metaData[0].adminNotification = null
-            // getData.metaData[0].servicerNotification = null
-            getData.metaData[0].dealerNotifications = null
-            getData.metaData[0].resellerNotifications = null
-            // getData.metaData[0].customerNotifications = null
-            getData.metaData[0].registerNotifications = null
+            delete newMetaData.adminNotification.userAdded
+            delete newMetaData.adminNotification.categoryUpdate
+            delete newMetaData.adminNotification.priceBookUpdate
+            delete newMetaData.adminNotification.priceBookAdd
+            delete newMetaData.adminNotification.categoryAdded
+            delete newMetaData.orderNotifications
+            delete newMetaData.servicerNotification.servicerAdded
+            delete newMetaData.dealerNotifications
+            delete newMetaData.resellerNotifications
+            delete newMetaData.registerNotifications
+            delete newMetaData.customerNotifications
+            metaData = newMetaData
         }
 
         if (req.params.flag == "Dealer") {
-            // getData.metaData[0].orderNotifications = null
-            // getData.metaData[0].claimNotification = null
-            getData.metaData[0].adminNotification = null
-            // getData.metaData[0].servicerNotification = null
-            // getData.metaData[0].dealerNotifications = null
-            // getData.metaData[0].resellerNotifications = null
-            // getData.metaData[0].customerNotifications = null
-            getData.metaData[0].registerNotifications = null
+            delete newMetaData.adminNotification.userAdded
+            delete newMetaData.adminNotification.categoryUpdate
+            delete newMetaData.adminNotification.priceBookUpdate
+            delete newMetaData.adminNotification.priceBookAdd
+            delete newMetaData.adminNotification.categoryAdded
+            delete newMetaData.claimNotification.repairStatusUpdate
+            delete newMetaData.servicerNotification
+            delete newMetaData.dealerNotifications.dealerAdded
+            delete newMetaData.registerNotifications
+            metaData = newMetaData
         }
         if (req.params.flag == "Reseller") {
-            // getData.metaData[0].orderNotifications = null
-            // getData.metaData[0].claimNotification = null
-            getData.metaData[0].adminNotification = null
-            // getData.metaData[0].servicerNotification = null
-            // getData.metaData[0].dealerNotifications = null
-            // getData.metaData[0].resellerNotifications = null
-            // getData.metaData[0].customerNotifications = null
-            getData.metaData[0].registerNotifications = null
+            console.log("sldkslks")
+            delete newMetaData.claimNotification.repairStatusUpdate
+            delete newMetaData.servicerNotification
+            delete newMetaData.dealerNotifications
+            delete newMetaData.resellerNotifications.resellerAdded
+            delete newMetaData.adminNotification
+            delete newMetaData.registerNotifications
+            metaData = newMetaData
         }
         if (req.params.flag == "Customer") {
-            // getData.metaData[0].orderNotifications = null
-            // getData.metaData[0].claimNotification = null
-            getData.metaData[0].adminNotification = null
-            getData.metaData[0].servicerNotification = null
-            getData.metaData[0].dealerNotifications = null
-            getData.metaData[0].resellerNotifications = null
-            // getData.metaData[0].customerNotifications = null
-            getData.metaData[0].registerNotifications = null
+            delete newMetaData.adminNotification
+            delete newMetaData.orderNotifications.addingNewOrderPending
+            delete newMetaData.orderNotifications.updateOrderPending
+            delete newMetaData.orderNotifications.archivinOrder
+            delete newMetaData.claimNotification.repairStatusUpdate
+            delete newMetaData.customerNotifications.customerAdded
+            delete newMetaData.servicerNotification
+            delete newMetaData.dealerNotifications
+            delete newMetaData.resellerNotifications
+            delete newMetaData.registerNotifications
+            metaData = newMetaData
         }
         if (req.params.flag == "Servicer") {
-            // getData.metaData[0].orderNotifications = null
-            // getData.metaData[0].claimNotification = null
-            getData.metaData[0].adminNotification = null
-            // getData.metaData[0].servicerNotification = null
-            getData.metaData[0].dealerNotifications = null
-            getData.metaData[0].resellerNotifications = null
-            // getData.metaData[0].customerNotifications = null
-            getData.metaData[0].registerNotifications = null
+            delete newMetaData.adminNotification.userAdded
+            delete newMetaData.adminNotification.categoryUpdate
+            delete newMetaData.adminNotification.priceBookUpdate
+            delete newMetaData.adminNotification.priceBookAdd
+            delete newMetaData.adminNotification.categoryAdded
+            delete newMetaData.orderNotifications
+            delete newMetaData.servicerNotification.servicerAdded
+            delete newMetaData.dealerNotifications
+            delete newMetaData.resellerNotifications
+            delete newMetaData.registerNotifications
+            delete newMetaData.customerNotifications
+            metaData = newMetaData
         }
 
         res.send({
             code: constant.successCode,
             message: "Success",
-            result: { notifications: getData.metaData[0], _id: getData._id }
+            result: { notifications: metaData, _id: getData._id },
+            result2: metaData
         })
     } catch (err) {
         res.send({
