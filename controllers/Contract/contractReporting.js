@@ -165,8 +165,8 @@ exports.exportContractReporting = async (req, res) => {
         const limit = 1000; // Adjust the limit based on your needs
         let page = data.page > 0 ? ((Number(req.body.page) - 1) * Number(limit)) : 0
         data.pageLimit = 1000
-        let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
-        let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+        // let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+        // let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
         let totalContractData = []
         let hasMore = true;
         let limitData = Number(limit)
@@ -346,55 +346,149 @@ exports.exportContractReporting = async (req, res) => {
 
         let mainQuery = []
         while (hasMore) {
+            let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+            let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+            if (data.contractId === "" && data.productName === "" && data.dealerSku === "" && data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
+                mainQuery = [
+                    { $sort: { unique_key_number: -1 } },
+                    {
+                        $lookup: {
+                            from: "orders",
+                            localField: "orderId",
+                            foreignField: "_id",
+                            as: "order",
+                            pipeline: [
+                                {
+                                    $lookup: {
+                                        from: "dealers",
+                                        localField: "dealerId",
+                                        foreignField: "_id",
+                                        as: "dealer",
+                                    }
+                                },
+                                {
+                                    $lookup: {
+                                        from: "resellers",
+                                        localField: "resellerId",
+                                        foreignField: "_id",
+                                        as: "reseller",
+                                    }
+                                },
+                                {
+                                    $lookup: {
+                                        from: "customers",
+                                        localField: "customerId",
+                                        foreignField: "_id",
+                                        as: "customer",
+                                    }
+                                },
+                                {
+                                    $lookup: {
+                                        from: "serviceproviders",
+                                        localField: "servicerId",
+                                        foreignField: "_id",
+                                        as: "servicer",
+                                    }
+                                },
 
-        if (data.contractId === "" && data.productName === "" && data.dealerSku === "" && data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
-            mainQuery = [
-                { $sort: { unique_key_number: -1 } },
-                {
-                    $lookup: {
-                        from: "orders",
-                        localField: "orderId",
-                        foreignField: "_id",
-                        as: "order",
-                        pipeline: [
-                            {
-                                $lookup: {
-                                    from: "dealers",
-                                    localField: "dealerId",
-                                    foreignField: "_id",
-                                    as: "dealer",
-                                }
-                            },
-                            {
-                                $lookup: {
-                                    from: "resellers",
-                                    localField: "resellerId",
-                                    foreignField: "_id",
-                                    as: "reseller",
-                                }
-                            },
-                            {
-                                $lookup: {
-                                    from: "customers",
-                                    localField: "customerId",
-                                    foreignField: "_id",
-                                    as: "customer",
-                                }
-                            },
-                            {
-                                $lookup: {
-                                    from: "serviceproviders",
-                                    localField: "servicerId",
-                                    foreignField: "_id",
-                                    as: "servicer",
-                                }
-                            },
+                            ],
 
-                        ],
+                        }
+                    },
+                    {
+                        $facet: {
+                            totalRecords: [
+                                {
+                                    $count: "total"
+                                }
+                            ],
+                            data: [
+                                {
+                                    $skip: skipLimit
+                                },
+                                {
+                                    $limit: pageLimit
+                                },
+                                {
+                                    $project: {
+                                        _id: 1,
+                                        // productName: 1,
+                                        // pName: 1,
+                                        // model: 1,
+                                        // serial: 1,
+                                        // dealerSku: 1,
+                                        // unique_key: 1,
+                                        // claimAmount: 1,
+                                        // minDate: 1,
+                                        // status: 1,
+                                        // productValue: 1,
+                                        // manufacture: 1,
+                                        // eligibilty: 1,
+                                        // orderUniqueKey: 1,
+                                        // venderOrder: 1,
+                                        // totalRecords: 1
+                                    }
+                                }
+                            ],
+                        },
 
-                    }
-                },
-                {
+                    },
+                ]
+            } else {
+                mainQuery = [
+                    { $sort: { unique_key_number: -1 } },
+                    {
+                        $lookup: {
+                            from: "orders",
+                            localField: "orderId",
+                            foreignField: "_id",
+                            as: "order",
+                            pipeline: [
+                                {
+                                    $lookup: {
+                                        from: "dealers",
+                                        localField: "dealerId",
+                                        foreignField: "_id",
+                                        as: "dealer",
+                                    }
+                                },
+                                {
+                                    $lookup: {
+                                        from: "resellers",
+                                        localField: "resellerId",
+                                        foreignField: "_id",
+                                        as: "reseller",
+                                    }
+                                },
+                                {
+                                    $lookup: {
+                                        from: "customers",
+                                        localField: "customerId",
+                                        foreignField: "_id",
+                                        as: "customer",
+                                    }
+                                },
+                                {
+                                    $lookup: {
+                                        from: "serviceproviders",
+                                        localField: "servicerId",
+                                        foreignField: "_id",
+                                        as: "servicer",
+                                    }
+                                },
+
+                            ],
+
+                        }
+                    },
+                    {
+                        $match:
+                        {
+                            $and: contractFilterWithEligibilty
+                        },
+                    },
+                ]
+                mainQuery.push({
                     $facet: {
                         totalRecords: [
                             {
@@ -428,113 +522,20 @@ exports.exportContractReporting = async (req, res) => {
                                     // totalRecords: 1
                                 }
                             }
+
                         ],
                     },
 
-                },
-            ]
-        } else {
-            mainQuery = [
-                { $sort: { unique_key_number: -1 } },
-                {
-                    $lookup: {
-                        from: "orders",
-                        localField: "orderId",
-                        foreignField: "_id",
-                        as: "order",
-                        pipeline: [
-                            {
-                                $lookup: {
-                                    from: "dealers",
-                                    localField: "dealerId",
-                                    foreignField: "_id",
-                                    as: "dealer",
-                                }
-                            },
-                            {
-                                $lookup: {
-                                    from: "resellers",
-                                    localField: "resellerId",
-                                    foreignField: "_id",
-                                    as: "reseller",
-                                }
-                            },
-                            {
-                                $lookup: {
-                                    from: "customers",
-                                    localField: "customerId",
-                                    foreignField: "_id",
-                                    as: "customer",
-                                }
-                            },
-                            {
-                                $lookup: {
-                                    from: "serviceproviders",
-                                    localField: "servicerId",
-                                    foreignField: "_id",
-                                    as: "servicer",
-                                }
-                            },
-
-                        ],
-
-                    }
-                },
-                {
-                    $match:
-                    {
-                        $and: contractFilterWithEligibilty
-                    },
-                },
-            ]
-            mainQuery.push({
-                $facet: {
-                    totalRecords: [
-                        {
-                            $count: "total"
-                        }
-                    ],
-                    data: [
-                        {
-                            $skip: skipLimit
-                          },
-                          {
-                            $limit: pageLimit
-                          },
-                        {
-                            $project: {
-                                _id: 1,
-                                // productName: 1,
-                                // pName: 1,
-                                // model: 1,
-                                // serial: 1,
-                                // dealerSku: 1,
-                                // unique_key: 1,
-                                // claimAmount: 1,
-                                // minDate: 1,
-                                // status: 1,
-                                // productValue: 1,
-                                // manufacture: 1,
-                                // eligibilty: 1,
-                                // orderUniqueKey: 1,
-                                // venderOrder: 1,
-                                // totalRecords: 1
-                            }
-                        }
-
-                    ],
-                },
-
-            })
-        }
-        // let getContracts = await contractService.getAllContracts2(mainQuery, { maxTimeMS: 100000 })
-        // var result1 = getContracts[0]?.data ? getContracts[0]?.data : []
-        // console.log(result1.length, "================================")
-        // res.send({
-        //     result1
-        // })
-        // return;
-        console.log("page+++++++++++++++++++++++++++++++++", skipLimit)
+                })
+            }
+            // let getContracts = await contractService.getAllContracts2(mainQuery, { maxTimeMS: 100000 })
+            // var result1 = getContracts[0]?.data ? getContracts[0]?.data : []
+            // console.log(result1.length, "================================")
+            // res.send({
+            //     result1
+            // })
+            // return;
+            console.log("page+++++++++++++++++++++++++++++++++", skipLimit)
 
             console.log("page+++++++++++++++++++++++++++++++++", skipLimit)
             let getContracts = await contractService.getAllContracts2(mainQuery, { maxTimeMS: 100000 })
