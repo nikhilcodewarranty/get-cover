@@ -165,8 +165,9 @@ exports.exportContractReporting = async (req, res) => {
         const limit = 1000; // Adjust the limit based on your needs
         let page = data.page > 0 ? ((Number(req.body.page) - 1) * Number(limit)) : 0
         data.pageLimit = 1000
-        // let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
-        // let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+        let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+        // let pageLimit = Number(req.body.pageLimit) || 10; // Default to 10 if pageLimit is not provided
+        let skipLimit = req.body.page > 0 ? (Number(req.body.page) - 1) * pageLimit : 0;
         let totalContractData = []
         let hasMore = true;
         let limitData = Number(limit)
@@ -345,9 +346,11 @@ exports.exportContractReporting = async (req, res) => {
         }
 
         let mainQuery = []
+        console.log("page+++++++++++++++++++++++++++++++++", skipLimit)
+
         while (hasMore) {
-            let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
-            let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+            // let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+            // let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
             if (data.contractId === "" && data.productName === "" && data.dealerSku === "" && data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
                 mainQuery = [
                     { $sort: { unique_key_number: -1 } },
@@ -535,23 +538,26 @@ exports.exportContractReporting = async (req, res) => {
             //     result1
             // })
             // return;
-            console.log("page+++++++++++++++++++++++++++++++++", skipLimit)
 
-            console.log("page+++++++++++++++++++++++++++++++++", skipLimit)
+            console.log("page+++++++++++++++++++++++++++++++++", mainQuery[3].$facet, skipLimit)
             let getContracts = await contractService.getAllContracts2(mainQuery, { maxTimeMS: 100000 })
             var result1 = getContracts[0]?.data ? getContracts[0]?.data : []
-            console.log(result1.length, "================================")
-            if (result1.length === 0) {
+            let totalRecords = getContracts[0]?.totalRecords?.[0]?.total || 0;
+            console.log(result1.length, getContracts[0]?.totalRecords, "================================")
+            if (result1.length === 0 || skipLimit >= totalRecords) {
                 hasMore = false;
                 break;
             }
-            totalContractData.concat(result1)
-            skipLimit++;
+
+            totalContractData = totalContractData.concat(result1);
+            skipLimit += pageLimit;
+
+            console.log("checign main", totalContractData.length)
         }
         // let getContracts = await contractService.getAllContracts2(mainQuery, { maxTimeMS: 100000 })
         // let totalCount = getContracts[0]?.totalRecords[0]?.total ? getContracts[0]?.totalRecords[0].total : 0
         // let result1 = getContracts[0]?.data ? getContracts[0]?.data : []
-
+        // return
         for (let e = 0; e < result1.length; e++) {
             result1[e].reason = " "
             if (!result1[e].eligibilty) {
