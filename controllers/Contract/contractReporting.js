@@ -163,10 +163,10 @@ exports.exportContractReporting = async (req, res) => {
         let data = req.body
         let getTheThresholdLimir = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
         const limit = 1000; // Adjust the limit based on your needs
-        let page = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
-
-        // let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
-        // let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+        let page = data.page > 0 ? ((Number(req.body.page) - 1) * Number(limit)) : 0
+        data.pageLimit = 1000
+        let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+        let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
         let totalContractData = []
         let hasMore = true;
         let limitData = Number(limit)
@@ -401,30 +401,31 @@ exports.exportContractReporting = async (req, res) => {
                         ],
                         data: [
                             {
-                                $skip: page
+                                $skip: skipLimit
                             },
                             {
-                                $limit: limit
+                                $limit: pageLimit
                             },
-                            // {
-                            // $project: {
-                            // productName: 1,
-                            // pName: 1,
-                            // model: 1,
-                            // serial: 1,
-                            // dealerSku: 1,
-                            // unique_key: 1,
-                            // claimAmount: 1,
-                            // minDate: 1,
-                            // status: 1,
-                            // productValue: 1,
-                            // manufacture: 1,
-                            // eligibilty: 1,
-                            // orderUniqueKey: 1,
-                            // venderOrder: 1,
-                            // totalRecords: 1
-                            // }
-                            // }
+                            {
+                                $project: {
+                                    _id: 1,
+                                    // productName: 1,
+                                    // pName: 1,
+                                    // model: 1,
+                                    // serial: 1,
+                                    // dealerSku: 1,
+                                    // unique_key: 1,
+                                    // claimAmount: 1,
+                                    // minDate: 1,
+                                    // status: 1,
+                                    // productValue: 1,
+                                    // manufacture: 1,
+                                    // eligibilty: 1,
+                                    // orderUniqueKey: 1,
+                                    // venderOrder: 1,
+                                    // totalRecords: 1
+                                }
+                            }
                         ],
                     },
 
@@ -493,20 +494,47 @@ exports.exportContractReporting = async (req, res) => {
                     ],
                     data: [
                         {
-                            $skip: page
-                        },
+                            $skip: skipLimit
+                          },
+                          {
+                            $limit: pageLimit
+                          },
                         {
-                            $limit: limit
-                        },
+                            $project: {
+                                _id: 1,
+                                // productName: 1,
+                                // pName: 1,
+                                // model: 1,
+                                // serial: 1,
+                                // dealerSku: 1,
+                                // unique_key: 1,
+                                // claimAmount: 1,
+                                // minDate: 1,
+                                // status: 1,
+                                // productValue: 1,
+                                // manufacture: 1,
+                                // eligibilty: 1,
+                                // orderUniqueKey: 1,
+                                // venderOrder: 1,
+                                // totalRecords: 1
+                            }
+                        }
 
                     ],
                 },
 
             })
         }
+        // let getContracts = await contractService.getAllContracts2(mainQuery, { maxTimeMS: 100000 })
+        // var result1 = getContracts[0]?.data ? getContracts[0]?.data : []
+        // console.log(result1.length, "================================")
+        // res.send({
+        //     result1
+        // })
+        // return;
 
         while (hasMore) {
-            console.log("page+++++++++++++++++++++++++++++++++", page)
+            console.log("page+++++++++++++++++++++++++++++++++", skipLimit)
             let getContracts = await contractService.getAllContracts2(mainQuery, { maxTimeMS: 100000 })
             var result1 = getContracts[0]?.data ? getContracts[0]?.data : []
             console.log(result1.length, "================================")
@@ -515,7 +543,7 @@ exports.exportContractReporting = async (req, res) => {
                 break;
             }
             totalContractData.concat(result1)
-            page++;
+            skipLimit++;
         }
         // let getContracts = await contractService.getAllContracts2(mainQuery, { maxTimeMS: 100000 })
         // let totalCount = getContracts[0]?.totalRecords[0]?.total ? getContracts[0]?.totalRecords[0].total : 0
