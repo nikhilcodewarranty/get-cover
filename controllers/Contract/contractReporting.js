@@ -412,26 +412,7 @@ exports.exportContractReporting = async (req, res) => {
                                 {
                                     $limit: pageLimit
                                 },
-                                {
-                                    $project: {
-                                        _id: 1,
-                                        // productName: 1,
-                                        // pName: 1,
-                                        // model: 1,
-                                        // serial: 1,
-                                        // dealerSku: 1,
-                                        // unique_key: 1,
-                                        // claimAmount: 1,
-                                        // minDate: 1,
-                                        // status: 1,
-                                        // productValue: 1,
-                                        // manufacture: 1,
-                                        // eligibilty: 1,
-                                        // orderUniqueKey: 1,
-                                        // venderOrder: 1,
-                                        // totalRecords: 1
-                                    }
-                                }
+                               
                             ],
                         },
 
@@ -505,26 +486,7 @@ exports.exportContractReporting = async (req, res) => {
                             {
                                 $limit: pageLimit
                             },
-                            {
-                                $project: {
-                                    _id: 1,
-                                    // productName: 1,
-                                    // pName: 1,
-                                    // model: 1,
-                                    // serial: 1,
-                                    // dealerSku: 1,
-                                    // unique_key: 1,
-                                    // claimAmount: 1,
-                                    // minDate: 1,
-                                    // status: 1,
-                                    // productValue: 1,
-                                    // manufacture: 1,
-                                    // eligibilty: 1,
-                                    // orderUniqueKey: 1,
-                                    // venderOrder: 1,
-                                    // totalRecords: 1
-                                }
-                            }
+                           
 
                         ],
                     },
