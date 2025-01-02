@@ -798,85 +798,93 @@ exports.getUserNotificationData = async (req, res) => {
         }
 
         if (req.role == "Dealer") {
-            // getData.metaData[0].orderNotifications = null
-            // getData.metaData[0].claimNotification = null
-            getData.metaData[0].adminNotification = null
-            // getData.metaData[0].servicerNotification = null
-            // getData.metaData[0].dealerNotifications = null
-            // getData.metaData[0].resellerNotifications = null
-            // getData.metaData[0].customerNotifications = null
+            getData.metaData[0].adminNotification.userAdded = null
+            getData.metaData[0].adminNotification.categoryUpdate = null
+            getData.metaData[0].adminNotification.priceBookUpdate = null
+            getData.metaData[0].adminNotification.priceBookAdd = null
+            getData.metaData[0].adminNotification.categoryAdded = null
+            getData.metaData[0].claimNotification.repairStatusUpdate = null
+            getData.metaData[0].servicerNotification = null
+            getData.metaData[0].dealerNotifications.dealerAdded = null
             getData.metaData[0].registerNotifications = null
         }
         if (req.role == "Reseller") {
-            // getData.metaData[0].orderNotifications = null
-            // getData.metaData[0].claimNotification = null
+            getData.metaData[0].claimNotification.repairStatusUpdate = null
+            getData.metaData[0].servicerNotification = null
+            getData.metaData[0].dealerNotifications = null
+            getData.metaData[0].resellerNotifications.resellerAdded = null
             getData.metaData[0].adminNotification = null
-            // getData.metaData[0].servicerNotification = null
-            // getData.metaData[0].dealerNotifications = null
-            // getData.metaData[0].resellerNotifications = null
-            // getData.metaData[0].customerNotifications = null
             getData.metaData[0].registerNotifications = null
         }
         if (req.role == "Customer") {
-            // getData.metaData[0].orderNotifications = null
-            // getData.metaData[0].claimNotification = null
             getData.metaData[0].adminNotification = null
+            getData.metaData[0].orderNotifications.addingNewOrderPending = null
+            getData.metaData[0].orderNotifications.updateOrderPending = null
+            getData.metaData[0].orderNotifications.archivinOrder = null
+            getData.metaData[0].claimNotification.repairStatusUpdate = null
+            getData.metaData[0].customerNotifications.customerAdded = null
             getData.metaData[0].servicerNotification = null
             getData.metaData[0].dealerNotifications = null
             getData.metaData[0].resellerNotifications = null
-            // getData.metaData[0].customerNotifications = null
             getData.metaData[0].registerNotifications = null
         }
         if (req.role == "Servicer") {
-            // getData.metaData[0].orderNotifications = null
-            // getData.metaData[0].claimNotification = null
-            getData.metaData[0].adminNotification = null
-            // getData.metaData[0].servicerNotification = null
+            getData.metaData[0].adminNotification.userAdded = null
+            getData.metaData[0].adminNotification.categoryUpdate = null
+            getData.metaData[0].adminNotification.priceBookUpdate = null
+            getData.metaData[0].adminNotification.priceBookAdd = null
+            getData.metaData[0].adminNotification.categoryAdded = null
+            getData.metaData[0].orderNotifications = null
+            getData.metaData[0].servicerNotification.servicerAdded = null
             getData.metaData[0].dealerNotifications = null
             getData.metaData[0].resellerNotifications = null
-            // getData.metaData[0].customerNotifications = null
             getData.metaData[0].registerNotifications = null
+            getData.metaData[0].customerNotifications = null
         }
 
         if (req.params.flag == "Dealer") {
-            // getData.metaData[0].orderNotifications = null
-            // getData.metaData[0].claimNotification = null
-            getData.metaData[0].adminNotification = null
-            // getData.metaData[0].servicerNotification = null
-            // getData.metaData[0].dealerNotifications = null
-            // getData.metaData[0].resellerNotifications = null
-            // getData.metaData[0].customerNotifications = null
+            getData.metaData[0].adminNotification.userAdded = null
+            getData.metaData[0].adminNotification.categoryUpdate = null
+            getData.metaData[0].adminNotification.priceBookUpdate = null
+            getData.metaData[0].adminNotification.priceBookAdd = null
+            getData.metaData[0].adminNotification.categoryAdded = null
+            getData.metaData[0].claimNotification.repairStatusUpdate = null
+            getData.metaData[0].servicerNotification = null
+            getData.metaData[0].dealerNotifications.dealerAdded = null
             getData.metaData[0].registerNotifications = null
         }
         if (req.params.flag == "Reseller") {
-            // getData.metaData[0].orderNotifications = null
-            // getData.metaData[0].claimNotification = null
+            getData.metaData[0].claimNotification.repairStatusUpdate = null
+            getData.metaData[0].servicerNotification = null
+            getData.metaData[0].dealerNotifications = null
+            getData.metaData[0].resellerNotifications.resellerAdded = null
             getData.metaData[0].adminNotification = null
-            // getData.metaData[0].servicerNotification = null
-            // getData.metaData[0].dealerNotifications = null
-            // getData.metaData[0].resellerNotifications = null
-            // getData.metaData[0].customerNotifications = null
             getData.metaData[0].registerNotifications = null
         }
         if (req.params.flag == "Customer") {
-            // getData.metaData[0].orderNotifications = null
-            // getData.metaData[0].claimNotification = null
             getData.metaData[0].adminNotification = null
+            getData.metaData[0].orderNotifications.addingNewOrderPending = null
+            getData.metaData[0].orderNotifications.updateOrderPending = null
+            getData.metaData[0].orderNotifications.archivinOrder = null
+            getData.metaData[0].claimNotification.repairStatusUpdate = null
+            getData.metaData[0].customerNotifications.customerAdded = null
             getData.metaData[0].servicerNotification = null
             getData.metaData[0].dealerNotifications = null
             getData.metaData[0].resellerNotifications = null
-            // getData.metaData[0].customerNotifications = null
             getData.metaData[0].registerNotifications = null
         }
         if (req.params.flag == "Servicer") {
-            // getData.metaData[0].orderNotifications = null
-            // getData.metaData[0].claimNotification = null
-            getData.metaData[0].adminNotification = null
-            // getData.metaData[0].servicerNotification = null
+            getData.metaData[0].adminNotification.userAdded = null
+            getData.metaData[0].adminNotification.categoryUpdate = null
+            getData.metaData[0].adminNotification.priceBookUpdate = null
+            getData.metaData[0].adminNotification.priceBookAdd = null
+            getData.metaData[0].adminNotification.categoryAdded = null
+            getData.metaData[0].orderNotifications = null
+            getData.metaData[0].servicerNotification.servicerAdded = null
             getData.metaData[0].dealerNotifications = null
             getData.metaData[0].resellerNotifications = null
-            // getData.metaData[0].customerNotifications = null
             getData.metaData[0].registerNotifications = null
+            getData.metaData[0].customerNotifications = null
         }
 
         res.send({
