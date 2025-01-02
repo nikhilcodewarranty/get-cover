@@ -501,11 +501,11 @@ exports.exportContractReporting = async (req, res) => {
             // })
             // return;
 
-            console.log("page+++++++++++++++++++++++++++++++++", mainQuery[3].$facet, skipLimit)
+            console.log("page+++++++++++++++++++++++++++++++++", skipLimit)
             let getContracts = await contractService.getAllContracts2(mainQuery, { maxTimeMS: 100000 })
             var result1 = getContracts[0]?.data ? getContracts[0]?.data : []
             let totalRecords = getContracts[0]?.totalRecords?.[0]?.total || 0;
-            console.log(result1.length, getContracts[0]?.totalRecords, "================================")
+            // console.log(result1.length, getContracts[0]?.totalRecords, "================================")
             if (result1.length === 0 || skipLimit >= totalRecords) {
                 hasMore = false;
                 break;
