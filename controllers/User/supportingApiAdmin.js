@@ -808,8 +808,8 @@ exports.getUserNotificationData = async (req, res) => {
                 "_id": "6776598c076be14863795f85"
             }
             delete getData.metaData[0].servicerNotification
-            delete getData.metaData[0].dealerNotifications.dealerAdded 
-            delete getData.metaData[0].registerNotifications 
+            delete getData.metaData[0].dealerNotifications.dealerAdded
+            delete getData.metaData[0].registerNotifications
 
 
 
@@ -824,12 +824,12 @@ exports.getUserNotificationData = async (req, res) => {
             // getData.metaData[0].registerNotifications = null
         }
         if (req.role == "Reseller") {
-           delete getData.metaData[0].claimNotification.repairStatusUpdate
-            getData.metaData[0].servicerNotification = null
-            getData.metaData[0].dealerNotifications = null
+            delete getData.metaData[0].claimNotification.repairStatusUpdate
+            delete getData.metaData[0].servicerNotification
+            delete getData.metaData[0].dealerNotifications
             delete getData.metaData[0].resellerNotifications.resellerAdded
-            getData.metaData[0].adminNotification = null
-            getData.metaData[0].registerNotifications = null
+            delete getData.metaData[0].adminNotification
+            delete getData.metaData[0].registerNotifications
         }
         if (req.role == "Customer") {
             getData.metaData[0].adminNotification = null
@@ -869,12 +869,12 @@ exports.getUserNotificationData = async (req, res) => {
             getData.metaData[0].registerNotifications = null
         }
         if (req.params.flag == "Reseller") {
-            getData.metaData[0].claimNotification.repairStatusUpdate = null
-            getData.metaData[0].servicerNotification = null
-            getData.metaData[0].dealerNotifications = null
-            getData.metaData[0].resellerNotifications.resellerAdded = null
-            getData.metaData[0].adminNotification = null
-            getData.metaData[0].registerNotifications = null
+            delete getData.metaData[0].claimNotification.repairStatusUpdate
+            delete getData.metaData[0].servicerNotification
+            delete getData.metaData[0].dealerNotifications
+            delete getData.metaData[0].resellerNotifications.resellerAdded
+            delete getData.metaData[0].adminNotification
+            delete getData.metaData[0].registerNotifications
         }
         if (req.params.flag == "Customer") {
             getData.metaData[0].adminNotification = null
