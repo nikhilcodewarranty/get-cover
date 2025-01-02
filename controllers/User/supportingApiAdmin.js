@@ -798,21 +798,36 @@ exports.getUserNotificationData = async (req, res) => {
         }
 
         if (req.role == "Dealer") {
-            getData.metaData[0].adminNotification.userAdded = null
-            getData.metaData[0].adminNotification.categoryUpdate = null
-            getData.metaData[0].adminNotification.priceBookUpdate = null
-            getData.metaData[0].adminNotification.priceBookAdd = null
-            getData.metaData[0].adminNotification.categoryAdded = null
-            getData.metaData[0].claimNotification.repairStatusUpdate = null
-            getData.metaData[0].servicerNotification = null
-            getData.metaData[0].dealerNotifications.dealerAdded = null
-            getData.metaData[0].registerNotifications = null
+            getData.metaData[0].adminNotification = {
+                "unassignDealerServicer": getData.metaData[0].adminNotification.unassignDealerServicer,
+                "assignDealerServicer": getData.metaData[0].adminNotification.assignDealerServicer,
+                "_id": "6776598c076be14863795f86"
+            }
+            getData.metaData[0].claimNotification = {
+                "repairStatusUpdate": getData.metaData[0].claimNotification.repairStatusUpdate,
+                "_id": "6776598c076be14863795f85"
+            }
+            delete getData.metaData[0].servicerNotification
+            delete getData.metaData[0].dealerNotifications.dealerAdded 
+            delete getData.metaData[0].registerNotifications 
+
+
+
+            // getData.metaData[0].adminNotification.userAdded = null
+            // getData.metaData[0].adminNotification.categoryUpdate = null
+            // getData.metaData[0].adminNotification.priceBookUpdate = null
+            // getData.metaData[0].adminNotification.priceBookAdd = null
+            // getData.metaData[0].adminNotification.categoryAdded = null
+            // getData.metaData[0].claimNotification.repairStatusUpdate = null
+            // getData.metaData[0].servicerNotification = null
+            // getData.metaData[0].dealerNotifications.dealerAdded = null
+            // getData.metaData[0].registerNotifications = null
         }
         if (req.role == "Reseller") {
-            getData.metaData[0].claimNotification.repairStatusUpdate = null
+           delete getData.metaData[0].claimNotification.repairStatusUpdate = null
             getData.metaData[0].servicerNotification = null
             getData.metaData[0].dealerNotifications = null
-            getData.metaData[0].resellerNotifications.resellerAdded = null
+            delete getData.metaData[0].resellerNotifications.resellerAdded = null
             getData.metaData[0].adminNotification = null
             getData.metaData[0].registerNotifications = null
         }
