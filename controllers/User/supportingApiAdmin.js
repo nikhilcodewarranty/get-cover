@@ -824,10 +824,10 @@ exports.getUserNotificationData = async (req, res) => {
             // getData.metaData[0].registerNotifications = null
         }
         if (req.role == "Reseller") {
-           delete getData.metaData[0].claimNotification.repairStatusUpdate = null
+           delete getData.metaData[0].claimNotification.repairStatusUpdate
             getData.metaData[0].servicerNotification = null
             getData.metaData[0].dealerNotifications = null
-            delete getData.metaData[0].resellerNotifications.resellerAdded = null
+            delete getData.metaData[0].resellerNotifications.resellerAdded
             getData.metaData[0].adminNotification = null
             getData.metaData[0].registerNotifications = null
         }
