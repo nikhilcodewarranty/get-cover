@@ -832,6 +832,7 @@ exports.getUserNotificationData = async (req, res) => {
             delete newMetaData.dealerNotifications
             delete newMetaData.resellerNotifications
             delete newMetaData.registerNotifications
+            metaData = newMetaData
         }
         if (req.role == "Servicer") {
             delete newMetaData.adminNotification.userAdded
@@ -845,6 +846,7 @@ exports.getUserNotificationData = async (req, res) => {
             delete newMetaData.resellerNotifications
             delete newMetaData.registerNotifications
             delete newMetaData.customerNotifications
+            metaData = newMetaData
         }
 
         if (req.params.flag == "Dealer") {
@@ -880,6 +882,7 @@ exports.getUserNotificationData = async (req, res) => {
             delete newMetaData.dealerNotifications
             delete newMetaData.resellerNotifications
             delete newMetaData.registerNotifications
+            metaData = newMetaData
         }
         if (req.params.flag == "Servicer") {
             delete newMetaData.adminNotification.userAdded
@@ -893,12 +896,13 @@ exports.getUserNotificationData = async (req, res) => {
             delete newMetaData.resellerNotifications
             delete newMetaData.registerNotifications
             delete newMetaData.customerNotifications
+            metaData = newMetaData
         }
 
         res.send({
             code: constant.successCode,
             message: "Success",
-            result: { notifications: getData.metaData[0], _id: getData._id },
+            result: { notifications: metaData, _id: getData._id },
             result2: metaData
         })
     } catch (err) {
