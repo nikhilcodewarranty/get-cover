@@ -1166,7 +1166,7 @@ exports.changePrimaryUser = async (req, res) => {
 
         notificationData = {
           title: "Reseller Primary User Updated",
-          description: `The Primary user of ${checkReseller.name} for ${resellerDealer.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName + " " + updateLastPrimary.metaData[0]?.lastName} to ${updatePrimary.metaData[0]?.firstName + " " + updatePrimary.metaData[0]?.lastName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The Primary user of Reseller ${checkReseller.name} for ${resellerDealer.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName + " " + updateLastPrimary.metaData[0]?.lastName} to ${updatePrimary.metaData[0]?.firstName + " " + updatePrimary.metaData[0]?.lastName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           tabAction: "resellerUser",
           flag: checkRole?.role,
@@ -1177,7 +1177,7 @@ exports.changePrimaryUser = async (req, res) => {
         notificationArray.push(notificationData)
         notificationData = {
           title: "Reseller Primary User Updated",
-          description: `The Primary user of ${checkReseller.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName + " " + updateLastPrimary.metaData[0]?.lastName} to ${updatePrimary.metaData[0]?.firstName + " " + updatePrimary.metaData[0]?.lastName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The Primary user of Reseller  ${checkReseller.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName + " " + updateLastPrimary.metaData[0]?.lastName} to ${updatePrimary.metaData[0]?.firstName + " " + updatePrimary.metaData[0]?.lastName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           tabAction: "resellerUser",
           flag: checkRole?.role,
@@ -1259,9 +1259,9 @@ exports.changePrimaryUser = async (req, res) => {
         const resellerId = resellerUsers.map(user => user._id)
         const customerId = customerUsers.map(user => user._id)
         let notificationEmails = adminUsers.map(user => user.email);
-        console.log("adminUsers-----------------------",adminUsers)
-        console.log("dealerUsers-----------------------",dealerUsers)
-        console.log("resellerUsers-----------------------",resellerUsers)
+        console.log("adminUsers-----------------------", adminUsers)
+        console.log("dealerUsers-----------------------", dealerUsers)
+        console.log("resellerUsers-----------------------", resellerUsers)
         let dealerEmails = dealerUsers.map(user => user.email);
         let resellerEmails = resellerUsers.map(user => user.email);
         let customerEmails = customerUsers.map(user => user.email);
@@ -1308,7 +1308,7 @@ exports.changePrimaryUser = async (req, res) => {
 
         notificationData = {
           title: "Primary User Updated",
-          description: `The Primary user for your account has been changed from ${updateLastPrimary.metaData[0]?.firstName} to ${updatePrimary.metaData[0]?.firstName}  by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+          description: `The Primary user for your account has been changed from ${updateLastPrimary.metaData[0]?.firstName + " " + updateLastPrimary.metaData[0]?.lastName} to ${updatePrimary.metaData[0]?.firstName + " " + updatePrimary.metaData[0]?.lastName}  by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
           redirectionId: "customer/user",
@@ -2212,7 +2212,7 @@ exports.getCustomerContract = async (req, res) => {
       endDate.setHours(11, 59, 0, 0)
       let dateFilter = { createdAt: { $gte: startDate, $lte: endDate } }
       contractFilterWithEligibilty.push(dateFilter)
-  }
+    }
     let mainQuery = []
     if (data.contractId === "" && data.productName === "" && data.dealerSku === "" && data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
       mainQuery = [
@@ -2239,7 +2239,7 @@ exports.getCustomerContract = async (req, res) => {
                   unique_key: 1,
                   productValue: 1,
                   minDate: 1,
-                  createdAt:1,
+                  createdAt: 1,
                   status: 1,
                   manufacture: 1,
                   eligibilty: 1,
@@ -2285,7 +2285,7 @@ exports.getCustomerContract = async (req, res) => {
                 serial: 1,
                 minDate: 1,
                 unique_key: 1,
-                createdAt:1,
+                createdAt: 1,
                 productValue: 1,
                 status: 1,
                 manufacture: 1,
