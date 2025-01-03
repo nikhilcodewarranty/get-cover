@@ -1012,7 +1012,7 @@ exports.editResellers = async (req, res) => {
         notificationArray.push(notificationData)
         notificationData = {
             title: "Reseller Details Updated",
-            description: `The details of Reseller ${checkReseller.name} for the Dealer ${checkDealer.name} has been updated by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+            description: `The details of Reseller ${checkReseller.name}  has been updated by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
             userId: req.teammateId,
             redirectionId: "dealer/resellerDetails/" + checkReseller._id,
             flag: 'reseller',

@@ -797,7 +797,7 @@ exports.rejectServicer = async (req, res) => {
       notificationFor: IDs
     };
 
-    let createNotification = await userService.createNotification(notificationData); 
+    let createNotification = await userService.createNotification(notificationData);
     let settingData = await userService.getSetting({});
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -1094,7 +1094,7 @@ exports.updateStatus = async (req, res) => {
         $elemMatch: {
           $and: [
             { "servicerNotification.userUpdate": true },
-            { status: true },
+            // { status: true },
             { metaId: new mongoose.Types.ObjectId(req.params.servicerId) }
           ]
         }
@@ -1273,13 +1273,18 @@ exports.updateStatus = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: checkServicer.metaData[0]?.name,
+      senderName: checkServicer.name,
       content: `Servicer Status has been changed to ${status_content}`,
       redirectId: '',
       subject: "Update Status"
     }
 
-    mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, 'noreply@getcover.com', emailData))
+
+    emailData.senderName = "Dear Admin"
+    mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, 'noreply@getcover.com', emailData))
+    emailData.senderName = "Dear "+ checkServicer.name
+
+    mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, 'noreply@getcover.com', emailData))
 
     //Save Logs
     let logData = {
@@ -1548,7 +1553,7 @@ exports.registerServiceProvider = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName:"Dear Admin",
+      senderName: "Dear Admin",
       content: "A new servicer " + ServicerMeta.name + " has been registered",
       subject: 'New Servicer Registration'
     }
@@ -1881,7 +1886,7 @@ exports.addServicerUser = async (req, res) => {
           flag: 'Servicer User',
           endPoint: base_url + "servicer/user",
           redirectionId: "servicer/user",
-          notificationFor: servicerId 
+          notificationFor: servicerId
         };
         notificationArray.push(notificationData)
       }
