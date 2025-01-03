@@ -320,7 +320,6 @@ exports.createDealer = async (req, res) => {
                     subject: "Dealer Account Approved - " + singleDealer.name,
                 }
                 // Send Email code here
-                console.log("notificationEmails----------------------",notificationEmails)
                 sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
 
                 if (req.body.isAccountCreate) {
@@ -568,6 +567,8 @@ exports.createDealer = async (req, res) => {
                 }
 
                 sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+                console.log("notificationEmails----------------------",notificationEmails)
+
                 // Send Email code here
                 if (req.body.isAccountCreate) {
                     for (let i = 0; i < createUsers.length; i++) {
