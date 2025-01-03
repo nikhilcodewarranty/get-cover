@@ -815,7 +815,7 @@ exports.getUserNotificationData = async (req, res) => {
 
         }
         if (req.role == "Reseller") {
-            delete newMetaData.claimNotification.repairStatusUpdate
+            delete newMetaData.claimNotification.partsUpdate
             delete newMetaData.servicerNotification
             delete newMetaData.dealerNotifications
             delete newMetaData.resellerNotifications.resellerAdded
@@ -828,7 +828,7 @@ exports.getUserNotificationData = async (req, res) => {
             delete newMetaData.orderNotifications.addingNewOrderPending
             delete newMetaData.orderNotifications.updateOrderPending
             delete newMetaData.orderNotifications.archivinOrder
-            delete newMetaData.claimNotification.repairStatusUpdate
+            delete newMetaData.claimNotification.partsUpdate
             delete newMetaData.customerNotifications.customerAdded
             delete newMetaData.servicerNotification
             delete newMetaData.dealerNotifications
@@ -857,7 +857,7 @@ exports.getUserNotificationData = async (req, res) => {
             delete newMetaData.adminNotification.priceBookUpdate
             delete newMetaData.adminNotification.priceBookAdd
             delete newMetaData.adminNotification.categoryAdded
-            delete newMetaData.claimNotification.repairStatusUpdate
+            delete newMetaData.claimNotification.partsUpdate
             delete newMetaData.servicerNotification
             delete newMetaData.dealerNotifications.dealerAdded
             delete newMetaData.registerNotifications
@@ -865,7 +865,7 @@ exports.getUserNotificationData = async (req, res) => {
         }
         if (req.params.flag == "Reseller") {
             console.log("sldkslks")
-            delete newMetaData.claimNotification.repairStatusUpdate
+            delete newMetaData.claimNotification.partsUpdate
             delete newMetaData.servicerNotification
             delete newMetaData.dealerNotifications
             delete newMetaData.resellerNotifications.resellerAdded
@@ -878,7 +878,7 @@ exports.getUserNotificationData = async (req, res) => {
             delete newMetaData.orderNotifications.addingNewOrderPending
             delete newMetaData.orderNotifications.updateOrderPending
             delete newMetaData.orderNotifications.archivinOrder
-            delete newMetaData.claimNotification.repairStatusUpdate
+            delete newMetaData.claimNotification.partsUpdate
             delete newMetaData.customerNotifications.customerAdded
             delete newMetaData.servicerNotification
             delete newMetaData.dealerNotifications
@@ -966,7 +966,7 @@ exports.updateNotificationData = async (req, res) => {
             delete newMetaData.adminNotification.priceBookUpdate
             delete newMetaData.adminNotification.priceBookAdd
             delete newMetaData.adminNotification.categoryAdded
-            delete newMetaData.claimNotification.repairStatusUpdate
+            delete newMetaData.claimNotification.partsUpdate
             delete newMetaData.servicerNotification
             delete newMetaData.dealerNotifications.dealerAdded
             delete newMetaData.registerNotifications
@@ -974,7 +974,7 @@ exports.updateNotificationData = async (req, res) => {
 
         }
         if (req.role == "Reseller") {
-            delete newMetaData.claimNotification.repairStatusUpdate
+            delete newMetaData.claimNotification.partsUpdate
             delete newMetaData.servicerNotification
             delete newMetaData.dealerNotifications
             delete newMetaData.resellerNotifications.resellerAdded
@@ -987,7 +987,7 @@ exports.updateNotificationData = async (req, res) => {
             delete newMetaData.orderNotifications.addingNewOrderPending
             delete newMetaData.orderNotifications.updateOrderPending
             delete newMetaData.orderNotifications.archivinOrder
-            delete newMetaData.claimNotification.repairStatusUpdate
+            delete newMetaData.claimNotification.partsUpdate
             delete newMetaData.customerNotifications.customerAdded
             delete newMetaData.servicerNotification
             delete newMetaData.dealerNotifications
@@ -1016,7 +1016,7 @@ exports.updateNotificationData = async (req, res) => {
             delete newMetaData.adminNotification.priceBookUpdate
             delete newMetaData.adminNotification.priceBookAdd
             delete newMetaData.adminNotification.categoryAdded
-            delete newMetaData.claimNotification.repairStatusUpdate
+            delete newMetaData.claimNotification.partsUpdate
             delete newMetaData.servicerNotification
             delete newMetaData.dealerNotifications.dealerAdded
             delete newMetaData.registerNotifications
@@ -1024,7 +1024,7 @@ exports.updateNotificationData = async (req, res) => {
         }
         if (req.params.flag == "Reseller") {
             console.log("sldkslks")
-            delete newMetaData.claimNotification.repairStatusUpdate
+            delete newMetaData.claimNotification.partsUpdate
             delete newMetaData.servicerNotification
             delete newMetaData.dealerNotifications
             delete newMetaData.resellerNotifications.resellerAdded
