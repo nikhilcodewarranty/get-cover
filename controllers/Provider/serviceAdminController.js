@@ -1194,7 +1194,7 @@ exports.updateStatus = async (req, res) => {
           lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
           address: settingData[0]?.address,
           websiteSetting: settingData[0],
-          senderName: checkServicer.metaData[0]?.name,
+          senderName: checkServicer.name,
           content: content,
           redirectId: status_content == "Active" ? resetLink : '',
           subject: "Update Status"
@@ -1286,7 +1286,7 @@ console.log("servicerEmail----------------",servicerEmail,notificationEmails,ema
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
-            senderName: checkServicer.metaData[0]?.name,
+            senderName: checkServicer?.name,
             content: content,
             redirectId: status_content == "Active" ? resetLink : '',
             subject: "Update Status"
