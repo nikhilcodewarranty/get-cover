@@ -1043,6 +1043,8 @@ exports.updateStatus = async (req, res) => {
       })
       return;
     }
+    let resetPasswordCode = randtoken.generate(4, '123456789')
+
     let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.params.servicerId, isPrimary: true } } })
     let criteria = { _id: checkServicer._id }
     let updateData = await providerService.updateServiceProvider(criteria, data)
@@ -1188,7 +1190,7 @@ exports.updateStatus = async (req, res) => {
 
         const status_content = req.body.status || req.body.status == "true" ? 'Active' : 'Inactive';
         const content = req.body.status ? 'Congratulations, you can now login to our system. Please click the following link to login to the system' : "Your account has been made inactive. If you think, this is a mistake, please contact our support team at support@getcover.com"
-   
+
         let emailData = {
           darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
           lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -1212,7 +1214,6 @@ exports.updateStatus = async (req, res) => {
           subject: "Update Status"
         }
 
-console.log("servicerEmail----------------",servicerEmail,notificationEmails,emailData)
         emailData.senderName = "Dear Admin"
         mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, 'noreply@getcover.com', emailData))
         emailData.senderName = "Dear " + checkServicer.name
@@ -1273,14 +1274,14 @@ console.log("servicerEmail----------------",servicerEmail,notificationEmails,ema
           let createNotification = await userService.saveNotificationBulk(notificationArray);
           let mergedEmail;
           let notificationEmails = adminUsers.map(user => user.email);
-       
+
           const servicerEmail = servicerUsers.map(user => user.email)
           mergedEmail = notificationEmails.concat(servicerEmail)
           let settingData = await userService.getSetting({});
 
           const status_content = req.body.status || req.body.status == "true" ? 'Active' : 'Inactive';
           const content = req.body.status ? 'Congratulations, you can now login to our system. Please click the following link to login to the system' : "Your account has been made inactive. If you think, this is a mistake, please contact our support team at support@getcover.com"
-
+          let resetLink = `${process.env.SITE_URL}newPassword/${getPrimary._id}/${resetPasswordCode}`
           let emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -1304,7 +1305,7 @@ console.log("servicerEmail----------------",servicerEmail,notificationEmails,ema
             subject: "Update Status"
           }
 
-          console.log("servicerEmail----------------",servicerEmail,notificationEmails,emailData)
+          console.log("servicerEmail----------------", servicerEmail, notificationEmails, emailData)
 
           emailData.senderName = "Dear Admin"
           mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, 'noreply@getcover.com', emailData))
