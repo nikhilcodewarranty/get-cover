@@ -2244,7 +2244,7 @@ exports.changeResellerStatus = async (req, res) => {
                     $elemMatch: {
                         $and: [
                             { "resellerNotifications.resellerUpdate": true },
-                            { status: true },
+                            // { status: true },
                             { metaId: new mongoose.Types.ObjectId(req.params.resellerId) }
                         ]
                     }
@@ -2327,7 +2327,7 @@ exports.changeResellerStatus = async (req, res) => {
             }
             emailData.senderName = "Dear Admin"
             mailing = sgMail.send(emailConstant.sendEmailTemplate(adminEmail, ["noreply@getcover.com"], emailData))
-            emailData.senderName = `Dear ${getPrimary.firstName + " " + getPrimary.lastName}`
+            emailData.senderName = `Dear ${getPrimary.metaData[0]?.firstName + " " + getPrimary.metaData[0]?.lastName}`
 
             mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
 

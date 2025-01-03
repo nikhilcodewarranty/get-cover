@@ -743,7 +743,7 @@ exports.changeDealerStatus = async (req, res) => {
       }
       emailData.senderName = "Dear Admin"
       mailing = sgMail.send(emailConstant.sendEmailTemplate(adminEmails, ["noreply@getcover.com"], emailData))
-      emailData.senderName = `Dear ${primaryUser.firstName + "" + primaryUser.lastName}`
+      emailData.senderName = `Dear ${primaryUser.metaData[0]?.firstName + "" + primaryUser.metaData[0]?.lastName}`
       mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
 
       let logData = {
