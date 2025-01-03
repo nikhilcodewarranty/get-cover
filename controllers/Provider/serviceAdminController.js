@@ -1074,7 +1074,7 @@ exports.updateStatus = async (req, res) => {
       metaData: {
         $elemMatch: {
           $and: [
-            { "servicerNotification.userUpdate": true },
+            { "servicerNotification.servicerUpdate": true },
             { status: true },
             {
               $or: [
@@ -1093,7 +1093,7 @@ exports.updateStatus = async (req, res) => {
       metaData: {
         $elemMatch: {
           $and: [
-            { "servicerNotification.userUpdate": true },
+            { "servicerNotification.servicerUpdate": true },
             // { status: true },
             { metaId: new mongoose.Types.ObjectId(req.params.servicerId) }
           ]
