@@ -567,7 +567,7 @@ exports.createDealer = async (req, res) => {
                 }
 
                 sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
-                console.log("notificationEmails----------------------",notificationEmails,createUsers,req.body.isAccountCreate)
+                console.log("notificationEmails----------------------", notificationEmails, createUsers, req.body.isAccountCreate)
 
                 // Send Email code here
                 if (req.body.isAccountCreate) {
@@ -927,6 +927,20 @@ exports.updateNotificationData = async (req, res) => {
             })
             return
         }
+
+        if (getData.metaData[0].roleId.toString() == "656f080e1eb1acda244af8c7") {
+            req.params.flag = "Customer"
+        }
+        if (getData.metaData[0].roleId.toString() == "656f08041eb1acda244af8c6") {
+            req.params.flag = "Dealer"
+        }
+        if (getData.metaData[0].roleId.toString() == "65719c8368a8a86ef8e1ae4d") {
+            req.params.flag = "Servicer"
+        }
+        if (getData.metaData[0].roleId.toString() == "65bb94b4b68e5a4a62a0b563") {
+            req.params.flag = "Reseller"
+        }
+
         let updateData = {
             $set: {
                 'metaData.$.orderNotifications': data.orderNotifications ? data.orderNotifications : getData.metaData[0].orderNotifications,
@@ -943,6 +957,109 @@ exports.updateNotificationData = async (req, res) => {
 
         let updateUserData = await userService.updateSingleUser({ metaData: { $elemMatch: { metaId: getData.metaData[0].metaId } }, _id: req.params.userId }, updateData, { new: true })
 
+        let metaData = updateUserData.metaData[0]
+        let newMetaData = JSON.parse(JSON.stringify(metaData));
+
+        if (req.role == "Dealer") {
+            delete newMetaData.adminNotification.userAdded
+            delete newMetaData.adminNotification.categoryUpdate
+            delete newMetaData.adminNotification.priceBookUpdate
+            delete newMetaData.adminNotification.priceBookAdd
+            delete newMetaData.adminNotification.categoryAdded
+            delete newMetaData.claimNotification.repairStatusUpdate
+            delete newMetaData.servicerNotification
+            delete newMetaData.dealerNotifications.dealerAdded
+            delete newMetaData.registerNotifications
+            metaData = newMetaData
+
+        }
+        if (req.role == "Reseller") {
+            delete newMetaData.claimNotification.repairStatusUpdate
+            delete newMetaData.servicerNotification
+            delete newMetaData.dealerNotifications
+            delete newMetaData.resellerNotifications.resellerAdded
+            delete newMetaData.adminNotification
+            delete newMetaData.registerNotifications
+            metaData = newMetaData
+        }
+        if (req.role == "Customer") {
+            delete newMetaData.adminNotification
+            delete newMetaData.orderNotifications.addingNewOrderPending
+            delete newMetaData.orderNotifications.updateOrderPending
+            delete newMetaData.orderNotifications.archivinOrder
+            delete newMetaData.claimNotification.repairStatusUpdate
+            delete newMetaData.customerNotifications.customerAdded
+            delete newMetaData.servicerNotification
+            delete newMetaData.dealerNotifications
+            delete newMetaData.resellerNotifications
+            delete newMetaData.registerNotifications
+            metaData = newMetaData
+        }
+        if (req.role == "Servicer") {
+            delete newMetaData.adminNotification.userAdded
+            delete newMetaData.adminNotification.categoryUpdate
+            delete newMetaData.adminNotification.priceBookUpdate
+            delete newMetaData.adminNotification.priceBookAdd
+            delete newMetaData.adminNotification.categoryAdded
+            delete newMetaData.orderNotifications
+            delete newMetaData.servicerNotification.servicerAdded
+            delete newMetaData.dealerNotifications
+            delete newMetaData.resellerNotifications
+            delete newMetaData.registerNotifications
+            delete newMetaData.customerNotifications
+            metaData = newMetaData
+        }
+
+        if (req.params.flag == "Dealer") {
+            delete newMetaData.adminNotification.userAdded
+            delete newMetaData.adminNotification.categoryUpdate
+            delete newMetaData.adminNotification.priceBookUpdate
+            delete newMetaData.adminNotification.priceBookAdd
+            delete newMetaData.adminNotification.categoryAdded
+            delete newMetaData.claimNotification.repairStatusUpdate
+            delete newMetaData.servicerNotification
+            delete newMetaData.dealerNotifications.dealerAdded
+            delete newMetaData.registerNotifications
+            metaData = newMetaData
+        }
+        if (req.params.flag == "Reseller") {
+            console.log("sldkslks")
+            delete newMetaData.claimNotification.repairStatusUpdate
+            delete newMetaData.servicerNotification
+            delete newMetaData.dealerNotifications
+            delete newMetaData.resellerNotifications.resellerAdded
+            delete newMetaData.adminNotification
+            delete newMetaData.registerNotifications
+            metaData = newMetaData
+        }
+        if (req.params.flag == "Customer") {
+            delete newMetaData.adminNotification
+            delete newMetaData.orderNotifications.addingNewOrderPending
+            delete newMetaData.orderNotifications.updateOrderPending
+            delete newMetaData.orderNotifications.archivinOrder
+            delete newMetaData.claimNotification.repairStatusUpdate
+            delete newMetaData.customerNotifications.customerAdded
+            delete newMetaData.servicerNotification
+            delete newMetaData.dealerNotifications
+            delete newMetaData.resellerNotifications
+            delete newMetaData.registerNotifications
+            metaData = newMetaData
+        }
+        if (req.params.flag == "Servicer") {
+            delete newMetaData.adminNotification.userAdded
+            delete newMetaData.adminNotification.categoryUpdate
+            delete newMetaData.adminNotification.priceBookUpdate
+            delete newMetaData.adminNotification.priceBookAdd
+            delete newMetaData.adminNotification.categoryAdded
+            delete newMetaData.orderNotifications
+            delete newMetaData.servicerNotification.servicerAdded
+            delete newMetaData.dealerNotifications
+            delete newMetaData.resellerNotifications
+            delete newMetaData.registerNotifications
+            delete newMetaData.customerNotifications
+            metaData = newMetaData
+        }
+
         if (!updateUserData) {
             res.send({
                 code: constant.errorCode,
@@ -953,7 +1070,7 @@ exports.updateNotificationData = async (req, res) => {
         res.send({
             code: constant.successCode,
             message: "Successfully updated the data",
-            result: { notifications: updateUserData.metaData[0], _id: updateUserData._id }
+            result: { notifications: metaData, _id: updateUserData._id }
         })
     } catch (err) {
         res.send({
