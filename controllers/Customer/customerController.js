@@ -1295,7 +1295,7 @@ exports.changePrimaryUser = async (req, res) => {
         if (resellerUsers.length > 0) {
           notificationData = {
             title: "Customer Primary User Updated",
-            description: `The Primary user of ${checkCustomer.username} has been changed from ${updateLastPrimary.metaData[0]?.firstName + " " + updateLastPrimary.metaData[0]?.lastName} to ${updatePrimary.metaData[0]?.firstName + " " + updatePrimary.metaData[0]?.lastName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}-${req.role}.`,
+            description: `The Primary user of Customer ${checkCustomer.username} has been changed from ${updateLastPrimary.metaData[0]?.firstName + " " + updateLastPrimary.metaData[0]?.lastName} to ${updatePrimary.metaData[0]?.firstName + " " + updatePrimary.metaData[0]?.lastName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}-${req.role}.`,
             userId: req.teammateId,
             flag: checkRole?.role,
             tabAction: "customerUser",
