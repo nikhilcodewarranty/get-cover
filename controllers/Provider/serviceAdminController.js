@@ -1273,6 +1273,8 @@ exports.updateStatus = async (req, res) => {
           let createNotification = await userService.saveNotificationBulk(notificationArray);
           let mergedEmail;
           let notificationEmails = adminUsers.map(user => user.email);
+          console.log("adminUsers-------------",adminUsers,servicerUsers)
+          console.log("email-------------",getPrimary)
           const servicerEmail = servicerUsers.map(user => user.email)
           mergedEmail = notificationEmails.concat(servicerEmail)
           let settingData = await userService.getSetting({});
