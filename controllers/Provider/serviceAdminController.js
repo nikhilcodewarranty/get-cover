@@ -1897,7 +1897,7 @@ exports.addServicerUser = async (req, res) => {
       let adminUsers = await supportingFunction.getNotificationEligibleUser(adminServicerUserQuery, { email: 1 })
       let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerServicerUserQuery, { email: 1 })
       const IDs = adminUsers.map(user => user._id)
-      const servicerId = adminUsers.map(user => user._id)
+      const servicerId = servicerUsers.map(user => user._id)
       if (adminUsers.length > 0) {
         let notificationData = {
           title: "Servicer User Added",
