@@ -801,7 +801,7 @@ exports.editCustomer = async (req, res) => {
     notificationArray.push(notificationData)
     notificationData = {
       title: "Customer Details Updated",
-      description: `The details of customer ${checkDealer.username} for the Dealer ${dealerCheck.name} has been updated by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+      description: `The details of customer ${checkDealer.username}  has been updated by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
       userId: req.teammateId,
       redirectionId: "dealer/customerDetails/" + checkDealer._id,
       flag: 'customer',
@@ -812,7 +812,7 @@ exports.editCustomer = async (req, res) => {
     if (resellerUsers.length > 0) {
       notificationData = {
         title: "Customer Details Updated",
-        description: `The details of customer ${checkDealer.username} for the Dealer ${dealerCheck.name} has been updated by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+        description: `The details of customer ${checkDealer.username} has been updated by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
         userId: req.teammateId,
         redirectionId: "reseller/customerDetails/" + checkDealer._id,
         flag: 'customer',

@@ -1740,9 +1740,6 @@ exports.deleteUser = async (req, res) => {
       let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDeleteQuery, { email: 1 })
       let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDeleteQuery, { email: 1 })
       let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerDeleteQuery, { email: 1 })
-      console.log("adminUsers------------------", adminUsers)
-      console.log("dealerUsers------------------", dealerUsers)
-      console.log("resellerUsers------------------", resellerUsers)
       const IDs = adminUsers.map(user => user._id)
       const dealerId = dealerUsers.map(user => user._id)
       const resellerId = resellerUsers.map(user => user._id)
@@ -1766,7 +1763,7 @@ exports.deleteUser = async (req, res) => {
       notificationArray.push(notificationData)
       notificationData = {
         title: "Reseller User Deleted",
-        description: `The User ${checkUser.metaData[0].firstName + " " + checkUser.metaData[0].lastName} for the reseller ${checkReseller.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}.`,
+        description: `The User ${checkUser.metaData[0].firstName + " " + checkUser.metaData[0].lastName} of reseller ${checkReseller.name} has been deleted by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} -${req.role}.`,
         userId: req.teammateId,
         tabAction: "resellerUser",
 
