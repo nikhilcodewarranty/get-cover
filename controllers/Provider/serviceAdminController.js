@@ -1188,8 +1188,7 @@ exports.updateStatus = async (req, res) => {
 
         const status_content = req.body.status || req.body.status == "true" ? 'Active' : 'Inactive';
         const content = req.body.status ? 'Congratulations, you can now login to our system. Please click the following link to login to the system' : "Your account has been made inactive. If you think, this is a mistake, please contact our support team at support@getcover.com"
-        console.log("adminUsers-------------",adminUsers,servicerUsers)
-        console.log("email-------------",getPrimary)
+   
         let emailData = {
           darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
           lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -1274,8 +1273,7 @@ console.log("servicerEmail----------------",servicerEmail,notificationEmails,ema
           let createNotification = await userService.saveNotificationBulk(notificationArray);
           let mergedEmail;
           let notificationEmails = adminUsers.map(user => user.email);
-          console.log("adminUsers-------------",adminUsers,servicerUsers)
-          console.log("email-------------",getPrimary)
+       
           const servicerEmail = servicerUsers.map(user => user.email)
           mergedEmail = notificationEmails.concat(servicerEmail)
           let settingData = await userService.getSetting({});
