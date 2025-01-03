@@ -159,7 +159,7 @@ exports.createReseller = async (req, res) => {
             description: `A New Reseller ${data.accountName} has been added and approved by  ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName} - ${req.role} on our portal.`,
             userId: req.teammateId,
             redirectionId: "dealer/resellerDetails/" + createdReseler._id,
-            endPoint: base_url + "dealer/resellerDetails/ " + createdReseler._id,
+            endPoint: base_url + "dealer/resellerDetails/" + createdReseler._id,
             flag: 'reseller',
             notificationFor: dealerId
         };
