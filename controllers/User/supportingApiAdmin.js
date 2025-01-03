@@ -567,7 +567,7 @@ exports.createDealer = async (req, res) => {
                 }
 
                 sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
-                console.log("notificationEmails----------------------",notificationEmails)
+                console.log("notificationEmails----------------------",notificationEmails,createUsers,req.body.isAccountCreate)
 
                 // Send Email code here
                 if (req.body.isAccountCreate) {
