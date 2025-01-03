@@ -573,7 +573,6 @@ exports.createDealer = async (req, res) => {
                 if (req.body.isAccountCreate) {
                     for (let i = 0; i < createUsers.length; i++) {
                         if (createUsers[i]?.metaData[0]?.status) {
-                            console.log("sdfsdfsdfsdfsdfsdf",email);
                             let resetPasswordCode = randtoken.generate(4, '123456789')
                             let email = createUsers[i].email;
                             let userId = createUsers[i]._id;
