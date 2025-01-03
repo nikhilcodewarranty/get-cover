@@ -2204,6 +2204,15 @@ exports.getCustomerContract = async (req, res) => {
     if (userSearchCheck == 1) {
       contractFilterWithEligibilty.push({ orderId: { $in: orderIds } })
     }
+
+    if (data.startDate != "") {
+      let startDate = new Date(data.startDate)
+      let endDate = new Date(data.endDate)
+      startDate.setHours(0, 0, 0, 0)
+      endDate.setHours(11, 59, 0, 0)
+      let dateFilter = { createdAt: { $gte: startDate, $lte: endDate } }
+      contractFilterWithEligibilty.push(dateFilter)
+  }
     let mainQuery = []
     if (data.contractId === "" && data.productName === "" && data.dealerSku === "" && data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
       mainQuery = [
@@ -2230,6 +2239,7 @@ exports.getCustomerContract = async (req, res) => {
                   unique_key: 1,
                   productValue: 1,
                   minDate: 1,
+                  createdAt:1,
                   status: 1,
                   manufacture: 1,
                   eligibilty: 1,
@@ -2275,6 +2285,7 @@ exports.getCustomerContract = async (req, res) => {
                 serial: 1,
                 minDate: 1,
                 unique_key: 1,
+                createdAt:1,
                 productValue: 1,
                 status: 1,
                 manufacture: 1,

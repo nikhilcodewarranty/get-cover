@@ -1268,8 +1268,8 @@ exports.getDealerServicers = async (req, res) => {
 
         let filteredData = result_Array.filter(entry => {
             return (
-                nameRegex.test(entry.servicerData?.name)&&
-                emailRegex.test(entry.email)&&
+                nameRegex.test(entry.servicerData?.name) &&
+                emailRegex.test(entry.email) &&
                 phoneRegex.test(entry.phoneNumber)
             );
         });
@@ -1341,7 +1341,7 @@ exports.getDealerCustomers = async (req, res) => {
             let getResellers = await resellerService.getResellers({ name: { '$regex': req.body.resellerName, '$options': 'i' } })
             const resellerIds = getResellers.map(obj => obj._id.toString());
             if (resellerIds.length == 0) {
-                query = { isDeleted: false, dealerId: req.userId, resellerId1:   { $in: ["1111121ccf9d400000000000"] } }
+                query = { isDeleted: false, dealerId: req.userId, resellerId1: { $in: ["1111121ccf9d400000000000"] } }
 
             } else {
                 query = { isDeleted: false, dealerId: req.userId, resellerId1: { $in: resellerIds } }
@@ -2158,7 +2158,7 @@ exports.getDealerResellers = async (req, res) => {
             }
         });
 
-        const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')  
+        const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
         const dealerRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
         const statusRegex = new RegExp(data.status)
 
@@ -2166,7 +2166,7 @@ exports.getDealerResellers = async (req, res) => {
             return (
                 nameRegex.test(entry.resellerData.name) &&
                 statusRegex.test(entry.status) &&
-                dealerRegex.test(entry.resellerData.dealerId) 
+                dealerRegex.test(entry.resellerData.dealerId)
             );
         });
         res.send({
@@ -2372,32 +2372,32 @@ exports.getDealerOrders = async (req, res) => {
 
             const getPrimaryUser = await userService.findUserforCustomer1([
                 {
-                  $match: {
-                    $and: [
-                      { metaData: { $elemMatch: { metaId: { $in: allUserIds }, isPrimary: true } } }
-                    ]
-                  }
+                    $match: {
+                        $and: [
+                            { metaData: { $elemMatch: { metaId: { $in: allUserIds }, isPrimary: true } } }
+                        ]
+                    }
                 },
                 {
-                  $project: {
-                    email: 1,
-                    'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
-                    'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
-                    'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
-                    'position': { $arrayElemAt: ["$metaData.position", 0] },
-                    'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
-                    'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
-                    'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
-                    'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
-                    'status': { $arrayElemAt: ["$metaData.status", 0] },
-                    resetPasswordCode: 1,
-                    isResetPassword: 1,
-                    approvedStatus: 1,
-                    createdAt: 1,
-                    updatedAt: 1
-                  }
+                    $project: {
+                        email: 1,
+                        'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+                        'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+                        'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+                        'position': { $arrayElemAt: ["$metaData.position", 0] },
+                        'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                        'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+                        'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+                        'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                        'status': { $arrayElemAt: ["$metaData.status", 0] },
+                        resetPasswordCode: 1,
+                        isResetPassword: 1,
+                        approvedStatus: 1,
+                        createdAt: 1,
+                        updatedAt: 1
+                    }
                 }
-              ]);
+            ]);
 
             //Get Respective Customer
             let respectiveCustomer = await customerService.getAllCustomers(
@@ -2645,33 +2645,33 @@ exports.getDealerArchievedOrders = async (req, res) => {
             const queryUser = { metaId: { $in: allUserIds }, isPrimary: true };
             const getPrimaryUser = await userService.findUserforCustomer1([
                 {
-                  $match: {
-                    $and: [
-          
-                      { metaData: { $elemMatch: { metaId: { $in: allUserIds }, isPrimary: true } } }
-                    ]
-                  }
+                    $match: {
+                        $and: [
+
+                            { metaData: { $elemMatch: { metaId: { $in: allUserIds }, isPrimary: true } } }
+                        ]
+                    }
                 },
                 {
-                  $project: {
-                    email: 1,
-                    'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
-                    'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
-                    'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
-                    'position': { $arrayElemAt: ["$metaData.position", 0] },
-                    'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
-                    'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
-                    'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
-                    'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
-                    'status': { $arrayElemAt: ["$metaData.status", 0] },
-                    resetPasswordCode: 1,
-                    isResetPassword: 1,
-                    approvedStatus: 1,
-                    createdAt: 1,
-                    updatedAt: 1
-                  }
+                    $project: {
+                        email: 1,
+                        'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+                        'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+                        'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+                        'position': { $arrayElemAt: ["$metaData.position", 0] },
+                        'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                        'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+                        'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+                        'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                        'status': { $arrayElemAt: ["$metaData.status", 0] },
+                        resetPasswordCode: 1,
+                        isResetPassword: 1,
+                        approvedStatus: 1,
+                        createdAt: 1,
+                        updatedAt: 1
+                    }
                 }
-              ]);
+            ]);
             //Get Respective Customer
             let respectiveCustomer = await customerService.getAllCustomers(
                 customerCreteria,
@@ -2892,6 +2892,7 @@ exports.getAllContracts = async (req, res) => {
                 resellerIds.push("1111121ccf9d400000000000")
             }
         };
+
         let orderAndCondition = []
         if (servicerIds.length > 0) {
             orderAndCondition.push({ servicerId: { $in: servicerIds } })
@@ -2948,6 +2949,15 @@ exports.getAllContracts = async (req, res) => {
         if (userSearchCheck == 1) {
             contractFilterWithEligibilty.push({ orderId: { $in: orderIds } })
         }
+
+        if (data.startDate != "") {
+            let startDate = new Date(data.startDate)
+            let endDate = new Date(data.endDate)
+            startDate.setHours(0, 0, 0, 0)
+            endDate.setHours(11, 59, 0, 0)
+            let dateFilter = { createdAt: { $gte: startDate, $lte: endDate } }
+            contractFilterWithEligibilty.push(dateFilter)
+        }
         let mainQuery = []
         if (data.contractId === "" && data.productName === "" && data.dealerSku === "" && data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
             mainQuery = [
@@ -2969,12 +2979,14 @@ exports.getAllContracts = async (req, res) => {
                             {
                                 $project: {
                                     productName: 1,
+                                    
                                     model: 1,
                                     serial: 1,
                                     unique_key: 1,
                                     minDate: 1,
                                     productValue: 1,
                                     status: 1,
+                                    createdAt: 1,
                                     manufacture: 1,
                                     eligibilty: 1,
                                     orderUniqueKey: 1,
@@ -3019,6 +3031,7 @@ exports.getAllContracts = async (req, res) => {
                                 model: 1,
                                 serial: 1,
                                 minDate: 1,
+                                createdAt: 1,
                                 unique_key: 1,
                                 productValue: 1,
                                 status: 1,
@@ -3043,7 +3056,7 @@ exports.getAllContracts = async (req, res) => {
             result1[e].reason = " "
             if (!result1[e].eligibilty) {
                 result1[e].reason = "Claims limit cross for this contract"
-              }
+            }
             if (result1[e].status != "Active") {
                 result1[e].reason = "Contract is not active"
             }
