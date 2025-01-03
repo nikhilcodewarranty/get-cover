@@ -1082,9 +1082,6 @@ exports.updateStatus = async (req, res) => {
               $or: [
                 { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
                 { metaId: new mongoose.Types.ObjectId(req.params.servicerId) },
-
-
-
               ]
             }
           ]
@@ -1187,6 +1184,7 @@ exports.updateStatus = async (req, res) => {
         const servicerEmail = servicerUsers.map(user => user.email)
         mergedEmail = notificationEmails.concat(servicerEmail)
         let settingData = await userService.getSetting({});
+        let resetLink = `${process.env.SITE_URL}newPassword/${getPrimary._id}/${resetPasswordCode}`
 
         const status_content = req.body.status || req.body.status == "true" ? 'Active' : 'Inactive';
         const content = req.body.status ? 'Congratulations, you can now login to our system. Please click the following link to login to the system' : "Your account has been made inactive. If you think, this is a mistake, please contact our support team at support@getcover.com"
