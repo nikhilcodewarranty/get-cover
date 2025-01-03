@@ -184,7 +184,7 @@ exports.createReseller = async (req, res) => {
 
         if (data.status) {
             for (let i = 0; i < saveMembers.length; i++) {
-                if (saveMembers[i].status) {
+                if (saveMembers[i].metaData[0].status) {
                     let email = saveMembers[i].email
                     let userId = saveMembers[i]._id
                     let resetPasswordCode = randtoken.generate(4, '123456789')
