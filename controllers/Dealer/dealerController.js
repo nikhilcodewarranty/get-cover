@@ -1319,8 +1319,8 @@ exports.updateDealerMeta = async (req, res) => {
       userId: req.teammateId,
       redirectionId: data.dealerId,
       flag: 'dealer',
-      endPoint: base_url + "/dealerDetails/" + checkDealer._id,
-      redirectionId: "/dealerDetails/" + checkDealer._id,
+      endPoint: base_url + "dealerDetails/" + checkDealer._id,
+      redirectionId: "dealerDetails/" + checkDealer._id,
       notificationFor: IDs
     };
     let notificationData1 = {
@@ -1329,9 +1329,9 @@ exports.updateDealerMeta = async (req, res) => {
       userId: req.teammateId,
       redirectionId: data.dealerId,
       flag: 'dealer',
-      endPoint: base_url + "/dealer/user",
-      redirectionId: "/dealer/user",
-      notificationFor: IDs
+      endPoint: base_url + "dealer/user",
+      redirectionId: "dealer/user",
+      notificationFor: IDs1
     };
 
     let notificationArrayData = [];
