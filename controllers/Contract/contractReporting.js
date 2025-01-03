@@ -345,6 +345,15 @@ exports.exportContractReporting = async (req, res) => {
             contractFilterWithEligibilty.push({ orderId: { $in: orderIds } })
         }
 
+        if (data.startDate != "") {
+            let startDate = new Date(data.startDate)
+            let endDate = new Date(data.endDate)
+            startDate.setHours(0, 0, 0, 0)
+            endDate.setHours(11, 59, 0, 0)
+            let dateFilter = { createdAt: { $gte: startDate, $lte: endDate } }
+            contractFilterWithEligibilty.push(dateFilter)
+        }
+
         let mainQuery = []
         console.log("page+++++++++++++++++++++++++++++++++", skipLimit)
 
@@ -412,7 +421,7 @@ exports.exportContractReporting = async (req, res) => {
                                 {
                                     $limit: pageLimit
                                 },
-                               
+
                             ],
                         },
 
@@ -486,7 +495,7 @@ exports.exportContractReporting = async (req, res) => {
                             {
                                 $limit: pageLimit
                             },
-                           
+
 
                         ],
                     },
