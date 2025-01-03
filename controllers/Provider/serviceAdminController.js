@@ -1213,7 +1213,7 @@ exports.updateStatus = async (req, res) => {
           subject: "Update Status"
         }
 
-
+console.log("servicerEmail----------------",servicerEmail,notificationEmails,emailData)
         emailData.senderName = "Dear Admin"
         mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, 'noreply@getcover.com', emailData))
         emailData.senderName = "Dear " + checkServicer.name
@@ -1306,6 +1306,7 @@ exports.updateStatus = async (req, res) => {
             subject: "Update Status"
           }
 
+          console.log("servicerEmail----------------",servicerEmail,notificationEmails,emailData)
 
           emailData.senderName = "Dear Admin"
           mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, 'noreply@getcover.com', emailData))
