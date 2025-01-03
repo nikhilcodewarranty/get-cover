@@ -1143,9 +1143,7 @@ exports.getDealerServicers = async (req, res) => {
         }
 
         let ids = getServicersIds.map((item) => item.servicerId)
-        let ids1 = getServicersIds.map((item) => item.dealerId)
         let servicer = await servicerService.getAllServiceProvider({ _id: { $in: ids }, status: true }, {})
-        let dealerAsServicer = await servicerService.getAllServiceProvider({ dealerId: { $in: ids1 }, status: true }, {})
 
         if (!servicer) {
             res.send({
@@ -1168,8 +1166,6 @@ exports.getDealerServicers = async (req, res) => {
         }
 
         const servicerIds = servicer.map(obj => obj._id);
-        const dealerAsServicerIds = dealerAsServicer.map(obj => obj.dealerId);
-        servicerIds.concat(dealerAsServicerIds);
         const query1 = { metaId: { $in: servicerIds }, isPrimary: true };
         const servicerUser = await userService.findUserforCustomer1([
             {
