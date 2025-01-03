@@ -879,7 +879,7 @@ exports.updateUserData = async (req, res) => {
 
           flag: checkRole?.role,
           redirectionId: "dealerDetails/" + checkDealer._id,
-          endPoint: base_url,
+          endPoint: base_url+"dealerDetails/" + checkDealer._id,
           notificationFor: IDs,
 
         };
