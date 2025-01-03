@@ -1166,7 +1166,7 @@ exports.changePrimaryUser = async (req, res) => {
 
         notificationData = {
           title: "Reseller Primary User Updated",
-          description: `The Primary user of ${checkReseller.name} for ${resellerDealer.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName + " " + updateLastPrimary.metaData[0]?.lastName} to ${updatePrimary.metaData[0]?.firstName + " " + updatePrimary.metaData[0]?.lastName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The Primary user of Reseller ${checkReseller.name} for ${resellerDealer.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName + " " + updateLastPrimary.metaData[0]?.lastName} to ${updatePrimary.metaData[0]?.firstName + " " + updatePrimary.metaData[0]?.lastName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           tabAction: "resellerUser",
           flag: checkRole?.role,
@@ -1177,7 +1177,7 @@ exports.changePrimaryUser = async (req, res) => {
         notificationArray.push(notificationData)
         notificationData = {
           title: "Reseller Primary User Updated",
-          description: `The Primary user of ${checkReseller.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName + " " + updateLastPrimary.metaData[0]?.lastName} to ${updatePrimary.metaData[0]?.firstName + " " + updatePrimary.metaData[0]?.lastName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The Primary user of Reseller  ${checkReseller.name} has been changed from ${updateLastPrimary.metaData[0]?.firstName + " " + updateLastPrimary.metaData[0]?.lastName} to ${updatePrimary.metaData[0]?.firstName + " " + updatePrimary.metaData[0]?.lastName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           tabAction: "resellerUser",
           flag: checkRole?.role,
