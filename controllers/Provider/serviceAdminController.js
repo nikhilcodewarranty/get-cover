@@ -1180,7 +1180,43 @@ exports.updateStatus = async (req, res) => {
         }
 
         await LOG(logData).save()
+        let mergedEmail;
+        let notificationEmails = adminUsers.map(user => user.email);
+        const servicerEmail = servicerUsers.map(user => user.email)
+        mergedEmail = notificationEmails.concat(servicerEmail)
+        let settingData = await userService.getSetting({});
 
+        const status_content = req.body.status || req.body.status == "true" ? 'Active' : 'Inactive';
+        const content = req.body.status ? 'Congratulations, you can now login to our system. Please click the following link to login to the system' : "Your account has been made inactive. If you think, this is a mistake, please contact our support team at support@getcover.com"
+
+        let emailData = {
+          darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+          lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+          address: settingData[0]?.address,
+          websiteSetting: settingData[0],
+          senderName: checkServicer.metaData[0]?.name,
+          content: content,
+          redirectId: status_content == "Active" ? resetLink : '',
+          subject: "Update Status"
+        }
+
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, 'noreply@getcover.com', emailData))
+        emailData = {
+          darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+          lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+          address: settingData[0]?.address,
+          websiteSetting: settingData[0],
+          senderName: checkServicer.name,
+          content: `Servicer Status has been changed to ${status_content}`,
+          redirectId: '',
+          subject: "Update Status"
+        }
+
+
+        emailData.senderName = "Dear Admin"
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, 'noreply@getcover.com', emailData))
+        emailData.senderName = "Dear " + checkServicer.name
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, 'noreply@getcover.com', emailData))
         res.send({
           code: constant.successCode,
           message: "Updated Successfully 'false'",
@@ -1234,9 +1270,44 @@ exports.updateStatus = async (req, res) => {
             };
             notificationArray.push(notificationData)
           }
-
-
           let createNotification = await userService.saveNotificationBulk(notificationArray);
+          let mergedEmail;
+          let notificationEmails = adminUsers.map(user => user.email);
+          const servicerEmail = servicerUsers.map(user => user.email)
+          mergedEmail = notificationEmails.concat(servicerEmail)
+          let settingData = await userService.getSetting({});
+
+          const status_content = req.body.status || req.body.status == "true" ? 'Active' : 'Inactive';
+          const content = req.body.status ? 'Congratulations, you can now login to our system. Please click the following link to login to the system' : "Your account has been made inactive. If you think, this is a mistake, please contact our support team at support@getcover.com"
+
+          let emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
+            senderName: checkServicer.metaData[0]?.name,
+            content: content,
+            redirectId: status_content == "Active" ? resetLink : '',
+            subject: "Update Status"
+          }
+
+          let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, 'noreply@getcover.com', emailData))
+          emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
+            senderName: checkServicer.name,
+            content: `Servicer Status has been changed to ${status_content}`,
+            redirectId: '',
+            subject: "Update Status"
+          }
+
+
+          emailData.senderName = "Dear Admin"
+          mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, 'noreply@getcover.com', emailData))
+          emailData.senderName = "Dear " + checkServicer.name
+          mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, 'noreply@getcover.com', emailData))
           res.send({
             code: constant.successCode,
             message: "Updated Successfully 'false'",
@@ -1247,44 +1318,7 @@ exports.updateStatus = async (req, res) => {
     }
 
     // Send Email code here
-    let mergedEmail;
-    let notificationEmails = adminUsers.map(user => user.email);
-    const servicerEmail = servicerUsers.map(user => user.email)
-    mergedEmail = notificationEmails.concat(servicerEmail)
-    let settingData = await userService.getSetting({});
 
-    const status_content = req.body.status || req.body.status == "true" ? 'Active' : 'Inactive';
-    const content = req.body.status ? 'Congratulations, you can now login to our system. Please click the following link to login to the system' : "Your account has been made inactive. If you think, this is a mistake, please contact our support team at support@getcover.com"
-
-    let emailData = {
-      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-      address: settingData[0]?.address,
-      websiteSetting: settingData[0],
-      senderName: checkServicer.metaData[0]?.name,
-      content: content,
-      redirectId: status_content == "Active" ? resetLink : '',
-      subject: "Update Status"
-    }
-
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, 'noreply@getcover.com', emailData))
-    emailData = {
-      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-      address: settingData[0]?.address,
-      websiteSetting: settingData[0],
-      senderName: checkServicer.name,
-      content: `Servicer Status has been changed to ${status_content}`,
-      redirectId: '',
-      subject: "Update Status"
-    }
-
-
-    emailData.senderName = "Dear Admin"
-    mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, 'noreply@getcover.com', emailData))
-    emailData.senderName = "Dear "+ checkServicer.name
-
-    mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, 'noreply@getcover.com', emailData))
 
     //Save Logs
     let logData = {
@@ -1303,7 +1337,7 @@ exports.updateStatus = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: "Updated Successfully",
-      result: updateData
+      result: { updateData, updateMetaData }
     })
 
   } catch (err) {
