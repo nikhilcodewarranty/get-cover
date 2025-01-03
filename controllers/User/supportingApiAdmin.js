@@ -567,7 +567,7 @@ exports.createDealer = async (req, res) => {
                 }
 
                 sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
-                console.log("notificationEmails----------------------",notificationEmails,createUsers,req.body.isAccountCreate)
+                console.log("notificationEmails----------------------", notificationEmails, createUsers, req.body.isAccountCreate)
 
                 // Send Email code here
                 if (req.body.isAccountCreate) {
@@ -927,6 +927,20 @@ exports.updateNotificationData = async (req, res) => {
             })
             return
         }
+
+        if (getData.metaData[0].roleId.toString() == "656f080e1eb1acda244af8c7") {
+            req.params.flag = "Customer"
+        }
+        if (getData.metaData[0].roleId.toString() == "656f08041eb1acda244af8c6") {
+            req.params.flag = "Dealer"
+        }
+        if (getData.metaData[0].roleId.toString() == "65719c8368a8a86ef8e1ae4d") {
+            req.params.flag = "Servicer"
+        }
+        if (getData.metaData[0].roleId.toString() == "65bb94b4b68e5a4a62a0b563") {
+            req.params.flag = "Reseller"
+        }
+
         let updateData = {
             $set: {
                 'metaData.$.orderNotifications': data.orderNotifications ? data.orderNotifications : getData.metaData[0].orderNotifications,
