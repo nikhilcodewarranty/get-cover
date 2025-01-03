@@ -203,7 +203,7 @@ exports.createCustomer = async (req, res, next) => {
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
       senderName: getPrimary.metaData[0]?.firstName,
-      redirectId: base_url + "customerDetails/" + createdCustomer._id,
+      // redirectId: base_url + "customerDetails/" + createdCustomer._id,
       content: `A New Customer ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName} - User Role - ${req.role} on our portal.`,
       subject: "New Customer  Added"
     }
@@ -216,7 +216,7 @@ exports.createCustomer = async (req, res, next) => {
     if (saveMembers.length > 0) {
       if (data.status) {
         for (let i = 0; i < saveMembers.length; i++) {
-          if (saveMembers[i].status) {
+          if (saveMembers[i].metaData[0].status) {
             let email = saveMembers[i].email
             let userId = saveMembers[i]._id
             let resetPasswordCode = randtoken.generate(4, '123456789')

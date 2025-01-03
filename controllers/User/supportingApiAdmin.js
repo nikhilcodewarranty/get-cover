@@ -558,7 +558,7 @@ exports.createDealer = async (req, res) => {
                 }
 
                 //Approve status 
-                let notificationEmails = adminUsers.map(user => user._id)
+                let notificationEmails = adminUsers.map(user => user.email)
 
                 let emailData = {
                     senderName: loginUser.metaData[0]?.firstName,
@@ -567,10 +567,12 @@ exports.createDealer = async (req, res) => {
                 }
 
                 sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+                console.log("notificationEmails----------------------",notificationEmails,createUsers,req.body.isAccountCreate)
+
                 // Send Email code here
                 if (req.body.isAccountCreate) {
                     for (let i = 0; i < createUsers.length; i++) {
-                        if (createUsers[i].status) {
+                        if (createUsers[i]?.metaData[0]?.status) {
                             let resetPasswordCode = randtoken.generate(4, '123456789')
                             let email = createUsers[i].email;
                             let userId = createUsers[i]._id;

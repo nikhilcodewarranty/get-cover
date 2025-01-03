@@ -159,7 +159,7 @@ exports.createReseller = async (req, res) => {
             description: `A New Reseller ${data.accountName} has been added and approved by  ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName} - ${req.role} on our portal.`,
             userId: req.teammateId,
             redirectionId: "dealer/resellerDetails/" + createdReseler._id,
-            endPoint: base_url + "dealer/resellerDetails/ " + createdReseler._id,
+            endPoint: base_url + "dealer/resellerDetails/" + createdReseler._id,
             flag: 'reseller',
             notificationFor: dealerId
         };
@@ -184,7 +184,7 @@ exports.createReseller = async (req, res) => {
 
         if (data.status) {
             for (let i = 0; i < saveMembers.length; i++) {
-                if (saveMembers[i].status) {
+                if (saveMembers[i].metaData[0].status) {
                     let email = saveMembers[i].email
                     let userId = saveMembers[i]._id
                     let resetPasswordCode = randtoken.generate(4, '123456789')
@@ -2244,7 +2244,7 @@ exports.changeResellerStatus = async (req, res) => {
                     $elemMatch: {
                         $and: [
                             { "resellerNotifications.resellerUpdate": true },
-                            { status: true },
+                            // { status: true },
                             { metaId: new mongoose.Types.ObjectId(req.params.resellerId) }
                         ]
                     }
@@ -2327,7 +2327,7 @@ exports.changeResellerStatus = async (req, res) => {
             }
             emailData.senderName = "Dear Admin"
             mailing = sgMail.send(emailConstant.sendEmailTemplate(adminEmail, ["noreply@getcover.com"], emailData))
-            emailData.senderName = `Dear ${getPrimary.firstName + " " + getPrimary.lastName}`
+            emailData.senderName = `Dear ${getPrimary.metaData[0]?.firstName + " " + getPrimary.metaData[0]?.lastName}`
 
             mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
 

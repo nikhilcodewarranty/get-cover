@@ -648,7 +648,6 @@ exports.changeDealerStatus = async (req, res) => {
 
     const changedDealerStatus = await dealerService.updateDealerStatus({ _id: req.params.dealerId }, newValue, option);
     if (changedDealerStatus) {
-      console.log("dfsdfsdfsdffsdfdssdf");
       const status_content = req.body.status ? 'Active' : 'Inactive';
       const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
       const base_url = `${process.env.SITE_URL}`
@@ -744,7 +743,7 @@ exports.changeDealerStatus = async (req, res) => {
       }
       emailData.senderName = "Dear Admin"
       mailing = sgMail.send(emailConstant.sendEmailTemplate(adminEmails, ["noreply@getcover.com"], emailData))
-      emailData.senderName = `Dear ${primaryUser.firstName + "" + primaryUser.lastName}`
+      emailData.senderName = `Dear ${primaryUser.metaData[0]?.firstName + "" + primaryUser.metaData[0]?.lastName}`
       mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
 
       let logData = {
@@ -1320,8 +1319,8 @@ exports.updateDealerMeta = async (req, res) => {
       userId: req.teammateId,
       redirectionId: data.dealerId,
       flag: 'dealer',
-      endPoint: base_url + "/dealerDetails/" + checkDealer._id,
-      redirectionId: "/dealerDetails/" + checkDealer._id,
+      endPoint: base_url + "dealerDetails/" + checkDealer._id,
+      redirectionId: "dealerDetails/" + checkDealer._id,
       notificationFor: IDs
     };
     let notificationData1 = {
@@ -1330,9 +1329,9 @@ exports.updateDealerMeta = async (req, res) => {
       userId: req.teammateId,
       redirectionId: data.dealerId,
       flag: 'dealer',
-      endPoint: base_url + "/dealer/user",
-      redirectionId: "/dealer/user",
-      notificationFor: IDs
+      endPoint: base_url + "dealer/user",
+      redirectionId: "dealer/user",
+      notificationFor: IDs1
     };
 
     let notificationArrayData = [];
