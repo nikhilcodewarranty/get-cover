@@ -2326,8 +2326,6 @@ exports.createDeleteRelation = async (req, res) => {
               {
                 $or: [
                   { roleId: new mongoose.Types.ObjectId(process.env.super) },
-                  { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
-                  { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
                 ]
               }
             ]
@@ -2342,7 +2340,6 @@ exports.createDeleteRelation = async (req, res) => {
               { status: true },
               {
                 $or: [
-                  { roleId: new mongoose.Types.ObjectId(process.env.super) },
                   { metaId: new mongoose.Types.ObjectId(checkDealer._id) },
                 ]
               }
@@ -2358,7 +2355,6 @@ exports.createDeleteRelation = async (req, res) => {
               { status: true },
               {
                 $or: [
-                  { roleId: new mongoose.Types.ObjectId(process.env.super) },
                   { metaId: { $in: newServicerIds } },
                 ]
               }
@@ -2369,6 +2365,7 @@ exports.createDeleteRelation = async (req, res) => {
       let adminUsers = await supportingFunction.getNotificationEligibleUser(adminAssignServicerQuery, { email: 1 })
       let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerQuery, { email: 1 })
       let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerQuery, { email: 1 })
+      console.log("servicerUsers-----------------",servicerUsers);
       const IDs = adminUsers.map(user => user._id)
       const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
       const base_url = `${process.env.SITE_URL}`
