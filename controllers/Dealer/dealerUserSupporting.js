@@ -1166,6 +1166,9 @@ exports.getDealerServicers = async (req, res) => {
         }
 
         const servicerIds = servicer.map(obj => obj._id);
+        const servicerIds1 = servicer.map(obj => obj.dealerId);
+        console.log("servicerIds1---------------------------------",servicerIds1);
+        servicerIds.concat(servicerIds1);
         const query1 = { metaId: { $in: servicerIds }, isPrimary: true };
         const servicerUser = await userService.findUserforCustomer1([
             {
@@ -1205,6 +1208,8 @@ exports.getDealerServicers = async (req, res) => {
             });
             return;
         };
+        console.log("serviffffffff============cerIds1---------------------------------",servicerUser._id);
+
         // Get servicer with claim
         const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "completed" };
         const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "completed" };
