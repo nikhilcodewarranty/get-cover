@@ -510,7 +510,6 @@ exports.exportContractReporting = async (req, res) => {
             // })
             // return;
 
-            console.log("page+++++++++++++++++++++++++++++++++", skipLimit)
             let getContracts = await contractService.getAllContracts2(mainQuery, { maxTimeMS: 100000 })
             var result1 = getContracts[0]?.data ? getContracts[0]?.data : []
             let totalRecords = getContracts[0]?.totalRecords?.[0]?.total || 0;
@@ -523,7 +522,6 @@ exports.exportContractReporting = async (req, res) => {
             totalContractData = totalContractData.concat(result1);
             skipLimit += pageLimit;
 
-            console.log("checign main", totalContractData.length)
         }
         // let getContracts = await contractService.getAllContracts2(mainQuery, { maxTimeMS: 100000 })
         // let totalCount = getContracts[0]?.totalRecords[0]?.total ? getContracts[0]?.totalRecords[0].total : 0
@@ -637,10 +635,13 @@ exports.exportContractReporting = async (req, res) => {
                 dealerEntry["Total Contracts"] += 1;
 
                 if (item.status === "Waiting") {
+                    console.log("Waiting+++++++++++++++++++++++",item.status);
                     dealerEntry["Waiting Contracts"] += 1;
                 } else if (item.status === "Active") {
+                    console.log("Active+++++++++++++++++++++++",item.status);
                     dealerEntry["Active Contracts"] += 1;
                 } else if (item.status === "Expired") {
+                    console.log("Expired+++++++++++++++++++++++",item.status);
                     dealerEntry["Expired Contracts"] += 1;
                 }
             });
