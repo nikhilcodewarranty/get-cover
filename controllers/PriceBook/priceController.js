@@ -622,7 +622,7 @@ exports.updatePriceBookById = async (req, res, next) => {
     if (req.body.priceType) {
      notificationData = {
       title: "GetCover Pricebook updated",
-      description: `GetCover Pricebook ${existingPriceBook[0]?.name} has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+      description: `GetCover Pricebook ${existingPriceBook[0]?.pName} has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
       userId: req.userId,
       flag: 'priceBook',
       notificationFor: IDs,
@@ -633,7 +633,7 @@ exports.updatePriceBookById = async (req, res, next) => {
   else{
     notificationData = {
       title: "GetCover Pricebook Status Updated",
-      description: `GetCover Pricebook ${existingPriceBook[0]?.name} status has been updated to ${body.status ? 'Active' : "Inactive"} by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+      description: `GetCover Pricebook ${existingPriceBook[0]?.pName} status has been updated to ${body.status ? 'Active' : "Inactive"} by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
       userId: req.userId,
       flag: 'priceBook',
       notificationFor: IDs,
@@ -657,7 +657,7 @@ exports.updatePriceBookById = async (req, res, next) => {
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
         senderName: "Dear Admin",
-        content: `A company Pricebook ${existingPriceBook[0]?.name} has been updated. To view the changes, please click here."`,
+        content: `A company Pricebook ${existingPriceBook[0]?.pName} has been updated. To view the changes, please click here."`,
         subject: "Update Price Book",
         redirectId: base_url + "companyPriceBook/" + existingPriceBook[0]?.name
       }
@@ -669,7 +669,7 @@ exports.updatePriceBookById = async (req, res, next) => {
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
         senderName: "Dear Admin",
-        content: `The Company Pricebook ${existingPriceBook[0]?.name} has been made ${body.status ? 'Active' : "Inactive"} in the system. To review the changes, please click here."`,
+        content: `The Company Pricebook ${existingPriceBook[0]?.pName} has been made ${body.status ? 'Active' : "Inactive"} in the system. To review the changes, please click here."`,
         subject: "Update Status",
         redirectId: base_url + "companyPriceBook/" + existingPriceBook[0]?.name
       }

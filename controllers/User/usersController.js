@@ -1140,11 +1140,8 @@ exports.updateUserData = async (req, res) => {
       const dealerEmails = customerUsers.map(user => user.email)
       const resellerEmails = resellerUsers.map(user => user.email)
       const customerEmails = resellerUsers.map(user => user.email)
-
       notificationEmails = adminUsers.map(user => user.email)
-
       mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails, customerEmails);
-
 
       if (data.firstName) {
 
