@@ -612,7 +612,7 @@ exports.exportContractReporting = async (req, res) => {
 
                 // If no dealer object is found, skip this item
                 if (!dealer) {
-                    console.warn("Missing dealer information for item:", item);
+                    console.warn("Missing dealer information for item:");
                     return;
                 }
 
@@ -661,7 +661,7 @@ exports.exportContractReporting = async (req, res) => {
 
                 // If no servicer object is found, skip this item
                 if (!servicer) {
-                    console.warn("Missing servicer information for item:", item);
+                    console.warn("Missing servicer information for item:");
                     return;
                 }
 
@@ -706,7 +706,7 @@ exports.exportContractReporting = async (req, res) => {
 
                 // If no reseller object is found, skip this item
                 if (!reseller) {
-                    console.warn("Missing reseller information for item:", item);
+                    console.warn("Missing reseller information for item:");
                     return;
                 }
 
@@ -752,7 +752,7 @@ exports.exportContractReporting = async (req, res) => {
 
                 // If no customer object is found, skip this item
                 if (!customer) {
-                    console.warn("Missing customer information for item:", item);
+                    console.warn("Missing customer information for item:");
                     return;
                 }
 
