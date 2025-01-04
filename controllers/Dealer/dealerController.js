@@ -2361,6 +2361,7 @@ exports.createDeleteRelation = async (req, res) => {
 
       const IDs = adminUsers.map(user => user._id)
       const dealerId = dealerUsers.map(user => user._id)
+      const servicerId = servicerUsers.map(user => user._id)
       const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
       const base_url = `${process.env.SITE_URL}`
       let notificationArray = allServiceProvider.map(servicer => ({
@@ -2386,9 +2387,24 @@ exports.createDeleteRelation = async (req, res) => {
         flag: 'Assigned Servicer',
         tabAction: "servicer",
         notificationFor: dealerId,
-        redirectionId: "/dealerDetails/" + req.params.dealerId,
-        endPoint: base_url + "dealerDetails/" + req.params.dealerId
+        redirectionId: "/ddealer/servicerList",
+        endPoint: base_url + "ddealer/servicerList"
       }));
+
+
+      createNotification = await userService.saveNotificationBulk(notificationArray);
+
+      notificationArray =  {
+        title: "Dealer Assigned",
+        description: `You have been assigned a new  dealer ${checkDealer.name} by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        userId: req.teammateId,
+        contentId: null,
+        flag: 'Assigned Servicer',
+        tabAction: "dealer",
+        notificationFor: servicerId,
+        redirectionId: "/servicer/dealerList",
+        endPoint: base_url + "servicer/dealerList"
+      }
 
 
       createNotification = await userService.saveNotificationBulk(notificationArray);
