@@ -485,7 +485,7 @@ exports.statusUpdate = async (req, res) => {
         endPoint: base_url + "dealerPriceList/" + getDealerDetail.name + "/" + data.dealerSku,
       };
       let notificationData1 = {
-        title: "PriceBook Updated",
+        title: "Price Book Updated",
         description: `Pricebook ${priceBookData[0]?.pName} has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         contentId: req.params.dealerPriceBookId,
@@ -500,7 +500,7 @@ exports.statusUpdate = async (req, res) => {
     }
     else {
       let notificationData2 = {
-        title: "Dealer Pricebook  Status updated",
+        title: "Dealer Pricebook  Status Updated",
         description: `Dealer Pricebook ${priceBookData[0]?.pName} for ${getDealerDetail.name} status has been updated to ${data.status ? "Active" : "Inactive"} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         contentId: req.params.dealerPriceBookId,

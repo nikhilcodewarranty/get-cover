@@ -778,29 +778,30 @@ exports.updateUserData = async (req, res) => {
           notificationData: servicerId
         };
         notificationArray.push(notificationData)
+        let emailData = {
+          darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+          lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+          address: settingData[0]?.address,
+          websiteSetting: settingData[0],
+          senderName: `Dear ${updateUser.metaData[0].firstName}`,
+          content: content,
+          subject: "Update Status",
+          redirectId: status_content == "Active" ? resetLink : '',
+        }
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(updateUser.email, ['noreply@getcover.com'], emailData))
+        emailData = {
+          darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+          lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+          address: settingData[0]?.address,
+          websiteSetting: settingData[0],
+          senderName: `Dear ${updateUser.metaData[0].firstName}`,
+          content: `Status has been changed to  ${status_content} for ${updateUser.metaData[0].firstName + " " + updateUser.metaData[0].lastName}`,
+          subject: "Update Status"
+        }
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmails, ['noreply@getcover.com'], emailData))
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
       }
-      let emailData = {
-        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        address: settingData[0]?.address,
-        websiteSetting: settingData[0],
-        senderName: `Dear ${updateUser.metaData[0].firstName}`,
-        content: content,
-        subject: "Update Status",
-        redirectId: status_content == "Active" ? resetLink : '',
-      }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(updateUser.email, ['noreply@getcover.com'], emailData))
-      emailData = {
-        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        address: settingData[0]?.address,
-        websiteSetting: settingData[0],
-        senderName: `Dear ${updateUser.metaData[0].firstName}`,
-        content: `Status has been changed to  ${status_content} for ${updateUser.metaData[0].firstName + " " + updateUser.metaData[0].lastName}`,
-        subject: "Update Status"
-      }
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmails, ['noreply@getcover.com'], emailData))
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+ 
     }
     if (checkDealer) {
       adminUpdatePrimaryQuery = {
@@ -921,7 +922,6 @@ exports.updateUserData = async (req, res) => {
     }
     if (checkReseller) {
       let resellerDealer = await dealerService.getDealerById(checkReseller.dealerId)
-
       adminUpdatePrimaryQuery = {
         metaData: {
           $elemMatch: {
