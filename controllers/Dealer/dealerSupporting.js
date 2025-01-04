@@ -693,7 +693,7 @@ exports.getDealerContract = async (req, res) => {
                                     productValue: 1,
                                     eligibilty: 1,
                                     orderUniqueKey: 1,
-                                    createdAt:1,
+                                    createdAt: 1,
                                     venderOrder: 1,
                                     totalRecords: 1
                                 }
@@ -739,7 +739,7 @@ exports.getDealerContract = async (req, res) => {
                                 productValue: 1,
                                 status: 1,
                                 manufacture: 1,
-                                createdAt:1,
+                                createdAt: 1,
                                 eligibilty: 1,
                                 orderUniqueKey: 1,
                                 venderOrder: 1,
@@ -1217,7 +1217,7 @@ exports.getDealerClaims = async (req, res) => {
             const { productValue, claimAmount } = claimObject.contracts;
 
             // Calculate the threshold limit value
-            const thresholdLimitValue = (getTheThresholdLimit.threshHoldLimit?.value ? getTheThresholdLimit.threshHoldLimit?.value : 1000/ 100) * productValue;
+            const thresholdLimitValue = (getTheThresholdLimit.threshHoldLimit?.value ? getTheThresholdLimit.threshHoldLimit?.value : 1000 / 100) * productValue;
 
             // Check if claimAmount exceeds the threshold limit value
             let overThreshold = claimAmount > thresholdLimitValue;
@@ -1295,11 +1295,11 @@ exports.getDealerServicers = async (req, res) => {
         };
         let servicerIds = servicer.map(obj => obj._id);
         let servicerIds1 = servicer.map(obj => obj.dealerId);
-        console.log("servicerIds1------------------------------",servicerIds1)
+        console.log("servicerIds1------------------------------", servicerIds1)
         const query1 = { metaId: { $in: servicerIds }, isPrimary: true };
-        console.log("servicerIds------------------------------",servicerIds)
-        servicerIds.concat(servicerIds1)
-        console.log("servicerIds------------------------------",servicerIds)
+        console.log("servicerIds------------------------------", servicerIds)
+        servicerIds = servicerIds.concat(servicerIds1)
+        console.log("servicerIds------------------------------", servicerIds)
 
         let servicerUser = await userService.findUserforCustomer1([
             {
@@ -1331,7 +1331,7 @@ exports.getDealerServicers = async (req, res) => {
                 }
             }
         ]);
-        console.log("12212112==========================================",servicerUser)
+        console.log("12212112==========================================", servicerUser)
         if (!servicerUser) {
             res.send({
                 code: constant.errorCode,
