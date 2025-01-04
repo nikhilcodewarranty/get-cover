@@ -1298,6 +1298,8 @@ exports.getDealerServicers = async (req, res) => {
         console.log("servicerIds1------------------------------",servicerIds1)
         const query1 = { metaId: { $in: servicerIds }, isPrimary: true };
         servicerIds.concat(servicerIds1)
+        console.log("servicerIds------------------------------",servicerIds)
+
         let servicerUser = await userService.findUserforCustomer1([
             {
                 $match: {
