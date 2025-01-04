@@ -1133,7 +1133,7 @@ exports.updatePriceBookCat = async (req, res) => {
     if (isValid.status == data.status) {
       notificationData = {
         title: "Pricebook Category Updated",
-        description: `Pricebook Category ${isValid.name} has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        description: `Pricebook Category ${data.name} has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.userId,
         contentId: req.params.catId,
         flag: 'category',

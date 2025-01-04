@@ -1955,6 +1955,8 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
         })
         return;
       }
+      const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+      const base_url = `${process.env.SITE_URL}`
       let getDealerSetting = await eligibilityService.getEligibility({ userId: req.body.dealerId })
       console.log("get dealer settings +++++++++++", data, getDealerSetting)
 
