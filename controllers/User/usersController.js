@@ -758,6 +758,8 @@ exports.updateUserData = async (req, res) => {
 
       }
       else {
+        console.log("IDs---------------",IDs)
+        console.log("IDs---------------",servicerId)
         notificationData = {
           title: "Servicer User Status Changed",
           description: `The Status for the Servicer ${checkServicer.name} for his user ${updateUser.metaData[0]?.firstName + " " +updateUser.metaData[0]?.lastName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
