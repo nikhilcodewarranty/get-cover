@@ -1302,7 +1302,7 @@ exports.getDealerServicers = async (req, res) => {
 exports.getServicersList = async (req, res) => {
     try {
         let data = req.body
-        let query = { isDeleted: false, accountStatus: "Approved", status: true, dealerId: null, resellerId: null }
+        let query = { isDeleted: false, accountStatus: "Approved", status: true, resellerId: null }
         let projection = { __v: 0, isDeleted: 0 }
         let servicer = await providerService.getAllServiceProvider(query, projection);
         let getRelations = await dealerRelationService.getDealerRelations({ dealerId: req.userId })
