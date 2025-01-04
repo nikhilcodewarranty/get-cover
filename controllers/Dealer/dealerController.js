@@ -2323,11 +2323,8 @@ exports.createDeleteRelation = async (req, res) => {
             $and: [
               { "adminNotification.assignDealerServicer": true },
               { status: true },
-              {
-                $or: [
-                  { roleId: new mongoose.Types.ObjectId(process.env.super) },
-                ]
-              }
+              { roleId: new mongoose.Types.ObjectId(process.env.super) },
+             
             ]
           }
         },
@@ -2338,11 +2335,7 @@ exports.createDeleteRelation = async (req, res) => {
             $and: [
               { "adminNotification.assignDealerServicer": true },
               { status: true },
-              {
-                $or: [
-                  { metaId: new mongoose.Types.ObjectId(checkDealer._id) },
-                ]
-              }
+              { metaId: new mongoose.Types.ObjectId(checkDealer._id) },
             ]
           }
         },
