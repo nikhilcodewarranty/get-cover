@@ -2358,8 +2358,7 @@ exports.createDeleteRelation = async (req, res) => {
       let adminUsers = await supportingFunction.getNotificationEligibleUser(adminAssignServicerQuery, { email: 1 })
       let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerQuery, { email: 1 })
       // let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerQuery, { email: 1 })
-      console.log("dealerUsers-----------------", dealerUsers);
-      console.log("adminUsers-----------------", adminUsers);
+
       const IDs = adminUsers.map(user => user._id)
       const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
       const base_url = `${process.env.SITE_URL}`
@@ -2375,10 +2374,8 @@ exports.createDeleteRelation = async (req, res) => {
         endPoint: base_url + "dealerDetails/" + req.params.dealerId
       }));
 
-      console.log("notificationArray-----------------", notificationArray);
-      return false;
 
-      let createNotification = await userService.createNotification(notificationData);
+      let createNotification = await userService.createNotification(notificationArray);
 
       //Save Logs create dealer relation
       let logData = {
