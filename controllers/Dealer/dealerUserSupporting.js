@@ -1210,6 +1210,8 @@ exports.getDealerServicers = async (req, res) => {
         };
         console.log("serviffffffff============cerIds1---------------------------------",servicerUser._id);
 
+        
+
         // Get servicer with claim
         const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "completed" };
         const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "completed" };
