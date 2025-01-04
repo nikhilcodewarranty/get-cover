@@ -1293,9 +1293,11 @@ exports.getDealerServicers = async (req, res) => {
         if (checkDealer.isServicer) {
             servicer.unshift(checkDealer);
         };
-        const servicerIds = servicer.map(obj => obj._id);
+        let servicerIds = servicer.map(obj => obj._id);
+        let servicerIds1 = servicer.map(obj => obj.dealerId);
+        console.log("servicerIds1------------------------------",servicerIds1)
         const query1 = { metaId: { $in: servicerIds }, isPrimary: true };
-
+        servicerIds.concat(servicerIds1)
         let servicerUser = await userService.findUserforCustomer1([
             {
                 $match: {
@@ -1326,7 +1328,7 @@ exports.getDealerServicers = async (req, res) => {
                 }
             }
         ]);
-
+        console.log("12212112==========================================",servicerUser)
         if (!servicerUser) {
             res.send({
                 code: constant.errorCode,
