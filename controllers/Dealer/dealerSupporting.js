@@ -1297,6 +1297,7 @@ exports.getDealerServicers = async (req, res) => {
         let servicerIds1 = servicer.map(obj => obj.dealerId);
         console.log("servicerIds1------------------------------",servicerIds1)
         const query1 = { metaId: { $in: servicerIds }, isPrimary: true };
+        console.log("servicerIds------------------------------",servicerIds)
         servicerIds.concat(servicerIds1)
         console.log("servicerIds------------------------------",servicerIds)
 
