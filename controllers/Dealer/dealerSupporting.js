@@ -1294,7 +1294,7 @@ exports.getDealerServicers = async (req, res) => {
             servicer.unshift(checkDealer);
         };
         let servicerIds = servicer.map(obj => obj._id);
-        let servicerIds1 = servicer.map(obj => obj.dealerId);
+        let servicerIds1 = servicer.map(obj => new mongoose.Types.ObjectId(obj.dealerId));
         console.log("servicerIds1------------------------------", servicerIds1)
         const query1 = { metaId: { $in: servicerIds }, isPrimary: true };
         console.log("servicerIds------------------------------", servicerIds)
