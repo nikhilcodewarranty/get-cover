@@ -1490,7 +1490,7 @@ exports.addCustomerUser = async (req, res) => {
         description: `A new user for customer ${checkCustomer.username} under ${checkDealer.name} has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
         userId: req.teammateId,
         contentId: saveData._id,
-        flag: 'customer_user',
+        flag: 'customerUser',
         endPoint: base_url + "customerDetails/" + checkCustomer._id,
         redirectionId: "customerDetails/" + checkCustomer._id,
         notificationFor: IDs
@@ -1501,7 +1501,7 @@ exports.addCustomerUser = async (req, res) => {
         description: `A new user for customer ${checkCustomer.username} has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
         userId: req.teammateId,
         contentId: saveData._id,
-        flag: 'customer_user',
+        flag: 'customerUser',
         endPoint: base_url + "dealer/customerDetails/" + checkCustomer._id,
         redirectionId: "dealer/customerDetails/" + checkCustomer._id,
         notificationFor: dealerId
@@ -1513,7 +1513,7 @@ exports.addCustomerUser = async (req, res) => {
           description: `A new user for customer ${checkCustomer.username} has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           contentId: saveData._id,
-          flag: 'customer_user',
+          flag: 'customerUser',
           endPoint: base_url + "reseller/customerDetails/" + checkCustomer._id,
           redirectionId: "reseller/customerDetails/" + checkCustomer._id,
           notificationFor: resellerId
@@ -1526,7 +1526,7 @@ exports.addCustomerUser = async (req, res) => {
         description: `A new user for your account has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
         userId: req.teammateId,
         contentId: saveData._id,
-        flag: 'customer_user',
+        flag: 'customerUser',
         endPoint: base_url + "customer/user",
         redirectionId: "customer/user",
         notificationFor: customerId
