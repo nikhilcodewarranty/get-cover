@@ -2360,7 +2360,7 @@ exports.createDeleteRelation = async (req, res) => {
       let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerQuery, { email: 1 })
 
       const IDs = adminUsers.map(user => user._id)
-      const dealerId = adminUsers.map(user => user._id)
+      const dealerId = dealerUsers.map(user => user._id)
       const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
       const base_url = `${process.env.SITE_URL}`
       let notificationArray = allServiceProvider.map(servicer => ({
