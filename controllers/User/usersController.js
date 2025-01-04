@@ -711,6 +711,8 @@ exports.updateUserData = async (req, res) => {
       }
       let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdatePrimaryQuery, { email: 1 })
       let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerUpdatePrimaryQuery, { email: 1 })
+      console.log("adminUsers------------------",adminUsers)
+      console.log("servicerUsers------------------",servicerUsers)
       const IDs = adminUsers.map(user => user._id)
       const servicerId = servicerUsers.map(user => user._id)
       const servicerEmails = servicerUsers.map(user => user.email)
