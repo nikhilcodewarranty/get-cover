@@ -758,7 +758,7 @@ exports.updateUserData = async (req, res) => {
       else {
         notificationData = {
           title: "Servicer User Status Changed",
-          description: `The Status for the Servicer ${checkServicer.name} for his user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The Status for the Servicer ${checkServicer.name} for his user ${updateUser.metaData[0]?.firstName + " " +updateUser.metaData[0]?.lastName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
           tabAction: "servicerUser",
@@ -770,7 +770,7 @@ exports.updateUserData = async (req, res) => {
         notificationArray.push(notificationData)
         notificationData = {
           title: "User Status Changed",
-          description: `The Status for  user ${updateUser.metaData[0]?.firstName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
+          description: `The Status for  user ${updateUser.metaData[0]?.firstName + " " +updateUser.metaData[0]?.lastName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
           userId: req.teammateId,
           flag: checkRole?.role,
           redirectionId: "servicer/user",
