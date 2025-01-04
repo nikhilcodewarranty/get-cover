@@ -2324,7 +2324,7 @@ exports.editServicer = async (req, res) => {
     const IDs = adminUsers.map(user => user._id)
     if (adminUsers.length > 0) {
       let notificationAdmin = {
-        title: "Servicer updated Succssfully",
+        title: "Servicer updated Successfully",
         description: `Servicer for Claim # ${checkClaim.unique_key} has been updated in the system by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         contentId: checkClaim._id,
@@ -2357,7 +2357,7 @@ exports.editServicer = async (req, res) => {
     const dealerIds = dealerUsers.map(user => user._id)
     if (dealerUsers.length > 0) {
       let notificationDealer = {
-        title: "Servicer updated Succssfully",
+        title: "Servicer updated Successfully",
         description: `Servicer for Claim # ${checkClaim.unique_key} has been updated in the system by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         contentId: checkClaim._id,
@@ -2390,7 +2390,7 @@ exports.editServicer = async (req, res) => {
 
     if (resellerUsers.length > 0) {
       let notificationReseller = {
-        title: "Servicer updated Succssfully",
+        title: "Servicer updated Successfully",
         description: `Servicer for Claim # ${checkClaim.unique_key} has been updated in the system by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         contentId: checkClaim._id,
@@ -2423,7 +2423,7 @@ exports.editServicer = async (req, res) => {
     const customerIds = customerUsers.map(user => user._id)
     if (customerUsers.length > 0) {
       let notificationCustomer = {
-        title: "Servicer updated Succssfully",
+        title: "Servicer updated Successfully",
         description: `Servicer for Claim # ${checkClaim.unique_key} has been updated in the system by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}`,
         userId: req.teammateId,
         contentId: checkClaim._id,
@@ -2455,7 +2455,7 @@ exports.editServicer = async (req, res) => {
     const servicerIds = servicerUsers.map(user => user._id)
     if (servicerUsers.length > 0) {
       let notificationServicer = {
-        title: "Servicer updated Succssfully",
+        title: "Servicer updated Successfully",
         description: `You have been assigned a new Claim # ${checkClaim.unique_key} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         contentId: checkClaim._id,
