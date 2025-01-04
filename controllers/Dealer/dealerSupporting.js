@@ -70,35 +70,180 @@ exports.getAllDealerPriceBooks = async (req, res) => {
 }
 
 //Get servicer list
-exports.getServicersList = async (req, res) => {
+exports.getDealerServicers = async (req, res) => {
     try {
         let data = req.body
-        if (req.role != "Super Admin") {
+
+        let checkDealer = await dealerService.getDealerByName({ _id: req.userId })
+        if (!checkDealer) {
             res.send({
                 code: constant.errorCode,
-                message: "Only super admin allow to do this action!"
+                message: "Invalid dealer ID"
             })
             return;
         }
-        let query = { isDeleted: false, accountStatus: "Approved", status: true, resellerId: null }
-        let projection = { __v: 0, isDeleted: 0 }
-        let servicer = await servicerService.getAllServiceProvider(query, projection);
-        const dealerReseller = await resellerService.getResellers({ dealerId: req.params.dealerId, status: true });
-        let getRelations = await dealerRelationService.getDealerRelations({ dealerId: req.params.dealerId })
-        const resultArray = servicer.map(item => {
-            let documentData = {}
-            const matchingServicer = getRelations.find(servicer => servicer.servicerId?.toString() == item._id?.toString() || servicer.servicerId?.toString() == item.resellerId?.toString());
-            documentData = item._doc
-            return { ...documentData, check: !!matchingServicer };
+        let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: req.userId })
+
+        if (!getServicersIds) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the servicer"
+            })
+            return;
+        }
+
+        let ids = getServicersIds.map((item) => item.servicerId)
+        let ids1 = getServicersIds.map((item) => item.dealerId)
+        let servicer = await servicerService.getAllServiceProvider({ _id: { $in: ids }, status: true }, {})
+        let dealerAsServicer = await servicerService.getAllServiceProvider({ dealerId: { $in: ids1 }, status: true }, {})
+
+        if (!servicer) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the servicers"
+            })
+            return;
+        }
+
+        if (checkDealer.isServicer) {
+            servicer.unshift(checkDealer);
+        };
+
+        // Get Dealer Reseller Servicer
+
+        let dealerResellerServicer = await resellerService.getResellers({ dealerId: req.userId, isServicer: true })
+
+        if (dealerResellerServicer.length > 0) {
+            servicer.unshift(...dealerResellerServicer);
+        }
+
+        const servicerIds = servicer.map(obj => obj._id);
+        const dealerAsServicerIds = dealerAsServicer.map(obj => obj.dealerId);
+        servicerIds.concat(dealerAsServicerIds);
+        const query1 = { metaId: { $in: servicerIds }, isPrimary: true };
+        const servicerUser = await userService.findUserforCustomer1([
+            {
+                $match: {
+                    $and: [
+                        // { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+                        // { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { metaData: { $elemMatch: { metaId: { $in: servicerIds }, isPrimary: true } } }
+                    ]
+                }
+            },
+            {
+                $project: {
+                    email: 1,
+                    'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+                    'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+                    'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+                    'position': { $arrayElemAt: ["$metaData.position", 0] },
+                    'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                    'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+                    'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+                    'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                    'status': { $arrayElemAt: ["$metaData.status", 0] },
+                    resetPasswordCode: 1,
+                    isResetPassword: 1,
+                    approvedStatus: 1,
+                    createdAt: 1,
+                    updatedAt: 1
+                }
+            }
+        ]);
+
+        if (!servicerUser) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the data"
+            });
+            return;
+        };
+        // Get servicer with claim
+        const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "completed" };
+        const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "completed" };
+        let claimAggregateQuery1 = [
+            {
+                $match: servicerCompleted
+            },
+            {
+                "$group": {
+                    "_id": "$servicerId",
+                    "totalAmount": {
+                        "$sum": {
+                            "$sum": "$totalAmount"
+                        }
+                    },
+                },
+
+            },
+        ]
+        let valueClaim = await claimService.getClaimWithAggregate(claimAggregateQuery1);
+        let claimAggregateQuery = [
+            {
+                $match: servicerClaimsIds
+            },
+            {
+                $group: {
+                    _id: "$servicerId",
+                    noOfOrders: { $sum: 1 },
+                }
+            },
+        ]
+        let numberOfClaims = await claimService.getClaimWithAggregate(claimAggregateQuery)
+
+        const result_Array = servicer.map(item1 => {
+            const matchingItem = servicerUser.find(item2 => item2.metaId?.toString() === item1?._id.toString() || item2.metaId?.toString() === item1?.dealerId?.toString() || item2.metaId?.toString() === item1?.resellerId?.toString());
+            const claimValue = valueClaim.find(claim => claim._id?.toString() === item1._id?.toString())
+            const claimNumber = numberOfClaims.find(claim => claim._id?.toString() === item1._id?.toString())
+            if (matchingItem) {
+                return {
+                    ...matchingItem, // Use toObject() to convert Mongoose document to plain JavaScript object
+                    servicerData: item1.toObject(),
+                    claimNumber: claimNumber ? claimNumber : {
+                        "_id": "",
+                        "noOfOrders": 0
+                    },
+                    claimValue: claimValue ? claimValue : {
+                        "_id": "",
+                        "totalAmount": 0
+                    }
+                };
+            }
+            else {
+                return {
+                    servicerData: {}
+                };
+            }
+        });
+        let emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
+        let nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
+        let phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
+
+        let filteredData = result_Array.filter(entry => {
+            return (
+                nameRegex.test(entry.servicerData?.name) &&
+                emailRegex.test(entry.email) &&
+                phoneRegex.test(entry.phoneNumber)
+            );
         });
 
-        let filteredData = resultArray.filter(item => item !== undefined);
+        // Add isServicer key for reseller when true
+        filteredData.forEach(item => {
+            // Check if resellerId is not null
+            if (item.servicerData.resellerId !== null) {
+                // Add the desired key-value pair inside servicerData object
+                item.servicerData.isServicer = true;
+                // You can add any key-value pair you want here
+            }
+        });
 
         res.send({
             code: constant.successCode,
             message: "Success",
-            result: filteredData
+            data: filteredData
         });
+
     } catch (err) {
         res.send({
             code: constant.errorCode,
