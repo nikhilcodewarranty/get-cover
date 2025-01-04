@@ -2323,8 +2323,8 @@ exports.createDeleteRelation = async (req, res) => {
             $and: [
               { "adminNotification.assignDealerServicer": true },
               { status: true },
-              { roleId: new mongoose.Types.ObjectId(process.env.super) },
-             
+              { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
+
             ]
           }
         },
@@ -2358,8 +2358,8 @@ exports.createDeleteRelation = async (req, res) => {
       let adminUsers = await supportingFunction.getNotificationEligibleUser(adminAssignServicerQuery, { email: 1 })
       let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerQuery, { email: 1 })
       // let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerQuery, { email: 1 })
-      console.log("dealerUsers-----------------",dealerUsers);
-      console.log("adminUsers-----------------",adminUsers);
+      console.log("dealerUsers-----------------", dealerUsers);
+      console.log("adminUsers-----------------", adminUsers);
       const IDs = adminUsers.map(user => user._id)
       const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
       const base_url = `${process.env.SITE_URL}`
@@ -2372,12 +2372,12 @@ exports.createDeleteRelation = async (req, res) => {
         tabAction: "servicer",
         notificationFor: IDs,
         redirectionId: "/dealerDetails/" + req.params.dealerId,
-        endPoint: base_url + "dealerDetails/" +req.params.dealerId
+        endPoint: base_url + "dealerDetails/" + req.params.dealerId
       }));
 
-      console.log("notificationArray-----------------",notificationArray);
+      console.log("notificationArray-----------------", notificationArray);
       return false;
-     
+
       let createNotification = await userService.createNotification(notificationData);
 
       //Save Logs create dealer relation
