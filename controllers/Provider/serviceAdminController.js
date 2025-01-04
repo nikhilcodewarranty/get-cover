@@ -1081,7 +1081,6 @@ exports.updateStatus = async (req, res) => {
             {
               $or: [
                 { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
-                { metaId: new mongoose.Types.ObjectId(req.params.servicerId) },
               ]
             }
           ]
@@ -1303,7 +1302,6 @@ exports.updateStatus = async (req, res) => {
             subject: "Update Status"
           }
 
-          console.log("servicerEmail----------------", servicerEmail, notificationEmails, emailData)
 
           emailData.senderName = "Dear Admin"
           mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, 'noreply@getcover.com', emailData))

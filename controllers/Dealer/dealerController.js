@@ -1955,8 +1955,10 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
         })
         return;
       }
+      const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+      const base_url = `${process.env.SITE_URL}`
       let getDealerSetting = await eligibilityService.getEligibility({ userId: req.body.dealerId })
-      console.log("get dealer settings +++++++++++", data, getDealerSetting)
+      console.log("get dealer checkLoginUser +++++++++++", checkLoginUser)
 
       let adhDays = checkDealer[0].adhDays
       let noOfClaim = getDealerSetting.noOfClaim
@@ -2187,7 +2189,7 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
       let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: req.body.dealerId, isPrimary: true })
       let notificationData = {
         title: "Dealer Pricebook file added successfully",
-        description: `The Bulk file ${file.fieldName} of dealer pricebook has been uploaded and processed successfully for dealer ${checkDealer.name}. The file has been uploaded by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        description: `The Bulk file ${req.file.originalname} of dealer pricebook has been uploaded and processed successfully for dealer ${checkDealer.name}. The file has been uploaded by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         tabAction: "priceBook",
         flag: 'Dealer Price Book',
@@ -2197,7 +2199,7 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
       };
       let notificationData1 = {
         title: "Pricebook added successfully",
-        description: `The Bulk file ${file.fieldName} of  pricebook has been uploaded and processed successfully. The file has been uploaded by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        description: `The Bulk file ${req.file.originalname} of  pricebook has been uploaded and processed successfully. The file has been uploaded by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         flag: 'Dealer Price Book',
         notificationFor: IDs1,
@@ -2312,6 +2314,7 @@ exports.createDeleteRelation = async (req, res) => {
       dealerId: req.params.dealerId,
       servicerId: servicerId
     }));
+    const allServiceProvider = await servicerService.getAllServiceProvider({ _id: { $in: newServicerIds } }, {});
     if (newRecords.length > 0) {
       let saveData = await dealerRelationService.createRelationsWithServicer(newRecords);
       const adminAssignServicerQuery = {
@@ -2323,8 +2326,36 @@ exports.createDeleteRelation = async (req, res) => {
               {
                 $or: [
                   { roleId: new mongoose.Types.ObjectId(process.env.super) },
-                  { roleId: new mongoose.Types.ObjectId("656f08041eb1acda244af8c6") },
-                  { roleId: new mongoose.Types.ObjectId("65719c8368a8a86ef8e1ae4d") },
+                ]
+              }
+            ]
+          }
+        },
+      }
+      const dealerQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "adminNotification.assignDealerServicer": true },
+              { status: true },
+              {
+                $or: [
+                  { metaId: new mongoose.Types.ObjectId(checkDealer._id) },
+                ]
+              }
+            ]
+          }
+        },
+      }
+      const servicerQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "adminNotification.assignDealerServicer": true },
+              { status: true },
+              {
+                $or: [
+                  { metaId: { $in: newServicerIds } },
                 ]
               }
             ]
@@ -2332,25 +2363,27 @@ exports.createDeleteRelation = async (req, res) => {
         },
       }
       let adminUsers = await supportingFunction.getNotificationEligibleUser(adminAssignServicerQuery, { email: 1 })
+      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerQuery, { email: 1 })
+      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerQuery, { email: 1 })
+      console.log("servicerUsers-----------------",servicerUsers);
       const IDs = adminUsers.map(user => user._id)
       const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
       const base_url = `${process.env.SITE_URL}`
-      let notificationData = {
+      let notificationArray = allServiceProvider.map(servicer => ({
         title: "Servicer Assigned to Dealer",
-        adminTitle: "Servicer Assigned to Dealer",
-        dealerTitle: "Servicer Assigned",
-        servicerTitle: "Dealer Assigned",
-        adminMessage: `We have successfully assigned the servicer to Dealer ${checkDealer.name} by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
-        dealerMessage: `You have been assigned a new servicer by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
-        servicerMessage: `You have been assigned a new dealer ${checkDealer.name} by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
-        description: `We have successfully assigned the servicer to Dealer ${checkDealer.name} by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        description: `We have successfully assigned the servicer ${servicer.name} to Dealer ${checkDealer.name} by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         contentId: null,
         flag: 'Assigned Servicer',
+        tabAction: "servicer",
         notificationFor: IDs,
         redirectionId: "/dealerDetails/" + req.params.dealerId,
-        endPoint: base_url
-      };
+        endPoint: base_url + "dealerDetails/" +req.params.dealerId
+      }));
+
+      console.log("notificationArray-----------------",notificationArray);
+      return false;
+     
       let createNotification = await userService.createNotification(notificationData);
 
       //Save Logs create dealer relation

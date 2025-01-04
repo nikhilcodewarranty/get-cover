@@ -1137,14 +1137,13 @@ exports.updateUserData = async (req, res) => {
       const dealerIds = dealerUsers.map(user => user._id)
       const resellerIds = resellerUsers.map(user => user._id)
       const customerIds = customerUsers.map(user => user._id)
-      const dealerEmails = customerUsers.map(user => user.email)
-      const resellerEmails = resellerUsers.map(user => user.email)
-      const customerEmails = resellerUsers.map(user => user.email)
 
+      const dealerEmails = dealerUsers.map(user => user.email)
+      const resellerEmails = resellerUsers.map(user => user.email)
+      const customerEmails = customerUsers.map(user => user.email)
       notificationEmails = adminUsers.map(user => user.email)
 
       mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails, customerEmails);
-
 
       if (data.firstName) {
 
@@ -1909,7 +1908,7 @@ exports.deleteUser = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: checkUser?.metaData[0].firstName,
+      senderName: `Dear ${checkUser?.metaData[0].firstName}`,
       content: "Your account has been deleted by Get-Cover team.",
       subject: "Delete User"
     }

@@ -1279,7 +1279,7 @@ exports.changePrimaryUser = async (req, res) => {
           notificationFor: IDs
         };
         notificationArray.push(notificationData)
-        notificationData = { 
+        notificationData = {
           title: "Customer Primary User Updated",
           description: `The Primary user of Customer ${checkCustomer.username} has been changed from ${updateLastPrimary.metaData[0]?.firstName + " " + updateLastPrimary.metaData[0]?.lastName} to ${updatePrimary.metaData[0]?.firstName + " " + updatePrimary.metaData[0]?.lastName} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}-${req.role}.`,
 
@@ -1490,7 +1490,7 @@ exports.addCustomerUser = async (req, res) => {
         description: `A new user for customer ${checkCustomer.username} under ${checkDealer.name} has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
         userId: req.teammateId,
         contentId: saveData._id,
-        flag: 'customer_user',
+        flag: 'customerUser',
         endPoint: base_url + "customerDetails/" + checkCustomer._id,
         redirectionId: "customerDetails/" + checkCustomer._id,
         notificationFor: IDs
@@ -1502,6 +1502,7 @@ exports.addCustomerUser = async (req, res) => {
         userId: req.teammateId,
         contentId: saveData._id,
         flag: 'customer_user',
+        tabAction: "customerUser",
         endPoint: base_url + "dealer/customerDetails/" + checkCustomer._id,
         redirectionId: "dealer/customerDetails/" + checkCustomer._id,
         notificationFor: dealerId
@@ -1514,6 +1515,8 @@ exports.addCustomerUser = async (req, res) => {
           userId: req.teammateId,
           contentId: saveData._id,
           flag: 'customer_user',
+          tabAction: "customerUser",
+
           endPoint: base_url + "reseller/customerDetails/" + checkCustomer._id,
           redirectionId: "reseller/customerDetails/" + checkCustomer._id,
           notificationFor: resellerId
@@ -1527,6 +1530,8 @@ exports.addCustomerUser = async (req, res) => {
         userId: req.teammateId,
         contentId: saveData._id,
         flag: 'customer_user',
+        tabAction: "customerUser",
+
         endPoint: base_url + "customer/user",
         redirectionId: "customer/user",
         notificationFor: customerId
