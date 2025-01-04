@@ -1958,7 +1958,7 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
       const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
       const base_url = `${process.env.SITE_URL}`
       let getDealerSetting = await eligibilityService.getEligibility({ userId: req.body.dealerId })
-      console.log("get dealer settings +++++++++++", data, getDealerSetting)
+      console.log("get dealer checkLoginUser +++++++++++",checkLoginUser)
 
       let adhDays = checkDealer[0].adhDays
       let noOfClaim = getDealerSetting.noOfClaim
