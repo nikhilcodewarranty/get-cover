@@ -711,8 +711,6 @@ exports.updateUserData = async (req, res) => {
       }
       let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdatePrimaryQuery, { email: 1 })
       let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerUpdatePrimaryQuery, { email: 1 })
-      console.log("adminUsers------------------",adminUsers)
-      console.log("servicerUsers------------------",servicerUsers)
       const IDs = adminUsers.map(user => user._id)
       const servicerId = servicerUsers.map(user => user._id)
       const servicerEmails = servicerUsers.map(user => user.email)
@@ -758,8 +756,7 @@ exports.updateUserData = async (req, res) => {
 
       }
       else {
-        console.log("IDs---------------",IDs)
-        console.log("IDs---------------",servicerId)
+  
         notificationData = {
           title: "Servicer User Status Changed",
           description: `The Status for the Servicer ${checkServicer.name} for his user ${updateUser.metaData[0]?.firstName + " " +updateUser.metaData[0]?.lastName} has been updated to ${status_content} by ${checkLoginUser?.metaData[0]?.firstName + " " + checkLoginUser?.metaData[0]?.lastName} - ${req.role}.`,
@@ -769,7 +766,7 @@ exports.updateUserData = async (req, res) => {
 
           redirectionId: "servicerDetails/" + checkServicer._id,
           endPoint: base_url + "servicerDetails/" + checkServicer._id,
-          notificationData: IDs
+          notificationFor: IDs
         };
         notificationArray.push(notificationData)
         notificationData = {
@@ -779,7 +776,7 @@ exports.updateUserData = async (req, res) => {
           flag: checkRole?.role,
           redirectionId: "servicer/user",
           endPoint: base_url + "servicer/user",
-          notificationData: servicerId
+          notificationFor: servicerId
         };
         notificationArray.push(notificationData)
         let emailData = {
