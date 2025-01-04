@@ -2347,25 +2347,26 @@ exports.createDeleteRelation = async (req, res) => {
           }
         },
       }
-      const servicerQuery = {
-        metaData: {
-          $elemMatch: {
-            $and: [
-              { "adminNotification.assignDealerServicer": true },
-              { status: true },
-              {
-                $or: [
-                  { metaId: { $in: newServicerIds } },
-                ]
-              }
-            ]
-          }
-        },
-      }
+      // const servicerQuery = {
+      //   metaData: {
+      //     $elemMatch: {
+      //       $and: [
+      //         { "adminNotification.assignDealerServicer": true },
+      //         { status: true },
+      //         {
+      //           $or: [
+      //             { metaId: { $in: newServicerIds } },
+      //           ]
+      //         }
+      //       ]
+      //     }
+      //   },
+      // }
       let adminUsers = await supportingFunction.getNotificationEligibleUser(adminAssignServicerQuery, { email: 1 })
       let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerQuery, { email: 1 })
-      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerQuery, { email: 1 })
-      console.log("servicerUsers-----------------",servicerUsers);
+      // let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerQuery, { email: 1 })
+      console.log("dealerUsers-----------------",dealerUsers);
+      console.log("adminUsers-----------------",adminUsers);
       const IDs = adminUsers.map(user => user._id)
       const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
       const base_url = `${process.env.SITE_URL}`
