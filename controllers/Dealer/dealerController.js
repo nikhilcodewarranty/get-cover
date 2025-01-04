@@ -2340,26 +2340,27 @@ exports.createDeleteRelation = async (req, res) => {
           }
         },
       }
-      // const servicerQuery = {
-      //   metaData: {
-      //     $elemMatch: {
-      //       $and: [
-      //         { "adminNotification.assignDealerServicer": true },
-      //         { status: true },
-      //         {
-      //           $or: [
-      //             { metaId: { $in: newServicerIds } },
-      //           ]
-      //         }
-      //       ]
-      //     }
-      //   },
-      // }
+      const servicerQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "adminNotification.assignDealerServicer": true },
+              { status: true },
+              {
+                $or: [
+                  { metaId: { $in: newServicerIds } },
+                ]
+              }
+            ]
+          }
+        },
+      }
       let adminUsers = await supportingFunction.getNotificationEligibleUser(adminAssignServicerQuery, { email: 1 })
       let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerQuery, { email: 1 })
-      // let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerQuery, { email: 1 })
+      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerQuery, { email: 1 })
 
       const IDs = adminUsers.map(user => user._id)
+      const dealerId = adminUsers.map(user => user._id)
       const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
       const base_url = `${process.env.SITE_URL}`
       let notificationArray = allServiceProvider.map(servicer => ({
@@ -2375,7 +2376,22 @@ exports.createDeleteRelation = async (req, res) => {
       }));
 
 
-      let createNotification = await userService.createNotification(notificationArray);
+      let createNotification = await userService.saveNotificationBulk(notificationArray);
+
+      notificationArray = allServiceProvider.map(servicer => ({
+        title: "Servicer Assigned",
+        description: `You have been assigned a new  servicer ${servicer.name} by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        userId: req.teammateId,
+        contentId: null,
+        flag: 'Assigned Servicer',
+        tabAction: "servicer",
+        notificationFor: dealerId,
+        redirectionId: "/dealerDetails/" + req.params.dealerId,
+        endPoint: base_url + "dealerDetails/" + req.params.dealerId
+      }));
+
+
+      createNotification = await userService.saveNotificationBulk(notificationArray);
 
       //Save Logs create dealer relation
       let logData = {
