@@ -2140,7 +2140,6 @@ exports.editClaimStatus = async (req, res) => {
 
       if (forCheckOnly) {
         let checkNoOfClaims = await claimService.getClaimWithAggregate(getNoOfClaimQuery)
-        console.log(checkNoOfClaims, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
         if (checkNoOfClaims.length == 0) {
           checkNoOfClaims = [{
             "monthlyCount": 0,

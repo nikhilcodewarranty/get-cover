@@ -2293,6 +2293,7 @@ exports.createDeleteRelation = async (req, res) => {
       }
     });
     let uncheckId = falseArray.map(record => new mongoose.Types.ObjectId(record._id))
+
     let checkId = trueArray.map(record => record._id)
     const existingRecords = await dealerRelationService.getDealerRelations({
       dealerId: new mongoose.Types.ObjectId(req.params.dealerId),
@@ -2364,9 +2365,9 @@ exports.createDeleteRelation = async (req, res) => {
       const servicerId = servicerUsers.map(user => user._id)
       const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
       const base_url = `${process.env.SITE_URL}`
-      let notificationArray = allServiceProvider.map(servicer => ({
+      let notificationArray = {
         title: "Servicer Assigned to Dealer",
-        description: `We have successfully assigned the servicer ${servicer.name} to Dealer ${checkDealer.name} by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        description: `We are reaching out to notify you about a recent update regarding the servicer list assigned to ${checkDealer.name}`,
         userId: req.teammateId,
         contentId: null,
         flag: 'Assigned Servicer',
@@ -2374,14 +2375,14 @@ exports.createDeleteRelation = async (req, res) => {
         notificationFor: IDs,
         redirectionId: "/dealerDetails/" + req.params.dealerId,
         endPoint: base_url + "dealerDetails/" + req.params.dealerId
-      }));
+      };
 
 
-      let createNotification = await userService.saveNotificationBulk(notificationArray);
+      let createNotification = await userService.createNotification(notificationArray);
 
-      notificationArray = allServiceProvider.map(servicer => ({
+      notificationArray ={
         title: "Servicer Assigned",
-        description: `You have been assigned a new  servicer ${servicer.name} by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        description: `We are reaching out to notify you about a recent update regarding the servicer list assigned to you`,
         userId: req.teammateId,
         contentId: null,
         flag: 'Assigned Servicer',
@@ -2389,14 +2390,14 @@ exports.createDeleteRelation = async (req, res) => {
         notificationFor: dealerId,
         redirectionId: "/dealer/servicerList",
         endPoint: base_url + "dealer/servicerList"
-      }));
+      };
 
 
-      createNotification = await userService.saveNotificationBulk(notificationArray);
+      createNotification = await userService.createNotification(notificationArray);
 
       notificationArray = {
         title: "Dealer Assigned",
-        description: `You have been assigned a new dealer ${checkDealer.name} by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        description: `We are reaching out to notify you about a recent update regarding the dealer list assigned to you`,
         userId: req.teammateId,
         contentId: null,
         flag: 'Assigned Servicer',
