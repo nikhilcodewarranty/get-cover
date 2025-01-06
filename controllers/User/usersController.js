@@ -2492,7 +2492,7 @@ exports.addMembers = async (req, res) => {
             $and: [
               { "resellerNotifications.userAdd": true },
               { status: true },
-              { metaId: new mongoose.Types.ObjectId(checkReseller._id) },
+              { metaId: new mongoose.Types.ObjectId(checkReseller.dealerId) },
             ]
           }
         },
