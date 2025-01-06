@@ -2189,7 +2189,7 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
       let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: req.body.dealerId, isPrimary: true })
       let notificationData = {
         title: "Dealer Pricebook file added successfully",
-        description: `The Bulk file ${req.file.originalname} of dealer pricebook has been uploaded and processed successfully for dealer ${checkDealer.name}. The file has been uploaded by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        description: `The Bulk file ${req.file.originalname} of dealer pricebook has been uploaded and processed successfully for dealer ${checkDealer[0].name}. The file has been uploaded by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.teammateId,
         tabAction: "priceBook",
         flag: 'Dealer Price Book',
