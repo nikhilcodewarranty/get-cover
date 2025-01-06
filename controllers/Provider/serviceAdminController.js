@@ -1869,7 +1869,6 @@ exports.addServicerUser = async (req, res) => {
               { status: true },
               {
                 $or: [
-                  { metaId: new mongoose.Types.ObjectId(req.params.servicerId) },
                   { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
                 ]
               }
