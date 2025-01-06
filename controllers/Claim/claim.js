@@ -2483,7 +2483,7 @@ exports.editServicer = async (req, res) => {
             {
               $or: [
                 { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                { metaId: checkClaim?.servicerId },
+                { metaId: req.body.servicerId },
               ]
             },
 
