@@ -2532,8 +2532,8 @@ exports.unAssignServicer = async (req, res) => {
         flag: 'Assigned Servicer',
         tabAction: "servicer",
         notificationFor: IDs,
-        redirectionId: "/dealerDetails/" + req.params.dealerId,
-        endPoint: base_url + "dealerDetails/" + req.params.dealerId
+        redirectionId: "/dealerDetails/" + data.dealerId,
+        endPoint: base_url + "dealerDetails/" + data.dealerId
       }));
 
 
