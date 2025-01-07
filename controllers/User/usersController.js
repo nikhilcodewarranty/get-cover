@@ -3211,7 +3211,7 @@ exports.getSetting = async (req, res) => {
     setting = await userService.getSetting({ userId: userId });
     const baseUrl = process.env.API_ENDPOINT;
     if (setting.length > 0) {
-      console
+      
       const checkUser = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin } } })
       let adminData = await userService.getSetting({ userId: checkUser.metaData[0].metaId });
       setting[0].base_url = baseUrl;
@@ -3448,7 +3448,10 @@ exports.contactUs = async (req, res) => {
 
     //Send to admin
     const admin = await supportingFunction.getPrimaryUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true });
-
+    const ip = data.ipAddress
+    const response = await axios.get(`https://ipapi.co/${ip}/json/`);
+    const result = response.data;
+    data.location = result.city + "," + result.region + "," + result.country_name + ","+result.postal
     emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -3458,6 +3461,7 @@ exports.contactUs = async (req, res) => {
       content: `A new user has submitted a request via the contact form`,
       subject: 'New Contact Form Submission',
       contactForm: data
+
     }
     //Send email to admin
     mailing = sgMail.send(emailConstant.sendContactUsTemplateAdmin(adminCC, ["noreply@getcover.com"], emailData))
