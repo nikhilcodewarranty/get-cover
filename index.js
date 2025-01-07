@@ -120,7 +120,7 @@ cron.schedule('6 0 * * *', () => {
 cron.schedule('0 1 * * *', () => {
   axios.get(`${process.env.API_ENDPOINT}api-v1/claim/checkNumberOfCertainPeriod`)   //live
 });
-
+ 
 //common routing for server
 app.use("/api-v1/user", userRoutes);
 // app.use("/", htmlPage);
