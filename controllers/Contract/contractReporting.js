@@ -274,7 +274,7 @@ exports.exportContractReporting = async (req, res) => {
             }
         };
 
-        console.log("checking the reseller data ak +++++++++++",resellerIds)
+        console.log("checking the reseller data ak +++++++++++", resellerIds)
 
         let dataForClaimReporting = {
             fileName: "contract-report-" + dateString,
@@ -284,7 +284,7 @@ exports.exportContractReporting = async (req, res) => {
             status: "Pending",
             reportName: data.reportName,
             remark: data.remark,
-            category: "Contract Reporting"
+            category: "Contract"
         }
         let createReporting = await claimReportingService.createReporting(dataForClaimReporting)
         // res.send({
@@ -296,21 +296,21 @@ exports.exportContractReporting = async (req, res) => {
         let orderAndCondition = []
 
         if (dealerIds.length > 0) {
-         userSearchCheck = 1
+            userSearchCheck = 1
             orderAndCondition.push({ dealerId: { $in: dealerIds } })
         }
         if (customerIds.length > 0) {
-         userSearchCheck = 1
+            userSearchCheck = 1
             orderAndCondition.push({ customerId: { $in: customerIds } })
 
         }
         if (servicerIds.length > 0) {
-         userSearchCheck = 1
+            userSearchCheck = 1
             orderAndCondition.push({ servicerId: { $in: servicerIds } })
 
         }
         if (resellerIds.length > 0) {
-         userSearchCheck = 1
+            userSearchCheck = 1
             orderAndCondition.push({ resellerId: { $in: resellerIds } })
 
         }
