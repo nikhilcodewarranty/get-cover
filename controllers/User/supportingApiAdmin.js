@@ -759,16 +759,16 @@ exports.updateData = async (req, res) => {
             let dataToUpdate = {
                 $set: {
                     metaData: [{
-                        metaId: findUser[u].metaId ? findUser[u].metaId :findUser[u].metaData[0].metaId ,
-                        status: findUser[u].status?findUser[u].status:findUser[u].metaData[0].status ,
-                        roleId: findUser[u].roleId?findUser[u].roleId:findUser[u].metaData[0].roleId ,
-                        firstName: findUser[u].firstName?findUser[u].firstName:findUser[u].metaData[0].firstName ,
-                        lastName: findUser[u].lastName?findUser[u].lastName:findUser[u].metaData[0].lastName ,
-                        phoneNumber: findUser[u].phoneNumber?findUser[u].phoneNumber:findUser[u].metaData[0].phoneNumber ,
-                        position: findUser[u].position?findUser[u].position:findUser[u].metaData[0].position ,
-                        isPrimary: findUser[u].isPrimary?findUser[u].isPrimary:findUser[u].metaData[0].isPrimary ,
-                        isDeleted: findUser[u].isDeleted?findUser[u].isDeleted:findUser[u].metaData[0].isDeleted ,
-                        dialCode: findUser[u].dialCode?findUser[u].dialCode:findUser[u].metaData[0].dialCode 
+                        metaId: findUser[u].metaId ? findUser[u].metaId : findUser[u].metaData[0].metaId,
+                        status: findUser[u].status ? findUser[u].status : findUser[u].metaData[0].status,
+                        roleId: findUser[u].roleId ? findUser[u].roleId : findUser[u].metaData[0].roleId,
+                        firstName: findUser[u].firstName ? findUser[u].firstName : findUser[u].metaData[0].firstName,
+                        lastName: findUser[u].lastName ? findUser[u].lastName : findUser[u].metaData[0].lastName,
+                        phoneNumber: findUser[u].phoneNumber ? findUser[u].phoneNumber : findUser[u].metaData[0].phoneNumber,
+                        position: findUser[u].position ? findUser[u].position : findUser[u].metaData[0].position,
+                        isPrimary: findUser[u].isPrimary ? findUser[u].isPrimary : findUser[u].metaData[0].isPrimary,
+                        isDeleted: findUser[u].isDeleted ? findUser[u].isDeleted : findUser[u].metaData[0].isDeleted,
+                        dialCode: findUser[u].dialCode ? findUser[u].dialCode : findUser[u].metaData[0].dialCode
                     }]
                 }
             }
@@ -801,55 +801,57 @@ exports.getUserNotificationData = async (req, res) => {
         let metaData = getData.metaData[0]
         let newMetaData = JSON.parse(JSON.stringify(metaData));
 
-        if (req.role == "Dealer") {
-            delete newMetaData.adminNotification.userAdded
-            delete newMetaData.adminNotification.categoryUpdate
-            delete newMetaData.adminNotification.priceBookUpdate
-            delete newMetaData.adminNotification.priceBookAdd
-            delete newMetaData.adminNotification.categoryAdded
-            delete newMetaData.claimNotification.partsUpdate
-            delete newMetaData.servicerNotification
-            delete newMetaData.dealerNotifications.dealerAdded
-            delete newMetaData.registerNotifications
-            metaData = newMetaData
+        // if (req.role == "Dealer") {
+        //     delete newMetaData.adminNotification.userAdded
+        //     delete newMetaData.adminNotification.categoryUpdate
+        //     delete newMetaData.adminNotification.priceBookUpdate
+        //     delete newMetaData.adminNotification.priceBookAdd
+        //     delete newMetaData.adminNotification.categoryAdded
+        //     delete newMetaData.claimNotification.partsUpdate
+        //     delete newMetaData.servicerNotification
+        //     delete newMetaData.dealerNotifications.dealerAdded
+        //     delete newMetaData.registerNotifications
+        //     metaData = newMetaData
 
-        }
-        if (req.role == "Reseller") {
-            delete newMetaData.claimNotification.partsUpdate
-            delete newMetaData.servicerNotification
-            delete newMetaData.dealerNotifications
-            delete newMetaData.resellerNotifications.resellerAdded
-            delete newMetaData.adminNotification
-            delete newMetaData.registerNotifications
-            metaData = newMetaData
-        }
-        if (req.role == "Customer") {
-            delete newMetaData.adminNotification
-            delete newMetaData.orderNotifications.addingNewOrderPending
-            delete newMetaData.orderNotifications.updateOrderPending
-            delete newMetaData.orderNotifications.archivinOrder
-            delete newMetaData.claimNotification.partsUpdate
-            delete newMetaData.customerNotifications.customerAdded
-            delete newMetaData.servicerNotification
-            delete newMetaData.dealerNotifications
-            delete newMetaData.resellerNotifications
-            delete newMetaData.registerNotifications
-            metaData = newMetaData
-        }
-        if (req.role == "Servicer") {
-            delete newMetaData.adminNotification.userAdded
-            delete newMetaData.adminNotification.categoryUpdate
-            delete newMetaData.adminNotification.priceBookUpdate
-            delete newMetaData.adminNotification.priceBookAdd
-            delete newMetaData.adminNotification.categoryAdded
-            delete newMetaData.orderNotifications
-            delete newMetaData.servicerNotification.servicerAdded
-            delete newMetaData.dealerNotifications
-            delete newMetaData.resellerNotifications
-            delete newMetaData.registerNotifications
-            delete newMetaData.customerNotifications
-            metaData = newMetaData
-        }
+        // }
+        // if (req.role == "Reseller") {
+        //     delete newMetaData.claimNotification.partsUpdate
+        //     delete newMetaData.servicerNotification
+        //     delete newMetaData.dealerNotifications
+        //     delete newMetaData.resellerNotifications.resellerAdded
+        //     delete newMetaData.adminNotification
+        //     delete newMetaData.registerNotifications
+        //     metaData = newMetaData
+        // }
+        // if (req.role == "Customer") {
+        //     delete newMetaData.adminNotification
+        //     delete newMetaData.orderNotifications.addingNewOrderPending
+        //     delete newMetaData.orderNotifications.updateOrderPending
+        //     delete newMetaData.orderNotifications.archivinOrder
+        //     delete newMetaData.claimNotification.partsUpdate
+        //     delete newMetaData.customerNotifications.customerAdded
+        //     delete newMetaData.servicerNotification
+        //     delete newMetaData.dealerNotifications
+        //     delete newMetaData.resellerNotifications
+        //     delete newMetaData.registerNotifications
+        //     metaData = newMetaData
+        // }
+        // if (req.role == "Servicer") {
+        //     delete newMetaData.adminNotification.userAdded
+        //     delete newMetaData.adminNotification.categoryUpdate
+        //     delete newMetaData.adminNotification.priceBookUpdate
+        //     delete newMetaData.adminNotification.priceBookAdd
+        //     delete newMetaData.adminNotification.categoryAdded
+        //     delete newMetaData.orderNotifications
+        //     delete newMetaData.servicerNotification.servicerAdded
+        //     delete newMetaData.dealerNotifications
+        //     delete newMetaData.resellerNotifications
+        //     delete newMetaData.registerNotifications
+        //     delete newMetaData.customerNotifications
+        //     metaData = newMetaData
+        // }
+
+        req.params.flag = req.params.flag ? req.params.flag : req.role
 
         if (req.params.flag == "Dealer") {
             delete newMetaData.adminNotification.userAdded
