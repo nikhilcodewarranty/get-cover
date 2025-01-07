@@ -224,6 +224,7 @@ exports.exportContractReporting = async (req, res) => {
         data.resellerName = data.resellerName ? data.resellerName : ""
         data.servicerName = data.servicerName ? data.servicerName : ""
 
+
         if (data.dealerName != "") {
             userSearchCheck = 1
             let getData = await dealerService.getAllDealers({ name: { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
@@ -272,6 +273,8 @@ exports.exportContractReporting = async (req, res) => {
                 resellerIds.push("1111121ccf9d400000000000")
             }
         };
+
+        console.log("checking the reseller data ak +++++++++++",resellerIds)
 
         let dataForClaimReporting = {
             fileName: "contract-report-" + dateString,
