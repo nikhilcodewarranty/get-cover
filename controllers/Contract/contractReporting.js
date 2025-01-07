@@ -296,21 +296,21 @@ exports.exportContractReporting = async (req, res) => {
         let orderAndCondition = []
 
         if (dealerIds.length > 0) {
-        let userSearchCheck = 1
+         userSearchCheck = 1
             orderAndCondition.push({ dealerId: { $in: dealerIds } })
         }
         if (customerIds.length > 0) {
-        let userSearchCheck = 1
+         userSearchCheck = 1
             orderAndCondition.push({ customerId: { $in: customerIds } })
 
         }
         if (servicerIds.length > 0) {
-        let userSearchCheck = 1
+         userSearchCheck = 1
             orderAndCondition.push({ servicerId: { $in: servicerIds } })
 
         }
         if (resellerIds.length > 0) {
-        let userSearchCheck = 1
+         userSearchCheck = 1
             orderAndCondition.push({ resellerId: { $in: resellerIds } })
 
         }
