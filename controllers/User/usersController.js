@@ -3237,11 +3237,11 @@ exports.getSetting = async (req, res) => {
 
       if (sideBarColor) {
         setting[0].adminSideBarColor = sideBarColor;
-        setting[0].colorScheme.push({ colorType: "adminSideBarColor", colorCode: sideBarColor.colorCode });
+        setting[0].colorScheme.push({ colorType: "adminSideBarColor", colorCode: sideBarColor?.colorCode });
       }
       if (!exists) {
         setting[0].adminSideBarColor = sideBarColor;
-        setting[0].colorScheme.push({ colorType: "chartFirstColor", colorCode: chartFirstColor.colorCode });
+        setting[0].colorScheme.push({ colorType: "chartFirstColor", colorCode: chartFirstColor?.colorCode });
       }
       // Repeat for any other properties that need the base_url prepended
     }
@@ -3270,7 +3270,7 @@ exports.getSetting = async (req, res) => {
 
         if (sideBarColor) {
           setting[0].adminSideBarColor = sideBarColor;
-          setting[0].colorScheme.push({ colorType: "adminSideBarColor", colorCode: sideBarColor.colorCode });
+          setting[0].colorScheme.push({ colorType: "adminSideBarColor", colorCode: sideBarColor?.colorCode });
         }
         // Repeat for any other properties that need the base_url prepended
       }
