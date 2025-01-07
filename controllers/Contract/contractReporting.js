@@ -219,6 +219,11 @@ exports.exportContractReporting = async (req, res) => {
             orderIds = [new mongoose.Types.ObjectId(data.userId)]
         }
 
+        data.dealerName = data.dealerName ? data.dealerName : ""
+        data.customerName = data.customerName ? data.customerName : ""
+        data.resellerName = data.resellerName ? data.resellerName : ""
+        data.servicerName = data.servicerName ? data.servicerName : ""
+
         if (data.dealerName != "") {
             userSearchCheck = 1
             let getData = await dealerService.getAllDealers({ name: { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
@@ -635,13 +640,13 @@ exports.exportContractReporting = async (req, res) => {
                 dealerEntry["Total Contracts"] += 1;
 
                 if (item.status === "Waiting") {
-                    console.log("Waiting+++++++++++++++++++++++",item.status);
+                    console.log("Waiting+++++++++++++++++++++++", item.status);
                     dealerEntry["Waiting Contracts"] += 1;
                 } else if (item.status === "Active") {
-                    console.log("Active+++++++++++++++++++++++",item.status);
+                    console.log("Active+++++++++++++++++++++++", item.status);
                     dealerEntry["Active Contracts"] += 1;
                 } else if (item.status === "Expired") {
-                    console.log("Expired+++++++++++++++++++++++",item.status);
+                    console.log("Expired+++++++++++++++++++++++", item.status);
                     dealerEntry["Expired Contracts"] += 1;
                 }
             });
