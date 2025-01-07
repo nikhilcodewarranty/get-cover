@@ -759,16 +759,16 @@ exports.updateData = async (req, res) => {
             let dataToUpdate = {
                 $set: {
                     metaData: [{
-                        metaId: findUser[u].metaId,
-                        status: findUser[u].status,
-                        roleId: findUser[u].roleId,
-                        firstName: findUser[u].firstName,
-                        lastName: findUser[u].lastName,
-                        phoneNumber: findUser[u].phoneNumber,
-                        position: findUser[u].position,
-                        isPrimary: findUser[u].isPrimary,
-                        isDeleted: findUser[u].isDeleted,
-                        dialCode: findUser[u].dialCode
+                        metaId: findUser[u].metaId ? findUser[u].metaId :findUser[u].metaData[0].metaId ,
+                        status: findUser[u].status?findUser[u].status:findUser[u].metaData[0].status ,
+                        roleId: findUser[u].roleId?findUser[u].roleId:findUser[u].metaData[0].roleId ,
+                        firstName: findUser[u].firstName?findUser[u].firstName:findUser[u].metaData[0].firstName ,
+                        lastName: findUser[u].lastName?findUser[u].lastName:findUser[u].metaData[0].lastName ,
+                        phoneNumber: findUser[u].phoneNumber?findUser[u].phoneNumber:findUser[u].metaData[0].phoneNumber ,
+                        position: findUser[u].position?findUser[u].position:findUser[u].metaData[0].position ,
+                        isPrimary: findUser[u].isPrimary?findUser[u].isPrimary:findUser[u].metaData[0].isPrimary ,
+                        isDeleted: findUser[u].isDeleted?findUser[u].isDeleted:findUser[u].metaData[0].isDeleted ,
+                        dialCode: findUser[u].dialCode?findUser[u].dialCode:findUser[u].metaData[0].dialCode 
                     }]
                 }
             }
@@ -807,7 +807,7 @@ exports.getUserNotificationData = async (req, res) => {
             delete newMetaData.adminNotification.priceBookUpdate
             delete newMetaData.adminNotification.priceBookAdd
             delete newMetaData.adminNotification.categoryAdded
-            delete newMetaData.claimNotification.repairStatusUpdate
+            delete newMetaData.claimNotification.partsUpdate
             delete newMetaData.servicerNotification
             delete newMetaData.dealerNotifications.dealerAdded
             delete newMetaData.registerNotifications
