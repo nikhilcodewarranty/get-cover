@@ -1033,7 +1033,7 @@ exports.getClaimReportings = async (req, res) => {
     let claimReportingQuery = {
       $and: [
         { userId: req.teammateId },
-        { category: { '$regex': data.category ? data.category.replace(/\s+/g, ' ').trim() : '' } },
+        { category: { '$regex': data.category ? data.category.replace(/\s+/g, ' ').trim() : '',"$options":"i" } },
       ]
     }
 
