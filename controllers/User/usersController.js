@@ -3417,72 +3417,72 @@ exports.updateDataBase = async (req, res) => {
                   "$$item",
                   {
                     orderNotifications: {
-                      addingNewOrderPending: true,
-                      addingNewOrderActive: true,
-                      makingOrderPaid: true,
-                      updateOrderPending: true,
-                      updateOrderActive: true,
-                      archivinOrder: true
+                      addingNewOrderPending: false,
+                      addingNewOrderActive: false,
+                      makingOrderPaid: false,
+                      updateOrderPending: false,
+                      updateOrderActive: false,
+                      archivinOrder: false
                     },
                     claimNotification: {
-                      newClaim: true,
-                      fileBulkClaimAdmin: true,
-                      fileBulkClaimDealer: true,
-                      fileBulkClaimServicer: true,
-                      fileBulkClaimReseller: true,
-                      fileBulkClaimCustomer: true,
-                      servicerUpdate: true,
-                      customerStatusUpdate: true,
-                      repairStatusUpdate: true,
-                      claimStatusUpdate: true,
-                      partsUpdate: true,
-                      claimComment: true
+                      newClaim: false,
+                      fileBulkClaimAdmin: false,
+                      fileBulkClaimDealer: false,
+                      fileBulkClaimServicer: false,
+                      fileBulkClaimReseller: false,
+                      fileBulkClaimCustomer: false,
+                      servicerUpdate: false,
+                      customerStatusUpdate: false,
+                      repairStatusUpdate: false,
+                      claimStatusUpdate: false,
+                      partsUpdate: false,
+                      claimComment: false
                     },
                     adminNotification: {
-                      userAdded: true,
-                      categoryUpdate: true,
-                      priceBookUpdate: true,
-                      priceBookAdd: true,
-                      unassignDealerServicer: true,
-                      assignDealerServicer: true,
-                      categoryAdded: true
+                      userAdded: false,
+                      categoryUpdate: false,
+                      priceBookUpdate: false,
+                      priceBookAdd: false,
+                      unassignDealerServicer: false,
+                      assignDealerServicer: false,
+                      categoryAdded: false
                     },
                     servicerNotification: {
-                      servicerAdded: true,
-                      userAdded: true,
-                      userUpdate: true,
-                      primaryChanged: true,
-                      userDelete: true
+                      servicerAdded: false,
+                      userAdded: false,
+                      userUpdate: false,
+                      primaryChanged: false,
+                      userDelete: false
                     },
                     dealerNotifications: {
-                      dealerAdded: true,
-                      userAdded: true,
-                      userUpdate: true,
-                      primaryChanged: true,
-                      userDelete: true,
-                      dealerPriceBookUpload: true,
-                      dealerPriceBookAdd: true,
-                      dealerPriceBookUpdate: true
+                      dealerAdded: false,
+                      userAdded: false,
+                      userUpdate: false,
+                      primaryChanged: false,
+                      userDelete: false,
+                      dealerPriceBookUpload: false,
+                      dealerPriceBookAdd: false,
+                      dealerPriceBookUpdate: false
                     },
                     resellerNotifications: {
-                      resellerAdded: true,
-                      userAdd: true,
-                      userUpdate: true,
-                      primaryChange: true,
-                      userDelete: true
+                      resellerAdded: false,
+                      userAdd: false,
+                      userUpdate: false,
+                      primaryChange: false,
+                      userDelete: false
                     },
                     customerNotifications: {
-                      customerAdded: true,
-                      userAdd: true,
-                      userUpdate: true,
-                      primaryChange: true,
-                      userDelete: true
+                      customerAdded: false,
+                      userAdd: false,
+                      userUpdate: false,
+                      primaryChange: false,
+                      userDelete: false
                     },
                     registerNotifications: {
-                      dealerRegistrationRequest: true,
-                      servicerRegistrationRequest: true,
-                      dealerDisapproved: true,
-                      servicerDisapproved: true
+                      dealerRegistrationRequest: false,
+                      servicerRegistrationRequest: false,
+                      dealerDisapproved: false,
+                      servicerDisapproved: false
                     }
                   }
                 ]
