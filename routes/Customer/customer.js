@@ -17,14 +17,19 @@ router.post('/customerOrders/:customerId', [verifyToken], customerController.cus
 router.post('/getCustomerContract/:customerId', [verifyToken], customerController.getCustomerContract); //getCustomerContract route
 //PUT Routes
 router.put('/editCustomer/:customerId', [verifyToken], customerController.editCustomer); //editCustomer route
+router.put('/addCustomerAddress/:customerId', [verifyToken], customerController.addCustomerAddress); //editCustomer route
+router.put('/addAddress/:customerId', [verifyToken], customerController.addAddress); //editCustomer route
+router.put('/deleteAddress/:customerId', [verifyToken], customerController.deleteAddress); //editCustomer route
+router.put('/editAddress', [verifyToken],customerController.editaddress); //editCustomer route
 //GET Routes
 router.get('/changePrimaryUser/:userId', [verifyToken], customerController.changePrimaryUser); //changePrimaryUser route
-router.get('/getCustomerById/:customerId', [verifyToken], supportingFunction.checkObjectId,customerController.getCustomerById); //getCustomerById route
+router.get('/getCustomerById/:customerId', [verifyToken], supportingFunction.checkObjectId, customerController.getCustomerById); //getCustomerById route
 router.get("/create-customer", [verifyToken], validator('createCustomerValidation'), [verifyToken], customerController.createCustomer); // createCustomer route
 
 
 router.post("/createCustomerNew", [verifyToken], customerController.createCustomerNew); //  getAllCustomers route
 router.post("/customerNew", [verifyToken], customerController.getAllCustomersNew); //  getAllCustomers route
+router.get("/justToCheck", customerController.justToCheck); //  getAllCustomers route
 
 
 

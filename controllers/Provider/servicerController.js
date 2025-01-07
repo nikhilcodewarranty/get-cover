@@ -23,6 +23,7 @@ const mongoose = require('mongoose');
 exports.getServicerDetail = async (req, res) => {
     try {
         let getMetaData = await userService.findOneUser({ _id: req.teammateId })
+        let servicerObject = {}
         if (!getMetaData) {
             res.send({
                 code: constant.errorCode,
@@ -30,7 +31,17 @@ exports.getServicerDetail = async (req, res) => {
             })
             return;
         };
-        const singleServiceProvider = await providerService.getServiceProviderById({ _id: getMetaData.metaId });
+        servicerObject = {
+            ...getMetaData.toObject(),
+            firstName: getMetaData.metaData[0].firstName,
+            phoneNumber: getMetaData.metaData[0].phoneNumber,
+            status: getMetaData.metaData[0].status,
+            lastName: getMetaData.metaData[0].lastName,
+            dialCode: getMetaData.metaData[0].dialCode,
+            isPrimary: getMetaData.metaData[0].isPrimary
+        }
+        getMetaData.firstName = getMetaData.metaData[0].firstName
+        const singleServiceProvider = await providerService.getServiceProviderById({ _id: getMetaData.metaData[0].metaId });
         if (!singleServiceProvider) {
             res.send({
                 code: constant.errorCode,
@@ -38,7 +49,7 @@ exports.getServicerDetail = async (req, res) => {
             })
             return;
         };
-        let resultUser = getMetaData.toObject()
+        let resultUser = servicerObject
         resultUser.meta = singleServiceProvider
         res.send({
             code: constant.successCode,
@@ -47,7 +58,7 @@ exports.getServicerDetail = async (req, res) => {
     } catch (error) {
         res.send({
             code: constant.errorCode,
-            message: err.message
+            message: error.message
         })
     }
 }
@@ -366,14 +377,35 @@ exports.getServicerDealers = async (req, res) => {
                             $lookup: {
                                 from: "users",
                                 localField: "_id",
-                                foreignField: "metaId",
+                                foreignField: "metaData.metaId",
                                 as: "userData",
                                 pipeline: [
                                     {
                                         $match: {
-                                            isPrimary: true,
-                                            "email": { '$regex': data.email ? data.email : '', '$options': 'i' },
-                                            "phoneNumber": { '$regex': data.phone ? data.phone : '', '$options': 'i' },
+                                            "metaData": {
+                                                $elemMatch: {
+                                                    isPrimary: true,
+                                                    phoneNumber: { '$regex': data.phoneNumber ? data.phoneNumber : '', '$options': 'i' },
+                                                }
+                                            },
+                                            email: { '$regex': data.email ? data.email : '', '$options': 'i' }
+
+                                        }
+                                    },
+
+                                    {
+                                        $project: {
+                                            "firstName": { $arrayElemAt: ["$metaData.firstName", 0] },
+                                            "lastName": { $arrayElemAt: ["$metaData.firstName", 0] },
+                                            "email": { $arrayElemAt: ["$metaData.email", 0] },
+                                            "phoneNumber": { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                                            "dialCode": { $arrayElemAt: ["$metaData.dialCode", 0] },
+                                            "roleId": { $arrayElemAt: ["$metaData.roleId", 0] },
+                                            "isPrimary": { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                                            "status": { $arrayElemAt: ["$metaData.status", 0] },
+                                            "metaId": { $arrayElemAt: ["$metaData.metaId", 0] },
+                                            "approvedStatus": 1,
+                                            "email": 1,
                                         }
                                     }
                                 ]
@@ -390,7 +422,7 @@ exports.getServicerDealers = async (req, res) => {
                                     {
                                         $match: {
                                             servicerId: new mongoose.Types.ObjectId(req.userId),
-                                            claimFile: "Completed"
+                                            claimFile: "completed"
 
                                         }
                                     },
@@ -417,6 +449,16 @@ exports.getServicerDealers = async (req, res) => {
             {
                 $unwind: "$dealerData"
             },
+
+            {
+                $project: {
+                    _id: 1,
+                    servicerId: 1,
+                    dealerId: 1,
+                    status: 1,
+                    dealerData: 1,
+                }
+            }
         ]
 
         let filteredData = await dealerRelationService.getDealerRelationsAggregate(query)
@@ -497,7 +539,7 @@ exports.createDeleteRelation = async (req, res) => {
 //get dashboard data
 exports.getDashboardData = async (req, res) => {
     try {
-        const claimQuery = { claimFile: 'Completed', servicerId: new mongoose.Types.ObjectId(req.userId) }
+        const claimQuery = { claimFile: 'completed', servicerId: new mongoose.Types.ObjectId(req.userId) }
         //Get claims data
         let lookupQuery = [
             {
@@ -524,7 +566,7 @@ exports.getDashboardData = async (req, res) => {
         ]
         let numberOfClaims = await claimService.getClaimWithAggregate(numberOfCompleletedClaims);
 
-        const paidClaimQuery = { claimFile: 'Completed', servicerId: new mongoose.Types.ObjectId(req.userId), claimPaymentStatus: "Paid" }
+        const paidClaimQuery = { claimFile: 'completed', servicerId: new mongoose.Types.ObjectId(req.userId), claimPaymentStatus: "Paid" }
         //Get total paid claim value
         let paidLookUp = [
             {
@@ -543,7 +585,7 @@ exports.getDashboardData = async (req, res) => {
             },
         ]
         let paidClaimValue = await claimService.getClaimWithAggregate(paidLookUp);
-        const unPaidClaimQuery = { claimFile: 'Completed', servicerId: new mongoose.Types.ObjectId(req.userId), claimPaymentStatus: "Unpaid" }
+        const unPaidClaimQuery = { claimFile: 'completed', servicerId: new mongoose.Types.ObjectId(req.userId), claimPaymentStatus: "Unpaid" }
         //Get total Unpaid claim value
         let unPaidLookUp = [
             {
@@ -802,6 +844,178 @@ exports.claimReportinDropdown = async (req, res) => {
     }
 };
 
+//Get Claim Reporting dropdown
+exports.getClaimReportingDropdown = async (req, res) => {
+    try {
+        let flag = req.params.flag
+        let response;
+        let dealerId = req.userId;
+
+        if (flag == "dealer") {
+            let servicerQuery = [
+                {
+                    $match: {
+                        _id: new mongoose.Types.ObjectId(req.userId)
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "servicer_dealer_relations",
+                        localField: "_id",
+                        foreignField: "servicerId",
+                        as: "relatedDealer" // Keep dealerPricebookData as an array
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "dealers",
+                        localField: "relatedDealer.dealerId",
+                        foreignField: "_id",
+                        as: "dealers" // Keep dealerPricebookData as an array
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "dealerpricebooks",
+                        localField: "dealers._id",
+                        foreignField: "dealerId",
+                        as: "dealerPricebookData" // Keep dealerPricebookData as an array
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "pricebooks",
+                        localField: "dealerPricebookData.priceBook", // Array of priceBook IDs
+                        foreignField: "_id",
+                        as: "pricebookData" // Keep pricebookData as an array
+                    },
+
+                },
+                {
+                    $lookup: {
+                        from: "pricecategories",
+                        localField: "pricebookData.category", // Array of priceBook IDs
+                        foreignField: "_id",
+                        as: "categories" // Keep pricebookData as an array
+                    },
+
+                },
+                {
+                    $project: {
+                        name: "$name", // Dealer name as per original dealer document
+                        _id: 1,
+                        dealers: {
+                            $map: {
+                                input: "$dealers",
+                                as: "dealer",
+                                in: {
+                                    _id: "$$dealer._id", // Include only _id
+                                    name: "$$dealer.name" // Include only name
+                                }
+                            }
+                        },
+                        categories: {
+                            $map: {
+                                input: "$categories", // Input from categoryData
+                                as: "cat",             // Alias for each element
+                                in: {
+                                    categoryName: "$$cat.name",  // Use category name
+                                    categoryId: "$$cat._id",    // Use category _id
+                                    priceBooks: {
+                                        $map: {
+                                            input: {
+                                                $filter: {
+                                                    input: "$pricebookData", // Filter pricebooks
+                                                    as: "pb",               // Alias for pricebook
+                                                    cond: { $eq: ["$$pb.category", "$$cat._id"] }  // Match pricebooks for the current category
+                                                }
+                                            },
+                                            as: "pb", // Alias for each pricebook
+                                            in: {
+                                                priceBookName: "$$pb.name",  // Use pricebook name
+                                                priceBookId: "$$pb._id",      // Use pricebook _id
+                                                dealerSku: {
+                                                    $map: {
+                                                        input: {
+                                                            $filter: {
+                                                                input: "$dealerPricebookData", // Filter dealer pricebooks
+                                                                as: "dpb",                    // Alias for dealer pricebook
+                                                                cond: { $eq: ["$$dpb.priceBook", "$$pb._id"] } // Match dealer pricebooks with the current pricebook
+                                                            }
+                                                        },
+                                                        as: "dpb", // Alias for each dealer pricebook
+                                                        in: {
+                                                            sku: "$$dpb.dealerSku", // Include SKU field
+                                                            dealerId: "$$dpb.dealerId" // Include SKU field
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+
+            response = await providerService.getTopFiveServicer(servicerQuery)
+        }
+        if (flag == "category") {
+            let catQuery = [
+                {
+                    $lookup: {
+                        from: "pricebooks",
+                        localField: "_id", // Array of priceBook IDs
+                        foreignField: "category",
+                        as: "pricebookData" // Keep pricebookData as an array
+                    },
+
+                },
+                {
+                    $lookup: {
+                        from: "dealerpricebooks",
+                        localField: "pricebookData._id",
+                        foreignField: "priceBook",
+                        as: "dealerPricebookData" // Keep dealerPricebookData as an array
+                    }
+                },
+                {
+                    $project: {
+                        categoryName: "$name", // Rename 'name' to 'categoryName'
+                        categoryId: "$_id",
+                        dealerPricebookData: 1,             // Include _id field
+                        priceBooks: {
+                            $map: {
+
+                                input: "$pricebookData",
+                                as: "pb",
+                                in: {
+                                    priceBookName: "$$pb.name",  // Use pricebook name
+                                    priceBookId: "$$pb._id",      // Use pricebook _id
+                                }
+                            }
+                        }      // Optionally include pricebookData if needed
+                    }
+                }
+            ]
+
+            response = await priceBookService.getCategoryWithPriceBooks(catQuery)
+        }
+        res.send({
+            code: constant.successCode,
+            result: response
+        })
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+};
+
+
 //get dashboard data for graph
 exports.getDashboardGraph = async (req, res) => {
     try {
@@ -895,7 +1109,7 @@ exports.getDashboardGraph = async (req, res) => {
                     createdAt: { $gte: startOfMonth, $lt: endOfMonth },
                     servicerId: new mongoose.Types.ObjectId(req.userId),
                     claimStatus: {
-                        $elemMatch: { status: "Completed" }
+                        $elemMatch: { status: "completed" }
                     },
                 },
             },
@@ -1005,20 +1219,20 @@ exports.getDashboardInfo = async (req, res) => {
 
             }
         },
-        { $sort: { unique_key: -1 } }]
+        { $sort: { updatedAt: -1 } }]
     const lastFiveOrder = await orderService.getOrderWithContract(orderQuery, 5, 5)
     const claimQuery = [
         {
             $match: {
                 $and: [
                     { servicerId: new mongoose.Types.ObjectId(req.userId) },
-                    { claimFile: "Completed" }
+                    { claimFile: "completed" }
                 ]
             }
         },
         {
             $sort: {
-                unique_key_number: -1
+                updatedAt: -1
             }
         },
         {
@@ -1045,6 +1259,7 @@ exports.getDashboardInfo = async (req, res) => {
         },
     ]
     const getLastNumberOfClaims = await claimService.getClaimWithAggregate(claimQuery, {})
+
     let lookupQuery = [
         {
             $match: { _id: { $in: dealerIds } }
@@ -1053,12 +1268,19 @@ exports.getDashboardInfo = async (req, res) => {
             $lookup: {
                 from: "users",
                 localField: "_id",
-                foreignField: "metaId",
+                foreignField: "metaData.metaId",
                 as: "users",
                 pipeline: [
                     {
                         $match: {
-                            isPrimary: true
+                            metaData: { $elemMatch: { isPrimary: true } }
+                        }
+                    },
+                    {
+                        $project: {
+                            // metaData:1,
+                            metaData: { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                            // metaData1: { $arrayElemAt: ["$email",0] }
                         }
                     }
                 ]
@@ -1139,7 +1361,8 @@ exports.getDashboardInfo = async (req, res) => {
                         else: 0
                     }
                 },
-                'phone': { $arrayElemAt: ["$users.phoneNumber", 0] },
+                'phone': { $arrayElemAt: ["$users.metaData", 0] },
+
 
             }
         },
@@ -1180,7 +1403,7 @@ exports.getDashboardInfo = async (req, res) => {
                 as: "claims",
                 pipeline: [
                     {
-                        $match: { claimFile: "Completed" }
+                        $match: { claimFile: "completed" }
                     },
                     {
                         "$group": {

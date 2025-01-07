@@ -4,14 +4,17 @@ const connection = require('../../db')
 const priceSchema = new mongoose.Schema({
   name: {
     type: String,
-    index: true
+    index: true,
+    trim: true,
   },
   pName: {
     type: String,
-    index: true
+    index: true,
+    trim: true,
   },
   description: {
     type: String,
+    trim: true,
   },
   term: {
     type: Number,

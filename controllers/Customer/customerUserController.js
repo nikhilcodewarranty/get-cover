@@ -130,10 +130,35 @@ exports.customerOrders = async (req, res) => {
 
     const allUserIds = mergedArray.concat(userCustomerIds);
 
+    const getPrimaryUser = await userService.findUserforCustomer1([
+      {
+        $match: {
+          $and: [
+            { metaData: { $elemMatch: { metaId: { $in: allUserIds }, isPrimary: true } } }
+          ]
+        }
+      },
+      {
+        $project: {
+          email: 1,
+          'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+          'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+          'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+          'position': { $arrayElemAt: ["$metaData.position", 0] },
+          'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+          'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+          'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+          'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+          'status': { $arrayElemAt: ["$metaData.status", 0] },
+          resetPasswordCode: 1,
+          isResetPassword: 1,
+          approvedStatus: 1,
+          createdAt: 1,
+          updatedAt: 1
+        }
+      }
+    ]);
 
-    const queryUser = { metaId: { $in: allUserIds }, isPrimary: true };
-
-    let getPrimaryUser = await userService.findUserforCustomer(queryUser)
 
     let servicerIdArray = ordersResult.map((result) => result.servicerId);
     const servicerCreteria = {
@@ -338,9 +363,9 @@ exports.getSingleOrder = async (req, res) => {
       ],
     };
     let checkServicer = await servicerService.getServiceProviderById(query1);
-    let singleDealerUser = await userService.getUserById1({ metaId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false });
-    let singleResellerUser = await userService.getUserById1({ metaId: checkOrder.resellerId, isPrimary: true }, { isDeleted: false });
-    let singleCustomerUser = await userService.getUserById1({ metaId: checkOrder.customerId, isPrimary: true }, { isDeleted: false });
+    let singleDealerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } }, { isDeleted: false });
+    let singleResellerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } }, { isDeleted: false });
+    let singleCustomerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } }, { isDeleted: false });
     // ------------------------------------Get Dealer Servicer -----------------------------
     let getServicersIds = await dealerRelationService.getDealerRelations({
       dealerId: checkOrder.dealerId,
@@ -363,9 +388,37 @@ exports.getSingleOrder = async (req, res) => {
       servicer.unshift(dealer);
     }
     const servicerIds = servicer.map((obj) => obj._id);
-    const servicerQuery = { metaId: { $in: servicerIds }, isPrimary: true };
 
-    let servicerUser = await userService.getMembers(servicerQuery, {});
+    const servicerUser = await userService.findUserforCustomer1([
+      {
+        $match: {
+          $and: [
+            { metaData: { $elemMatch: { metaId: { $in: servicerIds }, isPrimary: true } } }
+          ]
+        }
+      },
+      {
+        $project: {
+          email: 1,
+          'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+          'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+          'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+          'position': { $arrayElemAt: ["$metaData.position", 0] },
+          'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+          'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+          'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+          'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+          'status': { $arrayElemAt: ["$metaData.status", 0] },
+          resetPasswordCode: 1,
+          isResetPassword: 1,
+          approvedStatus: 1,
+          createdAt: 1,
+          updatedAt: 1
+        }
+      }
+    ]);
+
+
     const result_Array = servicer.map((item1) => {
       const matchingItem = servicerUser.find(
         (item2) => item2.metaId?.toString() === item1._id.toString()
@@ -373,8 +426,8 @@ exports.getSingleOrder = async (req, res) => {
 
       if (matchingItem) {
         return {
-          ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-          servicerData: matchingItem.toObject(),
+          ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
+          servicerData: matchingItem,
         };
       } else {
         return servicer.toObject();
@@ -453,6 +506,9 @@ exports.getCustomerContract = async (req, res) => {
   try {
     let data = req.body
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+    // let getTheThresholdLimir = await userService.getUserById1({ roleId: process.env.super_admin, isPrimary: true })
+    let getTheThresholdLimir = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
+
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
     let dealerIds = [];
@@ -528,8 +584,17 @@ exports.getCustomerContract = async (req, res) => {
     if (userSearchCheck == 1) {
       contractFilterWithEligibilty.push({ orderId: { $in: orderIds } })
     }
+
+    if (data.startDate != "") {
+      let startDate = new Date(data.startDate)
+      let endDate = new Date(data.endDate)
+      startDate.setHours(0, 0, 0, 0)
+      endDate.setHours(11, 59, 0, 0)
+      let dateFilter = { createdAt: { $gte: startDate, $lte: endDate } }
+      contractFilterWithEligibilty.push(dateFilter)
+  }
     let mainQuery = []
-    if (data.contractId === "" && data.productName === "" && data.dealerSku === "" &&  data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
+    if (data.contractId === "" && data.productName === "" && data.dealerSku === "" && data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
       mainQuery = [
         { $sort: { unique_key_number: -1 } },
         {
@@ -552,6 +617,7 @@ exports.getCustomerContract = async (req, res) => {
                   model: 1,
                   serial: 1,
                   minDate: 1,
+                  createdAt:1,
                   unique_key: 1,
                   productValue: 1,
                   status: 1,
@@ -600,6 +666,8 @@ exports.getCustomerContract = async (req, res) => {
                 minDate: 1,
                 unique_key: 1,
                 productValue: 1,
+                createdAt:1,
+
                 status: 1,
                 manufacture: 1,
                 eligibilty: 1,
@@ -620,6 +688,9 @@ exports.getCustomerContract = async (req, res) => {
     let result1 = getContracts[0]?.data ? getContracts[0]?.data : []
     for (let e = 0; e < result1.length; e++) {
       result1[e].reason = " "
+      if (!result1[e].eligibilty) {
+        result1[e].reason = "Claims limit cross for this contract"
+      }
       if (result1[e].status != "Active") {
         result1[e].reason = "Contract is not active"
       }
@@ -643,7 +714,7 @@ exports.getCustomerContract = async (req, res) => {
             openFileClaimsCount: { // Count of claims where claimfile is "Open"
               $sum: {
                 $cond: {
-                  if: { $eq: ["$claimFile", "Open"] }, // Assuming "claimFile" field is correct
+                  if: { $eq: ["$claimFile", "open"] }, // Assuming "claimFile" field is correct
                   then: 1,
                   else: 0
                 }
@@ -663,6 +734,21 @@ exports.getCustomerContract = async (req, res) => {
           result1[e].reason = "Claim value exceed the product value limit"
         }
       }
+
+
+      let thresholdLimitPercentage = getTheThresholdLimir.threshHoldLimit.value
+      const thresholdLimitValue = (thresholdLimitPercentage / 100) * Number(result1[e].productValue);
+      let overThreshold = result1[e].claimAmount > thresholdLimitValue;
+      let threshHoldMessage = "This claim amount surpasses the maximum allowed threshold."
+      if (!overThreshold) {
+        threshHoldMessage = ""
+      }
+      if (!thresholdLimitPercentage.isThreshHoldLimit) {
+        overThreshold = false
+        threshHoldMessage = ""
+      }
+      result1[e].threshHoldMessage = threshHoldMessage
+      result1[e].overThreshold = overThreshold
     }
     res.send({
       code: constant.successCode,
@@ -701,10 +787,26 @@ exports.addCustomerUser = async (req, res) => {
       return;
     };
 
-    data.accountId = checkCustomer._id
-    data.metaId = checkCustomer._id
-    data.roleId = process.env.customer
-    let saveData = await userService.createUser(data)
+    let metaData = {
+      email: data.email,
+      metaData: [
+        {
+          metaId: checkCustomer._id,
+          roleId: process.env.customer,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          phoneNumber: data.phoneNumber,
+          position: data.position,
+          isPrimary: false,
+          dialCode: data.dialCode ? data.dialCode : "+1"
+
+        }
+      ]
+
+    }
+
+
+    let saveData = await userService.createUser(metaData)
     if (!saveData) {
       //Save Logs
       let logData = {
@@ -769,7 +871,42 @@ exports.addCustomerUser = async (req, res) => {
 exports.getCustomerUsers = async (req, res) => {
   try {
     let data = req.body
-    let getCustomerUsers = await userService.findUser({ metaId: req.userId, isDeleted: false }, { isPrimary: -1 })
+
+    // let getCustomerUsers = await userService.findUser({ metaData: { $elemMatch: { metaId: req.userId, isDeleted: false } } }, { isPrimary: -1 })
+
+    const getCustomerUsers = await userService.findUserforCustomer1([
+      {
+        $match: {
+          $and: [
+            { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+            { metaData: { $elemMatch: { firstName: { '$regex': data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+            { metaData: { $elemMatch: { lastName: { '$regex': data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+            { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { metaData: { $elemMatch: { metaId: new mongoose.Types.ObjectId(req.userId) } } }
+          ]
+        }
+      },
+      {
+        $project: {
+          email: 1,
+          'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+          'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+          'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+          'position': { $arrayElemAt: ["$metaData.position", 0] },
+          'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+          'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+          'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+          'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+          'status': { $arrayElemAt: ["$metaData.status", 0] },
+          resetPasswordCode: 1,
+          isResetPassword: 1,
+          approvedStatus: 1,
+          createdAt: 1,
+          updatedAt: 1
+        }
+      }
+    ]);
+
     if (!getCustomerUsers) {
       res.send({
         code: constant.errorCode,
@@ -787,19 +924,6 @@ exports.getCustomerUsers = async (req, res) => {
       l_name: nameArray.slice(1).join(" ")  // Last name (if there are multiple parts)
     };
 
-    const firstNameRegex = new RegExp(data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', 'i')
-    const lastNameRegex = new RegExp(data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', 'i')
-    const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
-    const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
-
-    const filteredData = getCustomerUsers.filter(entry => {
-      return (
-        firstNameRegex.test(entry.firstName) &&
-        lastNameRegex.test(entry.lastName) &&
-        emailRegex.test(entry.email) &&
-        phoneRegex.test(entry.phoneNumber)
-      );
-    });
 
     let checkCustomer = await customerService.getCustomerByName({ _id: req.userId }, { status: 1 })
     if (!checkCustomer) {
@@ -814,7 +938,7 @@ exports.getCustomerUsers = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: "Success",
-      result: filteredData,
+      result: getCustomerUsers,
       customerStatus: checkCustomer.status,
       isAccountCreate: checkCustomer.isAccountCreate
     })
@@ -929,7 +1053,7 @@ exports.getCustomerById = async (req, res) => {
         message: "Invalid customer ID"
       })
     } else {
-      let getPrimaryUser = await userService.findOneUser({ metaId: checkCustomer._id, isPrimary: true }, {})
+      let getPrimaryUser = await userService.findOneUser({ metaData: { $elemMatch: { metaId: checkCustomer._id, isPrimary: true } } }, {})
       let checkReseller = await resellerService.getReseller({ _id: checkCustomer.resellerId }, { isDeleted: 0 });
       let project = {
         productsArray: 1,
@@ -1032,9 +1156,67 @@ exports.getOrderContract = async (req, res) => {
 
     const queryResselerUser = { metaId: { $in: [checkOrder[0].order[0].resellerId != null ? checkOrder[0].order[0].resellerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
 
-    let dealerUser = await userService.findUserforCustomer(queryDealerUser)
 
-    let resellerUser = await userService.findUserforCustomer(queryResselerUser)
+    let dealerUser = await userService.findUserforCustomer1([
+      {
+        $match: {
+          $and: [
+            { metaData: { $elemMatch: { metaId: new mongoose.Types.ObjectId(checkOrder[0].order[0].dealerId) } } },
+          ]
+        }
+      },
+      {
+        $project: {
+          email: 1,
+          password: 1,
+          'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+          'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+          'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+          'position': { $arrayElemAt: ["$metaData.position", 0] },
+          'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+          'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+          'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+          'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+          'status': { $arrayElemAt: ["$metaData.status", 0] },
+          resetPasswordCode: 1,
+          isResetPassword: 1,
+          approvedStatus: 1,
+          createdAt: 1,
+          updatedAt: 1
+        }
+      }
+    ])
+
+    let resellerUser = await userService.findUserforCustomer1([
+      {
+        $match: {
+          $and: [
+            { metaData: { $elemMatch: { metaId: new mongoose.Types.ObjectId(checkOrder[0].order[0].resellerId) } } },
+          ]
+        }
+      },
+      {
+        $project: {
+          email: 1,
+          password: 1,
+          'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+          'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+          'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+          'position': { $arrayElemAt: ["$metaData.position", 0] },
+          'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+          'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+          'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+          'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+          'status': { $arrayElemAt: ["$metaData.status", 0] },
+          resetPasswordCode: 1,
+          isResetPassword: 1,
+          approvedStatus: 1,
+          createdAt: 1,
+          updatedAt: 1
+        }
+      }
+    ])
+
 
     //Get Servicer Data
 
@@ -1162,7 +1344,7 @@ exports.getContractById = async (req, res) => {
             openFileClaimsCount: { // Count of claims where claimfile is "Open"
               $sum: {
                 $cond: {
-                  if: { $eq: ["$claimFile", "Open"] }, // Assuming "claimFile" field is correct
+                  if: { $eq: ["$claimFile", "open"] }, // Assuming "claimFile" field is correct
                   then: 1,
                   else: 0
                 }
@@ -1214,6 +1396,22 @@ exports.getContractById = async (req, res) => {
       }
 
     })
+    //Get dynamic options
+    const dynamicOption = await userService.getOptions({ name: "coverage_type" })
+    getData[0].mergedData = [];
+    getData[0].adhDays.forEach(adhItem => {
+      const matchedOption = dynamicOption.value.find(option => option.value === adhItem.value);
+
+      if (matchedOption) {
+        getData[0].mergedData.push({
+          label: matchedOption.label,
+          value: adhItem.value,
+          waitingDays: adhItem.waitingDays,
+          deductible: adhItem.deductible,
+          amountType: adhItem.amountType
+        });
+      }
+    });
     if (!getData) {
       res.send({
         code: constant.errorCode,
@@ -1237,139 +1435,49 @@ exports.getContractById = async (req, res) => {
 // get dashboard data 
 exports.getDashboardData = async (req, res) => {
   try {
-    let data = req.body;
-    let project = {
-      productsArray: 1,
-      dealerId: 1,
-      unique_key: 1,
-      unique_key_number: 1,
-      unique_key_search: 1,
-      servicerId: 1,
-      customerId: 1,
-      resellerId: 1,
-      paymentStatus: 1,
-      status: 1,
-      venderOrder: 1,
-      orderAmount: 1,
-    };
+    let data = req.body
 
-    let query = { status: 'Active', customerId: new mongoose.Types.ObjectId(req.userId) };
-    const claimQuery = { claimFile: 'Completed' }
-    var checkOrders_ = await orderService.getDashboardData(query, project);
-    //Get claims data
-    let lookupQuery = [
-      {
-        $match: claimQuery
-      },
-      {
-        $lookup: {
-          from: "contracts",
-          localField: "contractId",
-          foreignField: "_id",
-          as: "contracts",
-        }
-      },
-      {
-        $unwind: "$contracts"
-      },
-      {
-        $lookup: {
-          from: "orders",
-          localField: "contracts.orderId",
-          foreignField: "_id",
-          as: "contracts.orders",
-        },
 
-      },
+    let claimQueryCompleted = [
       {
-        $unwind: "$contracts.orders"
-      },
-      {
-        $match:
-        {
+        $match: {
           $and: [
-            { "contracts.orders.customerId": new mongoose.Types.ObjectId(req.userId) },
-          ]
-        },
-      },
-      {
-        "$group": {
-          "_id": "",
-          "totalAmount": {
-            "$sum": {
-              "$sum": "$totalAmount"
+            { customerId: new mongoose.Types.ObjectId(req.userId) },
+            {
+              $or: [
+                { claimFile: "completed" },
+                { claimFile: "rejected" },
+              ]
             }
-          },
-        },
-
-      },
-    ]
-    let valueClaim = await claimService.getClaimWithAggregate(lookupQuery);
-
-    const rejectedQuery = { claimFile: { $ne: "Rejected" } }
-    //Get number of claims
-    let numberOfCompleletedClaims = [
-      {
-        $match: claimQuery
-      },
-      {
-        $lookup: {
-          from: "contracts",
-          localField: "contractId",
-          foreignField: "_id",
-          as: "contracts",
-        }
-      },
-      {
-        $unwind: "$contracts"
-      },
-      {
-        $lookup: {
-          from: "orders",
-          localField: "contracts.orderId",
-          foreignField: "_id",
-          as: "contracts.orders",
-        },
-
-      },
-      {
-        $unwind: "$contracts.orders"
-      },
-      {
-        $match:
-        {
-          $and: [
-            { "contracts.orders.customerId": new mongoose.Types.ObjectId(req.userId) },
           ]
-        },
-      },
-    ]
-    let numberOfClaims = await claimService.getClaimWithAggregate(numberOfCompleletedClaims);
-    const claimData = {
-      numberOfClaims: numberOfClaims.length,
-      valueClaim: valueClaim.length > 0 ? valueClaim[0]?.totalAmount : 0
-    }
-    if (!checkOrders_[0] && numberOfClaims.length == 0 && valueClaim.length == 0) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to fetch order data",
-        result: {
-          claimData: claimData,
-          orderData: {
-            "_id": "",
-            "totalAmount": 0,
-            "totalOrder": 0
-          }
         }
-      })
-      return;
-    }
+      },
+
+    ]
+
+    let claimQuery = [
+      {
+        $match: {
+          customerId: new mongoose.Types.ObjectId(req.userId),
+        }
+      },
+
+    ]
+
+    let getOrderId = await orderService.getOrders({ customerId: req.userId })
+    let orderIds = getOrderId.map((orderId) => orderId._id)
+    let getCompletedClaim = await claimService.getClaimWithAggregate(claimQueryCompleted)
+    let getClaim = await claimService.getClaimWithAggregate(claimQuery)
+    let getContracts = await contractService.findContracts2({ orderId: { $in: orderIds } })
+
+
     res.send({
       code: constant.successCode,
       message: "Success",
       result: {
-        claimData: claimData,
-        orderData: checkOrders_[0]
+        numberOfDevices: getContracts.length,
+        numberOfSubmittedClaims: getClaim.length,
+        numberOfCompletedClaims: getCompletedClaim.length
       }
     })
   } catch (err) {
@@ -1380,54 +1488,45 @@ exports.getDashboardData = async (req, res) => {
   }
 };
 
-// get custiner details
-exports.getCustomerDetails = async (req, res) => {
+exports.getDashboardData1 = async (req, res) => {
   try {
     let data = req.body
-    let getUser = await userService.getUserById1({ _id: req.teammateId })
-    let mid = new mongoose.Types.ObjectId(req.userId)
-    let query = [
+
+    let claimQueryCompleted = [
       {
         $match: {
-          _id: mid
+          customerId: new mongoose.Types.ObjectId(req.userId),
+          claimFile: "completed"
         }
       },
-      {
-        $lookup: {
-          from: "dealers",
-          foreignField: "_id",
-          localField: "dealerId",
-          as: "dealer"
-        }
-      },
-      {
-        "$lookup": {
-          "let": { "userObjId": { "$toObjectId": "$resellerId" } },
-          "from": "resellers",
-          "pipeline": [
-            { "$match": { "$expr": { "$eq": ["$_id", "$$userObjId"] } } }
-          ],
-          "as": "reseller"
-        },
 
-      },
-      { $unwind: { path: "$dealer", preserveNullAndEmptyArrays: true } },
-      { $unwind: { path: "$reseller", preserveNullAndEmptyArrays: true } }
     ]
-    let getCustomer = await customerService.getCustomerByAggregate(query)
-    if (!getCustomer[0]) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to fetch the details"
-      })
-      return;
-    }
+
+    let claimQuery = [
+      {
+        $match: {
+          customerId: new mongoose.Types.ObjectId(req.userId),
+        }
+      },
+
+    ]
+
+    let getOrderId = await orderService.getOrders({ customerId: req.userId })
+    let orderIds = getOrderId.map((orderId) => orderId._id)
+    let getCompletedClaim = await claimService.getClaimWithAggregate(claimQueryCompleted)
+    let getClaim = await claimService.getClaimWithAggregate(claimQuery)
+    let getContracts = await contractService.findContracts2({ orderId: { $in: orderIds } })
+
     res.send({
       code: constant.successCode,
-      message: "Successfully fetched user details.",
-      result: getCustomer[0],
-      loginMember: getUser
+      message: "Success",
+      result: {
+        numberOfDevices: getContracts.length,
+        numberOfSubmittedClaims: getClaim.length,
+        numberOfCompletedClaims: getCompletedClaim.length
+      }
     })
+
   } catch (err) {
     res.send({
       code: constant.errorCode,
@@ -1435,6 +1534,91 @@ exports.getCustomerDetails = async (req, res) => {
     })
   }
 }
+
+// get custiner details
+exports.getCustomerDetails = async (req, res) => {
+  try {
+    let data = req.body;
+    let getUser = await userService.getUserById1({ _id: req.teammateId });
+    let mid = new mongoose.Types.ObjectId(req.userId);
+    let query = [
+      {
+        $match: {
+          _id: mid,
+        },
+      },
+      {
+        $lookup: {
+          from: "dealers",
+          foreignField: "_id",
+          localField: "dealerId",
+          as: "dealer",
+        },
+      },
+      {
+        $lookup: {
+          let: { userObjId: { $toObjectId: "$resellerId" } },
+          from: "resellers",
+          pipeline: [
+            { $match: { $expr: { $eq: ["$_id", "$$userObjId"] } } },
+          ],
+          as: "reseller",
+        },
+      },
+      { $unwind: { path: "$dealer", preserveNullAndEmptyArrays: true } },
+      { $unwind: { path: "$reseller", preserveNullAndEmptyArrays: true } },
+    ];
+    let getCustomer = await customerService.getCustomerByAggregate(query);
+
+    if (!getCustomer[0]) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the details",
+      });
+      return;
+    }
+
+    // Add a new primary address to the addresses array
+    if(getCustomer[0]?.addresses){
+      getCustomer[0].addresses.push({
+        address: getCustomer[0]?.street,
+        city: getCustomer[0]?.city,
+        state: getCustomer[0]?.state,
+        zip: getCustomer[0]?.zip,
+        isPrimary: true,
+      });
+      // Sort the addresses array to place isPrimary: true at the top
+      getCustomer[0].addresses.sort((a, b) => b.isPrimary - a.isPrimary);
+    }
+  
+
+
+    // Prepare loginMember details
+    let custmerDetails = {
+      ...getUser.toObject(),
+      firstName: getUser.metaData[0].firstName,
+      isPrimary: getUser.metaData[0].isPrimary,
+      phoneNumber: getUser.metaData[0].phoneNumber,
+      status: getUser.metaData[0].status,
+      position: getUser.metaData[0].position,
+      lastName: getUser.metaData[0].lastName,
+    };
+
+    // Send the response
+    res.send({
+      code: constant.successCode,
+      message: "Successfully fetched user details.",
+      result: getCustomer[0],
+      loginMember: custmerDetails,
+    });
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message,
+    });
+  }
+};
+
 
 // saker reporting for customer daily/weekly/day
 exports.saleReporting = async (req, res) => {
@@ -1583,7 +1767,7 @@ exports.getDashboardGraph = async (req, res) => {
           createdAt: { $gte: startOfMonth, $lt: endOfMonth },
           customerId: new mongoose.Types.ObjectId(req.userId),
           claimStatus: {
-            $elemMatch: { status: "Completed" }
+            $elemMatch: { status: "completed" }
           },
         },
       },
@@ -1675,7 +1859,9 @@ exports.getDashboardInfo = async (req, res) => {
 
       }
     },
-    { $sort: { unique_key_number: -1 } },
+    {
+      $sort: { updatedAt: -1 }
+    },
     {
       $limit: 5
     },
@@ -1689,14 +1875,14 @@ exports.getDashboardInfo = async (req, res) => {
             customerId: new mongoose.Types.ObjectId(req.userId)
           },
           {
-            claimFile: "Completed"
+            claimFile: "completed"
           }
         ]
       }
     },
     {
       $sort: {
-        unique_key_number: -1
+        updatedAt: -1
       }
     },
     {
@@ -1748,7 +1934,6 @@ const checkCustomerEmail = async (data) => {
           let dealerIds = checkEmail.customerData.map(ID => ID.dealerId.toString())
 
           const includesAny = (arr, values) => values.some(v => arr.includes(v));
-
 
           if (includesAny(resellerIds, [data.resellerId]) && includesAny(dealerIds, [data.dealerId])) {
             return {

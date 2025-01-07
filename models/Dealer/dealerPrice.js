@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
-const connection = require('../../db')
+const connection = require('../../db');
+const { string } = require("joi");
 
 const dealerBookSchema = new mongoose.Schema({
   priceBook: {
@@ -13,7 +14,8 @@ const dealerBookSchema = new mongoose.Schema({
   },
   dealerSku: {
     type: String,
-    default: ''
+    default: '',
+    trim: true
   },
   status: {
     type: Boolean,
@@ -26,7 +28,8 @@ const dealerBookSchema = new mongoose.Schema({
   },
   description: {
     type: String,
-    default: ''
+    default: '',
+    trim: true
   },
   isDeleted: {
     type: Boolean,
@@ -36,13 +39,57 @@ const dealerBookSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  adhDays: {
+    type: [
+      {
+        value: {
+          type: String
+        },
+        waitingDays: {
+          type: Number
+        },
+        deductible: {
+          type: Number
+        },
+        amountType: {
+          type: String,
+          enum: ["amount", "percentage"]
+        }
+      }
+    ]
+  },
   unique_key: {
     type: Number,
   },
   wholesalePrice: {
     type: Number,
     default: 0
-  }
+  },
+  noOfClaimPerPeriod: {
+    type: Number,
+    default: 0
+  },
+  noOfClaim: {
+    type: {
+      period: {
+        type: String,
+        enum: ["Monthly", "Annually"],
+        default: "Monthly"
+      },
+      value: {
+        type: Number,
+        default: -1
+      }
+    },
+  },
+  isManufacturerWarranty: {
+    type: Boolean,
+    default: false
+  },
+  isMaxClaimAmount: {
+    type: Boolean,
+    default: false
+  },
 }, { timestamps: true });
 module.exports = connection.userConnection.model("dealerPriceBook", dealerBookSchema);
 

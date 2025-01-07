@@ -111,15 +111,11 @@ module.exports = class priceBookService {
             localField: "coverageType.value",
             foreignField: "value.value",
             as: "options",
-            pipeline:[
-             { $match:{
-                value:{$elemMatch:{value:"breakdown"}}
-              }}
-            ]
           }
         },
 
       ]).sort({ 'createdAt': -1 });
+
       return singlePriceBookResponse;
     } catch (error) {
       return `Could not fetch price book ${error}`
@@ -235,9 +231,10 @@ module.exports = class priceBookService {
     }
   }
   //Find by name alternative method
-  static async findByName1(priceBooksName) {
+  static async findByName1(priceBooksName, projection) {
     try {
-      const response = await priceBook.findOne(priceBooksName);
+      let projections = projection ? projection : {}
+      const response = await priceBook.findOne(priceBooksName, projection);
       return response;
     } catch (error) {
       return `Could not fetch price book ${error}`;
@@ -251,6 +248,16 @@ module.exports = class priceBookService {
       return allPriceBook;
     } catch (error) {
       return `Could not fetch price book ${error}`;
+    }
+  }
+
+  static async getCategoryWithPriceBooks(query) {
+    try {
+      const allCategories = await priceCategory.aggregate(query).sort({ createdAt: -1 })
+      return allCategories;
+    }
+    catch (error) {
+      return `Could not get categories ${error}`
     }
   }
 }

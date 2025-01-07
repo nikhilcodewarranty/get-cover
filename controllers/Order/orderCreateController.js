@@ -104,6 +104,7 @@ exports.checkFileValidation = async (req, res) => {
             let originalName = file.originalname;
             let size = file.size;
             let totalDataComing1 = [];
+            let message = [];
             let ws;
             //S3 Bucket Read Code
             var params = { Bucket: process.env.bucket_name, Key: file.key };
@@ -111,6 +112,13 @@ exports.checkFileValidation = async (req, res) => {
                 if (err) {
                     console.log(err);
                 } else {
+                    if (!Buffer.isBuffer(data.Body)) {
+                        res.send({
+                            code: constant.errorCode,
+                            message: "Unable to buffer try again"
+                        })
+                        return
+                    }
                     // Parse the buffer as an Excel file
                     const wb = XLSX.read(data.Body, { type: 'buffer' });
                     // Extract the data from the first sheet
@@ -146,7 +154,7 @@ exports.checkFileValidation = async (req, res) => {
                     }
 
                     const isValidLength = totalDataComing1.every(
-                        (obj) => Object.keys(obj).length === 5
+                        (obj) => Object.keys(obj).length === 8
                     );
                     if (!isValidLength) {
                         res.send({
@@ -241,154 +249,155 @@ exports.checkFileValidation = async (req, res) => {
     }
 }
 
-
 //check file validation for orders
-exports.checkFileValidation = async (req, res) => {
-    try {
-        uploadP(req, res, async (err) => {
-            let data = req.body;
-            let file = req.file;
-            let csvName = file.key;
-            let originalName = file.originalname;
-            let size = file.size;
-            let totalDataComing1 = [];
-            let ws;
-            //S3 Bucket Read Code
-            var params = { Bucket: process.env.bucket_name, Key: file.key };
-            S3Bucket.getObject(params, function (err, data) {
-                if (err) {
-                    console.log(err);
-                } else {
-                    // Parse the buffer as an Excel file
-                    const wb = XLSX.read(data.Body, { type: 'buffer' });
-                    // Extract the data from the first sheet
-                    const sheetName = wb.SheetNames[0];
-                    ws = wb.Sheets[sheetName];
-                    totalDataComing1 = XLSX.utils.sheet_to_json(ws);
-                    const headers = [];
-                    for (let cell in ws) {
-                        // Check if the cell is in the first row and has a non-empty value
-                        if (
-                            /^[A-Z]1$/.test(cell) &&
-                            ws[cell].v !== undefined &&
-                            ws[cell].v !== null &&
-                            ws[cell].v.trim() !== ""
-                        ) {
-                            headers.push(ws[cell].v);
-                        }
-                    }
+// exports.checkFileValidation = async (req, res) => {
+//     try {
+//         uploadP(req, res, async (err) => {
+//             let data = req.body;
+//             let file = req.file;
+//             let csvName = file.key;
+//             let originalName = file.originalname;
+//             let size = file.size;
+//             let totalDataComing1 = [];
+//             let ws;
+//             //S3 Bucket Read Code
+//             var params = { Bucket: process.env.bucket_name, Key: file.key };
+//             S3Bucket.getObject(params, function (err, data) {
+//                 if (err) {
+//                     console.log(err);
+//                 } else {
+//                     if (!Buffer.isBuffer(data.Body)){
+//                         resse
+//                     }
+//                     // Parse the buffer as an Excel file
+//                     const wb = XLSX.read(data.Body, { type: 'buffer' });
+//                     // Extract the data from the first sheet
+//                     const sheetName = wb.SheetNames[0];
+//                     ws = wb.Sheets[sheetName];
+//                     totalDataComing1 = XLSX.utils.sheet_to_json(ws);
+//                     const headers = [];
+//                     for (let cell in ws) {
+//                         // Check if the cell is in the first row and has a non-empty value
+//                         if (
+//                             /^[A-Z]1$/.test(cell) &&
+//                             ws[cell].v !== undefined &&
+//                             ws[cell].v !== null &&
+//                             ws[cell].v.trim() !== ""
+//                         ) {
+//                             headers.push(ws[cell].v);
+//                         }
+//                     }
 
-                    if (headers.length !== 8) {
-                        // fs.unlink('../../uploads/orderFile/' + req.file.filename)
-                        res.send({
-                            code: constant.successCode,
-                            message:
-                                "Invalid file format detected. The sheet should contain exactly eight columns.",
-                            orderFile: {
-                                fileName: csvName,
-                                name: originalName,
-                                size: file.size,
-                            },
-                        });
-                        return;
-                    }
+//                     if (headers.length !== 8) {
+//                         // fs.unlink('../../uploads/orderFile/' + req.file.filename)
+//                         res.send({
+//                             code: constant.successCode,
+//                             message:
+//                                 "Invalid file format detected. The sheet should contain exactly eight columns.",
+//                             orderFile: {
+//                                 fileName: csvName,
+//                                 name: originalName,
+//                                 size: file.size,
+//                             },
+//                         });
+//                         return;
+//                     }
 
-                    const isValidLength = totalDataComing1.every(
-                        (obj) => Object.keys(obj).length === 5
-                    );
-                    if (!isValidLength) {
-                        res.send({
-                            code: constant.successCode,
-                            message: "Invalid fields value",
-                            orderFile: {
-                                fileName: csvName,
-                                name: originalName,
-                                size: size,
-                            },
-                        });
-                        return;
-                    }
-                    const totalDataComing = totalDataComing1.map((item) => {
-                        const keys = Object.keys(item);
-                        return {
-                            retailValue: item[keys[4]],
-                        };
-                    });
+//                     const isValidLength = totalDataComing1.every(
+//                         (obj) => Object.keys(obj).length === 5
+//                     );
+//                     if (!isValidLength) {
+//                         res.send({
+//                             code: constant.successCode,
+//                             message: "Invalid fields value",
+//                             orderFile: {
+//                                 fileName: csvName,
+//                                 name: originalName,
+//                                 size: size,
+//                             },
+//                         });
+//                         return;
+//                     }
+//                     const totalDataComing = totalDataComing1.map((item) => {
+//                         const keys = Object.keys(item);
+//                         return {
+//                             retailValue: item[keys[4]],
+//                         };
+//                     });
 
-                    const serialNumberArray = totalDataComing1.map((item) => {
-                        const keys = Object.keys(item);
-                        return {
-                            serial: item[keys[2]].toString().toLowerCase(),
-                        };
-                    });
+//                     const serialNumberArray = totalDataComing1.map((item) => {
+//                         const keys = Object.keys(item);
+//                         return {
+//                             serial: item[keys[2]].toString().toLowerCase(),
+//                         };
+//                     });
 
-                    const serialNumbers = serialNumberArray.map(number => number.serial);
-                    const duplicateSerials = serialNumbers.filter((serial, index) => serialNumbers.indexOf(serial) !== index);
+//                     const serialNumbers = serialNumberArray.map(number => number.serial);
+//                     const duplicateSerials = serialNumbers.filter((serial, index) => serialNumbers.indexOf(serial) !== index);
 
-                    if (duplicateSerials.length > 0) {
-                        res.send({
-                            code: constant.successCode,
-                            message: "Serial numbers are not unique for this product",
-                            orderFile: {
-                                fileName: csvName,
-                                name: originalName,
-                                size: size,
-                            },
-                        })
-                        return
-                    }
+//                     if (duplicateSerials.length > 0) {
+//                         res.send({
+//                             code: constant.successCode,
+//                             message: "Serial numbers are not unique for this product",
+//                             orderFile: {
+//                                 fileName: csvName,
+//                                 name: originalName,
+//                                 size: size,
+//                             },
+//                         })
+//                         return
+//                     }
 
-                    // Check retail price is in between rangeStart and rangeEnd
-                    const isValidRetailPrice = totalDataComing.map((obj) => {
-                        // Check if 'noOfProducts' matches the length of 'data'
-                        if (
-                            obj.retailValue < Number(data.rangeStart) ||
-                            obj.retailValue > Number(data.rangeEnd)
-                        ) {
-                            message.push({
-                                code: constant.successCode,
-                                retailPrice: obj.retailValue,
-                                message: "Invalid Retail Price!",
-                                fileName: csvName,
-                                name: originalName,
-                                orderFile: {
-                                    fileName: csvName,
-                                    name: originalName,
-                                    size: size,
-                                },
-                            });
-                        }
-                    });
+//                     // Check retail price is in between rangeStart and rangeEnd
+//                     const isValidRetailPrice = totalDataComing.map((obj) => {
+//                         // Check if 'noOfProducts' matches the length of 'data'
+//                         if (
+//                             obj.retailValue < Number(data.rangeStart) ||
+//                             obj.retailValue > Number(data.rangeEnd)
+//                         ) {
+//                             message.push({
+//                                 code: constant.successCode,
+//                                 retailPrice: obj.retailValue,
+//                                 message: "Invalid Retail Price!",
+//                                 fileName: csvName,
+//                                 name: originalName,
+//                                 orderFile: {
+//                                     fileName: csvName,
+//                                     name: originalName,
+//                                     size: size,
+//                                 },
+//                             });
+//                         }
+//                     });
 
-                    if (message.length > 0) {
-                        res.send({
-                            data: message,
+//                     if (message.length > 0) {
+//                         res.send({
+//                             data: message,
 
-                        });
-                        return;
-                    }
+//                         });
+//                         return;
+//                     }
 
-                    res.send({
-                        code: constant.successCode,
-                        message: "Verified",
-                        orderFile: {
-                            fileName: csvName,
-                            name: originalName,
-                            size: size,
-                        },
-                    });
-                }
-            })
+//                     res.send({
+//                         code: constant.successCode,
+//                         message: "Verified",
+//                         orderFile: {
+//                             fileName: csvName,
+//                             name: originalName,
+//                             size: size,
+//                         },
+//                     });
+//                 }
+//             })
 
-        });
-    } catch (err) {
-        res.send({
-            code: constant.errorCode,
-            message: err.message,
-        });
-    }
-};
-
+//         });
+//     } catch (err) {
+//         res.send({
+//             code: constant.errorCode,
+//             message: err.message,
+//         });
+//     }
+// };
 
 //checking uploaded file is valid
 exports.checkMultipleFileValidation = async (req, res) => {
@@ -736,35 +745,43 @@ async function generateTC(orderData) {
         //Get customer
         const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId }, { isDeleted: false })
         //Get customer primary info
-        const customerUser = await userService.getUserById1({ metaId: checkOrder.customerId, isPrimary: true }, { isDeleted: false })
+        const customerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } }, { isDeleted: false })
 
-        const DealerUser = await userService.getUserById1({ metaId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false })
+        const DealerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } }, { isDeleted: false })
 
         const checkReseller = await resellerService.getReseller({ _id: checkOrder.resellerId }, { isDeleted: false })
         //Get reseller primary info
-        const resellerUser = await userService.getUserById1({ metaId: checkOrder.resellerId, isPrimary: true }, { isDeleted: false })
+        const resellerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } }, { isDeleted: false })
         //Get contract info of the order
         let productCoveredArray = []
+        let otherInfo = []
         //Check contract is exist or not using contract id
         const contractArrayPromise = checkOrder?.productsArray.map(item => {
-            if (!item.exit) return contractService.getContractById({
+            return contractService.getContractById({
                 orderProductId: item._id
             });
-            else {
-                return null;
-            }
+
         })
         const contractArray = await Promise.all(contractArrayPromise);
 
         for (let i = 0; i < checkOrder?.productsArray.length; i++) {
+            let anotherObj = {
+                coverageStartDate: checkOrder?.productsArray[i]?.coverageStartDate,
+                coverageEndDate: checkOrder?.productsArray[i]?.coverageEndDate,
+                term: checkOrder?.productsArray[i]?.term
+            }
+            otherInfo.push(anotherObj)
             if (checkOrder?.productsArray[i].priceType == 'Quantity Pricing') {
                 for (let j = 0; j < checkOrder?.productsArray[i].QuantityPricing.length; j++) {
                     let quanitityProduct = checkOrder?.productsArray[i].QuantityPricing[j];
                     let obj = {
                         productName: checkOrder?.productsArray[i]?.dealerSku,
-                        noOfProducts: quanitityProduct.enterQuantity
+                        noOfProducts: quanitityProduct.enterQuantity,
+
                     }
                     productCoveredArray.push(obj)
+
+
                 }
 
             }
@@ -773,17 +790,37 @@ async function generateTC(orderData) {
 
                 let obj = {
                     productName: findContract?.dealerSku,
-                    noOfProducts: checkOrder?.productsArray[i].noOfProducts
+                    noOfProducts: checkOrder?.productsArray[i].noOfProducts,
+
                 }
                 productCoveredArray.push(obj)
             }
 
         }
+
+
+
+
         // return;
         const tableRows = productCoveredArray.map(product => `
         <p style="font-size:13px;">${product.productName} : ${product.noOfProducts}</p>
 
 `).join('');
+
+
+        const coverageStartDates = otherInfo.map((product, index) => `
+    <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageStartDate).format("MM/DD/YYYY")}</p>
+`).join('');
+
+        const coverageEndDates = otherInfo.map((product, index) => `
+    <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageEndDate).format("MM/DD/YYYY")}</p>
+`).join('');
+
+        const term = otherInfo.map((product, index) => `
+    <p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${product.term / 12} ${product.term / 12 === 1 ? 'Year' : 'Years'}</p>
+`).join('');
+
+
 
         const checkServicer = await servicerService.getServiceProviderById({
             $or: [
@@ -793,7 +830,7 @@ async function generateTC(orderData) {
             ]
         }, { isDeleted: false })
 
-        const servicerUser = await userService.getUserById1({ metaId: checkOrder.servicerId, isPrimary: true }, { isDeleted: false })
+        const servicerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.servicerId, isPrimary: true } } }, { isDeleted: false })
         //res.json(checkDealer);return
         const options = {
             format: 'A4',
@@ -821,7 +858,7 @@ async function generateTC(orderData) {
                                 <td style="font-size:13px;"> 
                                     <p><b>Attention –</b> ${checkReseller ? checkReseller.name : checkDealer.name}</p>
                                     <p> <b>Email Address – </b>${resellerUser ? resellerUser?.email : DealerUser.email}</p>
-                                    <p><b>Telephone :</b> +1 ${resellerUser ? resellerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : DealerUser.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3")}</p>
+                                    <p><b>Telephone :</b> +1 ${resellerUser ? resellerUser?.metaData[0]?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : DealerUser.metaData[0]?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3")}</p>
                                 </td>
                             </tr>
                         <tr>
@@ -829,28 +866,27 @@ async function generateTC(orderData) {
                             <td style="font-size:13px;">
                             <p> <b>Attention –</b>${checkCustomer ? checkCustomer?.username : ''}</p>
                             <p> <b>Email Address –</b>${checkCustomer ? customerUser?.email : ''}</p>
-                            <p><b>Telephone :</b> +1${checkCustomer ? customerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''}</p>
+                            <p><b>Telephone :</b> +1${checkCustomer ? customerUser?.metaData[0]?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''}</p>
                             </td>
                         </tr>
                     <tr>
                         <td style="font-size:13px;padding:15px;">Address of GET COVER service contract holder:</td>
                         <td style="font-size:13px;">${checkCustomer ? checkCustomer?.street : ''}, ${checkCustomer ? checkCustomer?.city : ''}, ${checkCustomer ? checkCustomer?.state : ''}, ${checkCustomer ? checkCustomer?.country : ''}</td>
                    </tr>
-                <tr>
+                 <tr>
                     <td style="font-size:13px;padding:15px;">Coverage Start Date:</td>
-                    <td style="font-size:13px;"> ${moment(coverageStartDate).format("MM/DD/YYYY")}</td>
+                    <td style="font-size:13px;"> ${coverageStartDates}</td>
                 </tr>
             <tr>
                 <td style="font-size:13px;padding:15px;">GET COVER service contract period:</td>
                 <td style="font-size:13px;">
-                ${checkOrder.productsArray[0]?.term / 12} 
-                ${checkOrder.productsArray[0]?.term / 12 === 1 ? 'Year' : 'Years'}
+                ${term} 
                 </td>
             </tr>
             <tr>
             <td style="font-size:13px;padding:15px;">Coverage End Date:</td>
-            <td style="font-size:13px;">${moment(coverageEndDate).format("MM/DD/YYYY")}</td>
-          </tr>
+            <td style="font-size:13px;">${coverageEndDates}</td >
+          </tr >
             <tr>
                 <td style="font-size:13px;padding:15px;">Number of covered components:</td>
                <td> ${tableRows}   </td>                 
@@ -867,7 +903,7 @@ async function generateTC(orderData) {
             const s3Key = `pdfs/${mergeFileName}`;
             //Upload to S3 bucket
             await uploadToS3(orderFile, bucketName, s3Key);
-            const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : "file-1723185474819.pdf"
+            const termConditionFile = checkOrder.termCondition.fileName
             const termPath = termConditionFile
             //Download from S3 bucket 
             const termPathBucket = await downloadFromS3(bucketName, termPath);
@@ -903,32 +939,106 @@ async function generateTC(orderData) {
             let attachment = data.Body.toString('base64');
 
             //sendTermAndCondition
-            // Send Email code here
-            let notificationEmails = await supportingFunction.getUserEmails();
-            notificationEmails.push(DealerUser.email)
-            notificationEmails.push(resellerUser?.email)
+            //send notification to admin and dealer 
+            const adminActiveOrderQuery = {
+                metaData: {
+                    $elemMatch: {
+                        $and: [
+                            { "orderNotifications.addingNewOrderActive": true },
+                            { status: true },
+                            { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                        ]
+                    }
+                },
+            }
+
+            const dealerActiveOrderQuery = {
+                metaData: {
+                    $elemMatch: {
+                        $and: [
+                            { "orderNotifications.addingNewOrderActive": true },
+                            { status: true },
+                            { metaId: checkOrder.dealerId },
+                        ]
+                    }
+                },
+            }
+
+            const resellerActiveOrderQuery = {
+                metaData: {
+                    $elemMatch: {
+                        $and: [
+                            { "orderNotifications.addingNewOrderActive": true },
+                            { status: true },
+                            { metaId: checkOrder.resellerId ? checkOrder.resellerId : "000008041eb1acda24111111" },
+                        ]
+                    }
+                },
+            }
+
+            const customerActiveOrderQuery = {
+                metaData: {
+                    $elemMatch: {
+                        $and: [
+                            { "orderNotifications.addingNewOrderActive": true },
+                            { status: true },
+                            {
+                                $or: [
+                                    { metaId: checkOrder.customerId },
+                                ]
+                            },
+
+                        ]
+                    }
+                },
+            }
+            let adminUsers = await supportingFunction.getNotificationEligibleUser(adminActiveOrderQuery, { email: 1 })
+            let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerActiveOrderQuery, { email: 1 })
+            let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerActiveOrderQuery, { email: 1 })
+            let customerUsers = await supportingFunction.getNotificationEligibleUser(customerActiveOrderQuery, { email: 1 })
+            console.log("dfsfddfssfdsdfsdfsdfsdf123333", customerUsers)
+            let notificationEmails = adminUsers.map(user => user.email)
+            let dealerEmails = dealerUsers.map(user => user.email)
+            let resellerEmails = resellerUsers.map(user => user.email)
+            let customerEmails = customerUsers.map(user => user.email)
+            const base_url = `${process.env.SITE_URL}`
+            console.log("notificationEmails", notificationEmails)
+            console.log("dealerEmails", dealerEmails)
+            console.log("resellerEmails", resellerEmails)
+            console.log("customerEmails", customerEmails)
+
             let settingData = await userService.getSetting({});
             let emailData = {
                 darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
                 lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
                 address: settingData[0]?.address,
                 websiteSetting: settingData[0],
-                senderName: customerUser.firstName,
-                content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
-                subject: 'Order Term and Condition-' + checkOrder.unique_key,
+                senderName: '',
+                content: `Congratulations, your order # ${checkOrder.unique_key} has been created in our system. Please login to the system and view your order details. Also, we have attached our T&C to the email for the review. Please review, if there is anything wrong here, do let us know. You can contact us at : support@getcover.com`,
+                subject: "Process Order",
+                redirectId: base_url + "orderDetails/" + checkOrder._id
             }
-            let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
+
+            let mailing = sgMail.send(emailConstant.sendTermAndCondition(notificationEmails, ["noreply@getcover.com"], emailData, attachment))
+            emailData.redirectId = base_url + "dealer/orderDetails/" + checkOrder._id
+            mailing = sgMail.send(emailConstant.sendTermAndCondition(dealerEmails, ["noreply@getcover.com"], emailData, attachment))
+            emailData.redirectId = base_url + "customer/orderDetails/" + checkOrder._id
+            mailing = sgMail.send(emailConstant.sendTermAndCondition(customerEmails, ["noreply@getcover.com"], emailData, attachment))
+            emailData.redirectId = base_url + "reseller/orderDetails/" + checkOrder._id
+            mailing = sgMail.send(emailConstant.sendTermAndCondition(resellerEmails, ["noreply@getcover.com"], emailData, attachment))
+
+
 
         })
         return 1
 
     }
     catch (err) {
-        res.send({
+        console.log(err.message)
+        return {
             code: constant.errorCode,
             message: err.message
-        })
-        return;
+        }
     }
 }
 
@@ -994,8 +1104,6 @@ function isValidDate(dateString) {
 }
 
 
-
-
 // Create Order
 exports.createOrder1 = async (req, res) => {
     try {
@@ -1003,15 +1111,19 @@ exports.createOrder1 = async (req, res) => {
         data.dealerPurchaseOrder = data.dealerPurchaseOrder.trim().replace(/\s+/g, ' ');
         data.resellerId = data.resellerId == 'null' ? null : data.resellerId;
         data.venderOrder = data.dealerPurchaseOrder;
+        const orderTermCondition = data.termCondition != null ? data.termCondition : {}
+        const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+        const base_url = `${process.env.SITE_URL}`
+        let notificationData;
+        let notificationArrayData = []
+        let notificationEmails
+        let emailData;
         let projection = { isDeleted: 0 };
-
         let settingData = await userService.getSetting({});
-
         let checkDealer = await dealerService.getDealerById(
             data.dealerId,
             projection
         );
-
         if (!checkDealer) {
             res.send({
                 code: constant.errorCode,
@@ -1058,6 +1170,7 @@ exports.createOrder1 = async (req, res) => {
                 return;
             }
         }
+
         if (data.priceBookId) {
             let query = { _id: data.priceBookId };
             let checkPriceBook = await priceBookService.findByName1(query);
@@ -1074,16 +1187,23 @@ exports.createOrder1 = async (req, res) => {
         data.servicerId = data.servicerId != "" ? data.servicerId : null;
         data.resellerId = data.resellerId != "" ? data.resellerId : null;
         data.customerId = data.customerId != "" ? data.customerId : null;
-        let count = await orderService.getOrdersCount();
+
+        let currentYear = new Date().getFullYear();
+        let currentYearWithoutHypen = new Date().getFullYear();
+        console.log(currentYear); // Outputs: 2024
+        currentYear = "-" + currentYear + "-"
+
+        let count = await orderService.getOrdersCount({ 'unique_key': { '$regex': currentYear, '$options': 'i' } });
 
         data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
-        data.unique_key_search = "GC" + "2024" + data.unique_key_number
-        data.unique_key = "GC-" + "2024-" + data.unique_key_number
+        data.unique_key_search = "GC" + currentYearWithoutHypen + data.unique_key_number
+        data.unique_key = "GC" + currentYear + data.unique_key_number
 
         let checkVenderOrder = await orderService.getOrder(
             { venderOrder: data.dealerPurchaseOrder, dealerId: data.dealerId },
             {}
         );
+
         if (checkVenderOrder) {
             res.send({
                 code: constant.errorCode,
@@ -1099,7 +1219,7 @@ exports.createOrder1 = async (req, res) => {
         }
 
         if (data.billTo == "Dealer") {
-            let getUser = await userService.getSingleUserByEmail({ metaId: checkDealer._id, isPrimary: true })
+            let getUser = await userService.getSingleUserByEmail({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
             data.billDetail = {
                 billTo: "Dealer",
                 detail: {
@@ -1113,7 +1233,7 @@ exports.createOrder1 = async (req, res) => {
         }
         if (data.billTo == "Reseller") {
             let getReseller = await resellerService.getReseller({ _id: data.resellerId })
-            let getUser = await userService.getSingleUserByEmail({ metaId: getReseller._id, isPrimary: true })
+            let getUser = await userService.getSingleUserByEmail({ metaData: { $elemMatch: { metaId: getReseller._id, isPrimary: true } } })
             data.billDetail = {
                 billTo: "Reseller",
                 detail: {
@@ -1147,7 +1267,65 @@ exports.createOrder1 = async (req, res) => {
         }
 
         data.serviceCoverageType = serviceCoverage != '' ? serviceCoverage : req.body.serviceCoverageType
+
+        let getChoosedProducts = data.productsArray
+        for (let A = 0; A < getChoosedProducts.length; A++) {
+            if (getChoosedProducts[A].coverageStartDate != "") {
+
+
+
+                let addOneDay = new Date(getChoosedProducts[A].coverageStartDate)
+                let addOneDay1 = new Date(getChoosedProducts[A].coverageStartDate)
+                let addOneDay2 = new Date(getChoosedProducts[A].coverageStartDate)
+                addOneDay2.setMonth(addOneDay2.getMonth() + getChoosedProducts[A].term)
+                addOneDay2.setDate(addOneDay2.getDate() - 1)
+                let addOneDay3 = new Date(getChoosedProducts[A].coverageStartDate)
+                addOneDay3.setMonth(addOneDay3.getMonth() + getChoosedProducts[A].term)
+                addOneDay3.setDate(addOneDay3.getDate() - 1)
+
+                data.productsArray[A].coverageStartDate1 = addOneDay
+                data.productsArray[A].coverageEndDate1 = addOneDay2
+                data.productsArray[A].coverageStartDate = addOneDay1.setDate(addOneDay1.getDate() + 1);
+                data.productsArray[A].coverageEndDate = addOneDay3.setDate(addOneDay3.getDate() + 1);
+
+                // need for sethours to 0 0 0 0
+
+                // data.productsArray[A].coverageStartDate1 = new Date(data.productsArray[A].coverageStartDate1).setHours(0, 0, 0, 0)
+                // data.productsArray[A].coverageStartDate = new Date(data.productsArray[A].coverageStartDate).setHours(0, 0, 0, 0)
+                // data.productsArray[A].coverageEndDate1 = new Date(data.productsArray[A].coverageEndDate1).setHours(0, 0, 0, 0)
+                // data.productsArray[A].coverageEndDate = new Date(data.productsArray[A].coverageEndDate).setHours(0, 0, 0, 0)
+
+
+            }
+            if (getChoosedProducts[A].coverageStartDate == "") {
+                data.productsArray[A].coverageStartDate1 = null
+                data.productsArray[A].coverageEndDate1 = null
+                data.productsArray[A].coverageStartDate = null
+                data.productsArray[A].coverageEndDate = null
+            }
+            if (getChoosedProducts[A].coverageStartDate == "") {
+                data.productsArray[A].coverageStartDate1 = null
+                data.productsArray[A].coverageEndDate1 = null
+                data.productsArray[A].coverageStartDate = null
+                data.productsArray[A].coverageEndDate = null
+            }
+            if (!getChoosedProducts[A].adhDays) {
+                res.send({
+                    code: constant.errorCode,
+                    message: "Coverage type data for waiting days and deductible is not provided"
+                })
+                return;
+            }
+            if (getChoosedProducts[A].adhDays.length == 0) {
+                let dealerPriceBookId = getChoosedProducts[A].priceBookId
+                let getDealerPriceBookId = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, priceBook: dealerPriceBookId })
+                data.productsArray[A].adhDays = getDealerPriceBookId.adhDays
+            }
+        }
+
         let savedResponse = await orderService.addOrder(data);
+        var orderServiceCoverageType = savedResponse.serviceCoverageType
+
         if (!savedResponse) {
             let logData = {
                 endpoint: "order/createOrder",
@@ -1184,7 +1362,7 @@ exports.createOrder1 = async (req, res) => {
         // Update Term and condtion while create order
         let uploadTermAndCondtion = await orderService.updateOrder(
             { _id: checkOrder._id },
-            { termCondition: checkDealer?.termCondition },
+            { termCondition: orderTermCondition },
             { new: true }
         );
 
@@ -1196,38 +1374,109 @@ exports.createOrder1 = async (req, res) => {
         };
 
         returnField.push(obj);
-        //send notification to admin and dealer 
-        let IDs = await supportingFunction.getUserIds()
-        let getPrimary = await supportingFunction.getPrimaryUser({ metaId: data.dealerId, isPrimary: true })
-        IDs.push(getPrimary._id)
 
-        let notificationData = {
-            title: "New order created",
-            description: "The new order " + savedResponse.unique_key + " has been created",
+        //send notification to admin and dealer 
+        let adminPendingQuery = {
+            metaData: {
+                $elemMatch: {
+                    $and: [
+                        { "orderNotifications.addingNewOrderPending": true },
+                        { status: true },
+                        {
+                            $or: [
+                                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                            ]
+                        },
+                    ]
+                }
+            },
+        }
+        let dealerPendingQuery = {
+            metaData: {
+                $elemMatch: {
+                    $and: [
+                        { "orderNotifications.addingNewOrderPending": true },
+                        { status: true },
+                        { metaId: savedResponse.dealerId },
+
+                    ]
+                }
+            },
+        }
+        let resellerPendingQuery = {
+            metaData: {
+                $elemMatch: {
+                    $and: [
+                        { "orderNotifications.addingNewOrderPending": true },
+                        { status: true },
+                        { metaId: savedResponse.resellerId }
+                    ]
+                }
+            },
+        }
+        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminPendingQuery, { email: 1 })
+        let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerPendingQuery, { email: 1 })
+        let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerPendingQuery, { email: 1 })
+        const IDs = adminUsers.map(user => user._id)
+        const ID1 = dealerUsers.map(user => user._id)
+        const dealerEmails = dealerUsers.map(user => user.email)
+        const ID2 = resellerUsers.map(user => user._id)
+        const resellerEmails = resellerUsers.map(user => user.email)
+        let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data.dealerId, isPrimary: true } } })
+        let adminNotificationData = {
+            title: "Draft Order Created",
+            description: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName}  - ${req.role}.`,
             userId: req.teammateId,
             contentId: null,
-            flag: 'order',
-            redirectionId: savedResponse.unique_key,
+            flag: 'edit_order',
+            redirectionId: "editOrder/" + savedResponse._id,
+            endPoint: base_url + "editOrder/" + savedResponse._id,
             notificationFor: IDs
         };
+        notificationArrayData.push(adminNotificationData)
 
-        let createNotification = await userService.createNotification(notificationData);
+        let dealerNotificationData = {
+            title: "Draft Order Created",
+            description: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName}  - ${req.role}.`,
+            userId: req.teammateId,
+            contentId: null,
+            flag: 'edit_order',
+            redirectionId: "dealer/editOrder/" + savedResponse._id,
+            endPoint: base_url + "dealer/editOrder/" + savedResponse._id,
+            notificationFor: ID1
+        };
+        notificationArrayData.push(dealerNotificationData)
+
+        let resellerNotificationData = {
+            title: "Draft Order Created",
+            description: `A new draft Order # ${savedResponse.unique_key} has been created by ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName}  - ${req.role}.`,
+            userId: req.teammateId,
+            contentId: null,
+            flag: 'edit_order',
+            redirectionId: "reseller/editOrder/" + savedResponse._id,
+            endPoint: base_url + "reseller/editOrder/" + savedResponse._id,
+            notificationFor: ID2
+        };
+        notificationArrayData.push(resellerNotificationData)
+
 
         // Send Email code here
-        let notificationEmails = await supportingFunction.getUserEmails();
-        let emailData = {
+        notificationEmails = adminUsers.map(user => user.email)
+
+        let mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails)
+        emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
-            senderName: getPrimary.firstName,
-            content: "The new order " + checkOrder.unique_key + "  has been created for " + getPrimary.firstName + "",
-            subject: "New Order"
+            senderName: '',
+            content: `A new Order # ${savedResponse.unique_key} has been created. The order is still in the pending state. To complete the order please click here and fill the data`,
+            subject: "New Order",
+            redirectId: base_url + "editOrder/" + savedResponse._id,
         }
 
-
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
+            console.log("inside active contitions")
             let paidDate = {
                 name: "processOrder",
                 date: new Date()
@@ -1238,11 +1487,16 @@ exports.createOrder1 = async (req, res) => {
                 { new: true }
             );
 
-            let count1 = await contractService.getContractsCountNew();
+            let count1 = await contractService.getContractsCountNew({ 'unique_key': { '$regex': currentYear, '$options': 'i' } });
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             var pricebookDetail = []
             let checkLength = savedResponse.productsArray.length - 1
-            let mapOnProducts = savedResponse.productsArray.map(async (product, index) => {
+            let checkOrderForService = await orderService.getOrder({ _id: savedResponse._id })
+
+            for (let k = 0; k < savedResponse.productsArray.length; k++) {
+                let product = savedResponse.productsArray[k]
+                let index = k
+
                 let headerLength;
                 if (data.adh && isNaN(data.adh)) {
 
@@ -1267,8 +1521,8 @@ exports.createOrder1 = async (req, res) => {
                 pricebookDetailObject.noOfProducts = product.checkNumberProducts
 
                 pricebookDetailObject.retailPrice = product.unitPrice
-                pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
-                pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
+                pricebookDetailObject.brokerFee = product.dealerPriceBookDetails[0].brokerFee
+                pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails[0]._id
                 pricebookDetail.push(pricebookDetailObject)
 
                 const readOpts = { // <--- need these settings in readFile options
@@ -1295,8 +1549,11 @@ exports.createOrder1 = async (req, res) => {
                 }
                 let priceBookId = product.priceBookId;
                 let coverageStartDate = product.coverageStartDate;
+                let coverageStartDate1 = product.coverageStartDate1;
                 let coverageEndDate = product.coverageEndDate;
+                let coverageEndDate1 = product.coverageEndDate1;
                 let orderProductId = product._id;
+
                 let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
 
                 let projection = { isDeleted: 0 };
@@ -1305,7 +1562,7 @@ exports.createOrder1 = async (req, res) => {
                     query,
                     projection
                 );
-                let dealerQuery = { priceBook: new mongoose.Types.ObjectId(priceBookId), dealerId: savedResponse.dealerId };
+                let dealerQuery = { priceBook: new mongoose.Types.ObjectId(priceBookId), dealerId: checkOrder.dealerId };
                 let dealerPriceBook = await dealerPriceService.getDealerPriceById(
                     dealerQuery,
                     {}
@@ -1333,8 +1590,8 @@ exports.createOrder1 = async (req, res) => {
 
                 totalDataComing.forEach((data, index1) => {
                     let unique_key_number1 = increamentNumber
-                    let unique_key_search1 = "OC" + "2024" + unique_key_number1
-                    let unique_key1 = "OC-" + "2024-" + unique_key_number1
+                    let unique_key_search1 = "OC" + currentYearWithoutHypen + unique_key_number1
+                    let unique_key1 = "OC" + currentYear + unique_key_number1
                     let claimStatus = new Date(product.coverageStartDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0) ? "Waiting" : "Active"
                     claimStatus = new Date(product.coverageEndDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) ? "Expired" : claimStatus
 
@@ -1352,7 +1609,7 @@ exports.createOrder1 = async (req, res) => {
                             message: `All date should be in the format MM/DD/YYYY , order has been created please update the file in edit order to create the contracts `
                         })
                         return
-                    }
+                    };
                     let p_date = new Date(data.purchaseDate)
                     let p_date1 = new Date(data.purchaseDate)
                     let l_date = new Date(data.purchaseDate)
@@ -1369,48 +1626,63 @@ exports.createOrder1 = async (req, res) => {
                     let labourWarrantyDate = new Date(l_date.setMonth(newLabourMonth))
                     let labourWarrantyDate1 = new Date(l_date1.setMonth(newLabourMonth))
                     //---------------------------------------- till here ----------------------------------------------
-                    function findMinDate(d1, d2, d3) {
 
-                        return new Date(Math.min(new Date(d1).getTime(), new Date(d2).getTime(), new Date(d3).getTime()));
-                    }
                     // Find the minimum date
                     let minDate;
 
-
-                    if (req.body.coverageType == "Breakdown") {
-                        if (req.body.serviceCoverageType == "Labour" || req.body.serviceCoverageType == "Labor") {
-                            minDate = findMinDate(new Date(dateCheck).setHours(0, 0, 0, 0), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-                        } else if (req.body.serviceCoverageType == "Parts") {
-                            minDate = findMinDate(new Date(dateCheck.setMonth(100000)), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-                        } else {
-                            minDate = findMinDate(new Date(dateCheck.setMonth(100000)), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
+                    let adhDaysArray = product.adhDays
+                    adhDaysArray.sort((a, b) => a.waitingDays - b.waitingDays);
+                    const futureDate = new Date(product.coverageStartDate);
+                    let minDate1 = futureDate.setDate(futureDate.getDate() + adhDaysArray[0].waitingDays);
+                    if (!product.isManufacturerWarranty) {
+                        if (adhDaysArray.length == 1) {
+                            const hasBreakdown = adhDaysArray.some(item => item.value === 'breakdown');
+                            if (hasBreakdown) {
+                                let minDate2
+                                if (orderServiceCoverageType == "Parts") {
+                                    minDate2 = partsWarrantyDate1
+                                } else if (orderServiceCoverageType == "Labour" || orderServiceCoverageType == "Labor") {
+                                    minDate2 = labourWarrantyDate1
+                                } else {
+                                    if (partsWarrantyDate1 > labourWarrantyDate1) {
+                                        minDate2 = labourWarrantyDate1
+                                    } else {
+                                        minDate2 = partsWarrantyDate1
+                                    }
+                                }
+                                if (minDate1 > minDate2) {
+                                    minDate = minDate1
+                                }
+                                if (minDate1 < minDate2) {
+                                    minDate = minDate2
+                                }
+                            } else {
+                                minDate = minDate1
+                            }
                         }
-                    } else if (req.body.coverageType == "Accidental") {
-                        minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
+                        else {
+                            minDate = minDate1
+                        }
+
                     } else {
-                        if (req.body.serviceCoverageType == "Labour" || req.body.serviceCoverageType == "Labor") {
+                        minDate = minDate1
 
-                            minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-                        } else if (req.body.serviceCoverageType == "Parts") {
-                            minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-                        } else {
-                            minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
-                        }
                     }
-
                     // let eligibilty = new Date(dateCheck) < new Date() ? true : false
+                    minDate = new Date(minDate).setHours(0, 0, 0, 0)
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
-
                     //reporting codes 
                     let contractObject = {
                         orderId: savedResponse._id,
                         orderUniqueKey: savedResponse.unique_key,
-                        minDate: minDate,
+                        minDate: new Date(minDate),
                         venderOrder: savedResponse.venderOrder,
                         orderProductId: orderProductId,
                         coverageStartDate: coverageStartDate,
+                        coverageStartDate1: coverageStartDate1,
                         dealerSku: dealerPriceBook.dealerSku,
                         coverageEndDate: coverageEndDate,
+                        coverageEndDate1: coverageEndDate1,
                         productName: priceBook[0]?.name,
                         pName: priceBook[0]?.pName,
                         manufacture: data.brand,
@@ -1424,18 +1696,24 @@ exports.createOrder1 = async (req, res) => {
                         status: claimStatus,
                         eligibilty: eligibilty,
                         condition: data.condition,
+                        adhDays: product.adhDays,
+                        noOfClaimPerPeriod: product.noOfClaimPerPeriod,
+                        noOfClaim: product.noOfClaim,
+                        isManufacturerWarranty: product.isManufacturerWarranty,
+                        isMaxClaimAmount: product.isMaxClaimAmount,
                         productValue: data.retailValue,
                         unique_key: unique_key1,
                         unique_key_search: unique_key_search1,
                         unique_key_number: unique_key_number1,
                     };
-
+                    console.log("sssssssssssssssssssssssssssssssssssssssssssss",index1);
                     increamentNumber++
 
                     contractArray.push(contractObject);
                 });
 
                 let saveContracts = await contractService.createBulkContracts(contractArray);
+                console.log("saveContracts++++++++++++++++++++++++++++++++++++", saveContracts)
                 if (saveContracts.length == 0) {
                     let logData = {
                         endpoint: "order/createOrder",
@@ -1465,63 +1743,160 @@ exports.createOrder1 = async (req, res) => {
                         { status: "Active" },
                         { new: true }
                     );
+
                     //generate T anc C
-                    if (checkDealer?.termCondition) {
+                    if (checkOrder?.termCondition) {
                         const tcResponse = await generateTC(savedResponse);
                     }
-                    //send notification to admin and dealer 
-                    let IDs = await supportingFunction.getUserIds()
-                    let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: data.dealerId, isPrimary: true })
-                    let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: data.customerId, isPrimary: true })
-                    let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: data.resellerId, isPrimary: true })
-                    if (resellerPrimary) {
-                        IDs.push(resellerPrimary._id)
+
+                    notificationArrayData = []
+                    const adminActiveOrderQuery = {
+                        metaData: {
+                            $elemMatch: {
+                                $and: [
+                                    { "orderNotifications.addingNewOrderActive": true },
+                                    { status: true },
+                                    { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                                ]
+                            }
+                        },
                     }
-                    IDs.push(dealerPrimary._id, customerPrimary._id)
+
+                    const dealerActiveOrderQuery = {
+                        metaData: {
+                            $elemMatch: {
+                                $and: [
+                                    { "orderNotifications.addingNewOrderActive": true },
+                                    { status: true },
+                                    { metaId: checkOrder.dealerId },
+                                ]
+                            }
+                        },
+                    }
+
+                    const resellerActiveOrderQuery = {
+                        metaData: {
+                            $elemMatch: {
+                                $and: [
+                                    { "orderNotifications.addingNewOrderActive": true },
+                                    { status: true },
+                                    { metaId: checkOrder.resellerId ? checkOrder.resellerId : "000008041eb1acda24111111" },
+                                ]
+                            }
+                        },
+                    }
+
+                    const customerActiveOrderQuery = {
+                        metaData: {
+                            $elemMatch: {
+                                $and: [
+                                    { "orderNotifications.addingNewOrderActive": true },
+                                    { status: true },
+                                    {
+                                        $or: [
+                                            { metaId: checkOrder.customerId },
+                                        ]
+                                    },
+
+                                ]
+                            }
+                        },
+                    }
+                    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminActiveOrderQuery, { email: 1 })
+                    let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerActiveOrderQuery, { email: 1 })
+                    let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerActiveOrderQuery, { email: 1 })
+                    let customerUsers = await supportingFunction.getNotificationEligibleUser(customerActiveOrderQuery, { email: 1 })
+                    let id = adminUsers.map(user => user._id)
+                    let id1 = dealerUsers.map(user => user._id)
+                    let id2 = resellerUsers.map(user => user._id)
+                    let id3 = customerUsers.map(user => user._id)
+                    let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data.dealerId, isPrimary: true } } })
+                    let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data.customerId, isPrimary: true } } })
+                    let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data.resellerId, isPrimary: true } } })
                     let notificationData1 = {
-                        title: "Order Update and Processed",
-                        description: "The  order " + checkOrder.unique_key + " has been updated and processed",
+                        title: "Order Added Successfully",
+                        description: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
                         userId: req.teammateId,
                         contentId: checkOrder._id,
-                        redirectionId: checkOrder.unique_key,
+                        redirectionId: "orderDetails/" + checkOrder._id,
+                        endPoint: base_url + "orderDetails/" + savedResponse._id,
                         flag: 'order',
-                        notificationFor: IDs
+                        notificationFor: id
+                    };
+                    let notificationData2 = {
+                        title: "Order Added Successfully",
+                        description: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+                        userId: req.teammateId,
+                        contentId: checkOrder._id,
+                        redirectionId: "dealer/orderDetails/" + checkOrder._id,
+                        endPoint: base_url + "dealer/orderDetails/" + savedResponse._id,
+                        flag: 'order',
+                        notificationFor: id1
+                    };
+                    let notificationData3 = {
+                        title: "Order Added Successfully",
+                        description: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+                        userId: req.teammateId,
+                        contentId: checkOrder._id,
+                        redirectionId: "reseller/orderDetails/" + checkOrder._id,
+                        endPoint: base_url + "reseller/orderDetails/" + savedResponse._id,
+                        flag: 'order',
+                        notificationFor: id2
+                    };
+                    let notificationData4 = {
+                        title: "Order Added Successfully",
+                        description: `A new Order # ${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+                        userId: req.teammateId,
+                        contentId: checkOrder._id,
+                        redirectionId: "customer/orderDetails/" + checkOrder._id,
+                        endPoint: base_url + "customer/orderDetails/" + checkOrder._id,
+                        flag: 'order',
+                        notificationFor: id3
                     };
 
-                    let createNotification = await userService.createNotification(notificationData1);
+                    notificationArrayData.push(notificationData1)
+                    notificationArrayData.push(notificationData2)
+                    notificationArrayData.push(notificationData3)
+                    notificationArrayData.push(notificationData4)
+                    let createNotification = await userService.saveNotificationBulk(notificationArrayData);
+
                     // Send Email code here
-                    let notificationEmails = await supportingFunction.getUserEmails();
-                    //Email to Dealer
-                    let emailData = {
-                        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-                        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-                        address: settingData[0]?.address,
-                        websiteSetting: settingData[0],
-                        senderName: dealerPrimary.firstName,
-                        content: "The  order " + checkOrder.unique_key + " has been updated and processed",
-                        subject: "Process Order"
+                    if (!checkOrder?.termCondition || checkOrder?.termCondition == null || checkOrder?.termCondition == '') {
+                        let notificationEmails = adminUsers.map(user => user.email)
+                        let dealerEmails = dealerUsers.map(user => user.email)
+                        let resellerEmails = resellerUsers.map(user => user.email)
+                        let customerEmails = customerUsers.map(user => user.email)
+                        let mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails, customerEmails)
+                        //Email to Dealer
+                        let emailData = {
+                            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                            address: settingData[0]?.address,
+                            websiteSetting: settingData[0],
+                            senderName: '',
+                            content: `Congratulations, your order # ${checkOrder.unique_key} has been created in our system. Please login to the system and view your order details. Please review, if there is anything wrong here, do let us know. You can contact us at : support@getcover.com`,
+                            subject: "Process Order",
+                            redirectId: base_url + "orderDetails/" + checkOrder._id
+                        }
+
+                        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+                        emailData.redirectId = base_url + "dealer/orderDetails/" + checkOrder._id
+                        mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
+                        emailData.redirectId = base_url + "reseller/orderDetails/" + checkOrder._id
+                        mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ["noreply@getcover.com"], emailData))
+                        emailData.redirectId = base_url + "customer/orderDetails/" + checkOrder._id
+                        mailing = sgMail.send(emailConstant.sendEmailTemplate(customerEmails, ["noreply@getcover.com"], emailData))
                     }
 
-                    let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
-                    //Email to Reseller
-                    emailData = {
-                        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-                        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-                        address: settingData[0]?.address,
-                        websiteSetting: settingData[0],
-                        senderName: resellerPrimary?.firstName,
-                        content: "The  order " + checkOrder.unique_key + " has been updated and processed",
-                        subject: "Process Order"
-                    }
 
-                    mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
+
                     let logData = {
                         endpoint: "order/createOrder",
                         body: data,
                         userId: req.userId,
                         response: {
                             code: constant.successCode,
-                            message: "Success",
+                            message: "Success2",
                             saveContracts
                         }
                     }
@@ -1541,18 +1916,22 @@ exports.createOrder1 = async (req, res) => {
                         await supportingFunction.reportingData(reportingData)
                     }
                 }
-            })
-            let checkOrder2 = await orderService.getOrder(
-                { _id: savedResponse._id },
-            );
 
+            }
             res.send({
                 code: constant.successCode,
-                message: "Success",
+                message: "Success1",
             });
             return
 
         } else {
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+            emailData.redirectId = base_url + "dealer/editOrder/" + savedResponse._id
+            mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
+            emailData.redirectId = base_url + "reseller/editOrder/" + savedResponse._id
+            mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ["noreply@getcover.com"], emailData))
+            let createNotification = await userService.saveNotificationBulk(notificationArrayData);
+
             let logData = {
                 endpoint: "order/createOrder",
                 body: data,
@@ -1565,7 +1944,7 @@ exports.createOrder1 = async (req, res) => {
             await LOG(logData).save()
             res.send({
                 code: constant.successCode,
-                message: "Success",
+                message: "Success3",
             });
         }
     } catch (err) {
@@ -1581,11 +1960,11 @@ exports.createOrder1 = async (req, res) => {
         await LOG(logData).save()
         res.send({
             code: constant.errorCode,
-            message: err.message
+            message: err.message,
+            errDetail: err.stack
         })
     }
 };
-
 // validating of edit file in order
 exports.editFileCase = async (req, res) => {
     try {
@@ -1991,7 +2370,8 @@ exports.editOrderDetail = async (req, res) => {
             let checkDealer1 = await dealerService.getDealerById(
                 data.dealerId
             );
-            let getUser = await userService.getSingleUserByEmail({ metaId: checkDealer1._id, isPrimary: true })
+            let getUser = await userService.getSingleUserByEmail({ metaData: { $elemMatch: { metaId: checkDealer1._id, isPrimary: true } } })
+
             data.billDetail = {
                 billTo: "Dealer",
                 detail: {
@@ -2004,7 +2384,8 @@ exports.editOrderDetail = async (req, res) => {
         }
         if (data.billTo == "Reseller") {
             let getReseller = await resellerService.getReseller({ _id: data.resellerId })
-            let getUser = await userService.getSingleUserByEmail({ metaId: getReseller._id, isPrimary: true })
+            let getUser = await userService.getSingleUserByEmail({ metaData: { $elemMatch: { metaId: getReseller._id, isPrimary: true } } })
+
             data.billDetail = {
                 billTo: "Reseller",
                 detail: {
@@ -2084,11 +2465,54 @@ exports.editOrderDetail = async (req, res) => {
             data.productsArray = finalOutput;
         }
 
+        let getChoosedProducts = data.productsArray
+        for (let A = 0; A < getChoosedProducts.length; A++) {
+            if (getChoosedProducts[A].coverageStartDate != "") {
+                let addOneDay = new Date(getChoosedProducts[A].coverageStartDate)
+                let addOneDay1 = new Date(getChoosedProducts[A].coverageStartDate)
+                let addOneDay2 = new Date(getChoosedProducts[A].coverageStartDate)
+                addOneDay2.setMonth(addOneDay2.getMonth() + getChoosedProducts[A].term)
+                addOneDay2.setDate(addOneDay2.getDate() - 1)
+                let addOneDay3 = new Date(getChoosedProducts[A].coverageStartDate)
+                addOneDay3.setMonth(addOneDay3.getMonth() + getChoosedProducts[A].term)
+                addOneDay3.setDate(addOneDay3.getDate() - 1)
+
+
+                data.productsArray[A].coverageStartDate1 = addOneDay
+                data.productsArray[A].coverageEndDate1 = addOneDay2
+                data.productsArray[A].coverageStartDate = addOneDay1.setDate(addOneDay1.getDate() + 1);
+                data.productsArray[A].coverageEndDate = addOneDay3.setDate(addOneDay3.getDate() + 1);
+
+            }
+            if (getChoosedProducts[A].coverageStartDate == "") {
+                data.productsArray[A].coverageStartDate1 = null
+                data.productsArray[A].coverageEndDate1 = null
+                data.productsArray[A].coverageStartDate = null
+                data.productsArray[A].coverageEndDate = null
+            }
+            if (!getChoosedProducts[A].adhDays) {
+                res.send({
+                    code: constant.errorCode,
+                    message: "Coverage type data for waiting days and deductible is not provided"
+                })
+                return;
+            }
+            if (getChoosedProducts[A].adhDays.length == 0) {
+                let dealerPriceBookId = getChoosedProducts[A].priceBookId
+                let getDealerPriceBookId = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, priceBook: dealerPriceBookId })
+                data.productsArray[A].adhDays = getDealerPriceBookId.adhDays
+            }
+        }
+
+
         let savedResponse = await orderService.updateOrder(
             { _id: req.params.orderId },
             data,
             { new: true }
         );
+
+
+        var orderServiceCoverageType = savedResponse.serviceCoverageType
         if (!savedResponse) {
             logData.response = {
                 code: constant.errorCode,
@@ -2135,35 +2559,102 @@ exports.editOrderDetail = async (req, res) => {
 
         returnField.push(obj);
         //send notification to dealer,reseller,admin,customer
-        let IDs = await supportingFunction.getUserIds()
-        let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.dealerId, isPrimary: true })
-        IDs.push(dealerPrimary._id)
+        const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+        const base_url = `${process.env.SITE_URL}`
+        let adminUpdateOrderQuery = {
+            metaData: {
+                $elemMatch: {
+                    $and: [
+                        { "orderNotifications.updateOrderPending": true },
+                        { status: true },
+                        { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                    ]
+                }
+            },
+        }
+        let dealerUpdateOrderQuery = {
+            metaData: {
+                $elemMatch: {
+                    $and: [
+                        { "orderNotifications.updateOrderPending": true },
+                        { status: true },
+                        { metaId: checkOrder.dealerId }
+                    ]
+                }
+            },
+        }
+        let resellerUpdateOrderQuery = {
+            metaData: {
+                $elemMatch: {
+                    $and: [
+                        { "orderNotifications.updateOrderPending": true },
+                        { status: true },
+                        { metaId: checkOrder.resellerId ? checkOrder.resellerId : "000008041eb1acda24111111" }
+                    ]
+                }
+            },
+        }
+        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdateOrderQuery, { email: 1 })
+        let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerUpdateOrderQuery, { email: 1 })
+        let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerUpdateOrderQuery, { email: 1 })
+        const IDs = adminUsers.map(user => user._id)
+        const IDs1 = dealerUsers.map(user => user._id)
+        const IDs2 = resellerUsers.map(user => user._id)
+        let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } })
         let notificationData = {
-            title: "Order update",
-            description: "The order " + savedResponse.unique_key + " has been updated",
+            title: "Draft Order Updated Successfully",
+            description: `The draft Order # ${checkOrder.unique_key} has been updated successfully by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
             userId: req.teammateId,
             contentId: checkOrder._id,
-            flag: 'order',
-            redirectionId: savedResponse.unique_key,
+            flag: 'edit_order',
+            redirectionId: "editOrder/" + savedResponse._id,
+            endPoint: base_url + "editOrder/" + savedResponse._id,
             notificationFor: IDs
         };
-        let createNotification = await userService.createNotification(notificationData);
+        let notificationData1 = {
+            title: "Draft Order Updated Successfully",
+            description: `The draft Order # ${checkOrder.unique_key} has been updated successfully by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+            userId: req.teammateId,
+            contentId: checkOrder._id,
+            flag: 'edit_order',
+            redirectionId: "dealer/editOrder/" + savedResponse._id,
+            endPoint: base_url + "dealer/editOrder/" + savedResponse._id,
+            notificationFor: IDs1
+        };
+        let notificationData2 = {
+            title: "Draft Order Updated Successfully",
+            description: `The draft Order # ${checkOrder.unique_key} has been updated successfully by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+            userId: req.teammateId,
+            contentId: checkOrder._id,
+            flag: 'edit_order',
+            redirectionId: "reseller/editOrder/" + savedResponse._id,
+            endPoint: base_url + "reseller/editOrder/" + savedResponse._id,
+            notificationFor: IDs2
+        };
+        let notificationArrayData = []
+        notificationArrayData.push(notificationData)
+        notificationArrayData.push(notificationData1)
+        notificationArrayData.push(notificationData2)
 
         // Send Email code here
-        let notificationEmails = await supportingFunction.getUserEmails();
+        let notificationEmails = adminUsers.map(user => user.email)
+        let dealerEmails = dealerUsers.map(user => user.email)
+
+        let resellerEmails = resellerUsers.map(user => user.email)
+
         let settingData = await userService.getSetting({});
+        let mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails)
         //Email to Dealer
         let emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
-            senderName: dealerPrimary.firstName,
-            content: "The  order " + savedResponse.unique_key + " has been updated",
-            subject: "Order Update"
+            senderName: '',
+            content: `Your order # ${checkOrder.unique_key} has been updated in our system. The order is still pending, as there is some data missing. Please update the data using the link here.`,
+            subject: "Order Update",
+            redirectId: base_url + "editOrder/" + checkOrder._id,
         }
-
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
 
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
 
@@ -2187,9 +2678,14 @@ exports.editOrderDetail = async (req, res) => {
                 { new: true }
             );
             var pricebookDetail = []
-            let count1 = await contractService.getContractsCountNew();
+            let currentYear = new Date().getFullYear();
+            let currentYearWithoutHypen = new Date().getFullYear();
+            currentYear = "-" + currentYear + "-"
+            let count1 = await contractService.getContractsCountNew({ 'unique_key': { '$regex': currentYear, '$options': 'i' } });
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             let checkLength = savedResponse.productsArray.length - 1
+            let checkOrderForService = await orderService.getOrder({ _id: savedResponse._id })
+
             let save = savedResponse.productsArray.map(async (product, index) => {
                 let headerLength;
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
@@ -2215,9 +2711,11 @@ exports.editOrderDetail = async (req, res) => {
                 let priceBookId = product.priceBookId;
                 let orderProductId = product._id;
                 let coverageStartDate = product.coverageStartDate;
+                let coverageStartDate1 = product.coverageStartDate1;
                 let coverageEndDate = product.coverageEndDate;
+                let coverageEndDate1 = product.coverageEndDate1;
                 let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
-                let projection = { isDeleted: 0 };   
+                let projection = { isDeleted: 0 };
 
                 let priceBook = await priceBookService.getPriceBookById(
                     query,
@@ -2247,8 +2745,8 @@ exports.editOrderDetail = async (req, res) => {
                 pricebookDetailObject.noOfProducts = product.checkNumberProducts
 
                 pricebookDetailObject.retailPrice = product.unitPrice
-                pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
-                pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
+                pricebookDetailObject.brokerFee = product.dealerPriceBookDetails[0].brokerFee
+                pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails[0]._id
                 pricebookDetail.push(pricebookDetailObject)
                 dealerBookDetail.push(dealerPriceBookObject)
                 const totalDataComing1 = result.data;
@@ -2270,8 +2768,8 @@ exports.editOrderDetail = async (req, res) => {
                 let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: checkOrder.dealerId, priceBook: priceBookId })
                 totalDataComing.forEach((data, index) => {
                     let unique_key_number1 = increamentNumber
-                    let unique_key_search1 = "OC" + "2024" + unique_key_number1
-                    let unique_key1 = "OC-" + "2024-" + unique_key_number1
+                    let unique_key_search1 = "OC" + currentYearWithoutHypen + unique_key_number1
+                    let unique_key1 = "OC" + currentYear + unique_key_number1
                     let claimStatus = new Date(product.coverageStartDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0) ? "Waiting" : "Active"
                     claimStatus = new Date(product.coverageEndDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) ? "Expired" : claimStatus
 
@@ -2299,39 +2797,57 @@ exports.editOrderDetail = async (req, res) => {
                     let labourWarrantyDate = new Date(l_date.setMonth(newLabourMonth))
                     let labourWarrantyDate1 = new Date(l_date1.setMonth(newLabourMonth))
                     //---------------------------------------- till here ----------------------------------------------
-                    function findMinDate(d1, d2, d3) {
-                        return new Date(Math.min(new Date(d1).getTime(), new Date(d2).getTime(), new Date(d3).getTime()));
-                    }
 
                     // Find the minimum date
                     let minDate;
 
-                    if (checkOrder.coverageType == "Breakdown") {
-                        if (checkOrder.serviceCoverageType == "Labour") {
-                            minDate = findMinDate(new Date(dateCheck).setHours(0, 0, 0, 0), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-                        } else if (checkOrder.serviceCoverageType == "Parts") {
-                            minDate = findMinDate(new Date(dateCheck.setMonth(100000)), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-                        } else {
-                            minDate = findMinDate(new Date(dateCheck.setMonth(100000)), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
-                        }
-                    } else if (checkOrder.coverageType == "Accidental") {
-                        minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-                    } else {
-                        if (checkOrder.serviceCoverageType == "Labour") {
-                            minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-                        } else if (checkOrder.serviceCoverageType == "Parts") {
-                            minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-                        } else {
-                            minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
-                        }
-                    }
+                    let adhDaysArray = product.adhDays
 
+                    adhDaysArray.sort((a, b) => a.waitingDays - b.waitingDays);
+
+                    const futureDate = new Date(product.coverageStartDate)
+
+                    let minDate1 = futureDate.setDate(futureDate.getDate() + adhDaysArray[0].waitingDays);
+                    if (!product.isManufacturerWarranty) {
+                        if (adhDaysArray.length == 1) {
+                            const hasBreakdown = adhDaysArray.some(item => item.value === 'breakdown');
+                            if (hasBreakdown) {
+                                let minDate2
+                                if (orderServiceCoverageType == "Parts") {
+                                    minDate2 = partsWarrantyDate1
+                                } else if (orderServiceCoverageType == "Labour" || orderServiceCoverageType == "Labor") {
+                                    minDate2 = labourWarrantyDate1
+                                } else {
+                                    if (partsWarrantyDate1 > labourWarrantyDate1) {
+                                        minDate2 = labourWarrantyDate1
+                                    } else {
+                                        minDate2 = partsWarrantyDate1
+                                    }
+                                }
+                                if (minDate1 > minDate2) {
+                                    minDate = minDate1
+                                }
+                                if (minDate1 < minDate2) {
+                                    minDate = minDate2
+                                }
+                            } else {
+                                minDate = minDate1
+                            }
+                        }
+                        else {
+                            minDate = minDate1
+                        }
+
+                    } else {
+                        minDate = minDate1
+                    }
+                    minDate = new Date(minDate).setHours(0, 0, 0, 0)
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
                     let serviceCoverage;
-                    if (checkOrder.serviceCoverageType == "Labour") {
+                    if (orderServiceCoverageType == "Labour") {
                         serviceCoverage = "Labor"
                     }
-                    if (checkOrder.serviceCoverageType == "Parts & Labour") {
+                    if (orderServiceCoverageType == "Parts & Labour") {
                         serviceCoverage = "Parts & Labor"
                     }
 
@@ -2340,10 +2856,12 @@ exports.editOrderDetail = async (req, res) => {
                         orderUniqueKey: savedResponse.unique_key,
                         venderOrder: savedResponse.venderOrder,
                         orderProductId: orderProductId,
-                        minDate: minDate,
+                        minDate: new Date(minDate),
                         coverageStartDate: coverageStartDate,
+                        coverageStartDate1: coverageStartDate1,
+                        coverageEndDate1: coverageEndDate1,
                         coverageEndDate: coverageEndDate,
-                        dealerSku:dealerPriceBook.dealerSku,
+                        dealerSku: dealerPriceBook.dealerSku,
                         serviceCoverageType: serviceCoverage,
                         coverageType: checkOrder.coverageType,
                         productName: priceBook[0]?.name,
@@ -2355,6 +2873,11 @@ exports.editOrderDetail = async (req, res) => {
                         purchaseDate: new Date(data.purchaseDate),
                         status: claimStatus,
                         eligibilty: eligibilty,
+                        adhDays: product.adhDays,
+                        noOfClaimPerPeriod: product.noOfClaimPerPeriod,
+                        noOfClaim: product.noOfClaim,
+                        isManufacturerWarranty: product.isManufacturerWarranty,
+                        isMaxClaimAmount: product.isMaxClaimAmount,
                         serial: data.serial,
                         condition: data.condition,
                         productValue: data.retailValue,
@@ -2388,54 +2911,143 @@ exports.editOrderDetail = async (req, res) => {
                     // 
                     //Send email to customer with term and condtion
                     //generate T anc C
-                    if (checkDealer1?.termCondition) {
+                    if (checkOrder?.termCondition) {
                         const tcResponse = await generateTC(savedResponse);
                     }
                     // send notification to dealer,admin, customer
-                    let IDs = await supportingFunction.getUserIds()
-                    let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.dealerId, isPrimary: true })
-                    let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.customerId, isPrimary: true })
-                    let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.resellerId, isPrimary: true })
-                    if (resellerPrimary) {
-                        IDs.push(resellerPrimary._id)
+                    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+                    const base_url = `${process.env.SITE_URL}`
+                    let adminUpdateOrderQuery = {
+                        metaData: {
+                            $elemMatch: {
+                                $and: [
+                                    { "orderNotifications.updateOrderActive": true },
+                                    { status: true },
+                                    { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                                ]
+                            }
+                        },
                     }
-                    IDs.push(dealerPrimary._id, customerPrimary._id)
-                    let notificationData1 = {
-                        title: "Process Order",
-                        description: "The order " + checkOrder.unique_key + " has been updated and processed",
+                    let dealerUpdateOrderQuery = {
+                        metaData: {
+                            $elemMatch: {
+                                $and: [
+                                    { "orderNotifications.updateOrderActive": true },
+                                    { status: true },
+                                    { metaId: checkOrder.dealerId },
+                                ]
+                            }
+                        },
+                    }
+                    let resellerUpdateOrderQuery = {
+                        metaData: {
+                            $elemMatch: {
+                                $and: [
+                                    { "orderNotifications.updateOrderActive": true },
+                                    { status: true },
+                                    { metaId: checkOrder.resellerId ? checkOrder.resellerId : "000008041eb1acda24111111" },
+                                ]
+                            }
+                        },
+                    }
+                    let customerUpdateOrderQuery = {
+                        metaData: {
+                            $elemMatch: {
+                                $and: [
+                                    { "orderNotifications.updateOrderActive": true },
+                                    { status: true },
+                                    { metaId: checkOrder.customerId },
+                                ]
+                            }
+                        },
+                    }
+
+                    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdateOrderQuery, { email: 1 })
+                    let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerUpdateOrderQuery, { email: 1 })
+                    let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerUpdateOrderQuery, { email: 1 })
+                    let customerUsers = await supportingFunction.getNotificationEligibleUser(customerUpdateOrderQuery, { email: 1 })
+                    const IDs = adminUsers.map(user => user._id)
+                    const IDs1 = dealerUsers.map(user => user._id)
+                    const IDs2 = resellerUsers.map(user => user._id)
+                    const IDs3 = customerUsers.map(user => user._id)
+                    let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } })
+                    let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } })
+                    let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } })
+                    let notificationData = {
+                        title: "New Active Order Created Successfully",
+                        description: `The draft Order # ${checkOrder.unique_key} has been marked completed successfully by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
                         userId: req.teammateId,
                         contentId: checkOrder._id,
                         flag: 'order',
-                        redirectionId: checkOrder.unique_key,
+                        redirectionId: "orderDetails/" + checkOrder._id,
+                        endPoint: base_url + "orderDetails/" + checkOrder._id,
                         notificationFor: IDs
                     };
-                    let createNotification = await userService.createNotification(notificationData1);
+                    let notificationData1 = {
+                        title: "New Active Order Created Successfully",
+                        description: `The draft Order # ${checkOrder.unique_key} has been marked completed successfully by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+                        userId: req.teammateId,
+                        contentId: checkOrder._id,
+                        flag: 'order',
+                        redirectionId: "dealer/orderDetails/" + checkOrder._id,
+                        endPoint: base_url + "dealer/orderDetails/" + checkOrder._id,
+                        notificationFor: IDs1
+                    };
+                    let notificationData2 = {
+                        title: "New Active Order Created Successfully",
+                        description: `The draft Order # ${checkOrder.unique_key} has been marked completed successfully by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+                        userId: req.teammateId,
+                        contentId: checkOrder._id,
+                        flag: 'order',
+                        redirectionId: "reseller/orderDetails/" + checkOrder._id,
+                        endPoint: base_url + "reseller/orderDetails/" + checkOrder._id,
+                        notificationFor: IDs2
+                    };
+                    let notificationData3 = {
+                        title: "New Active Order Created Successfully",
+                        description: `A new Order #${checkOrder.unique_key} has been added to the system by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+                        userId: req.teammateId,
+                        contentId: checkOrder._id,
+                        flag: 'order',
+                        redirectionId: "customer/orderDetails/" + checkOrder._id,
+                        endPoint: base_url + "customer/orderDetails/" + checkOrder._id,
+                        notificationFor: IDs3
+                    };
+                    notificationArrayData = []
+                    notificationArrayData.push(notificationData)
+                    notificationArrayData.push(notificationData1)
+                    notificationArrayData.push(notificationData2)
+                    notificationArrayData.push(notificationData3)
+                    let createNotification = await userService.saveNotificationBulk(notificationArrayData);
                     // Send Email code here
-                    let notificationEmails = await supportingFunction.getUserEmails();
-                    //Email to Dealer
-                    let emailData = {
-                        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-                        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-                        address: settingData[0]?.address,
-                        websiteSetting: settingData[0],
-                        senderName: dealerPrimary.firstName,
-                        content: "The  order " + savedResponse.unique_key + " updated and processed",
-                        subject: "Process Order"
+                    if (!checkOrder?.termCondition) {
+                        let notificationEmails = adminUsers.map(user => user.email)
+                        let dealerEmails = dealerUsers.map(user => user.email)
+                        let resellerEmails = resellerUsers.map(user => user.email)
+                        let customermails = customerUsers.map(user => user.email)
+                        //Email to Dealer
+                        let emailData = {
+                            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                            address: settingData[0]?.address,
+                            websiteSetting: settingData[0],
+                            senderName: '',
+                            content: "The order " + savedResponse.unique_key + " updated and processed",
+                            subject: "Process Order",
+                            redirectId: base_url + "orderDetails/" + checkOrder._id,
+                        }
+
+                        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+                        emailData.redirectId = base_url + "dealer/orderDetails/" + checkOrder._id
+                        mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
+                        emailData.redirectId = base_url + "reseller/orderDetails/" + checkOrder._id
+
+                        mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ["noreply@getcover.com"], emailData))
+                        emailData.redirectId = base_url + "customer/orderDetails/" + checkOrder._id
+
+                        mailing = sgMail.send(emailConstant.sendEmailTemplate(customermails, ["noreply@getcover.com"], emailData))
                     }
 
-                    let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
-                    //Email to Reseller
-                    emailData = {
-                        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-                        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-                        address: settingData[0]?.address,
-                        websiteSetting: settingData[0],
-                        senderName: resellerPrimary?.firstName,
-                        content: "The  order " + savedResponse.unique_key + " has been paid",
-                        subject: "Process Order"
-                    }
-
-                    mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
                     //Email to customer code here........
                     if (index == checkLength) {
 
@@ -2466,6 +3078,16 @@ exports.editOrderDetail = async (req, res) => {
                 message: "Success",
             });
         } else {
+            if (data.sendNotification) {
+                let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+                emailData.redirectId = base_url + "reseller/editOrder/" + checkOrder._id
+                mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ["noreply@getcover.com"], emailData))
+                emailData.redirectId = base_url + "dealer/editOrder/" + checkOrder._id
+                mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
+            }
+            let createNotification = await userService.saveNotificationBulk(notificationArrayData);
+
+
             logData.response = {
                 code: constant.successCode,
                 message: "Success",
@@ -2523,6 +3145,9 @@ exports.getOrderContract = async (req, res) => {
     try {
         let data = req.body
         let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+        // let getTheThresholdLimir = await userService.getUserById1({ roleId: process.env.super_admin, isPrimary: true })
+        let getTheThresholdLimir = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
+
         let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
         let limitData = Number(pageLimit)
         let dealerIds = [];
@@ -2620,8 +3245,17 @@ exports.getOrderContract = async (req, res) => {
         if (userSearchCheck == 1) {
             contractFilterWithEligibilty.push({ orderId: { $in: orderIds } })
         }
+
+        if (data.startDate != "") {
+            let startDate = new Date(data.startDate)
+            let endDate = new Date(data.endDate)
+            startDate.setHours(0, 0, 0, 0)
+            endDate.setHours(11, 59, 0, 0)
+            let dateFilter = { createdAt: { $gte: startDate, $lte: endDate } }
+            contractFilterWithEligibilty.push(dateFilter)
+        }
         let mainQuery = []
-        if (data.contractId === "" && data.productName === "" && data.dealerSku === "" &&  data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
+        if (data.contractId === "" && data.productName === "" && data.dealerSku === "" && data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
             mainQuery = [
                 { $sort: { unique_key_number: -1 } },
 
@@ -2649,6 +3283,7 @@ exports.getOrderContract = async (req, res) => {
                                     status: 1,
                                     minDate: 1,
                                     productValue: 1,
+                                    createdAt:1,
                                     manufacture: 1,
                                     eligibilty: 1,
                                     orderUniqueKey: 1,
@@ -2697,6 +3332,7 @@ exports.getOrderContract = async (req, res) => {
                                 status: 1,
                                 minDate: 1,
                                 manufacture: 1,
+                                createdAt:1,
                                 serviceCoverageType: 1,
                                 productValue: 1,
                                 coverageType: 1,
@@ -2718,6 +3354,9 @@ exports.getOrderContract = async (req, res) => {
         let result1 = getContracts[0]?.data ? getContracts[0]?.data : []
         for (let e = 0; e < result1.length; e++) {
             result1[e].reason = " "
+            if (!result1[e].eligibilty) {
+                result1[e].reason = "Claims limit cross for this contract"
+            }
             if (result1[e].status != "Active") {
                 result1[e].reason = "Contract is not active"
             }
@@ -2742,7 +3381,7 @@ exports.getOrderContract = async (req, res) => {
                         openFileClaimsCount: { // Count of claims where claimfile is "Open"
                             $sum: {
                                 $cond: {
-                                    if: { $eq: ["$claimFile", "Open"] }, // Assuming "claimFile" field is correct
+                                    if: { $eq: ["$claimFile", "open"] }, // Assuming "claimFile" field is correct
                                     then: 1,
                                     else: 0
                                 }
@@ -2762,6 +3401,21 @@ exports.getOrderContract = async (req, res) => {
                     result1[e].reason = "Claim value exceed the product value limit"
                 }
             }
+
+
+            let thresholdLimitPercentage = getTheThresholdLimir.threshHoldLimit.value
+            const thresholdLimitValue = (thresholdLimitPercentage / 100) * Number(result1[e].productValue);
+            let overThreshold = result1[e].claimAmount > thresholdLimitValue;
+            let threshHoldMessage = "This claim amount surpasses the maximum allowed threshold."
+            if (!overThreshold) {
+                threshHoldMessage = ""
+            }
+            if (!thresholdLimitPercentage.isThreshHoldLimit) {
+                overThreshold = false
+                threshHoldMessage = ""
+            }
+            result1[e].threshHoldMessage = threshHoldMessage
+            result1[e].overThreshold = overThreshold
         }
         if (!checkOrder[0]) {
             res.send({

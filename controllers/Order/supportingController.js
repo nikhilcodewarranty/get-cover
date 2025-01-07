@@ -102,7 +102,7 @@ exports.getDashboardData = async (req, res) => {
         var checkOrders_ = await orderService.getDashboardData(query, project)
         let claimQuery = [
             {
-                $match: { claimFile: 'Completed' }
+                $match: { claimFile: 'completed' }
             },
             {
                 "$group": {
@@ -118,7 +118,7 @@ exports.getDashboardData = async (req, res) => {
         ]
 
         let valueClaim = await claimService.getClaimWithAggregate(claimQuery);
-        let numberOfClaims = await claimService.getClaims({ claimFile: 'Completed' });
+        let numberOfClaims = await claimService.getClaims({ claimFile: 'completed' });
         if (!checkOrders_[0] && numberOfClaims.length == 0 && valueClaim[0]?.totalAmount == 0) {
             res.send({
                 code: constant.errorCode,
@@ -379,27 +379,32 @@ async function generateTC(orderData) {
         //Get customer
         const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId }, { isDeleted: false })
         //Get customer primary info
-        const customerUser = await userService.getUserById1({ metaId: checkOrder.customerId, isPrimary: true }, { isDeleted: false })
+        const customerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } }, { isDeleted: false })
 
-        const DealerUser = await userService.getUserById1({ metaId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false })
+        const DealerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } }, { isDeleted: false })
 
         const checkReseller = await resellerService.getReseller({ _id: checkOrder.resellerId }, { isDeleted: false })
         //Get reseller primary info
-        const resellerUser = await userService.getUserById1({ metaId: checkOrder.resellerId, isPrimary: true }, { isDeleted: false })
+        const resellerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } }, { isDeleted: false })
         //Get contract info of the order
         let productCoveredArray = []
+        let otherInfo = []
         //Check contract is exist or not using contract id
         const contractArrayPromise = checkOrder?.productsArray.map(item => {
-            if (!item.exit) return contractService.getContractById({
+            return contractService.getContractById({
                 orderProductId: item._id
             });
-            else {
-                return null;
-            }
+
         })
         const contractArray = await Promise.all(contractArrayPromise);
 
         for (let i = 0; i < checkOrder?.productsArray.length; i++) {
+            let anotherObj = {
+                coverageStartDate: checkOrder?.productsArray[i]?.coverageStartDate,
+                coverageEndDate: checkOrder?.productsArray[i]?.coverageEndDate,
+                term: checkOrder?.productsArray[i]?.term
+            }
+            otherInfo.push(anotherObj)
             if (checkOrder?.productsArray[i].priceType == 'Quantity Pricing') {
                 for (let j = 0; j < checkOrder?.productsArray[i].QuantityPricing.length; j++) {
                     let quanitityProduct = checkOrder?.productsArray[i].QuantityPricing[j];
@@ -428,6 +433,19 @@ async function generateTC(orderData) {
 
 `).join('');
 
+        const coverageStartDates = otherInfo.map((product, index) => `
+<p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageStartDate).format("MM/DD/YYYY")}</p>
+`).join('');
+
+        const coverageEndDates = otherInfo.map((product, index) => `
+<p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageEndDate).format("MM/DD/YYYY")}</p>
+`).join('');
+
+        const term = otherInfo.map((product, index) => `
+<p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${product.term / 12} ${product.term / 12 === 1 ? 'Year' : 'Years'}</p>
+`).join('');
+
+
         const checkServicer = await servicerService.getServiceProviderById({
             $or: [
                 { "_id": checkOrder.servicerId },
@@ -436,7 +454,7 @@ async function generateTC(orderData) {
             ]
         }, { isDeleted: false })
 
-        const servicerUser = await userService.getUserById1({ metaId: checkOrder.servicerId, isPrimary: true }, { isDeleted: false })
+        const servicerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.servicerId, isPrimary: true } } }, { isDeleted: false })
         //res.json(checkDealer);return
         const options = {
             format: 'A4',
@@ -448,7 +466,7 @@ async function generateTC(orderData) {
                 },
             }
         }
-        let mergeFileName = checkOrder.unique_key + '.pdf'
+        let mergeFileName = checkOrder.unique_key + '_' + Date.now() + '.pdf'
         //  const orderFile = 'pdfs/' + mergeFileName;
         const orderFile = `/tmp/${mergeFileName}`; // Temporary local storage
         const html = `<head>
@@ -464,7 +482,7 @@ async function generateTC(orderData) {
                                 <td style="font-size:13px;"> 
                                     <p><b>Attention –</b> ${checkReseller ? checkReseller.name : checkDealer.name}</p>
                                     <p> <b>Email Address – </b>${resellerUser ? resellerUser?.email : DealerUser.email}</p>
-                                    <p><b>Telephone :</b> +1 ${resellerUser ? resellerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : DealerUser.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3")}</p>
+                                    <p><b>Telephone :</b> +1 ${resellerUser ? resellerUser?.metaData[0]?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : DealerUser.metaData[0]?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3")}</p>
                                 </td>
                             </tr>
                         <tr>
@@ -472,28 +490,30 @@ async function generateTC(orderData) {
                             <td style="font-size:13px;">
                             <p> <b>Attention –</b>${checkCustomer ? checkCustomer?.username : ''}</p>
                             <p> <b>Email Address –</b>${checkCustomer ? customerUser?.email : ''}</p>
-                            <p><b>Telephone :</b> +1${checkCustomer ? customerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''}</p>
+                            <p><b>Telephone :</b> +1${checkCustomer ? customerUser?.metaData[0]?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''}</p>
                             </td>
                         </tr>
                     <tr>
                         <td style="font-size:13px;padding:15px;">Address of GET COVER service contract holder:</td>
                         <td style="font-size:13px;">${checkCustomer ? checkCustomer?.street : ''}, ${checkCustomer ? checkCustomer?.city : ''}, ${checkCustomer ? checkCustomer?.state : ''}, ${checkCustomer ? checkCustomer?.country : ''}</td>
                    </tr>
-                <tr>
+         
+                  <tr>
                     <td style="font-size:13px;padding:15px;">Coverage Start Date:</td>
-                    <td style="font-size:13px;"> ${moment(coverageStartDate).format("MM/DD/YYYY")}</td>
-                </tr>
+                    <td style="font-size:13px;"> ${coverageStartDates}</td>
+                  </tr>
             <tr>
                 <td style="font-size:13px;padding:15px;">GET COVER service contract period:</td>
                 <td style="font-size:13px;">
-                ${checkOrder.productsArray[0]?.term / 12} 
-                ${checkOrder.productsArray[0]?.term / 12 === 1 ? 'Year' : 'Years'}
-                </td>
+                ${term} 
+            </td>
             </tr>
+
             <tr>
-            <td style="font-size:13px;padding:15px;">Coverage End Date:</td>
-            <td style="font-size:13px;">${moment(coverageEndDate).format("MM/DD/YYYY")}</td>
-          </tr>
+                <td style="font-size:13px;padding:15px;">Coverage End Date:</td>
+                <td style="font-size:13px;">${coverageEndDates}</td >
+           </tr >
+
             <tr>
                 <td style="font-size:13px;padding:15px;">Number of covered components:</td>
                <td> ${tableRows}   </td>                 
@@ -510,7 +530,7 @@ async function generateTC(orderData) {
             const s3Key = `pdfs/${mergeFileName}`;
             //Upload to S3 bucket
             await uploadToS3(orderFile, bucketName, s3Key);
-            const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : "file-1723185474819.pdf"
+            const termConditionFile = checkOrder.termCondition.fileName
             const termPath = termConditionFile
             const termPathBucket = await downloadFromS3(bucketName, termPath);
             const orderPathBucket = await downloadFromS3(bucketName, s3Key);
@@ -549,7 +569,7 @@ async function generateTC(orderData) {
             notificationEmails.push(DealerUser.email)
             notificationEmails.push(resellerUser?.email)
             let emailData = {
-                senderName: customerUser.firstName,
+                senderName: '',
                 content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
                 subject: 'Order Term and Condition-' + checkOrder.unique_key,
             }
@@ -567,7 +587,9 @@ async function generateTC(orderData) {
     }
 }
 
+
 //Generate HTML to PDF
+
 exports.generateHtmltopdf = async (req, res) => {
     try {
         let response;
@@ -575,39 +597,52 @@ exports.generateHtmltopdf = async (req, res) => {
         const checkOrder = await orderService.getOrder({ _id: req.params.orderId }, { isDeleted: false })
         let coverageStartDate = checkOrder.productsArray[0]?.coverageStartDate;
         let coverageEndDate = checkOrder.productsArray[0]?.coverageEndDate;
+
         //Get Dealer
         const checkDealer = await dealerService.getDealerById(checkOrder.dealerId, { isDeleted: false })
         //Get customer
         const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId }, { isDeleted: false })
         //Get customer primary info
-        const customerUser = await userService.getUserById1({ metaId: checkOrder.customerId, isPrimary: true }, { isDeleted: false })
+        const customerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } }, { isDeleted: false })
 
-        const DealerUser = await userService.getUserById1({ metaId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false })
+        const DealerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } }, { isDeleted: false })
 
         const checkReseller = await resellerService.getReseller({ _id: checkOrder.resellerId }, { isDeleted: false })
         //Get reseller primary info
-        const resellerUser = await userService.getUserById1({ metaId: checkOrder.resellerId, isPrimary: true }, { isDeleted: false })
+        const resellerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } }, { isDeleted: false })
+
+        //Get contract info of the order
         //Get contract info of the order
         let productCoveredArray = []
+        let otherInfo = []
         //Check contract is exist or not using contract id
         const contractArrayPromise = checkOrder?.productsArray.map(item => {
-            if (!item.exit) return contractService.getContractById({
+            return contractService.getContractById({
                 orderProductId: item._id
             });
-            else {
-                return null;
-            }
+
         })
         const contractArray = await Promise.all(contractArrayPromise);
+
+
         for (let i = 0; i < checkOrder?.productsArray.length; i++) {
+            let anotherObj = {
+                coverageStartDate: checkOrder?.productsArray[i]?.coverageStartDate,
+                coverageEndDate: checkOrder?.productsArray[i]?.coverageEndDate,
+                term: checkOrder?.productsArray[i]?.term
+            }
+            otherInfo.push(anotherObj)
             if (checkOrder?.productsArray[i].priceType == 'Quantity Pricing') {
                 for (let j = 0; j < checkOrder?.productsArray[i].QuantityPricing.length; j++) {
                     let quanitityProduct = checkOrder?.productsArray[i].QuantityPricing[j];
                     let obj = {
-                        productName: quanitityProduct.name,
-                        noOfProducts: quanitityProduct.enterQuantity
+                        productName: checkOrder?.productsArray[i]?.dealerSku,
+                        noOfProducts: quanitityProduct.enterQuantity,
+
                     }
                     productCoveredArray.push(obj)
+
+
                 }
 
             }
@@ -615,8 +650,9 @@ exports.generateHtmltopdf = async (req, res) => {
                 let findContract = contractArray.find(contract => contract.orderProductId.toString() === checkOrder?.productsArray[i]._id.toString())
 
                 let obj = {
-                    productName: findContract.productName,
-                    noOfProducts: checkOrder?.productsArray[i].noOfProducts
+                    productName: findContract?.dealerSku,
+                    noOfProducts: checkOrder?.productsArray[i].noOfProducts,
+
                 }
                 productCoveredArray.push(obj)
             }
@@ -624,9 +660,22 @@ exports.generateHtmltopdf = async (req, res) => {
         }
         // res.json(productCoveredArray);
         // return;
+        // return;
         const tableRows = productCoveredArray.map(product => `
         <p style="font-size:13px;">${product.productName} : ${product.noOfProducts}</p>
 
+`).join('');
+
+        const coverageStartDates = otherInfo.map((product, index) => `
+<p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageStartDate).format("MM/DD/YYYY")}</p>
+`).join('');
+
+        const coverageEndDates = otherInfo.map((product, index) => `
+<p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${moment(product.coverageEndDate).format("MM/DD/YYYY")}</p>
+`).join('');
+
+        const term = otherInfo.map((product, index) => `
+<p style="font-size:13px;">${otherInfo.length > 1 ? `Product #${index + 1}: ` : ''}${product.term / 12} ${product.term / 12 === 1 ? 'Year' : 'Years'}</p>
 `).join('');
 
         const checkServicer = await servicerService.getServiceProviderById({
@@ -637,7 +686,7 @@ exports.generateHtmltopdf = async (req, res) => {
             ]
         }, { isDeleted: false })
 
-        const servicerUser = await userService.getUserById1({ metaId: checkOrder.servicerId, isPrimary: true }, { isDeleted: false })
+        const servicerUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: checkOrder.servicerId, isPrimary: true } } }, { isDeleted: false })
         const options = {
             format: 'A4',
             orientation: 'portrait',
@@ -648,68 +697,71 @@ exports.generateHtmltopdf = async (req, res) => {
                 },
             }
         }
-        let mergeFileName = checkOrder.unique_key + '.pdf'
+        // let mergeFileName = checkOrder.unique_key + '.pdf'
+        let mergeFileName = checkOrder.unique_key + '_' + Date.now() + '.pdf'
         //  const orderFile = 'pdfs/' + mergeFileName;
         const orderFile = `/tmp/${mergeFileName}`; // Temporary local storage
         const html = `<head>
         <link rel="stylesheet" href="https://gistcdn.githack.com/mfd/09b70eb47474836f25a21660282ce0fd/raw/e06a670afcb2b861ed2ac4a1ef752d062ef6b46b/Gilroy.css"></link>
         </head>
         <table border='1' border-collapse='collapse' style=" border-collapse: collapse; font-size:13px;font-family:  'Gilroy', sans-serif;">
-                            <tr>
-                                <td style="width:50%; font-size:13px;padding:15px;">  GET COVER service contract number:</td>
-                                <td style="font-size:13px;">${checkOrder.unique_key}</td>
-                            </tr>
-                            <tr>
-                                <td style="font-size:13px;padding:15px;">${checkReseller ? "Reseller Name" : "Dealer Name"}:</td>
-                                <td style="font-size:13px;"> 
-                                    <p><b>Attention –</b> ${checkReseller ? checkReseller.name : checkDealer.name}</p>
-                                    <p> <b>Email Address – </b>${resellerUser ? resellerUser?.email : DealerUser.email}</p>
-                                    <p><b>Telephone :</b> +1 ${resellerUser ? resellerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : DealerUser.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3")}</p>
-                                </td>
-                            </tr>
-                        <tr>
-                            <td style="font-size:13px;padding:15px;">GET COVER service contract holder name:</td>
-                            <td style="font-size:13px;">
-                            <p> <b>Attention –</b>${checkCustomer ? checkCustomer?.username : ''}</p>
-                            <p> <b>Email Address –</b>${checkCustomer ? customerUser?.email : ''}</p>
-                            <p><b>Telephone :</b> +1${checkCustomer ? customerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''}</p>
-                            </td>
-                        </tr>
-                    <tr>
-                        <td style="font-size:13px;padding:15px;">Address of GET COVER service contract holder:</td>
-                        <td style="font-size:13px;">${checkCustomer ? checkCustomer?.street : ''},${checkCustomer ? checkCustomer?.city : ''},${checkCustomer ? checkCustomer?.state : ''}</td>
-                   </tr>
-                <tr>
-                    <td style="font-size:13px;padding:15px;">Coverage Start Date:</td>
-                    <td style="font-size:13px;"> ${moment(coverageStartDate).format("MM/DD/YYYY")}</td>
-                </tr>
-            <tr>
-                <td style="font-size:13px;padding:15px;">GET COVER service contract period:</td>
-                <td style="font-size:13px;">
-                ${checkOrder.productsArray[0]?.term / 12} 
-                ${checkOrder.productsArray[0]?.term / 12 === 1 ? 'Year' : 'Years'}
-                </td>
-            </tr>
-            <tr>
-            <td style="font-size:13px;padding:15px;">Coverage End Date:</td>
-            <td style="font-size:13px;">${moment(coverageEndDate).format("MM/DD/YYYY")}</td>
-          </tr>
-            <tr>
-                <td style="font-size:13px;padding:15px;">Number of covered components:</td>
-               <td> ${tableRows}   </td>                 
-            </tr >
-            
-        </table > `;
+        <tr>
+            <td style="width:50%; font-size:13px;padding:15px;">  GET COVER service contract number:</td>
+            <td style="font-size:13px;">${checkOrder.unique_key}</td>
+        </tr>
+        <tr>
+        <td style="font-size:13px;padding:15px;">${checkReseller ? "Reseller Name" : "Dealer Name"}:</td>
+        <td style="font-size:13px;"> 
+            <p><b>Attention –</b> ${checkReseller ? checkReseller.name : checkDealer.name}</p>
+            <p> <b>Email Address – </b>${resellerUser ? resellerUser?.email : DealerUser.email}</p>
+            <p><b>Telephone :</b> +1 ${resellerUser ? resellerUser?.metaData[0]?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : DealerUser.metaData[0]?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3")}</p>
+        </td>
+    </tr>
+    <tr>
+    <td style="font-size:13px;padding:15px;">GET COVER service contract holder name:</td>
+    <td style="font-size:13px;">
+    <p> <b>Attention –</b>${checkCustomer ? checkCustomer?.username : ''}</p>
+    <p> <b>Email Address –</b>${checkCustomer ? customerUser?.email : ''}</p>
+    <p><b>Telephone :</b> +1${checkCustomer ? customerUser?.metaData[0]?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''}</p>
+    </td>
+</tr>
+<tr>
+<td style="font-size:13px;padding:15px;">Address of GET COVER service contract holder:</td>
+<td style="font-size:13px;">${checkCustomer ? checkCustomer?.street : ''}, ${checkCustomer ? checkCustomer?.city : ''}, ${checkCustomer ? checkCustomer?.state : ''}, ${checkCustomer ? checkCustomer?.country : ''}</td>
+</tr>
+<tr>
+<td style="font-size:13px;padding:15px;">Coverage Start Date:</td>
+<td style="font-size:13px;"> ${coverageStartDates}</td>
+</tr>
+<tr>
+<td style="font-size:13px;padding:15px;">GET COVER service contract period:</td>
+<td style="font-size:13px;">
+${term} 
+</td>
+</tr>
+<tr>
+<td style="font-size:13px;padding:15px;">Coverage End Date:</td>
+<td style="font-size:13px;">${coverageEndDates}</td >
+</tr >
+<tr>
+<td style="font-size:13px;padding:15px;">Number of covered components:</td>
+<td> ${tableRows}   </td>                 
+</tr >
+
+</table > `;
+
         const checkFileExist = await checkFileExistsInS3(process.env.bucket_name, `mergedFile/${mergeFileName}`)
-        if (checkFileExist) {
-            // link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
-            response = { link: link, fileName: mergeFileName, bucketName: process.env.bucket_name, key: "mergedFile" }
-            res.send({
-                code: constant.successCode,
-                message: 'Success!',
-                result: response
-            })
-        } else {
+        // if (checkFileExist) {
+        //     // link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
+        //     response = { link: link, fileName: mergeFileName, bucketName: process.env.bucket_name, key: "mergedFile" }
+        //     res.send({
+        //         code: constant.successCode,
+        //         message: 'Success!',
+        //         result: response
+        //     })
+        // } 
+        //else {
+
             pdf.create(html, options).toFile(orderFile, async (err, result) => {
                 if (err) return console.log(err);
                 const { PDFDocument, rgb } = require('pdf-lib');
@@ -717,9 +769,12 @@ exports.generateHtmltopdf = async (req, res) => {
                 const fileContent = await fs.readFile(orderFile);
                 const bucketName = process.env.bucket_name
                 const s3Key = `pdfs/${mergeFileName}`;
-                await uploadToS3(orderFile, bucketName, s3Key);
-                const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : "file-1723185474819.pdf"
+                //Upload to S3 bucket
+                await uploadToS3(orderFile, bucketName, s3Key);     
+
+                const termConditionFile = checkOrder.termCondition.fileName
                 const termPath = termConditionFile
+                //Download from S3 bucket 
                 const termPathBucket = await downloadFromS3(bucketName, termPath);
                 const orderPathBucket = await downloadFromS3(bucketName, s3Key);
                 async function mergePDFs(pdfBytes1, pdfBytes2, outputPath) {
@@ -743,17 +798,41 @@ exports.generateHtmltopdf = async (req, res) => {
                 const mergedPdf = await mergePDFs(termPathBucket, orderPathBucket, `/tmp/merged_${mergeFileName}`);
                 // Upload merged PDF to S3
                 const mergedKey = `mergedFile/${mergeFileName}`;
-                await uploadToS3(`/tmp/merged_${mergeFileName}`, bucketName, mergedKey);
-                response = { link: link, fileName: mergeFileName, bucketName: process.env.bucket_name, key: "mergedFile" }
 
+                await uploadToS3(`/tmp/merged_${mergeFileName}`, bucketName, mergedKey);
+
+                const params = {
+                    Bucket: bucketName,
+                    Key: `mergedFile/${mergeFileName}`
+                };
+                //Read from the s3 bucket
+                const data = await S3.getObject(params).promise();
+                let attachment = data.Body.toString('base64');
+
+                //sendTermAndCondition
+                // Send Email code here
+                let notificationEmails = await supportingFunction.getUserEmails();
+                notificationEmails.push(DealerUser.email)
+                notificationEmails.push(resellerUser?.email)
+                let settingData = await userService.getSetting({});
+                let emailData = {
+                    darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                    lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                    address: settingData[0]?.address,
+                    websiteSetting: settingData[0],
+                    senderName: '',
+                    content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
+                    subject: 'Order Term and Condition-' + checkOrder.unique_key,
+                }
+                let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
+                response = { link: link, fileName: mergeFileName, bucketName: process.env.bucket_name, key: "mergedFile" }
                 res.send({
                     code: constant.successCode,
                     message: 'Success!',
                     result: response
                 })
-
-            });
-        }
+            })
+        
 
     }
     catch (err) {
@@ -799,6 +878,7 @@ const downloadFromS3 = async (bucketName, key) => {
     const data = await S3.getObject(params).promise();
     return data.Body;
 };
+
 // reporting data creating script for all orders 
 exports.reportingDataCreation = async (req, res) => {
     try {
@@ -906,6 +986,7 @@ exports.reportingDataReCreation = async (req, res) => {
             })
         }
 
+
         let reportingToSave = []
         for (let i = 0; i < getAllOrders.length; i++) {
             let orderData = getAllOrders[i]
@@ -922,6 +1003,7 @@ exports.reportingDataReCreation = async (req, res) => {
                 for (let p = 0; p < orderData.productsArray.length; p++) {
                     productData = orderData.productsArray[p]
                     let productObject = {}
+
                     productObject.price = productData.price
                     productObject.noOfProducts = productData.checkNumberProducts
                     productObject.retailPrice = productData.dealerPriceBookDetails.retailPrice
@@ -933,9 +1015,10 @@ exports.reportingDataReCreation = async (req, res) => {
                     productObject.categoryId = productData.priceBookDetails.category
                     productObject.term = productData.priceBookDetails.term
                     productObject.adminFee = productData.priceBookDetails.adminFee
-                    productObject.brokerFee = productData.dealerPriceBookDetails.brokerFee
-                    productObject.dealerPriceId = productData.dealerPriceBookDetails._id
+                    productObject.brokerFee = productData.dealerPriceBookDetails[0].brokerFee
+                    productObject.dealerPriceId = productData.dealerPriceBookDetails[0]._id
                     products.push(productObject)
+                    console.log("-----------------------",productObject)
 
                 }
                 reportingData.products = products
@@ -1031,16 +1114,49 @@ exports.getServicerInOrders = async (req, res) => {
         $and: [
             {
                 $or: [
-                    { metaId: { $in: servicerIds } },
-                    { metaId: { $in: resellerIdss } },
-                    { metaId: { $in: dealerIdss } },
+                    { metaData: { $elemMatch: { metaId: { $in: servicerIds } } } },
+                    { metaData: { $elemMatch: { metaId: { $in: resellerIdss } } } },
+                    { metaData: { $elemMatch: { metaId: { $in: dealerIdss } } } },
                 ]
             },
             { isPrimary: true }
         ]
     };
 
-    let servicerUser = await userService.getMembers(query1, {});
+    const servicerUser = await userService.findUserforCustomer1([
+        {
+            $match: {
+                $and: [
+                    {
+                        $or: [
+                            { metaData: { $elemMatch: { metaId: { $in: servicerIds } } } },
+                            { metaData: { $elemMatch: { metaId: { $in: resellerIdss } } } },
+                            { metaData: { $elemMatch: { metaId: { $in: dealerIdss } } } },
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            $project: {
+                email: 1,
+                'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+                'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+                'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+                'position': { $arrayElemAt: ["$metaData.position", 0] },
+                'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+                'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+                'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                'status': { $arrayElemAt: ["$metaData.status", 0] },
+                resetPasswordCode: 1,
+                isResetPassword: 1,
+                approvedStatus: 1,
+                createdAt: 1,
+                updatedAt: 1
+            }
+        }
+    ]);
     if (!servicerUser) {
         res.send({
             code: constant.errorCode,
@@ -1049,17 +1165,17 @@ exports.getServicerInOrders = async (req, res) => {
         return;
     }
 
-    console.log("servicer user ++++++++++++++++++++++++++", servicer, servicerUser)
-
+    console.log("sdfsfsdfsdfsdfsdfsddfs",servicerUser);
     const result_Array = servicer.map((item1) => {
         const matchingItem = servicerUser.find(
-            (item2) => item2.metaId.toString() === item1?._id.toString());
+            (item2) => item2.metaId?.toString() === item1?._id?.toString());
+            
         let matchingItem2 = servicerUser.find(
-            (item2) => item2.metaId?.toString() === item1?.resellerId?.toString() || item2.metaId.toString() === item1?.dealerId?.toString());
+            (item2) => item2.metaId?.toString() === item1?.resellerId?.toString() || item2.metaId?.toString() === item1?.dealerId?.toString());
         if (matchingItem) {
             return {
                 ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-                servicerData: matchingItem.toObject(),
+                servicerData: matchingItem,
             };
         } else if (matchingItem2) {
             return {
@@ -1105,9 +1221,38 @@ exports.getDealerResellers = async (req, res) => {
         const resellerId = resellers.map(obj => obj._id);
 
         const orderResellerId = resellers.map(obj => obj._id);
-        const queryUser = { metaId: { $in: resellerId }, isPrimary: true };
+        // const queryUser = { metaId: { $in: resellerId }, isPrimary: true };
 
-        let getPrimaryUser = await userService.findUserforCustomer(queryUser)
+        const getPrimaryUser = await userService.findUserforCustomer1([
+            {
+                $match: {
+                    $and: [
+                        { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+                        { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { metaData: { $elemMatch: { metaId: { $in: resellerId }, isPrimary: true } } }
+                    ]
+                }
+            },
+            {
+                $project: {
+                    email: 1,
+                    'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+                    'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+                    'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+                    'position': { $arrayElemAt: ["$metaData.position", 0] },
+                    'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                    'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+                    'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+                    'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                    'status': { $arrayElemAt: ["$metaData.status", 0] },
+                    resetPasswordCode: 1,
+                    isResetPassword: 1,
+                    approvedStatus: 1,
+                    createdAt: 1,
+                    updatedAt: 1
+                }
+            }
+        ]);
 
         //Get Dealer Customer Orders
 
@@ -1146,17 +1291,13 @@ exports.getDealerResellers = async (req, res) => {
             }
         });
 
-        const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
         const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
-        const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
         const dealerRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
 
         const filteredData = result_Array.filter(entry => {
             return (
                 nameRegex.test(entry.resellerData.name) &&
-                emailRegex.test(entry.email) &&
-                dealerRegex.test(entry.resellerData.dealerId) &&
-                phoneRegex.test(entry.phoneNumber)
+                dealerRegex.test(entry.resellerData.dealerId)
             );
         });
         res.send({
