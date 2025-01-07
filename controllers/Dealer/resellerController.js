@@ -1250,6 +1250,8 @@ exports.addResellerUser = async (req, res) => {
                     }
                 },
             }
+
+            
             let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerQuery, { email: 1 })
             let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDealerQuery, { email: 1 })
 
@@ -2264,7 +2266,7 @@ exports.changeResellerStatus = async (req, res) => {
             let mergedEmail = adminEmail.concat(dealerEmails)
             let notificationData = {
                 title: "Reseller Status Updated",
-                description: `The Reseller ${singleReseller.name} status has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+                description: `The Reseller ${singleReseller.name} for dealer ${checkDealer.name} status has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
                 userId: req.teammateId,
                 redirectionId: "resellerDetails/" + singleReseller._id,
                 flag: 'reseller',

@@ -2140,7 +2140,6 @@ exports.editClaimStatus = async (req, res) => {
 
       if (forCheckOnly) {
         let checkNoOfClaims = await claimService.getClaimWithAggregate(getNoOfClaimQuery)
-        console.log(checkNoOfClaims, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
         if (checkNoOfClaims.length == 0) {
           checkNoOfClaims = [{
             "monthlyCount": 0,
@@ -2444,7 +2443,7 @@ exports.editServicer = async (req, res) => {
             { status: true },
             {
               $or: [
-                { metaId: checkClaim?.servicerId },
+                { metaId: eq.body.servicerId },
               ]
             },
           ]
@@ -2483,7 +2482,7 @@ exports.editServicer = async (req, res) => {
             {
               $or: [
                 { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                { metaId: checkClaim?.servicerId },
+                { metaId: req.body.servicerId },
               ]
             },
 
