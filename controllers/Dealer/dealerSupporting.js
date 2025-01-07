@@ -1827,6 +1827,7 @@ exports.getAllDealers = async (req, res) => {
 
         let projection = { __v: 0, isDeleted: 0 }
         let dealers = await dealerService.getAllDealers(dealerFilter, projection);
+        console.log("dealers+++++++++++++",dealers)
         const dealerIds = dealers.map(obj => obj._id);
 
         //-------------Get All Dealers Id's------------------------
