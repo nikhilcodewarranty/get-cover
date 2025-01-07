@@ -115,7 +115,7 @@ cron.schedule('4 0 * * *', () => {
 
 cron.schedule('6 0 * * *', () => {
   axios.get(`${process.env.API_ENDPOINT}api-v1/claim/statusClaim`)   //live
-});
+}); 
 
 cron.schedule('0 1 * * *', () => {
   axios.get(`${process.env.API_ENDPOINT}api-v1/claim/checkNumberOfCertainPeriod`)   //live
