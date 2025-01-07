@@ -197,24 +197,24 @@ exports.exportContractReporting = async (req, res) => {
 
         }
 
-        if (data.flag == "dealer") {
+        if (data.flag == "Dealer") {
             dealerIds = [new mongoose.Types.ObjectId(data.userId)]
 
         }
-        if (data.flag == "reseller") {
+        if (data.flag == "Reseller") {
             resellerIds = [new mongoose.Types.ObjectId(data.userId)]
 
         }
-        if (data.flag == "servicer") {
+        if (data.flag == "Servicer") {
             servicerIds = [new mongoose.Types.ObjectId(data.userId)]
 
         }
-        if (data.flag == "customer") {
+        if (data.flag == "Customer") {
             // match1 = { customerId: new mongoose.Types.ObjectId(data.userId) }
             customerIds = [new mongoose.Types.ObjectId(data.userId)]
 
         }
-        if (data.flag == "order") {
+        if (data.flag == "Order") {
             // match1 = { customerId: new mongoose.Types.ObjectId(data.userId) }
             orderIds = [new mongoose.Types.ObjectId(data.userId)]
         }
