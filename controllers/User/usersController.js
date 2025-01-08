@@ -2198,6 +2198,8 @@ exports.updateProfile = async (req, res) => {
     newMetaData[0].lastName = data.lastName ? data.lastName : checkUser.metaData[0].lastName
     newMetaData[0].phoneNumber = data.phoneNumber ? data.phoneNumber : checkUser.metaData[0].phoneNumber
     newMetaData[0].position = data.position ? data.position : checkUser.metaData[0].position
+    newMetaData[0].status = data.status
+
     let updateProfile = await userService.updateSingleUser({ email: email }, { metaData: newMetaData }, { new: true })
 
     if (!updateProfile) {
