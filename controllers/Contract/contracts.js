@@ -463,6 +463,15 @@ exports.getContractClaims = async (req, res) => {
           {
             $project: {
               "contractId": 1,
+              "totalAmount": {
+                "$sum": {
+                  "$filter": {
+                    "input": "$score",
+                    "as": "s",
+                    "cond": { "$eq": ["$$s.claimFile", "completed"] }
+                  }
+                }
+              },
               "claimFile": 1,
               "lossDate": 1,
               submittedBy: 1,
@@ -1051,7 +1060,7 @@ exports.getContractById = async (req, res) => {
         });
       }
     });
-    getData[0].totalClaim =  totalClaim
+    getData[0].totalClaim = totalClaim
     if (!getData) {
       res.send({
         code: constant.errorCode,
