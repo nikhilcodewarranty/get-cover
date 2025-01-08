@@ -184,7 +184,6 @@ exports.exportDataForClaim = async (req, res) => {
     if (req.role == 'Servicer') {
       match = { servicerId: new mongoose.Types.ObjectId(req.userId) }
     }
-
     if (req.role == 'Reseller') {
       match = { resellerId: new mongoose.Types.ObjectId(req.userId) }
     }
