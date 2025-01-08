@@ -689,7 +689,7 @@ exports.addClaim = async (req, res, next) => {
     }
     let mailing;
     if (checkCustomer.isAccountCreate) {
-      const customerCaseNotification = {
+      const customerCaseNotification = { 
         metaData: {
           $elemMatch: {
             $and: [
