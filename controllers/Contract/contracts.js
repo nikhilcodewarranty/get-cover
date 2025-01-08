@@ -428,6 +428,14 @@ exports.getContractClaims = async (req, res) => {
 
     }
 
+    const query = { contractId: new mongoose.Types.ObjectId(data.contractId) }
+    let claimTotalQuery = [
+      { $match: query },
+      { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
+
+    ]
+
+    let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
     // building the query for claims
     let newQuery = [];
     newQuery.push({
@@ -880,7 +888,8 @@ exports.getContractClaims = async (req, res) => {
       code: constant.successCode,
       message: "Success",
       result: result_Array,
-      totalCount
+      totalCount,
+      claimTotal
     });
 
   }
