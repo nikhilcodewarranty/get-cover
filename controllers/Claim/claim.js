@@ -726,7 +726,7 @@ exports.addClaim = async (req, res, next) => {
       mailing = sgMail.send(emailConstant.sendEmailTemplate(adminEmail, ["noreply@getcover.com"], emailData))
       emailData.senderName = `Dear ${dealerPrimary.metaData[0]?.firstName}`
       mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.com"], emailData))
-      emailData.senderName = `Dear ${resellerPrimary.metaData[0]?.firstName}`
+      emailData.senderName = `Dear ${resellerPrimary?.metaData[0]?.firstName}`
       mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ["noreply@getcover.com"], emailData))
       emailData.senderName = `Dear ${customerPrimary.metaData[0]?.firstName}`
       mailing = sgMail.send(emailConstant.sendEmailTemplate(customerEmail, ["noreply@getcover.com"], emailData))
@@ -765,7 +765,7 @@ exports.addClaim = async (req, res, next) => {
       mailing = sgMail.send(emailConstant.sendEmailTemplate(adminEmail, ["noreply@getcover.com"], emailData))
       emailData.senderName = `Dear ${dealerPrimary.metaData[0]?.firstName}`
       mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.com"], emailData))
-      emailData.senderName = `Dear ${resellerPrimary.metaData[0]?.firstName}`
+      emailData.senderName = `Dear ${resellerPrimary?.metaData[0]?.firstName}`
       mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ["noreply@getcover.com"], emailData))
     }
     // Email to servicer and cc to admin 
