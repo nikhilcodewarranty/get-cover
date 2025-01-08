@@ -14,7 +14,7 @@ router.post("/uploadTermAndCondition", [verifyToken], dealerController.uploadTer
 router.post("/createDealerPriceBook", [verifyToken], dealerController.createDealerPriceBook); // create dealer price book
 router.post("/checkDealerPriceBook", [verifyToken], dealerController.checkDealerPriceBook); // check dealer price book
 router.post("/uploadDealerPriceBook1", [verifyToken], dealerController.uploadDealerPriceBook); // upload dealer price book
-router.post("/uploadDealerPriceBook",[verifyToken], dealerController.uploadDealerPriceBookNew); // upload dealer price book
+router.post("/uploadDealerPriceBook", [verifyToken], dealerController.uploadDealerPriceBookNew); // upload dealer price book
 router.post("/createRelationWithServicer/:dealerId", [verifyToken], supportingFunction.checkObjectId, dealerController.createDeleteRelation); // create relation with servicer
 router.post("/unAssignServicer", [verifyToken], dealerController.unAssignServicer); // unassign servicer
 
@@ -40,7 +40,7 @@ router.post('/saveDealerSetting', [verifyToken], dealerController.saveDealerSett
 
 router.post('/resetDealerSetting', [verifyToken], dealerController.resetDealerSetting)
 
-router.get('/getDealerColorSetting/:dealerId',[verifyToken], dealerController.getDealerColorSetting);
+router.get('/getDealerColorSetting/:dealerId', [verifyToken], dealerController.getDealerColorSetting);
 
 router.get('/defaultSettingDealer/:dealerId', [verifyToken], dealerController.defaultSettingDealer);
 
@@ -49,6 +49,7 @@ router.post("/getUserByDealerId/:dealerId", [verifyToken], supportingFunction.ch
 router.post("/dealerOrders/:dealerId", [verifyToken], supportingFunction.checkObjectId, dealerSupportingController.getDealerOrders); // get dealer orders
 router.post("/getDealerContract/:dealerId", [verifyToken], supportingFunction.checkObjectId, dealerSupportingController.getDealerContract); // get dealer contract
 router.post("/getDealerClaims/:dealerId", [verifyToken], supportingFunction.checkObjectId, dealerSupportingController.getDealerClaims); // get dealer claims
+router.post("/getDealerAsServicerClaims/:dealerId", [verifyToken], supportingFunction.checkObjectId, dealerSupportingController.getDealerAsServicerClaims); // get dealer claims
 router.post("/getAllPriceBooksByFilter", [verifyToken], validator('filter_price_book'), dealerSupportingController.getAllPriceBooksByFilter); // get all price books by filter
 router.post("/getAllDealerPriceBooksByFilter", [verifyToken], validator('filter_dealer_price'), dealerSupportingController.getAllDealerPriceBooksByFilter); // get all dealer price books by filter
 router.post("/getDealerResellers/:dealerId", [verifyToken], supportingFunction.checkObjectId, dealerSupportingController.getDealerResellers); // get dealer resellers
