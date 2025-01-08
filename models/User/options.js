@@ -14,9 +14,13 @@ const optionSchema = new mongoose.Schema({
     value: {
         type: [{
             label: String,
-            value: String
+            value: String,
+            status: {
+                type: Boolean,
+                default: true
+            }
         }],
-        default: []
+        // default: []
     }
 });
 

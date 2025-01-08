@@ -21,6 +21,14 @@ const claimSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  submittedBy: {
+    type: String,
+    default: ''
+  },
+  shippingTo: {
+    type: String,
+    default: ''
+  },
   serial: {
     type: String,
     default: ''
@@ -29,7 +37,19 @@ const claimSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  approveDate:{
+    type: Date,
+    default:''
+  },
   pName: {
+    type: String,
+    default: ''
+  },
+  shippingTo:{
+    type: String,
+    default: ''
+  },
+  submittedBy:{
     type: String,
     default: ''
   },
@@ -37,17 +57,18 @@ const claimSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  manufacture: {
+  manufacture: { 
     type: String,
     default: ''
   },
-
+  
   claimFile: {
     type: 'String',
-    enum: ['Open', 'Completed', 'Rejected'],
-    default: 'Open',
+    enum: ['open', 'completed', 'rejected'],
+    default: 'open',
     index: true
   },
+
   reason: {
     type: 'String',
     default: '',
@@ -111,15 +132,15 @@ const claimSchema = new mongoose.Schema({
   },
   claimDate: {
     type: Date,
-    default: Date.now()
+    default: () => Date.now()
   },
   lossDate: {
     type: Date,
-    default: Date.now()
+    default: () => Date.now()
   },
   claimType: {
     type: String,
-    default: 'New'
+    default: ''
   },
   trackingNumber: {
     type: String,
@@ -159,6 +180,22 @@ const claimSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  customerOverAmount: {
+    type: Number,
+    default: 0
+  },
+  getcoverOverAmount: {
+    type: Number,
+    default: 0
+  },
+  customerClaimAmount: {
+    type: Number,
+    default: 0
+  },
+  getCoverClaimAmount: {
+    type: Number,
+    default: 0
+  },
   note: {
     type: String,
     default: ''
@@ -168,17 +205,17 @@ const claimSchema = new mongoose.Schema({
       {
         status: {
           type: String,
-          default: 'Request Submitted'
+          default: 'request_submitted'
         },
         date: {
           type: Date,
-          default: Date.now()
+          default: () => Date.now()
         }
       },
     ],
     default: [{
-      status: 'Request Submitted',
-      date: Date.now()
+      status: 'request_submitted',
+      default: () => Date.now()
     }]
   },
   trackStatus: {
@@ -186,26 +223,26 @@ const claimSchema = new mongoose.Schema({
       {
         status: {
           type: String,
-          default: 'Request Submitted'
+          default: 'request_sent'
         },
         date: {
           type: Date,
-          default: Date.now()
+          default: () => Date.now()
         }
       },
     ],
     default: [
       {
-        status: 'Open',
-        date: Date.now()
+        status: 'open',
+        default: () => Date.now()
       },
       {
-        status: 'Request Submitted',
-        date: Date.now()
+        status: 'request_submitted',
+        default: () => Date.now()
       },
       {
-        status: 'Request Sent',
-        date: Date.now()
+        status: 'request_sent',
+        default: () => Date.now()
       },
     ]
   },
@@ -214,18 +251,18 @@ const claimSchema = new mongoose.Schema({
       {
         status: {
           type: String,
-          default: 'Open'
+          default: 'open'
         },
         date: {
           type: Date,
-          default: Date.now()
+          default: () => Date.now() 
 
         }
       },
     ],
     default: [{
-      status: 'Open',
-      date: Date.now()
+      status: 'open',
+      default: () => Date.now()
     }]
   },
   repairStatus: {
@@ -233,19 +270,34 @@ const claimSchema = new mongoose.Schema({
       {
         status: {
           type: String,
-          default: 'Request Approved'
+          default: 'request_sent'
         },
         date: {
           type: Date,
-          default: Date.now()
+          default: () => Date.now()
         }
       },
     ],
     default: [{
-      status: 'Request Sent',
-      date: Date.now()
+      status: 'request_sent',
+      default: () => Date.now()
     }]
   },
 }, { timestamps: true });
+
+
+claimSchema.pre('save', function (next) {
+  // Define the fields that need to be set to 00:00
+  const dateFields = ['claimDate', 'lossDate'];
+
+  // Loop through each date field and set it to midnight if it exists
+  dateFields.forEach((field) => {
+    if (this[field]) {
+      this[field].setHours(0, 0, 0, 0);
+    }
+  });
+
+  next();
+});
 
 module.exports = connection.userConnection.model("claim", claimSchema);

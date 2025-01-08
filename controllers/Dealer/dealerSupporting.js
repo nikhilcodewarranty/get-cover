@@ -80,7 +80,7 @@ exports.getServicersList = async (req, res) => {
             })
             return;
         }
-        let query = { isDeleted: false, accountStatus: "Approved", status: true, dealerId: null, resellerId: null }
+        let query = { isDeleted: false, accountStatus: "Approved", status: true, resellerId: null,dealerId: null }
         let projection = { __v: 0, isDeleted: 0 }
         let servicer = await servicerService.getAllServiceProvider(query, projection);
         const dealerReseller = await resellerService.getResellers({ dealerId: req.params.dealerId, status: true });
@@ -140,8 +140,38 @@ exports.getDealerResellers = async (req, res) => {
         };
         const resellerId = resellers.map(obj => obj._id);
         const orderResellerId = resellers.map(obj => obj._id);
-        const queryUser = { metaId: { $in: resellerId }, isPrimary: true };
-        let getPrimaryUser = await userService.findUserforCustomer(queryUser)
+        const getPrimaryUser = await userService.findUserforCustomer1([
+            {
+                $match: {
+                    $and: [
+                        { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+                        { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { metaData: { $elemMatch: { metaId: { $in: resellerId }, isPrimary: true } } }
+                    ]
+                }
+            },
+            {
+                $project: {
+                    email: 1,
+                    'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+                    'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+                    'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+                    'position': { $arrayElemAt: ["$metaData.position", 0] },
+                    'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                    'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+                    'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+                    'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                    'status': { $arrayElemAt: ["$metaData.status", 0] },
+                    resetPasswordCode: 1,
+                    isResetPassword: 1,
+                    approvedStatus: 1,
+                    createdAt: 1,
+                    updatedAt: 1
+                }
+            }
+        ]);
+
+
         //Get Dealer Customer Orders
         let project = {
             productsArray: 1,
@@ -163,7 +193,7 @@ exports.getDealerResellers = async (req, res) => {
         let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project, '$resellerId');
         const result_Array = getPrimaryUser.map(item1 => {
             const matchingItem = resellers.find(item2 => item2._id.toString() === item1.metaId.toString());
-            const order = ordersResult.find(order => order._id.toString() === item1.metaId)
+            const order = ordersResult.find(order => order._id.toString() === item1.metaId.toString())
 
             if (matchingItem || order) {
                 return {
@@ -175,16 +205,12 @@ exports.getDealerResellers = async (req, res) => {
                 return dealerData.toObject();
             }
         });
-        const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
         const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
-        const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
         const dealerRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
         const filteredData = result_Array.filter(entry => {
             return (
                 nameRegex.test(entry.resellerData.name) &&
-                emailRegex.test(entry.email) &&
-                dealerRegex.test(entry.resellerData.dealerId) &&
-                phoneRegex.test(entry.phoneNumber)
+                dealerRegex.test(entry.resellerData.dealerId)
             );
         });
         res.send({
@@ -229,6 +255,8 @@ exports.getDealerOrders = async (req, res) => {
                 createdAt: 1,
                 venderOrder: 1,
                 orderAmount: 1,
+                paidAmount: 1,
+                dueAmount: 1,
                 contract: "$contract"
             };
 
@@ -314,8 +342,37 @@ exports.getDealerOrders = async (req, res) => {
                 .filter(result => result.customerId !== null)
                 .map(result => result.customerId);
             const allUserIds = mergedArray.concat(userCustomerIds);
-            const queryUser = { metaId: { $in: allUserIds }, isPrimary: true };
-            let getPrimaryUser = await userService.findUserforCustomer(queryUser)
+
+            const getPrimaryUser = await userService.findUserforCustomer1([
+                {
+                    $match: {
+                        $and: [
+                            { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+                            { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                            { metaData: { $elemMatch: { metaId: { $in: allUserIds }, isPrimary: true } } }
+                        ]
+                    }
+                },
+                {
+                    $project: {
+                        email: 1,
+                        'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+                        'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+                        'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+                        'position': { $arrayElemAt: ["$metaData.position", 0] },
+                        'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                        'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+                        'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+                        'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                        'status': { $arrayElemAt: ["$metaData.status", 0] },
+                        resetPasswordCode: 1,
+                        isResetPassword: 1,
+                        approvedStatus: 1,
+                        createdAt: 1,
+                        updatedAt: 1
+                    }
+                }
+            ]);
             //Get Respective Customer
             let respectiveCustomer = await customerService.getAllCustomers(
                 customerCreteria,
@@ -487,6 +544,9 @@ exports.getDealerContract = async (req, res) => {
     try {
         let data = req.body
         let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+        // let getTheThresholdLimir = await userService.getUserById1({ roleId: process.env.super_admin, isPrimary: true })
+        let getTheThresholdLimir = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
+
         let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
         let limitData = Number(pageLimit)
         let dealerIds = [];
@@ -592,9 +652,18 @@ exports.getDealerContract = async (req, res) => {
         if (userSearchCheck == 1) {
             contractFilterWithEligibilty.push({ orderId: { $in: orderIds } })
         }
+
+        if (data.startDate != "") {
+            let startDate = new Date(data.startDate)
+            let endDate = new Date(data.endDate)
+            startDate.setHours(0, 0, 0, 0)
+            endDate.setHours(11, 59, 0, 0)
+            let dateFilter = { createdAt: { $gte: startDate, $lte: endDate } }
+            contractFilterWithEligibilty.push(dateFilter)
+        }
         let mainQuery = []
 
-        if (data.contractId === "" && data.productName === "" && data.dealerSku === "" &&  data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
+        if (data.contractId === "" && data.productName === "" && data.dealerSku === "" && data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
             mainQuery = [
                 { $sort: { unique_key_number: -1 } },
 
@@ -624,6 +693,7 @@ exports.getDealerContract = async (req, res) => {
                                     productValue: 1,
                                     eligibilty: 1,
                                     orderUniqueKey: 1,
+                                    createdAt:1,
                                     venderOrder: 1,
                                     totalRecords: 1
                                 }
@@ -669,6 +739,7 @@ exports.getDealerContract = async (req, res) => {
                                 productValue: 1,
                                 status: 1,
                                 manufacture: 1,
+                                createdAt:1,
                                 eligibilty: 1,
                                 orderUniqueKey: 1,
                                 venderOrder: 1,
@@ -685,6 +756,9 @@ exports.getDealerContract = async (req, res) => {
         let result1 = getContracts[0]?.data ? getContracts[0]?.data : []
         for (let e = 0; e < result1.length; e++) {
             result1[e].reason = " "
+            if (!result1[e].eligibilty) {
+                result1[e].reason = "Claims limit cross for this contract"
+            }
             if (result1[e].status != "Active") {
                 result1[e].reason = "Contract is not active"
             }
@@ -710,7 +784,7 @@ exports.getDealerContract = async (req, res) => {
                         openFileClaimsCount: { // Count of claims where claimfile is "Open"
                             $sum: {
                                 $cond: {
-                                    if: { $eq: ["$claimFile", "Open"] }, // Assuming "claimFile" field is correct
+                                    if: { $eq: ["$claimFile", "open"] }, // Assuming "claimFile" field is correct
                                     then: 1,
                                     else: 0
                                 }
@@ -731,6 +805,20 @@ exports.getDealerContract = async (req, res) => {
                     result1[e].reason = "Claim value exceed the product value limit"
                 }
             }
+
+            let thresholdLimitPercentage = getTheThresholdLimir.threshHoldLimit.value
+            const thresholdLimitValue = (thresholdLimitPercentage / 100) * Number(result1[e].productValue);
+            let overThreshold = result1[e].claimAmount > thresholdLimitValue;
+            let threshHoldMessage = "This claim amount surpasses the maximum allowed threshold."
+            if (!overThreshold) {
+                threshHoldMessage = ""
+            }
+            if (!thresholdLimitPercentage.isThreshHoldLimit) {
+                overThreshold = false
+                threshHoldMessage = ""
+            }
+            result1[e].threshHoldMessage = threshHoldMessage
+            result1[e].overThreshold = overThreshold
         }
 
         res.send({
@@ -765,6 +853,10 @@ exports.getDealerClaims = async (req, res) => {
         let limitData = Number(pageLimit)
         const checkDealer = await dealerService.getDealerById(req.params.dealerId);
         let servicerMatch = {}
+        let dealerMatch = {}
+        let dateMatch = {}
+        let statusMatch = {}
+        let resellerMatch = {}
         if (data.servicerName != '' && data.servicerName != undefined) {
             const checkServicer = await servicerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } });
             if (checkServicer.length > 0) {
@@ -783,6 +875,40 @@ exports.getDealerClaims = async (req, res) => {
                 servicerMatch = { 'servicerId': new mongoose.Types.ObjectId('5fa1c587ae2ac23e9c46510f') }
             }
         }
+        data.dealerName = data.dealerName ? data.dealerName : ""
+
+        if (data.dealerName != "") {
+            let getDealer = await dealerService.getAllDealers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
+            let dealerIds = getDealer.map(ID => new mongoose.Types.ObjectId(ID._id))
+            dealerMatch = { dealerId: { $in: dealerIds } }
+
+        }
+        data.resellerName = data.resellerName ? data.resellerName : ""
+
+        if (data.resellerName != "") {
+            let getReseller = await resellerService.getResellers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
+            let resellerIds = getReseller.map(ID => new mongoose.Types.ObjectId(ID._id))
+            resellerMatch = { resellerId: { $in: resellerIds } }
+        }
+
+        statusMatch = {}
+
+        if (data.dateFilter != "") {
+            data.endDate = new Date(data.endDate).setHours(11, 59, 0, 0)
+            if (data.dateFilter == "damageDate") {
+                dateMatch = { lossDate: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
+                // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
+            }
+            if (data.dateFilter == "openDate") {
+                dateMatch = { createdAt: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
+                // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
+            }
+            if (data.dateFilter == "closeDate") {
+                dateMatch = { claimDate: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
+                statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
+            }
+        }
+
         let claimPaidStatus = {}
         if (data.claimPaidStatus != '' && data.claimPaidStatus != undefined) {
             claimPaidStatus = { "claimPaymentStatus": data.claimPaidStatus }
@@ -852,10 +978,14 @@ exports.getDealerClaims = async (req, res) => {
                             "unique_key": 1,
                             note: 1,
                             claimType: 1,
-                            dealerSku:1,
+                            dealerSku: 1,
                             totalAmount: 1,
                             servicerId: 1,
                             customerStatus: 1,
+                            getcoverOverAmount: 1,
+                            customerOverAmount: 1,
+                            customerClaimAmount: 1,
+                            getCoverClaimAmount: 1,
                             trackingNumber: 1,
                             trackingType: 1,
                             repairParts: 1,
@@ -863,6 +993,7 @@ exports.getDealerClaims = async (req, res) => {
                             claimStatus: 1,
                             repairStatus: 1,
                             "contracts.unique_key": 1,
+                            "contracts.coverageType": 1,
                             "contracts.productName": 1,
                             "contracts.pName": 1,
                             "contracts.model": 1,
@@ -929,7 +1060,11 @@ exports.getDealerClaims = async (req, res) => {
                         { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                        servicerMatch
+                        servicerMatch,
+                        dateMatch,
+                        dealerMatch,
+                        statusMatch,
+                        resellerMatch,
                     ]
                 },
             },
@@ -1016,6 +1151,7 @@ exports.getDealerClaims = async (req, res) => {
         let allClaims = await claimService.getClaimWithAggregate(lookupQuery);
         let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
         let allServicerIds = [];
+        let allServicer
         // Iterate over the data array
         resultFiter.forEach(item => {
             // Iterate over the dealerServicer array in each item
@@ -1024,6 +1160,7 @@ exports.getDealerClaims = async (req, res) => {
                 allServicerIds.push(dealer.servicerId);
             });
         });
+        const dynamicOption = await userService.getOptions({ name: 'coverage_type' })
 
         //Get Dealer and Reseller Servicers
         let servicer;
@@ -1032,12 +1169,19 @@ exports.getDealerClaims = async (req, res) => {
             { _id: { $in: allServicerIds }, status: true },
             {}
         );
-        const result_Array = resultFiter.map((item1) => {
+        let result_Array = resultFiter.map((item1) => {
             servicer = []
+            let mergedData = []
+            if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
+                mergedData = dynamicOption.value.filter(contract =>
+                    item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
+                );
+            }
+
             let servicerName = '';
             let selfServicer = false;
             let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
-                const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId.toString());
+                const dealerOfServicer = allServicer.find(servicer => servicer?._id.toString() === matched?.servicerId.toString());
                 servicer.push(dealerOfServicer)
             });
             if (item1.contracts.orders.servicers[0]?.length > 0) {
@@ -1050,7 +1194,7 @@ exports.getDealerClaims = async (req, res) => {
                 servicer.unshift(item1.contracts.orders.dealers)
             }
             if (item1.servicerId != null) {
-                servicerName = servicer.find(servicer => servicer._id?.toString() === item1.servicerId?.toString());
+                servicerName = servicer.find(servicer => servicer?._id?.toString() === item1.servicerId?.toString());
                 const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
                 selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() || item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString() ? true : false
             }
@@ -1060,11 +1204,39 @@ exports.getDealerClaims = async (req, res) => {
                 selfServicer: selfServicer,
                 contracts: {
                     ...item1.contracts,
-                    allServicer: servicer
+                    allServicer: servicer,
+                    mergedData: mergedData
                 }
             }
         })
+
         let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0
+        let getTheThresholdLimit = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
+
+        result_Array = result_Array.map(claimObject => {
+            const { productValue, claimAmount } = claimObject.contracts;
+
+            // Calculate the threshold limit value
+            const thresholdLimitValue = (getTheThresholdLimit.threshHoldLimit?.value ? getTheThresholdLimit.threshHoldLimit?.value : 1000/ 100) * productValue;
+
+            // Check if claimAmount exceeds the threshold limit value
+            let overThreshold = claimAmount > thresholdLimitValue;
+            let threshHoldMessage = "Claim amount exceeds the allowed limit. This might lead to claim rejection. To proceed further with claim please contact admin."
+            if (!overThreshold) {
+                threshHoldMessage = ""
+            }
+            if (!getTheThresholdLimit.isThreshHoldLimit) {
+                overThreshold = false
+                threshHoldMessage = ""
+            }
+
+            // Return the updated object with the new key 'overThreshold'
+            return {
+                ...claimObject,
+                overThreshold,
+                threshHoldMessage
+            };
+        });
         res.send({
             code: constant.successCode,
             message: "Success",
@@ -1123,7 +1295,38 @@ exports.getDealerServicers = async (req, res) => {
         };
         const servicerIds = servicer.map(obj => obj._id);
         const query1 = { metaId: { $in: servicerIds }, isPrimary: true };
-        let servicerUser = await userService.getMembers(query1, {});
+
+        let servicerUser = await userService.findUserforCustomer1([
+            {
+                $match: {
+                    $and: [
+                        // { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+                        // { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { metaData: { $elemMatch: { metaId: { $in: servicerIds }, isPrimary: true } } }
+                    ]
+                }
+            },
+            {
+                $project: {
+                    email: 1,
+                    'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+                    'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+                    'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+                    'position': { $arrayElemAt: ["$metaData.position", 0] },
+                    'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                    'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+                    'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+                    'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                    'status': { $arrayElemAt: ["$metaData.status", 0] },
+                    resetPasswordCode: 1,
+                    isResetPassword: 1,
+                    approvedStatus: 1,
+                    createdAt: 1,
+                    updatedAt: 1
+                }
+            }
+        ]);
+
         if (!servicerUser) {
             res.send({
                 code: constant.errorCode,
@@ -1131,10 +1334,11 @@ exports.getDealerServicers = async (req, res) => {
             });
             return;
         };
-        // Get servicer with claim
-        const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
 
-        const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
+        // Get servicer with claim
+        const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "completed" };
+
+        const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "completed" };
         let claimAggregateQuery1 = [
             {
                 $match: servicerCompleted
@@ -1173,8 +1377,8 @@ exports.getDealerServicers = async (req, res) => {
 
             if (matchingItem) {
                 return {
-                    ...matchingItem.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-                    servicerData: item1.toObject(),
+                    ...matchingItem, // Use toObject() to convert Mongoose document to plain JavaScript object
+                    servicerData: item1,
                     claimNumber: claimNumber ? claimNumber : 0,
                     claimValue: claimValue ? claimValue : 0
                 };
@@ -1185,17 +1389,18 @@ exports.getDealerServicers = async (req, res) => {
                 };
             }
         });
+        let emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
+        let nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
+        let phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
 
-        const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
-        const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
-        const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
-        const filteredData = result_Array.filter(entry => {
+        let filteredData = result_Array.filter(entry => {
             return (
                 nameRegex.test(entry.servicerData?.name) &&
-                emailRegex.test(entry?.email) &&
-                phoneRegex.test(entry?.phoneNumber)
+                emailRegex.test(entry.email) &&
+                phoneRegex.test(entry.phoneNumber)
             );
         });
+
         res.send({
             code: constant.successCode,
             message: "Success",
@@ -1210,7 +1415,6 @@ exports.getDealerServicers = async (req, res) => {
     }
 }
 
-//Get dealer price book by id 
 exports.getDealerPriceBookById = async (req, res) => {
     try {
         if (req.role != "Super Admin") {
@@ -1244,11 +1448,38 @@ exports.getDealerPriceBookById = async (req, res) => {
             "createdAt": 1,
             "updatedAt": 1,
             priceBooks: 1,
+            adhDays: 1,
+            noOfClaim: 1,
+            noOfClaimPerPeriod: 1,
+            isManufacturerWarranty: 1,
+            isMaxClaimAmount: 1,
             dealer: 1
         }
 
         let query = { isDeleted: false, _id: new mongoose.Types.ObjectId(req.params.dealerPriceBookId) }
+
         let getDealerPrice = await dealerPriceService.getDealerPriceBookById(query, projection)
+
+        //Get dealer coverageType
+        const dealerCoverage = getDealerPrice[0]?.dealer.coverageType
+
+        // Clear the current optionDropdown
+        getDealerPrice[0].adhDays1 = [];
+
+        // Iterate through each adhDays item (assumed to be dealer coverage details)
+        getDealerPrice[0].adhDays.forEach(adhDayItem => {
+            // Iterate over each option in the priceBooks options
+            getDealerPrice[0].priceBooks.options.forEach(option => {
+                // Find the matching adhDayItem.label value in the option array
+                const matchingValue = option.value.find(optValue => optValue.value === adhDayItem.value);
+                // If there's a match, push it into the optionDropdown array
+                if (matchingValue) {
+                    getDealerPrice[0].adhDays1.push({ ...matchingValue, waitingDays: adhDayItem.waitingDays, deductible: adhDayItem.deductible, amountType: adhDayItem.amountType });
+                }
+            });
+        });
+
+
 
         if (!getDealerPrice) {
             res.send({
@@ -1351,6 +1582,13 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
                 { 'name': { '$regex': req.body.category ? req.body.category : '', '$options': 'i' } }
             ]
         };
+        if (!Array.isArray(data.coverageType) && data.coverageType != '') {
+            res.send({
+                code: constant.errorCode,
+                message: "Coverage type should be an array!"
+            });
+            return;
+        }
         let getCatIds = await priceBookService.getAllPriceCat(queryCategories, {})
         let catIdsArray = getCatIds.map(category => category._id)
         let searchName = req.body.name ? req.body.name : ''
@@ -1362,7 +1600,8 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
                 query = {
                     $and: [
                         { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-                        { 'priceBooks.coverageType': data.coverageType },
+                        { 'priceBooks.coverageType.value': { $all: data.coverageType } },
+                        { 'priceBooks.coverageType': { $size: data.coverageType.length } },
                         { 'priceBooks.category._id': { $in: catIdsArray } },
                         { 'status': data.status },
                         { 'dealerSku': { '$regex': dealerSku, '$options': 'i' } },
@@ -1390,7 +1629,8 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
             query = {
                 $and: [
                     { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-                    { 'priceBooks.coverageType': data.coverageType },
+                    { 'priceBooks.coverageType.value': { $all: data.coverageType } },
+                    { 'priceBooks.coverageType': { $size: data.coverageType.length } },
                     { 'priceBooks.category._id': { $in: catIdsArray } },
                     { 'dealerSku': { '$regex': dealerSku, '$options': 'i' } },
 
@@ -1472,6 +1712,13 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
             })
             return;
         }
+        if (!Array.isArray(data.coverageType) && data.coverageType != '') {
+            res.send({
+                code: constant.errorCode,
+                message: "Coverage type should be an array!"
+            });
+            return;
+        }
         data.status = typeof (data.status) == "string" ? "all" : data.status
         let categorySearch = req.body.category ? req.body.category : ''
         let queryCategories = {
@@ -1507,8 +1754,11 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
         }
 
         if (data.coverageType) {
-            matchConditions.push({ 'priceBooks.coverageType': data.coverageType });
+            matchConditions.push({ 'priceBooks.coverageType.value': { "$all": data.coverageType }, 'priceBooks.coverageType': { "$size": data.coverageType.length } });
         }
+
+
+        console.log("sdfsdfdsfdsdsf")
 
         if (data.name) {
             matchConditions.push({ 'priceBooks.name': { '$regex': req.body.name ? req.body.name.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } });
@@ -1577,12 +1827,45 @@ exports.getAllDealers = async (req, res) => {
 
         let projection = { __v: 0, isDeleted: 0 }
         let dealers = await dealerService.getAllDealers(dealerFilter, projection);
+        // console.log("dealers+++++++++++++",dealers.length)
         const dealerIds = dealers.map(obj => obj._id);
-        let query1 = { metaId: { $in: dealerIds }, isPrimary: true };
+        console.log("dealers+++++++++++++",dealerIds)
 
         //-------------Get All Dealers Id's------------------------
+        const dealarUser = await userService.findUserforCustomer1([
+            {
+                $match: {
+                    $and: [
+                        { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phoneNumber ? data.phoneNumber.toString().trim() : '', '$options': 'i' } } } },
+                        { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { metaData: { $elemMatch: { metaId: { $in: dealerIds }, isPrimary: true } } }
+                    ]
+                }
+            },
+            {
+                $project: {
+                    email: 1,
+                    'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+                    'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+                    'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+                    'position': { $arrayElemAt: ["$metaData.position", 0] },
+                    'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                    'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+                    'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+                    'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                    'status': { $arrayElemAt: ["$metaData.status", 0] },
+                    resetPasswordCode: 1,
+                    isResetPassword: 1,
+                    approvedStatus: 1,
+                    createdAt: 1,
+                    updatedAt: 1
+                }
+            }
+        ]);
 
-        let dealarUser = await userService.getMembers(query1, projection)
+        console.log("dealers users+++++++++++++",dealarUser)
+
+
 
         //Get Dealer Order Data     
         let orderQuery = { dealerId: { $in: dealerIds }, status: "Active" };
@@ -1600,7 +1883,6 @@ exports.getAllDealers = async (req, res) => {
         }
 
         let orderData = await orderService.getAllOrderInCustomers(orderQuery, project, "$dealerId");
-
         if (!dealers) {
             res.send({
                 code: constant.errorCode,
@@ -1609,12 +1891,12 @@ exports.getAllDealers = async (req, res) => {
             return;
         };
 
-        const result_Array = dealarUser.map(item1 => {
+        const result_Array = dealarUser?.map(item1 => {
             const matchingItem = dealers.find(item2 => item2._id.toString() === item1.metaId.toString());
             const orders = orderData.find(order => order._id.toString() === item1.metaId.toString())
             if (matchingItem || orders) {
                 return {
-                    ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+                    ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
                     dealerData: matchingItem.toObject(),
                     ordersData: orders ? orders : {}
                 };
@@ -1623,20 +1905,9 @@ exports.getAllDealers = async (req, res) => {
             }
         });
 
-        const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
-        const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
-        const phoneRegex = new RegExp(data.phoneNumber ? data.phoneNumber : '', 'i')
-        const filteredData = result_Array.filter(entry => {
-            return (
-                nameRegex.test(entry.dealerData.name) &&
-                emailRegex.test(entry.email) &&
-                phoneRegex.test(entry.phoneNumber)
-            );
-        });
-
         res.send({
             code: constant.successCode,
-            data: filteredData
+            data: result_Array
         });
     } catch (err) {
         res.send({
@@ -1673,8 +1944,36 @@ exports.getPendingDealers = async (req, res) => {
 
         const dealerIds = dealers.map(obj => obj._id);
 
-        let query1 = { metaId: { $in: dealerIds }, isPrimary: true };
-        let dealarUser = await userService.getMembers(query1, projection)
+        const dealarUser = await userService.findUserforCustomer1([
+            {
+                $match: {
+                    $and: [
+                        { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+                        { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { metaData: { $elemMatch: { metaId: { $in: dealerIds }, isPrimary: true } } }
+                    ]
+                }
+            },
+            {
+                $project: {
+                    email: 1,
+                    'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+                    'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+                    'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+                    'position': { $arrayElemAt: ["$metaData.position", 0] },
+                    'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                    'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+                    'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+                    'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                    'status': { $arrayElemAt: ["$metaData.status", 0] },
+                    resetPasswordCode: 1,
+                    isResetPassword: 1,
+                    approvedStatus: 1,
+                    createdAt: 1,
+                    updatedAt: 1
+                }
+            }
+        ]);
 
         if (!dealers) {
             res.send({
@@ -1689,7 +1988,7 @@ exports.getPendingDealers = async (req, res) => {
 
             if (matchingItem) {
                 return {
-                    ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+                    ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
                     dealerData: matchingItem.toObject()
                 };
             } else {
@@ -1697,21 +1996,11 @@ exports.getPendingDealers = async (req, res) => {
             }
         });
 
-        const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
-        const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
-        const phoneRegex = new RegExp(data.phoneNumber ? data.phoneNumber.replace(/\s+/g, ' ').trim() : '', 'i')
 
-        const filteredData = result_Array.filter(entry => {
-            return (
-                nameRegex.test(entry.dealerData.name) &&
-                emailRegex.test(entry.email) &&
-                phoneRegex.test(entry.phoneNumber)
-            );
-        });
 
         res.send({
             code: constant.successCode,
-            data: filteredData
+            data: result_Array
         });
     } catch (err) {
         res.send({
@@ -1732,7 +2021,36 @@ exports.getDealerById = async (req, res) => {
             })
             return;
         }
+
         const dealers = await dealerService.getSingleDealerById({ _id: req.params.dealerId });
+        //get coverage type based on dealer coverageType
+        let coverageType = dealers[0]?.coverageType
+        let adhDays = dealers[0]?.adhDays
+
+        let adhDays1 = []
+        // coverageType = coverageType.map(type=>type.value);
+        const optionQuery = {
+            value: {
+                $elemMatch: {
+                    value: { $in: coverageType }
+                }
+            }
+        }
+        const dynamicOption = await userService.getOptions(optionQuery)
+        const filteredOptions = dynamicOption?.value.filter(item => coverageType.includes(item.value));
+
+
+        // Loop through adhDays and find matching coverageType
+        adhDays.forEach(adhItem => {
+            const matchingCoverage = filteredOptions.find(ct => ct.value === adhItem.value);
+            if (matchingCoverage) {
+                // Push a combined object into adh1 with both adhDays and coverageType properties
+                adhDays1.push({ label: matchingCoverage.label, value: matchingCoverage.value, waitingDays: adhItem.waitingDays, deductible: adhItem.deductible, amountType: adhItem.amountType });
+            }
+        });
+
+        // Assign adhDays1 to the dealer object
+
 
         if (!dealers[0]) {
             res.send({
@@ -1742,8 +2060,34 @@ exports.getDealerById = async (req, res) => {
             return
         }
 
-        const query1 = { metaId: { $in: [dealers[0]._id] }, isPrimary: true };
-        let dealarUser = await userService.getMembers(query1, { isDeleted: false })
+        const dealarUser = await userService.findUserforCustomer1([
+            {
+                $match: {
+                    $and: [
+                        { metaData: { $elemMatch: { metaId: { $in: [dealers[0]._id] }, isPrimary: true } } }
+                    ]
+                }
+            },
+            {
+                $project: {
+                    email: 1,
+                    'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+                    'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+                    'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+                    'position': { $arrayElemAt: ["$metaData.position", 0] },
+                    'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                    'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+                    'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+                    'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                    'status': { $arrayElemAt: ["$metaData.status", 0] },
+                    resetPasswordCode: 1,
+                    isResetPassword: 1,
+                    approvedStatus: 1,
+                    createdAt: 1,
+                    updatedAt: 1
+                }
+            }
+        ]);
 
         if (!dealarUser) {
             res.send({
@@ -1773,7 +2117,7 @@ exports.getDealerById = async (req, res) => {
         }
         let ordersResult = await orderService.getAllOrderInCustomers(query, project, "$dealerId");
         //Get Claim Result 
-        const claimQuery = { claimFile: 'Completed' }
+        const claimQuery = { claimFile: 'completed' }
         let lookupQuery = [
             {
                 $match: claimQuery
@@ -1823,7 +2167,7 @@ exports.getDealerById = async (req, res) => {
         ]
 
         let valueClaim = await claimService.getClaimWithAggregate(lookupQuery);
-        const rejectedQuery = { claimFile: "Completed" }
+        const rejectedQuery = { claimFile: "completed" }
         //Get number of claims
         let numberOfCompleletedClaims = [
             {
@@ -1870,7 +2214,7 @@ exports.getDealerById = async (req, res) => {
             const matchingItem = dealers.find(item2 => item2._id.toString() === item1.metaId.toString());
             if (matchingItem) {
                 return {
-                    ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+                    ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
                     dealerData: matchingItem.toObject(),
                     ordersResult: ordersResult,
                     claimData: claimData
@@ -1879,7 +2223,11 @@ exports.getDealerById = async (req, res) => {
                 return dealerData.toObject();
             }
         });
+        // result_Array.push({ adhDays1: adhDays1 })
 
+        // dealers[0] = dealers[0].toObject()
+        result_Array[0].dealerData.adhDays1 = adhDays1
+        result_Array[0].dealerData.coverageType = filteredOptions
         res.send({
             code: constant.successCode,
             message: "Success",
@@ -1892,6 +2240,52 @@ exports.getDealerById = async (req, res) => {
             message: err.message
         });
     };
+};
+
+//Get dealer setting 
+exports.getDealerSettings = async (req, res) => {
+    try {
+        let data = req.body
+        let dealerId = req.params.dealerId;
+        if (req.role == 'Dealer') {
+            dealerId = req.userId
+        }
+        if (req.role == 'Reseller') {
+            const checkReseller = await resellerService.getReseller({ _id: req.userId }, {})
+            dealerId = checkReseller.dealerId
+        }
+
+        let query = [
+            {
+                $match: {
+                    _id: new mongoose.Types.ObjectId(dealerId)
+                }
+            },
+            {
+                $lookup: {
+                    from: "eligibilticriterias",
+                    localField: "_id",
+                    foreignField: "userId",
+                    as: "settings"
+                }
+            },
+            { $unwind: "$settings" }
+
+        ]
+        let getDealer = await dealerService.getDealerAndClaims(query)
+
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            result: getDealer,
+            bucketName: process.env.bucket_name
+        })
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
 };
 
 //get dealer detail by ID
@@ -1915,28 +2309,44 @@ exports.getUserByDealerId = async (req, res) => {
             });
             return;
         };
+        let users = await userService.findUserforCustomer1([
+            {
+                $match: {
+                    $and: [
+                        { metaData: { $elemMatch: { firstName: { '$regex': data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+                        { metaData: { $elemMatch: { lastName: { '$regex': data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+                        { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+                        { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { metaData: { $elemMatch: { metaId: new mongoose.Types.ObjectId(req.params.dealerId) } } }
+                    ]
+                }
+            },
+            {
+                $project: {
+                    email: 1,
+                    'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+                    'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+                    'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+                    'position': { $arrayElemAt: ["$metaData.position", 0] },
+                    'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                    'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+                    'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+                    'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                    'status': { $arrayElemAt: ["$metaData.status", 0] },
+                    resetPasswordCode: 1,
+                    isResetPassword: 1,
+                    approvedStatus: 1,
+                    createdAt: 1,
+                    updatedAt: 1
+                }
+            }
+        ]);
 
-        const users = await dealerService.getUserByDealerId({ metaId: req.params.dealerId, isDeleted: false });
+
+        // let users = await dealerService.getUserByDealerId({ metaData: { $elemMatch: { metaId: req.params.dealerId, isDeleted: false } } });
 
         let name = data.firstName ? data.firstName : ""
         let nameArray = name.trim().split(" ");
-        // Create new keys for first name and last name
-        let newObj = {
-            f_name: nameArray[0],  // First name
-            l_name: nameArray.slice(1).join(" ")  // Last name (if there are multiple parts)
-        };
-        const firstNameRegex = new RegExp(data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', 'i')
-        const lastNameRegex = new RegExp(data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', 'i')
-        const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
-        const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
-        let filteredData = users.filter(entry => {
-            return (
-                firstNameRegex.test(entry.firstName) &&
-                lastNameRegex.test(entry.lastName) &&
-                emailRegex.test(entry.email) &&
-                phoneRegex.test(entry.phoneNumber)
-            );
-        });
 
         if (!users) {
             res.send({
@@ -1949,7 +2359,7 @@ exports.getUserByDealerId = async (req, res) => {
         res.send({
             code: constant.successCode,
             message: "Success",
-            result: filteredData,
+            result: users,
             dealerData: dealers,
             dealerStatus: dealers.accountStatus,
             isAccountCreate: dealers.isAccountCreate,

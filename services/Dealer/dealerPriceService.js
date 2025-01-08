@@ -121,7 +121,15 @@ module.exports = class dealerPriceService {
                   foreignField: "_id",
                   as: "category"
                 }
-              }
+              },
+              {
+                $lookup: {
+                  from: "options",
+                  localField: "coverageType.value",
+                  foreignField: "value.value",
+                  as: "options",
+                }
+              },
             ]
           }
         },

@@ -28,6 +28,9 @@ exports.createReseller = async (req, res) => {
     try {
         let data = req.body
         let getCount = await resellerService.getResellersCount({})
+        const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+        const base_url = `${process.env.SITE_URL}`
+
         data.unique_key = getCount[0] ? getCount[0].unique_key + 1 : 1
         data.accountName = data.accountName.trim().replace(/\s+/g, ' ');
         // check dealer for existing 
@@ -81,45 +84,107 @@ exports.createReseller = async (req, res) => {
             return;
         };
         //Send Notification to reseller and admin
+        const adminQuery = {
+            metaData: {
+                $elemMatch: {
+                    $and: [
+                        { "resellerNotifications.resellerAdded": true },
+                        { status: true },
+                        { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
 
-        let IDs = await supportingFunction.getUserIds()
-
+                    ]
+                }
+            },
+        }
+        const dealerQuery = {
+            metaData: {
+                $elemMatch: {
+                    $and: [
+                        { "resellerNotifications.resellerAdded": true },
+                        { status: true },
+                        { metaId: new mongoose.Types.ObjectId(checkDealer._id) },
+                    ]
+                }
+            },
+        }
+        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
+        let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerQuery, { email: 1 })
+        const IDs = adminUsers.map(user => user._id)
+        let notificationArray = []
+        const dealerId = dealerUsers.map(user => user._id)
         // Create the user
-        teamMembers = teamMembers.map(member => ({ ...member, metaId: createdReseler._id, roleId: '65bb94b4b68e5a4a62a0b563' }));
+        teamMembers = teamMembers.map(member => ({
+            ...member,
+            metaData:
+                [
+                    {
+                        firstName: member.firstName,
+                        lastName: member.lastName,
+                        phoneNumber: member.phoneNumber,
+                        metaId: createdReseler._id,
+                        roleId: "65bb94b4b68e5a4a62a0b563",
+                        position: member.position,
+                        dialCode: member.dialCode,
+                        status: member.status,
+                        isPrimary: member.isPrimary
+                    }
+                ],
+            approvedStatus: "Approved",
 
+        })
+        );
         // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
         // Primary User Welcoime email
-        let notificationEmails = await supportingFunction.getUserEmails();
-        let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
-        notificationEmails.push(getPrimary.email)
-        IDs.push(getPrimary._id)
+        let notificationEmails = adminUsers.map(user => user.email)
+        let mergedEmail;
+        let dealerEmails = dealerUsers.map(user => user.email)
+        mergedEmail = notificationEmails.concat(dealerEmails)
+        //Merge start singleServer
+        let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
+
         let notificationData = {
-            title: "Reseller Account Creation",
-            description: data.accountName + " " + "reseller account has been created successfully!",
+            title: "New Reseller  Added",
+            description: `A New Reseller ${data.accountName} has been added and approved by ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName} -  ${req.role} on our portal.`,
             userId: req.teammateId,
+            redirectionId: "resellerDetails/" + createdReseler._id,
+            endPoint: base_url + "resellerDetails/" + createdReseler._id,
             flag: 'reseller',
             notificationFor: IDs
         };
+        notificationArray.push(notificationData)
 
-        let createNotification = await userService.createNotification(notificationData);
+        notificationData = {
+            title: "New Reseller  Added",
+            description: `A New Reseller ${data.accountName} has been added and approved by  ${checkLoginUser.metaData[0].firstName + " " + checkLoginUser.metaData[0].lastName} - ${req.role} on our portal.`,
+            userId: req.teammateId,
+            redirectionId: "dealer/resellerDetails/" + createdReseler._id,
+            endPoint: base_url + "dealer/resellerDetails/" + createdReseler._id,
+            flag: 'reseller',
+            notificationFor: dealerId
+        };
+        notificationArray.push(notificationData)
+
+        let createNotification = await userService.saveNotificationBulk(notificationArray);
         let settingData = await userService.getSetting({});
         let emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
-            senderName: getPrimary.firstName,
+            senderName: getPrimary.metaData[0]?.firstName,
             content: "We are delighted to inform you that the reseller account for " + createdReseler.name + " has been created.",
             subject: "Reseller Account Created - " + createdReseler.name
         }
 
+
         // Send Email code here
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
 
         if (data.status) {
             for (let i = 0; i < saveMembers.length; i++) {
-                if (saveMembers[i].status) {
+                if (saveMembers[i].metaData[0].status) {
                     let email = saveMembers[i].email
                     let userId = saveMembers[i]._id
                     let resetPasswordCode = randtoken.generate(4, '123456789')
@@ -213,8 +278,36 @@ exports.getAllResellers = async (req, res) => {
 
         const resellerId = resellers.map(obj => obj._id);
         const resellerOrderIds = resellers.map(obj => obj._id);
-        const queryUser = { metaId: { $in: resellerId }, isPrimary: true };
-        let getPrimaryUser = await userService.findUserforCustomer(queryUser)
+        const getPrimaryUser = await userService.findUserforCustomer1([
+            {
+                $match: {
+                    $and: [
+                        { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+                        { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { metaData: { $elemMatch: { metaId: { $in: resellerId }, isPrimary: true } } }
+                    ]
+                }
+            },
+            {
+                $project: {
+                    email: 1,
+                    'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+                    'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+                    'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+                    'position': { $arrayElemAt: ["$metaData.position", 0] },
+                    'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                    'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+                    'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+                    'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                    'status': { $arrayElemAt: ["$metaData.status", 0] },
+                    resetPasswordCode: 1,
+                    isResetPassword: 1,
+                    approvedStatus: 1,
+                    createdAt: 1,
+                    updatedAt: 1
+                }
+            }
+        ]);
         //Get Reseller Orders
         let project = {
             productsArray: 1,
@@ -290,9 +383,38 @@ exports.getResellerByDealerId = async (req, res) => {
         return;
     };
     let resellerData = await resellerService.getResellers({ dealerId: req.params.dealerId }, { isDeleted: 0 })
+
     const resellerIds = resellerData.map(reseller => reseller._id)
-    const queryUser = { metaId: { $in: resellerIds }, isPrimary: true };
-    let getPrimaryUser = await userService.findUserforCustomer(queryUser)
+
+    const getPrimaryUser = await userService.findUserforCustomer1([
+        {
+            $match: {
+                $and: [
+                    { metaData: { $elemMatch: { metaId: { $in: resellerIds }, isPrimary: true } } }
+                ]
+            }
+        },
+        {
+            $project: {
+                email: 1,
+                'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+                'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+                'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+                'position': { $arrayElemAt: ["$metaData.position", 0] },
+                'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+                'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+                'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                'status': { $arrayElemAt: ["$metaData.status", 0] },
+                resetPasswordCode: 1,
+                isResetPassword: 1,
+                approvedStatus: 1,
+                createdAt: 1,
+                updatedAt: 1
+            }
+        }
+    ]);
+
     const result_Array = getPrimaryUser.map(item1 => {
         const matchingItem = resellerData.find(item2 => item2._id.toString() === item1.metaId.toString());
 
@@ -328,6 +450,7 @@ exports.getResellerById = async (req, res) => {
         }
 
         let checkReseller = await resellerService.getResellers({ _id: req.params.resellerId }, { isDeleted: 0 });
+
         if (!checkReseller[0]) {
             res.send({
                 code: constant.errorCode,
@@ -336,8 +459,36 @@ exports.getResellerById = async (req, res) => {
             return;
         }
         let checkDealerStatus = await dealerService.getDealerByName({ _id: checkReseller[0].dealerId })
-        const query1 = { metaId: { $in: [checkReseller[0]._id] }, isPrimary: true };
-        let resellerUser = await userService.getMembers(query1, { isDeleted: false })
+
+        const resellerUser = await userService.findUserforCustomer1([
+            {
+                $match: {
+                    $and: [
+                        { metaData: { $elemMatch: { metaId: { $in: [checkReseller[0]._id] }, isPrimary: true } } }
+                    ]
+                }
+            },
+            {
+                $project: {
+                    email: 1,
+                    'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+                    'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+                    'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+                    'position': { $arrayElemAt: ["$metaData.position", 0] },
+                    'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                    'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+                    'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+                    'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                    'status': { $arrayElemAt: ["$metaData.status", 0] },
+                    resetPasswordCode: 1,
+                    isResetPassword: 1,
+                    approvedStatus: 1,
+                    createdAt: 1,
+                    updatedAt: 1
+                }
+            }
+        ]);
+
         if (!resellerUser) {
             res.send({
                 code: constant.errorCode,
@@ -363,9 +514,11 @@ exports.getResellerById = async (req, res) => {
                 { resellerId: { $in: [checkReseller[0]._id] }, status: "Active" },
             ]
         }
+
         let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project, "$resellerId");
         //Get Claim Result 
-        const claimQuery = { claimFile: 'Completed' }
+        const claimQuery = { claimFile: 'completed' }
+
         let lookupQuery = [
             {
                 $match: claimQuery
@@ -415,7 +568,7 @@ exports.getResellerById = async (req, res) => {
         ]
 
         let valueClaim = await claimService.getClaimWithAggregate(lookupQuery);
-        const rejectedQuery = { claimFile: { $ne: "Rejected" } }
+        const rejectedQuery = { claimFile: { $ne: "rejected" } }
         //Get number of claims
         let numberOfCompleletedClaims = [
             {
@@ -464,7 +617,7 @@ exports.getResellerById = async (req, res) => {
             let order = ordersResult.find(order => order._id.toString() === user.metaId.toString())
             if (matchItem || order) {
                 return {
-                    ...user.toObject(),
+                    ...user,
                     resellerData: matchItem.toObject(),
                     orderData: order ? order : {},
                     claimData: claimData
@@ -506,16 +659,41 @@ exports.getResellerUsers = async (req, res) => {
         });
         return;
     }
-    const queryUser = {
-        $and: [
-            { metaId: { $in: checkReseller._id } },
-            { firstName: { '$regex': data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { lastName: { '$regex': data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { phoneNumber: { '$regex': data.phone ? data.phone : '', '$options': 'i' } },
-        ]
-    }
-    let users = await userService.getMembers(queryUser, { isDeleted: 0 });
+
+    const users = await userService.findUserforCustomer1([
+        {
+            $match: {
+                $and: [
+                    { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+                    { metaData: { $elemMatch: { firstName: { '$regex': data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+                    { metaData: { $elemMatch: { lastName: { '$regex': data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+                    { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                    { metaData: { $elemMatch: { metaId: checkReseller._id } } }
+                ]
+            }
+        },
+        {
+            $project: {
+                email: 1,
+                'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+                'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+                'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+                'position': { $arrayElemAt: ["$metaData.position", 0] },
+                'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+                'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+                'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                'status': { $arrayElemAt: ["$metaData.status", 0] },
+                resetPasswordCode: 1,
+                isResetPassword: 1,
+                approvedStatus: 1,
+                createdAt: 1,
+                updatedAt: 1
+            }
+        }
+    ]);
+
+
     res.send({
         code: constant.successCode,
         data: users,
@@ -569,76 +747,115 @@ exports.getResellerPriceBook = async (req, res) => {
     let projection = { isDeleted: 0, __v: 0 }
     let query
 
-    if (checkDealer.coverageType == "Breakdown & Accidental") {
-        if (data.coverageType == "") {
-            query = {
-                $and: [
-                    { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-                    { 'priceBooks.category._id': { $in: catIdsArray } },
-                    { 'status': true },
-                    { 'dealerSku': { '$regex': dealerSku, '$options': 'i' } },
-                    {
-                        dealerId: new mongoose.Types.ObjectId(checkDealer._id)
-                    },
-                    {
-                        isDeleted: false
-                    }
-                ]
-            }
-        } else {
-            query = {
-                $and: [
-                    { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-                    { 'priceBooks.category._id': { $in: catIdsArray } },
-                    { 'status': true },
-                    { 'dealerSku': { '$regex': dealerSku, '$options': 'i' } },
-                    { 'priceBooks.coverageType': data.coverageType },
-
-                    {
-                        dealerId: new mongoose.Types.ObjectId(checkDealer._id)
-                    },
-                    {
-                        isDeleted: false
-                    }
-                ]
-            }
+    const coverageType = data.coverageType
+    if (data.coverageType == "") {
+        query = {
+            $and: [
+                { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+                { 'priceBooks.category._id': { $in: catIdsArray } },
+                { 'priceBooks.coverageType': { $elemMatch: { value: { $in: checkDealer.coverageType } } } },
+                { 'status': true },
+                { 'dealerSku': { '$regex': dealerSku, '$options': 'i' } },
+                {
+                    dealerId: new mongoose.Types.ObjectId(checkDealer._id)
+                },
+                {
+                    isDeleted: false
+                }
+            ]
         }
-    } else {
-        if (data.coverageType == "") {
-            query = {
-                $and: [
-                    { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-                    { 'priceBooks.category._id': { $in: catIdsArray } },
-                    { 'priceBooks.coverageType': checkDealer.coverageType },
-                    { 'dealerSku': { '$regex': dealerSku, '$options': 'i' } },
-                    { 'status': true },
-                    {
-                        dealerId: new mongoose.Types.ObjectId(checkDealer._id)
-                    },
-                    {
-                        isDeleted: false
-                    }
-                ]
-            }
-        } else {
-            query = {
-                $and: [
-                    { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-                    { 'priceBooks.coverageType': data.coverageType },
-                    { 'priceBooks.category._id': { $in: catIdsArray } },
-                    { 'dealerSku': { '$regex': dealerSku, '$options': 'i' } },
-                    { 'status': true },
-                    {
-                        dealerId: new mongoose.Types.ObjectId(checkDealer._id)
-                    },
-                    {
-                        isDeleted: false
-                    }
-                ]
-            }
+    }
+
+    else {
+        query = {
+            $and: [
+                { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+                { 'priceBooks.coverageType.value': { $all: coverageType } },
+                { 'priceBooks.coverageType': { $size: coverageType.length } },
+                { 'priceBooks.category._id': { $in: catIdsArray } },
+                { 'status': true },
+                { 'dealerSku': { '$regex': dealerSku, '$options': 'i' } },
+                {
+                    dealerId: new mongoose.Types.ObjectId(checkDealer._id)
+                },
+                {
+                    isDeleted: false
+                }
+            ]
         }
 
     }
+
+    // if (checkDealer.coverageType == "Breakdown & Accidental") {
+    //     if (data.coverageType == "") {
+    //         query = {
+    //             $and: [
+    //                 { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+    //                 { 'priceBooks.category._id': { $in: catIdsArray } },
+    //                 { 'status': true },
+    //                 { 'dealerSku': { '$regex': dealerSku, '$options': 'i' } },
+    //                 {
+    //                     dealerId: new mongoose.Types.ObjectId(checkDealer._id)
+    //                 },
+    //                 {
+    //                     isDeleted: false
+    //                 }
+    //             ]
+    //         }
+    //     } else {
+    //         query = {
+    //             $and: [
+    //                 { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+    //                 { 'priceBooks.category._id': { $in: catIdsArray } },
+    //                 { 'status': true },
+    //                 { 'dealerSku': { '$regex': dealerSku, '$options': 'i' } },
+    //                 { 'priceBooks.coverageType': data.coverageType },
+
+    //                 {
+    //                     dealerId: new mongoose.Types.ObjectId(checkDealer._id)
+    //                 },
+    //                 {
+    //                     isDeleted: false
+    //                 }
+    //             ]
+    //         }
+    //     }
+    // } else {
+    //     if (data.coverageType == "") {
+    //         query = {
+    //             $and: [
+    //                 { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+    //                 { 'priceBooks.category._id': { $in: catIdsArray } },
+    //                 { 'priceBooks.coverageType': checkDealer.coverageType },
+    //                 { 'dealerSku': { '$regex': dealerSku, '$options': 'i' } },
+    //                 { 'status': true },
+    //                 {
+    //                     dealerId: new mongoose.Types.ObjectId(checkDealer._id)
+    //                 },
+    //                 {
+    //                     isDeleted: false
+    //                 }
+    //             ]
+    //         }
+    //     } else {
+    //         query = {
+    //             $and: [
+    //                 { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+    //                 { 'priceBooks.coverageType': data.coverageType },
+    //                 { 'priceBooks.category._id': { $in: catIdsArray } },
+    //                 { 'dealerSku': { '$regex': dealerSku, '$options': 'i' } },
+    //                 { 'status': true },
+    //                 {
+    //                     dealerId: new mongoose.Types.ObjectId(checkDealer._id)
+    //                 },
+    //                 {
+    //                     isDeleted: false
+    //                 }
+    //             ]
+    //         }
+    //     }
+
+    // }
 
 
     if (data.term != '') {
@@ -729,8 +946,96 @@ exports.editResellers = async (req, res) => {
             street: data.street,
             zip: data.zip
         }
+        // check dealer for existing 
+        let checkDealer = await dealerService.getDealerByName({ _id: checkReseller.dealerId }, {});
         const updateServicerMeta = await providerService.updateServiceProvider({ resellerId: req.params.resellerId }, servicerMeta)
 
+        //Notification to dealer,admin,reseller
+        const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+        const base_url = `${process.env.SITE_URL}`
+        const adminDealerrQuery = {
+            metaData: {
+                $elemMatch: {
+                    $and: [
+                        { "resellerNotifications.resellerUpdate": true },
+                        { status: true },
+                        { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") }
+                    ]
+                }
+            },
+        }
+
+        const dealerrQuery = {
+            metaData: {
+                $elemMatch: {
+                    $and: [
+                        { "resellerNotifications.resellerUpdate": true },
+                        { status: true },
+                        { metaId: new mongoose.Types.ObjectId(checkReseller.dealerId) }
+                    ]
+                }
+            },
+        }
+
+        const reellerQuery = {
+            metaData: {
+                $elemMatch: {
+                    $and: [
+                        { "resellerNotifications.resellerUpdate": true },
+                        { status: true },
+                        { metaId: new mongoose.Types.ObjectId(checkReseller._id) }
+                    ]
+                }
+            },
+        }
+
+        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerrQuery, { email: 1 })
+        let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerrQuery, { email: 1 })
+        let resellerUsers = await supportingFunction.getNotificationEligibleUser(reellerQuery, { email: 1 })
+        let notificationArray = []
+
+        let IDs = adminUsers.map(user => user._id)
+        let dealerIds = dealerUsers.map(user => user._id)
+        let dealerEmails = dealerUsers.map(user => user.email)
+        let resellerId = resellerUsers.map(user => user._id)
+        let resellerEmail = resellerUsers.map(user => user.email)
+
+        let notificationData = {
+            title: "Reseller Details Updated",
+            description: `The details of Reseller ${checkReseller.name} for the Dealer ${checkDealer.name} has been updated by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+            userId: req.teammateId,
+            redirectionId: "resellerDetails/" + checkReseller._id,
+            flag: 'reseller',
+            endPoint: base_url + "resellerDetails/" + checkReseller._id,
+            notificationFor: IDs
+        };
+        notificationArray.push(notificationData)
+        notificationData = {
+            title: "Reseller Details Updated",
+            description: `The details of Reseller ${checkReseller.name}  has been updated by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+            userId: req.teammateId,
+            redirectionId: "dealer/resellerDetails/" + checkReseller._id,
+            flag: 'reseller',
+            endPoint: base_url + "dealer/resellerDetails/" + checkReseller._id,
+            notificationFor: dealerIds
+        };
+        notificationArray.push(notificationData)
+        notificationData = {
+            title: "Details Updated",
+            description: `The details for your account has been changed by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+            userId: req.teammateId,
+            redirectionId: "reseller/user",
+            flag: 'reseller',
+            endPoint: base_url + "reseller/user",
+            notificationFor: resellerId
+        };
+        notificationArray.push(notificationData)
+        let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkReseller.dealerId, isPrimary: true } } })
+
+        let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkReseller._id, isPrimary: true } } })
+        let mergedEmail;
+        let notificationEmails = adminUsers.map(user => user.email)
+        mergedEmail = notificationEmails.concat(resellerEmail, dealerEmails)
         if (data.isServicer) {
             const checkServicer = await providerService.getServiceProviderById({ resellerId: req.params.resellerId })
             if (!checkServicer) {
@@ -762,49 +1067,42 @@ exports.editResellers = async (req, res) => {
             }
 
         }
-        let resellerUserCreateria = { metaId: req.params.resellerId };
         let newValue = {
-            status: false
-        };
-        if (data.isAccountCreate && checkReseller.status) {
-            resellerUserCreateria = { metaId: req.params.resellerId, isPrimary: true };
-            newValue = {
-                status: true
-            };
+            $set: {
+                'metaData.$.status': false,
+            }
         }
-        const changeResellerUser = await userService.updateUser(resellerUserCreateria, newValue, { new: true });
-        //Send notification to admin,dealer,reseller
 
-        let IDs = await supportingFunction.getUserIds()
-        let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkReseller.dealerId, isPrimary: true })
-        let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkReseller._id, isPrimary: true })
-        IDs.push(dealerPrimary._id)
-        IDs.push(resellerPrimary._id)
-        let notificationData = {
-            title: "Reseller updated",
-            description: checkReseller.name + " , " + "details has been updated",
-            userId: req.teammateId,
-            flag: 'reseller',
-            notificationFor: IDs
-        };
-        // save notification
-        let createNotification = await userService.createNotification(notificationData);
+        let resellerUserCreateria = { metaData: { $elemMatch: { metaId: req.params.resellerId } } }
+
+        if (data.isAccountCreate && checkReseller.status) {
+            resellerUserCreateria = { metaData: { $elemMatch: { metaId: req.params.resellerId, isPrimary: true } } }
+            newValue = {
+                $set: {
+                    'metaData.$.status': true,
+                }
+            }
+        }
+
+        const changeResellerUser = await userService.updateUser(resellerUserCreateria, newValue, { new: true });
+        let createNotification = await userService.saveNotificationBulk(notificationArray);
         // Send Email code here
-        let notificationEmails = await supportingFunction.getUserEmails();
         let settingData = await userService.getSetting({});
         //notificationEmails.push(resellerPrimary.email);
-        notificationEmails.push(dealerPrimary.email);
         let emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
-            senderName: checkReseller.name,
-            content: "The information has been updated successfully! effective immediately.",
+            senderName: `Dear ${checkReseller?.name}`,
+            content: "Your details have been updated. To view the details, please login into your account.",
             subject: "Update Info"
         }
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ['noreply@getcover.com'], emailData))
 
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary.email, notificationEmails, emailData))
+
         //Save Logs update reseller
         let logData = {
             userId: req.userId,
@@ -850,6 +1148,9 @@ exports.addResellerUser = async (req, res) => {
     try {
         let data = req.body
         let checkReseller = await resellerService.getReseller({ _id: data.resellerId }, {})
+        // let checkDealer = await resellerService.getReseller({ _id: checkReseller.dealerId }, {})
+        let checkDealer = await dealerService.getDealerByName({ _id: checkReseller.dealerId }, {})
+
         if (!checkReseller) {
             res.send({
                 code: constant.errorCode,
@@ -868,10 +1169,8 @@ exports.addResellerUser = async (req, res) => {
             return;
         }
 
-        let checkUser = await userService.getUserById1({ metaId: data.resellerId, isPrimary: true }, { isDeleted: false })
+        let checkUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: data.resellerId, isPrimary: true } } }, { isDeleted: false })
         data.status = checkUser.status == 'no' || !checkUser.status || checkUser.status == 'false' ? false : true;
-        data.metaId = checkReseller._id
-        data.roleId = '65bb94b4b68e5a4a62a0b563'
         let statusCheck;
         if (!checkReseller.status) {
             statusCheck = false
@@ -879,8 +1178,26 @@ exports.addResellerUser = async (req, res) => {
             statusCheck = data.status
         }
 
-        data.status = statusCheck
-        let saveData = await userService.createUser(data)
+        let metaData = {
+            email: data.email,
+            metaData: [
+                {
+                    metaId: checkReseller._id,
+                    status: statusCheck,
+                    roleId: "65bb94b4b68e5a4a62a0b563",
+                    firstName: data.firstName,
+                    lastName: data.lastName,
+                    phoneNumber: data.phoneNumber,
+                    position: data.position,
+                    isPrimary: false,
+                    dialCode: data.dialCode ? data.dialCode : "+1"
+
+                }
+            ]
+
+        }
+
+        let saveData = await userService.createUser(metaData)
         if (!saveData) {
             //Save Logs add reseller user
             let logData = {
@@ -899,6 +1216,90 @@ exports.addResellerUser = async (req, res) => {
                 message: "Unable to add the data"
             })
         } else {
+            //Send notification
+            const adminDealerQuery = {
+                metaData: {
+                    $elemMatch: {
+                        $and: [
+                            { "resellerNotifications.userAdd": true },
+                            { status: true },
+                            { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                        ]
+                    }
+                },
+            }
+            const dealerDealerQuery = {
+                metaData: {
+                    $elemMatch: {
+                        $and: [
+                            { "resellerNotifications.userAdd": true },
+                            { status: true },
+                            { metaId: new mongoose.Types.ObjectId(checkReseller.dealerId) },
+                        ]
+                    }
+                },
+            }
+            const resellerDealerQuery = {
+                metaData: {
+                    $elemMatch: {
+                        $and: [
+                            { "resellerNotifications.userAdd": true },
+                            { status: true },
+                            { metaId: new mongoose.Types.ObjectId(checkReseller._id) },
+                        ]
+                    }
+                },
+            }
+
+            
+            let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerQuery, { email: 1 })
+            let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDealerQuery, { email: 1 })
+
+            let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerDealerQuery, { email: 1 })
+
+            const IDs = adminUsers.map(user => user._id)
+            let notificationArray = []
+            const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+            const base_url = `${process.env.SITE_URL}`
+            const dealerId = dealerUsers.map(user => user._id)
+            const resellerId = resellerUsers.map(user => user._id)
+            let notificationData = {
+                title: "Reseller User Added",
+                description: `A new user for reseller ${checkReseller.name} under Dealer ${checkDealer.name} has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+                userId: req.teammateId,
+                tabAction: "resellerUser",
+                contentId: saveData._id,
+                flag: 'reseller_user',
+                endPoint: base_url + "resellerDetails/" + checkReseller._id,
+                redirectionId: "resellerDetails/" + checkReseller._id,
+                notificationFor: IDs
+            };
+            notificationArray.push(notificationData)
+            notificationData = {
+                title: "Reseller User Added",
+                description: `A new user for reseller ${checkReseller.name} has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+                userId: req.teammateId,
+                contentId: saveData._id,
+                tabAction: "resellerUser",
+                flag: 'reseller_user',
+                endPoint: base_url + "dealer/resellerDetails/" + checkReseller._id,
+                redirectionId: "dealer/resellerDetails/" + checkReseller._id,
+                notificationFor: dealerId
+            };
+            notificationArray.push(notificationData)
+            notificationData = {
+                title: "New User Added",
+                description: `A new user for your account has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+                userId: req.teammateId,
+                contentId: saveData._id,
+                flag: 'reseller_user',
+                endPoint: base_url + "reseller/user",
+                redirectionId: "reseller/user",
+                notificationFor: resellerId
+            };
+            notificationArray.push(notificationData)
+            let createNotification = await userService.saveNotificationBulk(notificationArray);
+
             //Save Logs add reseller user
             let logData = {
                 userId: req.userId,
@@ -988,8 +1389,8 @@ exports.getResellerServicers = async (req, res) => {
 
         const servicerIds = servicer.map(obj => obj._id);
         // Get servicer with claim
-        const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "Completed", resellerId: new mongoose.Types.ObjectId(req.params.resellerId) };
-        const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "Completed", resellerId: new mongoose.Types.ObjectId(req.params.resellerId) };
+        const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "completed", resellerId: new mongoose.Types.ObjectId(req.params.resellerId) };
+        const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "completed", resellerId: new mongoose.Types.ObjectId(req.params.resellerId) };
         let claimAggregateQuery1 = [
             {
                 $match: servicerCompleted
@@ -1019,8 +1420,40 @@ exports.getResellerServicers = async (req, res) => {
             },
         ]
         let numberOfClaims = await claimService.getClaimWithAggregate(claimAggregateQuery);
-        const query1 = { metaId: { $in: servicerIds }, isPrimary: true };
-        let servicerUser = await userService.getMembers(query1, {})
+
+        const servicerUser = await userService.findUserforCustomer1([
+            {
+                $match: {
+                    $and: [
+                        // { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+                        // { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { metaData: { $elemMatch: { metaId: { $in: servicerIds }, isPrimary: true } } }
+                    ]
+                }
+            },
+            {
+                $project: {
+                    email: 1,
+                    'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+                    'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+                    'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+                    'position': { $arrayElemAt: ["$metaData.position", 0] },
+                    'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                    'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+                    'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+                    'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                    'status': { $arrayElemAt: ["$metaData.status", 0] },
+                    resetPasswordCode: 1,
+                    isResetPassword: 1,
+                    approvedStatus: 1,
+                    createdAt: 1,
+                    updatedAt: 1
+                }
+            }
+        ]);
+
+
+
         if (!servicerUser) {
             res.send({
                 code: constant.errorCode,
@@ -1034,7 +1467,7 @@ exports.getResellerServicers = async (req, res) => {
             const claimNumber = numberOfClaims.find(claim => claim._id.toString() === servicer._id.toString())
             if (matchingItem) {
                 return {
-                    ...matchingItem.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+                    ...matchingItem, // Use toObject() to convert Mongoose document to plain JavaScript object
                     servicerData: servicer.toObject(),
                     claimValue: claimValue ? claimValue : {
                         totalAmount: 0
@@ -1045,15 +1478,15 @@ exports.getResellerServicers = async (req, res) => {
                 return servicer.toObject();
             }
         })
-        const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
-        const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
-        const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
+        let emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
+        let nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
+        let phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
 
-        const filteredData = result_Array.filter(entry => {
+        let filteredData = result_Array.filter(entry => {
             return (
-                nameRegex.test(entry.servicerData.name) &&
+                nameRegex.test(entry.servicerData?.name) &&
                 emailRegex.test(entry.email) &&
-                phoneRegex.test(entry.phoneNumber)
+                phoneRegex.test(entry.phone)
             );
         });
         res.send({
@@ -1179,6 +1612,8 @@ exports.getResellerOrders = async (req, res) => {
             createdAt: 1,
             venderOrder: 1,
             orderAmount: 1,
+            paidAmount: 1,
+            dueAmount: 1,
             contract: "$contract"
         };
 
@@ -1269,8 +1704,38 @@ exports.getResellerOrders = async (req, res) => {
             .map(result => result.customerId);
 
         const allUserIds = mergedArray.concat(userCustomerIds);
-        const queryUser = { metaId: { $in: allUserIds }, isPrimary: true };
-        let getPrimaryUser = await userService.findUserforCustomer(queryUser)
+
+        const getPrimaryUser = await userService.findUserforCustomer1([
+            {
+                $match: {
+                    $and: [
+                        { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+                        { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { metaData: { $elemMatch: { metaId: { $in: allUserIds }, isPrimary: true } } }
+                    ]
+                }
+            },
+            {
+                $project: {
+                    email: 1,
+                    'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+                    'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+                    'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+                    'position': { $arrayElemAt: ["$metaData.position", 0] },
+                    'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
+                    'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
+                    'roleId': { $arrayElemAt: ["$metaData.roleId", 0] },
+                    'isPrimary': { $arrayElemAt: ["$metaData.isPrimary", 0] },
+                    'status': { $arrayElemAt: ["$metaData.status", 0] },
+                    resetPasswordCode: 1,
+                    isResetPassword: 1,
+                    approvedStatus: 1,
+                    createdAt: 1,
+                    updatedAt: 1
+                }
+            }
+        ]);
+
 
         const result_Array = ordersResult.map((item1) => {
             const dealerName =
@@ -1413,6 +1878,9 @@ exports.getResellerContract = async (req, res) => {
     try {
         let data = req.body
         let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+        // let getTheThresholdLimir = await userService.getUserById1({ roleId: process.env.super_admin, isPrimary: true })
+        let getTheThresholdLimir = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
+
         let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
         let limitData = Number(pageLimit)
         let dealerIds = [];
@@ -1510,8 +1978,17 @@ exports.getResellerContract = async (req, res) => {
             contractFilterWithEligibilty.push({ orderId: { $in: orderIds } })
         }
 
+        if (data.startDate != "") {
+            let startDate = new Date(data.startDate)
+            let endDate = new Date(data.endDate)
+            startDate.setHours(0, 0, 0, 0)
+            endDate.setHours(11, 59, 0, 0)
+            let dateFilter = { createdAt: { $gte: startDate, $lte: endDate } }
+            contractFilterWithEligibilty.push(dateFilter)
+        }
+
         let mainQuery = []
-        if (data.contractId === "" && data.productName === "" && data.dealerSku === "" &&  data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
+        if (data.contractId === "" && data.productName === "" && data.dealerSku === "" && data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
             mainQuery = [
                 { $sort: { unique_key_number: -1 } },
                 {
@@ -1540,6 +2017,7 @@ exports.getResellerContract = async (req, res) => {
                                     manufacture: 1,
                                     eligibilty: 1,
                                     orderUniqueKey: 1,
+                                    createdAt: 1,
                                     venderOrder: 1,
                                     totalRecords: 1
                                 }
@@ -1589,6 +2067,7 @@ exports.getResellerContract = async (req, res) => {
                                 eligibilty: 1,
                                 orderUniqueKey: 1,
                                 venderOrder: 1,
+                                createdAt: 1,
                                 totalRecords: 1
                             }
                         }
@@ -1602,6 +2081,9 @@ exports.getResellerContract = async (req, res) => {
         let result1 = getContracts[0]?.data ? getContracts[0]?.data : []
         for (let e = 0; e < result1.length; e++) {
             result1[e].reason = " "
+            if (!result1[e].eligibilty) {
+                result1[e].reason = "Claims limit cross for this contract"
+            }
             if (result1[e].status != "Active") {
                 result1[e].reason = "Contract is not active"
             }
@@ -1628,7 +2110,7 @@ exports.getResellerContract = async (req, res) => {
                         openFileClaimsCount: { // Count of claims where claimfile is "Open"
                             $sum: {
                                 $cond: {
-                                    if: { $eq: ["$claimFile", "Open"] }, // Assuming "claimFile" field is correct
+                                    if: { $eq: ["$claimFile", "open"] }, // Assuming "claimFile" field is correct
                                     then: 1,
                                     else: 0
                                 }
@@ -1648,6 +2130,19 @@ exports.getResellerContract = async (req, res) => {
                     result1[e].reason = "Claim value exceed the product value limit"
                 }
             }
+            let thresholdLimitPercentage = getTheThresholdLimir.threshHoldLimit.value
+            const thresholdLimitValue = (thresholdLimitPercentage / 100) * Number(result1[e].productValue);
+            let overThreshold = result1[e].claimAmount > thresholdLimitValue;
+            let threshHoldMessage = "This claim amount surpasses the maximum allowed threshold."
+            if (!overThreshold) {
+                threshHoldMessage = ""
+            }
+            if (!thresholdLimitPercentage.isThreshHoldLimit) {
+                overThreshold = false
+                threshHoldMessage = ""
+            }
+            result1[e].threshHoldMessage = threshHoldMessage
+            result1[e].overThreshold = overThreshold
         }
         res.send({
             code: constant.successCode,
@@ -1668,6 +2163,12 @@ exports.getResellerContract = async (req, res) => {
 exports.changeResellerStatus = async (req, res) => {
     try {
         const singleReseller = await resellerService.getReseller({ _id: req.params.resellerId });
+        let IDs = await supportingFunction.getUserIds()
+        let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: singleReseller.dealerId, isPrimary: true })
+        let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.resellerId, isPrimary: true })
+        //check Reseller dealer
+        let checkDealer = await dealerService.getDealerByName({ _id: singleReseller.dealerId }, {})
+        let mergedEmail;
         if (!singleReseller) {
             res.send({
                 code: constant.errorCode,
@@ -1675,12 +2176,13 @@ exports.changeResellerStatus = async (req, res) => {
             })
             return;
         }
+
         //Update Reseller User Status if inactive
         if (!req.body.status) {
-            let resellerUserCreateria = { metaId: req.params.resellerId };
+            let resellerUserCreateria = { metaData: { $elemMatch: { metaId: req.params.resellerId } } }
             let newValue = {
                 $set: {
-                    status: req.body.status
+                    'metaData.$.status': req.body.status,
                 }
             };
             let option = { new: true };
@@ -1689,10 +2191,11 @@ exports.changeResellerStatus = async (req, res) => {
         }
 
         else if (singleReseller.isAccountCreate && req.body.status) {
-            let resellerUserCreateria = { metaId: req.params.resellerId, isPrimary: true };
+            let resellerUserCreateria = { metaData: { $elemMatch: { metaId: req.params.resellerId, isPrimary: true } } }
+
             let newValue = {
                 $set: {
-                    status: req.body.status
+                    'metaData.$.status': req.body.status,
                 }
             };
             let option = { new: true };
@@ -1709,40 +2212,127 @@ exports.changeResellerStatus = async (req, res) => {
 
         const changedResellerStatus = await resellerService.updateReseller({ _id: req.params.resellerId }, newValue);
         if (changedResellerStatus) {
+            const status_content = req.body.status ? 'Active' : 'Inactive';
             //Update status if reseller is inactive
             const updateServicer = await providerService.updateServiceProvider({ resellerId: req.params.resellerId }, { status: req.body.status })
             //Send notification to reseller,dealer and admin
-            let IDs = await supportingFunction.getUserIds()
-            let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: singleReseller.dealerId, isPrimary: true })
-            let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.resellerId, isPrimary: true })
-            IDs.push(dealerPrimary._id)
-            IDs.push(getPrimary._id)
+            const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+            const base_url = `${process.env.SITE_URL}`
+            const adminDealerrQuery = {
+                metaData: {
+                    $elemMatch: {
+                        $and: [
+                            { "resellerNotifications.resellerUpdate": true },
+                            { status: true },
+                            { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") }
+                        ]
+                    }
+                },
+            }
+
+            const dealerrQuery = {
+                metaData: {
+                    $elemMatch: {
+                        $and: [
+                            { "resellerNotifications.resellerUpdate": true },
+                            { status: true },
+                            { metaId: new mongoose.Types.ObjectId(checkDealer._id) }
+                        ]
+                    }
+                },
+            }
+            const resellerQuery = {
+                metaData: {
+                    $elemMatch: {
+                        $and: [
+                            { "resellerNotifications.resellerUpdate": true },
+                            // { status: true },
+                            { metaId: new mongoose.Types.ObjectId(req.params.resellerId) }
+                        ]
+                    }
+                },
+            }
+            let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerrQuery, { email: 1 })
+            let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerrQuery, { email: 1 })
+            let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerQuery, { email: 1 })
+            let notificationArray = []
+            let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: singleReseller.dealerId, isPrimary: true } } })
+            let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.params.resellerId, isPrimary: true } } })
+            let IDs = adminUsers.map(user => user._id)
+            let adminEmail = adminUsers.map(user => user.email)
+            let dealerId = dealerUsers.map(user => user._id)
+            let dealerEmails = dealerUsers.map(user => user.email)
+            let resellerId = resellerUsers.map(user => user._id)
+            let mergedEmail = adminEmail.concat(dealerEmails)
             let notificationData = {
-                title: "Reseller status update",
-                description: singleReseller.name + " , " + "your status has been updated",
+                title: "Reseller Status Updated",
+                description: `The Reseller ${singleReseller.name} for dealer ${checkDealer.name} status has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
                 userId: req.teammateId,
+                redirectionId: "resellerDetails/" + singleReseller._id,
                 flag: 'reseller',
+                endPoint: base_url + "resellerDetails/" + singleReseller._id,
                 notificationFor: IDs
             };
+            notificationArray.push(notificationData)
+            notificationData = {
+                title: "Reseller Status Updated",
+                description: `The Reseller ${singleReseller.name} status has been updated to ${status_content} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+                userId: req.teammateId,
+                redirectionId: "dealer/resellerDetails/" + singleReseller._id,
+                flag: 'reseller',
+                endPoint: base_url + "dealer/resellerDetails/" + singleReseller._id,
+                notificationFor: dealerId
+            };
+            notificationArray.push(notificationData)
+            notificationData = {
+                title: "Status Updated",
+                description: `GetCover has updated your status to ${status_content}.`,
+                userId: req.teammateId,
+                redirectionId: null,
+                flag: 'reseller',
+                endPoint: null,
+                notificationFor: resellerId
+            };
+            notificationArray.push(notificationData)
 
-            let createNotification = await userService.createNotification(notificationData);
+            let createNotification = await userService.saveNotificationBulk(notificationArray);
 
             // Send Email code here
-            let notificationEmails = await supportingFunction.getUserEmails();
             let settingData = await userService.getSetting({});
-            notificationEmails.push(dealerPrimary.email);
-            const status_content = req.body.status ? 'Active' : 'Inactive';
+            let resetPasswordCode = randtoken.generate(4, '123456789')
+            const content = req.body.status ? 'Congratulations, you can now login to our system. Please click the following link to login to the system' : "Your account has been made inactive. If you think, this is a mistake, please contact our support team at support@getcover.com"
+
+            let resetLink = `${process.env.SITE_URL}newPassword/${getPrimary._id}/${resetPasswordCode}`
+
             let emailData = {
+                senderName: `Dear ${singleReseller.name}`,
                 darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
                 lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
                 address: settingData[0]?.address,
                 websiteSetting: settingData[0],
-                senderName: singleReseller.name,
-                content: "Status has been changed to " + status_content + " " + ", effective immediately.",
+                content: content,
+                redirectId: status_content == "Active" ? resetLink : '',
                 subject: "Update Status"
             }
 
-            let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, ["noreply@getcover.com"], emailData))
+
+            emailData = {
+                senderName: singleReseller.name,
+                darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                address: settingData[0]?.address,
+                websiteSetting: settingData[0],
+                content: `Reseller status has been changed to ${status_content}`,
+                redirectId: '',
+                subject: "Update Status"
+            }
+            emailData.senderName = "Dear Admin"
+            mailing = sgMail.send(emailConstant.sendEmailTemplate(adminEmail, ["noreply@getcover.com"], emailData))
+            emailData.senderName = `Dear ${getPrimary.metaData[0]?.firstName + " " + getPrimary.metaData[0]?.lastName}`
+
+            mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
+
             //Save Logs change reseller status
             let logData = {
                 userId: req.userId,
@@ -1867,7 +2457,11 @@ exports.getResellerClaims = async (req, res) => {
                             note: 1,
                             pName: 1,
                             totalAmount: 1,
-                            dealerSku:1,
+                            getcoverOverAmount: 1,
+                            customerOverAmount: 1,
+                            customerClaimAmount: 1,
+                            getCoverClaimAmount: 1,
+                            dealerSku: 1,
                             servicerId: 1,
                             claimType: 1,
                             customerStatus: 1,
@@ -1883,6 +2477,7 @@ exports.getResellerClaims = async (req, res) => {
                             "contracts.model": 1,
                             "contracts.manufacture": 1,
                             "contracts.serial": 1,
+                            "contracts.coverageType": 1,
                             "contracts.orders.dealerId": 1,
                             "contracts.orders._id": 1,
                             "contracts.orders.servicerId": 1,
@@ -1934,6 +2529,11 @@ exports.getResellerClaims = async (req, res) => {
             }
         })
         let servicerMatch = {}
+        let dealerMatch = {}
+        let resellerMatch = {}
+        let dateMatch = {}
+        let statusMatch = {}
+
         if (data.servicerName != '' && data.servicerName != undefined) {
             const checkServicer = await providerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } });
             if (checkServicer.length > 0) {
@@ -1952,7 +2552,43 @@ exports.getResellerClaims = async (req, res) => {
                 servicerMatch = { 'servicerId': new mongoose.Types.ObjectId('5fa1c587ae2ac23e9c46510f') }
             }
         }
+        data.dealerName = data.dealerName ? data.dealerName : ""
+
+
+        if (data.dealerName != "") {
+            let getDealer = await dealerService.getAllDealers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
+            let dealerIds = getDealer.map(ID => new mongoose.Types.ObjectId(ID._id))
+            dealerMatch = { dealerId: { $in: dealerIds } }
+
+        }
+        data.resellerMatch = data.resellerMatch ? data.resellerMatch : ""
+        if (data.resellerName != "") {
+            let getReseller = await resellerService.getResellers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
+            let resellerIds = getReseller.map(ID => new mongoose.Types.ObjectId(ID._id))
+            resellerMatch = { resellerId: { $in: resellerIds } }
+        }
+
+        statusMatch = {}
+
+        if (data.dateFilter != "") {
+            data.endDate = new Date(data.endDate).setHours(11, 59, 0, 0)
+            if (data.dateFilter == "damageDate") {
+                dateMatch = { lossDate: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
+                // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
+            }
+            if (data.dateFilter == "openDate") {
+                dateMatch = { createdAt: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
+                // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
+            }
+            if (data.dateFilter == "closeDate") {
+                dateMatch = { claimDate: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
+                statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
+            }
+        }
+
         let claimPaidStatus = {}
+        const dynamicOption = await userService.getOptions({ name: 'coverage_type' })
+
         if (data.claimPaidStatus != '' && data.claimPaidStatus != undefined) {
             claimPaidStatus = { "claimPaymentStatus": data.claimPaidStatus }
         }
@@ -1976,7 +2612,11 @@ exports.getResellerClaims = async (req, res) => {
                         { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                        servicerMatch
+                        servicerMatch,
+                        resellerMatch,
+                        dealerMatch,
+                        dateMatch,
+                        statusMatch,
                     ]
                 },
             },
@@ -2082,6 +2722,12 @@ exports.getResellerClaims = async (req, res) => {
         );
         const result_Array = resultFiter.map((item1) => {
             servicer = []
+            let mergedData = []
+            if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
+                mergedData = dynamicOption.value.filter(contract =>
+                    item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
+                );
+            }
             let servicerName = '';
             let selfServicer = false;
             let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
@@ -2113,7 +2759,9 @@ exports.getResellerClaims = async (req, res) => {
                 selfServicer: selfServicer,
                 contracts: {
                     ...item1.contracts,
-                    allServicer: servicer
+                    allServicer: servicer,
+                    mergedData: mergedData
+
                 }
             }
         })

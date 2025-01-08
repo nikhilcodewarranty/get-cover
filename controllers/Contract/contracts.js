@@ -4,6 +4,7 @@ const contractService = require("../../services/Contract/contractService");
 const priceBookService = require("../../services/PriceBook/priceBookService");
 const claimService = require("../../services/Claim/claimService");
 const providerService = require("../../services/Provider/providerService");
+const userService = require("../../services/User/userService");
 const dealerService = require("../../services/Dealer/dealerService");
 const customerService = require("../../services/Customer/customerService");
 const resellerService = require("../../services/Dealer/resellerService");
@@ -16,6 +17,7 @@ const { default: mongoose } = require("mongoose");
 exports.getContracts = async (req, res) => {
   try {
     let data = req.body
+    let getTheThresholdLimir = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
@@ -92,7 +94,7 @@ exports.getContracts = async (req, res) => {
     }
 
     let orderIds = []
-    
+
     if (orderAndCondition.length > 0) {
       let getOrders = await orderService.getOrders({
         $and: orderAndCondition
@@ -134,10 +136,25 @@ exports.getContracts = async (req, res) => {
       contractFilterWithEligibilty.push({ orderId: { $in: orderIds } })
     }
 
+    if (data.startDate != "") {
+      let startDate = new Date(data.startDate)
+      let endDate = new Date(data.endDate)
+      startDate.setHours(0, 0, 0, 0)
+      endDate.setHours(11, 59, 0, 0)
+      let dateFilter = { createdAt: { $gte: startDate, $lte: endDate } }
+      contractFilterWithEligibilty.push(dateFilter)
+    }
+
     let mainQuery = []
-    if (data.contractId === "" && data.productName === "" &&  data.dealerSku === "" && data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
+    if (data.contractId === "" && data.productName === "" && data.dealerSku === "" && data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
       mainQuery = [
         { $sort: { unique_key_number: -1 } },
+        // let dateFilter = { createdAt: { $gte: data.startDate, $lte: data.endDate } }
+        // {
+        //   $match: {
+        //     createdAt: { $gte: data.startDate, $lte: data.endDate }
+        //   }
+        // },
         {
           $facet: {
             totalRecords: [
@@ -158,8 +175,9 @@ exports.getContracts = async (req, res) => {
                   pName: 1,
                   model: 1,
                   serial: 1,
-                  dealerSku:1,
+                  dealerSku: 1,
                   unique_key: 1,
+                  claimAmount: 1,
                   minDate: 1,
                   status: 1,
                   productValue: 1,
@@ -167,7 +185,8 @@ exports.getContracts = async (req, res) => {
                   eligibilty: 1,
                   orderUniqueKey: 1,
                   venderOrder: 1,
-                  totalRecords: 1
+                  totalRecords: 1,
+                  createdAt: 1
                 }
               }
             ],
@@ -207,14 +226,16 @@ exports.getContracts = async (req, res) => {
                 serial: 1,
                 minDate: 1,
                 unique_key: 1,
-                dealerSku:1,
+                dealerSku: 1,
                 status: 1,
+                claimAmount: 1,
                 manufacture: 1,
                 productValue: 1,
                 eligibilty: 1,
                 orderUniqueKey: 1,
                 venderOrder: 1,
-                totalRecords: 1
+                totalRecords: 1,
+                createdAt: 1
               }
             }
           ],
@@ -229,7 +250,9 @@ exports.getContracts = async (req, res) => {
 
     for (let e = 0; e < result1.length; e++) {
       result1[e].reason = " "
-
+      if (!result1[e].eligibilty) {
+        result1[e].reason = "Claims limit cross for this contract"
+      }
       if (result1[e].status != "Active") {
         result1[e].reason = "Contract is not active"
       }
@@ -244,6 +267,8 @@ exports.getContracts = async (req, res) => {
         result1[e].reason = "Contract will be eligible on " + " " + formattedDate
       }
 
+
+
       let claimQuery = [
         {
           $match: { contractId: new mongoose.Types.ObjectId(result1[e]._id) }
@@ -255,7 +280,7 @@ exports.getContracts = async (req, res) => {
             openFileClaimsCount: { // Count of claims where claimfile is "Open"
               $sum: {
                 $cond: {
-                  if: { $eq: ["$claimFile", "Open"] }, // Assuming "claimFile" field is correct
+                  if: { $eq: ["$claimFile", "open"] }, // Assuming "claimFile" field is correct
                   then: 1,
                   else: 0
                 }
@@ -276,6 +301,20 @@ exports.getContracts = async (req, res) => {
           result1[e].reason = "Claim value exceed the product value limit"
         }
       }
+
+      let thresholdLimitPercentage = getTheThresholdLimir.threshHoldLimit.value
+      const thresholdLimitValue = (thresholdLimitPercentage / 100) * Number(result1[e].productValue);
+      let overThreshold = result1[e].claimAmount > thresholdLimitValue;
+      let threshHoldMessage = "This claim amount surpasses the maximum allowed threshold."
+      if (!overThreshold) {
+        threshHoldMessage = ""
+      }
+      if (!getTheThresholdLimir.isThreshHoldLimit) {
+        overThreshold = false
+        threshHoldMessage = ""
+      }
+      result1[e].threshHoldMessage = threshHoldMessage
+      result1[e].overThreshold = overThreshold
     }
 
     res.send({
@@ -286,7 +325,7 @@ exports.getContracts = async (req, res) => {
     })
 
   } catch (err) {
-     res.send({
+    res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -309,7 +348,7 @@ exports.editContract = async (req, res) => {
     const claimAmount = claimTotal[0]?.amount ? claimTotal[0]?.amount : 0
     let option = { new: true }
     //check claim
-    let checkClaim = await claimService.getClaims({ contractId: req.params.contractId, claimFile: "Open" })
+    let checkClaim = await claimService.getClaims({ contractId: req.params.contractId, claimFile: "open" })
 
     if (!checkClaim[0]) {
       if (claimAmount < data.productValue) {
@@ -324,7 +363,7 @@ exports.editContract = async (req, res) => {
     //check if claim value is less then product value update eligibilty true
 
     if (!updateContracts) {
-       res.send({
+      res.send({
         code: constant.errorCode,
         message: "Unable to update the contract"
       })
@@ -336,7 +375,7 @@ exports.editContract = async (req, res) => {
       result: updateContracts
     })
   } catch (err) {
-     res.send({
+    res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -355,7 +394,6 @@ exports.getContractById = async (req, res) => {
     let claimTotalQuery = [
       { $match: totalCreteria },
       { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
-
     ]
     let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
     let query = [
@@ -437,7 +475,7 @@ exports.getContractById = async (req, res) => {
             openFileClaimsCount: { // Count of claims where claimfile is "Open"
               $sum: {
                 $cond: {
-                  if: { $eq: ["$claimFile", "Open"] }, // Assuming "claimFile" field is correct
+                  if: { $eq: ["$claimFile", "open"] }, // Assuming "claimFile" field is correct
                   then: 1,
                   else: 0
                 }
@@ -492,10 +530,27 @@ exports.getContractById = async (req, res) => {
 
         }
       }
-
     })
+
+    //Get dynamic options
+    const dynamicOption = await userService.getOptions({ name: "coverage_type" })
+    getData[0].mergedData = [];
+    getData[0].adhDays.forEach(adhItem => {
+      const matchedOption = dynamicOption.value.find(option => option.value === adhItem.value);
+
+      if (matchedOption) {
+        getData[0].mergedData.push({
+          label: matchedOption.label,
+          value: adhItem.value,
+          waitingDays: adhItem.waitingDays,
+          deductible: adhItem.deductible,
+          amountType: adhItem.amountType
+        });
+      }
+    });
+
     if (!getData) {
-       res.send({
+      res.send({
         code: constant.errorCode,
         message: "Unable to get contract"
       })
@@ -507,7 +562,7 @@ exports.getContractById = async (req, res) => {
       result: getData[0]
     })
   } catch (err) {
-     res.send({
+    res.send({
       code: constant.errorCode,
       message: err.message + ":" + err.stack
     })
@@ -524,7 +579,7 @@ exports.deleteOrdercontractbulk = async (req, res) => {
       result: deleteContract
     })
   } catch (err) {
-     res.send({
+    res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -581,12 +636,12 @@ exports.cronJobEligible = async (req, res) => {
       // Update when not any claim right now for active contract
       await contractService.allUpdate(bulk);
       bulk = [];
-
       // Fetch claims for contracts
       let checkClaim = await claimService.getClaims({ contractId: { $in: contractIds } });
-      const openContractIds = checkClaim.filter(claim => claim.claimFile === 'Open').map(claim => claim.contractId);
+      const openContractIds = checkClaim.filter(claim => claim.claimFile === 'open').map(claim => claim.contractId);
 
       openContractIds.forEach(openContract => {
+        // console.log("openContract",openContract)
         bulk.push({
           'updateMany': {
             'filter': { '_id': openContract },
@@ -596,31 +651,35 @@ exports.cronJobEligible = async (req, res) => {
         });
       });
 
+      // console.log("bulk00000000000000000000000",bulk)
       // Update when claim is open for contract
       await contractService.allUpdate(bulk);
       bulk = [];
 
-      const notOpenContractIds = checkClaim.filter(claim => claim.claimFile !== 'Open').map(claim => claim.contractId);
+      const notOpenContractIds = checkClaim.filter(claim => claim.claimFile !== 'open').map(claim => claim.contractId);
 
       if (notOpenContractIds.length > 0) {
         for (let j = 0; j < notOpenContractIds.length; j++) {
-          let claimTotalQuery = [
-            { $match: { contractId: new mongoose.Types.ObjectId(notOpenContractIds[j]) } },
-            { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
+          if (!openContractIds.some(item => item.equals(notOpenContractIds[j]))) {
+            let claimTotalQuery = [
+              { $match: { contractId: new mongoose.Types.ObjectId(notOpenContractIds[j]) } },
+              { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
 
-          ]
-          let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
-          let obj = result.find(el => el._id.toString() === notOpenContractIds[j].toString());
+            ]
+            let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
+            let obj = result.find(el => el._id.toString() === notOpenContractIds[j].toString());
+            if (obj?.productValue > claimTotal[0]?.amount) {
+              bulk.push({
+                'updateMany': {
+                  'filter': { '_id': notOpenContractIds[j] },
+                  'update': { $set: { eligibilty: true } },
+                  'upsert': false
+                }
+              });
+            }
+          }
 
-          if (obj?.productValue > claimTotal[0]?.amount) {
-            bulk.push({
-              'updateMany': {
-                'filter': { '_id': notOpenContractIds[j] },
-                'update': { $set: { eligibilty: true } },
-                'upsert': false
-              }
-            });
-          } else {
+          else {
             bulk.push({
               'updateMany': {
                 'filter': { '_id': notOpenContractIds[j] },
@@ -642,10 +701,32 @@ exports.cronJobEligible = async (req, res) => {
     });
 
   } catch (err) {
-     res.send({
+    res.send({
       code: constant.errorCode,
       message: err.message
     });
   }
 };
+
+// have to do
+exports.updateContract = async (req, res) => {
+  try {
+    let getOrder = await orderService.getOrder({ _id: "66fa6ffe1d16062766365aae" })
+    let contractObject = {
+      $set: {
+        coverageStartDate1: getOrder.productsArray[0].coverageStartDate,
+        coverageEndDate1: getOrder.productsArray[0].coverageEndDate
+      }
+    }
+    let updateMany = await contractService.updateManyContract({ orderId: getOrder._id }, contractObject, { new: true })
+    res.send({
+      updateMany
+    })
+  } catch (err) {
+    res.send({
+      code: 401,
+      message: err.statck
+    })
+  }
+}
 

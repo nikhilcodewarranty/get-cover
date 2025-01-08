@@ -14,7 +14,7 @@ module.exports = class dealerService {
     }
   }
 
-    // Get dealer and claims
+  // Get dealer and claims
   static async getDealerAndClaims(query) {
     try {
       const singleResellerResponse = await dealer.aggregate(query);
@@ -26,7 +26,7 @@ module.exports = class dealerService {
   }
 
   // Get top five dealers
-  static async getTopFiveDealers(query){
+  static async getTopFiveDealers(query) {
     try {
       const topDealers = await dealer.aggregate(query);
       return topDealers;
@@ -65,7 +65,7 @@ module.exports = class dealerService {
       return `Could not fetch dealer: ${error}`;
     }
   }
-    // Get single dealer by ID
+  // Get single dealer by ID
   static async getSingleDealerById(dealerId, projection) {
     try {
       const singleDealerResponse = await dealer.find(dealerId, projection);
@@ -91,6 +91,20 @@ module.exports = class dealerService {
       return singleDealerResponse;
     } catch (error) {
       return `Could not fetch dealer: ${error}`;
+    }
+  }
+
+  // update price book
+  static async updateDealerMany(criteria, newValue, option) {
+    try {
+      const updatedResponse = await dealer.updateMany(
+        criteria,
+        newValue,
+        option
+      );
+      return updatedResponse;
+    } catch (error) {
+      return `Could not update price book ${error}`;
     }
   }
 
@@ -145,7 +159,7 @@ module.exports = class dealerService {
   static async statusUpdate(criteria, newValue, option) {
 
     try {
-      const updatedResult = await dealerPrice.findByIdAndUpdate(
+      const updatedResult = await dealerPrice.findOneAndUpdate(
         criteria,
         newValue,
         option

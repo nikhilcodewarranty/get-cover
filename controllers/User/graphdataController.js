@@ -98,7 +98,7 @@ exports.getDashboardInfo = async (req, res) => {
       }
     },
 
-    { $sort: { unique_key_number: -1 } },
+    { $sort: { updatedAt: -1 } },
     {
       $limit: 5
     },
@@ -109,12 +109,12 @@ exports.getDashboardInfo = async (req, res) => {
   const claimQuery = [
     {
       $match: {
-        claimFile: "Completed"
+        claimFile: "completed"
       }
     },
     {
       $sort: {
-        unique_key_number: -1
+        updatedAt: -1
       }
     },
     {
@@ -218,7 +218,7 @@ exports.getDashboardInfo = async (req, res) => {
       $match: {
         dealerId: null,
         resellerId: null,
-        status: true
+        accountStatus: "Approved"
       }
     },
     {
@@ -245,7 +245,7 @@ exports.getDashboardInfo = async (req, res) => {
         as: "claims",
         pipeline: [
           {
-            $match: { claimFile: "Completed" }
+            $match: { claimFile: "completed" }
           },
           {
             "$group": {
@@ -384,8 +384,11 @@ exports.getDashboardGraph = async (req, res) => {
 
     let startOfMonth = new Date(startOfMonth2.getFullYear(), startOfMonth2.getMonth(), startOfMonth2.getDate());
 
+    console.log("startOfMonth---------------", startOfMonth)
+
 
     let endOfMonth = new Date(endOfMonth1.getFullYear(), endOfMonth1.getMonth(), endOfMonth1.getDate() + 1);
+    console.log("endOfMonth---------------", endOfMonth)
 
     if (isNaN(startOfMonth) || isNaN(endOfMonth)) {
       return { code: 401, message: "invalid date" };
@@ -401,15 +404,24 @@ exports.getDashboardGraph = async (req, res) => {
     let dailyQuery = [
       {
         $match: {
-          createdAt: { $gte: startOfMonth, $lt: endOfMonth },
-          claimStatus: {
-            $elemMatch: { status: "Completed" }
-          },
-        },
+          claimDate: { $gte: startOfMonth, $lt: endOfMonth },// claim completion date
+          claimFile: "completed"
+        }
+      },
+      {
+        $addFields: {
+          completedClaims: {
+            $filter: {
+              input: "$claimStatus",
+              as: "status",
+              cond: { $eq: ["$$status.status", "completed"] }
+            }
+          }
+        }
       },
       {
         $group: {
-          _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$claimDate" } },
           total_amount: { $sum: "$totalAmount" },
           total_claim: { $sum: 1 },
         }
@@ -457,8 +469,12 @@ exports.getDashboardGraph = async (req, res) => {
     let getPriceBooks1 = await priceBookService.getAllActivePriceBook(priceQuery1)
 
     const result = datesArray.map(date => {
+      console.log("adasdassasa", date)
       const dateString = date.toISOString().slice(0, 10);
+      console.log("dateString", dateString);
       const order = getData.find(item => item._id === dateString);
+      console.log("order", order);
+
       return {
         weekStart: dateString,
         total_amount: order ? order.total_amount : 0,

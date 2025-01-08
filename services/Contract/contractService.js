@@ -10,7 +10,7 @@ module.exports = class contractService {
       return `Could not fetch contracts ${error}`
     }
   }
- 
+
   // Fetch all contracts based on a query without pagination
   static async getAllContracts2(query, pageLimit, page) {
     try {
@@ -36,7 +36,7 @@ module.exports = class contractService {
       const count = await contract.find();
       return count.sort((a, b) => b.unique_key_number - a.unique_key_number);;
     } catch (error) {
-      return`Could not fetch contract count ${error}`;
+      return `Could not fetch contract count ${error}`;
     }
   }
   // Find contracts based on a query with pagination and sorting by createdAt
@@ -53,9 +53,10 @@ module.exports = class contractService {
   }
 
   // Get the latest contract based on unique_key_number
-  static async getContractsCountNew() {
+  static async getContractsCountNew(query) {
     try {
-      const count = await contract.find().sort({ unique_key_number: -1 }).limit(1);
+      let queryCheck = query ? query : {}
+      const count = await contract.find(queryCheck).sort({ unique_key_number: -1 }).limit(1);
       return count;
     } catch (error) {
       return `Could not fetch contract count: ${error}`;
@@ -107,6 +108,26 @@ module.exports = class contractService {
   static async updateContract(criteria, data, option) {
     try {
       const updatedResponse = await contract.findOneAndUpdate(criteria, data, option);
+
+      return updatedResponse;
+    } catch (error) {
+      return `Could not update contract: ${error}`;
+    }
+  }
+
+  static async updateManyContract(criteria, data, option) {
+    try {
+      const updatedResponse = await contract.updateMany(criteria, data, option);
+
+      return updatedResponse;
+    } catch (error) {
+      return `Could not update contract: ${error}`;
+    }
+  }
+
+  static async deleteManyContract(criteria) {
+    try {
+      const updatedResponse = await contract.deleteMany(criteria);
 
       return updatedResponse;
     } catch (error) {

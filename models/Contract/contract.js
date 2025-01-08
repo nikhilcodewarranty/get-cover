@@ -30,8 +30,8 @@ const contractSchema = new mongoose.Schema({
     default: ''
   },
   coverageType: {
-    type: String,
-    default: ''
+    type: [],
+    default: []
   },
   partsWarranty: {
     type: Date,
@@ -60,6 +60,25 @@ const contractSchema = new mongoose.Schema({
     type: String,
     index: true,
   },
+  adhDays: {
+    type: [
+      {
+        value: {
+          type: String
+        },
+        waitingDays: {
+          type: Number
+        },
+        deductible: {
+          type: Number
+        },
+        amountType: {
+          type: String,
+          enum: ["amount", "percentage"]
+        }
+      }
+    ]
+  },
   productValue: {
     type: String,
   },
@@ -69,7 +88,7 @@ const contractSchema = new mongoose.Schema({
   },
   regDate: {
     type: Date,
-    default: Date.now()
+    default: () => Date.now()
   },
   condition: {
     type: String,
@@ -93,9 +112,17 @@ const contractSchema = new mongoose.Schema({
   },
   coverageStartDate: {
     type: Date,
-    default: Date.now(),
+    default: () => Date.now(),
   },
   coverageEndDate: {
+    type: Date,
+    default: '',
+  },
+  coverageStartDate1: {
+    type: Date,
+    default: () => Date.now(),
+  },
+  coverageEndDate1: {
     type: Date,
     default: '',
   },
@@ -111,6 +138,31 @@ const contractSchema = new mongoose.Schema({
     type: String,
     enum: ['Active', 'Waiting', 'Expired', 'Cancelled', 'Refunded', 'Inactive'],
     default: 'Waiting'
+  },
+  noOfClaimPerPeriod: {
+    type: Number,
+    default: 0
+  },
+  noOfClaim: {
+    type: {
+      period: {
+        type: String,
+        enum: ["Monthly", "Annually"],
+        default: "Monthly"
+      },
+      value: {
+        type: Number,
+        default: -1
+      }
+    },
+  },
+  isManufacturerWarranty: {
+    type: Boolean,
+    default: false
+  },
+  isMaxClaimAmount: {
+    type: Boolean,
+    default: false
   },
   isDeleted: {
     type: Boolean,

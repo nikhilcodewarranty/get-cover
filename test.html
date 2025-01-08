@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coverage Form</title>
+</head>
+<body>
+    <h1>Coverage Form</h1>
+    <form id="coverageForm" action="/submit-coverage" method="POST">
+        <label for="date">Date:</label>
+        <input type="date" id="date" name="date" required><br><br>
+
+        <label for="isManufacturer">Is Manufacturer:</label>
+        <input type="checkbox" id="isManufacturer" name="isManufacturer"><br><br>
+
+        <label for="coverageStartdate">Coverage Start Date:</label>
+        <input type="date" id="coverageStartdate" name="coverageStartdate" required><br><br>
+
+        <label for="purchasedate">Purchase Date:</label>
+        <input type="date" id="purchasedate" name="purchasedate" required><br><br>
+
+        <label for="partMonths">Part Months:</label>
+        <input type="number" id="partMonths" name="partMonths" required><br><br>
+
+        <label for="labourMonths">Labour Months:</label>
+        <input type="number" id="labourMonths" name="labourMonths" required><br><br>
+
+        <label for="noOfclaimTotal">Number of Claims Total:</label>
+        <input type="number" id="noOfclaimTotal" name="noOfclaimTotal" required><br><br>
+
+        <label for="noOfclaimMonthly">Number of Claims Monthly:</label>
+        <input type="number" id="noOfclaimMonthly" name="noOfclaimMonthly" required><br><br>
+
+        <label for="takenClaimThisMonth">Taken Claim This Month:</label>
+        <input type="number" id="takenClaimThisMonth" name="takenClaimThisMonth" required><br><br>
+
+        <h3>Adh (Breakdown)</h3>
+        <label for="adhDays">Days:</label>
+        <input type="number" id="adhDays" name="adhDays" required><br><br>
+
+        <label for="adhDeductible">Deductible Amount:</label>
+        <input type="number" id="adhDeductible" name="adhDeductible" required><br><br>
+
+        <h3>Accidental</h3>
+        <label for="accidentalDays">Days:</label>
+        <input type="number" id="accidentalDays" name="accidentalDays" required><br><br>
+
+        <label for="accidentalDeductible">Deductible Amount:</label>
+        <input type="number" id="accidentalDeductible" name="accidentalDeductible" required><br><br>
+
+        <button type="submit">Submit</button>
+    </form>
+
+    <script>
+        // You can add client-side JavaScript to handle form validation, etc., if needed.
+    </script>
+</body>
+</html>

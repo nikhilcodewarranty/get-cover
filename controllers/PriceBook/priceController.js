@@ -5,6 +5,7 @@ const dealerService = require("../../services/Dealer/dealerService");
 const orderService = require("../../services/Order/orderService");
 const userService = require("../../services/User/userService");
 const dealerPriceService = require("../../services/Dealer/dealerPriceService");
+const eligibilityService = require("../../services/Dealer/eligibilityService");
 const constant = require("../../config/constant");
 const randtoken = require('rand-token').generator()
 const mongoose = require('mongoose');
@@ -13,6 +14,50 @@ const supportingFunction = require('../../config/supportingFunction')
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey('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 ');
 const emailConstant = require('../../config/emailConstant');
+const multer = require('multer');
+const path = require('path');
+
+//multer file upload 
+const { S3Client } = require('@aws-sdk/client-s3');
+const XLSX = require("xlsx");
+
+const aws = require('aws-sdk');
+const { Upload } = require('@aws-sdk/lib-storage');
+const multerS3 = require('multer-s3');
+const terms = require("../../models/User/terms");
+const options = require("../../models/User/options");
+aws.config.update({
+  accessKeyId: process.env.aws_access_key_id,
+  secretAccessKey: process.env.aws_secret_access_key,
+});
+const S3Bucket = new aws.S3();
+// s3 bucket connections
+const s3 = new S3Client({
+  region: process.env.region,
+  credentials: {
+    accessKeyId: process.env.aws_access_key_id,
+    secretAccessKey: process.env.aws_secret_access_key,
+  }
+});
+const folderName = 'companyPriceBook'; // Replace with your specific folder name
+const StorageP = multerS3({
+  s3: s3,
+  bucket: process.env.bucket_name,
+  metadata: (req, file, cb) => {
+    cb(null, { fieldName: file.fieldname });
+  },
+  key: (req, file, cb) => {
+    const fileName = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
+    const fullPath = `${folderName}/${fileName}`;
+    cb(null, fullPath);
+  }
+});
+var uploadP = multer({
+  storage: StorageP,
+  limits: {
+    fileSize: 500 * 1024 * 1024, // 500 MB limit
+  },
+}).single('companyPriceBook');
 //------------- price book api's------------------//
 
 //get all price books
@@ -30,10 +75,17 @@ exports.getAllPriceBooks = async (req, res, next) => {
     let catIdsArray = getCatIds.map(category => category._id)
     let searchName = req.body.name ? req.body.name.replace(/\s+/g, ' ').trim() : ''
     let searchName1 = req.body.pName ? req.body.pName.replace(/\s+/g, ' ').trim() : ''
-    let filterStatus = (data.status === true || data.status === false) ? (data.status === true ? true : false) : ""
+    console.log(typeof (data.status))
+    let filterStatus = (data.status === "true" || data.status === "false") ? (data.status === "true" ? true : false) : ""
     data.status = typeof (filterStatus) == "string" ? "all" : filterStatus
     let query;
-
+    if (!Array.isArray(data.coverageType) && data.coverageType != '') {
+      res.send({
+        code: constant.errorCode,
+        message: "Coverage type should be an array!"
+      });
+      return;
+    }
     if (data.status != "all") {
       if (data.coverageType != "") {
         query = {
@@ -58,12 +110,14 @@ exports.getAllPriceBooks = async (req, res, next) => {
         };
       }
 
-    } else if (data.coverageType != "") {
+    }
+    else if (data.coverageType.length > 0) {
       query = {
         $and: [
           { isDeleted: false },
           { 'pName': { '$regex': searchName1, '$options': 'i' } },
-          { 'coverageType': data.coverageType },
+          { "coverageType.value": { "$all": data.coverageType } },
+          { "coverageType": { "$size": data.coverageType.length } },
           { 'name': { '$regex': searchName, '$options': 'i' } },
           { 'category': { $in: catIdsArray } }
         ]
@@ -74,11 +128,13 @@ exports.getAllPriceBooks = async (req, res, next) => {
           { isDeleted: false },
           { 'pName': { '$regex': searchName1, '$options': 'i' } },
           { 'name': { '$regex': searchName, '$options': 'i' } },
-          { 'category': { $in: catIdsArray } }
+          { 'category': { $in: catIdsArray } },
+          //  { 'status': data.status },
+
+
         ]
       };
     }
-    // return;
     if (data.term != '') {
       query.$and.push({ 'term': Number(data.term) });
     }
@@ -162,6 +218,8 @@ exports.getAllActivePriceBook = async (req, res) => {
 exports.createPriceBook = async (req, res, next) => {
   try {
     let data = req.body
+    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+    const base_url = `${process.env.SITE_URL}`
 
     if (req.role != "Super Admin") {
       res.send({
@@ -238,32 +296,56 @@ exports.createPriceBook = async (req, res, next) => {
       })
     } else {
       // Send notification when create
-      let IDs = await supportingFunction.getUserIds()
+      const adminPriceBookQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "adminNotification.priceBookAdd": true },
+              { status: true },
+              {
+                $or: [
+                  { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
+                ]
+              }
+            ]
+          }
+        },
+      }
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminPriceBookQuery, { email: 1 })
+      const IDs = adminUsers.map(user => user._id)
       let notificationData = {
-        title: "Price Book Created",
-        description: "The priceBook " + data.name + " created successfully.",
+        title: "New GetCover Pricebook Added",
+        description: `A new GetCover Pricebook ${data.pName} has been added under category ${checkCat.name} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
         userId: req.userId,
         contentId: savePriceBook._id,
         flag: 'priceBook',
+        endPoint: base_url + "companyPriceBook/" + data.name,
+        redirectionId: "/companyPriceBook/" + data.name,
         notificationFor: IDs
       };
       let createNotification = await userService.createNotification(notificationData);
 
       // Send Email code here
-      let notificationEmails = await supportingFunction.getUserEmails();
+      let notificationEmails = adminUsers.map(user => user.email)
       //Get Website Setting
       const settingData = await userService.getSetting({});
-      const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
+      priceBookData.category = checkCat.name
+      priceBookData.coverageType = data.coverageType.map(item => item.label).join(', ');
+      const admin = await userService.getSingleUserByEmail({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), status: true } } }, {})
       let emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: admin.firstName,
-        content: "The priceBook " + data.name + " created successfully! effective immediately.",
+        priceBookData: priceBookData,
+        senderName: "Admin",
+        content: `A new company pricebook ${data.pName} has been added with the following data:`,
         subject: "Create Price Book"
       }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+
+
+
+      let mailing = sgMail.send(emailConstant.sendPriceBookNotification(notificationEmails, [], emailData))
       let logData = {
         userId: req.teammateId,
         endpoint: "price/createPriceBook",
@@ -303,11 +385,24 @@ exports.createPriceBook = async (req, res, next) => {
 exports.getPriceBookById = async (req, res, next) => {
   try {
     let query = { _id: new mongoose.Types.ObjectId(req.params.priceBookId) }
-    //
     let projection = { isDeleted: 0, __v: 0 }
     const singlePriceBook = await priceBookService.getPriceBookById(
       query, projection
     );
+
+    singlePriceBook[0].optionDropdown = [];
+
+    // Iterate through each coverageType item
+    singlePriceBook[0].coverageType.forEach(coverageItem => {
+      // Check against each option's value array
+      singlePriceBook[0].options.forEach(option => {
+        const matchingValue = option.value.find(optValue => optValue.value === coverageItem.value);
+        if (matchingValue) {
+          // Push the matching option into the coverageType1 array
+          singlePriceBook[0].optionDropdown.push(matchingValue);
+        }
+      });
+    });
     if (!singlePriceBook) {
       res.send({
         code: constant.errorCode,
@@ -504,20 +599,54 @@ exports.updatePriceBookById = async (req, res, next) => {
     }
 
     // Send notification when updated
-    let IDs = await supportingFunction.getUserIds()
-    let notificationData = {
-      title: "Price Book Updated",
-      description: existingPriceBook[0]?.name + " " + "has been successfully updated",
+    const adminPriceUpdateQuery = {
+      metaData: {
+        $elemMatch: {
+          $and: [
+            { "adminNotification.priceBookUpdate": true },
+            { status: true },
+            {
+              $or: [
+                { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
+              ]
+            }
+          ]
+        }
+      },
+    }
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminPriceUpdateQuery, { email: 1 })
+    const IDs = adminUsers.map(user => user._id)
+    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+    const base_url = `${process.env.SITE_URL}`
+    let notificationData
+    if (req.body.priceType) {
+     notificationData = {
+      title: "GetCover Pricebook updated",
+      description: `GetCover Pricebook ${existingPriceBook[0]?.pName} has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
       userId: req.userId,
       flag: 'priceBook',
-      notificationFor: IDs
+      notificationFor: IDs,
+      endPoint: base_url + "companyPriceBook/" + existingPriceBook[0]?.name,
+      redirectionId: "companyPriceBook/" + existingPriceBook[0]?.name
     };
-
+  }
+  else{
+    notificationData = {
+      title: "GetCover Pricebook Status Updated",
+      description: `GetCover Pricebook ${existingPriceBook[0]?.pName} status has been updated to ${body.status ? 'Active' : "Inactive"} by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+      userId: req.userId,
+      flag: 'priceBook',
+      notificationFor: IDs,
+      endPoint: base_url + "companyPriceBook/" + existingPriceBook[0]?.name,
+      redirectionId: "companyPriceBook/" + existingPriceBook[0]?.name
+    };
+  }
     let createNotification = await userService.createNotification(notificationData);
 
     // Send Email code here
-    let notificationEmails = await supportingFunction.getUserEmails();
-    const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
+    let notificationEmails = adminUsers.map(user => user.email)
+    const admin = await userService.getSingleUserByEmail({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), status: true } } }, {})
+
     //Get Website Setting
     const settingData = await userService.getSetting({});
     let emailData;
@@ -527,9 +656,10 @@ exports.updatePriceBookById = async (req, res, next) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: admin.firstName,
-        content: "The priceBook " + existingPriceBook[0]?.name + " updated successfully! effective immediately.",
-        subject: "Update Price Book"
+        senderName: "Dear Admin",
+        content: `A company Pricebook ${existingPriceBook[0]?.pName} has been updated. To view the changes, please click here."`,
+        subject: "Update Price Book",
+        redirectId: base_url + "companyPriceBook/" + existingPriceBook[0]?.name
       }
     }
     else {
@@ -538,12 +668,13 @@ exports.updatePriceBookById = async (req, res, next) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: admin.firstName,
-        content: "The priceBook " + existingPriceBook[0]?.name + " has been changed to " + body.status ? 'Active' : "Inactive" + "! effective immediately.",
-        subject: "Update Status"
+        senderName: "Dear Admin",
+        content: `The Company Pricebook ${existingPriceBook[0]?.pName} has been made ${body.status ? 'Active' : "Inactive"} in the system. To review the changes, please click here."`,
+        subject: "Update Status",
+        redirectId: base_url + "companyPriceBook/" + existingPriceBook[0]?.name
       }
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "", emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "noreply@getcover.com", emailData))
     let logData = {
       userId: req.teammateId,
       endpoint: "price/updatePriceBook",
@@ -663,31 +794,52 @@ exports.createPriceBookCat = async (req, res) => {
       });
       return;
     }
+    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+    const base_url = `${process.env.SITE_URL}`
     // save notification for create category
-    let IDs = await supportingFunction.getUserIds()
+    const adminCategoryQuery = {
+      metaData: {
+        $elemMatch: {
+          $and: [
+            { "adminNotification.categoryAdded": true },
+            { status: true },
+            {
+              $or: [
+                { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
+              ]
+            }
+          ]
+        }
+      },
+    }
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminCategoryQuery, { email: 1 })
+    const IDs = adminUsers.map(user => user._id)
     let notificationData = {
-      title: "New Category Created",
-      description: req.body.name + " " + "has been successfully created",
+      title: "New Pricebook Category Added",
+      description: `A new Pricebook Category ${req.body.name} has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
       userId: req.userId,
       flag: 'category',
+      endPoint: base_url + "category",
+      redirectionId: "/category",
       notificationFor: IDs
     };
     let createNotification = await userService.createNotification(notificationData);
 
     // Send Email code here
-    let notificationEmails = await supportingFunction.getUserEmails();
+    let notificationEmails = adminUsers.map(user => user.email)
     const settingData = await userService.getSetting({});
-    const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
+    const admin = await userService.getSingleUserByEmail({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true } } }, {})
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: admin.firstName,
-      content: "The category " + data.name + " created successfully! effective immediately.",
+      senderName: "Dear Admin",
+
+      content: `A new Price Book Category ${data.name} has been added to the system by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
       subject: "New Category Added"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
 
     let logData = {
       userId: req.teammateId,
@@ -787,32 +939,59 @@ exports.getActivePriceBookCategories = async (req, res) => {
         return;
       }
     }
+
     let query1 = { _id: new mongoose.Types.ObjectId(ID) }
+
     let getPriceBook = await priceBookService.getPriceBookById(query1, {})
     let coverageType = data.coverageType ? data.coverageType : getDealer?.coverageType
+
+
     let queryPrice;
     queryPrice = {
       $and: [
         { status: true },
-        { coverageType: coverageType }
       ]
     }
-    if (coverageType == "Breakdown & Accidental") {
-      queryPrice = { status: true }
-    } else {
+    if (coverageType) {
+      const optionQuery = {
+        value: {
+          $elemMatch: {
+            value: { $in: coverageType }
+          }
+        }
+      }
+      const dynamicOption = await userService.getOptions(optionQuery)
+
+      const filteredOptions = dynamicOption.value
+        .filter(item => !coverageType.includes(item.value))
+        .map(item => item.value);
       queryPrice = {
         $and: [
           { status: true },
-          { coverageType: coverageType }
+          {
+            "coverageType.value": {
+              $in: coverageType
+            }
+          },
+          {
+            "coverageType.value": {
+              $nin: filteredOptions
+            }
+          }
         ]
       }
+
+
     }
 
     let getPriceBook1 = await priceBookService.getAllPriceIds(queryPrice, {})
+
+
     let catIds = getPriceBook1.map(catId => new mongoose.Types.ObjectId(catId.category))
+
     let query;
 
-    if (!data.coverageType) {
+    if (!coverageType) {
       query = {
         $and: [
           { status: true },
@@ -931,30 +1110,67 @@ exports.updatePriceBookCat = async (req, res) => {
       }
     }
     // Send notification when update
-    let IDs = await supportingFunction.getUserIds()
-    let notificationData = {
-      title: "Category Updated",
-      description: "The category " + data.name + " updated successfully!",
-      userId: req.userId,
-      contentId: req.params.catId,
-      flag: 'category',
-      notificationFor: IDs
-    };
+    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+    const base_url = `${process.env.SITE_URL}`
+    const adminUpdateCategoryQuery = {
+      metaData: {
+        $elemMatch: {
+          $and: [
+            { "adminNotification.categoryUpdate": true },
+            { status: true },
+            {
+              $or: [
+                { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
+              ]
+            }
+          ]
+        }
+      },
+    }
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdateCategoryQuery, { email: 1 })
+    const IDs = adminUsers.map(user => user._id)
+    let notificationData;
+    if (isValid.status == data.status) {
+      notificationData = {
+        title: "Pricebook Category Updated",
+        description: `Pricebook Category ${data.name} has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        userId: req.userId,
+        contentId: req.params.catId,
+        flag: 'category',
+        notificationFor: IDs,
+        endPoint: base_url + "category",
+        redirectionId: "/category"
+      };
+    }
+    else {
+      notificationData = {
+        title: "Pricebook Category Status Updated",
+        description: `Pricebook Category ${isValid.name} status has been updated to ${data.status == true ? "Active" : "Inactive"} ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        userId: req.userId,
+        contentId: req.params.catId,
+        flag: 'category',
+        notificationFor: IDs,
+        endPoint: base_url + "category",
+        redirectionId: "/category"
+      };
+    }
+
     let createNotification = await userService.createNotification(notificationData);
     // Send Email code here
-    let notificationEmails = await supportingFunction.getUserEmails();
+    let notificationEmails = adminUsers.map(user => user.email)
     const settingData = await userService.getSetting({});
-    const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
+    const admin = await userService.getSingleUserByEmail({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true } } }, {})
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: admin.firstName,
-      content: "The category " + data.name + " updated successfully! effective immediately.",
+      senderName: "Dear Admin",
+
+      content: "The category " + data.name + " updated successfully.",
       subject: "Update Category"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
     let logData = {
       userId: req.teammateId,
       endpoint: "price/updatePricebookCat",
@@ -1100,29 +1316,177 @@ exports.getPriceBookByCategoryId = async (req, res) => {
     }
     let limit = req.body.limit ? req.body.limit : 10000
     let page = req.body.page ? req.body.page : 1
+
     let queryFilter
-    if (data.coverageType == "Breakdown & Accidental") {
+    // queryFilter = {
+    //   $and: [
+    //     { status: true }
+    //   ]
+    // }
+
+    // const dynamicOption = await userService.getOptions(optionQuery)
+    // const filteredOptions = dynamicOption.value.filter(item => coverageType.includes(item.value));
+
+    if (data.coverageType) {
+      let coverageType = data.coverageType
+      const optionQuery = {
+        value: {
+          $elemMatch: {
+            value: { $in: coverageType }
+          }
+        }
+      }
+      const dynamicOption = await userService.getOptions(optionQuery)
+      const filteredOptions = dynamicOption.value
+        .filter(item => !coverageType.includes(item.value))
+        .map(item => item.value);
+
       queryFilter = {
         $and: [
           { category: new mongoose.Types.ObjectId(req.params.categoryId) },
+          {
+            "coverageType.value": {
+              $in: coverageType
+            }
+          },
+          {
+            "coverageType.value": {
+              $nin: filteredOptions
+            }
+          },
           { status: true }
         ]
       }
-    } else {
-      queryFilter = {
-        $and: [
-          { category: new mongoose.Types.ObjectId(req.params.categoryId) },
-          { coverageType: data.coverageType },
-          { status: true }
-        ]
-      };
     }
+
     let fetchPriceBooks = await priceBookService.getAllPriceBook(queryFilter, { __v: 0 }, limit, page)
     res.send({
       code: constant.successCode,
       message: 'Data fetched successfully',
       result: {
         priceBooks: fetchPriceBooks ? fetchPriceBooks : []
+      }
+    })
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+//Get coverage type by price book
+exports.getCoverageType = async (req, res) => {
+  try {
+    let data = req.body
+    let priceBookId = { _id: req.params.priceBookId }
+    // check the request is having price book  or not
+    let checkPriceBook = await priceBookService.findByName1(priceBookId)
+    if (!checkPriceBook) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid Price Book"
+      })
+      return;
+    }
+    const coverageType = checkPriceBook.coverageType.map(item => item.value)
+    // Get ADh value from the dealer
+    const dealerData = await dealerService.getDealerByName({ _id: data.dealerId })
+    const optionQuery = {
+      value: {
+        $elemMatch: {
+          value: { $in: coverageType }
+        }
+      }
+    }
+    const dynamicOption = await userService.getOptions(optionQuery)
+
+    const filteredOptions = dynamicOption.value.filter(item => coverageType.includes(item.value));
+
+    const adhDays = dealerData.adhDays;
+    const mergedData = adhDays.map(adh => {
+      const match = filteredOptions.find(opt => opt.value === adh.label);
+      if (match) {
+        return { label: match.label, value: match.value, waitingDays: adh.value, deductible: adh.value1, amountType: adh.amountType }
+
+      }
+
+      return adh;
+    });
+
+    res.send({
+      code: constant.successCode,
+      message: 'Data fetched successfully',
+      result: mergedData
+    })
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.getCoverageTypeAndAdhDays = async (req, res) => {
+  try {
+    let data = req.body
+    let priceBookId = { _id: req.params.priceBookId }
+    // check the request is having price book  or not
+    let checkPriceBook = await priceBookService.findByName1(priceBookId)
+    if (!checkPriceBook) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid Price Book"
+      })
+      return;
+    }
+    const coverageType = checkPriceBook.coverageType.map(item => item.value)
+    // Get ADh value from the dealer
+    // console.log("coverageType0000000000000000000000",coverageType)
+    const dealerData = await dealerService.getDealerByName({ _id: data.dealerId }, { adhDays: 1, })
+    const optionQuery = {
+      value: {
+        $elemMatch: {
+          value: { $in: coverageType }
+        }
+      }
+    }
+
+    const dynamicOption = await userService.getOptions(optionQuery)
+    const filteredOptions = dynamicOption.value.filter(item => coverageType.includes(item.value));
+    const adhDays = dealerData.adhDays;
+    // const mergedData = adhDays.map(adh => {
+    //   const match = filteredOptions.find(opt => opt.value === adh.label);
+    //   if (match) {
+    //     return { label: match.label, value: match.value, waitingDays: adh.waitingDays, deductible: adh.deductible, amountType: adh.amountType }
+
+    //   }
+
+    //   return adh;
+    // });
+
+    const mergedData = filteredOptions.map(filter => {
+      const match = adhDays.find(opt => opt.value === filter.value);
+      if (match) {
+        return { label: filter.label, value: filter.value, waitingDays: match.waitingDays, deductible: match.deductible, amountType: match.amountType }
+
+      }
+
+      return filter;
+    });
+
+    const eligibilityCriteria = await eligibilityService.getEligibility({ userId: data.dealerId });
+
+    res.send({
+      code: constant.successCode,
+      message: 'Data fetched successfully',
+      result: {
+        dealerData: dealerData,
+        eligibilityCriteria: eligibilityCriteria ? eligibilityCriteria : {},
+        priceBook: checkPriceBook,
+        mergedData
+
+
       }
     })
   } catch (err) {
@@ -1169,4 +1533,719 @@ exports.getCategoryByPriceBook = async (req, res) => {
   }
 }
 
+//Get File data from S3 bucket
+const getObjectFromS3 = (bucketReadUrl) => {
+  return new Promise((resolve, reject) => {
+    S3Bucket.getObject(bucketReadUrl, (err, data) => {
+      if (err) {
+        reject(err);
+      } else {
+        const wb = XLSX.read(data.Body, { type: 'buffer' });
+        const sheetName = wb.SheetNames[0];
+        const sheet = wb.Sheets[sheetName];
+        let headers = [];
+
+        for (let cell in sheet) {
+          if (
+            /^[A-Z]1$/.test(cell) &&
+            sheet[cell].v !== undefined &&
+            sheet[cell].v !== null &&
+            sheet[cell].v.trim() !== ""
+          ) {
+            headers.push(sheet[cell].v);
+          }
+        }
+
+        const result = {
+          headers: headers,
+          data: XLSX.utils.sheet_to_json(sheet, { defval: "" }),
+        };
+
+        resolve(result);
+      }
+    });
+  });
+};
+
+//upload  price book
+exports.uploadRegularPriceBook = async (req, res) => {
+  try {
+    uploadP(req, res, async (err) => {
+      let file = req.file;
+      let data = req.body
+      if (!file || !data.priceType) {
+        res.send({
+          code: constant.errorCode,
+          message: "File and price type is required"
+        })
+        return
+      }
+      const bucketReadUrl = { Bucket: process.env.bucket_name, Key: file.key };
+      // Await the getObjectFromS3 function to complete
+      const result = await getObjectFromS3(bucketReadUrl);
+      let responseData = result.data;
+      const headers = result.headers
+
+      if (data.priceType == "Regular Pricing") {
+        //check the header of file
+        if (headers.length !== 10) {
+          res.send({
+            code: constant.errorCode,
+            message: "Invalid file format detected. The sheet should contain exactly three columns."
+          })
+          return
+        }
+        // updating the key names 
+        let totalDataComing = responseData.map(item => {
+          let keys = Object.keys(item);
+          return {
+            category: item[keys[0]].trim().replace(/\s+/g, ' '),  // First key's value
+            name: item[keys[1]].trim().replace(/\s+/g, ' '),   // Second key's value
+            pName: item[keys[2]].trim().replace(/\s+/g, ' '),  // Third key's value
+            description: item[keys[3]].trim().replace(/\s+/g, ' '),   // Second key's value
+            frontingFee: item[keys[4]],   // Second key's value
+            reinsuranceFee: item[keys[5]],   // Second key's value
+            reserveFutureFee: item[keys[6]],   // Second key's value
+            adminFee: item[keys[7]],   // Second key's value
+            coverageType: item[keys[8]],   // Second key's value
+            term: item[keys[9]],   // Second key's value
+          };
+        });
+        const totalDataOriginal = responseData.map(item => {
+          let keys = Object.keys(item);
+          return {
+            Category: item[keys[0]],  // First key's value
+            "Product Sku": item[keys[1]],   // Second key's value
+            "Product Name": item[keys[2]],  // Third key's value
+            Description: item[keys[3]],   // Second key's value
+            "Fronting Fee": item[keys[4]],   // Second key's value
+            "Reinsaurance Fee": item[keys[5]],   // Second key's value
+            "Reserve Future Fee": item[keys[6]],   // Second key's value
+            "Admin Fee": item[keys[7]],   // Second key's value
+            "Coverage Type": item[keys[8]],   // Second key's value
+            Term: item[keys[9]],    // Second key's value
+          };
+        });
+
+        for (let c = 0; c < totalDataComing.length; c++) {
+
+          totalDataComing[c].inValid = false
+          totalDataComing[c].reason = "Success"
+          function convertToMonths(term) {
+            // Use a regular expression to extract the number and the unit (year/years)
+            const match = term.match(/(\d+)\s*(year|years)/i);
+
+            if (match) {
+              const years = parseInt(match[1], 10);  // Extract the number of years
+              const months = years * 12;             // Convert years to months
+              return months;
+            } else {
+              totalDataComing[c].inValid = true
+              totalDataComing[c].reason = "Invalid term"
+              console.log("term invalid ");
+            }
+          }
+          let category = totalDataComing[c].category;
+          let name = totalDataComing[c].name;
+          let term = convertToMonths(totalDataComing[c].term);
+          let coverageType = totalDataComing[c].coverageType;
+          let catSearch = new RegExp(`^${category}$`, 'i');
+          let priceNameSearch = new RegExp(`^${name}$`, 'i');
+          let checkCategory = await priceBookService.getPriceCatByName({ name: catSearch })
+          if (!checkCategory) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Invalid category"
+          }
+          let checkPriceBook = await priceBookService.findByName1({ name: { '$regex': new RegExp(`^${name}$`, 'i') } })
+          if (checkPriceBook) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Product sku already exist"
+          }
+          if (!name) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Product name required"
+          }
+          let checkTerms = await terms.findOne({ terms: term })
+          if (!checkTerms) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Invalid term"
+          }
+          coverageType = coverageType.split(',').map(type => type.trim());
+          coverageType = [...new Set(coverageType)]
+          // coverageType = ["breakdown", "accidental", "liquid_damage"]
+          let checkCoverageType = await options.findOne({ "value.label": { $all: coverageType }, "name": "coverage_type" })
+
+          if (!checkCoverageType) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Invalid coverage type"
+          }
+
+          totalDataComing[c].coverageType = coverageType
+          if (checkCoverageType) {
+            let mergedArray = coverageType.map(id => {
+              // Find a match in array2 based on id
+              let match = checkCoverageType.value.find(item2 => item2.label === id);
+
+              // Return the match only if found
+              // return match ? match :null; // If no match, return the id object
+              return match ? { label: match.label, value: match.value } : null; // If no match, return the id object
+            });
+            totalDataComing[c].coverageType = mergedArray
+
+          }
+          totalDataComing[c].category = checkCategory ? checkCategory._id : ""
+          totalDataComing[c].term = term
+          totalDataComing[c].priceType = "Regular Pricing"
+          totalDataComing[c].frontingFee = totalDataComing[c].frontingFee ? totalDataComing[c].frontingFee : 0
+          totalDataComing[c].reinsuranceFee = totalDataComing[c].reinsuranceFee ? totalDataComing[c].reinsuranceFee : 0
+          totalDataComing[c].reserveFutureFee = totalDataComing[c].reserveFutureFee ? totalDataComing[c].reserveFutureFee : 0
+          totalDataComing[c].adminFee = totalDataComing[c].adminFee ? totalDataComing[c].adminFee : 0
+          // totalDataComing[c].inValid = totalDataComing[c].description != "" ? false : true
+          // console.log("sldfjshfljhdf",totalDataComing[c],"======",totalDataComing[c].description,"++++++++++++")
+          // totalDataComing[c].reason = totalDataComing[c].description != "" ? "" : "Description is required"
+          // totalDataComing[c].inValid = totalDataComing[c].pName != "" ? false : true
+          // totalDataComing[c].reason = totalDataComing[c].pName != "" ? "" : "Product name is required"
+          if (!totalDataComing[c].description || !totalDataComing[c].pName) {
+            totalDataComing[c].reason = "Product name and description both are required"
+            totalDataComing[c].inValid = true
+          }
+
+          if (!totalDataComing[c].inValid) {
+            let createCompanyPriceBook = await priceBookService.createPriceBook(totalDataComing[c])
+          }
+        }
+
+        function convertArrayToHTMLTable(array) {
+          const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');
+          const rows = array.map(obj => {
+            const values = Object.values(obj).map(value => `<td>${value}</td>`);
+            values[2] = `${values[2]}`;
+            return values.join('');
+          });
+
+          const htmlContent = `<html>
+              <head>
+                  <style>
+                      table {
+                          border-collapse: collapse;
+                          width: 100%; 
+                      }
+                      th, td {
+                          border: 1px solid #dddddd;
+                          text-align: left;
+                          padding: 8px;
+                      }
+                      th {
+                          background-color: #f2f2f2;
+                      }
+                  </style>
+              </head>
+              <body>
+                  <table>
+                      <thead><tr>${header}</tr></thead>
+                      <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
+                  </table>
+              </body>
+          </html>`;
+
+          return htmlContent;
+        }
+        let totalDataOriginal1 = totalDataOriginal.map((item) => {
+          let match = totalDataComing.find((secondItem) => secondItem.name === item["Product Sku"]);
+          if (match) {
+            // If match is found, add reason and status
+            return {
+              ...item,
+              reason: match.reason,
+              status: match.inValid ? 'Unsuccessful' : 'Successful'
+            };
+          }
+        });
+        const htmlTableString = convertArrayToHTMLTable(totalDataOriginal1);
+        const mailing = sgMail.send(emailConstant.sendPriceBookFile(("yashasvi@codenomad.net"), ["anil@codenomad.net"], htmlTableString));
+
+        res.send({
+          code: constant.successCode,
+          data: totalDataComing
+        })
+      } else if (data.priceType == "Flat Pricing") {
+        if (headers.length !== 12) {
+          res.send({
+            code: constant.errorCode,
+            message: "Invalid file format detected. The sheet should contain exactly three columns."
+          })
+          return
+        }
+
+        // updating the key names 
+        let totalDataComing = responseData.map(item => {
+          let keys = Object.keys(item);
+          return {
+            category: item[keys[0]].trim().replace(/\s+/g, ' '),  // First key's value
+            name: item[keys[1]],   // Second key's value
+            pName: item[keys[2]],  // Third key's value
+            description: item[keys[3]],   // Second key's value
+            frontingFee: item[keys[4]],   // Second key's value
+            reinsuranceFee: item[keys[5]],   // Second key's value
+            reserveFutureFee: item[keys[6]],   // Second key's value
+            adminFee: item[keys[7]],   // Second key's value
+            coverageType: item[keys[8]],   // Second key's value
+            term: item[keys[9]],   // Second key's value
+            rangeStart: item[keys[10]],   // Second key's value
+            rangeEnd: item[keys[11]],   // Second key's value
+          };
+        });
+
+        let totalDataOriginal = responseData.map(item => {
+          let keys = Object.keys(item);
+          return {
+            Category: item[keys[0]],  // First key's value
+            "Product Sku": item[keys[1]],   // Second key's value
+            "Product Name": item[keys[2]],  // Third key's value
+            Description: item[keys[3]],   // Second key's value
+            "Fronting Fee": item[keys[4]],   // Second key's value
+            "Reinsaurance Fee": item[keys[5]],   // Second key's value
+            "Reserve Future Fee": item[keys[6]],   // Second key's value
+            "Admin Fee": item[keys[7]],   // Second key's value
+            "Coverage Type": item[keys[8]],   // Second key's value
+            Term: item[keys[9]],   // Second key's value
+            "Range Start": item[keys[10]],   // Second key's value
+            "Range End": item[keys[11]],   // Second key's value
+          };
+        });
+
+
+
+
+        for (let c = 0; c < totalDataComing.length; c++) {
+
+          totalDataComing[c].inValid = false
+          totalDataComing[c].reason = "Success"
+          function convertToMonths(term) {
+            // Use a regular expression to extract the number and the unit (year/years)
+            const match = term.match(/(\d+)\s*(year|years)/i);
+
+            if (match) {
+              const years = parseInt(match[1], 10);  // Extract the number of years
+              const months = years * 12;             // Convert years to months
+              return months;
+            } else {
+              totalDataComing[c].inValid = true
+              totalDataComing[c].reason = "Invalid term"
+            }
+          }
+          let category = totalDataComing[c].category;
+          let name = totalDataComing[c].name;
+          let term = convertToMonths(totalDataComing[c].term);
+          let coverageType = totalDataComing[c].coverageType;
+          let catSearch = new RegExp(`^${category}$`, 'i');
+          let priceNameSearch = new RegExp(`^${name}$`, 'i');
+          let checkCategory = await priceBookService.getPriceCatByName({ name: catSearch })
+          if (!checkCategory) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Invalid category"
+          }
+          let checkPriceBook = await priceBookService.findByName1({ name: name })
+          if (checkPriceBook) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Product sku already exist"
+          }
+          console.log("name check ----------------------", name)
+          if (!name) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Product name required"
+          }
+          let checkTerms = await terms.findOne({ terms: term })
+          if (!checkTerms) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Invalid term"
+          }
+          coverageType = coverageType.split(',').map(type => type.trim());
+          coverageType = [...new Set(coverageType)]
+
+          // coverageType = ["breakdown", "accidental", "liquid_damage"]
+          let checkCoverageType = await options.findOne({ "value.label": { $all: coverageType }, "name": "coverage_type" })
+
+          if (!checkCoverageType) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Invalid coverage type"
+          }
+          totalDataComing[c].coverageType = coverageType
+          if (checkCoverageType) {
+
+            let mergedArray = coverageType.map(id => {
+              // Find a match in array2 based on id
+              let match = checkCoverageType.value.find(item2 => item2.label == id);
+
+              // Return the match only if found
+              // return match ? match :null; // If no match, return the id object
+              return match ? { label: match.label, value: match.value } : null; // If no match, return the id object
+            });
+            totalDataComing[c].coverageType = mergedArray
+
+          }
+          if (totalDataComing[c].rangeStart < 0 || !totalDataComing[c].rangeStart) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Invalid range start price"
+          }
+          if (totalDataComing[c].rangeEnd < 0 || !totalDataComing[c].rangeEnd || totalDataComing[c].rangeEnd < totalDataComing[c].rangeStart) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Invalid range end price"
+          }
+          totalDataComing[c].category = checkCategory ? checkCategory._id : ""
+          totalDataComing[c].term = term
+          totalDataComing[c].priceType = "Flat Pricing"
+          totalDataComing[c].frontingFee = totalDataComing[c].frontingFee ? totalDataComing[c].frontingFee : 0
+          totalDataComing[c].reinsuranceFee = totalDataComing[c].reinsuranceFee ? totalDataComing[c].reinsuranceFee : 0
+          totalDataComing[c].reserveFutureFee = totalDataComing[c].reserveFutureFee ? totalDataComing[c].reserveFutureFee : 0
+          totalDataComing[c].adminFee = totalDataComing[c].adminFee ? totalDataComing[c].adminFee : 0
+          // totalDataComing[c].inValid = totalDataComing[c].description != "" ? false : true
+          // console.log("sldfjshfljhdf",totalDataComing[c],"======",totalDataComing[c].description,"++++++++++++")
+          // totalDataComing[c].reason = totalDataComing[c].description != "" ? "" : "Description is required"
+          // totalDataComing[c].inValid = totalDataComing[c].pName != "" ? false : true
+          // totalDataComing[c].reason = totalDataComing[c].pName != "" ? "" : "Product name is required"
+          if (!totalDataComing[c].description || !totalDataComing[c].pName) {
+            totalDataComing[c].reason = "Product name and description both are required"
+            totalDataComing[c].inValid = true
+          }
+
+          if (!totalDataComing[c].inValid) {
+            let createCompanyPriceBook = await priceBookService.createPriceBook(totalDataComing[c])
+          }
+        }
+
+
+        function convertArrayToHTMLTable(array) {
+          const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');
+          const rows = array.map(obj => {
+            const values = Object.values(obj).map(value => `<td>${value}</td>`);
+            values[2] = `${values[2]}`;
+            return values.join('');
+          });
+
+          const htmlContent = `<html>
+              <head>
+                  <style>
+                      table {
+                          border-collapse: collapse;
+                          width: 100%; 
+                      }
+                      th, td {
+                          border: 1px solid #dddddd;
+                          text-align: left;
+                          padding: 8px;
+                      }
+                      th {
+                          background-color: #f2f2f2;
+                      }
+                  </style>
+              </head>
+              <body>
+                  <table>
+                      <thead><tr>${header}</tr></thead>
+                      <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
+                  </table>
+              </body>
+          </html>`;
+
+          return htmlContent;
+        }
+        let totalDataOriginal1 = totalDataOriginal.map((item) => {
+          let match = totalDataComing.find((secondItem) => secondItem.name === item["Product Sku"]);
+          if (match) {
+            // If match is found, add reason and status
+            return {
+              ...item,
+              reason: match.reason,
+              status: match.inValid ? 'Unsuccessful' : 'Successful'
+            };
+          }
+        });
+        const htmlTableString = convertArrayToHTMLTable(totalDataOriginal1);
+        const mailing = sgMail.send(emailConstant.sendPriceBookFile(("yashasvi@codenomad.net"), ["noreply@getcover.com"], htmlTableString));
+
+
+        res.send({
+          code: constant.successCode,
+          data: totalDataComing
+        })
+
+      } else if (data.priceType == "Quantity Pricing") {
+        if (headers.length < 12) {
+          res.send({
+            code: constant.errorCode,
+            message: "Invalid file format detected. The sheet should contain exactly three columns."
+          })
+          return
+        }
+
+        let quantityPriceDetail = []
+        // updating the key names 
+        let totalDataComing = responseData.map(item => {
+          quantityPriceDetail = []
+
+          let keys = Object.keys(item);
+          for (let i = 0; i < (headers.length - 10) / 2; i++) { // Loop for creating 6 entries
+            if (item[keys[10 + (2 * i)]] != "" || item[keys[11 + (2 * i)]] != "") {
+              console.log(i, '++++++++++', item[keys[10 + i]], "----------------------", item[keys[11 + i]])
+              quantityPriceDetail.push({
+                name: item[keys[10 + (2 * i)]],       // Set the name value from item
+                quantity: item[keys[11 + (2 * i)]]   // Set the quantity value from item
+              });
+            }
+          }
+          return {
+            category: item[keys[0]].trim().replace(/\s+/g, ' '),  // First key's value
+            name: item[keys[1]],   // Second key's value
+            pName: item[keys[2]],  // Third key's value
+            description: item[keys[3]],   // Second key's value
+            frontingFee: item[keys[4]],   // Second key's value
+            reinsuranceFee: item[keys[5]],   // Second key's value
+            reserveFutureFee: item[keys[6]],   // Second key's value
+            adminFee: item[keys[7]],   // Second key's value
+            coverageType: item[keys[8]],   // Second key's value
+            term: item[keys[9]],   // Second key's value
+            quantityPriceDetail: quantityPriceDetail
+          };
+        });
+
+        let totalDataOriginal = responseData.map(item => {
+          quantityPriceDetail = []
+
+          let keys = Object.keys(item);
+          for (let i = 0; i < (headers.length - 10) / 2; i++) { // Loop for creating 6 entries
+            if (item[keys[10 + (2 * i)]] != "" || item[keys[11 + (2 * i)]] != "") {
+              console.log(i, '++++++++++', item[keys[10 + i]], "----------------------", item[keys[11 + i]])
+              quantityPriceDetail.push({
+                name: item[keys[10 + (2 * i)]],       // Set the name value from item
+                quantity: item[keys[11 + (2 * i)]]   // Set the quantity value from item
+              });
+            }
+          }
+          return {
+            Category: item[keys[0]],  // First key's value
+            "Product Sku": item[keys[1]],   // Second key's value
+            "Product Name": item[keys[2]],  // Third key's value
+            Description: item[keys[3]],   // Second key's value
+            "Fronting Fee": item[keys[4]],   // Second key's value
+            "Reinsaurance Fee": item[keys[5]],   // Second key's value
+            "Reserve Future Fee": item[keys[6]],   // Second key's value
+            "Admin Fee": item[keys[7]],   // Second key's value
+            "Coverage Type": item[keys[8]],   // Second key's value
+            Term: item[keys[9]],   // Second key's value
+            "Name 1": item[keys[10]],   // Second key's value
+            "Max Quantity 1": item[keys[11]],   // Second key's value
+            "Name 2": item[keys[12]],   // Second key's value
+            "Max Quantity 2": item[keys[13]],   // Second key's value
+            "Name 3": item[keys[14]],   // Second key's value
+            "Max Quantity 3": item[keys[15]],   // Second key's value
+            "Name 4": item[keys[16]],   // Second key's value
+            "Max Quantity 4": item[keys[17]],   // Second key's value
+            "Name 5": item[keys[18]],   // Second key's value
+            "Max Quantity 5": item[keys[19]],   // Second key's value
+            "Name 6": item[keys[20]],   // Second key's value
+            "Max Quantity 6": item[keys[21]],   // Second key's value
+            // quantityPriceDetail: quantityPriceDetail
+          };
+        });
+
+        for (let c = 0; c < totalDataComing.length; c++) {
+
+          totalDataComing[c].inValid = false
+          totalDataComing[c].reason = "Success"
+
+          // function to convert the year to months
+          function convertToMonths(term) {
+            // Use a regular expression to extract the number and the unit (year/years)
+            const match = term.match(/(\d+)\s*(year|years)/i);
+
+            if (match) {
+              const years = parseInt(match[1], 10);  // Extract the number of years
+              const months = years * 12;             // Convert years to months
+              return months;
+            } else {
+              totalDataComing[c].inValid = true
+              totalDataComing[c].reason = "Invalid term"
+            }
+          }
+
+          // function for quantity price item details
+          function validateQuantityPriceDetail(data) {
+            let invalidEntries = data.quantityPriceDetail.filter(item => {
+              return !item.name?.trim() || !item.quantity;
+            });
+
+            if (invalidEntries.length > 0) {
+              console.log("Error: Some entries have empty name or quantity values.");
+              return false;
+            }
+
+            console.log("All entries are valid.");
+            return true;
+          }
+
+          let category = totalDataComing[c].category;
+          let name = totalDataComing[c].name;
+          let term = convertToMonths(totalDataComing[c].term);
+          let coverageType = totalDataComing[c].coverageType;
+          let catSearch = new RegExp(`^${category}$`, 'i');
+          let priceNameSearch = new RegExp(`^${name}$`, 'i');
+          let checkCategory = await priceBookService.getPriceCatByName({ name: catSearch })
+          if (!checkCategory) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Invalid category"
+          }
+          let checkPriceBook = await priceBookService.findByName1({ name: name })
+          if (checkPriceBook) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Product sku already exist"
+          }
+          console.log("name check ----------------------", name)
+          if (!name) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Product name required"
+          }
+          let checkTerms = await terms.findOne({ terms: term })
+          if (!checkTerms) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Invalid term"
+          }
+          coverageType = coverageType.split(',').map(type => type.trim());
+          coverageType = [...new Set(coverageType)]
+
+          // coverageType = ["breakdown", "accidental", "liquid_damage"]
+          let checkCoverageType = await options.findOne({ "value.label": { $all: coverageType }, "name": "coverage_type" })
+
+          if (!checkCoverageType) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Invalid coverage type"
+          }
+          totalDataComing[c].coverageType = coverageType
+          if (checkCoverageType) {
+            let mergedArray = coverageType.map(id => {
+              // Find a match in array2 based on id
+              let match = checkCoverageType.value.find(item2 => item2.label === id);
+
+              // Return the match only if found
+              // return match ? match :null; // If no match, return the id object
+              return match ? { label: match.label, value: match.value } : null; // If no match, return the id object
+            });
+            totalDataComing[c].coverageType = mergedArray
+
+          }
+          if (!validateQuantityPriceDetail(totalDataComing[c])) {
+            totalDataComing[c].inValid = true
+            totalDataComing[c].reason = "Invalid quantity price items"
+          }
+
+          totalDataComing[c].category = checkCategory ? checkCategory._id : ""
+          totalDataComing[c].term = term
+          totalDataComing[c].priceType = "Quantity Pricing"
+          totalDataComing[c].frontingFee = totalDataComing[c].frontingFee ? totalDataComing[c].frontingFee : 0
+          totalDataComing[c].reinsuranceFee = totalDataComing[c].reinsuranceFee ? totalDataComing[c].reinsuranceFee : 0
+          totalDataComing[c].reserveFutureFee = totalDataComing[c].reserveFutureFee ? totalDataComing[c].reserveFutureFee : 0
+          totalDataComing[c].adminFee = totalDataComing[c].adminFee ? totalDataComing[c].adminFee : 0
+          // totalDataComing[c].inValid = totalDataComing[c].description != "" ? false : true
+          // console.log("sldfjshfljhdf",totalDataComing[c],"======",totalDataComing[c].description,"++++++++++++")
+          // totalDataComing[c].reason = totalDataComing[c].description != "" ? "" : "Description is required"
+          // totalDataComing[c].inValid = totalDataComing[c].pName != "" ? false : true
+          // totalDataComing[c].reason = totalDataComing[c].pName != "" ? "" : "Product name is required"
+          if (!totalDataComing[c].description || !totalDataComing[c].pName) {
+            totalDataComing[c].reason = "Product name and description both are required"
+            totalDataComing[c].inValid = true
+          }
+
+          if (!totalDataComing[c].inValid) {
+            let createCompanyPriceBook = await priceBookService.createPriceBook(totalDataComing[c])
+          }
+        }
+
+        function convertArrayToHTMLTable(array) {
+          const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');
+          const rows = array.map(obj => {
+            const values = Object.values(obj).map(value => `<td>${value}</td>`);
+            values[2] = `${values[2]}`;
+            return values.join('');
+          });
+
+          const htmlContent = `<html>
+              <head>
+                  <style>
+                      table {
+                          border-collapse: collapse;
+                          width: 100%; 
+                      }
+                      th, td {
+                          border: 1px solid #dddddd;
+                          text-align: left;
+                          padding: 8px;
+                      }
+                      th {
+                          background-color: #f2f2f2;
+                      }
+                  </style>
+              </head>
+              <body>
+                  <table>
+                      <thead><tr>${header}</tr></thead>
+                      <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
+                  </table>
+              </body>
+          </html>`;
+
+          return htmlContent;
+        }
+        let totalDataOriginal1 = totalDataOriginal.map((item) => {
+          console.log("item check ++++++++++++++++++++++++", item)
+          let match = totalDataComing.find((secondItem) => secondItem.name === item["Product Sku"]);
+          if (match) {
+            // If match is found, add reason and status
+            return {
+              ...item,
+              reason: match.reason,
+              status: match.inValid ? 'Unsuccessful' : 'Successful'
+            };
+          }
+        });
+        const htmlTableString = convertArrayToHTMLTable(totalDataOriginal1);
+        const mailing = sgMail.send(emailConstant.sendPriceBookFile(("yashasvi@codenomad.net"), ["anil@codenomad.net"], htmlTableString));
+
+        res.send({
+          code: constant.successCode,
+          data: totalDataComing
+        })
+      } else {
+        res.send({
+          code: constant.errorCode,
+          message: "Invalid price type "
+        })
+      }
+
+    })
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+//not using 
+exports.uploadCompanyPriceBook = async (req, res) => {
+  try {
+    let data = req.body
+
+    if (data.priceType == "Regular Price") {
+      let callApi = await uploadRegularPriceBook(req, res)
+      res.send({
+        callApi
+      })
+    }
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
 

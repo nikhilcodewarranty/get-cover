@@ -9,6 +9,46 @@ const notificationSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  dealerTitle: {
+    type: String,
+    default: ''
+  },
+  servicerTitle: {
+    type: String,
+    default: ''
+  },
+  customerTitle: {
+    type: String,
+    default: ''
+  },
+  adminTitle: {
+    type: String,
+    default: ''
+  },
+  resellerTitle: {
+    type: String,
+    default: ''
+  },
+  dealerMessage: {
+    type: String,
+    default: ''
+  },
+  servicerMessage: {
+    type: String,
+    default: ''
+  },
+  customerMessage: {
+    type: String,
+    default: ''
+  },
+  adminMessage: {
+    type: String,
+    default: ''
+  },
+  resellerMessage: {
+    type: String,
+    default: ''
+  },
   notificationFor: {
     type: [],
     default: []
@@ -37,7 +77,15 @@ const notificationSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  tabAction:{
+    type: String,
+    default: ''
+  },
   redirectionId: {
+    type: String,
+    default: ''
+  },
+  endPoint:{
     type: String,
     default: ''
   },

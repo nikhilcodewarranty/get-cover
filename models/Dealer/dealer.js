@@ -32,14 +32,14 @@ const dealarSchema = new mongoose.Schema({
   },
   country: {
     type: String,
-    default: '' 
+    default: ''
   },
   token: {
     type: String,
     default: ''
   },
   createdBy: {
-    type: String, 
+    type: String,
     default: ''
   },
   status: {
@@ -55,22 +55,41 @@ const dealarSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
- 
+
   isShippingAllowed: {
     type: Boolean,
     default: false
   },
-  isAccountCreate:{
-    type:Boolean,
-    default:true
-},
+  isAccountCreate: {
+    type: Boolean,
+    default: true
+  },
   serviceCoverageType: {
     type: String,
     default: ''
   },
   coverageType: {
-    type: String,
-    default: ''
+    type: [],
+    default: []
+  },
+  adhDays: {
+    type: [
+      {
+        value: {
+          type: String
+        },
+        waitingDays: {
+          type: Number
+        },
+        deductible: {
+          type: Number
+        },
+        amountType: {
+          type: String,
+          enum: ["amount", "percentage"]
+        }
+      }
+    ]
   },
   termCondition: {
     type: {},

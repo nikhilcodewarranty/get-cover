@@ -1,66 +1,20 @@
 const mongoose = require("mongoose");
 const connection = require('../../db');
-
 // Define the default resetColor array
-const defaultResetColor = [
-  {
-    colorCode: "#303030",
-    colorType: "sideBarColor"
-  },
-  {
-    colorCode: "#fafafa",
-    colorType: "sideBarTextColor"
-  },
-  {
-    colorCode: "#f2f2f2",
-    colorType: "sideBarButtonColor"
-  },
-  {
-    colorCode: "#201d1d",
-    colorType: "sideBarButtonTextColor"
-  },
-  {
-    colorCode: "#343232",
-    colorType: "buttonColor"
-  },
-  {
-    colorCode: "#fffafa",
-    colorType: "buttonTextColor"
-  },
-  {
-    colorCode: "#f2f2f2",
-    colorType: "backGroundColor"
-  },
-  {
-    colorCode: "",
-    colorType: "textColor"
-  },
-  {
-    colorCode: "#242424",
-    colorType: "titleColor"
-  },
-  {
-    colorCode: "#1a1a1a",
-    colorType: "cardColor"
-  },
-  {
-    colorCode: "#fcfcfc",
-    colorType: "cardBackGroundColor"
-  },
-  {
-    colorCode: "#fcfcfc",
-    colorType: "modelBackgroundColor"
-  },
-  {
-    colorCode: "#2b2727",
-    colorType: "modelColor"
-  }
-];
+
 
 const settingSchema = new mongoose.Schema({
   logoLight: {
     type: {},
     default: {}
+  },
+  whiteLabelLogo: {
+    type: {},
+    default: {}
+  },
+  isWhiteLabelShow: {
+    type: Boolean,
+    default: false
   },
   logoDark: {
     type: {},
@@ -96,7 +50,7 @@ const settingSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  resetColor: {
+  defaultColor: {
     type: [
       {
         colorCode: {
@@ -109,7 +63,43 @@ const settingSchema = new mongoose.Schema({
         }
       }
     ],
-    default: defaultResetColor // Set the default value
+    default: [] // Set the default value
+  },
+  defaultLightLogo: {
+    type: {},
+    default: {}
+  },
+  defaultWhiteLabelLogo: {
+    type: {},
+    default: {}
+  },
+  defaultDarkLogo: {
+    type: {},
+    default: {}
+  },
+  defaultFavIcon: {
+    type: {},
+    default: {}
+  },
+  defaultTitle: {
+    type: String,
+    default: ''
+  },
+  defaultPaymentDetail: {
+    type: String,
+    default: ''
+  },
+  defaultAddress: {
+    type: String,
+    default: ''
+  },
+  setDefault: {
+    type: Number,
+    default: 0
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    default: null
   }
 });
 

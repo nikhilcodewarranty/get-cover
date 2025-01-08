@@ -3,7 +3,6 @@ const mongoose = require("mongoose");
 const connection = require('../../db')
 
 const orderSchema = new mongoose.Schema({
-
   dealerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "dealer",
@@ -32,8 +31,7 @@ const orderSchema = new mongoose.Schema({
     default: ''
   },
   coverageType: {
-    type: String,
-    default: ''
+    type: [],
   },
   unique_key_number: {
     type: Number,
@@ -55,12 +53,12 @@ const orderSchema = new mongoose.Schema({
         priceBookId: {
           type: mongoose.Schema.Types.ObjectId,
         },
-        priceBookDetails:{
-          type:{},
+        priceBookDetails: {
+          type: {},
           // default:{}
         },
-        dealerPriceBookDetails:{
-          type:{},
+        dealerPriceBookDetails: {
+          type: {},
           // default:{}
         },
         unitPrice: {
@@ -68,7 +66,7 @@ const orderSchema = new mongoose.Schema({
         },
         dealerSku: {
           type: String,
-          default:''
+          default: ''
         },
         noOfProducts: {
           type: Number,
@@ -77,9 +75,9 @@ const orderSchema = new mongoose.Schema({
           type: String,
           default: ''
         },
-        adh:{
-          type:Number,
-          default:0
+        adh: {
+          type: Number,
+          default: 0
         },
         term: {
           type: Number,
@@ -92,6 +90,50 @@ const orderSchema = new mongoose.Schema({
         checkNumberProducts: {
           type: Number,
           default: 0
+        },
+        adhDays: {
+          type: [
+            {
+              value: {
+                type: String
+              },
+              waitingDays: {
+                type: Number
+              },
+              deductible: {
+                type: Number
+              },
+              amountType: {
+                type: String,
+                enum: ["amount", "percentage"]
+              }
+            }
+          ]
+        },
+        noOfClaimPerPeriod: {
+          type: Number,
+          default: 0
+        },
+        noOfClaim: {
+          type: {
+            period: {
+              type: String,
+              enum: ["Monthly", "Annually"],
+              default: "Monthly"
+            },
+            value: {
+              type: Number,
+              default: -1
+            }
+          },
+        },
+        isMaxClaimAmount: {
+          type: Boolean,
+          default: false
+        },
+        isManufacturerWarranty: {
+          type: Boolean,
+          default: false
         },
         orderFile: {
           type: {
@@ -149,9 +191,17 @@ const orderSchema = new mongoose.Schema({
         },
         coverageStartDate: {
           type: Date,
-          default: Date.now(),
+           default: () => Date.now(),
+        },
+        coverageStartDate1: {
+          type: Date,
+           default: () => Date.now(),
         },
         coverageEndDate: {
+          type: Date,
+          default: '',
+        },
+        coverageEndDate1: {
           type: Date,
           default: '',
         },
@@ -185,7 +235,7 @@ const orderSchema = new mongoose.Schema({
   },
   orderDate: {
     type: Date,
-    default: Date.now(),
+    default: () => Date.now()
   },
   paidAmount: {
     type: Number,
@@ -226,7 +276,6 @@ const orderSchema = new mongoose.Schema({
       }
     }
   },
-
   canProceed: {
     type: Boolean,
     default: false

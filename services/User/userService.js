@@ -49,9 +49,9 @@ module.exports = class userService {
   }
 
   //find user
-  static async findUser(query, sorting) {
+  static async findUser(query, sorting,projection) {
     try {
-      const allUsers = await user.find(query).sort(sorting);
+      const allUsers = await user.find(query,projection).sort(sorting);
       return allUsers;
     } catch (error) {
       return `Could not fetch users: ${error}`;
@@ -229,6 +229,14 @@ module.exports = class userService {
     }
   };
 
+  static async saveNotificationBulk(data) {
+    try {
+      const response = await notification.insertMany(data);
+      return response;
+    } catch (error) {
+      return `Could not create notification: ${error}`;
+    }
+  };
 
   // get all notifications
   static async getAllNotifications(query, skipLimit, limitData) {
@@ -273,7 +281,7 @@ module.exports = class userService {
   // find customer members new
   static async findUserforCustomer1(query) {
     try {
-      const fetchUser = await user.aggregate(query).sort({ createdAt: -1 });
+      const fetchUser = await user.aggregate(query).sort({ isPrimary: -1, createdAt: -1 });
       return fetchUser;
     } catch (error) {
       return `Could not get user: ${error}`;
@@ -314,6 +322,17 @@ module.exports = class userService {
     try {
       const saveSetting = await setting.findOneAndUpdate(creteria, data, option);
       return saveSetting;
+    }
+    catch (error) {
+      console.log(`Could not fetch users ${error}`);
+    }
+  }
+
+  //Update Many Setting 
+  static async updateManySetting(creteria, data, option) {
+    try {
+      const updateSetting = await setting.updateMany(creteria, data, option);
+      return updateSetting;
     }
     catch (error) {
       console.log(`Could not fetch users ${error}`);
@@ -394,10 +413,30 @@ module.exports = class userService {
     }
   }
 
+  //Get Option
   static async getOptions(query) {
     try {
       const response = await options.findOne(query);
       return response;
+    } catch (error) {
+      return `Could not find options: ${error}`;
+    }
+  }
+
+  //Get Option
+  static async getMultipleOptions(query, projection) {
+    try {
+      const response = await options.find(query, projection);
+      return response;
+    } catch (error) {
+      return `Could not find options: ${error}`;
+    }
+  }
+
+  static async updateData(criteria, newValue, option) {
+    try {
+      const updatedResponse = await options.findOneAndUpdate(criteria, newValue, option);
+      return updatedResponse;
     } catch (error) {
       return `Could not find options: ${error}`;
     }

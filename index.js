@@ -38,7 +38,7 @@ const mongoose = require('mongoose')
 const fs = require('fs');
 const { verifyToken } = require('./middleware/auth') // authentication with jwt as middleware
 var app = express();
-
+// const htmlPage = require("./test.html")
 
 app.use("/api-v1/api-docs", swaggerUi.serve, (...args) => swaggerUi.setup(swaggerDocument)(...args));
 app.use("/api-v1/priceApi", swaggerUi.serve, (...args) => swaggerUi.setup(swaggerDocumentDealer)(...args));
@@ -60,6 +60,7 @@ app.use((req, res, next) => {
   next();
 });
 
+
 // List of allowed IPs
 console.log("sdfsdfsdfsdsdf")
 function isHostAllowed(req) {
@@ -68,18 +69,18 @@ function isHostAllowed(req) {
   return allowedHosts.includes(host);
 }
 
-app.use((req, res, next) => {
-  if (req.headers.host == "localhost:3002" || req.headers.host=="http://54.176.118.28:3002") {
-    next(); // Proceed if the host is allowed
-  } else {
-    if (isHostAllowed(req)) {
-      next(); // Proceed if the host is allowed
-    } else {
-      console.log("checking the origin ++++++++++++++++++++++++++++++++++++++++++",allowedHosts,req.headers)
-      res.status(403).send('Access denied: Host not allowed');
-    }
-  }
-});
+// app.use((req, res, next) => {
+//   if (req.headers.host == "localhost:3002" || req.headers.host == "http://54.176.118.28:3002") {
+//     next(); // Proceed if the host is allowed
+//   } else {
+//     if (isHostAllowed(req)) {
+//       next(); // Proceed if the host is allowed
+//     } else {
+//       console.log("checking the origin ++++++++++++++++++++++++++++++++++++++++++", allowedHosts, req.headers)
+//       res.status(403).send('Access denied: Host not allowed');
+//     }
+//   }
+// });
 
 
 app.use(cors())
@@ -97,41 +98,32 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 
-// app.get('/uploads/logo/:filename', (req, res) => {
-//   const folder = 'logo';
-//   const filename = req.params.filename;
-//   const filePath = path.join(__dirname, 'uploads', folder, filename);
-
-//   // Check if the file exists
-//   fs.access(filePath, fs.constants.F_OK, (err) => {
-//     if (err) {
-//       return res.status(404).send('File not found');
-//     }
-
-//     // Send the file if it exists
-//     res.sendFile(filePath);
-//   });
-// });
-
 
 var cron = require('node-cron');
+
 var cronOptions = {
   'method': 'POST',
   'url': `${process.env.API_ENDPOINT}api-v1/order/cronJobStatus`,
 };
 
-cron.schedule(' 2 0 * * *', () => {
+cron.schedule('2 0 * * *', () => {
   axios.get(`${process.env.API_ENDPOINT}api-v1/order/cronJobStatus`)   //live
 });
-cron.schedule(' 4 0 * * *', () => {
+cron.schedule('4 0 * * *', () => {
   axios.get(`${process.env.API_ENDPOINT}api-v1/contract/cronJobEligible`)   //live
 });
 
-cron.schedule(' 6 0 * * *', () => {
+cron.schedule('6 0 * * *', () => {
   axios.get(`${process.env.API_ENDPOINT}api-v1/claim/statusClaim`)   //live
+}); 
+
+cron.schedule('0 1 * * *', () => {
+  axios.get(`${process.env.API_ENDPOINT}api-v1/claim/checkNumberOfCertainPeriod`)   //live
 });
+ 
 //common routing for server
 app.use("/api-v1/user", userRoutes);
+// app.use("/", htmlPage);
 app.use("/api-v1/reporting", reportingRoutes);
 app.use("/api-v1/admin", userRoutes);
 app.use("/api-v1/dealer", dealerRoutes);
@@ -148,11 +140,7 @@ app.use("/api-v1/servicerPortal", servicePortal);
 app.use("/api-v1/dealerPortal", dealerUserRoutes);
 app.use("/api-v1/customerPortal", customerUserRoutes);
 app.use("/api-v1/resellerPortal", resellerUserRoutes);
-// catch 404 and forward to error handler
-app.use(function (req, res, next) {
-  res.redirect(process.env.SITE_URL)
 
-});
 // error handler
 app.use(function (err, req, res, next) {
   // set locals, only providing error in development
@@ -166,14 +154,16 @@ app.use(function (err, req, res, next) {
 
 //* Catch HTTP 404 
 app.use((req, res, next) => {
-  res.redirect(process.env.SITE_URL)
-
+  res.send({
+    code: 404,
+    message: "Not Found"
+  })
 
 })
 const PORT = 3002
 
 
 
-httpServer.listen(PORT, () => console.log(`app listening at http://localhost:${PORT}`))
+httpServer.listen(PORT, '0.0.0.0', () => console.log(`app listening at http://localhost:${PORT}`))
 
 module.exports = app;
