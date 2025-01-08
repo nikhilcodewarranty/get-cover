@@ -1104,9 +1104,17 @@ exports.updateProfile = async (req, res) => {
       });
       return
     }
+
     const data = req.body
     let email = data.email
-    let updateProfile = await userService.updateSingleUser({ email: email }, data, { new: true })
+
+    let checkUser = await userService.getUserById1({ email: email })
+    let newMetaData = checkUser.metaData
+    newMetaData[0].firstName = data.firstName ? data.firstName : checkUser.metaData[0].firstName
+    newMetaData[0].lastName = data.lastName ? data.lastName : checkUser.metaData[0].lastName
+    newMetaData[0].phoneNumber = data.phoneNumber ? data.phoneNumber : checkUser.metaData[0].phoneNumber
+    newMetaData[0].position = data.position ? data.position : checkUser.metaData[0].position
+    let updateProfile = await userService.updateSingleUser({ email: email }, { metaData: newMetaData }, { new: true })
 
     if (!updateProfile) {
       res.send({
@@ -1119,7 +1127,23 @@ exports.updateProfile = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: 'Success!',
-      result: updateProfile
+      result: {
+        "_id": updateProfile._id,
+        "firstName": updateProfile.metaData[0].firstName,
+        "lastName": updateProfile.metaData[0].lastName,
+        "notificationTo": updateProfile.notificationTo,
+        "email": updateProfile.email,
+        "metaId": updateProfile.metaData[0].metaId,
+        "position": updateProfile.metaData[0].position,
+        "phoneNumber": updateProfile.metaData[0].phoneNumber,
+        "dialCode": updateProfile.metaData[0].dialCode,
+        "roleId": updateProfile.metaData[0].roleId,
+        "isPrimary": updateProfile.metaData[0].isPrimary,
+        "status": updateProfile.metaData[0].status,
+        "approvedStatus": updateProfile.approvedStatus,
+        "createdAt": updateProfile.createdAt,
+        "updatedAt": updateProfile.updatedAt,
+      }
     })
 
   }
@@ -1130,6 +1154,7 @@ exports.updateProfile = async (req, res) => {
     })
   }
 };
+
 
 // Update Password
 exports.updatePassword = async (req, res) => {
