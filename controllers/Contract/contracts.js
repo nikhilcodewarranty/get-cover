@@ -889,7 +889,7 @@ exports.getContractClaims = async (req, res) => {
       message: "Success",
       result: result_Array,
       totalCount,
-      claimTotal
+      claimAmout:claimTotal[0]?.amount
     });
 
   }
