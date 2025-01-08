@@ -184,24 +184,23 @@ exports.exportDataForClaim = async (req, res) => {
     if (req.role == 'Servicer') {
       match = { servicerId: new mongoose.Types.ObjectId(req.userId) }
     }
-
     if (req.role == 'Reseller') {
       match = { resellerId: new mongoose.Types.ObjectId(req.userId) }
     }
 
-    if (data.flag == "dealer") {
+    if (data.flag == "Dealer") {
       match1 = { dealerId: new mongoose.Types.ObjectId(data.userId) }
 
     }
-    if (data.flag == "reseller") {
+    if (data.flag == "Reseller") {
       match1 = { resellerId: new mongoose.Types.ObjectId(data.userId) }
 
     }
-    if (data.flag == "servicer") {
+    if (data.flag == "Servicer") {
       match1 = { servicerId: new mongoose.Types.ObjectId(data.userId) }
 
     }
-    if (data.flag == "customer") {
+    if (data.flag == "Customer") {
       match1 = { customerId: new mongoose.Types.ObjectId(data.userId) }
 
     }
@@ -660,7 +659,7 @@ exports.exportDataForClaim = async (req, res) => {
       status: "Pending",
       reportName: data.reportName,
       remark: data.remark,
-      category: "Claim Reporting"
+      category: "Claim"
     }
     let createReporting = await claimReportingService.createReporting(dataForClaimReporting)
     res.send({
@@ -1033,7 +1032,7 @@ exports.getClaimReportings = async (req, res) => {
     let claimReportingQuery = {
       $and: [
         { userId: req.teammateId },
-        { category: { '$regex': data.category ? data.category.replace(/\s+/g, ' ').trim() : '' } },
+        { category: { '$regex': data.category ? data.category.replace(/\s+/g, ' ').trim() : '',"$options":"i" } },
       ]
     }
 

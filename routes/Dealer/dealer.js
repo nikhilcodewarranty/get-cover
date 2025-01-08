@@ -14,7 +14,7 @@ router.post("/uploadTermAndCondition", [verifyToken], dealerController.uploadTer
 router.post("/createDealerPriceBook", [verifyToken], dealerController.createDealerPriceBook); // create dealer price book
 router.post("/checkDealerPriceBook", [verifyToken], dealerController.checkDealerPriceBook); // check dealer price book
 router.post("/uploadDealerPriceBook1", [verifyToken], dealerController.uploadDealerPriceBook); // upload dealer price book
-router.post("/uploadDealerPriceBook", dealerController.uploadDealerPriceBookNew); // upload dealer price book
+router.post("/uploadDealerPriceBook",[verifyToken], dealerController.uploadDealerPriceBookNew); // upload dealer price book
 router.post("/createRelationWithServicer/:dealerId", [verifyToken], supportingFunction.checkObjectId, dealerController.createDeleteRelation); // create relation with servicer
 router.post("/unAssignServicer", [verifyToken], dealerController.unAssignServicer); // unassign servicer
 

@@ -197,27 +197,33 @@ exports.exportContractReporting = async (req, res) => {
 
         }
 
-        if (data.flag == "dealer") {
+        if (data.flag == "Dealer") {
             dealerIds = [new mongoose.Types.ObjectId(data.userId)]
 
         }
-        if (data.flag == "reseller") {
+        if (data.flag == "Reseller") {
             resellerIds = [new mongoose.Types.ObjectId(data.userId)]
 
         }
-        if (data.flag == "servicer") {
+        if (data.flag == "Servicer") {
             servicerIds = [new mongoose.Types.ObjectId(data.userId)]
 
         }
-        if (data.flag == "customer") {
+        if (data.flag == "Customer") {
             // match1 = { customerId: new mongoose.Types.ObjectId(data.userId) }
             customerIds = [new mongoose.Types.ObjectId(data.userId)]
 
         }
-        if (data.flag == "order") {
+        if (data.flag == "Order") {
             // match1 = { customerId: new mongoose.Types.ObjectId(data.userId) }
             orderIds = [new mongoose.Types.ObjectId(data.userId)]
         }
+
+        data.dealerName = data.dealerName ? data.dealerName : ""
+        data.customerName = data.customerName ? data.customerName : ""
+        data.resellerName = data.resellerName ? data.resellerName : ""
+        data.servicerName = data.servicerName ? data.servicerName : ""
+
 
         if (data.dealerName != "") {
             userSearchCheck = 1
@@ -268,6 +274,8 @@ exports.exportContractReporting = async (req, res) => {
             }
         };
 
+        console.log("checking the reseller data ak +++++++++++", resellerIds)
+
         let dataForClaimReporting = {
             fileName: "contract-report-" + dateString,
             userId: req.teammateId,
@@ -276,7 +284,7 @@ exports.exportContractReporting = async (req, res) => {
             status: "Pending",
             reportName: data.reportName,
             remark: data.remark,
-            category: "Contract Reporting"
+            category: "Contract"
         }
         let createReporting = await claimReportingService.createReporting(dataForClaimReporting)
         // res.send({
@@ -288,17 +296,21 @@ exports.exportContractReporting = async (req, res) => {
         let orderAndCondition = []
 
         if (dealerIds.length > 0) {
+            userSearchCheck = 1
             orderAndCondition.push({ dealerId: { $in: dealerIds } })
         }
         if (customerIds.length > 0) {
+            userSearchCheck = 1
             orderAndCondition.push({ customerId: { $in: customerIds } })
 
         }
         if (servicerIds.length > 0) {
+            userSearchCheck = 1
             orderAndCondition.push({ servicerId: { $in: servicerIds } })
 
         }
         if (resellerIds.length > 0) {
+            userSearchCheck = 1
             orderAndCondition.push({ resellerId: { $in: resellerIds } })
 
         }
@@ -635,13 +647,13 @@ exports.exportContractReporting = async (req, res) => {
                 dealerEntry["Total Contracts"] += 1;
 
                 if (item.status === "Waiting") {
-                    console.log("Waiting+++++++++++++++++++++++",item.status);
+                    console.log("Waiting+++++++++++++++++++++++", item.status);
                     dealerEntry["Waiting Contracts"] += 1;
                 } else if (item.status === "Active") {
-                    console.log("Active+++++++++++++++++++++++",item.status);
+                    console.log("Active+++++++++++++++++++++++", item.status);
                     dealerEntry["Active Contracts"] += 1;
                 } else if (item.status === "Expired") {
-                    console.log("Expired+++++++++++++++++++++++",item.status);
+                    console.log("Expired+++++++++++++++++++++++", item.status);
                     dealerEntry["Expired Contracts"] += 1;
                 }
             });

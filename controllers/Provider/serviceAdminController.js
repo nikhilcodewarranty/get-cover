@@ -1081,7 +1081,6 @@ exports.updateStatus = async (req, res) => {
             {
               $or: [
                 { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
-                { metaId: new mongoose.Types.ObjectId(req.params.servicerId) },
               ]
             }
           ]
@@ -1303,7 +1302,6 @@ exports.updateStatus = async (req, res) => {
             subject: "Update Status"
           }
 
-          console.log("servicerEmail----------------", servicerEmail, notificationEmails, emailData)
 
           emailData.senderName = "Dear Admin"
           mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, 'noreply@getcover.com', emailData))
@@ -1871,7 +1869,6 @@ exports.addServicerUser = async (req, res) => {
               { status: true },
               {
                 $or: [
-                  { metaId: new mongoose.Types.ObjectId(req.params.servicerId) },
                   { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
                 ]
               }
@@ -2007,6 +2004,97 @@ exports.createDeleteRelation = async (req, res) => {
 
     if (newRecords.length > 0) {
       let saveData = await dealerRelationService.createRelationsWithServicer(newRecords);
+      const adminAssignServicerQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "adminNotification.assignDealerServicer": true },
+              { status: true },
+              { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
+
+            ]
+          }
+        },
+      }
+      const servicerQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "adminNotification.assignDealerServicer": true },
+              { status: true },
+              { metaId: new mongoose.Types.ObjectId(checkServicer._id) },
+            ]
+          }
+        },
+      }
+      const dealerQuery = {
+        metaData: {
+          $elemMatch: {
+            $and: [
+              { "adminNotification.assignDealerServicer": true },
+              { status: true },
+              {
+                $or: [
+                  { metaId: { $in: newDealerIds } },
+                ]
+              }
+            ]
+          }
+        },
+      }
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminAssignServicerQuery, { email: 1 })
+      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerQuery, { email: 1 })
+      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerQuery, { email: 1 })
+
+      const IDs = adminUsers.map(user => user._id)
+      const dealerId = dealerUsers.map(user => user._id)
+      const servicerId = servicerUsers.map(user => user._id)
+      const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+      const base_url = `${process.env.SITE_URL}`
+      let notificationArray = {
+        title: "Servicer Assigned to Dealer",
+        description: `We are reaching out to notify you about a recent update regarding the servicer list assigned to ${checkDealer.name}`,
+        userId: req.teammateId,
+        contentId: null,
+        flag: 'Assigned Servicer',
+        tabAction: "servicer",
+        notificationFor: IDs,
+        redirectionId: "/dealerDetails/" + req.params.dealerId,
+        endPoint: base_url + "dealerDetails/" + req.params.dealerId
+      };
+
+
+      let createNotification = await userService.createNotification(notificationArray);
+
+      notificationArray = {
+        title: "Servicer Assigned",
+        description: `We are reaching out to notify you about a recent update regarding the servicer list assigned to you`,
+        userId: req.teammateId,
+        contentId: null,
+        flag: 'Assigned Servicer',
+        tabAction: "",
+        notificationFor: dealerId,
+        redirectionId: "/dealer/servicerList",
+        endPoint: base_url + "dealer/servicerList"
+      };
+
+
+      createNotification = await userService.createNotification(notificationArray);
+
+      notificationArray = {
+        title: "Dealer Assigned",
+        description: `We are reaching out to notify you about a recent update regarding the dealer list assigned to you`,
+        userId: req.teammateId,
+        contentId: null,
+        flag: 'Assigned Servicer',
+        tabAction: "",
+        notificationFor: servicerId,
+        redirectionId: "/servicer/dealerList",
+        endPoint: base_url + "servicer/dealerList"
+      }
+
+
+      createNotification = await userService.createNotification(notificationArray);
       res.send({
         code: constant.successCode,
         message: "success"
