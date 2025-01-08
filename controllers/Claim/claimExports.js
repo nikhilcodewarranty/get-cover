@@ -184,7 +184,6 @@ exports.exportDataForClaim = async (req, res) => {
     if (req.role == 'Servicer') {
       match = { servicerId: new mongoose.Types.ObjectId(req.userId) }
     }
-
     if (req.role == 'Reseller') {
       match = { resellerId: new mongoose.Types.ObjectId(req.userId) }
     }
@@ -1033,7 +1032,7 @@ exports.getClaimReportings = async (req, res) => {
     let claimReportingQuery = {
       $and: [
         { userId: req.teammateId },
-        { category: { '$regex': data.category ? data.category.replace(/\s+/g, ' ').trim() : '' } },
+        { category: { '$regex': data.category ? data.category.replace(/\s+/g, ' ').trim() : '',"$options":"i" } },
       ]
     }
 
