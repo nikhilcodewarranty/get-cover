@@ -2194,10 +2194,11 @@ exports.updateProfile = async (req, res) => {
 
     let checkUser = await userService.getUserById1({ email: email })
     let newMetaData = checkUser.metaData
-    newMetaData[0].firstName = data.firstName
-    newMetaData[0].lastName = data.lastName
-    newMetaData[0].phoneNumber = data.phoneNumber
-    newMetaData[0].position = data.position
+    newMetaData[0].firstName = data.firstName ? data.firstName : checkUser.metaData[0].firstName
+    newMetaData[0].lastName = data.lastName ? data.lastName : checkUser.metaData[0].lastName
+    newMetaData[0].phoneNumber = data.phoneNumber ? data.phoneNumber : checkUser.metaData[0].phoneNumber
+    newMetaData[0].status = data.status 
+    newMetaData[0].position = data.position ? data.position : checkUser.metaData[0].position
     let updateProfile = await userService.updateSingleUser({ email: email }, { metaData: newMetaData }, { new: true })
 
     if (!updateProfile) {
@@ -2238,6 +2239,8 @@ exports.updateProfile = async (req, res) => {
     })
   }
 };
+
+
 
 // Update Password
 exports.updatePassword = async (req, res) => {
