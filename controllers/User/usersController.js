@@ -2194,10 +2194,10 @@ exports.updateProfile = async (req, res) => {
 
     let checkUser = await userService.getUserById1({ email: email })
     let newMetaData = checkUser.metaData
-    newMetaData[0].firstName = data.firstName
-    newMetaData[0].lastName = data.lastName
-    newMetaData[0].phoneNumber = data.phoneNumber
-    newMetaData[0].position = data.position
+    newMetaData[0].firstName = data.firstName ? data.firstName : checkUser.metaData[0].firstName
+    newMetaData[0].lastName = data.lastName ? data.lastName : checkUser.metaData[0].lastName
+    newMetaData[0].phoneNumber = data.phoneNumber ? data.phoneNumber : checkUser.metaData[0].phoneNumber
+    newMetaData[0].position = data.position ? data.position : checkUser.metaData[0].position
     let updateProfile = await userService.updateSingleUser({ email: email }, { metaData: newMetaData }, { new: true })
 
     if (!updateProfile) {
@@ -3250,7 +3250,6 @@ exports.getSetting = async (req, res) => {
       setting = await userService.getSetting({ userId: checkUser.metaData[0].metaId });
       if (setting.length > 0) {
         setting[0].base_url = baseUrl;
-
         // Assuming setting[0].logoDark and setting[0].logoLight contain relative paths
         if (setting[0].logoDark && setting[0].logoDark.fileName) {
           setting[0].logoDark.baseUrl = baseUrl;
@@ -3258,7 +3257,7 @@ exports.getSetting = async (req, res) => {
 
         if (setting[0].logoLight && setting[0].logoLight.fileName) {
           setting[0].logoLight.baseUrl = baseUrl;
-        }
+        }   
 
         if (setting[0].favIcon && setting[0].favIcon.fileName) {
           setting[0].favIcon.baseUrl = baseUrl;

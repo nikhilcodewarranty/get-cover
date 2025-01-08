@@ -1800,3 +1800,310 @@ eligibility check
                             }
                         }
                     }
+
+
+
+
+
+
+// Brett Setting Data
+                    {
+  "_id": {
+    "$oid": "668fd6cf91f918f716391e96"
+  },
+  "logoLight": {
+    "fileName": "file-1736316371318.png",
+    "name": "Get-Cover-REV-svg.png",
+    "size": 11896,
+    "baseUrl": "https://api.getcover.com/"
+  },
+  "logoDark": {
+    "fileName": "file-1736316378167.png",
+    "name": "Get-Cover.png",
+    "size": 11896,
+    "baseUrl": "https://api.getcover.com/"
+  },
+  "favIcon": {
+    "fileName": "file-1736316365675.png",
+    "name": "Get-Fabicon.png",
+    "size": 3172,
+    "baseUrl": "https://api.getcover.com/"
+  },
+  "title": "Get Cover",
+  "colorScheme": [
+    {
+      "colorCode": "#9f76c5",
+      "colorType": "chartFirstColor",
+      "_id": {
+        "$oid": "677e164acf6985d007e1f719"
+      }
+    },
+    {
+      "colorCode": "#9f76c5",
+      "colorType": "chartSecondColor",
+      "_id": {
+        "$oid": "677e164acf6985d007e1f71a"
+      }
+    },
+    {
+      "colorCode": "#9f76c5",
+      "colorType": "sideBarColor",
+      "_id": {
+        "$oid": "677e164acf6985d007e1f71b"
+      }
+    },
+    {
+      "colorCode": "#ffffff",
+      "colorType": "sideBarTextColor",
+      "_id": {
+        "$oid": "677e164acf6985d007e1f71c"
+      }
+    },
+    {
+      "colorCode": "#cbb8ff",
+      "colorType": "sideBarButtonColor",
+      "_id": {
+        "$oid": "677e164acf6985d007e1f71d"
+      }
+    },
+    {
+      "colorCode": "#000000",
+      "colorType": "sideBarButton2ndColor",
+      "_id": {
+        "$oid": "677e164acf6985d007e1f71e"
+      }
+    },
+    {
+      "colorCode": "#e0dbe6",
+      "colorType": "sideBarButtonTextColor",
+      "_id": {
+        "$oid": "677e164acf6985d007e1f71f"
+      }
+    },
+    {
+      "colorCode": "#8263b1",
+      "colorType": "buttonColor",
+      "_id": {
+        "$oid": "677e164acf6985d007e1f720"
+      }
+    },
+    {
+      "colorCode": "#dfd1e2",
+      "colorType": "buttonTextColor",
+      "_id": {
+        "$oid": "677e164acf6985d007e1f721"
+      }
+    },
+    {
+      "colorCode": "#f4eff5",
+      "colorType": "backGroundColor",
+      "_id": {
+        "$oid": "677e164acf6985d007e1f722"
+      }
+    },
+    {
+      "colorCode": "#333333",
+      "colorType": "textColor",
+      "_id": {
+        "$oid": "677e164acf6985d007e1f723"
+      }
+    },
+    {
+      "colorCode": "#333333",
+      "colorType": "titleColor",
+      "_id": {
+        "$oid": "677e164acf6985d007e1f724"
+      }
+    },
+    {
+      "colorCode": "#643f9f",
+      "colorType": "cardColor",
+      "_id": {
+        "$oid": "677e164acf6985d007e1f725"
+      }
+    },
+    {
+      "colorCode": "#fcfcfc",
+      "colorType": "cardBackGroundColor",
+      "_id": {
+        "$oid": "677e164acf6985d007e1f726"
+      }
+    },
+    {
+      "colorCode": "#fcfcfc",
+      "colorType": "modelBackgroundColor",
+      "_id": {
+        "$oid": "677e164acf6985d007e1f727"
+      }
+    },
+    {
+      "colorCode": "#2b2727",
+      "colorType": "modelColor",
+      "_id": {
+        "$oid": "677e164acf6985d007e1f728"
+      }
+    },
+    {
+      "colorCode": "#000000",
+      "colorType": "inActiveButtonBackgroundColor",
+      "_id": {
+        "$oid": "677e164acf6985d007e1f729"
+      }
+    },
+    {
+      "colorCode": "#ffffff",
+      "colorType": "inActiveButtonColor",
+      "_id": {
+        "$oid": "677e164acf6985d007e1f72a"
+      }
+    }
+  ],
+  "__v": 0,
+  "address": "9701 Wilshire Blvd., \nSuite 930 Beverly Hills, CA 90212",
+  "paymentDetail": "Bank Name: PCB BANK\nAccount Name: GET COVER LLC\nAccount Number: 12405759\nRouting Number : 122043602",
+  "setDefault": 0,
+  "defaultColor": [
+    {
+      "colorCode": "#303030",
+      "colorType": "sideBarColor",
+      "_id": {
+        "$oid": "67542494bf94f5de1f963fd0"
+      }
+    },
+    {
+      "colorCode": "#ffffff",
+      "colorType": "sideBarTextColor",
+      "_id": {
+        "$oid": "67542494bf94f5de1f963fd1"
+      }
+    },
+    {
+      "colorCode": "#ffffff",
+      "colorType": "sideBarButtonColor",
+      "_id": {
+        "$oid": "67542494bf94f5de1f963fd2"
+      }
+    },
+    {
+      "colorCode": "#ffffff",
+      "colorType": "sideBarButton2ndColor",
+      "_id": {
+        "$oid": "67542494bf94f5de1f963fd3"
+      }
+    },
+    {
+      "colorCode": "#201d1d",
+      "colorType": "sideBarButtonTextColor",
+      "_id": {
+        "$oid": "67542494bf94f5de1f963fd4"
+      }
+    },
+    {
+      "colorCode": "#343232",
+      "colorType": "buttonColor",
+      "_id": {
+        "$oid": "67542494bf94f5de1f963fd5"
+      }
+    },
+    {
+      "colorCode": "#fffafa",
+      "colorType": "buttonTextColor",
+      "_id": {
+        "$oid": "67542494bf94f5de1f963fd6"
+      }
+    },
+    {
+      "colorCode": "#f2f2f2",
+      "colorType": "backGroundColor",
+      "_id": {
+        "$oid": "67542494bf94f5de1f963fd7"
+      }
+    },
+    {
+      "colorCode": "#333333",
+      "colorType": "textColor",
+      "_id": {
+        "$oid": "67542494bf94f5de1f963fd8"
+      }
+    },
+    {
+      "colorCode": "#242424",
+      "colorType": "titleColor",
+      "_id": {
+        "$oid": "67542494bf94f5de1f963fd9"
+      }
+    },
+    {
+      "colorCode": "#1a1a1a",
+      "colorType": "cardColor",
+      "_id": {
+        "$oid": "67542494bf94f5de1f963fda"
+      }
+    },
+    {
+      "colorCode": "#fcfcfc",
+      "colorType": "cardBackGroundColor",
+      "_id": {
+        "$oid": "67542494bf94f5de1f963fdb"
+      }
+    },
+    {
+      "colorCode": "#fcfcfc",
+      "colorType": "modelBackgroundColor",
+      "_id": {
+        "$oid": "67542494bf94f5de1f963fdc"
+      }
+    },
+    {
+      "colorCode": "#2b2727",
+      "colorType": "modelColor",
+      "_id": {
+        "$oid": "67542494bf94f5de1f963fdd"
+      }
+    },
+    {
+      "colorCode": "#ffffff",
+      "colorType": "inActiveButtonBackgroundColor",
+      "_id": {
+        "$oid": "67542494bf94f5de1f963fde"
+      }
+    },
+    {
+      "colorCode": "#212121",
+      "colorType": "inActiveButtonColor",
+      "_id": {
+        "$oid": "67542494bf94f5de1f963fdf"
+      }
+    }
+  ],
+  "userId": {
+    "$oid": "663090222e20a55a607b3e1b"
+  },
+  "defaultAddress": "9701 Wilshire Blvd., \nSuite 930 Beverly Hills, CA 90212",
+  "defaultDarkLogo": {
+    "fileName": "file-1725880532751.png",
+    "name": "Get-Cover.png",
+    "size": 11896,
+    "baseUrl": "https://api.getcover.com/"
+  },
+  "defaultFavIcon": {
+    "fileName": "file-1725880506612.png",
+    "name": "Get-Fabicon.png",
+    "size": 3172,
+    "baseUrl": "https://api.getcover.com/"
+  },
+  "defaultLightLogo": {
+    "fileName": "file-1725880521105.png",
+    "name": "Get-Cover-REV-svg.png",
+    "size": 11896,
+    "baseUrl": "https://api.getcover.com/"
+  },
+  "defaultPaymentDetail": "Bank Name: PCB BANK\nAccount Name: GET COVER LLC\nAccount Number: 12405759\nRouting Number : 122043602",
+  "defaultTitle": "Get Cover",
+  "whiteLabelLogo": {
+    "fileName": "file-1736316391407.png",
+    "name": "Primary Logo 303px.png",
+    "size": 1018,
+    "baseUrl": "https://api.getcover.com/"
+  }
+}
