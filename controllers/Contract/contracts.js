@@ -737,7 +737,7 @@ exports.getContractClaims = async (req, res) => {
     //Get Dealer and Reseller Servicers
     let servicer;
     //service call from claim services
-    let allServicer = await servicerService.getAllServiceProvider(
+    let allServicer = await providerService.getAllServiceProvider(
       { _id: { $in: allServicerIds }, status: true },
       {}
     );
