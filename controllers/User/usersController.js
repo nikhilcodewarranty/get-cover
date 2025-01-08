@@ -3215,7 +3215,6 @@ exports.getSetting = async (req, res) => {
       const checkUser = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin } } })
       let adminData = await userService.getSetting({ userId: checkUser.metaData[0].metaId });
       setting[0].base_url = baseUrl;
-
       // Assuming setting[0].logoDark and setting[0].logoLight contain relative paths
       if (setting[0].logoDark && setting[0].logoDark.fileName) {
         setting[0].logoDark.baseUrl = baseUrl;
@@ -3232,9 +3231,12 @@ exports.getSetting = async (req, res) => {
         setting[0].whiteLabelLogo.baseUrl = baseUrl;
       }
       const sideBarColor = adminData[0]?.colorScheme.find(color => color.colorType === "sideBarColor");
+      
       const chartFirstColor = adminData[0]?.colorScheme.find(color => color.colorType === "chartFirstColor");
       const exists = setting[0].colorScheme.some(color => color.colorType === 'chartFirstColor');
-      const chartSecondColor = setting[0].colorScheme.some(color => color.colorType === 'chartSecondColor');
+
+      const chartSecondColor = adminData[0].colorScheme.some(color => color.colorType === 'chartSecondColor');
+      const chartSecondColorExist = setting[0].colorScheme.some(color => color.colorType === 'chartSecondColor');
 
       if (sideBarColor) {
         setting[0].adminSideBarColor = sideBarColor;
@@ -3244,7 +3246,7 @@ exports.getSetting = async (req, res) => {
         // setting[0].adminSideBarColor = sideBarColor;
         setting[0].colorScheme.push({ colorType: "chartFirstColor", colorCode: chartFirstColor?.colorCode });
       }
-      if (!chartSecondColor) {
+      if (!chartSecondColorExist) {
         // setting[0].adminSideBarColor = sideBarColor;
         setting[0].colorScheme.push({ colorType: "chartSecondColor", colorCode: chartSecondColor?.colorCode });
       }
