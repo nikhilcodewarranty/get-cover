@@ -627,6 +627,7 @@ exports.createDealer = async (req, res) => {
             code: constant.errorCode,
             message: err.message
         });
+        
     }
 };
 
