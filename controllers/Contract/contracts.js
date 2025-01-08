@@ -896,6 +896,9 @@ exports.getContractById = async (req, res) => {
       { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
     ]
     let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
+    let totalClaim = await claimService.findContractCount({ contractId: new mongoose.Types.ObjectId(req.params.contractId) })
+
+
     let query = [
       {
         $match: { _id: new mongoose.Types.ObjectId(req.params.contractId) },
@@ -1059,7 +1062,8 @@ exports.getContractById = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: "Success",
-      result: getData[0]
+      result: getData[0],
+      totalClaim
     })
   } catch (err) {
     res.send({
