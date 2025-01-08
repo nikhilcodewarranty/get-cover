@@ -428,7 +428,7 @@ exports.getContractClaims = async (req, res) => {
 
     }
 
-    const claimQuery = { contractId: new mongoose.Types.ObjectId(data.contractId) }
+    const claimQuery = { contractId: new mongoose.Types.ObjectId(req.params.contractId) }
     let claimTotalQuery = [
       { $match: claimQuery },
       { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
