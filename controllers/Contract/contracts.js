@@ -1051,7 +1051,7 @@ exports.getContractById = async (req, res) => {
         });
       }
     });
-
+    getData[0].totalClaim =  totalClaim
     if (!getData) {
       res.send({
         code: constant.errorCode,
