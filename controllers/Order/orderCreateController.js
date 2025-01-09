@@ -3204,6 +3204,7 @@ exports.getOrderContract = async (req, res) => {
             orderAndCondition.push({ servicerId: { $in: servicerIds } })
         }
         let orderIds = []
+
         if (orderAndCondition.length > 0) {
             let getOrders = await orderService.getOrders({
                 $and: orderAndCondition
@@ -3212,6 +3213,7 @@ exports.getOrderContract = async (req, res) => {
                 orderIds = await getOrders.map(order => order._id)
             }
         }
+
         let contractFilterWithEligibilty = []
         if (data.eligibilty != '') {
             contractFilterWithEligibilty = [
@@ -3250,7 +3252,7 @@ exports.getOrderContract = async (req, res) => {
             let startDate = new Date(data.startDate)
             let endDate = new Date(data.endDate)
             startDate.setHours(0, 0, 0, 0)
-            endDate.setHours(11, 59, 0, 0)
+            endDate.setHours(0, 0, 0, 0)
             let dateFilter = { createdAt: { $gte: startDate, $lte: endDate } }
             contractFilterWithEligibilty.push(dateFilter)
         }
