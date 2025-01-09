@@ -3249,8 +3249,8 @@ exports.getOrderContract = async (req, res) => {
         }
 
         if (data.startDate != "") {
-            let startDate = new Date(data.startDate).toISOString()
-            let endDate = new Date(data.endDate).toISOString()
+            let startDate = new Date(data.startDate.toISOString())
+            let endDate = new Date(data.endDate.toISOString())
             // startDate.setHours(0, 0, 0, 0)
             // endDate.setHours(0, 0, 0, 0)
             // console.log("endDate-----------------",endDate)
