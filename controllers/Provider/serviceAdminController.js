@@ -3281,70 +3281,33 @@ exports.resetServicerSetting = async (req, res) => {
 
     let data = req.body;
     const adminSetting = await userService.getSetting({ userId: req.userId });
-
-    let servicerId = req.body.servicerId
-
+    let servicerId = data.id
     let response;
-    const getData = await userService.getSetting({ userId: servicerId });
-    let defaultResetColor = [];
-    let defaultPaymentDetail = '';
-    let defaultLightLogo = {};
-    let defaultDarkLogo = {};
-    let defaultFavIcon = {};
-    let defaultAddress = '';
-    let defaultTitle = '';
-    if (getData[0]?.defaultColor.length > 0) {
-      defaultResetColor = getData[0]?.defaultColor
-      defaultPaymentDetail = getData[0]?.defaultPaymentDetail
-      defaultLightLogo = {
-        fileName: getData[0].defaultLightLogo.fileName,
-        name: getData[0].defaultLightLogo.name,
-        size: getData[0].defaultLightLogo.size
-      }
-      defaultDarkLogo = {
-        fileName: getData[0].defaultDarkLogo.fileName,
-        name: getData[0].defaultDarkLogo.name,
-        size: getData[0].defaultDarkLogo.size
-      }
-      defaultFavIcon = {
-        fileName: getData[0].defaultFavIcon.fileName,
-        name: getData[0].defaultFavIcon.name,
-        size: getData[0].defaultFavIcon.size
-      }
-      defaultAddress = getData[0]?.defaultAddress
-      defaultTitle = getData[0]?.defaultTitle
-    }
-    else {
-      defaultResetColor = adminSetting[0]?.defaultColor
-      defaultPaymentDetail = adminSetting[0]?.defaultPaymentDetail
-      defaultLightLogo = {
-        fileName: adminSetting[0].defaultLightLogo.fileName,
-        name: adminSetting[0].defaultLightLogo.name,
-        size: adminSetting[0].defaultLightLogo.size
-      }
-      defaultDarkLogo = {
-        fileName: adminSetting[0].defaultDarkLogo.fileName,
-        name: adminSetting[0].defaultDarkLogo.name,
-        size: adminSetting[0].defaultDarkLogo.size
-      }
-      defaultFavIcon = {
-        fileName: adminSetting[0].defaultFavIcon.fileName,
-        name: adminSetting[0].defaultFavIcon.name,
-        size: adminSetting[0].defaultFavIcon.size
-      }
-      defaultAddress = adminSetting[0]?.defaultAddress
-      defaultTitle = adminSetting[0]?.defaultTitle
-    }
+    const getData = await userService.getSetting({ userId: servicerId });  
     response = await userService.updateSetting({ _id: getData[0]?._id }, {
-      colorScheme: defaultResetColor,
-      logoLight: defaultLightLogo,
-      logoDark: defaultDarkLogo,
-      favIcon: defaultFavIcon,
-      title: defaultTitle,
-      address: defaultAddress,
-      paymentDetail: defaultPaymentDetail,
+      colorScheme: [],
+      defaultColor: [],
+      logoLight: {
+        fileName: adminSetting[0].logoLight.fileName,
+        name: adminSetting[0].logoLight.name,
+        size: adminSetting[0].logoLight.size
+      },
+      logoDark: {
+        fileName: adminSetting[0].logoDark.fileName,
+        name: adminSetting[0].logoDark.name,
+        size: adminSetting[0].logoDark.size
+      },
+      favIcon: {
+        fileName: adminSetting[0].favIcon.fileName,
+        name: adminSetting[0].favIcon.name,
+        size: adminSetting[0].favIcon.size
+      },
+      title: adminSetting[0]?.title,
+      address: adminSetting[0]?.address,
+      paymentDetail: adminSetting[0]?.paymentDetail,
       setDefault: 1
     }, { new: true })
+
     res.send({
       code: constant.successCode,
       message: "Reset Successfully!!",
@@ -3428,7 +3391,7 @@ exports.getServicerColorSetting = async (req, res) => {
     if (!setting[0] || setting[0].colorScheme.length == 0) {
       setting = await userService.getSetting({});
     }
-    
+
     if (setting.length > 0) {
       setting[0].base_url = baseUrl;
 
