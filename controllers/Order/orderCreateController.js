@@ -1706,7 +1706,7 @@ exports.createOrder1 = async (req, res) => {
                         unique_key_search: unique_key_search1,
                         unique_key_number: unique_key_number1,
                     };
-                    console.log("sssssssssssssssssssssssssssssssssssssssssssss", index1);
+                    console.log("sssssssssssssssssssssssssssssssssssssssssssss",index1);
                     increamentNumber++
 
                     contractArray.push(contractObject);
@@ -3213,7 +3213,7 @@ exports.getOrderContract = async (req, res) => {
                 orderIds = await getOrders.map(order => order._id)
             }
         }
-
+        
         let contractFilterWithEligibilty = []
         if (data.eligibilty != '') {
             contractFilterWithEligibilty = [
@@ -3253,14 +3253,7 @@ exports.getOrderContract = async (req, res) => {
             let endDate = new Date(data.endDate)
             startDate.setHours(0, 0, 0, 0)
             endDate.setHours(11, 59, 0, 0)
-            // console.log("endDate-----------------",endDate)
-            // console.log("startDate-----------------",endDstartDateate)
-            let dateFilter = {
-                createdAt: {
-                    $gte: new Date(startDate).toISOString(),
-                    $lte: new Date(endDate).toISOString()
-                }
-            }
+            let dateFilter = { createdAt: { $gte: startDate, $lte: endDate } }
             contractFilterWithEligibilty.push(dateFilter)
         }
         let mainQuery = []
@@ -3292,7 +3285,7 @@ exports.getOrderContract = async (req, res) => {
                                     status: 1,
                                     minDate: 1,
                                     productValue: 1,
-                                    createdAt: 1,
+                                    createdAt:1,
                                     manufacture: 1,
                                     eligibilty: 1,
                                     orderUniqueKey: 1,
@@ -3341,7 +3334,7 @@ exports.getOrderContract = async (req, res) => {
                                 status: 1,
                                 minDate: 1,
                                 manufacture: 1,
-                                createdAt: 1,
+                                createdAt:1,
                                 serviceCoverageType: 1,
                                 productValue: 1,
                                 coverageType: 1,
