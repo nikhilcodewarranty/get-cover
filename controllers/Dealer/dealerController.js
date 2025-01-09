@@ -2856,68 +2856,28 @@ exports.resetDealerSetting = async (req, res) => {
       dealerId = checkCustomer.dealerId
     }
     let response;
-    const getData = await userService.getSetting({ userId: dealerId });
-    console.log("getData-----------------------",getData)
-    console.log("dealerId-----------------------",dealerId)
-    let defaultResetColor = [];
-    let defaultPaymentDetail = '';
-    let defaultLightLogo = {};
-    let defaultDarkLogo = {};
-    let defaultFavIcon = {};
-    let defaultAddress = '';
-    let defaultTitle = '';
-    if (getData[0]?.defaultColor.length > 0) {
-      defaultResetColor = getData[0]?.defaultColor
-      defaultPaymentDetail = getData[0]?.defaultPaymentDetail
-      defaultLightLogo = {
-        fileName: getData[0].defaultLightLogo.fileName,
-        name: getData[0].defaultLightLogo.name,
-        size: getData[0].defaultLightLogo.size
-      }
-      defaultDarkLogo = {
-        fileName: getData[0].defaultDarkLogo.fileName,
-        name: getData[0].defaultDarkLogo.name,
-        size: getData[0].defaultDarkLogo.size
-      }
-      defaultFavIcon = {
-        fileName: getData[0].defaultFavIcon.fileName,
-        name: getData[0].defaultFavIcon.name,
-        size: getData[0].defaultFavIcon.size
-      }
-      defaultAddress = getData[0]?.defaultAddress
-      defaultTitle = getData[0]?.defaultTitle
-    }
-    else {
-      defaultResetColor = adminSetting[0]?.defaultColor
-      defaultPaymentDetail = adminSetting[0]?.defaultPaymentDetail
-      defaultLightLogo = {
-        fileName: adminSetting[0].defaultLightLogo.fileName,
-        name: adminSetting[0].defaultLightLogo.name,
-        size: adminSetting[0].defaultLightLogo.size
-      }
-      defaultDarkLogo = {
-        fileName: adminSetting[0].defaultDarkLogo.fileName,
-        name: adminSetting[0].defaultDarkLogo.name,
-        size: adminSetting[0].defaultDarkLogo.size
-      }
-      defaultFavIcon = {
-        fileName: adminSetting[0].defaultFavIcon.fileName,
-        name: adminSetting[0].defaultFavIcon.name,
-        size: adminSetting[0].defaultFavIcon.size
-      }
-      defaultAddress = adminSetting[0]?.defaultAddress
-      defaultTitle = adminSetting[0]?.defaultTitle
-    }
-    console.log("getData[0]?._id-----------------",getData[0]?._id)
+    const getData = await userService.getSetting({ userId: dealerId });   
     response = await userService.updateSetting({ _id: getData[0]?._id }, {
       colorScheme: [],
       defaultColor: [],
-      logoLight: defaultLightLogo,
-      logoDark: defaultDarkLogo,
-      favIcon: defaultFavIcon,
-      title: defaultTitle,
-      address: defaultAddress,
-      paymentDetail: defaultPaymentDetail,
+      logoLight: {
+        fileName: adminSetting[0].logoLight.fileName,
+        name: adminSetting[0].logoLight.name,
+        size: adminSetting[0].logoLight.size
+      },
+      logoDark: {
+        fileName: adminSetting[0].logoDark.fileName,
+        name: adminSetting[0].logoDark.name,
+        size: adminSetting[0].logoDark.size
+      },
+      favIcon: {
+        fileName: adminSetting[0].favIcon.fileName,
+        name: adminSetting[0].favIcon.name,
+        size: adminSetting[0].favIcon.size
+      },
+      title: adminSetting[0]?.title,
+      address: adminSetting[0]?.address,
+      paymentDetail: adminSetting[0]?.paymentDetail,
       setDefault: 1
     }, { new: true })
 
