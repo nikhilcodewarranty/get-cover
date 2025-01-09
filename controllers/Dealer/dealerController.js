@@ -2843,7 +2843,7 @@ exports.resetDealerSetting = async (req, res) => {
     let data = req.body;
     const adminSetting = await userService.getSetting({ userId: req.userId });
 
-    let dealerId = req.body.dealerId
+    let dealerId = req.body.id
     if (req.role == "Dealer") {
       dealerId = req.userId
     }
