@@ -2857,6 +2857,8 @@ exports.resetDealerSetting = async (req, res) => {
     }
     let response;
     const getData = await userService.getSetting({ userId: dealerId });
+    console.log("getData-----------------------",getData)
+    console.log("dealerId-----------------------",dealerId)
     let defaultResetColor = [];
     let defaultPaymentDetail = '';
     let defaultLightLogo = {};
