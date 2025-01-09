@@ -1701,6 +1701,7 @@ exports.getDealerServicers = async (req, res) => {
             return;
         }
         // Get Dealer Reseller Servicer
+        console.log("id+++++++++++++",servicer)
 
         let dealerResellerServicer = await resellerService.getResellers({ dealerId: req.params.dealerId, isServicer: true })
 
@@ -1711,13 +1712,16 @@ exports.getDealerServicers = async (req, res) => {
         if (checkDealer.isServicer) {
             servicer.unshift(checkDealer);
         };
+        console.log("id++++++++66666+++++",servicer)
+
         let servicerIds = servicer.map(obj => obj._id);
         let servicerIds1 = servicer.map(obj => new mongoose.Types.ObjectId(obj.dealerId));
+        // let servicerIds1 = servicer.map(obj => new mongoose.Types.ObjectId(obj.dealerId));
         console.log("servicerIds1------------------------------", servicerIds1)
         const query1 = { metaId: { $in: servicerIds }, isPrimary: true };
         console.log("servicerIds------------------------------", servicerIds)
         servicerIds = servicerIds.concat(servicerIds1)
-        console.log("servicerIds------------------------------", servicerIds)
+        console.log("servicerIds33333333------------------------------", servicerIds)
 
         let servicerUser = await userService.findUserforCustomer1([
             {
@@ -1749,7 +1753,7 @@ exports.getDealerServicers = async (req, res) => {
                 }
             }
         ]);
-        console.log("12212112==========================================", servicerUser)
+        // console.log("12212112==========================================", servicerUser)
         if (!servicerUser) {
             res.send({
                 code: constant.errorCode,
@@ -1795,8 +1799,8 @@ exports.getDealerServicers = async (req, res) => {
 
         const result_Array = servicer.map(item1 => {
             const matchingItem = servicerUser.find(item2 =>
-                item2.metaId?.toString() === item1?._id.toString() ||
-                item2.metaId?.toString() === item1?.dealerId.toString()
+                item2.metaId?.toString() === item1?._id?.toString() ||
+                item2.metaId?.toString() === item1?.dealerId?.toString()
             );
 
             const claimValue = valueClaim.find(claim => claim._id?.toString() === item1._id?.toString())
