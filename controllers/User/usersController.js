@@ -2197,7 +2197,7 @@ exports.updateProfile = async (req, res) => {
     newMetaData[0].firstName = data.firstName ? data.firstName : checkUser.metaData[0].firstName
     newMetaData[0].lastName = data.lastName ? data.lastName : checkUser.metaData[0].lastName
     newMetaData[0].phoneNumber = data.phoneNumber ? data.phoneNumber : checkUser.metaData[0].phoneNumber
-    newMetaData[0].status = data.status 
+    newMetaData[0].status = data.status
     newMetaData[0].position = data.position ? data.position : checkUser.metaData[0].position
     let updateProfile = await userService.updateSingleUser({ email: email }, { metaData: newMetaData }, { new: true })
 
@@ -3198,7 +3198,6 @@ exports.getSetting = async (req, res) => {
     //   });
     //   return
     // }
-
     let userId = req.userId
     let setting;
     if (req.role == "Reseller") {
@@ -3212,46 +3211,50 @@ exports.getSetting = async (req, res) => {
     setting = await userService.getSetting({ userId: userId });
     const baseUrl = process.env.API_ENDPOINT;
     if (setting.length > 0) {
-      
       const checkUser = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin } } })
       let adminData = await userService.getSetting({ userId: checkUser.metaData[0].metaId });
-      setting[0].base_url = baseUrl;
+      if (setting[0]?.colorScheme.length > 0) {
+        setting[0].base_url = baseUrl;
+        // Assuming setting[0].logoDark and setting[0].logoLight contain relative paths
+        if (setting[0].logoDark && setting[0].logoDark.fileName) {
+          setting[0].logoDark.baseUrl = baseUrl;
+        }
 
-      // Assuming setting[0].logoDark and setting[0].logoLight contain relative paths
-      if (setting[0].logoDark && setting[0].logoDark.fileName) {
-        setting[0].logoDark.baseUrl = baseUrl;
+        if (setting[0].logoLight && setting[0].logoLight.fileName) {
+          setting[0].logoLight.baseUrl = baseUrl;
+        }
+
+        if (setting[0].favIcon && setting[0].favIcon.fileName) {
+          setting[0].favIcon.baseUrl = baseUrl;
+        }
+        if (setting[0].whiteLabelLogo && setting[0].whiteLabelLogo.fileName) {
+          setting[0].whiteLabelLogo.baseUrl = baseUrl;
+        }
+        const sideBarColor = adminData[0]?.colorScheme.find(color => color.colorType === "sideBarColor");
+        const chartFirstColor = adminData[0]?.colorScheme.find(color => color.colorType === "chartFirstColor");
+        const exists = setting[0].colorScheme.some(color => color.colorType === 'chartFirstColor');
+
+        if (sideBarColor) {
+          setting[0].adminSideBarColor = sideBarColor;
+          setting[0].colorScheme.push({ colorType: "adminSideBarColor", colorCode: sideBarColor.colorCode });
+        }
+        if (!exists) {
+          setting[0].adminSideBarColor = sideBarColor;
+          setting[0].colorScheme.push({ colorType: "chartFirstColor", colorCode: chartFirstColor.colorCode });
+        }
+        // Repeat for any other properties that need the base_url prepended
+      }
+      //Assign Admin Setting 
+      else {
+        setting = adminData
       }
 
-      if (setting[0].logoLight && setting[0].logoLight.fileName) {
-        setting[0].logoLight.baseUrl = baseUrl;
-      }
-
-      if (setting[0].favIcon && setting[0].favIcon.fileName) {
-        setting[0].favIcon.baseUrl = baseUrl;
-      }
-      if (setting[0].whiteLabelLogo && setting[0].whiteLabelLogo.fileName) {
-        setting[0].whiteLabelLogo.baseUrl = baseUrl;
-      }
-      const sideBarColor = adminData[0]?.colorScheme.find(color => color.colorType === "sideBarColor");
-      const chartFirstColor = adminData[0]?.colorScheme.find(color => color.colorType === "chartFirstColor");
-      const exists = setting[0].colorScheme.some(color => color.colorType === 'chartFirstColor');
-
-      if (sideBarColor) {
-        setting[0].adminSideBarColor = sideBarColor;
-        setting[0].colorScheme.push({ colorType: "adminSideBarColor", colorCode: sideBarColor.colorCode });
-      }
-      if (!exists) {
-        setting[0].adminSideBarColor = sideBarColor;
-        setting[0].colorScheme.push({ colorType: "chartFirstColor", colorCode: chartFirstColor.colorCode });
-      }
-      // Repeat for any other properties that need the base_url prepended
     }
     else {
       const checkUser = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin } } })
       setting = await userService.getSetting({ userId: checkUser.metaData[0].metaId });
       if (setting.length > 0) {
         setting[0].base_url = baseUrl;
-
         // Assuming setting[0].logoDark and setting[0].logoLight contain relative paths
         if (setting[0].logoDark && setting[0].logoDark.fileName) {
           setting[0].logoDark.baseUrl = baseUrl;
@@ -3452,7 +3455,7 @@ exports.contactUs = async (req, res) => {
     const ip = data.ipAddress
     const response = await axios.get(`https://ipapi.co/${ip}/json/`);
     const result = response.data;
-    data.location = result.city + "," + result.region + "," + result.country_name + ","+result.postal
+    data.location = result.city + "," + result.region + "," + result.country_name + "," + result.postal
     emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
