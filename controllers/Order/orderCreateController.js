@@ -3255,7 +3255,7 @@ exports.getOrderContract = async (req, res) => {
             // endDate.setHours(0, 0, 0, 0)
             // console.log("endDate-----------------",endDate)
             // console.log("startDate-----------------",endDstartDateate)
-            let dateFilter = { createdAt: { $gte: startDate, $lte: endDate } }
+            let dateFilter = { createdAt: { $gte: startDate, $lte: Date(data.endDate) } }
             console.log("dateFilter--------------",dateFilter)
             contractFilterWithEligibilty.push(dateFilter)
         }
