@@ -2380,7 +2380,7 @@ exports.createDeleteRelation = async (req, res) => {
 
       let createNotification = await userService.createNotification(notificationArray);
 
-      notificationArray ={
+      notificationArray = {
         title: "Servicer Assigned",
         description: `We are reaching out to notify you about a recent update regarding the servicer list assigned to you`,
         userId: req.teammateId,
@@ -2907,7 +2907,8 @@ exports.resetDealerSetting = async (req, res) => {
       defaultTitle = adminSetting[0]?.defaultTitle
     }
     response = await userService.updateSetting({ _id: getData[0]?._id }, {
-      colorScheme: defaultResetColor,
+      colorScheme: [],
+      defaultColor: [],
       logoLight: defaultLightLogo,
       logoDark: defaultDarkLogo,
       favIcon: defaultFavIcon,
@@ -2916,6 +2917,8 @@ exports.resetDealerSetting = async (req, res) => {
       paymentDetail: defaultPaymentDetail,
       setDefault: 1
     }, { new: true })
+
+
     res.send({
       code: constant.successCode,
       message: "Reset Successfully!!",
@@ -3015,10 +3018,9 @@ exports.getDealerColorSetting = async (req, res) => {
       dealerId = checkCustomer.dealerId
     }
     let setting = await userService.getSetting({ userId: dealerId });
-    if (!setting[0]) {
-      // dealerId = "668fd6cf91f918f716391e96"
+    if (!setting[0] || setting[0].colorScheme.length == 0) {
       setting = await userService.getSetting({});
-    } 0
+    }
     const baseUrl = process.env.API_ENDPOINT;
     if (setting.length > 0) {
       setting[0].base_url = baseUrl;
