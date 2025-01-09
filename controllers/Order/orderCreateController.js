@@ -3257,8 +3257,8 @@ exports.getOrderContract = async (req, res) => {
             // console.log("startDate-----------------",endDstartDateate)
             let dateFilter = {
                 createdAt: {
-                    $gte: new Date(req.body.startDate).toISOString(),
-                    $lte: new Date(req.body.endDate).toISOString()
+                    $gte: new Date(startDate).toISOString(),
+                    $lte: new Date(endDate).toISOString()
                 }
             }
             contractFilterWithEligibilty.push(dateFilter)
