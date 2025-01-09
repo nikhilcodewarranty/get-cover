@@ -2991,6 +2991,7 @@ exports.accountSetting = async (req, res) => {
     let response;
     const getData = await userService.getSetting({ userId: req.userId });
     if (getData.length > 0) {
+      //Update white label setting for all users
       await userService.updateManySetting({}, { whiteLabelLogo: data.whiteLabelLogo }, { new: true });
       response = await userService.updateSetting({ _id: getData[0]?._id }, data, { new: true })
 
