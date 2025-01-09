@@ -2906,6 +2906,7 @@ exports.resetDealerSetting = async (req, res) => {
       defaultAddress = adminSetting[0]?.defaultAddress
       defaultTitle = adminSetting[0]?.defaultTitle
     }
+    console.log("getData[0]?._id-----------------",getData[0]?._id)
     response = await userService.updateSetting({ _id: getData[0]?._id }, {
       colorScheme: [],
       defaultColor: [],
