@@ -3252,7 +3252,7 @@ exports.getOrderContract = async (req, res) => {
             let startDate = new Date(data.startDate)
             let endDate = new Date(data.endDate)
             startDate.setHours(0, 0, 0, 0)
-            endDate.setHours(0, 0, 0, 0)
+            endDate.setHours(11, 59, 0, 0)
             // console.log("endDate-----------------",endDate)
             // console.log("startDate-----------------",endDstartDateate)
             let dateFilter = {
