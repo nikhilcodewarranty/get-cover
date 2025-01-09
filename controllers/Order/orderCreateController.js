@@ -3251,10 +3251,10 @@ exports.getOrderContract = async (req, res) => {
         if (data.startDate != "") {
             let startDate = new Date(data.startDate)
             let endDate = new Date(data.endDate)
-            startDate.setHours(0, 0, 0, 0)
-            endDate.setHours(0, 0, 0, 0)
-            console.log("endDate-----------------",endDate)
-            console.log("startDate-----------------",startDate)
+            // startDate.setHours(0, 0, 0, 0)
+            // endDate.setHours(0, 0, 0, 0)
+            // console.log("endDate-----------------",endDate)
+            // console.log("startDate-----------------",endDstartDateate)
             let dateFilter = { createdAt: { $gte: startDate, $lte: endDate } }
             contractFilterWithEligibilty.push(dateFilter)
         }
