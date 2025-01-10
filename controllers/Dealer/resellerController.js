@@ -1299,6 +1299,7 @@ exports.addResellerUser = async (req, res) => {
             };
             notificationArray.push(notificationData)
             let createNotification = await userService.saveNotificationBulk(notificationArray);
+            let settingData = await userService.getSetting({});
 
             let email = data.email
             let userId = saveData._id
