@@ -1483,7 +1483,7 @@ exports.getResellerServicers = async (req, res) => {
         };
 
         result_Array = servicer.map(servicer => {
-            const matchingItem = servicerUser.find(user => user.metaId.toString() === servicer._id.toString()||user.metaId.toString() === servicer?.dealerId.toString()||user.metaId.toString() === servicer?.resellerId.toString())
+            const matchingItem = servicerUser.find(user => user.metaId.toString() === servicer._id.toString() || user.metaId.toString() === servicer?.dealerId.toString() || user.metaId.toString() === servicer?.resellerId.toString())
             const claimValue = valueClaim.find(claim => claim._id.toString() === servicer._id.toString())
             const claimNumber = numberOfClaims.find(claim => claim._id.toString() === servicer._id.toString())
             if (matchingItem) {
@@ -1724,8 +1724,11 @@ exports.getServicerInOrders = async (req, res) => {
         }
     }
 
-    const servicerIds = servicer.map((obj) => obj._id);
-
+    let servicerIds = servicer.map((obj) => obj._id);
+    const resellerIdss = servicer.map((obj) => new mongoose.Types.ObjectId(obj?.resellerId));
+    const dealerIdss = servicer.map((obj) => new mongoose.Types.ObjectId(obj?.dealerId));
+    servicerIds = servicerIds.concat(resellerIdss);
+    servicerIds = servicerIds.concat(dealerIdss);
     const servicerUser = await userService.findUserforCustomer1([
         {
             $match: {
