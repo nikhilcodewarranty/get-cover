@@ -984,12 +984,12 @@ exports.getResellerDetails = async (req, res) => {
         let resellerObject = {}
         resellerObject = {
             ...getUser.toObject(),
-            firstName:getUser.metaData[0].firstName,
-            phoneNumber:getUser.metaData[0].phoneNumber,
-            status:getUser.metaData[0].status,
-            lastName:getUser.metaData[0].lastName,
-            dialCode:getUser.metaData[0].dialCode,
-            isPrimary:getUser.metaData[0].isPrimary
+            firstName: getUser.metaData[0].firstName,
+            phoneNumber: getUser.metaData[0].phoneNumber,
+            status: getUser.metaData[0].status,
+            lastName: getUser.metaData[0].lastName,
+            dialCode: getUser.metaData[0].dialCode,
+            isPrimary: getUser.metaData[0].isPrimary
         }
         let mid = new mongoose.Types.ObjectId(req.userId)
         let query = [
@@ -1153,7 +1153,7 @@ exports.getResellerCustomers = async (req, res) => {
         const dealerRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
         result_Array = result_Array.filter(entry => {
             return (
-               
+
                 dealerRegex.test(entry.customerData.dealerId)
             );
         });
@@ -1765,7 +1765,7 @@ exports.getServicerInOrders = async (req, res) => {
 
     const result_Array = servicer.map((item1) => {
         const matchingItem = servicerUser.find(
-            (item2) => item2.metaId?.toString() === item1._id?.toString());
+            (item2) => item2.metaId?.toString() === item1._id?.toString() || item2.metaId?.toString() === item1?.dealerId?.toString() || item2.metaId?.toString() === item1?.resellerId?.toString());
         if (matchingItem) {
             return {
                 ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
@@ -2227,7 +2227,7 @@ exports.getResellerContract = async (req, res) => {
                                     unique_key: 1,
                                     productValue: 1,
                                     status: 1,
-                                    createdAt:1,
+                                    createdAt: 1,
                                     manufacture: 1,
                                     eligibilty: 1,
                                     orderUniqueKey: 1,
@@ -2275,7 +2275,7 @@ exports.getResellerContract = async (req, res) => {
                                 unique_key: 1,
                                 status: 1,
                                 productValue: 1,
-                                createdAt:1,
+                                createdAt: 1,
                                 minDate: 1,
                                 manufacture: 1,
                                 eligibilty: 1,
@@ -2296,7 +2296,7 @@ exports.getResellerContract = async (req, res) => {
             result1[e].reason = " "
             if (!result1[e].eligibilty) {
                 result1[e].reason = "Claims limit cross for this contract"
-              }
+            }
             if (result1[e].status != "Active") {
                 result1[e].reason = "Contract is not active"
             }
