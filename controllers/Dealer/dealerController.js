@@ -74,7 +74,7 @@ const autherUpload = multerS3({
   },
   key: (req, file, cb) => {
       const fileName = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
-      const fullPath = `${folderName}/${fileName}`;
+      const fullPath = `${"thumbnail"}/${fileName}`;
       cb(null, fullPath);
   }
 });
@@ -180,6 +180,7 @@ exports.uploadTermAndCondition = async (req, res, next) => {
 exports.uploadBannerImage = async (req, res, next) => {
   try {
     codewarrantyImages(req, res, async (err) => {
+      console.log("fsdfsddddddddddddddddddddd")
       let file = req.file;
       file.fileName = file.key
       file.filename = file.key
