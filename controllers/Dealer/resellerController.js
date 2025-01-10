@@ -1300,6 +1300,24 @@ exports.addResellerUser = async (req, res) => {
             notificationArray.push(notificationData)
             let createNotification = await userService.saveNotificationBulk(notificationArray);
 
+            let email = data.email
+            let userId = saveData._id
+            let resetPasswordCode = randtoken.generate(4, '123456789')
+            let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
+            let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
+            const mailing = sgMail.send(emailConstant.servicerApproval(email,
+                {
+                    flag: "created",
+                    link: resetLink,
+                    darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                    lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                    subject: "Set Password",
+                    title: settingData[0]?.title,
+                    address: settingData[0]?.address,
+                    role: "Reseller User",
+                    servicerName: data.firstName + " " + data.lastName
+                }))
+
             //Save Logs add reseller user
             let logData = {
                 userId: req.userId,
@@ -1388,11 +1406,11 @@ exports.getResellerServicers = async (req, res) => {
         }
 
         let servicerIds = servicer.map(obj => obj._id);
-        console.log(servicer,"--------------------")
+        console.log(servicer, "--------------------")
         let servicerIds1 = servicer.map(obj => new mongoose.Types.ObjectId(obj.dealerId));
-        console.log(servicerIds1,"---333-----------------")
+        console.log(servicerIds1, "---333-----------------")
         servicerIds = servicerIds.concat(servicerIds1)
-        console.log(servicerIds,"---333-----------------")
+        console.log(servicerIds, "---333-----------------")
 
         // Get servicer with claim
         const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "completed", resellerId: new mongoose.Types.ObjectId(req.params.resellerId) };
@@ -1458,7 +1476,7 @@ exports.getResellerServicers = async (req, res) => {
             }
         ]);
 
-        console.log(servicerUser,"---333-----------------")
+        console.log(servicerUser, "---333-----------------")
 
 
         if (!servicerUser) {
@@ -1471,7 +1489,7 @@ exports.getResellerServicers = async (req, res) => {
         result_Array = servicer.map(servicer => {
             const matchingItem = servicerUser.find(user =>
                 user.metaId?.toString() === servicer?._id?.toString() ||
-                user.metaId?.toString() === servicer?.dealerId?.toString()||
+                user.metaId?.toString() === servicer?.dealerId?.toString() ||
                 user.metaId?.toString() === servicer?.resellerId?.toString()
             )
             const claimValue = valueClaim.find(claim => claim._id.toString() === servicer._id.toString())

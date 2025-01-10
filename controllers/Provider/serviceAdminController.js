@@ -1940,7 +1940,7 @@ exports.addServicerUser = async (req, res) => {
           lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
           title: settingData[0]?.title,
           subject: "Set Password",
-          role: "Servicer",
+          role: "Servicer User",
           address: settingData[0]?.address,
           servicerName: data.firstName + " " + data.lastName
         }))
