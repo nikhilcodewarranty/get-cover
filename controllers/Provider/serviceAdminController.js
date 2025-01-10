@@ -163,7 +163,8 @@ exports.createServiceProvider = async (req, res, next) => {
                 subject: "Set Password",
                 role: "Servicer",
                 address: settingData[0]?.address,
-                servicerName: saveMembers[i].firstName
+                servicerName: saveMembers[i].metaData[0].firstName + " "+ saveMembers[i].metaData[0].lastName
+                
               }))
           }
 
@@ -366,7 +367,7 @@ exports.createServiceProvider = async (req, res, next) => {
         let saveMembers = await userService.insertManyUser(teamMembers)
         if (data.status) {
           for (let i = 0; i < saveMembers.length; i++) {
-            if (saveMembers[i].status) {
+            if (saveMembers[i].metaData[0].status) {
               let email = saveMembers[i].email
               let userId = saveMembers[i]._id
               let resetPasswordCode = randtoken.generate(4, '123456789')
@@ -381,7 +382,7 @@ exports.createServiceProvider = async (req, res, next) => {
                   websiteSetting: settingData[0],
                   subject: "Set Password",
                   link: resetLink, role: 'Servicer',
-                  servicerName: saveMembers[i].firstName
+                  servicerName: saveMembers[i].metaData[0].firstName + " "+ saveMembers[i].metaData[0].lastName
                 }))
 
             }
