@@ -340,7 +340,7 @@ exports.createServiceProvider = async (req, res, next) => {
           title: settingData[0]?.title,
           websiteSetting: settingData[0],
           link: updatePrimaryLInk, role: "Servicer",
-          servicerName: updatePrimaryCode?.firstName
+          servicerName: updatePrimaryCode?.metaData[0].firstName
         }))
 
       teamMembers = teamMembers.slice(1).map(member => ({
