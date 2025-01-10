@@ -69,12 +69,25 @@ const autherUpload = multerS3({
   s3: s3,
   bucket: process.env.bucket_name,
   metadata: (req, file, cb) => {
-    console.log("req------------", req.body)
     cb(null, { fieldName: file.fieldname });
   },
   key: (req, file, cb) => {
+
+    let flag = req.query.flag
+
+    let folderName;
+    // Example: Set folderName based on file.fieldname
+    if (flag === 'bannerImage') {
+      folderName = 'banner';
+    } else if (flag === 'authorImage') {
+      folderName = 'author';
+    } else if (flag === 'thumbnailImage') {
+      folderName = 'thumbnail';
+    }
+
+
     const fileName = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
-    const fullPath = `${"thumbnail"}/${fileName}`;
+    const fullPath = `${folderName}/${fileName}`;
     cb(null, fullPath);
   }
 });
@@ -182,8 +195,10 @@ exports.uploadBannerImage = async (req, res, next) => {
     codewarrantyImages(req, res, async (err) => {
       console.log("fsdfsddddddddddddddddddddd")
       let file = req.file;
-      file.fileName = file.key
-      file.filename = file.key
+      console.log("fsdfsddddddddddddddddddddd",file)
+
+      // file.fileName = file.key
+      // file.filename = file.key
       // Log or process the content as needed
 
       res.send({

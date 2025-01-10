@@ -1168,7 +1168,7 @@ exports.getServicerInOrders = async (req, res) => {
     console.log("sdfsfsdfsdfsdfsdfsddfs",servicerUser);
     const result_Array = servicer.map((item1) => {
         const matchingItem = servicerUser.find(
-            (item2) => item2.metaId?.toString() === item1?._id?.toString());
+            (item2) => item2.metaId?.toString() === item1?._id?.toString()||item2.metaId?.toString() === item1?.dealerId?.toString()||item2.metaId?.toString() === item1?.resellerId?.toString());
             
         let matchingItem2 = servicerUser.find(
             (item2) => item2.metaId?.toString() === item1?.resellerId?.toString() || item2.metaId?.toString() === item1?.dealerId?.toString());
