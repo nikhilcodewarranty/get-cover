@@ -1410,8 +1410,9 @@ exports.getResellerServicers = async (req, res) => {
         let servicerIds = servicer.map(obj => obj._id);
         console.log(servicer, "--------------------")
         let servicerIds1 = servicer.map(obj => new mongoose.Types.ObjectId(obj.dealerId));
+        let servicerIds2 = servicer.map(obj => new mongoose.Types.ObjectId(obj.resellerId));
         console.log(servicerIds1, "---333-----------------")
-        servicerIds = servicerIds.concat(servicerIds1)
+        servicerIds = servicerIds.concat(servicerIds1,servicerIds2)
         console.log(servicerIds, "---333-----------------")
 
         // Get servicer with claim
