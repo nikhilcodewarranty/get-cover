@@ -1940,9 +1940,9 @@ exports.addServicerUser = async (req, res) => {
           lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
           title: settingData[0]?.title,
           subject: "Set Password",
-          role: "Servicer",
+          role: "Servicer User",
           address: settingData[0]?.address,
-          servicerName: saveMembers[i].firstName
+          servicerName: data.firstName + " " + data.lastName
         }))
       const notificationEmails = adminUsers.map(user => user.email)
 

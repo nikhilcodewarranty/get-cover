@@ -1552,11 +1552,11 @@ exports.addCustomerUser = async (req, res) => {
         flag: "created", title: settingData[0]?.title,
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        link: resetLink, subject: "Set Password", role: "Customer",
-        servicerName: saveMembers[i].firstName,
+        link: resetLink, subject: "Set Password", role: "Customer User",
+        servicerName: data.firstName + " " + data.lastName,
         address: settingData[0]?.address,
       }))
-      
+
       //Save Logs
       let logData = {
         userId: req.userId,
