@@ -1170,16 +1170,14 @@ exports.addResellerUser = async (req, res) => {
         }
 
         let checkUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: data.resellerId, isPrimary: true } } }, { isDeleted: false })
-        data.status = checkUser.status == 'no' || !checkUser.status || checkUser.status == 'false' ? false : true;
-        let statusCheck;
-        console.log("checkReseller----------------")
-        if (!checkReseller.status) {
+        data.status = checkUser.metaData[0]?.status == 'no' || !checkUser.metaData[0]?.status || checkUser.metaData[0]?.status == 'false' ? false : true;
 
+        let statusCheck;
+        if (!checkReseller.status) {
             statusCheck = false
         } else {
             statusCheck = data.status
         }
-
         let metaData = {
             email: data.email,
             metaData: [
@@ -1253,7 +1251,7 @@ exports.addResellerUser = async (req, res) => {
                 },
             }
 
-            
+
             let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerQuery, { email: 1 })
             let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDealerQuery, { email: 1 })
 
@@ -1301,6 +1299,25 @@ exports.addResellerUser = async (req, res) => {
             };
             notificationArray.push(notificationData)
             let createNotification = await userService.saveNotificationBulk(notificationArray);
+            let settingData = await userService.getSetting({});
+
+            let email = data.email
+            let userId = saveData._id
+            let resetPasswordCode = randtoken.generate(4, '123456789')
+            let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
+            let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
+            const mailing = sgMail.send(emailConstant.servicerApproval(email,
+                {
+                    flag: "created",
+                    link: resetLink,
+                    darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                    lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                    subject: "Set Password",
+                    title: settingData[0]?.title,
+                    address: settingData[0]?.address,
+                    role: "Reseller User",
+                    servicerName: data.firstName + " " + data.lastName
+                }))
 
             //Save Logs add reseller user
             let logData = {
@@ -1338,6 +1355,7 @@ exports.addResellerUser = async (req, res) => {
         })
     }
 }
+
 
 //Get Reseller Servicer
 exports.getResellerServicers = async (req, res) => {
