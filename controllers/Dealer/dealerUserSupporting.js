@@ -1165,11 +1165,13 @@ exports.getDealerServicers = async (req, res) => {
             servicer.unshift(...dealerResellerServicer);
         }
 
-        const servicerIds = servicer.map(obj => obj._id);
+        let servicerIds = servicer.map(obj => obj._id);
         const servicerIds1 = servicer.map(obj => obj.dealerId);
+        const servicerIds2 = servicer.map(obj => obj.resellerId);
         console.log("servicerIds1---------------------------------",servicerIds1);
         console.log("servicerIds++++---------------------------------",servicerIds1);
-        servicerIds.concat(servicerIds1);
+        servicerIds= servicerIds.concat(servicerIds1);
+        servicerIds = servicerIds.concat(servicerIds2);
         console.log("servicerIds---------------------------------",servicerIds1);
         const query1 = { metaId: { $in: servicerIds }, isPrimary: true };
         const servicerUser = await userService.findUserforCustomer1([
