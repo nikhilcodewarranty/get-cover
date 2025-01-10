@@ -193,9 +193,7 @@ exports.uploadTermAndCondition = async (req, res, next) => {
 exports.uploadBannerImage = async (req, res, next) => {
   try {
     codewarrantyImages(req, res, async (err) => {
-      console.log("fsdfsddddddddddddddddddddd")
       let file = req.file;
-      console.log("fsdfsddddddddddddddddddddd",file)
 
       // file.fileName = file.key
       // file.filename = file.key

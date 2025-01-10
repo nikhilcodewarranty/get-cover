@@ -147,7 +147,7 @@ exports.createServiceProvider = async (req, res, next) => {
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
       if (data.status) {
         for (let i = 0; i < saveMembers.length; i++) {
-          if (saveMembers[i].status) {
+          if (saveMembers[i].metaData[0]?.status) {
             let email = saveMembers[i].email
             let userId = saveMembers[i]._id
             let resetPasswordCode = randtoken.generate(4, '123456789')
@@ -1924,6 +1924,26 @@ exports.addServicerUser = async (req, res) => {
       }
 
       let createNotification = await userService.saveNotificationBulk(notificationArray);
+
+      let email = data.email
+      let userId = saveData._id
+      let resetPasswordCode = randtoken.generate(4, '123456789')
+      let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
+      let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
+      let settingData = await userService.getSetting({});
+
+      const mailing = sgMail.send(emailConstant.servicerApproval(email,
+        {
+          flag: "Approved",
+          link: resetLink,
+          darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+          lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+          title: settingData[0]?.title,
+          subject: "Set Password",
+          role: "Servicer",
+          address: settingData[0]?.address,
+          servicerName: saveMembers[i].firstName
+        }))
       const notificationEmails = adminUsers.map(user => user.email)
 
       res.send({
@@ -3283,7 +3303,7 @@ exports.resetServicerSetting = async (req, res) => {
     const adminSetting = await userService.getSetting({ userId: req.userId });
     let servicerId = data.id
     let response;
-    const getData = await userService.getSetting({ userId: servicerId });  
+    const getData = await userService.getSetting({ userId: servicerId });
     response = await userService.updateSetting({ _id: getData[0]?._id }, {
       colorScheme: [],
       defaultColor: [],
