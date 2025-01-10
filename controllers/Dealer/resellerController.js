@@ -1387,7 +1387,7 @@ exports.getResellerServicers = async (req, res) => {
             servicer.unshift(checkReseller);
         }
 
-        const servicerIds = servicer.map(obj => obj._id);
+        let servicerIds = servicer.map(obj => obj._id);
         let servicerIds1 = servicer.map(obj => new mongoose.Types.ObjectId(obj.dealerId));
         servicerIds = servicerIds.concat(servicerIds1)
 
