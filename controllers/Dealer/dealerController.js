@@ -69,13 +69,13 @@ const autherUpload = multerS3({
   s3: s3,
   bucket: process.env.bucket_name,
   metadata: (req, file, cb) => {
-    console.log("req------------",req.body)
-      cb(null, { fieldName: file.fieldname });
+    console.log("req------------", req.body)
+    cb(null, { fieldName: file.fieldname });
   },
   key: (req, file, cb) => {
-      const fileName = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
-      const fullPath = `${"thumbnail"}/${fileName}`;
-      cb(null, fullPath);
+    const fileName = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
+    const fullPath = `${"thumbnail"}/${fileName}`;
+    cb(null, fullPath);
   }
 });
 
@@ -1648,6 +1648,13 @@ exports.addDealerUser = async (req, res) => {
       notificationArrayData.push(notificationData1)
 
       let createNotification = await userService.saveNotificationBulk(notificationArrayData);
+      //Send Reset Password
+      let resetPasswordCode = randtoken.generate(4, '123456789')
+      let email = data.email;
+      let userId = saveData._id;
+      let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
+      let mailing = sgMail.send(emailConstant.dealerApproval(email, { subject: "Set Password", link: resetLink, role: req.role, dealerName: data.firstName + " " + data?.lastName }))
+      let updateStatus = await userService.updateUser({ _id: userId }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
       //Save Logs create Customer
       let logData = {
         userId: req.userId,
@@ -2909,7 +2916,7 @@ exports.resetDealerSetting = async (req, res) => {
       dealerId = checkCustomer.dealerId
     }
     let response;
-    const getData = await userService.getSetting({ userId: dealerId });   
+    const getData = await userService.getSetting({ userId: dealerId });
     response = await userService.updateSetting({ _id: getData[0]?._id }, {
       colorScheme: [],
       defaultColor: [],
