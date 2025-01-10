@@ -1170,7 +1170,7 @@ exports.addResellerUser = async (req, res) => {
         }
 
         let checkUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: data.resellerId, isPrimary: true } } }, { isDeleted: false })
-        data.status = checkUser.status == 'no' || !checkUser.status || checkUser.status == 'false' ? false : true;
+        data.status = checkUser.metaData[0]?.status == 'no' || !checkUser.metaData[0]?.status || checkUser.metaData[0]?.status == 'false' ? false : true;
 
         let statusCheck;
         if (!checkReseller.status) {
