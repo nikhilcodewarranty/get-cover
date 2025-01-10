@@ -1792,7 +1792,7 @@ exports.getSingleOrder = async (req, res) => {
 
         let result_Array = servicer.map((item1) => {
             const matchingItem = servicerUser.find(
-                (item2) => item2.metaId.toString() === item1._id.toString() || item2.metaId.toString() === item1?.dealerId.toString() || item2.metaId.toString() === item1?.resellerId.toString()
+                (item2) => item2.metaId.toString() === item1?._id?.toString() || item2?.metaId?.toString() === item1?.dealerId?.toString() || item2.metaId?.toString() === item1?.resellerId?.toString()
             );
 
             if (matchingItem) {
