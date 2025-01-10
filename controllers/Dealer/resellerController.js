@@ -1150,7 +1150,7 @@ exports.addResellerUser = async (req, res) => {
         let checkReseller = await resellerService.getReseller({ _id: data.resellerId }, {})
         // let checkDealer = await resellerService.getReseller({ _id: checkReseller.dealerId }, {})
         let checkDealer = await dealerService.getDealerByName({ _id: checkReseller.dealerId }, {})
-
+  
         if (!checkReseller) {
             res.send({
                 code: constant.errorCode,
@@ -1158,9 +1158,9 @@ exports.addResellerUser = async (req, res) => {
             })
             return;
         };
-
+  
         let checkEmail = await userService.findOneUser({ email: data.email }, {})
-
+  
         if (checkEmail) {
             res.send({
                 code: constant.errorCode,
@@ -1168,16 +1168,18 @@ exports.addResellerUser = async (req, res) => {
             })
             return;
         }
-
+  
         let checkUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: data.resellerId, isPrimary: true } } }, { isDeleted: false })
         data.status = checkUser.metaData[0]?.status == 'no' || !checkUser.metaData[0]?.status || checkUser.metaData[0]?.status == 'false' ? false : true;
-
+  
         let statusCheck;
         if (!checkReseller.status) {
             statusCheck = false
         } else {
             statusCheck = data.status
         }
+        console.log("dsfsdfdsfdsfdfsdsfsd",statusCheck)
+        console.log("checkReseller",checkReseller)
         let metaData = {
             email: data.email,
             metaData: [
@@ -1191,12 +1193,12 @@ exports.addResellerUser = async (req, res) => {
                     position: data.position,
                     isPrimary: false,
                     dialCode: data.dialCode ? data.dialCode : "+1"
-
+  
                 }
             ]
-
+  
         }
-
+  
         let saveData = await userService.createUser(metaData)
         if (!saveData) {
             //Save Logs add reseller user
@@ -1250,13 +1252,13 @@ exports.addResellerUser = async (req, res) => {
                     }
                 },
             }
-
-
+  
+  
             let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerQuery, { email: 1 })
             let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDealerQuery, { email: 1 })
-
+  
             let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerDealerQuery, { email: 1 })
-
+  
             const IDs = adminUsers.map(user => user._id)
             let notificationArray = []
             const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
@@ -1300,7 +1302,7 @@ exports.addResellerUser = async (req, res) => {
             notificationArray.push(notificationData)
             let createNotification = await userService.saveNotificationBulk(notificationArray);
             let settingData = await userService.getSetting({});
-
+  
             let email = data.email
             let userId = saveData._id
             let resetPasswordCode = randtoken.generate(4, '123456789')
@@ -1318,7 +1320,7 @@ exports.addResellerUser = async (req, res) => {
                     role: "Reseller User",
                     servicerName: data.firstName + " " + data.lastName
                 }))
-
+  
             //Save Logs add reseller user
             let logData = {
                 userId: req.userId,
@@ -1354,7 +1356,7 @@ exports.addResellerUser = async (req, res) => {
             message: err.message
         })
     }
-}
+  }
 
 
 //Get Reseller Servicer
