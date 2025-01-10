@@ -42,7 +42,7 @@ router.post('/resetDealerSetting', [verifyToken], dealerController.resetDealerSe
 
 router.get('/getDealerColorSetting/:dealerId', [verifyToken], dealerController.getDealerColorSetting);
 
-router.post('/uploadBannerImage', [verifyToken], dealerController.uploadBannerImage);
+router.post('/uploadBannerImage',  dealerController.uploadBannerImage);
 
 
 router.get('/defaultSettingDealer/:dealerId', [verifyToken], dealerController.defaultSettingDealer);
