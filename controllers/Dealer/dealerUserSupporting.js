@@ -1164,22 +1164,23 @@ exports.getDealerServicers = async (req, res) => {
         if (dealerResellerServicer.length > 0) {
             servicer.unshift(...dealerResellerServicer);
         }
+        // console.log("servicerIds1---------------00000000000------------------",servicer);
 
         let servicerIds = servicer.map(obj => obj._id);
-        const servicerIds1 = servicer.map(obj => obj.dealerId);
-        const servicerIds2 = servicer.map(obj => obj.resellerId);
-        console.log("servicerIds1---------------------------------",servicerIds1);
-        console.log("servicerIds++++---------------------------------",servicerIds1);
+        const servicerIds1 = servicer.map(obj => new mongoose.Types.ObjectId(obj.dealerId));
+        const servicerIds2 = servicer.map(obj => new mongoose.Types.ObjectId(obj.resellerId));
+        // console.log("servicerIds1---------------------------------",servicerIds);
+        // console.log("servicerIds++++---------------------------------",servicerIds1);
         servicerIds= servicerIds.concat(servicerIds1);
         servicerIds = servicerIds.concat(servicerIds2);
-        console.log("servicerIds---------------------------------",servicerIds1);
+        console.log("servicerIds---------------------------------",servicerIds);
         const query1 = { metaId: { $in: servicerIds }, isPrimary: true };
         const servicerUser = await userService.findUserforCustomer1([
             {
                 $match: {
                     $and: [
-                        // { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
-                        // { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { metaData: { $elemMatch: { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } } } },
+                        { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         { metaData: { $elemMatch: { metaId: { $in: servicerIds }, isPrimary: true } } }
                     ]
                 }
@@ -1212,7 +1213,7 @@ exports.getDealerServicers = async (req, res) => {
             });
             return;
         };
-        console.log("serviffffffff============cerIds1---------------------------------",servicerUser._id);
+        // console.log("serviffffffff============cerIds1---------------------------------",servicerUser);
 
         // Get servicer with claim
         const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "completed" };
@@ -1248,7 +1249,7 @@ exports.getDealerServicers = async (req, res) => {
         let numberOfClaims = await claimService.getClaimWithAggregate(claimAggregateQuery)
 
         const result_Array = servicer.map(item1 => {
-            const matchingItem = servicerUser.find(item2 => item2.metaId?.toString() === item1?._id.toString() || item2.metaId?.toString() === item1?.dealerId?.toString() || item2.metaId?.toString() === item1?.resellerId?.toString());
+            const matchingItem = servicerUser.find(item2 => item2.metaId?.toString() === item1?._id?.toString() || item2.metaId?.toString() === item1?.dealerId?.toString() || item2.metaId?.toString() === item1?.resellerId?.toString());
             const claimValue = valueClaim.find(claim => claim._id?.toString() === item1._id?.toString())
             const claimNumber = numberOfClaims.find(claim => claim._id?.toString() === item1._id?.toString())
             if (matchingItem) {
@@ -1302,7 +1303,7 @@ exports.getDealerServicers = async (req, res) => {
     } catch (err) {
         res.send({
             code: constant.errorCode,
-            message: err.message
+            message: err.stack
         })
     }
 }
