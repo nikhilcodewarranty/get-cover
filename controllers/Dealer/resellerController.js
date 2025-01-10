@@ -1251,7 +1251,7 @@ exports.addResellerUser = async (req, res) => {
                 },
             }
 
-            
+
             let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerQuery, { email: 1 })
             let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDealerQuery, { email: 1 })
 
@@ -1388,6 +1388,9 @@ exports.getResellerServicers = async (req, res) => {
         }
 
         const servicerIds = servicer.map(obj => obj._id);
+        let servicerIds1 = servicer.map(obj => new mongoose.Types.ObjectId(obj.dealerId));
+        servicerIds = servicerIds.concat(servicerIds1)
+
         // Get servicer with claim
         const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "completed", resellerId: new mongoose.Types.ObjectId(req.params.resellerId) };
         const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "completed", resellerId: new mongoose.Types.ObjectId(req.params.resellerId) };
