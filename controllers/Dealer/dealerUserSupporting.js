@@ -1087,7 +1087,7 @@ exports.getResellerServicers = async (req, res) => {
         };
 
         result_Array = servicer.map(servicer => {
-            const matchingItem = servicerUser.find(user => user.metaId.toString() === servicer._id.toString())
+            const matchingItem = servicerUser.find(user => user.metaId.toString() === servicer._id.toString()||user.metaId.toString() === servicer.dealerId?.toString()||user.metaId.toString() === servicer.resellerId?.toString())
             if (matchingItem) {
                 return {
                     ...matchingItem, // Use toObject() to convert Mongoose document to plain JavaScript object
@@ -1309,7 +1309,7 @@ exports.getDealerServicers = async (req, res) => {
 exports.getServicersList = async (req, res) => {
     try {
         let data = req.body
-        let query = { isDeleted: false, accountStatus: "Approved", status: true, resellerId: null }
+        let query = { isDeleted: false, accountStatus: "Approved", status: true }
         let projection = { __v: 0, isDeleted: 0 }
         let servicer = await providerService.getAllServiceProvider(query, projection);
         let getRelations = await dealerRelationService.getDealerRelations({ dealerId: req.userId })

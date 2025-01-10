@@ -1483,7 +1483,7 @@ exports.getResellerServicers = async (req, res) => {
         };
 
         result_Array = servicer.map(servicer => {
-            const matchingItem = servicerUser.find(user => user.metaId.toString() === servicer._id.toString())
+            const matchingItem = servicerUser.find(user => user.metaId.toString() === servicer._id.toString()||user.metaId.toString() === servicer?.dealerId.toString()||user.metaId.toString() === servicer?.resellerId.toString())
             const claimValue = valueClaim.find(claim => claim._id.toString() === servicer._id.toString())
             const claimNumber = numberOfClaims.find(claim => claim._id.toString() === servicer._id.toString())
             if (matchingItem) {
