@@ -42,6 +42,9 @@ router.post('/resetDealerSetting', [verifyToken], dealerController.resetDealerSe
 
 router.get('/getDealerColorSetting/:dealerId', [verifyToken], dealerController.getDealerColorSetting);
 
+router.post('/uploadBannerImage', [verifyToken], dealerController.uploadBannerImage);
+
+
 router.get('/defaultSettingDealer/:dealerId', [verifyToken], dealerController.defaultSettingDealer);
 
 router.post("/dealers", [verifyToken], dealerSupportingController.getAllDealers); // get dealers list

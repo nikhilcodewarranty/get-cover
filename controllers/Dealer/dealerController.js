@@ -51,6 +51,7 @@ const s3 = new S3Client({
     secretAccessKey: process.env.aws_secret_access_key,
   }
 });
+
 const StorageP = multerS3({
   s3: s3,
   bucket: process.env.bucket_name, // Ensure this environment variable is set
@@ -62,12 +63,37 @@ const StorageP = multerS3({
     cb(null, fileName);
   }
 });
+
+//Upload Code waranty Images
+const autherUpload = multerS3({
+  s3: s3,
+  bucket: process.env.bucket_name,
+  metadata: (req, file, cb) => {
+    console.log("req------------",req.body)
+      cb(null, { fieldName: file.fieldname });
+  },
+  key: (req, file, cb) => {
+      const fileName = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
+      const fullPath = `${folderName}/${fileName}`;
+      cb(null, fullPath);
+  }
+});
+
 var uploadP = multer({
   storage: StorageP,
   limits: {
     fileSize: 500 * 1024 * 1024, // 500 MB limit
   },
 }).single('file');
+
+
+var codewarrantyImages = multer({
+  storage: autherUpload,
+  limits: {
+    fileSize: 500 * 1024 * 1024, // 500 MB limit
+  },
+}).single('file');
+
 
 const checkObjectId = async (Id) => {
   // Check if the potentialObjectId is a valid ObjectId
@@ -151,6 +177,31 @@ exports.uploadTermAndCondition = async (req, res, next) => {
 
 }
 
+exports.uploadBannerImage = async (req, res, next) => {
+  try {
+    codewarrantyImages(req, res, async (err) => {
+      let file = req.file;
+      file.fileName = file.key
+      file.filename = file.key
+      // Log or process the content as needed
+
+      res.send({
+        code: constant.successCode,
+        message: 'Success!',
+        file
+
+      })
+    })
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+    return
+  }
+
+}
 //Register Dealer
 exports.registerDealer = async (req, res) => {
   try {
