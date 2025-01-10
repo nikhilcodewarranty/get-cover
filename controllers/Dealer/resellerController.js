@@ -1503,6 +1503,7 @@ exports.getResellerServicers = async (req, res) => {
         })
     }
 }
+
 //Get customer by reseller 
 exports.getResselerByCustomer = async (req, res) => {
     try {
