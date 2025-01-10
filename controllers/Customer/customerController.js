@@ -1538,6 +1538,25 @@ exports.addCustomerUser = async (req, res) => {
       };
       notificationArray.push(notificationData)
       let createNotification = await userService.saveNotificationBulk(notificationArray);
+
+      let email = data.email
+      let userId = saveData._id
+      let settingData = await userService.getSetting({});
+
+      let resetPasswordCode = randtoken.generate(4, '123456789')
+      let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
+
+      let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
+
+      const mailing = sgMail.send(emailConstant.servicerApproval(email, {
+        flag: "created", title: settingData[0]?.title,
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        link: resetLink, subject: "Set Password", role: "Customer",
+        servicerName: saveMembers[i].firstName,
+        address: settingData[0]?.address,
+      }))
+      
       //Save Logs
       let logData = {
         userId: req.userId,

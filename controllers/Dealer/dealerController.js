@@ -1653,7 +1653,7 @@ exports.addDealerUser = async (req, res) => {
       let email = data.email;
       let userId = saveData._id;
       let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
-      let mailing = sgMail.send(emailConstant.dealerApproval(email, { subject: "Set Password", link: resetLink, role: req.role, dealerName: data.firstName + " " + data?.lastName }))
+      let mailing = sgMail.send(emailConstant.dealerApproval(email, { subject: "Set Password", link: resetLink, role: req.role + " " + "User", dealerName: data.firstName + " " + data?.lastName }))
       let updateStatus = await userService.updateUser({ _id: userId }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
       //Save Logs create Customer
       let logData = {
