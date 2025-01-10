@@ -147,7 +147,7 @@ exports.createServiceProvider = async (req, res, next) => {
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
       if (data.status) {
         for (let i = 0; i < saveMembers.length; i++) {
-          if (saveMembers[i].status) {
+          if (saveMembers[i].metaData[0]?.status) {
             let email = saveMembers[i].email
             let userId = saveMembers[i]._id
             let resetPasswordCode = randtoken.generate(4, '123456789')
@@ -163,7 +163,8 @@ exports.createServiceProvider = async (req, res, next) => {
                 subject: "Set Password",
                 role: "Servicer",
                 address: settingData[0]?.address,
-                servicerName: saveMembers[i].firstName
+                servicerName: saveMembers[i].metaData[0].firstName + " "+ saveMembers[i].metaData[0].lastName
+                
               }))
           }
 
@@ -339,7 +340,7 @@ exports.createServiceProvider = async (req, res, next) => {
           title: settingData[0]?.title,
           websiteSetting: settingData[0],
           link: updatePrimaryLInk, role: "Servicer",
-          servicerName: updatePrimaryCode?.firstName
+          servicerName: updatePrimaryCode?.metaData[0].firstName
         }))
 
       teamMembers = teamMembers.slice(1).map(member => ({
@@ -366,7 +367,7 @@ exports.createServiceProvider = async (req, res, next) => {
         let saveMembers = await userService.insertManyUser(teamMembers)
         if (data.status) {
           for (let i = 0; i < saveMembers.length; i++) {
-            if (saveMembers[i].status) {
+            if (saveMembers[i].metaData[0].status) {
               let email = saveMembers[i].email
               let userId = saveMembers[i]._id
               let resetPasswordCode = randtoken.generate(4, '123456789')
@@ -381,7 +382,7 @@ exports.createServiceProvider = async (req, res, next) => {
                   websiteSetting: settingData[0],
                   subject: "Set Password",
                   link: resetLink, role: 'Servicer',
-                  servicerName: saveMembers[i].firstName
+                  servicerName: saveMembers[i].metaData[0].firstName + " "+ saveMembers[i].metaData[0].lastName
                 }))
 
             }
@@ -1924,6 +1925,26 @@ exports.addServicerUser = async (req, res) => {
       }
 
       let createNotification = await userService.saveNotificationBulk(notificationArray);
+
+      let email = data.email
+      let userId = saveData._id
+      let resetPasswordCode = randtoken.generate(4, '123456789')
+      let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
+      let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
+      let settingData = await userService.getSetting({});
+
+      const mailing = sgMail.send(emailConstant.servicerApproval(email,
+        {
+          flag: "Approved",
+          link: resetLink,
+          darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+          lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+          title: settingData[0]?.title,
+          subject: "Set Password",
+          role: "Servicer User",
+          address: settingData[0]?.address,
+          servicerName: data.firstName + " " + data.lastName
+        }))
       const notificationEmails = adminUsers.map(user => user.email)
 
       res.send({
