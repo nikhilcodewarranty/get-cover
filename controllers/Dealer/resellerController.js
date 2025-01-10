@@ -200,7 +200,7 @@ exports.createReseller = async (req, res) => {
                             title: settingData[0]?.title,
                             address: settingData[0]?.address,
                             role: "Reseller",
-                            servicerName: saveMembers[i].firstName
+                            servicerName: saveMembers[i].metaData[0].firstName + " "+ saveMembers[i].metaData[0].lastName
                         }))
                 }
 

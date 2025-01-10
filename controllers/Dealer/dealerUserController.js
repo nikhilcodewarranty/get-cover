@@ -686,7 +686,7 @@ exports.createCustomer = async (req, res, next) => {
                                 address: settingData[0]?.address,
                                 link: resetLink,
                                 subject: "Set Password", role: "Customer",
-                                servicerName: saveMembers[i].firstName
+                                servicerName: saveMembers[i].metaData[0].firstName + " "+ saveMembers[i].metaData[0].lastName
                             }))
                     }
 
@@ -968,7 +968,7 @@ exports.createReseller = async (req, res) => {
                             role: "Reseller",
                             title: settingData[0]?.title,
                             address: settingData[0]?.address,
-                            servicerName: saveMembers[i].firstName
+                            servicerName: saveMembers[i].metaData[0].firstName + " "+ saveMembers[i].metaData[0].lastName
                         }))
                 }
             }

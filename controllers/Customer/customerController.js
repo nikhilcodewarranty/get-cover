@@ -227,7 +227,7 @@ exports.createCustomer = async (req, res, next) => {
               darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
               lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
               link: resetLink, subject: "Set Password", role: "Customer",
-              servicerName: saveMembers[i].firstName,
+              servicerName: saveMembers[i].metaData[0].firstName + " "+ saveMembers[i].metaData[0].lastName,
               address: settingData[0]?.address,
             }))
 

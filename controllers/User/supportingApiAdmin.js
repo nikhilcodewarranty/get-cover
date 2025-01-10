@@ -325,12 +325,12 @@ exports.createDealer = async (req, res) => {
                 if (req.body.isAccountCreate) {
                     for (let i = 0; i < createUsers.length; i++) {
                         // Send mail to all User except primary
-                        if (createUsers[i].status) {
+                        if (createUsers[i].metaData[0].status) {
                             let resetPasswordCode = randtoken.generate(4, '123456789')
                             let email = createUsers[i].email;
                             let userId = createUsers[i]._id;
                             let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
-                            sgMail.send(emailConstant.dealerApproval(email, { subject: "Set Password", link: resetLink, role: req.role, dealerName: createUsers[i].firstName }))
+                            sgMail.send(emailConstant.dealerApproval(email, { subject: "Set Password", link: resetLink, role: req.role, dealerName: createUsers[i].metaData[0].firstName + " " + createUsers[i].metaData[0].lastName }))
                             await userService.updateUser({ _id: userId }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
                         }
                     }
@@ -575,7 +575,7 @@ exports.createDealer = async (req, res) => {
                             let email = createUsers[i].email;
                             let userId = createUsers[i]._id;
                             let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
-                            let mailing = sgMail.send(emailConstant.dealerApproval(email, { subject: "Set Password", link: resetLink, role: req.role, dealerName: createUsers[i].firstName }))
+                            let mailing = sgMail.send(emailConstant.dealerApproval(email, { subject: "Set Password", link: resetLink, role: req.role, dealerName: createUsers[i].metaData[0].firstName + " "+createUsers[i].metaData[0].lastName }))
                             let updateStatus = await userService.updateUser({ _id: userId }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
                         }
 
@@ -625,7 +625,7 @@ exports.createDealer = async (req, res) => {
             code: constant.errorCode,
             message: err.message
         });
-        
+
     }
 };
 
