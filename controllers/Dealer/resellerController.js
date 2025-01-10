@@ -1388,8 +1388,11 @@ exports.getResellerServicers = async (req, res) => {
         }
 
         let servicerIds = servicer.map(obj => obj._id);
+        console.log(servicer,"--------------------")
         let servicerIds1 = servicer.map(obj => new mongoose.Types.ObjectId(obj.dealerId));
+        console.log(servicerIds1,"---333-----------------")
         servicerIds = servicerIds.concat(servicerIds1)
+        console.log(servicerIds,"---333-----------------")
 
         // Get servicer with claim
         const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "completed", resellerId: new mongoose.Types.ObjectId(req.params.resellerId) };
@@ -1455,6 +1458,7 @@ exports.getResellerServicers = async (req, res) => {
             }
         ]);
 
+        console.log(servicerUser,"---333-----------------")
 
 
         if (!servicerUser) {
@@ -1465,7 +1469,10 @@ exports.getResellerServicers = async (req, res) => {
             return;
         };
         result_Array = servicer.map(servicer => {
-            const matchingItem = servicerUser.find(user => user.metaId.toString() === servicer._id.toString())
+            const matchingItem = servicerUser.find(user =>
+                user.metaId?.toString() === servicer?._id?.toString() ||
+                user.metaId?.toString() === servicer?.dealerId?.toString()
+            )
             const claimValue = valueClaim.find(claim => claim._id.toString() === servicer._id.toString())
             const claimNumber = numberOfClaims.find(claim => claim._id.toString() === servicer._id.toString())
             if (matchingItem) {
