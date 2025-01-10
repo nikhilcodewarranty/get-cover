@@ -1108,8 +1108,8 @@ exports.getServicerInOrders = async (req, res) => {
     }
 
     const servicerIds = servicer.map((obj) => obj?._id);
-    const resellerIdss = servicer.map((obj) => obj?.resellerId);
-    const dealerIdss = servicer.map((obj) => obj?.dealerId);
+    const resellerIdss = servicer.map((obj) => new mongoose.Types.ObjectId(obj?.resellerId));
+    const dealerIdss = servicer.map((obj) => new mongoose.Types.ObjectId(obj?.dealerId));
     const query1 = {
         $and: [
             {
