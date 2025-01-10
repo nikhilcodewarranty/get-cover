@@ -1942,7 +1942,7 @@ exports.addServicerUser = async (req, res) => {
           subject: "Set Password",
           role: "Servicer",
           address: settingData[0]?.address,
-          servicerName: saveMembers[i].firstName
+          servicerName: data.firstName + " " + data.lastName
         }))
       const notificationEmails = adminUsers.map(user => user.email)
 
