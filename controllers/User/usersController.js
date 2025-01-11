@@ -1454,7 +1454,7 @@ exports.sendLinkToEmail = async (req, res) => {
         })
         return;
       }
-      let resetLink = `${process.env.SITE_URL} newPassword / ${checkEmail._id} /${resetPasswordCode}`
+      let resetLink = `${process.env.SITE_URL}newPassword/${checkEmail._id}/${resetPasswordCode}`
 
       let settingData = await userService.getSetting({});
 
