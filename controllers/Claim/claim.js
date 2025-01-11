@@ -576,7 +576,7 @@ exports.addClaim = async (req, res, next) => {
             { status: true },
             {
               $or: [
-                { metaId: checkOrder?.resellerId },
+                { metaId: checkOrder.resellerId },
                 // { metaId: data?.servicerId },
               ]
             },
@@ -673,7 +673,7 @@ exports.addClaim = async (req, res, next) => {
     let servicerPrimary = await supportingFunction.getPrimaryUser({ $or: [{ metaData: { $elemMatch: { metaId: data?.servicerId, isPrimary: true } } }, { metaData: { $elemMatch: { metaId: checkServicer?.dealerId, isPrimary: true } } }, { metaData: { $elemMatch: { metaId: checkServicer?.resellerId, isPrimary: true } } }] })
 
     let createNotification = await userService.saveNotificationBulk(notificationArray);
-
+    console.log("-----------------------------------------------------11111")
     // Send Email code here
     let settingData = await userService.getSetting({});
     let adminCC = await supportingFunction.getUserEmails();
@@ -684,7 +684,7 @@ exports.addClaim = async (req, res, next) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: `Dear ${customerPrimary?.metaData[0]?.firstName}`,
+      senderName: `Dear ${customerPrimary.metaData[0]?.firstName}`,
       redirectId: base_url
     }
     let mailing;
@@ -712,7 +712,7 @@ exports.addClaim = async (req, res, next) => {
       let customerCaseUser = await supportingFunction.getNotificationEligibleUser(customerCaseNotification, { email: 1, metaData: 1 })
       let adminUser = customerCaseUser.filter(user => user.metaData[0]?.roleId.toString() === process.env.super_admin.toString())
       let dealerUser = customerCaseUser.filter(user => user.metaData[0]?.roleId.toString() === process.env.dealer.toString())
-      let resellerUser = customerCaseUser.filter(user => user?.metaData[0]?.roleId.toString() === process.env.reseller.toString())
+      let resellerUser = customerCaseUser.filter(user => user.metaData[0]?.roleId.toString() === process.env.reseller.toString())
       let customerUser = customerCaseUser.filter(user => user.metaData[0]?.roleId.toString() === process.env.customer.toString())
 
       const adminEmail = adminUser.map(user => user.email)
@@ -726,7 +726,7 @@ exports.addClaim = async (req, res, next) => {
       mailing = sgMail.send(emailConstant.sendEmailTemplate(adminEmail, ["noreply@getcover.com"], emailData))
       emailData.senderName = `Dear ${dealerPrimary.metaData[0]?.firstName}`
       mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.com"], emailData))
-      emailData.senderName = `Dear ${resellerPrimary.metaData[0]?.firstName}`
+      emailData.senderName = `Dear ${resellerPrimary?.metaData[0]?.firstName}`
       mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ["noreply@getcover.com"], emailData))
       emailData.senderName = `Dear ${customerPrimary.metaData[0]?.firstName}`
       mailing = sgMail.send(emailConstant.sendEmailTemplate(customerEmail, ["noreply@getcover.com"], emailData))
@@ -765,9 +765,11 @@ exports.addClaim = async (req, res, next) => {
       mailing = sgMail.send(emailConstant.sendEmailTemplate(adminEmail, ["noreply@getcover.com"], emailData))
       emailData.senderName = `Dear ${dealerPrimary.metaData[0]?.firstName}`
       mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.com"], emailData))
-      emailData.senderName = `Dear ${resellerPrimary.metaData[0]?.firstName}`
+      emailData.senderName = `Dear ${resellerPrimary?.metaData[0]?.firstName}`
       mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ["noreply@getcover.com"], emailData))
     }
+    console.log("-----------------------------------------------------2222222")
+
     // Email to servicer and cc to admin 
     if (servicerPrimary) {
       emailData = {
@@ -813,6 +815,8 @@ exports.addClaim = async (req, res, next) => {
       }
 
     }
+    console.log("-----------------------------------------------------333333")
+
     res.send({
       code: constant.successCode,
       message: 'Success!',
@@ -3245,7 +3249,7 @@ exports.saveBulkClaim = async (req, res) => {
       let toMail = [];
       let ccMail;
       const userId = req.userId;
-      let resellerData 
+      let resellerData
 
       //Get Fail and Passes Entries
       const counts = totalDataComing.reduce((acc, obj) => {
@@ -3696,7 +3700,7 @@ exports.saveBulkClaim = async (req, res) => {
         let allDealer = await supportingFunction.getNotificationEligibleUser(dealerEmailBulkQuery, { email: 1 })
 
         let adminEmail = adminUsers.map(user => user.email);
-        let dealerEmail= allDealer.map(user => user.email);
+        let dealerEmail = allDealer.map(user => user.email);
 
         if (failureEntries.length > 0) {
           htmlTableString = convertArrayToHTMLTable([], failureEntries);
