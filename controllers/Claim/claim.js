@@ -576,7 +576,7 @@ exports.addClaim = async (req, res, next) => {
             { status: true },
             {
               $or: [
-                { metaId: checkOrder.resellerId },
+                { metaId: checkOrder?.resellerId },
                 // { metaId: data?.servicerId },
               ]
             },
