@@ -2197,7 +2197,7 @@ exports.updateProfile = async (req, res) => {
     newMetaData[0].firstName = data.firstName ? data.firstName : checkUser.metaData[0].firstName
     newMetaData[0].lastName = data.lastName ? data.lastName : checkUser.metaData[0].lastName
     newMetaData[0].phoneNumber = data.phoneNumber ? data.phoneNumber : checkUser.metaData[0].phoneNumber
-    newMetaData[0].status = data.status 
+    newMetaData[0].status = data.status
     newMetaData[0].position = data.position ? data.position : checkUser.metaData[0].position
     let updateProfile = await userService.updateSingleUser({ email: email }, { metaData: newMetaData }, { new: true })
 
@@ -3231,14 +3231,14 @@ exports.getSetting = async (req, res) => {
         setting[0].whiteLabelLogo.baseUrl = baseUrl;
       }
       const sideBarColor = adminData[0]?.colorScheme.find(color => color.colorType === "sideBarColor");
-      
+
       const chartFirstColor = adminData[0]?.colorScheme.find(color => color.colorType === "chartFirstColor");
       const exists = setting[0].colorScheme.some(color => color.colorType === 'chartFirstColor');
-      
+
       const chartSecondColor = adminData[0]?.colorScheme.find(color => color.colorType === "chartSecondColor");
       const chartSecondColorExist = setting[0].colorScheme.some(color => color.colorType === 'chartSecondColor');
-      console.log("chartSecondColorExist",chartSecondColorExist)
-      console.log("chartSecondColor",chartSecondColor)
+      console.log("chartSecondColorExist", chartSecondColorExist)
+      console.log("chartSecondColor", chartSecondColor)
 
       if (sideBarColor) {
         setting[0].adminSideBarColor = sideBarColor;
@@ -3279,7 +3279,7 @@ exports.getSetting = async (req, res) => {
         }
 
         const sideBarColor = setting[0]?.colorScheme.find(color => color.colorType === "sideBarColor");
-  
+
 
         if (sideBarColor) {
           setting[0].adminSideBarColor = sideBarColor;
@@ -3313,7 +3313,7 @@ exports.preLoginData = async (req, res) => {
     //   });
     //   return
     // }
-    const checkUser = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin } } })
+    const checkUser = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
     let setting = await userService.getSetting({ userId: checkUser.metaData[0].metaId });
     const baseUrl = process.env.API_ENDPOINT;
     if (setting.length > 0) {
@@ -3465,7 +3465,7 @@ exports.contactUs = async (req, res) => {
     const ip = data.ipAddress
     const response = await axios.get(`https://ipapi.co/${ip}/json/`);
     const result = response.data;
-    data.location = result.city + "," + result.region + "," + result.country_name + ","+result.postal
+    data.location = result.city + "," + result.region + "," + result.country_name + "," + result.postal
     emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
