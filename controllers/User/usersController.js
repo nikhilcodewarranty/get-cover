@@ -3309,12 +3309,12 @@ exports.preLoginData = async (req, res) => {
     // if (req.role != "Super Admin") {
     //   res.send({
     //     code: constant.errorCode,
-    //     message: "Only super admin allow to do this action!"
+    //     message: "Only super admin all  ow to do this action!"
     //   });
     //   return
     // }
 
-    console.log("ewewrwerwerwerwerwerwerr-------------------------",)
+    console.log("ewewrwerwerwerwerwerwerr-------------------------")
 
     const checkUser = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
     console.log("checkUser-------------------------", checkUser)
