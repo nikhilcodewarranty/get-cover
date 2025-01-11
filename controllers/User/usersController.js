@@ -2989,7 +2989,7 @@ exports.accountSetting = async (req, res) => {
     data.setDefault = 0;
     data.userId = req.userId
     let response;
-    const getData = await userService.getSetting({ userId: req.userId });
+    const getData = await userService.getSetting({ userId: req.teammateId });
     console.log("getData----------------------",getData);
     if (getData.length > 0) {
       await userService.updateManySetting({}, { whiteLabelLogo: data.whiteLabelLogo }, { new: true });
