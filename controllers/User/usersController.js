@@ -3212,7 +3212,6 @@ exports.getSetting = async (req, res) => {
     setting = await userService.getSetting({ userId: userId });
     const baseUrl = process.env.API_ENDPOINT;
     if (setting.length > 0) {
-      console.log("dsfsdfsdfsdfddsfdsdsdsfsdsdfsddfsdf")
       const checkUser = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin } } })
       let adminData = await userService.getSetting({ userId: checkUser.metaData[0].metaId });
       setting[0].base_url = baseUrl;
@@ -3238,6 +3237,8 @@ exports.getSetting = async (req, res) => {
 
       const chartSecondColor = adminData[0].colorScheme.some(color => color.colorType === 'chartSecondColor');
       const chartSecondColorExist = setting[0].colorScheme.some(color => color.colorType === 'chartSecondColor');
+      console.log("chartSecondColorExist",chartSecondColorExist)
+      console.log("chartSecondColor",chartSecondColor)
 
       if (sideBarColor) {
         setting[0].adminSideBarColor = sideBarColor;
