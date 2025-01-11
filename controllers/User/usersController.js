@@ -3212,7 +3212,7 @@ exports.getSetting = async (req, res) => {
     setting = await userService.getSetting({ userId: userId });
     const baseUrl = process.env.API_ENDPOINT;
     if (setting.length > 0) {
-      
+      console.log("dsfsdfsdfsdfddsfdsdsdsfsdsdfsddfsdf")
       const checkUser = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin } } })
       let adminData = await userService.getSetting({ userId: checkUser.metaData[0].metaId });
       setting[0].base_url = baseUrl;
@@ -3254,6 +3254,8 @@ exports.getSetting = async (req, res) => {
       // Repeat for any other properties that need the base_url prepended
     }
     else {
+      console.log("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
+
       const checkUser = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin } } })
       setting = await userService.getSetting({ userId: checkUser.metaData[0].metaId });
       if (setting.length > 0) {
