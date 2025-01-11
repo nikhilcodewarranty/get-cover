@@ -2990,6 +2990,7 @@ exports.accountSetting = async (req, res) => {
     data.userId = req.userId
     let response;
     const getData = await userService.getSetting({ userId: req.userId });
+    console.log("getData----------------------",getData);
     if (getData.length > 0) {
       await userService.updateManySetting({}, { whiteLabelLogo: data.whiteLabelLogo }, { new: true });
       response = await userService.updateSetting({ _id: getData[0]?._id }, data, { new: true })
@@ -3255,13 +3256,10 @@ exports.getSetting = async (req, res) => {
       // Repeat for any other properties that need the base_url prepended
     }
     else {
-      console.log("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
-
       const checkUser = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin } } })
       setting = await userService.getSetting({ userId: checkUser.metaData[0].metaId });
       if (setting.length > 0) {
         setting[0].base_url = baseUrl;
-
         // Assuming setting[0].logoDark and setting[0].logoLight contain relative paths
         if (setting[0].logoDark && setting[0].logoDark.fileName) {
           setting[0].logoDark.baseUrl = baseUrl;
