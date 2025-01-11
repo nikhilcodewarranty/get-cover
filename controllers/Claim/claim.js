@@ -576,7 +576,7 @@ exports.addClaim = async (req, res, next) => {
             { status: true },
             {
               $or: [
-                { metaId: checkOrder.resellerId },
+                { metaId: checkOrder?.resellerId },
                 // { metaId: data?.servicerId },
               ]
             },
@@ -684,7 +684,7 @@ exports.addClaim = async (req, res, next) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: `Dear ${customerPrimary.metaData[0]?.firstName}`,
+      senderName: `Dear ${customerPrimary?.metaData[0]?.firstName}`,
       redirectId: base_url
     }
     let mailing;
@@ -712,7 +712,7 @@ exports.addClaim = async (req, res, next) => {
       let customerCaseUser = await supportingFunction.getNotificationEligibleUser(customerCaseNotification, { email: 1, metaData: 1 })
       let adminUser = customerCaseUser.filter(user => user.metaData[0]?.roleId.toString() === process.env.super_admin.toString())
       let dealerUser = customerCaseUser.filter(user => user.metaData[0]?.roleId.toString() === process.env.dealer.toString())
-      let resellerUser = customerCaseUser.filter(user => user.metaData[0]?.roleId.toString() === process.env.reseller.toString())
+      let resellerUser = customerCaseUser.filter(user => user?.metaData[0]?.roleId.toString() === process.env.reseller.toString())
       let customerUser = customerCaseUser.filter(user => user.metaData[0]?.roleId.toString() === process.env.customer.toString())
 
       const adminEmail = adminUser.map(user => user.email)
@@ -839,7 +839,6 @@ exports.addClaim = async (req, res, next) => {
     })
   }
 }
-
 // Edit Repair part Done
 exports.editClaim = async (req, res) => {
   try {
