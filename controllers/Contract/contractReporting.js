@@ -312,7 +312,6 @@ exports.exportContractReporting = async (req, res) => {
         if (resellerIds.length > 0) {
             userSearchCheck = 1
             orderAndCondition.push({ resellerId: { $in: resellerIds } })
-
         }
 
 
@@ -368,6 +367,8 @@ exports.exportContractReporting = async (req, res) => {
 
         let mainQuery = []
         console.log("page+++++++++++++++++++++++++++++++++", skipLimit)
+
+        console.log("contractFilterWithEligibilty----------------------",contractFilterWithEligibilty)
 
         while (hasMore) {
             // let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
