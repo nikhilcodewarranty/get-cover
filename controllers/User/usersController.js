@@ -3234,8 +3234,8 @@ exports.getSetting = async (req, res) => {
       
       const chartFirstColor = adminData[0]?.colorScheme.find(color => color.colorType === "chartFirstColor");
       const exists = setting[0].colorScheme.some(color => color.colorType === 'chartFirstColor');
-
-      const chartSecondColor = adminData[0].colorScheme.some(color => color.colorType === 'chartSecondColor');
+      
+      const chartSecondColor = adminData[0]?.colorScheme.find(color => color.colorType === "chartSecondColor");
       const chartSecondColorExist = setting[0].colorScheme.some(color => color.colorType === 'chartSecondColor');
       console.log("chartSecondColorExist",chartSecondColorExist)
       console.log("chartSecondColor",chartSecondColor)
