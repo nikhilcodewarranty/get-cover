@@ -215,6 +215,7 @@ exports.exportContractReporting = async (req, res) => {
 
         }
         if (data.flag == "Order") {
+            userSearchCheck=1
             // match1 = { customerId: new mongoose.Types.ObjectId(data.userId) }
             orderIds = [new mongoose.Types.ObjectId(data.userId)]
         }
