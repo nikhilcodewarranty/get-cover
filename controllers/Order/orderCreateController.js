@@ -996,17 +996,13 @@ async function generateTC(orderData) {
             let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerActiveOrderQuery, { email: 1 })
             let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerActiveOrderQuery, { email: 1 })
             let customerUsers = await supportingFunction.getNotificationEligibleUser(customerActiveOrderQuery, { email: 1 })
-            console.log("dfsfddfssfdsdfsdfsdfsdf123333", customerUsers)
             let notificationEmails = adminUsers.map(user => user.email)
             let dealerEmails = dealerUsers.map(user => user.email)
             let resellerEmails = resellerUsers.map(user => user.email)
             let customerEmails = customerUsers.map(user => user.email)
             const base_url = `${process.env.SITE_URL}`
-            console.log("notificationEmails", notificationEmails)
-            console.log("dealerEmails", dealerEmails)
-            console.log("resellerEmails", resellerEmails)
-            console.log("customerEmails", customerEmails)
-
+            console.log("dealerEmails----------------------",dealerEmails)
+            console.log("herrrrrrrrrrrrrrrrrrrrrrrrrrrr----------------------",notificationEmails)
             let settingData = await userService.getSetting({});
             let emailData = {
                 darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
