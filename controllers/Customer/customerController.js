@@ -1613,7 +1613,11 @@ exports.getCustomerById = async (req, res) => {
         zip: checkCustomer?.zip,
         isPrimary: true,
       });
-      checkCustomer.addresses.sort((a, b) => b.isPrimary - a.isPrimary);
+      let filteredAddress = checkCustomer.addresses.filter(item => item && Object.keys(item).length > 0);
+
+      checkCustomer.addresses = filteredAddress.sort((a, b) => b.isPrimary - a.isPrimary);
+
+      console.log("Asdasdasasdasdasda",filteredAddress)
 
     }
     if (!checkCustomer) {
@@ -3156,7 +3160,7 @@ exports.deleteAddress = async (req, res) => {
     let customerAddresses = checkCustomer.addresses ? checkCustomer.addresses : []
     console.log(customerAddresses)
     let newArray = customerAddresses.filter(obj => obj._id.toString() !== data.addressId.toString())
-    customerAddresses.push(data.address)
+    // customerAddresses.push(data.address)
     let udpateCustomer = await customerService.updateCustomer({ _id: customerId }, { addresses: newArray }, { new: true })
     if (!udpateCustomer) {
       res.send({
