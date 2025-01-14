@@ -815,16 +815,16 @@ ${term}
                 notificationEmails.push(DealerUser.email)
                 notificationEmails.push(resellerUser?.email)
                 let settingData = await userService.getSetting({});
-                let emailData = {
-                    darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-                    lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-                    address: settingData[0]?.address,
-                    websiteSetting: settingData[0],
-                    senderName: '',
-                    content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
-                    subject: 'Order Term and Condition-' + checkOrder.unique_key,
-                }
-                let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
+                // let emailData = {
+                //     darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                //     lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                //     address: settingData[0]?.address,
+                //     websiteSetting: settingData[0],
+                //     senderName: '',
+                //     content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
+                //     subject: 'Order Term and Condition-' + checkOrder.unique_key,
+                // }
+                // let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
                 response = { link: link, fileName: mergeFileName, bucketName: process.env.bucket_name, key: "mergedFile" }
                 res.send({
                     code: constant.successCode,
