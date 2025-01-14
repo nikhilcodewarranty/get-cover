@@ -1002,7 +1002,8 @@ async function generateTC(orderData) {
             let customerEmails = customerUsers.map(user => user.email)
             const base_url = `${process.env.SITE_URL}`
             console.log("dealerEmails----------------------",dealerEmails)
-            console.log("herrrrrrrrrrrrrrrrrrrrrrrrrrrr----------------------",notificationEmails)
+            console.log("resellerEmails----------------------",resellerEmails)
+            console.log("notificationEmails----------------------",notificationEmails)
             let settingData = await userService.getSetting({});
             let emailData = {
                 darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
