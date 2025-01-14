@@ -1617,8 +1617,6 @@ exports.getCustomerById = async (req, res) => {
 
       checkCustomer.addresses = filteredAddress.sort((a, b) => b.isPrimary - a.isPrimary);
 
-      console.log("Asdasdasasdasdasda",filteredAddress)
-
     }
     if (!checkCustomer) {
       res.send({
