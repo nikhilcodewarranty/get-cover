@@ -1017,9 +1017,7 @@ async function generateTC(orderData) {
 
             let mailing = await sgMail.send(emailConstant.sendTermAndCondition(notificationEmails, ["noreply@getcover.com"], emailData, attachment))
             emailData.redirectId = base_url + "dealer/orderDetails/" + checkOrder._id
-            mailing = await sgMail.send(emailConstant.sendTermAndCondition(dealerEmails, ["noreply@getcover.com"], emailData, attachment))
-            console.log("dealerrrrrrrmailing----------------------",mailing)
-
+            mailing = await sgMail.send(emailConstant.sendTermAndCondition("amit@codenomad.net", ["noreply@getcover.com"], emailData, attachment))
             emailData.redirectId = base_url + "customer/orderDetails/" + checkOrder._id
             mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerEmails, ["noreply@getcover.com"], emailData, attachment))
             emailData.redirectId = base_url + "reseller/orderDetails/" + checkOrder._id
