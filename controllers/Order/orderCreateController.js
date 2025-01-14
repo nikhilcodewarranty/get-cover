@@ -996,12 +996,14 @@ async function generateTC(orderData) {
             let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerActiveOrderQuery, { email: 1 })
             let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerActiveOrderQuery, { email: 1 })
             let customerUsers = await supportingFunction.getNotificationEligibleUser(customerActiveOrderQuery, { email: 1 })
+
             let notificationEmails = adminUsers.map(user => user.email)
-            let dealerEmails = dealerUsers.map(user => user.email)
+            let dealerEmails111 = dealerUsers.map(user => user.email)
+
             let resellerEmails = resellerUsers.map(user => user.email)
             let customerEmails = customerUsers.map(user => user.email)
             const base_url = `${process.env.SITE_URL}`
-            console.log("dealerEmails----------------------",dealerEmails)
+            console.log("dealerEmails----------------------",dealerEmails111)
             console.log("resellerEmails----------------------",resellerEmails)
             console.log("notificationEmails----------------------",notificationEmails)
             let settingData = await userService.getSetting({});
@@ -1013,15 +1015,15 @@ async function generateTC(orderData) {
                 senderName: '',
                 content: `Congratulations, your order # ${checkOrder.unique_key} has been created in our system. Please login to the system and view your order details. Also, we have attached our T&C to the email for the review. Please review, if there is anything wrong here, do let us know. You can contact us at : support@getcover.com`,
                 subject: "Process Order",
-                redirectId: base_url + "orderDetails/" + checkOrder._id
+                // redirectId: base_url + "orderDetails/" + checkOrder._id
             }
 
             let mailing = await sgMail.send(emailConstant.sendTermAndCondition(notificationEmails, ["noreply@getcover.com"], emailData, attachment))
-            emailData.redirectId = base_url + "dealer/orderDetails/" + checkOrder._id
-            mailing = await sgMail.send(emailConstant.sendTermAndCondition("amit@codenomad.net", ["noreply@getcover.com"], emailData, attachment))
-            emailData.redirectId = base_url + "customer/orderDetails/" + checkOrder._id
+            // emailData.redirectId = base_url + "dealer/orderDetails/" + checkOrder._id
+            mailing = await sgMail.send(emailConstant.sendTermAndCondition(dealerEmails111,["noreply@getcover.com"], emailData, attachment))
+            // emailData.redirectId = base_url + "customer/orderDetails/" + checkOrder._id
             mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerEmails, ["noreply@getcover.com"], emailData, attachment))
-            emailData.redirectId = base_url + "reseller/orderDetails/" + checkOrder._id
+            // emailData.redirectId = base_url + "reseller/orderDetails/" + checkOrder._id
             mailing = await sgMail.send(emailConstant.sendTermAndCondition(resellerEmails, ["noreply@getcover.com"], emailData, attachment))
 
 
