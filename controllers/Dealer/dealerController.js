@@ -1333,6 +1333,14 @@ exports.updateDealerMeta = async (req, res) => {
       let updatedCustomer = await customerService.updateDealerName(criteria, { dealerName: data.accountName }, option)
       //Update dealer name in reseller
       let updateResellerDealer = await resellerService.updateMeta(criteria, { dealerName: data.accountName }, option)
+
+      let updateDealerServicerAccount = await servicerService.updateServiceProvider(criteria, {
+        name: data.accountName,
+        city: data.city,
+        country: data.country,
+        street: data.street,
+        zip: data.zip
+      })
     }
     //update primary user to true by default
     if (checkDealer.accountStatus) {
