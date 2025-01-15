@@ -1488,10 +1488,15 @@ exports.updateDealerSetting = async (req, res) => {
     if (!data.isAccountCreate) {
       await userService.updateUser({ metaData: { $elemMatch: { metaId: req.params.dealerId } } }, { status: false }, { new: true })
     }
-    //Update Meta in servicer also     
+    //Update Meta in servicer also 
+    console.log("typeOf",typeOf(data.isServicer))
+
     if (data.isServicer && data.isServicer == "true") {
+      console.log("sdfdsfsdfsdfsdsdf")
       const checkServicer = await servicerService.getServiceProviderById({ dealerId: checkDealerId._id })
       if (!checkServicer) {
+      console.log("if mai")
+
         const CountServicer = await servicerService.getServicerCount();
         let servicerObject = {
           name: checkDealerId.name,
@@ -1509,6 +1514,8 @@ exports.updateDealerSetting = async (req, res) => {
       }
 
       else {
+      console.log("else mai")
+
         let criteria = { dealerId: checkDealerId._id }
         let option = { new: true }
         const servicerMeta = {
