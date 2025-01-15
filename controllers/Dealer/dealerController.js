@@ -1511,6 +1511,8 @@ exports.updateDealerSetting = async (req, res) => {
           unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
         }
         let createData = await servicerService.createServiceProvider(servicerObject)
+        console.log("createData-----------------",createData)
+        console.log("servicerObject-----------------",servicerObject)
       }
 
       else {
