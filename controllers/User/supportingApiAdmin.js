@@ -509,8 +509,10 @@ exports.createDealer = async (req, res) => {
                     notificationFor: IDs
                 };
                 let createNotification = await userService.createNotification(notificationData);
+
+                console.log("sdffffffffdsdsddsddfs",typeof(data.isServicer))
                 // Create the user
-                if (data.isServicer || data.isServicer == "true") {
+                if (data.isServicer && data.isServicer == "true") {
                     const CountServicer = await providerService.getServicerCount();
                     let servicerObject = {
                         name: data.name,
