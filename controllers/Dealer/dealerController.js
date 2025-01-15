@@ -1506,7 +1506,7 @@ exports.updateDealerSetting = async (req, res) => {
           dealerId: checkDealerId._id,
           state: checkDealerId.state,
           country: checkDealerId.country,
-          status: checkDealerId.status,
+          status: checkDealerId.accountStatus,
           accountStatus: "Approved",
           unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
         }
