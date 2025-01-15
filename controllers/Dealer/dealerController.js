@@ -1489,7 +1489,7 @@ exports.updateDealerSetting = async (req, res) => {
       await userService.updateUser({ metaData: { $elemMatch: { metaId: req.params.dealerId } } }, { status: false }, { new: true })
     }
     //Update Meta in servicer also 
-    console.log("typeOf",typeOf(data.isServicer))
+    console.log("typeOf",typeof(data.isServicer))
 
     if (data.isServicer && data.isServicer == "true") {
       console.log("sdfdsfsdfsdfsdsdf")
