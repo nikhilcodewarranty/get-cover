@@ -1175,7 +1175,7 @@ exports.addResellerUser = async (req, res) => {
         let statusCheck;
         if (!checkReseller.status) {
             statusCheck = false
-        } else {
+        } else { 
             statusCheck = data.status
         }
         console.log("dsfsdfdsfdsfdfsdsfsd", statusCheck)
