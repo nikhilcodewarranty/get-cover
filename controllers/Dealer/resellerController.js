@@ -200,7 +200,7 @@ exports.createReseller = async (req, res) => {
                             title: settingData[0]?.title,
                             address: settingData[0]?.address,
                             role: "Reseller",
-                            servicerName: saveMembers[i].metaData[0].firstName + " "+ saveMembers[i].metaData[0].lastName
+                            servicerName: saveMembers[i].metaData[0].firstName + " " + saveMembers[i].metaData[0].lastName
                         }))
                 }
 
@@ -1178,8 +1178,8 @@ exports.addResellerUser = async (req, res) => {
         } else {
             statusCheck = data.status
         }
-        console.log("dsfsdfdsfdsfdfsdsfsd",statusCheck)
-        console.log("checkReseller",checkReseller)
+        console.log("dsfsdfdsfdsfdfsdsfsd", statusCheck)
+        console.log("checkReseller", checkReseller)
         let metaData = {
             email: data.email,
             metaData: [
@@ -1413,7 +1413,7 @@ exports.getResellerServicers = async (req, res) => {
         let servicerIds1 = servicer.map(obj => new mongoose.Types.ObjectId(obj.dealerId));
         let servicerIds2 = servicer.map(obj => new mongoose.Types.ObjectId(obj.resellerId));
         console.log(servicerIds1, "---333-----------------")
-        servicerIds = servicerIds.concat(servicerIds1,servicerIds2)
+        servicerIds = servicerIds.concat(servicerIds1, servicerIds2)
         console.log(servicerIds, "---333-----------------")
 
         // Get servicer with claim
@@ -2585,6 +2585,404 @@ exports.getResellerClaims = async (req, res) => {
                 servicerMatch = { 'servicerId': new mongoose.Types.ObjectId('5fa1c587ae2ac23e9c46510f') }
             }
         }
+        data.dealerName = data.dealerName ? data.dealerName : ""
+
+
+        if (data.dealerName != "") {
+            let getDealer = await dealerService.getAllDealers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
+            let dealerIds = getDealer.map(ID => new mongoose.Types.ObjectId(ID._id))
+            dealerMatch = { dealerId: { $in: dealerIds } }
+
+        }
+        data.resellerMatch = data.resellerMatch ? data.resellerMatch : ""
+        if (data.resellerName != "") {
+            let getReseller = await resellerService.getResellers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
+            let resellerIds = getReseller.map(ID => new mongoose.Types.ObjectId(ID._id))
+            resellerMatch = { resellerId: { $in: resellerIds } }
+        }
+
+        statusMatch = {}
+
+        if (data.dateFilter != "") {
+            data.endDate = new Date(data.endDate).setHours(11, 59, 0, 0)
+            if (data.dateFilter == "damageDate") {
+                dateMatch = { lossDate: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
+                // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
+            }
+            if (data.dateFilter == "openDate") {
+                dateMatch = { createdAt: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
+                // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
+            }
+            if (data.dateFilter == "closeDate") {
+                dateMatch = { claimDate: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
+                statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
+            }
+        }
+
+        let claimPaidStatus = {}
+        const dynamicOption = await userService.getOptions({ name: 'coverage_type' })
+
+        if (data.claimPaidStatus != '' && data.claimPaidStatus != undefined) {
+            claimPaidStatus = { "claimPaymentStatus": data.claimPaidStatus }
+        }
+        else {
+            claimPaidStatus = {
+                $or: [
+                    { "claimPaymentStatus": "Paid" },
+                    { "claimPaymentStatus": "Unpaid" },
+                ]
+            }
+        }
+        let lookupQuery = [
+            { $sort: { unique_key_number: -1 } },
+            {
+                $match:
+                {
+                    $and: [
+                        { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        claimPaidStatus,
+                        { 'customerStatus.status': { '$regex': data.customerStatusValue ? data.customerStatusValue.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        servicerMatch,
+                        resellerMatch,
+                        dealerMatch,
+                        dateMatch,
+                        statusMatch,
+                    ]
+                },
+            },
+            {
+                $lookup: {
+                    from: "contracts",
+                    localField: "contractId",
+                    foreignField: "_id",
+                    as: "contracts",
+                }
+            },
+            {
+                $unwind: "$contracts"
+            },
+            {
+                $match:
+                {
+                    $and: [
+                        { 'contracts.unique_key': { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { "contracts.serial": { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { "contracts.productName": { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                    ]
+                },
+            },
+            {
+                $lookup: {
+                    from: "orders",
+                    localField: "contracts.orderId",
+                    foreignField: "_id",
+                    as: "contracts.orders",
+                },
+            },
+            {
+                $unwind: "$contracts.orders"
+            },
+            {
+                $match:
+                {
+                    $and: [
+                        { "contracts.orders.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { "contracts.orders.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { "contracts.orders.resellerId": new mongoose.Types.ObjectId(resellerId) },
+                    ]
+                },
+            },
+            {
+                $lookup: {
+                    from: "dealers",
+                    localField: "contracts.orders.dealerId",
+                    foreignField: "_id",
+                    as: "contracts.orders.dealers",
+                }
+            },
+            {
+                $unwind: "$contracts.orders.dealers"
+            },
+            {
+                $lookup: {
+                    from: "customers",
+                    localField: "contracts.orders.customerId",
+                    foreignField: "_id",
+                    as: "contracts.orders.customer",
+
+                }
+            },
+            {
+                $unwind: "$contracts.orders.customer"
+            },
+            {
+                $match:
+                {
+                    $and: [
+                        { "contracts.orders.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                    ]
+                },
+            },
+
+        ]
+
+        if (newQuery.length > 0) {
+            lookupQuery = lookupQuery.concat(newQuery);
+        }
+
+        let allClaims = await claimService.getClaimWithAggregate(lookupQuery);
+
+        let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
+        let allServicerIds = [];
+        // Iterate over the data array
+        resultFiter.forEach(item => {
+            // Iterate over the dealerServicer array in each item
+            item.contracts.orders.dealers.dealerServicer.forEach(dealer => {
+                // Push the servicerId to the allServicerIds array
+                allServicerIds.push(dealer.servicerId);
+            });
+        });
+
+        //Get Dealer and Reseller Servicers
+        let servicer;
+        let servicerName = '';
+        allServicer = await providerService.getAllServiceProvider(
+            { _id: { $in: allServicerIds }, status: true },
+            {}
+        );
+        const result_Array = resultFiter.map((item1) => {
+            servicer = []
+            let mergedData = []
+            if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
+                mergedData = dynamicOption.value.filter(contract =>
+                    item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
+                );
+            }
+            let servicerName = '';
+            let selfServicer = false;
+            let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
+                const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId.toString());
+                servicer.push(dealerOfServicer)
+            });
+
+            if (item1.contracts.orders.servicers[0]?.length > 0) {
+                servicer.unshift(item1.contracts.orders.servicers[0])
+            }
+
+            if (item1.contracts.orders.resellers[0]?.isServicer) {
+                servicer.unshift(item1.contracts.orders.resellers[0])
+            }
+
+            if (item1.contracts.orders.dealers.isServicer) {
+                servicer.unshift(item1.contracts.orders.dealers)
+            }
+
+            if (item1.servicerId != null) {
+                servicerName = servicer.find(servicer => servicer._id.toString() === item1.servicerId.toString());
+                const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
+                selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() || item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString() ? true : false
+
+            }
+            return {
+                ...item1,
+                servicerData: servicerName,
+                selfServicer: selfServicer,
+                contracts: {
+                    ...item1.contracts,
+                    allServicer: servicer,
+                    mergedData: mergedData
+
+                }
+            }
+        })
+        let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            result: result_Array,
+            totalCount
+        })
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
+exports.getResellerAsServicerClaims = async (req, res) => {
+    try {
+        const resellerId = req.params.resellerId ? req.params.resellerId : req.userId
+        const singleReseller = await resellerService.getReseller({ _id: resellerId });
+
+        if (!singleReseller) {
+            res.send({
+                code: constant.errorCode,
+                message: "Reseller not found"
+            })
+            return;
+        }
+
+        let data = req.body
+        let query = { isDeleted: false };
+        let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+        let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+        let limitData = Number(pageLimit)
+        let newQuery = [];
+        newQuery.push({
+            $facet: {
+                totalRecords: [
+                    {
+                        $count: "total"
+                    }
+                ],
+                data: [
+                    {
+                        $skip: skipLimit
+                    },
+                    {
+                        $limit: pageLimit
+                    },
+                    {
+                        $lookup: {
+                            from: "servicer_dealer_relations",
+                            localField: "contracts.orders.dealers._id",
+                            foreignField: "dealerId",
+                            as: "contracts.orders.dealers.dealerServicer",
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: "resellers",
+                            localField: "contracts.orders.resellerId",
+                            foreignField: "_id",
+                            as: "contracts.orders.resellers",
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: "serviceproviders",
+                            localField: "contracts.orders.servicerId",
+                            foreignField: "_id",
+                            as: "contracts.orders.servicers",
+                        }
+                    },
+                    {
+                        $project: {
+                            "contractId": 1,
+                            "claimFile": 1,
+                            "lossDate": 1,
+                            "receiptImage": 1,
+                            reason: 1,
+                            "unique_key": 1,
+                            note: 1,
+                            pName: 1,
+                            totalAmount: 1,
+                            getcoverOverAmount: 1,
+                            customerOverAmount: 1,
+                            customerClaimAmount: 1,
+                            getCoverClaimAmount: 1,
+                            dealerSku: 1,
+                            servicerId: 1,
+                            claimType: 1,
+                            customerStatus: 1,
+                            trackingNumber: 1,
+                            trackingType: 1,
+                            repairParts: 1,
+                            diagnosis: 1,
+                            claimStatus: 1,
+                            repairStatus: 1,
+                            // repairStatus: { $arrayElemAt: ['$repairStatus', -1] },
+                            "contracts.unique_key": 1,
+                            "contracts.productName": 1,
+                            "contracts.model": 1,
+                            "contracts.manufacture": 1,
+                            "contracts.serial": 1,
+                            "contracts.coverageType": 1,
+                            "contracts.orders.dealerId": 1,
+                            "contracts.orders._id": 1,
+                            "contracts.orders.servicerId": 1,
+                            "contracts.orders.serviceCoverageType": 1,
+                            "contracts.orders.coverageType": 1,
+                            "contracts.orders.customerId": 1,
+                            "contracts.orders.dealers.isShippingAllowed": 1,
+                            "contracts.orders.resellerId": 1,
+                            "contracts.orders.dealers.name": 1,
+                            "contracts.orders.dealers.isServicer": 1,
+                            "contracts.orders.dealers._id": 1,
+                            "contracts.orders.customer.username": 1,
+                            // "contracts.orders.dealers.dealerServicer": 1,
+                            "contracts.orders.dealers.dealerServicer": {
+                                $map: {
+                                    input: "$contracts.orders.dealers.dealerServicer",
+                                    as: "dealerServicer",
+                                    in: {
+                                        "_id": "$$dealerServicer._id",
+                                        "servicerId": "$$dealerServicer.servicerId",
+                                    }
+                                }
+                            },
+                            "contracts.orders.servicers": {
+                                $map: {
+                                    input: "$contracts.orders.servicers",
+                                    as: "servicer",
+                                    in: {
+                                        "_id": "$$servicer._id",
+                                        "name": "$$servicer.name",
+                                    }
+                                }
+                            },
+                            "contracts.orders.resellers": {
+                                $map: {
+                                    input: "$contracts.orders.resellers",
+                                    as: "reseller",
+                                    in: {
+                                        "_id": "$$reseller._id",
+                                        "name": "$$reseller.name",
+                                        "isServicer": "$$reseller.isServicer"
+                                    }
+                                }
+                            }
+                        }
+                    },
+
+                ]
+            }
+        })
+        let servicerMatch = {}
+        let dealerMatch = {}
+        let resellerMatch = {}
+        let dateMatch = {}
+        let statusMatch = {}
+        const checkServicer = await providerService.getAllServiceProvider({ resellerId: new mongoose.Types.ObjectId(resellerId) });
+        let servicerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer?._id))
+
+        servicerMatch = {
+            $or: [
+                { "servicerId": { $in: servicerIds } }
+            ]
+        };
+        // if (data.servicerName != '' && data.servicerName != undefined) {
+        //     const checkServicer = await providerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } });
+        //     if (checkServicer.length > 0) {
+        //         let servicerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer._id))
+        //         let dealerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer.dealerId))
+        //         let resellerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer.resellerId))
+        //         servicerMatch = {
+        //             $or: [
+        //                 { "servicerId": { $in: servicerIds } },
+        //                 { "servicerId": { $in: dealerIds } },
+        //                 { "servicerId": { $in: resellerIds } }
+        //             ]
+        //         };
+        //     }
+        //     else {
+        //         servicerMatch = { 'servicerId': new mongoose.Types.ObjectId('5fa1c587ae2ac23e9c46510f') }
+        //     }
+        // }
         data.dealerName = data.dealerName ? data.dealerName : ""
 
 
