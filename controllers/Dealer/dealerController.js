@@ -1491,7 +1491,7 @@ exports.updateDealerSetting = async (req, res) => {
     //Update Meta in servicer also 
     console.log("typeOf",typeof(data.isServicer))
 
-    if (data.isServicer && data.isServicer == "true") {
+    if (data.isServicer) {
       console.log("sdfdsfsdfsdfsdsdf")
       const checkServicer = await servicerService.getServiceProviderById({ dealerId: checkDealerId._id })
       if (!checkServicer) {
