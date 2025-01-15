@@ -1489,7 +1489,7 @@ exports.updateDealerSetting = async (req, res) => {
       await userService.updateUser({ metaData: { $elemMatch: { metaId: req.params.dealerId } } }, { status: false }, { new: true })
     }
     //Update Meta in servicer also     
-    if (data.isServicer) {
+    if (data.isServicer && data.isServicer == "true") {
       const checkServicer = await servicerService.getServiceProviderById({ dealerId: checkDealerId._id })
       if (!checkServicer) {
         const CountServicer = await servicerService.getServicerCount();

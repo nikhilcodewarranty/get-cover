@@ -1178,8 +1178,6 @@ exports.addResellerUser = async (req, res) => {
         } else {  
             statusCheck = data.status
         }
-        console.log("dsfsdfdsfdsfdfsdsfsd", statusCheck)
-        console.log("checkReseller", checkReseller)
         let metaData = {
             email: data.email,
             metaData: [

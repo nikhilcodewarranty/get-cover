@@ -341,7 +341,7 @@ exports.createDealer = async (req, res) => {
                     await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPrimaryCode, isResetPassword: true }, { new: true })
 
                 }
-                if (req.body.isServicer) {
+                if (req.body.isServicer && req.body.isServicer == "true") {
                     const CountServicer = await providerService.getServicerCount();
                     let servicerObject = {
                         name: data.name,
