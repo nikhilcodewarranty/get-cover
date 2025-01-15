@@ -14,6 +14,7 @@ router.post("/addResellerUser", [verifyToken], resellerController.addResellerUse
 router.post("/getResselerByCustomer/:customerId", [verifyToken], supportingFunction.checkObjectId, resellerController.getResselerByCustomer) // Get a reseller by customer ID
 router.post("/changeResellerStatus/:resellerId", [verifyToken], supportingFunction.checkObjectId, resellerController.changeResellerStatus) // Change the status of a reseller
 router.post("/getResellerClaims/:resellerId", [verifyToken], supportingFunction.checkObjectId, resellerController.getResellerClaims) // Get claims for a reseller by reseller ID
+router.post("/getResellerAsServicerClaims/:resellerId", [verifyToken], supportingFunction.checkObjectId, resellerController.getResellerAsServicerClaims) // Get claims for a reseller by reseller ID
 router.get("/getResellerById/:resellerId", [verifyToken], supportingFunction.checkObjectId, resellerController.getResellerById) // Get a reseller by reseller ID
 router.get("/getDealerByReseller/:resellerId", [verifyToken], supportingFunction.checkObjectId, resellerController.getDealerByReseller) // Get a dealer by reseller ID
 router.post("/getResellerPriceBook/:resellerId", [verifyToken], supportingFunction.checkObjectId, resellerController.getResellerPriceBook) // Get the price book for a reseller by reseller ID
