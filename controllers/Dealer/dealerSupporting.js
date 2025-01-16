@@ -1267,6 +1267,10 @@ exports.getDealerAsServicerClaims = async (req, res) => {
         let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
         let limitData = Number(pageLimit)
         const checkDealer = await dealerService.getDealerById(req.params.dealerId);
+        if(checkDealer.isServicer){
+            let getServicerData = await servicerService.getServicerByName({dealerId:req.params.dealerId})
+            req.params.dealerId = getServicerData._id
+        }
         let servicerMatch = {}
         let dealerMatch = {}
         let dateMatch = {}
@@ -1659,6 +1663,7 @@ exports.getDealerAsServicerClaims = async (req, res) => {
             code: constant.successCode,
             message: "Success",
             result: result_Array,
+            lookupQuery,
             totalCount
         })
     }
