@@ -657,7 +657,7 @@ exports.getDealerContract = async (req, res) => {
             let startDate = new Date(data.startDate)
             let endDate = new Date(data.endDate)
             startDate.setHours(0, 0, 0, 0)
-            endDate.setHours(11, 59, 0, 0)
+            endDate.setHours(23, 59, 999, 0)
             let dateFilter = { createdAt: { $gte: startDate, $lte: endDate } }
             contractFilterWithEligibilty.push(dateFilter)
         }
