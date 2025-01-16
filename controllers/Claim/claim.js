@@ -372,6 +372,9 @@ exports.addClaim = async (req, res, next) => {
       console.log("checkCategory------------------",checkCategory)
     }
 
+
+    return;
+
     let checkCoverageStartDate = new Date(checkContract.coverageStartDate).setHours(0, 0, 0, 0)
     if (new Date(checkCoverageStartDate) > new Date(data.lossDate)) {
       res.send({
