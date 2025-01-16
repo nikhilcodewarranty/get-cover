@@ -1,4 +1,5 @@
 const serviceProvider = require("../../models/Provider/serviceProvider");
+const servicePriceBook = require("../../models/Provider/servicerPriceBook");
 
 module.exports = class providerService {
   // Get all service providers based on a query and projection
@@ -80,6 +81,26 @@ module.exports = class providerService {
     }
   }
 
+  //Save Servicer Price Book
+  static async saveServicerPriceBook(data) {
+
+    try {
+      const response = await new servicePriceBook(data).save();
+      return response;
+    } catch (error) {
+      return `Could not save servicer price book: ${error}`;
+    }
+  }
+
+  //Get Servicer Price Book
+  static async servicerPriceBook(query, projection) {
+    try {
+      const servicerPriceBook = await servicePriceBook.find(query, projection).sort({ "createdAt": -1 });
+      return servicerPriceBook;
+    } catch (error) {
+      return `Could not fetch service price book: ${error}`;
+    }
+  }
   // Update the status of a service provider based on criteria and new values
   static async statusUpdate(criteria, newValue, option) {
     try {

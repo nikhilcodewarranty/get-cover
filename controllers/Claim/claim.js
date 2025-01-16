@@ -325,6 +325,7 @@ exports.uploadCommentImage = async (req, res, next) => {
 exports.addClaim = async (req, res, next) => {
   try {
     let data = req.body;
+    const checkOrder = await orderService.getOrder({ _id: checkContract.orderId }, { isDeleted: false })
 
     let checkContract = await contractService.getContractById({ _id: data.contractId })
     // data.lossDate = new Date(data.lossDate).setDate(new Date(data.lossDate).getDate() + 1)
@@ -357,6 +358,18 @@ exports.addClaim = async (req, res, next) => {
         })
         return;
       }
+      //check servicer price book and category exist in the database
+      let filterPriceBook = checkOrder.productsArray.filter(product => product._id.toString() === checkContract.orderProductId.toString());
+      console.log("filterPriceBook------------------",filterPriceBook)
+
+      let checkCategory = {
+        categoryArray: {
+          $elemMatch: { categoryId: filterPriceBook.categoryId }
+        },
+        servicerId: data.servicerId
+      }
+
+      console.log("checkCategory------------------",checkCategory)
     }
 
     let checkCoverageStartDate = new Date(checkContract.coverageStartDate).setHours(0, 0, 0, 0)
@@ -434,7 +447,6 @@ exports.addClaim = async (req, res, next) => {
     data.receiptImage = data.file
     data.servicerId = data.servicerId ? data.servicerId : null
 
-    const checkOrder = await orderService.getOrder({ _id: checkContract.orderId }, { isDeleted: false })
     let currentYear = new Date().getFullYear();
     currentYear = "-" + currentYear + "-"
     let count = await claimService.getClaimCount({ 'unique_key': { '$regex': currentYear, '$options': 'i' } });
@@ -689,7 +701,7 @@ exports.addClaim = async (req, res, next) => {
     }
     let mailing;
     if (checkCustomer.isAccountCreate) {
-      const customerCaseNotification = { 
+      const customerCaseNotification = {
         metaData: {
           $elemMatch: {
             $and: [
@@ -3246,7 +3258,7 @@ exports.saveBulkClaim = async (req, res) => {
       let toMail = [];
       let ccMail;
       const userId = req.userId;
-      let resellerData 
+      let resellerData
 
       //Get Fail and Passes Entries
       const counts = totalDataComing.reduce((acc, obj) => {
@@ -3697,7 +3709,7 @@ exports.saveBulkClaim = async (req, res) => {
         let allDealer = await supportingFunction.getNotificationEligibleUser(dealerEmailBulkQuery, { email: 1 })
 
         let adminEmail = adminUsers.map(user => user.email);
-        let dealerEmail= allDealer.map(user => user.email);
+        let dealerEmail = allDealer.map(user => user.email);
 
         if (failureEntries.length > 0) {
           htmlTableString = convertArrayToHTMLTable([], failureEntries);
