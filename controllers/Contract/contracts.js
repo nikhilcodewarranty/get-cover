@@ -293,16 +293,19 @@ exports.getContracts = async (req, res) => {
       let checkClaims = await claimService.getClaimWithAggregate(claimQuery)
 
       if (checkClaims[0]) {
+        console.log("checking the open -------",checkClaims[0])
+        if (checkClaims[0].openFileClaimsCount > 0) {
+          result1[e].reason = "Contract has open claim"
+
+        }
+
         if (checkClaims[0]?.isMaxClaimAmount) {
-          if (checkClaims[0].openFileClaimsCount > 0) {
-            result1[e].reason = "Contract has open claim"
 
+          if (checkClaims[0].totalAmount >= result1[e].productValue) {
+            result1[e].reason = "Claim value exceed the product value limit"
           }
+        }
 
-        }
-        if (checkClaims[0].totalAmount >= result1[e].productValue) {
-          result1[e].reason = "Claim value exceed the product value limit"
-        }
       }
 
       let thresholdLimitPercentage = getTheThresholdLimir.threshHoldLimit.value
@@ -892,7 +895,7 @@ exports.getContractClaims = async (req, res) => {
       message: "Success",
       result: result_Array,
       totalCount,
-      claimAmout:claimTotal[0]?.amount
+      claimAmout: claimTotal[0]?.amount
     });
 
   }
