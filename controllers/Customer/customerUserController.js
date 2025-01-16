@@ -321,6 +321,7 @@ exports.getSingleOrder = async (req, res) => {
   try {
     let projection = { isDeleted: 0 };
     let query = { _id: req.params.orderId };
+    let servicer;
     let checkOrder = await orderService.getOrder(query, projection);
     if (!checkOrder) {
       res.send({
