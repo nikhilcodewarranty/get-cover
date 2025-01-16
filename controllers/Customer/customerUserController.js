@@ -389,6 +389,9 @@ exports.getSingleOrder = async (req, res) => {
       servicer.unshift(dealer);
     }
     const servicerIds = servicer.map((obj) => obj._id);
+    const servicerIds1 = servicer.map((obj) => new mongoose.Types.ObjectId(obj.dealerId));
+    const servicerIds2 = servicer.map((obj) => new mongoose.Types.ObjectId(obj.resellerId));
+    servicerIds =servicerIds1.concat(servicerIds2,servicerIds1)
 
     const servicerUser = await userService.findUserforCustomer1([
       {
@@ -422,7 +425,7 @@ exports.getSingleOrder = async (req, res) => {
 
     const result_Array = servicer.map((item1) => {
       const matchingItem = servicerUser.find(
-        (item2) => item2.metaId?.toString() === item1._id.toString()
+        (item2) => item2.metaId?.toString() === item1._id.toString() ||item2.metaId?.toString() === item1.dealerId.toString()||item2.metaId?.toString() === item1.resellerId.toString()
       );
 
       if (matchingItem) {
