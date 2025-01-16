@@ -365,7 +365,10 @@ exports.addClaim = async (req, res, next) => {
 
       let priceBookData = {}
       const checkServicerData = await servicerService.servicerPriceBook({ servicerId: data.servicerId }, {})
+      console.log("checkServicerData------------------",checkServicerData)
       if (!checkServicerData) {
+      console.log("yes dfgfgffgf------------------")
+
         priceBookData.servicerId = data.servicerId
         priceBookData.categoryArray = [
           {
@@ -398,7 +401,6 @@ exports.addClaim = async (req, res, next) => {
 
         const checkPriceBookData = await servicerService.servicerPriceBook(checkPriceBookQuery, {})
 
-        console.log("categoryData------------------", categoryData)
       }
 
 
