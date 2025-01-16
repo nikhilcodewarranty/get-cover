@@ -361,25 +361,49 @@ exports.addClaim = async (req, res, next) => {
       }
       //check servicer price book and category exist in the database
       let filterPriceBook = checkOrder.productsArray.filter(product => product._id.toString() === checkContract.orderProductId.toString());
-      console.log("filterPriceBook------------------",filterPriceBook)
+      console.log("filterPriceBook------------------", filterPriceBook)
 
-      let checkCategoryQuery = {
-        categoryArray: {
-          $elemMatch: { categoryId: filterPriceBook[0]?.categoryId }
-        },
-        servicerId: data.servicerId
+      let priceBookData = {}
+      const checkServicerData = await servicerService.servicerPriceBook({ servicerId: data.servicerId }, {})
+      if (!checkServicerData) {
+        priceBookData.servicerId = data.servicerId
+        priceBookData.categoryArray = [
+          {
+            categoryId: filterPriceBook[0]?.categoryId
+          }
+        ]
+        priceBookData.priceBookArray = [
+          {
+            priceBookId: filterPriceBook[0]?.priceBookId
+          }
+        ]
+
+        const saveData = await servicerService.saveServicerPriceBook(priceBookData)
+      }
+      else {
+        let checkCategoryQuery = {
+          categoryArray: {
+            $elemMatch: { categoryId: filterPriceBook[0]?.categoryId }
+          },
+          servicerId: data.servicerId
+        }
+        const checkCategoryData = await servicerService.servicerPriceBook(checkCategoryQuery, {})
+
+        let checkPriceBookQuery = {
+          priceBookArray: {
+            $elemMatch: { priceBookId: filterPriceBook[0]?.priceBookId }
+          },
+          servicerId: data.servicerId
+        }
+
+        const checkPriceBookData = await servicerService.servicerPriceBook(checkPriceBookQuery, {})
+
+        console.log("categoryData------------------", categoryData)
       }
 
-      console.log("checkCategory------------------",checkCategoryQuery)
-
-      const categoryData = await servicerService.servicerPriceBook(checkCategoryQuery,{})
-
-      console.log("categoryData------------------",categoryData)
 
     }
 
-
-    return;
 
     let checkCoverageStartDate = new Date(checkContract.coverageStartDate).setHours(0, 0, 0, 0)
     if (new Date(checkCoverageStartDate) > new Date(data.lossDate)) {
