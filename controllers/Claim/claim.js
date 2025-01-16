@@ -327,6 +327,8 @@ exports.addClaim = async (req, res, next) => {
     let data = req.body;
 
     let checkContract = await contractService.getContractById({ _id: data.contractId })
+    const checkOrder = await orderService.getOrder({ _id: checkContract.orderId }, { isDeleted: false })
+
     // data.lossDate = new Date(data.lossDate).setDate(new Date(data.lossDate).getDate() + 1)
     // data.lossDate = new Date(data.lossDate)
     const submittedUser = await userService.getUserById1({ _id: data.submittedBy }, {})
@@ -357,7 +359,52 @@ exports.addClaim = async (req, res, next) => {
         })
         return;
       }
+      //check servicer price book and category exist in the database
+      let filterPriceBook = checkOrder.productsArray.filter(product => product._id.toString() === checkContract.orderProductId.toString());
+      let priceBookData = {}
+      let checkServicerData = await servicerService.servicerPriceBook({ servicerId: data.servicerId }, {})
+      if (!checkServicerData) {
+        priceBookData.servicerId = data.servicerId
+        priceBookData.categoryArray = [
+          {
+            categoryId: filterPriceBook[0]?.categoryId
+          }
+        ]
+        priceBookData.priceBookArray = [
+          {
+            priceBookId: filterPriceBook[0]?.priceBookId
+          }
+        ]
+
+        const saveData = await servicerService.saveServicerPriceBook(priceBookData)
+      }
+      else {
+        let checkCategoryQuery = {
+          categoryArray: {
+            $elemMatch: { categoryId: filterPriceBook[0]?.categoryId }
+          },
+          servicerId: data.servicerId
+        }
+        let checkCategoryData = await servicerService.servicerPriceBook(checkCategoryQuery, {})
+        if (!checkCategoryData) {
+          checkServicerData.categoryArray.push({ categoryId: filterPriceBook[0]?.categoryId })
+        }
+        let checkPriceBookQuery = {
+          priceBookArray: {
+            $elemMatch: { priceBookId: filterPriceBook[0]?.priceBookId }
+          },
+          servicerId: data.servicerId
+        }
+        const checkPriceBookData = await servicerService.servicerPriceBook(checkPriceBookQuery, {})
+        if (!checkPriceBookData) {
+          checkServicerData.priceBookArray.push({ priceBookId: filterPriceBook[0]?.priceBookId })
+        }
+        await servicerService.updateServicerPriceBook({ servicerId: data.servicerId }, checkServicerData, { new: true })
+      }
+
+
     }
+
 
     let checkCoverageStartDate = new Date(checkContract.coverageStartDate).setHours(0, 0, 0, 0)
     if (new Date(checkCoverageStartDate) > new Date(data.lossDate)) {
@@ -434,7 +481,6 @@ exports.addClaim = async (req, res, next) => {
     data.receiptImage = data.file
     data.servicerId = data.servicerId ? data.servicerId : null
 
-    const checkOrder = await orderService.getOrder({ _id: checkContract.orderId }, { isDeleted: false })
     let currentYear = new Date().getFullYear();
     currentYear = "-" + currentYear + "-"
     let count = await claimService.getClaimCount({ 'unique_key': { '$regex': currentYear, '$options': 'i' } });
@@ -689,7 +735,7 @@ exports.addClaim = async (req, res, next) => {
     }
     let mailing;
     if (checkCustomer.isAccountCreate) {
-      const customerCaseNotification = { 
+      const customerCaseNotification = {
         metaData: {
           $elemMatch: {
             $and: [
@@ -853,6 +899,18 @@ exports.editClaim = async (req, res) => {
         message: "Invalid claim ID"
       })
       return
+    }
+    if (checkClaim.claimFile === "completed" || checkClaim.claimFile === "rejected") {
+      const message =
+        checkClaim.claimFile === "completed"
+          ? "The claim has already been processed and is marked as completed."
+          : "The claim has been rejected. Please contact support for further assistance.";
+
+      res.send({
+        code: constant.errorCode,
+        message: message,
+      });
+      return;
     }
     if (checkClaim.claimFile == 'open') {
       let contract = await contractService.getContractById({ _id: checkClaim.contractId });
@@ -3246,7 +3304,7 @@ exports.saveBulkClaim = async (req, res) => {
       let toMail = [];
       let ccMail;
       const userId = req.userId;
-      let resellerData 
+      let resellerData
 
       //Get Fail and Passes Entries
       const counts = totalDataComing.reduce((acc, obj) => {
@@ -3697,7 +3755,7 @@ exports.saveBulkClaim = async (req, res) => {
         let allDealer = await supportingFunction.getNotificationEligibleUser(dealerEmailBulkQuery, { email: 1 })
 
         let adminEmail = adminUsers.map(user => user.email);
-        let dealerEmail= allDealer.map(user => user.email);
+        let dealerEmail = allDealer.map(user => user.email);
 
         if (failureEntries.length > 0) {
           htmlTableString = convertArrayToHTMLTable([], failureEntries);

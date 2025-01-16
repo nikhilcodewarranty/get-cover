@@ -1003,9 +1003,9 @@ async function generateTC(orderData) {
             let resellerEmails = resellerUsers.map(user => user.email)
             let customerEmails = customerUsers.map(user => user.email)
             const base_url = `${process.env.SITE_URL}`
-            console.log("dealerEmails----------------------",dealerEmails111)
-            console.log("resellerEmails----------------------",resellerEmails)
-            console.log("notificationEmails----------------------",notificationEmails)
+            console.log("dealerEmails----------------------", dealerEmails111)
+            console.log("resellerEmails----------------------", resellerEmails)
+            console.log("notificationEmails----------------------", notificationEmails)
             let settingData = await userService.getSetting({});
             let emailData = {
                 darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -1020,7 +1020,7 @@ async function generateTC(orderData) {
 
             let mailing = await sgMail.send(emailConstant.sendTermAndCondition(notificationEmails, ["noreply@getcover.com"], emailData, attachment))
             // emailData.redirectId = base_url + "dealer/orderDetails/" + checkOrder._id
-            mailing = await sgMail.send(emailConstant.sendTermAndCondition(dealerEmails111,["noreply@getcover.com"], emailData, attachment))
+            mailing = await sgMail.send(emailConstant.sendTermAndCondition(dealerEmails111, ["noreply@getcover.com"], emailData, attachment))
             // emailData.redirectId = base_url + "customer/orderDetails/" + checkOrder._id
             mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerEmails, ["noreply@getcover.com"], emailData, attachment))
             // emailData.redirectId = base_url + "reseller/orderDetails/" + checkOrder._id
@@ -1156,6 +1156,9 @@ exports.createOrder1 = async (req, res) => {
                 });
                 return;
             }
+
+
+             
         }
 
         if (data.customerId) {
@@ -1705,7 +1708,7 @@ exports.createOrder1 = async (req, res) => {
                         unique_key_search: unique_key_search1,
                         unique_key_number: unique_key_number1,
                     };
-                    console.log("sssssssssssssssssssssssssssssssssssssssssssss",index1);
+                    console.log("sssssssssssssssssssssssssssssssssssssssssssss", index1);
                     increamentNumber++
 
                     contractArray.push(contractObject);
@@ -1867,7 +1870,7 @@ exports.createOrder1 = async (req, res) => {
                         let customerEmails = customerUsers.map(user => user.email)
                         let mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails, customerEmails)
 
-                        console.log("dealerEmails------------------",dealerEmails);
+                        console.log("dealerEmails------------------", dealerEmails);
                         //Email to Dealer
                         let emailData = {
                             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -3216,7 +3219,7 @@ exports.getOrderContract = async (req, res) => {
                 orderIds = await getOrders.map(order => order._id)
             }
         }
-        
+
         let contractFilterWithEligibilty = []
         if (data.eligibilty != '') {
             contractFilterWithEligibilty = [
@@ -3288,7 +3291,7 @@ exports.getOrderContract = async (req, res) => {
                                     status: 1,
                                     minDate: 1,
                                     productValue: 1,
-                                    createdAt:1,
+                                    createdAt: 1,
                                     manufacture: 1,
                                     eligibilty: 1,
                                     orderUniqueKey: 1,
@@ -3337,7 +3340,7 @@ exports.getOrderContract = async (req, res) => {
                                 status: 1,
                                 minDate: 1,
                                 manufacture: 1,
-                                createdAt:1,
+                                createdAt: 1,
                                 serviceCoverageType: 1,
                                 productValue: 1,
                                 coverageType: 1,
