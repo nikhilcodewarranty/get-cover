@@ -365,7 +365,7 @@ exports.addClaim = async (req, res, next) => {
 
       let checkCategory = {
         categoryArray: {
-          $elemMatch: { categoryId: filterPriceBook.categoryId }
+          $elemMatch: { categoryId: filterPriceBook[0]?.categoryId }
         },
         servicerId: data.servicerId
       }
