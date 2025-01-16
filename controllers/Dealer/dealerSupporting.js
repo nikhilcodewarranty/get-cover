@@ -1269,7 +1269,7 @@ exports.getDealerAsServicerClaims = async (req, res) => {
         const checkDealer = await dealerService.getDealerById(req.params.dealerId);
         if(checkDealer.isServicer){
             let getServicerData = await servicerService.getServicerByName({dealerId:req.params.dealerId})
-            req.params.dealerId = getServicerData.dealerId
+            req.params.dealerId = getServicerData._id
         }
         let servicerMatch = {}
         let dealerMatch = {}
