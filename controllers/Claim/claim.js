@@ -4770,8 +4770,9 @@ exports.getAllClaims = async (req, res, next) => {
       { _id: { $in: allServicerIds }, status: true },
       {}
     );
-    const result_Array = resultFiter.map((item1) => {
+    const result_Array = resultFiter.map(async (item1) => {
       servicer = []
+      console.log("sfgdfg23345435435")
       let servicerName = '';
       let selfServicer = false;
       let selfResellerServicer = false;
@@ -4787,11 +4788,16 @@ exports.getAllClaims = async (req, res, next) => {
       }
 
       if (item1.contracts.orders.resellers[0]?.isServicer && item1.contracts.orders.resellers[0]?.status) {
-        servicer.unshift(item1.contracts.orders.resellers[0])
+        let checkResellerServicer = await servicerService.getServiceProviderById({ resellerId: item1.contracts.orders.resellers[0]._id })
+        console.log("checkResellerServicer------------------",checkResellerServicer)
+        servicer.push(checkResellerServicer)
       }
 
       if (item1.contracts.orders.dealers.isServicer && item1.contracts.orders.dealers.accountStatus) {
-        servicer.unshift(item1.contracts.orders.dealers)
+        let checkDealerServicer = await servicerService.getServiceProviderById({ dealerId: item1.contracts.orders.dealers._id })
+        console.log("checkDealerServicer------------------",checkDealerServicer)
+
+        servicer.push(checkDealerServicer)
       }
 
       if (item1.servicerId != null) {
