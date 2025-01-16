@@ -6,7 +6,7 @@ const servicePriceBookSchema = new mongoose.Schema({
         default: null
     },
     categoryArray: {
-        type: [],
+        type: Array,
         default: []
     },
     priceBookArray: {
