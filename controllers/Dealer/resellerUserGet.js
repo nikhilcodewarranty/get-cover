@@ -1406,9 +1406,12 @@ exports.getResellerServicers = async (req, res) => {
             servicer.unshift(checkReseller);
         }
 
-        const servicerIds = servicer.map(obj => obj._id);
+        let servicerIds = servicer.map(obj => obj._id);
+        let servicerIds1 = servicer.map(obj => new mongoose.Types.ObjectId(obj.dealerId));
+        let servicerIds2 = servicer.map(obj => new mongoose.Types.ObjectId(obj.resellerId));
+        servicerIds = servicerIds.concat(servicerIds1, servicerIds2);
         // Get servicer with claim
-        const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "completed", resellerId: new mongoose.Types.ObjectId(req.userId) };
+        let servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "completed", resellerId: new mongoose.Types.ObjectId(req.userId) };
         const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "completed", resellerId: new mongoose.Types.ObjectId(req.userId) };
         let claimAggregateQuery1 = [
             {
