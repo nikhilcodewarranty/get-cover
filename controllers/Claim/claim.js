@@ -363,14 +363,19 @@ exports.addClaim = async (req, res, next) => {
       let filterPriceBook = checkOrder.productsArray.filter(product => product._id.toString() === checkContract.orderProductId.toString());
       console.log("filterPriceBook------------------",filterPriceBook)
 
-      let checkCategory = {
+      let checkCategoryQuery = {
         categoryArray: {
           $elemMatch: { categoryId: filterPriceBook[0]?.categoryId }
         },
         servicerId: data.servicerId
       }
 
-      console.log("checkCategory------------------",checkCategory)
+      console.log("checkCategory------------------",checkCategoryQuery)
+
+      const categoryData = await servicerService.servicerPriceBook(checkCategoryQuery,{})
+
+      console.log("categoryData------------------",categoryData)
+
     }
 
 
