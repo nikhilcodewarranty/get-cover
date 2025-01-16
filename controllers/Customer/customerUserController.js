@@ -388,9 +388,9 @@ exports.getSingleOrder = async (req, res) => {
     if (dealer && dealer.isServicer) {
       servicer.unshift(dealer);
     }
-    const servicerIds = servicer.map((obj) => obj._id);
-    const servicerIds1 = servicer.map((obj) => new mongoose.Types.ObjectId(obj.dealerId));
-    const servicerIds2 = servicer.map((obj) => new mongoose.Types.ObjectId(obj.resellerId));
+    let servicerIds = servicer.map((obj) => obj._id);
+    let servicerIds1 = servicer.map((obj) => new mongoose.Types.ObjectId(obj.dealerId));
+    let servicerIds2 = servicer.map((obj) => new mongoose.Types.ObjectId(obj.resellerId));
     servicerIds =servicerIds1.concat(servicerIds2,servicerIds1)
 
     const servicerUser = await userService.findUserforCustomer1([
