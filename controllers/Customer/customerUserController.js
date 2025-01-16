@@ -321,6 +321,7 @@ exports.getSingleOrder = async (req, res) => {
   try {
     let projection = { isDeleted: 0 };
     let query = { _id: req.params.orderId };
+    let servicer;
     let checkOrder = await orderService.getOrder(query, projection);
     if (!checkOrder) {
       res.send({
@@ -387,7 +388,17 @@ exports.getSingleOrder = async (req, res) => {
     if (dealer && dealer.isServicer) {
       servicer.unshift(dealer);
     }
-    const servicerIds = servicer.map((obj) => obj._id);
+    let servicerIds = servicer.map((obj) => obj._id);
+    console.log("servicers ids111111111111111111111", servicerIds)
+    let servicerIds1 = servicer.map((obj) => new mongoose.Types.ObjectId(obj.dealerId));
+    console.log("servicers ids222222222222222", servicerIds1)
+    let servicerIds2 = servicer.map((obj) => new mongoose.Types.ObjectId(obj.resellerId));
+    console.log("servicers ids3333333333333333333", servicerIds2)
+    servicerIds = servicerIds.concat( servicerIds1)
+    servicerIds = servicerIds.concat( servicerIds2)
+    console.log("servicers 444444444444444444444444", servicerIds)
+
+    // console.log("servicers ids", servicer)
 
     const servicerUser = await userService.findUserforCustomer1([
       {
@@ -418,10 +429,11 @@ exports.getSingleOrder = async (req, res) => {
       }
     ]);
 
+    console.log("servicers usersss", servicerUser)
 
     const result_Array = servicer.map((item1) => {
       const matchingItem = servicerUser.find(
-        (item2) => item2.metaId?.toString() === item1._id.toString()
+        (item2) => item2.metaId?.toString() === item1?._id?.toString() || item2?.metaId?.toString() === item1?.dealerId?.toString() || item2?.metaId?.toString() === item1?.resellerId?.toString()
       );
 
       if (matchingItem) {
@@ -430,7 +442,7 @@ exports.getSingleOrder = async (req, res) => {
           servicerData: matchingItem,
         };
       } else {
-        return servicer.toObject();
+        return servicer?.toObject();
       }
     });
     let userData = {
@@ -592,7 +604,7 @@ exports.getCustomerContract = async (req, res) => {
       endDate.setHours(11, 59, 0, 0)
       let dateFilter = { createdAt: { $gte: startDate, $lte: endDate } }
       contractFilterWithEligibilty.push(dateFilter)
-  }
+    }
     let mainQuery = []
     if (data.contractId === "" && data.productName === "" && data.dealerSku === "" && data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
       mainQuery = [
@@ -617,7 +629,7 @@ exports.getCustomerContract = async (req, res) => {
                   model: 1,
                   serial: 1,
                   minDate: 1,
-                  createdAt:1,
+                  createdAt: 1,
                   unique_key: 1,
                   productValue: 1,
                   status: 1,
@@ -666,7 +678,7 @@ exports.getCustomerContract = async (req, res) => {
                 minDate: 1,
                 unique_key: 1,
                 productValue: 1,
-                createdAt:1,
+                createdAt: 1,
 
                 status: 1,
                 manufacture: 1,
@@ -1579,7 +1591,7 @@ exports.getCustomerDetails = async (req, res) => {
     }
 
     // Add a new primary address to the addresses array
-    if(getCustomer[0]?.addresses){
+    if (getCustomer[0]?.addresses) {
       getCustomer[0].addresses.push({
         address: getCustomer[0]?.street,
         city: getCustomer[0]?.city,
@@ -1590,7 +1602,7 @@ exports.getCustomerDetails = async (req, res) => {
       // Sort the addresses array to place isPrimary: true at the top
       getCustomer[0].addresses.sort((a, b) => b.isPrimary - a.isPrimary);
     }
-  
+
 
 
     // Prepare loginMember details
