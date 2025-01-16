@@ -325,9 +325,10 @@ exports.uploadCommentImage = async (req, res, next) => {
 exports.addClaim = async (req, res, next) => {
   try {
     let data = req.body;
-    const checkOrder = await orderService.getOrder({ _id: checkContract.orderId }, { isDeleted: false })
 
     let checkContract = await contractService.getContractById({ _id: data.contractId })
+    const checkOrder = await orderService.getOrder({ _id: checkContract.orderId }, { isDeleted: false })
+
     // data.lossDate = new Date(data.lossDate).setDate(new Date(data.lossDate).getDate() + 1)
     // data.lossDate = new Date(data.lossDate)
     const submittedUser = await userService.getUserById1({ _id: data.submittedBy }, {})
