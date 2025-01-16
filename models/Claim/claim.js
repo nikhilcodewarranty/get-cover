@@ -85,7 +85,6 @@ const claimSchema = new mongoose.Schema({
   },
   servicerId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "serviceproviders",
     default: null,
     index: true
   },
