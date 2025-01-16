@@ -95,7 +95,7 @@ module.exports = class providerService {
   //Get Servicer Price Book
   static async servicerPriceBook(query, projection) {
     try {
-      const servicerPriceBook = await servicePriceBook.find(query, projection).sort({ "createdAt": -1 });
+      const servicerPriceBook = await servicePriceBook.findOne(query, projection).sort({ "createdAt": -1 });
       return servicerPriceBook;
     } catch (error) {
       return `Could not fetch service price book: ${error}`;
