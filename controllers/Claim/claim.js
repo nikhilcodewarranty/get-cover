@@ -900,6 +900,18 @@ exports.editClaim = async (req, res) => {
       })
       return
     }
+    if (checkClaim.claimFile === "completed" || checkClaim.claimFile === "rejected") {
+      const message =
+        checkClaim.claimFile === "completed"
+          ? "The claim has already been processed and is marked as completed."
+          : "The claim has been rejected. Please contact support for further assistance.";
+
+      res.send({
+        code: constant.errorCode,
+        message: message,
+      });
+      return;
+    }
     if (checkClaim.claimFile == 'open') {
       let contract = await contractService.getContractById({ _id: checkClaim.contractId });
       const query = { contractId: new mongoose.Types.ObjectId(checkClaim.contractId), claimFile: 'completed' }
