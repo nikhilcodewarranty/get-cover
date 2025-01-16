@@ -296,6 +296,8 @@ exports.getContracts = async (req, res) => {
         console.log("checking the open -------",checkClaims[0])
         if (checkClaims[0].openFileClaimsCount > 0) {
           result1[e].reason = "Contract has open claim"
+        console.log("checking the open -------",result1[e].reason )
+
 
         }
 
