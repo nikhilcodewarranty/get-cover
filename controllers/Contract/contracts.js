@@ -13,6 +13,7 @@ const constant = require("../../config/constant");
 const { default: mongoose } = require("mongoose");
 
 
+
 //Get all contracts new api
 exports.getContracts = async (req, res) => {
   try {
@@ -293,8 +294,11 @@ exports.getContracts = async (req, res) => {
       let checkClaims = await claimService.getClaimWithAggregate(claimQuery)
 
       if (checkClaims[0]) {
-        if (checkClaims[0].openFileClaimsCount > 0) {
-          result1[e].reason = "Contract has open claim"
+        if (isMaxClaimAmount) {
+          if (checkClaims[0].openFileClaimsCount > 0) {
+            result1[e].reason = "Contract has open claim"
+
+          }
 
         }
         if (checkClaims[0].totalAmount >= result1[e].productValue) {

@@ -430,7 +430,7 @@ exports.getSingleOrder = async (req, res) => {
           servicerData: matchingItem,
         };
       } else {
-        return servicer.toObject();
+        return servicer?.toObject();
       }
     });
     let userData = {
