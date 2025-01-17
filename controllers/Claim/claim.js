@@ -3287,12 +3287,12 @@ exports.saveBulkClaim = async (req, res) => {
 
       totalDataComing.map((data, index) => {
         let servicerId = data.servicerData?._id
-        if (data.servicerData?.dealerId) {
-          servicerId = data.servicerData?.dealerId
-        }
-        if (data.servicerData?.resellerId) {
-          servicerId = data.servicerData?.resellerId
-        }
+        // if (data.servicerData?.dealerId) {
+        //   servicerId = data.servicerData?.dealerId
+        // }
+        // if (data.servicerData?.resellerId) {
+        //   servicerId = data.servicerData?.resellerId
+        // }
         const issue = data.issue != "" ? data.issue + "-" + data.diagnosis : data.diagnosis
         // emailDealerId.push(data.orderData?.order?.dealerId);
         if (!data.exit) {
