@@ -90,6 +90,7 @@ exports.createDealer = async (req, res) => {
     try {
         upload(req, res, async () => {
             const data = req.body;
+            data.name = data.name.trim().replace(/\s+/, '');
             const loginUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: req.userId, isPrimary: true } } }, {});
             //get coverage type based on dealer coverageType
             const coverageType = data.coverageType
