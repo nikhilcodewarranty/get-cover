@@ -2964,7 +2964,7 @@ exports.getAllContracts = async (req, res) => {
             let startDate = new Date(data.startDate)
             let endDate = new Date(data.endDate)
             startDate.setHours(0, 0, 0, 0)
-            endDate.setHours(11, 59, 0, 0)
+            endDate.setHours(23, 59, 999, 0)
             let dateFilter = { createdAt: { $gte: startDate, $lte: endDate } }
             contractFilterWithEligibilty.push(dateFilter)
         }
@@ -3882,7 +3882,7 @@ exports.getDealerAsServicerClaims = async (req, res) => {
         statusMatch = {}
 
         if (data.dateFilter != "") {
-            data.endDate = new Date(data.endDate).setHours(11, 59, 0, 0)
+            data.endDate = new Date(data.endDate).setHours(23, 59, 999, 0)
             if (data.dateFilter == "damageDate") {
                 dateMatch = { lossDate: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
                 // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
