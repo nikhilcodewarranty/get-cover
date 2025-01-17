@@ -1175,7 +1175,7 @@ exports.addResellerUser = async (req, res) => {
         let statusCheck;
         if (!checkReseller.status) {
             statusCheck = false
-        } else {  
+        } else {
             statusCheck = data.status
         }
         let metaData = {
@@ -2956,8 +2956,10 @@ exports.getResellerAsServicerClaims = async (req, res) => {
         let dateMatch = {}
         let statusMatch = {}
         const checkServicer = await providerService.getAllServiceProvider({ resellerId: new mongoose.Types.ObjectId(resellerId) });
-        let servicerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer?._id))
+        let servicerIdToCheck = checkServicer[0]?._id
 
+        let servicerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer?._id))
+        servicerIds.push(new mongoose.Types.ObjectId(resellerId))
         servicerMatch = {
             $or: [
                 { "servicerId": { $in: servicerIds } }
@@ -3087,7 +3089,7 @@ exports.getResellerAsServicerClaims = async (req, res) => {
                     $and: [
                         { "contracts.orders.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         { "contracts.orders.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                        { "contracts.orders.resellerId": new mongoose.Types.ObjectId(resellerId) },
+                        // { "contracts.orders.resellerId": new mongoose.Types.ObjectId(resellerId) },
                     ]
                 },
             },
