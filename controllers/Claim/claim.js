@@ -2319,6 +2319,50 @@ exports.editServicer = async (req, res) => {
         })
         return
       }
+
+      //check servicer price book and category exist in the database
+      let filterPriceBook = checkOrder.productsArray.filter(product => product._id.toString() === checkContract.orderProductId.toString());
+      let priceBookData = {}
+      let checkServicerData = await servicerService.servicerPriceBook({ servicerId: checkServicer._id }, {})
+      if (!checkServicerData) {
+        priceBookData.servicerId = checkServicer._id
+        priceBookData.categoryArray = [
+          {
+            categoryId: filterPriceBook[0]?.categoryId
+          }
+        ]
+        priceBookData.priceBookArray = [
+          {
+            priceBookId: filterPriceBook[0]?.priceBookId
+          }
+        ]
+
+        const saveData = await servicerService.saveServicerPriceBook(priceBookData)
+      }
+      else {
+        let checkCategoryQuery = {
+          categoryArray: {
+            $elemMatch: { categoryId: filterPriceBook[0]?.categoryId }
+          },
+          servicerId: checkServicer._id
+        }
+        let checkCategoryData = await servicerService.servicerPriceBook(checkCategoryQuery, {})
+        if (!checkCategoryData) {
+          checkServicerData.categoryArray.push({ categoryId: filterPriceBook[0]?.categoryId })
+        }
+        let checkPriceBookQuery = {
+          priceBookArray: {
+            $elemMatch: { priceBookId: filterPriceBook[0]?.priceBookId }
+          },
+          servicerId: checkServicer._id
+        }
+        const checkPriceBookData = await servicerService.servicerPriceBook(checkPriceBookQuery, {})
+        if (!checkPriceBookData) {
+          checkServicerData.priceBookArray.push({ priceBookId: filterPriceBook[0]?.priceBookId })
+        }
+        await servicerService.updateServicerPriceBook({ servicerId: checkServicer._id }, checkServicerData, { new: true })
+      }
+
       data.servicerId = checkServicer._id
     }
 
