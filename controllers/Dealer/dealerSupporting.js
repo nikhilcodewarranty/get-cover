@@ -1263,13 +1263,14 @@ exports.getDealerAsServicerClaims = async (req, res) => {
         }
         let data = req.body
         let query = { isDeleted: false };
+        let servicerIdToCheck;
         let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
         let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
         let limitData = Number(pageLimit)
         const checkDealer = await dealerService.getDealerById(req.params.dealerId);
-        if(checkDealer.isServicer){
-            let getServicerData = await servicerService.getServicerByName({dealerId:req.params.dealerId})
-            req.params.dealerId = getServicerData._id
+        if (checkDealer.isServicer) {
+            let getServicerData = await servicerService.getServicerByName({ dealerId: req.params.dealerId })
+            servicerIdToCheck = getServicerData._id
         }
         let servicerMatch = {}
         let dealerMatch = {}
@@ -1486,7 +1487,7 @@ exports.getDealerAsServicerClaims = async (req, res) => {
                         dealerMatch,
                         statusMatch,
                         resellerMatch,
-                        {servicerId:new mongoose.Types.ObjectId(req.params.dealerId)}
+                        { servicerId: { $in: [new mongoose.Types.ObjectId(req.params.dealerId), new mognoose.Types.ObjectId(servicerIdToCheck)] } }
                     ]
                 },
             },
@@ -1639,7 +1640,7 @@ exports.getDealerAsServicerClaims = async (req, res) => {
             const { productValue, claimAmount } = claimObject.contracts;
 
             // Calculate the threshold limit value
-            const thresholdLimitValue = (getTheThresholdLimit.threshHoldLimit?.value ? getTheThresholdLimit.threshHoldLimit?.value : 1000/ 100) * productValue;
+            const thresholdLimitValue = (getTheThresholdLimit.threshHoldLimit?.value ? getTheThresholdLimit.threshHoldLimit?.value : 1000 / 100) * productValue;
 
             // Check if claimAmount exceeds the threshold limit value
             let overThreshold = claimAmount > thresholdLimitValue;
@@ -1706,7 +1707,7 @@ exports.getDealerServicers = async (req, res) => {
             return;
         }
         // Get Dealer Reseller Servicer
-        console.log("id+++++++++++++",servicer)
+        console.log("id+++++++++++++", servicer)
 
         let dealerResellerServicer = await resellerService.getResellers({ dealerId: req.params.dealerId, isServicer: true })
 
@@ -2264,7 +2265,7 @@ exports.getAllDealers = async (req, res) => {
         let dealers = await dealerService.getAllDealers(dealerFilter, projection);
         // console.log("dealers+++++++++++++",dealers.length)
         const dealerIds = dealers.map(obj => obj._id);
-        console.log("dealers+++++++++++++",dealerIds)
+        console.log("dealers+++++++++++++", dealerIds)
 
         //-------------Get All Dealers Id's------------------------
         const dealarUser = await userService.findUserforCustomer1([
@@ -2298,7 +2299,7 @@ exports.getAllDealers = async (req, res) => {
             }
         ]);
 
-        console.log("dealers users+++++++++++++",dealarUser)
+        console.log("dealers users+++++++++++++", dealarUser)
 
 
 
