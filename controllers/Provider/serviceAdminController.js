@@ -163,8 +163,8 @@ exports.createServiceProvider = async (req, res, next) => {
                 subject: "Set Password",
                 role: "Servicer",
                 address: settingData[0]?.address,
-                servicerName: saveMembers[i].metaData[0].firstName + " "+ saveMembers[i].metaData[0].lastName
-                
+                servicerName: saveMembers[i].metaData[0].firstName + " " + saveMembers[i].metaData[0].lastName
+
               }))
           }
 
@@ -382,7 +382,7 @@ exports.createServiceProvider = async (req, res, next) => {
                   websiteSetting: settingData[0],
                   subject: "Set Password",
                   link: resetLink, role: 'Servicer',
-                  servicerName: saveMembers[i].metaData[0].firstName + " "+ saveMembers[i].metaData[0].lastName
+                  servicerName: saveMembers[i].metaData[0].firstName + " " + saveMembers[i].metaData[0].lastName
                 }))
 
             }
@@ -2888,14 +2888,29 @@ exports.paidUnpaidClaim = async (req, res) => {
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
     let servicerId = req.params.servicerId
+    let checkServicer = await providerService.getServiceProviderById({
+      $or: [
+        { _id: req.params.servicerId },
+        { resellerId: req.params.servicerId },
+        { dealerId: req.params.servicerId },
+
+      ]
+    })
+    let servicerIdToCheck = checkServicer._id
     let match = {};
     if (req.role == 'Dealer') {
       match = { 'contracts.orders.dealerId': new mongoose.Types.ObjectId(req.userId) }
+      checkServicer = await providerService.getServiceProviderById({ dealerId: req.userId })
+      servicerIdToCheck = checkServicer._id
       servicerId = req.userId
+
     }
     if (req.role == 'Reseller') {
       match = { 'contracts.orders.resellerId': new mongoose.Types.ObjectId(req.userId) }
+      checkServicer = await providerService.getServiceProviderById({ resellerId: req.userId })
+      servicerIdToCheck = checkServicer._id
       servicerId = req.userId
+
     }
     if (req.role == 'Customer') {
       match = { 'contracts.orders.customerId': new mongoose.Types.ObjectId(req.userId) }
@@ -3062,7 +3077,7 @@ exports.paidUnpaidClaim = async (req, res) => {
             { claimPaymentStatus: flag },
             dateQuery,
             approveQuery,
-            { 'servicerId': new mongoose.Types.ObjectId(servicerId) }
+            { 'servicerId': { $in: [new mongoose.Types.ObjectId(servicerId), new mongoose.Types.ObjectId(servicerIdToCheck)] } }
           ]
         },
       },
