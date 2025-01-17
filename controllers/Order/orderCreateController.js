@@ -1157,7 +1157,7 @@ exports.createOrder1 = async (req, res) => {
                 return;
             }
 
-            data.servicerId = checkServicer._id != "" ? checkServicer._id : null;             
+            data.servicerId = checkServicer._id != "" ? checkServicer._id : null;
         }
 
         if (data.customerId) {
@@ -2345,6 +2345,8 @@ exports.editOrderDetail = async (req, res) => {
                     });
                     return;
                 }
+
+                data.servicerId = checkServicer._id
             }
         }
         if (data.customerId != "") {

@@ -1036,6 +1036,9 @@ exports.editOrderDetail = async (req, res) => {
                     return;
                 }
             }
+
+            data.servicerId = checkServicer._id
+
         }
         if (data.customerId != "") {
             if (data.customerId != checkId.customerId) {
