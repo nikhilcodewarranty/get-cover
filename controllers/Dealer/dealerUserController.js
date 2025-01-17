@@ -1058,6 +1058,10 @@ exports.createOrder = async (req, res) => {
                 });
                 return;
             }
+
+            data.servicerId = checkServicer._id != "" ? checkServicer._id : null;    
+
+
         }
 
         if (data.customerId) {
@@ -1086,7 +1090,6 @@ exports.createOrder = async (req, res) => {
 
         data.createdBy = req.userId;
         data.dealerId = req.userId;
-        data.servicerId = data.servicerId != "" ? data.servicerId : null;
         data.resellerId = data.resellerId != "" ? data.resellerId : null;
         data.customerId = data.customerId != "" ? data.customerId : null;
         let currentYear = new Date().getFullYear();

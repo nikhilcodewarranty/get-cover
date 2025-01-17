@@ -9,7 +9,7 @@ const orderSchema = new mongoose.Schema({
   },
   servicerId: {
     type: mongoose.Schema.Types.ObjectId,
-    default: '',
+    default:null,
   },
   customerId: {
     type: mongoose.Schema.Types.ObjectId,

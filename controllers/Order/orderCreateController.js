@@ -1157,8 +1157,7 @@ exports.createOrder1 = async (req, res) => {
                 return;
             }
 
-
-             
+            data.servicerId = checkServicer._id != "" ? checkServicer._id : null;             
         }
 
         if (data.customerId) {
@@ -1186,7 +1185,6 @@ exports.createOrder1 = async (req, res) => {
         }
 
         data.createdBy = req.userId;
-        data.servicerId = data.servicerId != "" ? data.servicerId : null;
         data.resellerId = data.resellerId != "" ? data.resellerId : null;
         data.customerId = data.customerId != "" ? data.customerId : null;
 
