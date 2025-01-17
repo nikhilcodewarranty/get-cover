@@ -3151,7 +3151,9 @@ exports.getResellerAsServicerClaims = async (req, res) => {
             { _id: { $in: allServicerIds }, status: true },
             {}
         );
-        const result_Array = resultFiter.map((item1) => {
+
+
+        let result_Array = await Promise.all(resultFiter.map(async (item1) => {
             servicer = []
             let mergedData = []
             if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
@@ -3161,23 +3163,28 @@ exports.getResellerAsServicerClaims = async (req, res) => {
             }
             let servicerName = '';
             let selfServicer = false;
-            let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
-                const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId.toString());
-                servicer.push(dealerOfServicer)
-            });
+            await Promise.all(item1.contracts.orders.dealers.dealerServicer.map(async (matched) => {
+                const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId?.toString());
+                if (dealerOfServicer) {
+                    servicer.push(dealerOfServicer);
+                }
+            }));
 
             if (item1.contracts.orders.servicers[0]?.length > 0) {
                 servicer.unshift(item1.contracts.orders.servicers[0])
             }
 
-            if (item1.contracts.orders.resellers[0]?.isServicer) {
-                servicer.unshift(item1.contracts.orders.resellers[0])
+
+            if (item1.contracts.orders.resellers[0]?.isServicer && item1.contracts.orders.resellers[0]?.status) {
+                let checkResellerServicer = await providerService.getServiceProviderById({ resellerId: item1.contracts.orders.resellers[0]._id })
+                servicer.push(checkResellerServicer)
             }
 
-            if (item1.contracts.orders.dealers.isServicer) {
-                servicer.unshift(item1.contracts.orders.dealers)
-            }
+            if (item1.contracts.orders.dealers.isServicer && item1.contracts.orders.dealers.accountStatus) {
+                let checkDealerServicer = await providerService.getServiceProviderById({ dealerId: item1.contracts.orders.dealers._id })
 
+                servicer.push(checkDealerServicer)
+            }
             if (item1.servicerId != null) {
                 servicerName = servicer.find(servicer => servicer._id.toString() === item1.servicerId.toString());
                 const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
@@ -3195,7 +3202,8 @@ exports.getResellerAsServicerClaims = async (req, res) => {
 
                 }
             }
-        })
+        }));
+
         let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0
         res.send({
             code: constant.successCode,
