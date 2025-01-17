@@ -244,6 +244,7 @@ exports.registerDealer = async (req, res) => {
 
     // Check if the dealer already exists
     const existingDealer = await dealerService.getDealerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') } }, { isDeleted: 0, __v: 0 });
+    console.log("checking the data for dealer ak +++++++++++++++",existingDealer)
     if (existingDealer) {
       res.send({
         code: constant.errorCode,
