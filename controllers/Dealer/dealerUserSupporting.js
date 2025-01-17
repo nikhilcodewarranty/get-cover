@@ -3825,19 +3825,24 @@ exports.getAllClaims = async (req, res, next) => {
 
 exports.getDealerAsServicerClaims = async (req, res) => {
     try {
-        // if (req.role != 'Super Admin') {
-        //     res.send({
-        //         code: constant.errorCode,
-        //         message: 'Only super admin allow to do this action'
-        //     });
-        //     return;
-        // }
+        if (req.role != 'Super Admin') {
+            res.send({
+                code: constant.errorCode,
+                message: 'Only super admin allow to do this action'
+            });
+            return;
+        }
         let data = req.body
         let query = { isDeleted: false };
+        let servicerIdToCheck;
         let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
         let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
         let limitData = Number(pageLimit)
         const checkDealer = await dealerService.getDealerById(req.userId);
+        if (checkDealer.isServicer) {
+            let getServicerData = await servicerService.getServicerByName({ dealerId: req.userId })
+            servicerIdToCheck = getServicerData._id
+        }
         let servicerMatch = {}
         let dealerMatch = {}
         let dateMatch = {}
@@ -4053,7 +4058,7 @@ exports.getDealerAsServicerClaims = async (req, res) => {
                         dealerMatch,
                         statusMatch,
                         resellerMatch,
-                        {servicerId:new mongoose.Types.ObjectId(req.userId)}
+                        { servicerId: { $in: [new mongoose.Types.ObjectId(req.userId), new mongoose.Types.ObjectId(servicerIdToCheck)] } }
                     ]
                 },
             },
@@ -4095,7 +4100,7 @@ exports.getDealerAsServicerClaims = async (req, res) => {
                     $and: [
                         { "contracts.orders.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         { "contracts.orders.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                        // { "contracts.orders.dealerId": new mongoose.Types.ObjectId(req.params.dealerId) },
+                        // { "contracts.orders.dealerId": new mongoose.Types.ObjectId(req.userId) },
                     ]
                 },
             },
@@ -4206,7 +4211,7 @@ exports.getDealerAsServicerClaims = async (req, res) => {
             const { productValue, claimAmount } = claimObject.contracts;
 
             // Calculate the threshold limit value
-            const thresholdLimitValue = (getTheThresholdLimit.threshHoldLimit?.value ? getTheThresholdLimit.threshHoldLimit?.value : 1000/ 100) * productValue;
+            const thresholdLimitValue = (getTheThresholdLimit.threshHoldLimit?.value ? getTheThresholdLimit.threshHoldLimit?.value : 1000 / 100) * productValue;
 
             // Check if claimAmount exceeds the threshold limit value
             let overThreshold = claimAmount > thresholdLimitValue;
@@ -4230,6 +4235,7 @@ exports.getDealerAsServicerClaims = async (req, res) => {
             code: constant.successCode,
             message: "Success",
             result: result_Array,
+            lookupQuery,
             totalCount
         })
     }
