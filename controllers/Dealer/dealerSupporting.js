@@ -1487,7 +1487,7 @@ exports.getDealerAsServicerClaims = async (req, res) => {
                         dealerMatch,
                         statusMatch,
                         resellerMatch,
-                        { servicerId: { $in: [new mongoose.Types.ObjectId(req.params.dealerId), new mognoose.Types.ObjectId(servicerIdToCheck)] } }
+                        { servicerId: { $in: [new mongoose.Types.ObjectId(req.params.dealerId), new mongoose.Types.ObjectId(servicerIdToCheck)] } }
                     ]
                 },
             },
