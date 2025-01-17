@@ -362,9 +362,9 @@ exports.addClaim = async (req, res, next) => {
       //check servicer price book and category exist in the database
       let filterPriceBook = checkOrder.productsArray.filter(product => product._id.toString() === checkContract.orderProductId.toString());
       let priceBookData = {}
-      let checkServicerData = await servicerService.servicerPriceBook({ servicerId: data.servicerId }, {})
+      let checkServicerData = await servicerService.servicerPriceBook({ servicerId: checkServicer._id }, {})
       if (!checkServicerData) {
-        priceBookData.servicerId = data.servicerId
+        priceBookData.servicerId = checkServicer._id
         priceBookData.categoryArray = [
           {
             categoryId: filterPriceBook[0]?.categoryId
@@ -383,7 +383,7 @@ exports.addClaim = async (req, res, next) => {
           categoryArray: {
             $elemMatch: { categoryId: filterPriceBook[0]?.categoryId }
           },
-          servicerId: data.servicerId
+          servicerId: checkServicer._id
         }
         let checkCategoryData = await servicerService.servicerPriceBook(checkCategoryQuery, {})
         if (!checkCategoryData) {
@@ -393,15 +393,16 @@ exports.addClaim = async (req, res, next) => {
           priceBookArray: {
             $elemMatch: { priceBookId: filterPriceBook[0]?.priceBookId }
           },
-          servicerId: data.servicerId
+          servicerId: checkServicer._id
         }
         const checkPriceBookData = await servicerService.servicerPriceBook(checkPriceBookQuery, {})
         if (!checkPriceBookData) {
           checkServicerData.priceBookArray.push({ priceBookId: filterPriceBook[0]?.priceBookId })
         }
-        await servicerService.updateServicerPriceBook({ servicerId: data.servicerId }, checkServicerData, { new: true })
+        await servicerService.updateServicerPriceBook({ servicerId: checkServicer._id }, checkServicerData, { new: true })
       }
 
+      data.servicerId = checkServicer._id ? checkServicer._id : null
 
     }
 
@@ -479,7 +480,6 @@ exports.addClaim = async (req, res, next) => {
     }
 
     data.receiptImage = data.file
-    data.servicerId = data.servicerId ? data.servicerId : null
 
     let currentYear = new Date().getFullYear();
     currentYear = "-" + currentYear + "-"
@@ -4789,13 +4789,13 @@ exports.getAllClaims = async (req, res, next) => {
 
       if (item1.contracts.orders.resellers[0]?.isServicer && item1.contracts.orders.resellers[0]?.status) {
         let checkResellerServicer = await servicerService.getServiceProviderById({ resellerId: item1.contracts.orders.resellers[0]._id })
-        console.log("checkResellerServicer------------------",checkResellerServicer)
+        console.log("checkResellerServicer------------------", checkResellerServicer)
         servicer.push(checkResellerServicer)
       }
 
       if (item1.contracts.orders.dealers.isServicer && item1.contracts.orders.dealers.accountStatus) {
         let checkDealerServicer = await servicerService.getServiceProviderById({ dealerId: item1.contracts.orders.dealers._id })
-        console.log("checkDealerServicer------------------",checkDealerServicer)
+        console.log("checkDealerServicer------------------", checkDealerServicer)
 
         servicer.push(checkDealerServicer)
       }
