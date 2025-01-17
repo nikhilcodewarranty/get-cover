@@ -2563,8 +2563,14 @@ exports.updateServicerByOrder = async (req, res) => {
             });
             return;
         }
+        const checkServicer = await servicerService.getServiceProviderById({
+            $or: [
+                { _id: req.body.servicerId },
+                { dealerId: req.body.servicerId },
+                { resellerId: req.body.servicerId }]
+        })
         let creteria = { _id: req.params.orderId }
-        let update = await orderService.updateOrder(creteria, { servicerId: req.body.servicerId }, { new: true })
+        let update = await orderService.updateOrder(creteria, { servicerId: checkServicer._id }, { new: true })
         if (update) {
             res.send({
                 code: constant.successCode,

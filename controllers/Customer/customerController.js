@@ -2707,7 +2707,7 @@ exports.customerClaims = async (req, res) => {
     );
     const dynamicOption = await userService.getOptions({ name: 'coverage_type' })
 
-    const result_Array = resultFiter.map((item1) => {
+    let result_Array = await Promise.all(resultFiter.map(async(item1) => {
       servicer = []
       let mergedData = []
       if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
@@ -2719,21 +2719,25 @@ exports.customerClaims = async (req, res) => {
       let selfServicer = false;
       let selfResellerServicer = false;
 
-      let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
-        const dealerOfServicer = allServicer.find(servicer => servicer?._id.toString() === matched?.servicerId.toString());
+      await Promise.all(item1.contracts.orders.dealers.dealerServicer.map(async (matched) => {
+        const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId?.toString());
         if (dealerOfServicer) {
-          servicer.push(dealerOfServicer)
+          servicer.push(dealerOfServicer);
         }
-
-      });
+      }));
+      
       if (item1.contracts.orders.servicers[0]?.length > 0) {
         servicer.unshift(item1.contracts.orders.servicers[0])
       }
-      if (item1.contracts.orders.resellers[0]?.isServicer) {
-        servicer.unshift(item1.contracts.orders.resellers[0])
+      if (item1.contracts.orders.resellers[0]?.isServicer && item1.contracts.orders.resellers[0]?.status) {
+        let checkResellerServicer = await servicerService.getServiceProviderById({ resellerId: item1.contracts.orders.resellers[0]._id })
+        servicer.push(checkResellerServicer)
       }
-      if (item1.contracts.orders.dealers.isServicer) {
-        servicer.unshift(item1.contracts.orders.dealers)
+    
+      if (item1.contracts.orders.dealers.isServicer && item1.contracts.orders.dealers.accountStatus) {
+        let checkDealerServicer = await servicerService.getServiceProviderById({ dealerId: item1.contracts.orders.dealers._id })
+
+        servicer.push(checkDealerServicer)
       }
       if (item1.servicerId != null) {
         servicerName = servicer.find(servicer => servicer?._id.toString() === item1?.servicerId.toString());
@@ -2749,7 +2753,7 @@ exports.customerClaims = async (req, res) => {
           mergedData: mergedData
         }
       }
-    })
+    }));
     let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0
     res.send({
       code: constant.successCode,

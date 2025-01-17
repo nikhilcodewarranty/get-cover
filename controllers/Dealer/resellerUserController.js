@@ -257,7 +257,7 @@ exports.createCustomer = async (req, res, next) => {
                                 address: settingData[0]?.address,
                                 link: resetLink,
                                 subject: "Set Password", role: "Customer",
-                                servicerName: saveMembers[i].metaData[0].firstName + " "+ saveMembers[i].metaData[0].lastName
+                                servicerName: saveMembers[i].metaData[0].firstName + " " + saveMembers[i].metaData[0].lastName
                             }))
                     }
 
@@ -432,6 +432,8 @@ exports.createOrder = async (req, res) => {
                 });
                 return;
             }
+
+            data.servicerId = checkServicer._id != "" ? checkServicer._id : null;
         }
 
         if (data.customerId) {
@@ -459,7 +461,6 @@ exports.createOrder = async (req, res) => {
         }
 
         data.createdBy = req.userId;
-        data.servicerId = data.servicerId != "" ? data.servicerId : null;
         data.resellerId = req.userId;
         data.dealerId = checkReseller.dealerId;
         data.customerId = data.customerId != "" ? data.customerId : null;
@@ -1035,6 +1036,9 @@ exports.editOrderDetail = async (req, res) => {
                     return;
                 }
             }
+
+            data.servicerId = checkServicer._id
+
         }
         if (data.customerId != "") {
             if (data.customerId != checkId.customerId) {
