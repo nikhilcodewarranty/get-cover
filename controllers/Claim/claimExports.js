@@ -204,6 +204,10 @@ exports.exportDataForClaim = async (req, res) => {
       match1 = { customerId: new mongoose.Types.ObjectId(data.userId) }
 
     }
+    if (data.flag == "Contract") {
+      match1 = { contractId: new mongoose.Types.ObjectId(data.userId) }
+
+    }
 
     // building the query for claims
     let newQuery = [];

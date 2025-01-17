@@ -1483,8 +1483,8 @@ exports.getResellerServicers = async (req, res) => {
             });
             return;
         };
-        console.log("servicer---------------------------",servicer)
-        console.log("servicerUser---------------------------",servicerUser)
+        console.log("servicer---------------------------", servicer)
+        console.log("servicerUser---------------------------", servicerUser)
         result_Array = servicer.map(servicer => {
             const matchingItem = servicerUser.find(user => user?.metaId?.toString() === servicer?._id?.toString() || user?.metaId?.toString() === servicer?.dealerId?.toString() || user?.metaId?.toString() === servicer?.resellerId?.toString())
             const claimValue = valueClaim.find(claim => claim._id.toString() === servicer._id.toString())
@@ -3034,7 +3034,7 @@ exports.getDashboardData = async (req, res) => {
 
 exports.getResellerAsServicerClaims = async (req, res) => {
     try {
-        const resellerId =  req.userId
+        const resellerId = req.userId
         const singleReseller = await resellerService.getReseller({ _id: resellerId });
 
         if (!singleReseller) {
@@ -3178,6 +3178,7 @@ exports.getResellerAsServicerClaims = async (req, res) => {
         let statusMatch = {}
         const checkServicer = await providerService.getAllServiceProvider({ resellerId: new mongoose.Types.ObjectId(resellerId) });
         let servicerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer?._id))
+        servicerIds.push(new mongoose.Types.ObjectId(resellerId))
 
         servicerMatch = {
             $or: [
