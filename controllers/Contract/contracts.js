@@ -294,7 +294,7 @@ exports.getContracts = async (req, res) => {
       let checkClaims = await claimService.getClaimWithAggregate(claimQuery)
 
       if (checkClaims[0]) {
-        if (isMaxClaimAmount) {
+        if (checkClaims[0].isMaxClaimAmount) {
           if (checkClaims[0].openFileClaimsCount > 0) {
             result1[e].reason = "Contract has open claim"
 
