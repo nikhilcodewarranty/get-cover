@@ -3466,3 +3466,33 @@ exports.getServicerColorSetting = async (req, res) => {
 
 
 
+exports.updateClaimsApproveDate = async (req, res) => {
+  try {
+    let data = req.body
+    let claims = await claimService.getClaims()
+    console.log("---------------------dddd------", claims.length)
+    for (let i = 0; i < claims.length; i++) {
+      console.log(i, "----------------ddddgggggg-----------", claims[i].updatedAt,claims[i].unique_key)
+      let approveDate = claims[i].claimDate
+      console.log(i, "---------------------dddd------", approveDate)
+
+      
+
+      if (!claims[i].approveDate || claims[i].approveDate == null) {
+        let newValue = {
+          $set: {
+            approveDate: approveDate
+          }
+        }
+        let updateData = await claimService.updateClaim({ _id: claims[i]._id }, newValue, { new: true })
+        console.log(i, "---------------------------", updateData.approveDate)
+      }
+
+    }
+
+  } catch (err) {
+    res.send({
+      message: err.message
+    })
+  }
+}
