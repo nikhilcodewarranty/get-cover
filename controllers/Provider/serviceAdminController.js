@@ -2778,7 +2778,7 @@ exports.getServicerClaims = async (req, res) => {
         }
       }
     })
-    
+
     let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0
     let getTheThresholdLimit = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
 
@@ -2862,14 +2862,14 @@ exports.paidUnpaidClaim = async (req, res) => {
       const start = moment().subtract(data.noOfDays, 'days').startOf('day')
       dateQuery = {
         claimDate: {
-          $gte: new Date(start),
+          $gt: new Date(start),
           $lte: new Date(end),
         }
       }
     }
 
     let approveQuery = {}
-    if (data.startDate && data.endDate & flag == 1) {
+    if (data.startDate != "" && data.endDate != "") {
       const start = new Date(data.startDate); // Replace with your start date
       let end = new Date(data.endDate);
       // Add one day to the end date
