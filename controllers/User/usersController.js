@@ -1469,6 +1469,7 @@ exports.sendLinkToEmail = async (req, res) => {
         subject: "Set Password"
       }
       const mailing = sgMail.send(emailConstant.resetpassword(checkEmail._id, resetPasswordCode, checkEmail.email, data))
+      console.log(mailing.body)
 
       if (mailing) {
         let updateStatus = await userService.updateUser({ _id: checkEmail._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
