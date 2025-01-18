@@ -1113,6 +1113,7 @@ exports.createOrder1 = async (req, res) => {
         const orderTermCondition = data.termCondition != null ? data.termCondition : {}
         const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
         const base_url = `${process.env.SITE_URL}`
+        data.servicerId  = null
         let notificationData;
         let notificationArrayData = []
         let notificationEmails
