@@ -2855,7 +2855,6 @@ exports.paidUnpaidClaim = async (req, res) => {
     let data = req.body
     let dateQuery = {}
     const flag = req.body.flag == 1 ? 'Paid' : 'Unpaid'
-
     if (data.noOfDays) {
       const end = moment().startOf('day')
       const start = moment().subtract(data.noOfDays, 'days').startOf('day')
@@ -2868,7 +2867,7 @@ exports.paidUnpaidClaim = async (req, res) => {
     }
 
     let approveQuery = {}
-    if (data.startDate && data.endDate & flag == 1) {
+    if (data.startDate && data.endDate && flag == "Paid") {
       const start = new Date(data.startDate); // Replace with your start date
       let end = new Date(data.endDate);
       // Add one day to the end date
