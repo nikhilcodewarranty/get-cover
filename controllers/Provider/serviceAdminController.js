@@ -2492,6 +2492,7 @@ exports.getServicerClaims = async (req, res) => {
               "claimFile": 1,
               "lossDate": 1,
               "receiptImage": 1,
+              "claimType": 1,
               reason: 1,
               "unique_key": 1,
               totalAmount: 1,
