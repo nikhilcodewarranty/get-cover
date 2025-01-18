@@ -2492,6 +2492,7 @@ exports.getServicerClaims = async (req, res) => {
               "claimFile": 1,
               "lossDate": 1,
               "receiptImage": 1,
+              "claimType": 1,
               reason: 1,
               "unique_key": 1,
               totalAmount: 1,
@@ -2855,9 +2856,10 @@ exports.paidUnpaidClaim = async (req, res) => {
     let data = req.body
     let dateQuery = {}
     const flag = req.body.flag == 1 ? 'Paid' : 'Unpaid'
+
     if (data.noOfDays) {
-      let end = moment().startOf('day')
-      end.setHours(23, 59, 999, 0)
+      let end = moment().endOf('day').set({ millisecond: 0 })
+      // end.setHours(23, 59, 999, 0)
       const start = moment().subtract(data.noOfDays, 'days').startOf('day')
       dateQuery = {
         claimDate: {
