@@ -1493,7 +1493,6 @@ exports.updateDealerSetting = async (req, res) => {
     console.log("typeOf",typeof(data.isServicer))
 
     if (data.isServicer) {
-      console.log("sdfdsfsdfsdfsdsdf")
       const checkServicer = await servicerService.getServiceProviderById({ dealerId: checkDealerId._id })
       if (!checkServicer) {
       console.log("if mai")
