@@ -2778,7 +2778,7 @@ exports.getServicerClaims = async (req, res) => {
         }
       }
     })
-    
+
     let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0
     let getTheThresholdLimit = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
 
@@ -2858,20 +2858,22 @@ exports.paidUnpaidClaim = async (req, res) => {
     const flag = req.body.flag == 1 ? 'Paid' : 'Unpaid'
 
     if (data.noOfDays) {
-      const end = moment().startOf('day')
+      let end = moment().startOf('day')
+      end.setHours(23, 59, 999, 0)
       const start = moment().subtract(data.noOfDays, 'days').startOf('day')
       dateQuery = {
         claimDate: {
-          $gte: new Date(start),
+          $gt: new Date(start),
           $lte: new Date(end),
         }
       }
     }
 
     let approveQuery = {}
-    if (data.startDate && data.endDate & flag == 1) {
-      const start = new Date(data.startDate); // Replace with your start date
+    if (data.startDate != "" && data.endDate != "" && flag == "Paid") {
+      let start = new Date(data.startDate); // Replace with your start date
       let end = new Date(data.endDate);
+      end.setHours(23, 59, 999, 0)
       // Add one day to the end date
       end.setDate(end.getDate() + 1);
       start.setDate(start.getDate() + 1);
