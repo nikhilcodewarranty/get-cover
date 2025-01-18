@@ -2859,7 +2859,7 @@ exports.paidUnpaidClaim = async (req, res) => {
 
     if (data.noOfDays) {
       let end = moment().startOf('day')
-      end.setHours(23,59,999,0)
+      end.setHours(23, 59, 999, 0)
       const start = moment().subtract(data.noOfDays, 'days').startOf('day')
       dateQuery = {
         claimDate: {
@@ -2870,7 +2870,7 @@ exports.paidUnpaidClaim = async (req, res) => {
     }
 
     let approveQuery = {}
-    if (data.startDate != "" && data.endDate != "") {
+    if (data.startDate != "" && data.endDate != "" && flag == "Paid") {
       let start = new Date(data.startDate); // Replace with your start date
       let end = new Date(data.endDate);
       end.setHours(23, 59, 999, 0)
