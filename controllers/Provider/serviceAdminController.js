@@ -2492,6 +2492,7 @@ exports.getServicerClaims = async (req, res) => {
               "claimFile": 1,
               "lossDate": 1,
               "receiptImage": 1,
+              "claimType": 1,
               reason: 1,
               "unique_key": 1,
               totalAmount: 1,
@@ -2872,8 +2873,8 @@ exports.paidUnpaidClaim = async (req, res) => {
     let approveQuery = {}
     if (data.startDate != "" && data.endDate != "" && flag == "Paid") {
       let start = new Date(data.startDate); // Replace with your start date
-      let end = new Date(data.endDate);
-      end.setHours(23, 59, 999, 0)
+      let end = moment().endOf('day').set({ millisecond: 0 })
+
       // Add one day to the end date
       end.setDate(end.getDate() + 1);
       start.setDate(start.getDate() + 1);
