@@ -809,7 +809,7 @@ exports.getContractClaims = async (req, res) => {
       }
 
       if (item1.contracts.orders.dealers.isServicer && item1.contracts.orders.dealers.accountStatus) {
-        let checkDealerServicer = await servicerService.getServiceProviderById({ dealerId: item1.contracts.orders.dealers._id })
+        let checkDealerServicer = await providerService.getServiceProviderById({ dealerId: item1.contracts.orders.dealers._id })
         servicer.push(checkDealerServicer)
       }
 
