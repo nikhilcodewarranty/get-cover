@@ -2998,6 +2998,7 @@ exports.paidUnpaidClaim = async (req, res) => {
               "contracts.orders.dealers.name": 1,
               "contracts.orders.dealers.isServicer": 1,
               "contracts.orders.dealers._id": 1,
+              "contracts.orders.dealers.accountStatus": 1,
               "contracts.orders.customer.username": 1,
               "contracts.orders.dealers.dealerServicer": {
                 $map: {
@@ -3026,7 +3027,8 @@ exports.paidUnpaidClaim = async (req, res) => {
                   in: {
                     "_id": "$$reseller._id",
                     "name": "$$reseller.name",
-                    "isServicer": "$$reseller.isServicer"
+                    "isServicer": "$$reseller.isServicer",
+                    "status": "$$reseller.status"
                   }
                 }
               }

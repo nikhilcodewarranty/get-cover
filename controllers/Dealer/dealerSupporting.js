@@ -1016,6 +1016,7 @@ exports.getDealerClaims = async (req, res) => {
                             "contracts.orders.coverageType": 1,
                             "contracts.orders.customerId": 1,
                             "contracts.orders.dealers.isShippingAllowed": 1,
+                            "contracts.orders.dealers.accountStatus": 1,
                             "contracts.orders.resellerId": 1,
                             "contracts.orders.dealers.name": 1,
                             "contracts.orders.dealers.isServicer": 1,
@@ -1048,7 +1049,8 @@ exports.getDealerClaims = async (req, res) => {
                                     in: {
                                         "_id": "$$reseller._id",
                                         "name": "$$reseller.name",
-                                        "isServicer": "$$reseller.isServicer"
+                                        "isServicer": "$$reseller.isServicer",
+                                        "status": "$$reseller.status"
                                     }
                                 }
                             }
@@ -1173,7 +1175,6 @@ exports.getDealerClaims = async (req, res) => {
         const dynamicOption = await userService.getOptions({ name: 'coverage_type' })
 
         //Get Dealer and Reseller Servicers
-        let servicer;
         allServicer = await servicerService.getAllServiceProvider(
             { _id: { $in: allServicerIds }, status: true },
             {}
@@ -1181,7 +1182,7 @@ exports.getDealerClaims = async (req, res) => {
 
 
         let result_Array = await Promise.all(resultFiter.map(async (item1) => {
-            servicer = []
+            let servicer = []
             let mergedData = []
             if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
                 mergedData = dynamicOption.value.filter(contract =>
