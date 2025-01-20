@@ -2873,15 +2873,15 @@ exports.paidUnpaidClaim = async (req, res) => {
     let approveQuery = {}
     if (data.startDate != "" && data.endDate != "" && paidFlag== "Paid") {
       let start = new Date(data.startDate); // Replace with your start date
-      let end = moment().endOf('day').set({ millisecond: 0 })
-
+      data.endDate = new Date(data.endDate)
+      data.endDate.setHours(23,59,999,0)
       // Add one day to the end date
-      end.setDate(end.getDate() + 1);
+      // end.setDate(end.getDate() + 1);
       start.setDate(start.getDate() + 1);
       approveQuery = {
         approveDate: {
           $gte: new Date(start),
-          $lte: new Date(end),
+          $lte: new Date(data.endDate),
         }
       }
 
