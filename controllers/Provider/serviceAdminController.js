@@ -3205,7 +3205,7 @@ exports.paidUnpaidClaim = async (req, res) => {
 
     const dynamicOption = await userService.getOptions({ name: 'coverage_type' })
 
-    const result_Array = resultFiter.map((item1) => {
+    let result_Array = await Promise.all(resultFiter.map(async (item1) => {
       servicer = []
       let servicerName = '';
       item1.approveDate = item1?.approveDate ? item1.approveDate : ''
@@ -3223,11 +3223,18 @@ exports.paidUnpaidClaim = async (req, res) => {
       if (item1.contracts.orders.servicers[0]?.length > 0) {
         servicer.unshift(item1.contracts.orders.servicers[0])
       }
-      if (item1.contracts.orders.resellers[0]?.isServicer) {
-        servicer.unshift(item1.contracts.orders.resellers[0])
+
+
+      let dealerResellerServicer = await resellerService.getResellers({ dealerId: item1.contracts.orders.dealers._id, isServicer: true, status: true })
+      let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
+      if (dealerResellerServicer.length > 0) {
+        let dealerResellerServicer = await servicerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
+        servicer = servicer.concat(dealerResellerServicer);
       }
-      if (item1.contracts.orders.dealers.isServicer) {
-        servicer.unshift(item1.contracts.orders.dealers)
+
+      if (item1.contracts.orders.dealers.isServicer && item1.contracts.orders.dealers.accountStatus) {
+        let checkDealerServicer = await servicerService.getServiceProviderById({ dealerId: item1.contracts.orders.dealers._id })
+        servicer.push(checkDealerServicer)
       }
       if (item1.servicerId != null) {
         servicerName = servicer.find(servicer => servicer._id?.toString() === item1.servicerId?.toString());
@@ -3244,7 +3251,7 @@ exports.paidUnpaidClaim = async (req, res) => {
           mergedData: mergedData
         }
       }
-    })
+    }));
     let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0
     res.send({
       code: constant.successCode,
