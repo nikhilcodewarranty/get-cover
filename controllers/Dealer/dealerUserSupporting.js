@@ -4205,7 +4205,7 @@ exports.getDealerAsServicerClaims = async (req, res) => {
             let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
             if (dealerResellerServicer.length > 0) {
                 let dealerResellerServicer = await servicerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
-                servicer = servicer.concat(dealerResellerServicer);
+                servicer = servicer.concat(dealerResellerServicer); 
             }
 
             if (item1.contracts.orders.dealers.isServicer && item1.contracts.orders.dealers.accountStatus) {
