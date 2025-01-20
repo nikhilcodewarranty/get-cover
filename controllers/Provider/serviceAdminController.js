@@ -2856,7 +2856,7 @@ exports.paidUnpaidClaim = async (req, res) => {
   try {
     let data = req.body
     let dateQuery = {}
-    const flag = req.body.flag == 1 ? 'Paid' : 'Unpaid'
+    const paidFlag= req.body.paidFlag== 1 ? 'Paid' : 'Unpaid'
 
     if (data.noOfDays) {
       let end = moment().startOf('day')
@@ -2871,7 +2871,7 @@ exports.paidUnpaidClaim = async (req, res) => {
     }
 
     let approveQuery = {}
-    if (data.startDate != "" && data.endDate != "" && flag == "Paid") {
+    if (data.startDate != "" && data.endDate != "" && paidFlag== "Paid") {
       let start = new Date(data.startDate); // Replace with your start date
       let end = moment().endOf('day').set({ millisecond: 0 })
 
@@ -3080,7 +3080,7 @@ exports.paidUnpaidClaim = async (req, res) => {
 
             { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { 'productName': { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { claimPaymentStatus: flag },
+            { claimPaymentStatus: paidFlag},
             dateQuery,
             approveQuery,
             { 'servicerId': { $in: [new mongoose.Types.ObjectId(servicerId), new mongoose.Types.ObjectId(servicerIdToCheck)] } }
