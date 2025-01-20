@@ -1316,7 +1316,8 @@ exports.getServicersList = async (req, res) => {
         let projection = { __v: 0, isDeleted: 0 }
         let servicer = await providerService.getAllServiceProvider(query, projection);
         let getRelations = await dealerRelationService.getDealerRelations({ dealerId: req.userId })
-        let getRelations = await dealerRelationService.getDealerRelations({ dealerId: req.userId })
+        const dealerReseller = await resellerService.getResellers({ dealerId:  req.userId , status: true });
+
 
         const resultArray = servicer.map(item => {
             const matchingServicer = getRelations.find(servicer => servicer.servicerId.toString() == item._id.toString());
