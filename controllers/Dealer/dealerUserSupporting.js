@@ -1087,7 +1087,7 @@ exports.getResellerServicers = async (req, res) => {
         };
 
         result_Array = servicer.map(servicer => {
-            const matchingItem = servicerUser.find(user => user.metaId.toString() === servicer._id.toString()||user.metaId.toString() === servicer.dealerId?.toString()||user.metaId.toString() === servicer.resellerId?.toString())
+            const matchingItem = servicerUser.find(user => user.metaId.toString() === servicer._id.toString() || user.metaId.toString() === servicer.dealerId?.toString() || user.metaId.toString() === servicer.resellerId?.toString())
             if (matchingItem) {
                 return {
                     ...matchingItem, // Use toObject() to convert Mongoose document to plain JavaScript object
@@ -1171,9 +1171,9 @@ exports.getDealerServicers = async (req, res) => {
         const servicerIds2 = servicer.map(obj => new mongoose.Types.ObjectId(obj.resellerId));
         // console.log("servicerIds1---------------------------------",servicerIds);
         // console.log("servicerIds++++---------------------------------",servicerIds1);
-        servicerIds= servicerIds.concat(servicerIds1);
+        servicerIds = servicerIds.concat(servicerIds1);
         servicerIds = servicerIds.concat(servicerIds2);
-        console.log("servicerIds---------------------------------",servicerIds);
+        console.log("servicerIds---------------------------------", servicerIds);
         const query1 = { metaId: { $in: servicerIds }, isPrimary: true };
         const servicerUser = await userService.findUserforCustomer1([
             {
@@ -1316,7 +1316,7 @@ exports.getServicersList = async (req, res) => {
         let projection = { __v: 0, isDeleted: 0 }
         let servicer = await providerService.getAllServiceProvider(query, projection);
         let getRelations = await dealerRelationService.getDealerRelations({ dealerId: req.userId })
-        const dealerReseller = await resellerService.getResellers({ dealerId:  req.userId , status: true });
+        const dealerReseller = await resellerService.getResellers({ dealerId: req.userId, status: true });
 
 
         const resultArray = servicer.map(item => {
@@ -1327,9 +1327,9 @@ exports.getServicersList = async (req, res) => {
 
         let filteredData = resultArray.filter(item =>
             // console.log("item+++++++++++++++++++++++++",item)
-            item !== undefined && item.dealerId?.toString() != req.params.dealerId?.toString() && 
+            item !== undefined && item.dealerId?.toString() != req.params.dealerId?.toString() &&
             dealerReseller.some(reseller => reseller._id?.toString() != item.resellerId?.toString())
-        
+
         );
         res.send({
             code: constant.successCode,
@@ -1700,8 +1700,8 @@ exports.getServicerInOrders = async (req, res) => {
         }
     }
     const servicerIds = servicer.map((obj) => obj?._id);
-     const resellerIdss = servicer.map((obj) => new mongoose.Types.ObjectId(obj?.resellerId));
-        const dealerIdss = servicer.map((obj) => new mongoose.Types.ObjectId(obj?.dealerId));
+    const resellerIdss = servicer.map((obj) => new mongoose.Types.ObjectId(obj?.resellerId));
+    const dealerIdss = servicer.map((obj) => new mongoose.Types.ObjectId(obj?.dealerId));
     // const dealerIdss = servicer.map((obj) => obj?._id);
     const query1 = {
         $and: [
@@ -1764,7 +1764,7 @@ exports.getServicerInOrders = async (req, res) => {
 
     const result_Array = servicer.map((item1) => {
         const matchingItem = servicerUser.find(
-            (item2) => item2.metaId?.toString() === item1?._id.toString()||item2.metaId?.toString() === item1?.dealerId?.toString()||item2.metaId?.toString() === item1?.resellerId?.toString());
+            (item2) => item2.metaId?.toString() === item1?._id.toString() || item2.metaId?.toString() === item1?.dealerId?.toString() || item2.metaId?.toString() === item1?.resellerId?.toString());
         let matchingItem2 = servicerUser.find(
             (item2) => item2.metaId?.toString() === item1?.resellerId?.toString() || item2?.metaId?.toString() === item1?.dealerId?.toString());
         if (matchingItem) {
@@ -2998,7 +2998,7 @@ exports.getAllContracts = async (req, res) => {
                             {
                                 $project: {
                                     productName: 1,
-                                    
+
                                     model: 1,
                                     serial: 1,
                                     unique_key: 1,
@@ -3118,12 +3118,12 @@ exports.getAllContracts = async (req, res) => {
                     result1[e].reason = "Contract has open claim"
 
                 }
-        if (checkClaims[0].isMaxClaimAmount) {
+                if (checkClaims[0].isMaxClaimAmount) {
 
-                if (checkClaims[0].totalAmount >= result1[e].productValue) {
-                    result1[e].reason = "Claim value exceed the product value limit"
+                    if (checkClaims[0].totalAmount >= result1[e].productValue) {
+                        result1[e].reason = "Claim value exceed the product value limit"
+                    }
                 }
-            }
             }
             let thresholdLimitPercentage = getTheThresholdLimir.threshHoldLimit.value
             const thresholdLimitValue = (thresholdLimitPercentage / 100) * Number(result1[e].productValue);
@@ -4014,6 +4014,7 @@ exports.getDealerAsServicerClaims = async (req, res) => {
                             "contracts.orders.resellerId": 1,
                             "contracts.orders.dealers.name": 1,
                             "contracts.orders.dealers.isServicer": 1,
+                            "contracts.orders.dealers.accountStatus": 1,
                             "contracts.orders.dealers._id": 1,
                             "contracts.orders.customer.username": 1,
                             "contracts.orders.dealers.dealerServicer": {
@@ -4175,8 +4176,8 @@ exports.getDealerAsServicerClaims = async (req, res) => {
             { _id: { $in: allServicerIds }, status: true },
             {}
         );
-        let result_Array = resultFiter.map((item1) => {
-            servicer = []
+        let result_Array = await Promise.all(resultFiter.map(async (item1) => {
+            let servicer = []
             let mergedData = []
             if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
                 mergedData = dynamicOption.value.filter(contract =>
@@ -4186,18 +4187,31 @@ exports.getDealerAsServicerClaims = async (req, res) => {
 
             let servicerName = '';
             let selfServicer = false;
-            let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
-                const dealerOfServicer = allServicer.find(servicer => servicer?._id.toString() === matched?.servicerId.toString());
-                servicer.push(dealerOfServicer)
-            });
+            await Promise.all(item1.contracts.orders.dealers.dealerServicer.map(async (matched) => {
+                const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId?.toString());
+                if (dealerOfServicer) {
+                    servicer.push(dealerOfServicer);
+                }
+            }));
+
+
             if (item1.contracts.orders.servicers[0]?.length > 0) {
                 servicer.unshift(item1.contracts.orders.servicers[0])
             }
-            if (item1.contracts.orders.resellers[0]?.isServicer) {
-                servicer.unshift(item1.contracts.orders.resellers[0])
+            // if (item1.contracts.orders.resellers[0]?.isServicer) {
+            //     servicer.unshift(item1.contracts.orders.resellers[0])
+            // }
+            let dealerResellerServicer = await resellerService.getResellers({ dealerId: item1.contracts.orders.dealers._id, isServicer: true, status: true })
+            let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
+            if (dealerResellerServicer.length > 0) {
+                let dealerResellerServicer = await servicerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
+                servicer = servicer.concat(dealerResellerServicer);
             }
-            if (item1.contracts.orders.dealers.isServicer) {
-                servicer.unshift(item1.contracts.orders.dealers)
+
+            if (item1.contracts.orders.dealers.isServicer && item1.contracts.orders.dealers.accountStatus) {
+                let checkDealerServicer = await servicerService.getServiceProviderById({ dealerId: item1.contracts.orders.dealers._id })
+
+                servicer.push(checkDealerServicer)
             }
             if (item1.servicerId != null) {
                 servicerName = servicer.find(servicer => servicer?._id?.toString() === item1.servicerId?.toString());
@@ -4214,7 +4228,8 @@ exports.getDealerAsServicerClaims = async (req, res) => {
                     mergedData: mergedData
                 }
             }
-        })
+        }));
+
 
         let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0
         let getTheThresholdLimit = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })

@@ -2704,7 +2704,6 @@ exports.customerClaims = async (req, res) => {
     });
 
     //Get Dealer and Reseller Servicers
-    let servicer;
     let servicerName = '';
     allServicer = await servicerService.getAllServiceProvider(
       { _id: { $in: allServicerIds }, status: true },
@@ -2713,7 +2712,7 @@ exports.customerClaims = async (req, res) => {
     const dynamicOption = await userService.getOptions({ name: 'coverage_type' })
 
     let result_Array = await Promise.all(resultFiter.map(async(item1) => {
-      servicer = []
+     let servicer = []
       let mergedData = []
       if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
         mergedData = dynamicOption.value.filter(contract =>
