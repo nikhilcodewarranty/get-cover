@@ -2157,12 +2157,12 @@ exports.getResellerContract = async (req, res) => {
                     result1[e].reason = "Contract has open claim"
 
                 }
-        if (checkClaims[0].isMaxClaimAmount) {
+                if (checkClaims[0].isMaxClaimAmount) {
 
-                if (checkClaims[0].totalAmount >= result1[e].productValue) {
-                    result1[e].reason = "Claim value exceed the product value limit"
+                    if (checkClaims[0].totalAmount >= result1[e].productValue) {
+                        result1[e].reason = "Claim value exceed the product value limit"
+                    }
                 }
-            }
             }
             let thresholdLimitPercentage = getTheThresholdLimir.threshHoldLimit.value
             const thresholdLimitValue = (thresholdLimitPercentage / 100) * Number(result1[e].productValue);
@@ -3192,9 +3192,15 @@ exports.getResellerAsServicerClaims = async (req, res) => {
             }
 
 
-            if (item1.contracts.orders.resellers[0]?.isServicer && item1.contracts.orders.resellers[0]?.status) {
-                let checkResellerServicer = await providerService.getServiceProviderById({ resellerId: item1.contracts.orders.resellers[0]._id })
-                servicer.push(checkResellerServicer)
+            // if (item1.contracts.orders.resellers[0]?.isServicer && item1.contracts.orders.resellers[0]?.status) {
+            //     let checkResellerServicer = await providerService.getServiceProviderById({ resellerId: item1.contracts.orders.resellers[0]._id })
+            //     servicer.push(checkResellerServicer)
+            // }
+            let dealerResellerServicer = await resellerService.getResellers({ dealerId: item1.contracts.orders.dealers._id, isServicer: true, status: true })
+            let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
+            if (dealerResellerServicer.length > 0) {
+                let dealerResellerServicer = await providerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
+                servicer = servicer.concat(dealerResellerServicer);
             }
 
             if (item1.contracts.orders.dealers.isServicer && item1.contracts.orders.dealers.accountStatus) {
