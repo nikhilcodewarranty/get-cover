@@ -1165,7 +1165,6 @@ exports.getServicerInOrders = async (req, res) => {
         return;
     }
 
-    console.log("sdfsfsdfsdfsdfsdfsddfs",servicerUser);
     const result_Array = servicer.map((item1) => {
         const matchingItem = servicerUser.find(
             (item2) => item2.metaId?.toString() === item1?._id?.toString());
