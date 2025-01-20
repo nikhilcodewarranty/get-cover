@@ -92,10 +92,14 @@ exports.getServicersList = async (req, res) => {
             return { ...documentData, check: !!matchingServicer };
         });
 
-        // let filteredData = resultArray.filter(item => item !== undefined);
+        // let filteredData = resultArray.filter(item => item.dealerId?.toString() != req.params.dealerId?.toString());
         let filteredData = resultArray.filter(item =>
-            item !== undefined && !(item.dealerId === req.params.dealerId && item.resellerId === dealerReseller[0]?._id)
+            // console.log("item+++++++++++++++++++++++++",item)
+            item !== undefined && item.dealerId?.toString() != req.params.dealerId?.toString() && item.resellerId?.toString() != dealerReseller[0]?._id?.toString()
+        
         );
+
+        console.log("checking +++++++++++++=",filteredData)
 
         res.send({
             code: constant.successCode,

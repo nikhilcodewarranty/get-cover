@@ -1326,13 +1326,14 @@ exports.getServicersList = async (req, res) => {
         });
 
         let filteredData = resultArray.filter(item =>
-            item !== undefined && !(item.dealerId === req.userId && item.resellerId === dealerReseller[0]?._id)
+            // console.log("item+++++++++++++++++++++++++",item)
+            item !== undefined && item.dealerId?.toString() != req.params.dealerId?.toString() && item.resellerId?.toString() != dealerReseller[0]?._id?.toString()
+        
         );
-
         res.send({
             code: constant.successCode,
             message: "Success",
-            result: resultArray
+            result: filteredData
         });
     } catch (err) {
         res.send({
