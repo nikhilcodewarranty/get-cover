@@ -481,10 +481,7 @@ exports.getAllClaims = async (req, res, next) => {
       let dealerResellerServicer = await resellerService.getResellers({ dealerId: item1.contracts.orders.dealers._id, isServicer: true, status: true })
       let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
       if (dealerResellerServicer.length > 0) {
-      //  console.log("servicer-------------------",servicer)
         let dealerResellerServicer = await servicerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
-      //  console.log("dealerResellerServicer-------------------",dealerResellerServicer)
-
       servicer = servicer.concat(dealerResellerServicer);
       }
 
