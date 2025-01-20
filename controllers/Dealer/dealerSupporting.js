@@ -1768,7 +1768,7 @@ exports.getDealerServicers = async (req, res) => {
         }
          if (checkDealer.isServicer) {
             // servicer.unshift(checkDealer);
-            let checkDealerServicer = await servicerService.getServiceProviderById({ dealerId: checkDealer_id })
+            let checkDealerServicer = await servicerService.getServiceProviderById({ dealerId: checkDealer._id })
             servicer.push(checkDealerServicer)
         };
 
