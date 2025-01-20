@@ -145,8 +145,8 @@ exports.getContracts = async (req, res) => {
       contractFilterWithEligibilty.push(dateFilter)
     }
 
-    if(data.equal!=""){
-      
+    if (data.equal != "") {
+
     }
 
     let mainQuery = []
@@ -297,10 +297,10 @@ exports.getContracts = async (req, res) => {
       let checkClaims = await claimService.getClaimWithAggregate(claimQuery)
 
       if (checkClaims[0]) {
-        console.log("checking the open -------",checkClaims[0])
+        console.log("checking the open -------", checkClaims[0])
         if (checkClaims[0].openFileClaimsCount > 0) {
           result1[e].reason = "Contract has open claim"
-        console.log("checking the open -------",result1[e].reason )
+          console.log("checking the open -------", result1[e].reason)
 
 
         }
@@ -440,7 +440,7 @@ exports.getContractClaims = async (req, res) => {
 
     }
 
-    const claimQuery = { contractId: new mongoose.Types.ObjectId(req.params.contractId),claimFile:"completed"}
+    const claimQuery = { contractId: new mongoose.Types.ObjectId(req.params.contractId), claimFile: "completed" }
     let claimTotalQuery = [
       { $match: claimQuery },
       { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
@@ -1025,8 +1025,10 @@ exports.getContractById = async (req, res) => {
           getData[e].reason = "Contract has open claim"
 
         }
-        if (checkClaims[0].totalAmount >= getData[e].productValue) {
-          getData[e].reason = "Claim value exceed the product value limit"
+        if (checkClaims[0].isMaxClaimAmount) {
+          if (checkClaims[0].totalAmount >= getData[e].productValue) {
+            getData[e].reason = "Claim value exceed the product value limit"
+          }
         }
       }
     }

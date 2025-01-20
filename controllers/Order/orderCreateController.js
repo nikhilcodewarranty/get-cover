@@ -3406,9 +3406,12 @@ exports.getOrderContract = async (req, res) => {
                     result1[e].reason = "Contract has open claim"
 
                 }
+        if (checkClaims[0].isMaxClaimAmount) {
+
                 if (checkClaims[0].totalAmount >= result1[e].productValue) {
                     result1[e].reason = "Claim value exceed the product value limit"
                 }
+            }
             }
 
 
