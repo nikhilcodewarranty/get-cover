@@ -2516,6 +2516,7 @@ exports.getResellerClaims = async (req, res) => {
                             "contracts.orders.coverageType": 1,
                             "contracts.orders.customerId": 1,
                             "contracts.orders.dealers.isShippingAllowed": 1,
+                            "contracts.orders.dealers.accountStatus": 1,
                             "contracts.orders.resellerId": 1,
                             "contracts.orders.dealers.name": 1,
                             "contracts.orders.dealers.isServicer": 1,
@@ -2778,8 +2779,7 @@ exports.getResellerClaims = async (req, res) => {
               }
             
               if (item1.contracts.orders.dealers.isServicer && item1.contracts.orders.dealers.accountStatus) {
-                let checkDealerServicer = await providerService.getServiceProviderById({ dealerId: item1.contracts.orders.dealers._id })
-        
+                let checkDealerServicer = await providerService.getServiceProviderById({ dealerId: item1.contracts.orders.dealers._id })        
                 servicer.push(checkDealerServicer)
               }
 
