@@ -1733,17 +1733,23 @@ exports.getSingleOrder = async (req, res) => {
             {}
         );
 
-        if (checkOrder.resellerId != null) {
-            var checkReseller = await resellerService.getReseller({
-                _id: checkOrder.resellerId,
-            });
-        }
+        // if (checkOrder.resellerId != null) {
+        //     var checkReseller = await resellerService.getReseller({
+        //         _id: checkOrder.resellerId,
+        //     });
+        // }
 
 
-        if (reseller && reseller.isServicer) {
-            if (reseller.status) {
-                servicer.unshift(reseller);
-            }
+        // if (reseller && reseller.isServicer) {
+        //     if (reseller.status) {
+        //         servicer.unshift(reseller);
+        //     }
+        // }
+
+        let dealerResellerServicer = await resellerService.getResellers({ dealerId: checkOrder.dealerId, isServicer: true, status: true })
+
+        if (dealerResellerServicer.length > 0) {
+            servicer.unshift(...dealerResellerServicer);
         }
 
         if (dealer && dealer.isServicer) {

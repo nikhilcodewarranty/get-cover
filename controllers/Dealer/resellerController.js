@@ -2747,14 +2747,13 @@ exports.getResellerClaims = async (req, res) => {
         });
 
         //Get Dealer and Reseller Servicers
-        let servicer;
         let servicerName = '';
         allServicer = await providerService.getAllServiceProvider(
             { _id: { $in: allServicerIds }, status: true },
             {}
         );
         let result_Array = await Promise.all(resultFiter.map(async(item1) => {
-            servicer = []
+            let servicer = []
             let mergedData = []
             if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
                 mergedData = dynamicOption.value.filter(contract =>
@@ -2775,10 +2774,14 @@ exports.getResellerClaims = async (req, res) => {
             }
 
             if (item1.contracts.orders.resellers[0]?.isServicer && item1.contracts.orders.resellers[0]?.status) {
+                console.log("------------------------------------------------------",item1.contracts.orders.resellers[0]?.isServicer)
                 let checkResellerServicer = await providerService.getServiceProviderById({ resellerId: item1.contracts.orders.resellers[0]._id })
+                console.log("----------sssssss--------------------------------------------",checkResellerServicer)
+
                 servicer.push(checkResellerServicer)
+
               }
-            
+           
               if (item1.contracts.orders.dealers.isServicer && item1.contracts.orders.dealers.accountStatus) {
                 let checkDealerServicer = await providerService.getServiceProviderById({ dealerId: item1.contracts.orders.dealers._id })        
                 servicer.push(checkDealerServicer)
