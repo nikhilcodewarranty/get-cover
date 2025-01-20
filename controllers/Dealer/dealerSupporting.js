@@ -95,8 +95,8 @@ exports.getServicersList = async (req, res) => {
         // let filteredData = resultArray.filter(item => item.dealerId?.toString() != req.params.dealerId?.toString());
         let filteredData = resultArray.filter(item =>
             // console.log("item+++++++++++++++++++++++++",item)
-            item !== undefined && item.dealerId?.toString() != req.params.dealerId?.toString() && item.resellerId?.toString() != dealerReseller[0]?._id?.toString()
-
+            item !== undefined && item.dealerId?.toString() != req.params.dealerId?.toString() &&  dealerReseller.some(reseller => reseller._id?.toString() != item.resellerId?.toString())
+        
         );
 
         console.log("checking +++++++++++++=", filteredData)
