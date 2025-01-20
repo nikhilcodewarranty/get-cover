@@ -1316,16 +1316,24 @@ exports.getServicersList = async (req, res) => {
         let projection = { __v: 0, isDeleted: 0 }
         let servicer = await providerService.getAllServiceProvider(query, projection);
         let getRelations = await dealerRelationService.getDealerRelations({ dealerId: req.userId })
+        const dealerReseller = await resellerService.getResellers({ dealerId:  req.userId , status: true });
+
+
         const resultArray = servicer.map(item => {
             const matchingServicer = getRelations.find(servicer => servicer.servicerId.toString() == item._id.toString());
             const documentData = item._doc;
             return { ...documentData, check: !!matchingServicer };
         });
 
+        let filteredData = resultArray.filter(item =>
+            // console.log("item+++++++++++++++++++++++++",item)
+            item !== undefined && item.dealerId?.toString() != req.params.dealerId?.toString() && item.resellerId?.toString() != dealerReseller[0]?._id?.toString()
+        
+        );
         res.send({
             code: constant.successCode,
             message: "Success",
-            result: resultArray
+            result: filteredData
         });
     } catch (err) {
         res.send({

@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const userController = require("../../controllers/User/usersController"); // user controller
+const maillogController = require("../../controllers/User/maillogController"); // mail log controller
 const supportingApiAdmin = require("../../controllers/User/supportingApiAdmin"); // admin supporting function for creation role controller
 const graphdataController = require("../../controllers/User/graphdataController"); // admin graph data  controller
 const dealerController = require("../../controllers/Dealer/dealerController"); // dealer controller
@@ -81,4 +82,6 @@ router.post("/createDealer", [verifyToken], supportingApiAdmin.createDealer); //
 router.post("/convertToBase64", supportingApiAdmin.convertToBase64); // create dealer API from super admin
 router.post('/createServicer', [verifyToken], validator("create_service_provider_validation"), supportingApiAdmin.createServiceProvider);// create service provider API from super admin
 
+
+router.post('/webhookData',maillogController.webhookData)
 module.exports = router;
