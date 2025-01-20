@@ -531,6 +531,7 @@ exports.getContractClaims = async (req, res) => {
               "contracts.orders.coverageType": 1,
               "contracts.orders.customerId": 1,
               "contracts.orders.dealers.isShippingAllowed": 1,
+              "contracts.orders.dealers.accountStatus": 1,
               "contracts.orders.resellerId": 1,
               "contracts.orders.dealers.name": 1,
               "contracts.orders.dealers.isServicer": 1,
@@ -775,39 +776,48 @@ exports.getContractClaims = async (req, res) => {
 
 
 
-    let result_Array = resultFiter.map((item1) => {
-      servicer = []
-      let mergedData = []
+    let result_Array = await Promise.all(resultFiter.map(async (item1) => {
+      let servicer = []
+      //  servicer =allServicer;
+      let mergedData = [];
 
-
-      let servicerName = ''
+      let servicerName = '';
       let selfServicer = false;
       let selfResellerServicer = false;
-      let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
+
+      await Promise.all(item1.contracts.orders.dealers.dealerServicer.map(async (matched) => {
         const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId?.toString());
         if (dealerOfServicer) {
-          servicer.push(dealerOfServicer)
+          servicer.push(dealerOfServicer);
         }
-      });
+      }));
 
       if (item1.contracts.orders.servicers[0]?.length > 0) {
-        servicer.unshift(item1.contracts.orders.servicers[0])
+        servicer.unshift(item1.contracts.orders.servicers[0]);
       }
 
-      if (item1.contracts.orders.resellers[0]?.isServicer && item1.contracts.orders.resellers[0]?.status) {
-        servicer.unshift(item1.contracts.orders.resellers[0])
+      // if (item1.contracts.orders.resellers[0]?.isServicer && item1.contracts.orders.resellers[0]?.status) {
+      //   let checkResellerServicer = await servicerService.getServiceProviderById({ resellerId: item1.contracts.orders.resellers[0]._id })
+      //   servicer.push(checkResellerServicer)
+      // }
+
+      let dealerResellerServicer = await resellerService.getResellers({ dealerId: item1.contracts.orders.dealers._id, isServicer: true, status: true })
+      let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
+      if (dealerResellerServicer.length > 0) {
+        let dealerResellerServicer = await providerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
+      servicer = servicer.concat(dealerResellerServicer);
       }
 
       if (item1.contracts.orders.dealers.isServicer && item1.contracts.orders.dealers.accountStatus) {
-        servicer.unshift(item1.contracts.orders.dealers)
+        let checkDealerServicer = await providerService.getServiceProviderById({ dealerId: item1.contracts.orders.dealers._id })
+        servicer.push(checkDealerServicer)
       }
 
       if (item1.servicerId != null) {
         servicerName = servicer.find(servicer => servicer?._id?.toString() === item1.servicerId?.toString());
-        selfServicer = req.role == "Customer" ? false : item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() ? true : false
-        selfResellerServicer = item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString()
+        selfServicer = req.role == "Customer" ? false : item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() ? true : false;
+        selfResellerServicer = item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString();
       }
-
 
       if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
         if (req.role == "Servicer") {
@@ -833,7 +843,6 @@ exports.getContractClaims = async (req, res) => {
             item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
           );
         }
-
       }
 
       return {
@@ -846,8 +855,8 @@ exports.getContractClaims = async (req, res) => {
           allServicer: servicer,
           mergedData: mergedData
         }
-      }
-    })
+      };
+    }));
 
     let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0 // getting the total count 
     let getTheThresholdLimit = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
