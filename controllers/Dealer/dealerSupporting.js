@@ -1872,7 +1872,7 @@ exports.getDealerServicers = async (req, res) => {
                 return {
                     ...matchingItem, // Use toObject() to convert Mongoose document to plain JavaScript object
                     servicerData: {
-                        ...item1,
+                        ...item1.toObject(),
                         isServicer: isServicer ? true : false
                     },
                     claimNumber: claimNumber ? claimNumber : 0,
