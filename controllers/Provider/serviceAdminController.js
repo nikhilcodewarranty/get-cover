@@ -2881,7 +2881,7 @@ exports.paidUnpaidClaim = async (req, res) => {
       approveQuery = {
         approveDate: {
           $gte: new Date(start),
-          $lte: new Date(end),
+          $lte: new Date(data.endDate),
         }
       }
 
