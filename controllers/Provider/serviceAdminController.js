@@ -2876,7 +2876,7 @@ exports.paidUnpaidClaim = async (req, res) => {
       data.endDate = new Date(data.endDate)
       data.endDate.setHours(23,59,999,0)
       // Add one day to the end date
-      end.setDate(end.getDate() + 1);
+      // end.setDate(end.getDate() + 1);
       start.setDate(start.getDate() + 1);
       approveQuery = {
         approveDate: {
