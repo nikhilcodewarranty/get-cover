@@ -428,19 +428,34 @@ exports.getAllClaims = async (req, res, next) => {
         // Push the servicerId to the allServicerIds array
         allServicerIds.push(dealer.servicerId);
       });
+      // if (item.contracts.orders.dealers.isServicer && item.contracts.orders.dealers.accountStatus) {
+      //   allServicerIds.push(item.contracts.orders.dealers._id)
+      // }
     });
 
     //Get Dealer and Reseller Servicers
     //service call from claim services
+    // let allServicer = await servicerService.getAllServiceProvider(
+    //   { _id: { $in: allServicerIds }, status: true },
+    //   {}
+    // );
+
     let allServicer = await servicerService.getAllServiceProvider(
-      { _id: { $in: allServicerIds }, status: true },
+      {
+        $or: [
+          { "_id":  allServicerIds  },
+          { "dealerId":   allServicerIds  },
+          { "resellerId": allServicerIds  }
+        ]
+      },
       {}
     );
 
     const dynamicOption = await userService.getOptions({ name: 'coverage_type' })
 
     let result_Array = await Promise.all(resultFiter.map(async (item1) => {
-      let servicer = [];
+      let servicer = []
+      //  servicer =allServicer;
       let mergedData = [];
 
       let servicerName = '';
@@ -464,11 +479,14 @@ exports.getAllClaims = async (req, res, next) => {
       // }
 
       let dealerResellerServicer = await resellerService.getResellers({ dealerId: item1.contracts.orders.dealers._id, isServicer: true, status: true })
-
+      let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
       if (dealerResellerServicer.length > 0) {
-        servicer.unshift(...dealerResellerServicer);
-      }
+      //  console.log("servicer-------------------",servicer)
+        let dealerResellerServicer = await servicerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
+      //  console.log("dealerResellerServicer-------------------",dealerResellerServicer)
 
+      servicer = servicer.concat(dealerResellerServicer);
+      }
 
       if (item1.contracts.orders.dealers.isServicer && item1.contracts.orders.dealers.accountStatus) {
         let checkDealerServicer = await servicerService.getServiceProviderById({ dealerId: item1.contracts.orders.dealers._id })
