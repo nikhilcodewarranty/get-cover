@@ -1327,8 +1327,9 @@ exports.getServicersList = async (req, res) => {
 
         let filteredData = resultArray.filter(item =>
             // console.log("item+++++++++++++++++++++++++",item)
-            item !== undefined && item.dealerId?.toString() != req.params.dealerId?.toString() &&
-            dealerReseller.some(reseller => reseller._id?.toString() != item.resellerId?.toString())
+            item !== undefined && item.dealerId?.toString() != req.params.dealerId?.toString() && !dealerReseller.some(
+                reseller => reseller._id?.toString() === item.resellerId?.toString()
+            )
 
         );
         res.send({

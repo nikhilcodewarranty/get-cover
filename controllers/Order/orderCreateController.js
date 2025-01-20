@@ -1113,7 +1113,7 @@ exports.createOrder1 = async (req, res) => {
         const orderTermCondition = data.termCondition != null ? data.termCondition : {}
         const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
         const base_url = `${process.env.SITE_URL}`
-        data.servicerId  = null
+        data.servicerId = null
         let notificationData;
         let notificationArrayData = []
         let notificationEmails
@@ -3406,12 +3406,12 @@ exports.getOrderContract = async (req, res) => {
                     result1[e].reason = "Contract has open claim"
 
                 }
-        if (checkClaims[0].isMaxClaimAmount) {
+                if (checkClaims[0].isMaxClaimAmount) {
 
-                if (checkClaims[0].totalAmount >= result1[e].productValue) {
-                    result1[e].reason = "Claim value exceed the product value limit"
+                    if (checkClaims[0].totalAmount >= result1[e].productValue) {
+                        result1[e].reason = "Claim value exceed the product value limit"
+                    }
                 }
-            }
             }
 
 
