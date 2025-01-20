@@ -3228,12 +3228,12 @@ exports.paidUnpaidClaim = async (req, res) => {
       let dealerResellerServicer = await resellerService.getResellers({ dealerId: item1.contracts.orders.dealers._id, isServicer: true, status: true })
       let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
       if (dealerResellerServicer.length > 0) {
-        let dealerResellerServicer = await servicerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
+        let dealerResellerServicer = await providerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
         servicer = servicer.concat(dealerResellerServicer);
       }
 
       if (item1.contracts.orders.dealers.isServicer && item1.contracts.orders.dealers.accountStatus) {
-        let checkDealerServicer = await servicerService.getServiceProviderById({ dealerId: item1.contracts.orders.dealers._id })
+        let checkDealerServicer = await providerService.getServiceProviderById({ dealerId: item1.contracts.orders.dealers._id })
         servicer.push(checkDealerServicer)
       }
       if (item1.servicerId != null) {
