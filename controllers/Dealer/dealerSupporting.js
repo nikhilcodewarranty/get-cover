@@ -1013,6 +1013,7 @@ exports.getDealerClaims = async (req, res) => {
                             "contracts.orders.coverageType": 1,
                             "contracts.orders.customerId": 1,
                             "contracts.orders.dealers.isShippingAllowed": 1,
+                            "contracts.orders.dealers.accountStatus": 1,
                             "contracts.orders.resellerId": 1,
                             "contracts.orders.dealers.name": 1,
                             "contracts.orders.dealers.isServicer": 1,
@@ -1045,7 +1046,8 @@ exports.getDealerClaims = async (req, res) => {
                                     in: {
                                         "_id": "$$reseller._id",
                                         "name": "$$reseller.name",
-                                        "isServicer": "$$reseller.isServicer"
+                                        "isServicer": "$$reseller.isServicer",
+                                        "status": "$$reseller.status"
                                     }
                                 }
                             }

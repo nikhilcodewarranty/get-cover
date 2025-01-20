@@ -2550,7 +2550,8 @@ exports.getResellerClaims = async (req, res) => {
                                     in: {
                                         "_id": "$$reseller._id",
                                         "name": "$$reseller.name",
-                                        "isServicer": "$$reseller.isServicer"
+                                        "isServicer": "$$reseller.isServicer",
+                                        "status": "$$reseller.status"
                                     }
                                 }
                             }
