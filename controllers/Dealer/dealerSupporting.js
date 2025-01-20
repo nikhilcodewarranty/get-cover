@@ -95,8 +95,8 @@ exports.getServicersList = async (req, res) => {
         // let filteredData = resultArray.filter(item => item.dealerId?.toString() != req.params.dealerId?.toString());
         let filteredData = resultArray.filter(item =>
             // console.log("item+++++++++++++++++++++++++",item)
-            item !== undefined && item.dealerId?.toString() != req.params.dealerId?.toString() &&  dealerReseller.some(reseller => reseller._id?.toString() != item.resellerId?.toString())
-        
+            item !== undefined && item.dealerId?.toString() != req.params.dealerId?.toString() && dealerReseller.some(reseller => reseller._id?.toString() != item.resellerId?.toString())
+
         );
 
         console.log("checking +++++++++++++=", filteredData)
@@ -808,12 +808,12 @@ exports.getDealerContract = async (req, res) => {
                     result1[e].reason = "Contract has open claim"
 
                 }
-        if (checkClaims[0].isMaxClaimAmount) {
+                if (checkClaims[0].isMaxClaimAmount) {
 
-                if (checkClaims[0].totalAmount >= result1[e].productValue) {
-                    result1[e].reason = "Claim value exceed the product value limit"
+                    if (checkClaims[0].totalAmount >= result1[e].productValue) {
+                        result1[e].reason = "Claim value exceed the product value limit"
+                    }
                 }
-            }
             }
 
             let thresholdLimitPercentage = getTheThresholdLimir.threshHoldLimit.value
@@ -1457,7 +1457,7 @@ exports.getDealerAsServicerClaims = async (req, res) => {
                             "contracts.orders.coverageType": 1,
                             "contracts.orders.customerId": 1,
                             "contracts.orders.dealers.isShippingAllowed": 1,
-                            "contracts.orders.dealers.accountStatus": 1,                            
+                            "contracts.orders.dealers.accountStatus": 1,
                             "contracts.orders.resellerId": 1,
                             "contracts.orders.dealers.name": 1,
                             "contracts.orders.dealers.isServicer": 1,
@@ -1622,7 +1622,7 @@ exports.getDealerAsServicerClaims = async (req, res) => {
             {}
         );
         let result_Array = await Promise.all(resultFiter.map(async (item1) => {
-           let servicer = []
+            let servicer = []
             let mergedData = []
             if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
                 mergedData = dynamicOption.value.filter(contract =>
@@ -1638,7 +1638,7 @@ exports.getDealerAsServicerClaims = async (req, res) => {
                     servicer.push(dealerOfServicer);
                 }
             }));
-            
+
             if (item1.contracts.orders.servicers[0]?.length > 0) {
                 servicer.unshift(item1.contracts.orders.servicers[0])
             }
@@ -1752,16 +1752,17 @@ exports.getDealerServicers = async (req, res) => {
             return;
         }
         // Get Dealer Reseller Servicer
-        console.log("id+++++++++++++", servicer)
 
         let dealerResellerServicer = await resellerService.getResellers({ dealerId: req.params.dealerId, isServicer: true })
-
+        let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
         if (dealerResellerServicer.length > 0) {
-            servicer.unshift(...dealerResellerServicer);
+            let dealerResellerServicer = await servicerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
+            servicer = servicer.concat(dealerResellerServicer);
         }
-
-        if (checkDealer.isServicer) {
-            servicer.unshift(checkDealer);
+         if (checkDealer.isServicer) {
+            // servicer.unshift(checkDealer);
+            let checkDealerServicer = await servicerService.getServiceProviderById({ dealerId: checkDealer_id })
+            servicer.push(checkDealerServicer)
         };
 
         let servicerIds = servicer.map(obj => obj._id);
