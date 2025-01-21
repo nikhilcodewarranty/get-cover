@@ -615,25 +615,28 @@ exports.cronJobEligible = async (req, res) => {
         let product = result[i];
         let contractId = product._id;
         let check = new Date() >= new Date(product.minDate) && new Date() <= new Date(product.coverageEndDate) ? true : false
-        if (new Date() >= new Date(product.minDate) && new Date() <= new Date(product.coverageEndDate)) {
-          contractIds.push(product._id);
-          updateDoc = {
-            'updateMany': {
-              'filter': { '_id': contractId },
-              'update': { $set: { eligibilty: true } },
-              'upsert': false
-            }
-          };
-        } else {
-          updateDoc = {
-            'updateMany': {
-              'filter': { '_id': contractId },
-              'update': { $set: { eligibilty: false } },
-              'upsert': false
-            }
-          };
+        if (!product.notEligibleByCustom) {
+          if (new Date() >= new Date(product.minDate) && new Date() <= new Date(product.coverageEndDate)) {
+            contractIds.push(product._id);
+            updateDoc = {
+              'updateMany': {
+                'filter': { '_id': contractId },
+                'update': { $set: { eligibilty: true } },
+                'upsert': false
+              }
+            };
+          } else {
+            updateDoc = {
+              'updateMany': {
+                'filter': { '_id': contractId },
+                'update': { $set: { eligibilty: false } },
+                'upsert': false
+              }
+            };
+          }
+          bulk.push(updateDoc);
         }
-        bulk.push(updateDoc);
+
       }
 
 
