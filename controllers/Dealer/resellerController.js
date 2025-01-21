@@ -1378,6 +1378,9 @@ exports.getResellerServicers = async (req, res) => {
             return;
         }
 
+        let checkResellerAsServicer = await resellerService.getResellers({ dealerId: checkDealer._id, status: true, isServicer: true })
+        let resellerAsServicerIds = checkResellerAsServicer.map(ID=>new mongoose.Types.ObjectId(ID._id))
+
         let result_Array = []
         //Get Dealer Servicer
         let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: checkReseller.dealerId })
@@ -1407,12 +1410,9 @@ exports.getResellerServicers = async (req, res) => {
         }
 
         let servicerIds = servicer.map(obj => obj._id);
-        console.log(servicer, "--------------------")
         let servicerIds1 = servicer.map(obj => new mongoose.Types.ObjectId(obj.dealerId));
         let servicerIds2 = servicer.map(obj => new mongoose.Types.ObjectId(obj.resellerId));
-        console.log(servicerIds1, "---333-----------------")
-        servicerIds = servicerIds.concat(servicerIds1, servicerIds2)
-        console.log(servicerIds, "---333-----------------")
+        servicerIds = servicerIds.concat(servicerIds1, servicerIds2,resellerAsServicerIds)
 
         // Get servicer with claim
         const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "completed", resellerId: new mongoose.Types.ObjectId(req.params.resellerId) };

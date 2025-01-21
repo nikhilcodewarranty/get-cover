@@ -3728,7 +3728,8 @@ exports.preLoginData = async (req, res) => {
 }
 
 
-const userModel = require("../../models/User/users")
+const userModel = require("../../models/User/users");
+const contractService = require("../../services/Contract/contractService");
 exports.updateDataBase = async (req, res) => {
   try {
     let updateData = await userModel.updateMany(
@@ -3827,6 +3828,26 @@ exports.updateDataBase = async (req, res) => {
     res.send({
       code: constant.errorCode,
       message: err.message
+    })
+  }
+}
+
+exports.updateContracts = async(req,res)=>{
+  try{
+    let newValue = {
+      $set:{
+        eligibilty:false
+      }
+    }
+    let updateContracts = await contractService.updateManyContract({orderId:"670d4ca5e7cbbc76c394ef51"},newValue,{new:true})
+    res.send({
+      data:updateContracts
+    })
+  }
+
+  catch(err){
+    res.send({
+      message:err.message
     })
   }
 }
