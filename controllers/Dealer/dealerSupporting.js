@@ -1759,16 +1759,19 @@ exports.getDealerServicers = async (req, res) => {
             return;
         }
         // Get Dealer Reseller Servicer
-        console.log("id+++++++++++++", servicer)
 
         let dealerResellerServicer = await resellerService.getResellers({ dealerId: req.params.dealerId, isServicer: true })
-
+        let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
         if (dealerResellerServicer.length > 0) {
-            servicer.unshift(...dealerResellerServicer);
-        }
+            let dealerResellerServicer = await servicerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
 
+            servicer = servicer.concat(dealerResellerServicer);
+        }
         if (checkDealer.isServicer) {
-            servicer.unshift(checkDealer);
+            // servicer.unshift(checkDealer);
+            let checkDealerServicer = await servicerService.getServiceProviderById({ dealerId: checkDealer._id })
+            checkDealerServicer.isServicer = true
+            servicer.push(checkDealerServicer)
         };
 
         let servicerIds = servicer.map(obj => obj._id);
@@ -1859,14 +1862,19 @@ exports.getDealerServicers = async (req, res) => {
                 item2.metaId?.toString() === item1?.dealerId?.toString() ||
                 item2.metaId?.toString() === item1?.resellerId?.toString()
             );
-
+            const isServicer =
+                item1?.dealerId?.toString() === matchingItem?.metaId?.toString() ||
+                item1?.resellerId?.toString() === matchingItem?.metaId?.toString();
             const claimValue = valueClaim.find(claim => claim._id?.toString() === item1._id?.toString())
             const claimNumber = numberOfClaims.find(claim => claim._id?.toString() === item1._id?.toString())
 
             if (matchingItem) {
                 return {
                     ...matchingItem, // Use toObject() to convert Mongoose document to plain JavaScript object
-                    servicerData: item1,
+                    servicerData: {
+                        ...item1.toObject(),
+                        isServicer: isServicer ? true : false
+                    },
                     claimNumber: claimNumber ? claimNumber : 0,
                     claimValue: claimValue ? claimValue : 0
                 };

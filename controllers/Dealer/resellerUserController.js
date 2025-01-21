@@ -433,7 +433,7 @@ exports.createOrder = async (req, res) => {
                 return;
             }
 
-            data.servicerId = checkServicer._id != "" ? checkServicer._id : null;
+            data.servicerId = checkServicer._id;
         }
 
         if (data.customerId) {
@@ -464,6 +464,7 @@ exports.createOrder = async (req, res) => {
         data.resellerId = req.userId;
         data.dealerId = checkReseller.dealerId;
         data.customerId = data.customerId != "" ? data.customerId : null;
+        data.servicerId =  data.servicerId ?  data.servicerId : null
 
         let currentYear = new Date().getFullYear();
         let currentYearWithoutHypen = new Date().getFullYear();
