@@ -1997,6 +1997,8 @@ exports.editClaimStatus = async (req, res) => {
 
       }
       if (data.claimStatus == 'completed') {
+        let updateClaimDate = await claimService.updateClaim(criteria, { claimDate: new Date() }, { new: true })
+
         //Email to dealer,customer,reseller
         let sendCompletionDealerNotification = dealerUser.map(user => user.email);
         let sendCompletionResellerNotification = resellerUsers.map(user => user.email);

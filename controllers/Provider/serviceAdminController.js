@@ -2856,25 +2856,26 @@ exports.paidUnpaidClaim = async (req, res) => {
   try {
     let data = req.body
     let dateQuery = {}
-    const paidFlag= req.body.paidFlag== 1 ? 'Paid' : 'Unpaid'
+    const paidFlag = req.body.paidFlag == 1 ? 'Paid' : 'Unpaid'
 
-    if (data.noOfDays) {
+    if (data.noOfDays != '') {
       let end = moment().startOf('day')
       end.setHours(23, 59, 999, 0)
       const start = moment().subtract(data.noOfDays, 'days').startOf('day')
       dateQuery = {
-        claimDate: {
-          $gt: new Date(start),
-          $lte: new Date(end),
-        }
+        claimDate: { $lte: new Date(start) }
+        // claimDate: {
+        //   $gt: new Date(start),
+        //   $lte: new Date(end),
+        // }
       }
     }
 
     let approveQuery = {}
-    if (data.startDate != "" && data.endDate != "" && paidFlag== "Paid") {
+    if (data.startDate != "" && data.endDate != "" && paidFlag == "Paid") {
       let start = new Date(data.startDate); // Replace with your start date
       data.endDate = new Date(data.endDate)
-      data.endDate.setHours(23,59,999,0)
+      data.endDate.setHours(23, 59, 999, 0)
       // Add one day to the end date
       // end.setDate(end.getDate() + 1);
       start.setDate(start.getDate() + 1);
@@ -3080,7 +3081,7 @@ exports.paidUnpaidClaim = async (req, res) => {
 
             { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { 'productName': { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { claimPaymentStatus: paidFlag},
+            { claimPaymentStatus: paidFlag },
             dateQuery,
             approveQuery,
             { 'servicerId': { $in: [new mongoose.Types.ObjectId(servicerId), new mongoose.Types.ObjectId(servicerIdToCheck)] } }
@@ -3481,11 +3482,11 @@ exports.updateClaimsApproveDate = async (req, res) => {
     let claims = await claimService.getClaims()
     console.log("---------------------dddd------", claims.length)
     for (let i = 0; i < claims.length; i++) {
-      console.log(i, "----------------ddddgggggg-----------", claims[i].updatedAt,claims[i].unique_key)
+      console.log(i, "----------------ddddgggggg-----------", claims[i].updatedAt, claims[i].unique_key)
       let approveDate = claims[i].claimDate
       console.log(i, "---------------------dddd------", approveDate)
 
-      
+
 
       if (!claims[i].approveDate || claims[i].approveDate == null) {
         let newValue = {
