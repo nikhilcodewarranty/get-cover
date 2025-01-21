@@ -346,6 +346,7 @@ exports.createPriceBook = async (req, res, next) => {
 
 
       let mailing = sgMail.send(emailConstant.sendPriceBookNotification(notificationEmails, [], emailData))
+      console.log("mailing---------------------------",mailing)
       let logData = {
         userId: req.teammateId,
         endpoint: "price/createPriceBook",
