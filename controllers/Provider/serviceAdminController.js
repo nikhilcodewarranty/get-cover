@@ -24,6 +24,8 @@ const randtoken = require('rand-token').generator()
 exports.createServiceProvider = async (req, res, next) => {
   try {
     let data = req.body
+
+    console.log("data+++++++++++++++++++++++++",data)
     data.accountName = data.accountName.trim().replace(/\s+/g, ' ');
     const count = await providerService.getServicerCount();
     const admin = await userService.getUserById1({ metaData: { $elemMatch: { metaId: new mongoose.Types.ObjectId(req.userId), isPrimary: true } } }, {})
