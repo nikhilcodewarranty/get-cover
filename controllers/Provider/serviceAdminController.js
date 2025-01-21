@@ -2859,8 +2859,7 @@ exports.paidUnpaidClaim = async (req, res) => {
     const paidFlag = req.body.paidFlag == 1 ? 'Paid' : 'Unpaid'
 
     if (data.noOfDays != '') {
-      let end = moment().startOf('day')
-      end.setHours(23, 59, 999, 0)
+      let end = moment().endOf('day').set({ millisecond: 0 })
       const start = moment().subtract(data.noOfDays, 'days').startOf('day')
       dateQuery = {
         claimDate: { $lte: new Date(start) }
