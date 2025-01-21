@@ -52,7 +52,7 @@ const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, d
   data.forEach((sheetData, index) => {
     let sheetName;
 
-console.log("role===================================",role)
+console.log("role===================================",sheetData)
     if (role == "Super Admin") {
       if (index == 0) {
         sheetName = "summary"
@@ -120,6 +120,7 @@ console.log("role===================================",role)
     }
 
     if (role == "paid") {
+      console.log("role===================================",role)
 
       if (index == 0) {
         sheetName = "detail"
@@ -128,10 +129,13 @@ console.log("role===================================",role)
 
 
     const sheet = workbook.addWorksheet(`${sheetName}`);
+    console.log("role===================================",role)
 
     if (sheetData.length > 0) {
+
       const headers = Object.keys(sheetData[0]); // Get keys from the first object as column headers
       sheet.columns = headers.map(header => ({ header, key: header }));
+      console.log("role=============eeeeeeee======================",sheet)
 
       // Add rows to the sheet
       sheetData.forEach(row => {
@@ -165,6 +169,69 @@ console.log("role===================================",role)
     throw error;
   }
 };
+
+
+const createExcelFileWithMultipleSheets1 = async (data, bucketName, folderName, dateString, role) => {
+  console.log("Input data:", JSON.stringify(data, null, 2));
+  console.log("Role:", role);
+
+  const workbook = new ExcelJS.Workbook();
+
+  data.forEach((sheetData, index) => {
+    let sheetName = `Sheet${index + 1}`;
+    if (role === "paid" && index === 0) {
+      sheetName = "detail";
+    }
+
+    console.log(`Creating sheet: ${sheetName}`);
+    const sheet = workbook.addWorksheet(sheetName);
+
+    if (sheetData.length > 0) {
+      const headers = Object.keys(sheetData[0]);
+      sheet.columns = headers.map((header) => ({ header, key: header }));
+
+      sheetData.forEach((row) => {
+        const formattedRow = { ...row };
+        if (formattedRow.approveDate) {
+          formattedRow.approveDate = new Date(formattedRow.approveDate).toISOString();
+        }
+
+        console.log("Adding row:", formattedRow);
+        sheet.addRow(formattedRow);
+      });
+    } else {
+      console.log(`Sheet ${sheetName} has no data.`);
+    }
+  });
+
+  // Write workbook locally for debugging
+  // await workbook.xlsx.writeFile(`./debug-claim-report-${dateString}.xlsx`);
+  console.log("Workbook written locally for debugging.");
+
+  // Prepare S3 upload
+  const buffer = await workbook.xlsx.writeBuffer();
+  const s3Key = `${folderName}/claim-report-${dateString}.xlsx`;
+
+  const params = {
+    Bucket: bucketName,
+    Key: s3Key,
+    Body: buffer,
+    ContentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  };
+
+  console.log("S3 upload parameters:", params);
+
+  try {
+    const uploadResponse = await s3Client1.send(new PutObjectCommand(params));
+    console.log('Upload successful:', uploadResponse);
+    return uploadResponse;
+  } catch (error) {
+    console.error('Error uploading file to S3:', error);
+    throw error;
+  }
+};
+
+
 
 exports.exportDataForClaim = async (req, res) => {
   try {
@@ -1200,12 +1267,12 @@ exports.paidUnpaidClaimReporting = async (req, res) => {
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
-    let servicerId = req.params.servicerId
+    let servicerId = req.body.userId
     let checkServicer = await providerService.getServiceProviderById({
       $or: [
-        { _id: req.params.servicerId },
-        { resellerId: req.params.servicerId },
-        { dealerId: req.params.servicerId },
+        { _id: req.body.userId },
+        { resellerId: req.body.userId },
+        { dealerId: req.body.userId },
 
       ]
     })
@@ -1243,10 +1310,7 @@ exports.paidUnpaidClaimReporting = async (req, res) => {
     }
 
     let createReporting = await claimReportingService.createReporting(dataForClaimReporting)
-    res.send({
-      code: constant.successCode,
-      message: "Success",
-    })
+  
 
     let newQuery = [];
     newQuery.push({
@@ -1290,6 +1354,7 @@ exports.paidUnpaidClaimReporting = async (req, res) => {
               "unique_key": 1,
               approveDate: 1,
               totalAmount: 1,
+              _id:0
               // ClaimType: 1,
               // note: 1,
               // servicerId: 1,
@@ -1514,13 +1579,13 @@ exports.paidUnpaidClaimReporting = async (req, res) => {
 
     let allServicerIds = [];
     // Iterate over the data array
-    resultFiter.forEach(item => {
-      // Iterate over the dealerServicer array in each item
-      item.contracts.orders.dealers.dealerServicer.forEach(dealer => {
-        // Push the servicerId to the allServicerIds array
-        allServicerIds.push(dealer.servicerId);
-      });
-    });
+    // resultFiter.forEach(item => {
+    //   // Iterate over the dealerServicer array in each item
+    //   item.contracts.orders.dealers.dealerServicer.forEach(dealer => {
+    //     // Push the servicerId to the allServicerIds array
+    //     allServicerIds.push(dealer.servicerId);
+    //   });
+    // });
 
     //Get Dealer and Reseller Servicers
     let servicer;
@@ -1532,56 +1597,58 @@ exports.paidUnpaidClaimReporting = async (req, res) => {
     );
 
     const dynamicOption = await userService.getOptions({ name: 'coverage_type' })
+    let result_Array = [resultFiter]
+    // let result_Array = await Promise.all(resultFiter.map(async (item1) => {
+    //   servicer = []
+    //   let servicerName = '';
+    //   item1.approveDate = item1?.approveDate ? item1.approveDate : ''
+    //   let selfServicer = false;
+    //   let mergedData = []
+    //   if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
+    //     mergedData = dynamicOption.value.filter(contract =>
+    //       item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
+    //     );
+    //   }
+    //   // let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
+    //   //   const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId.toString());
+    //   //   servicer.push(dealerOfServicer)
+    //   // });
+    //   // if (item1.contracts.orders.servicers[0]?.length > 0) {
+    //   //   servicer.unshift(item1.contracts.orders.servicers[0])
+    //   // }
 
-    let result_Array = await Promise.all(resultFiter.map(async (item1) => {
-      servicer = []
-      let servicerName = '';
-      item1.approveDate = item1?.approveDate ? item1.approveDate : ''
-      let selfServicer = false;
-      let mergedData = []
-      if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
-        mergedData = dynamicOption.value.filter(contract =>
-          item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
-        );
-      }
-      let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
-        const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId.toString());
-        servicer.push(dealerOfServicer)
-      });
-      if (item1.contracts.orders.servicers[0]?.length > 0) {
-        servicer.unshift(item1.contracts.orders.servicers[0])
-      }
 
+    //   // let dealerResellerServicer = await resellerService.getResellers({ dealerId: item1.contracts.orders.dealers._id, isServicer: true, status: true })
+    //   let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
+    //   if (dealerResellerServicer.length > 0) {
+    //     let dealerResellerServicer = await providerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
+    //     servicer = servicer.concat(dealerResellerServicer);
+    //   }
 
-      let dealerResellerServicer = await resellerService.getResellers({ dealerId: item1.contracts.orders.dealers._id, isServicer: true, status: true })
-      let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
-      if (dealerResellerServicer.length > 0) {
-        let dealerResellerServicer = await providerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
-        servicer = servicer.concat(dealerResellerServicer);
-      }
-
-      if (item1.contracts.orders.dealers.isServicer && item1.contracts.orders.dealers.accountStatus) {
-        let checkDealerServicer = await providerService.getServiceProviderById({ dealerId: item1.contracts.orders.dealers._id })
-        servicer.push(checkDealerServicer)
-      }
-      if (item1.servicerId != null) {
-        servicerName = servicer.find(servicer => servicer._id?.toString() === item1.servicerId?.toString());
-        const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
-        selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() ? true : false
-      }
-      return {
-        ...item1,
-        servicerData: servicerName,
-        selfServicer: selfServicer,
-        contracts: {
-          ...item1.contracts,
-          allServicer: servicer,
-          mergedData: mergedData
-        }
-      }
-    }));
+    //   // if (item1.contracts.orders.dealers.isServicer && item1.contracts.orders.dealers.accountStatus) {
+    //   //   let checkDealerServicer = await providerService.getServiceProviderById({ dealerId: item1.contracts.orders.dealers._id })
+    //   //   servicer.push(checkDealerServicer)
+    //   // }
+    //   // if (item1.servicerId != null) {
+    //   //   servicerName = servicer.find(servicer => servicer._id?.toString() === item1.servicerId?.toString());
+    //   //   const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
+    //   //   selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() ? true : false
+    //   // }
+    //   return {
+    //     ...item1,
+    //     servicerData: servicerName,
+    //     selfServicer: selfServicer,
+    //     contracts: {
+    //       ...item1.contracts,
+    //       allServicer: servicer,
+    //       mergedData: mergedData
+    //     }
+    //   }
+    // }));
+ 
+ 
     console.log("checking the data _-------------------",result_Array)
-    await createExcelFileWithMultipleSheets(result_Array, process.env.bucket_name, 'claimReporting', dateString, "paid")
+    await createExcelFileWithMultipleSheets1(result_Array, process.env.bucket_name, 'claimReporting', dateString, "paid")
       .then((res) => {
         claimReportingService.updateReporting({ _id: createReporting._id }, { status: "Active" }, { new: true })
       })
@@ -1589,6 +1656,10 @@ exports.paidUnpaidClaimReporting = async (req, res) => {
         console.log("err:---------", err)
         claimReportingService.updateReporting({ _id: createReporting._id }, { status: "Failed" }, { new: true })
 
+      })
+      res.send({
+        code: constant.successCode,
+        message: "Success",
       })
     // res.send({
     //   code: constant.successCode,
@@ -1599,7 +1670,7 @@ exports.paidUnpaidClaimReporting = async (req, res) => {
   catch (err) {
     res.send({
       code: constant.errorCode,
-      message: err.message
+      message: err.stack
     })
   }
 }
