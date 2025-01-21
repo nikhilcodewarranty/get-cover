@@ -83,7 +83,7 @@ router.post("/convertToBase64", supportingApiAdmin.convertToBase64); // create d
 router.post('/createServicer', [verifyToken], validator("create_service_provider_validation"), supportingApiAdmin.createServiceProvider);// create service provider API from super admin
 
 
-// router.get('/updateContracts', [verifyToken], userController.updateContracts);
+router.get('/updateContracts', [verifyToken], userController.updateContracts);
 
 
 router.post('/webhookData',maillogController.webhookData)

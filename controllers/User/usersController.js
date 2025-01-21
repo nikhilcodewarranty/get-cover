@@ -3836,7 +3836,8 @@ exports.updateContracts = async(req,res)=>{
   try{
     let newValue = {
       $set:{
-        eligibilty:false
+        eligibilty:false,
+        notEligibleByCustom:true
       }
     }
     let updateContracts = await contractService.updateManyContract({orderId:"670d4ca5e7cbbc76c394ef51"},newValue,{new:true})
