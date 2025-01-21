@@ -346,7 +346,6 @@ exports.createPriceBook = async (req, res, next) => {
 
 
       let mailing = await sgMail.send(emailConstant.sendPriceBookNotification(notificationEmails, [], emailData))
-      console.log("mailing---------------------------",mailing)
       let logData = {
         userId: req.teammateId,
         endpoint: "price/createPriceBook",
@@ -621,27 +620,27 @@ exports.updatePriceBookById = async (req, res, next) => {
     const base_url = `${process.env.SITE_URL}`
     let notificationData
     if (req.body.priceType) {
-     notificationData = {
-      title: "GetCover Pricebook updated",
-      description: `GetCover Pricebook ${existingPriceBook[0]?.pName} has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
-      userId: req.userId,
-      flag: 'priceBook',
-      notificationFor: IDs,
-      endPoint: base_url + "companyPriceBook/" + existingPriceBook[0]?.name,
-      redirectionId: "companyPriceBook/" + existingPriceBook[0]?.name
-    };
-  }
-  else{
-    notificationData = {
-      title: "GetCover Pricebook Status Updated",
-      description: `GetCover Pricebook ${existingPriceBook[0]?.pName} status has been updated to ${body.status ? 'Active' : "Inactive"} by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
-      userId: req.userId,
-      flag: 'priceBook',
-      notificationFor: IDs,
-      endPoint: base_url + "companyPriceBook/" + existingPriceBook[0]?.name,
-      redirectionId: "companyPriceBook/" + existingPriceBook[0]?.name
-    };
-  }
+      notificationData = {
+        title: "GetCover Pricebook updated",
+        description: `GetCover Pricebook ${existingPriceBook[0]?.pName} has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        userId: req.userId,
+        flag: 'priceBook',
+        notificationFor: IDs,
+        endPoint: base_url + "companyPriceBook/" + existingPriceBook[0]?.name,
+        redirectionId: "companyPriceBook/" + existingPriceBook[0]?.name
+      };
+    }
+    else {
+      notificationData = {
+        title: "GetCover Pricebook Status Updated",
+        description: `GetCover Pricebook ${existingPriceBook[0]?.pName} status has been updated to ${body.status ? 'Active' : "Inactive"} by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        userId: req.userId,
+        flag: 'priceBook',
+        notificationFor: IDs,
+        endPoint: base_url + "companyPriceBook/" + existingPriceBook[0]?.name,
+        redirectionId: "companyPriceBook/" + existingPriceBook[0]?.name
+      };
+    }
     let createNotification = await userService.createNotification(notificationData);
 
     // Send Email code here
