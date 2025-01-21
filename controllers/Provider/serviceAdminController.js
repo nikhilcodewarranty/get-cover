@@ -163,8 +163,8 @@ exports.createServiceProvider = async (req, res, next) => {
                 subject: "Set Password",
                 role: "Servicer",
                 address: settingData[0]?.address,
-                servicerName: saveMembers[i].metaData[0].firstName + " "+ saveMembers[i].metaData[0].lastName
-                
+                servicerName: saveMembers[i].metaData[0].firstName + " " + saveMembers[i].metaData[0].lastName
+
               }))
           }
 
@@ -382,7 +382,7 @@ exports.createServiceProvider = async (req, res, next) => {
                   websiteSetting: settingData[0],
                   subject: "Set Password",
                   link: resetLink, role: 'Servicer',
-                  servicerName: saveMembers[i].metaData[0].firstName + " "+ saveMembers[i].metaData[0].lastName
+                  servicerName: saveMembers[i].metaData[0].firstName + " " + saveMembers[i].metaData[0].lastName
                 }))
 
             }
@@ -2862,10 +2862,11 @@ exports.paidUnpaidClaim = async (req, res) => {
       // end.setHours(23, 59, 999, 0)
       const start = moment().subtract(data.noOfDays, 'days').startOf('day')
       dateQuery = {
-        claimDate: {
-          $gt: new Date(start),
-          $lte: new Date(end),
-        }
+        // claimDate: {
+        //   $gt: new Date(start),
+        //   $lte: new Date(end),
+        // }
+        claimDate: { $lte: new Date(start) }
       }
     }
 
