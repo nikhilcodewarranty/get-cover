@@ -1113,7 +1113,6 @@ exports.createOrder1 = async (req, res) => {
         const orderTermCondition = data.termCondition != null ? data.termCondition : {}
         const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
         const base_url = `${process.env.SITE_URL}`
-        data.servicerId = null
         let notificationData;
         let notificationArrayData = []
         let notificationEmails
@@ -1158,6 +1157,7 @@ exports.createOrder1 = async (req, res) => {
                 return;
             }
 
+            console.log("checkServicer-------------------",checkServicer)
             data.servicerId = checkServicer._id
         }
 
@@ -1187,6 +1187,8 @@ exports.createOrder1 = async (req, res) => {
 
         console.log("data-------------------------",data)
         data.createdBy = req.userId;
+        data.servicerId = data.servicerId ? data.servicerId : null
+
         data.resellerId = data.resellerId != "" ? data.resellerId : null;
         data.customerId = data.customerId != "" ? data.customerId : null;
 
