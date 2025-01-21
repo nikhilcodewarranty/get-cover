@@ -14,7 +14,7 @@ const create_servicer_validation = Joi.object({
     oldName: Joi.string().replace(/\s+/g, ' ').trim().optional(),
     oldEmail: Joi.string().replace(/\s+/g, ' ').trim().optional(),
     lastName: Joi.string().replace(/\s+/g, ' ').trim().optional(),
-    phoneNumber: Joi.number().optional(),
+    phoneNumber:   Joi.number().integer().required(),  
     isPrimary: Joi.boolean().optional(),
     status: Joi.boolean().optional(),
     flag: Joi.string().optional(),
