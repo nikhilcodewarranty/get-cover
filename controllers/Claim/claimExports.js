@@ -1590,11 +1590,11 @@ exports.paidUnpaidClaimReporting = async (req, res) => {
         claimReportingService.updateReporting({ _id: createReporting._id }, { status: "Failed" }, { new: true })
 
       })
-    res.send({
-      code: constant.successCode,
-      message: "Success",
-      result: result_Array,
-    })
+    // res.send({
+    //   code: constant.successCode,
+    //   message: "Success",
+    //   result: result_Array,
+    // })
   }
   catch (err) {
     res.send({
