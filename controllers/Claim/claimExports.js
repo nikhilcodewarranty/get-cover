@@ -52,7 +52,7 @@ const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, d
   data.forEach((sheetData, index) => {
     let sheetName;
 
-
+console.log("role===================================",role)
     if (role == "Super Admin") {
       if (index == 0) {
         sheetName = "summary"
@@ -1580,6 +1580,7 @@ exports.paidUnpaidClaimReporting = async (req, res) => {
         }
       }
     }));
+    console.log("checking the data _-------------------",result_Array)
     await createExcelFileWithMultipleSheets(result_Array, process.env.bucket_name, 'claimReporting', dateString, "paid")
       .then((res) => {
         claimReportingService.updateReporting({ _id: createReporting._id }, { status: "Active" }, { new: true })
