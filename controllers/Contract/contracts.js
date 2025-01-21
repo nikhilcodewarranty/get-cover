@@ -805,7 +805,7 @@ exports.getContractClaims = async (req, res) => {
       let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
       if (dealerResellerServicer.length > 0) {
         let dealerResellerServicer = await providerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
-      servicer = servicer.concat(dealerResellerServicer);
+        servicer = servicer.concat(dealerResellerServicer);
       }
 
       if (item1.contracts.orders.dealers.isServicer && item1.contracts.orders.dealers.accountStatus) {
@@ -1156,28 +1156,28 @@ exports.cronJobEligible = async (req, res) => {
         let product = result[i];
         let contractId = product._id;
         let check = new Date() >= new Date(product.minDate) && new Date() <= new Date(product.coverageEndDate) ? true : false
-        if (new Date() >= new Date(product.minDate) && new Date() <= new Date(product.coverageEndDate)) {
-          contractIds.push(product._id);
-          updateDoc = {
-            'updateMany': {
-              'filter': { '_id': contractId },
-              'update': { $set: { eligibilty: true } },
-              'upsert': false
-            }
-          };
-        } else {
-          updateDoc = {
-            'updateMany': {
-              'filter': { '_id': contractId },
-              'update': { $set: { eligibilty: false } },
-              'upsert': false
-            }
-          };
+        if (!product.notEligibleByCustom) {
+          if (new Date() >= new Date(product.minDate) && new Date() <= new Date(product.coverageEndDate)) {
+            contractIds.push(product._id);
+            updateDoc = {
+              'updateMany': {
+                'filter': { '_id': contractId },
+                'update': { $set: { eligibilty: true } },
+                'upsert': false
+              }
+            };
+          } else {
+            updateDoc = {
+              'updateMany': {
+                'filter': { '_id': contractId },
+                'update': { $set: { eligibilty: false } },
+                'upsert': false
+              }
+            };
+          }
+          bulk.push(updateDoc);
         }
-        bulk.push(updateDoc);
       }
-
-
       // Update when not any claim right now for active contract
       await contractService.allUpdate(bulk);
       bulk = [];
