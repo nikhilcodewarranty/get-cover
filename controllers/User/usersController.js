@@ -2197,7 +2197,7 @@ exports.updateProfile = async (req, res) => {
     newMetaData[0].firstName = data.firstName ? data.firstName : checkUser.metaData[0].firstName
     newMetaData[0].lastName = data.lastName ? data.lastName : checkUser.metaData[0].lastName
     newMetaData[0].phoneNumber = data.phoneNumber ? data.phoneNumber : checkUser.metaData[0].phoneNumber
-    newMetaData[0].status = data.status 
+    newMetaData[0].status = data.status
     newMetaData[0].position = data.position ? data.position : checkUser.metaData[0].position
     let updateProfile = await userService.updateSingleUser({ email: email }, { metaData: newMetaData }, { new: true })
 
@@ -3455,7 +3455,7 @@ exports.contactUs = async (req, res) => {
     const ip = data.ipAddress
     const response = await axios.get(`https://ipapi.co/${ip}/json/`);
     const result = response.data;
-    data.location = result.city + "," + result.region + "," + result.country_name + ","+result.postal
+    data.location = result.city + "," + result.region + "," + result.country_name + "," + result.postal
     emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -3832,23 +3832,23 @@ exports.updateDataBase = async (req, res) => {
   }
 }
 
-exports.updateContracts = async(req,res)=>{
-  try{
+exports.updateContracts = async (req, res) => {
+  try {
     let newValue = {
-      $set:{
-        eligibilty:false,
-        notEligibleByCustom:true
+      $set: {
+        eligibilty: false,
+        notEligibleByCustom: true
       }
     }
-    let updateContracts = await contractService.updateManyContract({orderId:"670d4ca5e7cbbc76c394ef51"},newValue,{new:true})
+    let updateContracts = await contractService.updateManyContract({ orderId: "670d4ca5e7cbbc76c394ef51" }, newValue, { new: true })
     res.send({
-      data:updateContracts
+      data: updateContracts
     })
   }
 
-  catch(err){
+  catch (err) {
     res.send({
-      message:err.message
+      message: err.message
     })
   }
 }
