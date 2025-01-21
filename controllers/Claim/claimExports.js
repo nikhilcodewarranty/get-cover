@@ -205,7 +205,7 @@ const createExcelFileWithMultipleSheets1 = async (data, bucketName, folderName, 
   });
 
   // Write workbook locally for debugging
-  await workbook.xlsx.writeFile(`./debug-claim-report-${dateString}.xlsx`);
+  // await workbook.xlsx.writeFile(`./debug-claim-report-${dateString}.xlsx`);
   console.log("Workbook written locally for debugging.");
 
   // Prepare S3 upload
