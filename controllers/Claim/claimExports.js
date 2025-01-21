@@ -1246,7 +1246,6 @@ exports.paidUnpaidClaimReporting = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: "Success",
-      result_Array, lookupQuery
     })
 
     let newQuery = [];
