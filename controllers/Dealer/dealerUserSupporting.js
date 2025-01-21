@@ -4222,7 +4222,7 @@ exports.getDealerAsServicerClaims = async (req, res) => {
                 // console.log("dealerId-------------------",item1.contracts?.orders?.dealerId)
                 selfServicer = req.role == "Customer" ? false : checkItselfServicer?.dealerId?.toString() === item1.contracts?.orders?.dealerId.toString() ? true : false;
                 // selfResellerServicer = item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString();
-                selfResellerServicer = checkItselfServicer?.resellerId?.toString() === item1.contracts?.orders?.resellerId?.toString();
+                // selfResellerServicer = checkItselfServicer?.resellerId?.toString() === item1.contracts?.orders?.resellerId?.toString();
                 // selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() || item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString() ? true : false
             }
             return {
