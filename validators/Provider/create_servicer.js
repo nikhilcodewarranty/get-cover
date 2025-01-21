@@ -1,6 +1,4 @@
 const Joi = require("joi")
-
-
 const create_servicer_validation = Joi.object({
     accountName: Joi.string().trim().replace(/\s+/g, ' ').required(),
     status: Joi.boolean().required(),
@@ -24,7 +22,7 @@ const create_servicer_validation = Joi.object({
         email: Joi.string().replace(/\s+/g, ' ').trim().required(),
         firstName: Joi.string().replace(/\s+/g, ' ').trim().required(),
         lastName: Joi.string().replace(/\s+/g, ' ').trim().required(),
-        phoneNumber: Joi.number().required(),
+        phoneNumber:  Joi.number().integer().required(),
         isPrimary: Joi.boolean().required(),
         status: Joi.boolean().required(),
         position: Joi.string().trim().allow('').replace(/\s+/g, ' ').optional()
