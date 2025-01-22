@@ -2343,12 +2343,12 @@ exports.getResellerContract = async (req, res) => {
                     result1[e].reason = "Contract has open claim"
 
                 }
-        if (checkClaims[0].isMaxClaimAmount) {
+                if (checkClaims[0].isMaxClaimAmount) {
 
-                if (checkClaims[0].totalAmount >= result1[e].productValue) {
-                    result1[e].reason = "Claim value exceed the product value limit"
+                    if (checkClaims[0].totalAmount >= result1[e].productValue) {
+                        result1[e].reason = "Claim value exceed the product value limit"
+                    }
                 }
-            }
             }
 
             let thresholdLimitPercentage = getTheThresholdLimir.threshHoldLimit.value
@@ -2633,7 +2633,7 @@ exports.getResellerClaims = async (req, res) => {
                             "contracts.orders.coverageType": 1,
                             "contracts.orders.customerId": 1,
                             "contracts.orders.dealers.isShippingAllowed": 1,
-                            "contracts.orders.dealers.accountStatus": 1,                            
+                            "contracts.orders.dealers.accountStatus": 1,
                             "contracts.orders.resellerId": 1,
                             "contracts.orders.dealers.name": 1,
                             "contracts.orders.dealers.isServicer": 1,
@@ -2875,6 +2875,8 @@ exports.getResellerClaims = async (req, res) => {
                 ...item1,
                 servicerData: servicerName,
                 selfServicer: selfServicer,
+                selfResellerServicer: selfResellerServicer,
+
                 contracts: {
                     ...item1.contracts,
                     allServicer: servicer,
@@ -3399,7 +3401,7 @@ exports.getResellerAsServicerClaims = async (req, res) => {
             let servicerName = '';
             let selfServicer = false;
             let selfResellerServicer = false;
-            
+
             let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
                 const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId.toString());
                 servicer.push(dealerOfServicer)
@@ -3435,6 +3437,8 @@ exports.getResellerAsServicerClaims = async (req, res) => {
                 ...item1,
                 servicerData: servicerName,
                 selfServicer: selfServicer,
+                selfResellerServicer: selfResellerServicer,
+
                 contracts: {
                     ...item1.contracts,
                     allServicer: servicer,
