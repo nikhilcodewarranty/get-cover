@@ -20,7 +20,9 @@ const mailLogs = new Schema({
     },
     event:{
         type:String,
-        default:Sent
+        default:"Sent"
     }
    
-})
+},{timestamps:true})
+
+module.exports = mongoose.model("maillogs",mailLogs)
