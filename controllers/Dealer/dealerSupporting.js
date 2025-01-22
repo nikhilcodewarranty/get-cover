@@ -1877,7 +1877,7 @@ exports.getDealerServicers = async (req, res) => {
                     servicerData: {
                         ...item1.toObject(),
                         isServicer: isServicer ? true : false,
-                        actionShow:filtered.length > 0 || matchDealerSelf ? false : true
+                        actionShow: filtered.length > 0 || matchDealerSelf ? false : true
                     },
                     claimNumber: claimNumber ? claimNumber : 0,
                     claimValue: claimValue ? claimValue : 0
