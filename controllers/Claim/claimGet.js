@@ -494,7 +494,7 @@ exports.getAllClaims = async (req, res, next) => {
         servicerName = servicer.find(servicer => servicer?._id?.toString() === item1.servicerId?.toString());
         let checkItselfServicer = await servicerService.getServiceProviderById({ _id: item1.servicerId })
         selfServicer = req.role == "Customer" ? false : checkItselfServicer?.dealerId?.toString() === item1.contracts?.orders?.dealerId.toString() ? true : false;
-        selfResellerServicer = checkItselfServicer?.resellerId?.toString() === item1.contracts?.orders?.resellerId?.toString();
+        selfResellerServicer = checkItselfServicer?.resellerId?.toString() === item1.contracts?.orders?.resellerId?.toString() ? true : false;
       }
 
       if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
