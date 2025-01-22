@@ -3394,6 +3394,8 @@ exports.getResellerAsServicerClaims = async (req, res) => {
             }
             let servicerName = '';
             let selfServicer = false;
+            let selfResellerServicer = false;
+            
             let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
                 const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId.toString());
                 servicer.push(dealerOfServicer)
@@ -3419,7 +3421,10 @@ exports.getResellerAsServicerClaims = async (req, res) => {
             if (item1.servicerId != null) {
                 servicerName = servicer.find(servicer => servicer._id.toString() === item1.servicerId.toString());
                 const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
-                selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() || item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString() ? true : false
+                let checkItselfServicer = await providerService.getServiceProviderById({ _id: item1.servicerId })
+                selfServicer = req.role == "Customer" ? false : checkItselfServicer?.dealerId?.toString() === item1.contracts?.orders?.dealerId.toString() ? true : false;
+                selfResellerServicer = checkItselfServicer?.resellerId?.toString() === item1.contracts?.orders?.resellerId?.toString();
+                // selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() || item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString() ? true : false
 
             }
             return {
