@@ -1340,8 +1340,6 @@ exports.getResellerPriceBook = async (req, res) => {
         }
     }
 
-    console.log("sdfsdffffffffffff-------------------dfdsfsfdsfsdfsd")
-
     let getResellerPriceBook = await dealerPriceService.getAllPriceBooksByFilter(query, projection)
     if (!getResellerPriceBook) {
         res.send({
