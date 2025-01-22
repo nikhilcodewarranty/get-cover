@@ -21,6 +21,10 @@ const mailLogs = new Schema({
     event:{
         type:String,
         default:"Sent"
+    },
+    userId:{
+        type:mongoose.Schema.Types.ObjectId,
+        default:null
     }
    
 },{timestamps:true})

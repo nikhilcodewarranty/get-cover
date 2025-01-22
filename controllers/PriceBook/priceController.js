@@ -5,6 +5,7 @@ const dealerService = require("../../services/Dealer/dealerService");
 const orderService = require("../../services/Order/orderService");
 const userService = require("../../services/User/userService");
 const dealerPriceService = require("../../services/Dealer/dealerPriceService");
+const maillogService = require("../../services/User/maillogServices")
 const eligibilityService = require("../../services/Dealer/eligibilityService");
 const constant = require("../../config/constant");
 const randtoken = require('rand-token').generator()
@@ -346,6 +347,7 @@ exports.createPriceBook = async (req, res, next) => {
 
 
       let mailing = await sgMail.send(emailConstant.sendPriceBookNotification(notificationEmails, [], emailData))
+      console.log("mail log data ++++++++++++++",mailing)
       let logData = {
         userId: req.teammateId,
         endpoint: "price/createPriceBook",

@@ -67,6 +67,7 @@ module.exports = class userService {
       return `Could not create users: ${error}`;
     }
   };
+
   // Save bulk users
   static async insertManyUser(data) {
     try {
@@ -126,7 +127,6 @@ module.exports = class userService {
       return `Could not find role: ${error}`;
     }
   };
-
 
   //get all TERMS
   static async getAllTerms(query, projection) {
@@ -247,6 +247,7 @@ module.exports = class userService {
       return `Could not find notifications: ${error}`;
     }
   };
+
   // get count notification
   static async getCountNotification(query) {
     try {
@@ -256,6 +257,7 @@ module.exports = class userService {
       return `Could not find notification count: ${error}`;
     }
   };
+
   // update notification
   static async updateNotification(criteria, newValue, option) {
     try {
@@ -265,6 +267,7 @@ module.exports = class userService {
       return `Could not update notification: ${error}`;
     }
   }
+
   // find user for customer
   static async findUserforCustomer(query) {
     try {
@@ -278,6 +281,7 @@ module.exports = class userService {
       return `Could not get user: ${error}`;
     }
   }
+
   // find customer members new
   static async findUserforCustomer1(query) {
     try {
@@ -287,6 +291,7 @@ module.exports = class userService {
       return `Could not get user: ${error}`;
     }
   }
+
   // update only single data
   static async updateSingleUser(criteria, newValue, option) {
     try {
@@ -296,6 +301,7 @@ module.exports = class userService {
       return `Could not update user: ${error}`;
     }
   }
+  
   // get user by email
   static async getSingleUserByEmail(query, project) {
     try {

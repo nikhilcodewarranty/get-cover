@@ -84,7 +84,8 @@ router.post('/createServicer', [verifyToken], validator("create_service_provider
 
 
 router.get('/updateContracts', [verifyToken], userController.updateContracts);
+router.get('/webhookData', [verifyToken], maillogController.webhookData);
 
-
+console.log("under webhook data +++++++++++")
 router.post('/webhookData',maillogController.webhookData)
 module.exports = router;
