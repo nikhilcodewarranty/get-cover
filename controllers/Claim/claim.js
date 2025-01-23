@@ -3067,7 +3067,6 @@ exports.saveBulkClaim = async (req, res) => {
           const claimData = claimArray;
           const servicerData = servicerArray == undefined || servicerArray == null ? allDataArray[0]?.order?.servicer : servicerArray[i]
           let flag;
-
           item.contractData = contractData;
           item.claimType = ''
           item.servicerData = servicerData;
@@ -3236,24 +3235,32 @@ exports.saveBulkClaim = async (req, res) => {
               //Find Servicer with dealer Servicer
               const servicerCheck = allDataArray[0]?.order.dealer.dealerServicer.find(item => item.servicerId?.toString() === servicerData._id?.toString())
               if (servicerCheck) {
+                console.log("++++++++++++++++++++++++++++++++++1")
                 flag = true
               }
               //Check Dealer itself servicer
               if (allDataArray[0]?.order.dealer?.isServicer && allDataArray[0]?.order.dealer?.accountStatus && allDataArray[0]?.order.dealer._id?.toString() === servicerData.dealerId?.toString()) {
                 flag = true
+                console.log("++++++++++++++++++++++++++++++++++2")
+
               }
               //Check Dealer Reseller servicer
               let dealerResellerServicer = await resellerService.getResellers({ dealerId: allDataArray[0]?.order.dealer._id, isServicer: true, status: true })
               let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
               if (dealerResellerServicer.length > 0) {
+                console.log("++++++++++++++++++++++++++++++++++3",dealerResellerServicer)
+                console.log("++++++++++++++++++++++++++++++++++4",servicerData)
+
                 let dealerResellerServicer = await servicerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
-                const exists = dealerResellerServicer.some(item => item?._id?.toString() === servicerData?._id?.toString());
+                let exists = dealerResellerServicer.some(item => item?._id?.toString() === servicerData?._id?.toString());
                 if(exists){
                   flag = true
                 } 
               }
             }
           }
+          console.log("++++++++++++++++++++++++++++++++++5",flag)
+
           if ((item?.servicerName != '' && !servicerData)) {
             flag = false
           }
@@ -3271,6 +3278,7 @@ exports.saveBulkClaim = async (req, res) => {
         }
       }
 
+      return;
       // return;
       let finalArray = []
       //Save bulk claim
