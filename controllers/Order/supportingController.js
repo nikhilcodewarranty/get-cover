@@ -223,8 +223,9 @@ exports.cronJobStatus = async (req, res) => {
                     status = 'Waiting'
                 }
                 if (claimStatus == 'Active') {
+                    let checkContract = await contractService.getContractById({orderProductId:orderProductId},{})
                     status = 'Active'
-                    eligibilty = true;
+                    eligibilty = !checkContract.notEligibleByCustom ? true : false;
                 }
                 let updateDoc = {
                     'updateMany': {

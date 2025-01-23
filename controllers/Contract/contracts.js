@@ -1157,6 +1157,7 @@ exports.cronJobEligible = async (req, res) => {
         let contractId = product._id;
         let check = new Date() >= new Date(product.minDate) && new Date() <= new Date(product.coverageEndDate) ? true : false
         if (!product.notEligibleByCustom) {
+          console.log("+++++++++++++++++++++++++++++++++++", product.unique_key);
           if (new Date() >= new Date(product.minDate) && new Date() <= new Date(product.coverageEndDate)) {
             contractIds.push(product._id);
             updateDoc = {
@@ -1178,13 +1179,13 @@ exports.cronJobEligible = async (req, res) => {
           bulk.push(updateDoc);
         }
       }
+
       // Update when not any claim right now for active contract
       await contractService.allUpdate(bulk);
       bulk = [];
       // Fetch claims for contracts
       let checkClaim = await claimService.getClaims({ contractId: { $in: contractIds } });
       const openContractIds = checkClaim.filter(claim => claim.claimFile === 'open').map(claim => claim.contractId);
-
       openContractIds.forEach(openContract => {
         // console.log("openContract",openContract)
         bulk.push({
@@ -1195,6 +1196,7 @@ exports.cronJobEligible = async (req, res) => {
           }
         });
       });
+
 
       // console.log("bulk00000000000000000000000",bulk)
       // Update when claim is open for contract
