@@ -3262,8 +3262,9 @@ exports.saveBulkClaim = async (req, res) => {
             flag = false
           }
           if ((!flag && flag != undefined && item.hasOwnProperty("servicerName") && req.role == "Admin")) {
-            item.exit = true;
+            console.log("sdfsdfsddsffdsdfsdsfdfsdsfdfsdfsfdsdfssdf")
             item.status = "Servicer not found"
+            item.exit = true;
           }
           if (contractData && contractData.status != "Active") {
             item.status = "Contract is not active";
