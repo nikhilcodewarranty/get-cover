@@ -3279,6 +3279,7 @@ exports.saveBulkClaim = async (req, res) => {
         }
       }
 
+      console.log("totalDataComing-----------------------------",totalDataComing)
       return;
       // return;
       let finalArray = []
