@@ -3053,8 +3053,6 @@ exports.saveBulkClaim = async (req, res) => {
 
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
       
-      console.log("contractAllDataArray---------------------------------",contractAllDataArray);
-      return;
 
 
       let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
@@ -3230,6 +3228,8 @@ exports.saveBulkClaim = async (req, res) => {
             item.exit = true;
           }
 
+          console.log("dealer++++++++++++++++++++++++++++++++",allDataArray[0]?.order.dealer)
+          console.log("servicer++++++++++++++++++++++++++++++++",allDataArray[0]?.order.dealer.dealerServicer)
           if (allDataArray.length > 0 && servicerData) {
 
             flag = false;
@@ -3268,6 +3268,8 @@ exports.saveBulkClaim = async (req, res) => {
           item.servicerData = null
         }
       }
+
+      return;
       let finalArray = []
       //Save bulk claim
 
