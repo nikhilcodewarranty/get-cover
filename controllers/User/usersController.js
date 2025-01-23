@@ -3840,7 +3840,7 @@ exports.updateContracts = async (req, res) => {
         notEligibleByCustom: true
       }
     }
-    let updateContracts = await contractService.updateManyContract({ orderId: "670d4ca5e7cbbc76c394ef51" }, newValue, { new: true })
+    let updateContracts = await contractService.updateManyContract({ orderId: "67909cb866a8026ca44dcd1d" }, newValue, { new: true })
     res.send({
       data: updateContracts
     })
