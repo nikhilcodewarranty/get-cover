@@ -3276,7 +3276,7 @@ exports.saveBulkClaim = async (req, res) => {
         } else {
           item.contractData = null
           item.servicerData = null
-        }
+        } 
       }
 
       console.log("totalDataComing-----------------------------",totalDataComing)
