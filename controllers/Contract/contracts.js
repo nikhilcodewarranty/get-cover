@@ -1157,7 +1157,6 @@ exports.cronJobEligible = async (req, res) => {
         let contractId = product._id;
         let check = new Date() >= new Date(product.minDate) && new Date() <= new Date(product.coverageEndDate) ? true : false
         if (!product.notEligibleByCustom) {
-          console.log("+++++++++++++++++++++++++++++++++++", product.unique_key);
           if (new Date() >= new Date(product.minDate) && new Date() <= new Date(product.coverageEndDate)) {
             contractIds.push(product._id);
             updateDoc = {

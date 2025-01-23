@@ -300,7 +300,7 @@ exports.getAllClaims = async (req, res, next) => {
       }
     }
     let lookupQuery = [
-      { $sort: { createdAt: -1 } },
+      { $sort: { unique_key_number: -1 } },
       {
         $match:
         {
