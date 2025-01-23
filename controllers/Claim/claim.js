@@ -3251,21 +3251,18 @@ exports.saveBulkClaim = async (req, res) => {
 
                 let dealerResellerServicer = await servicerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
                 let exists = dealerResellerServicer.some(item => item?._id?.toString() === servicerData?._id?.toString());
-                console.log("++++++++++++++++++++++++++++++++++3",dealerResellerServicer)
-                console.log("++++++++++++++++++++++++++++++++++4",servicerData)
-                console.log("++++++++++++++++++++++++++++++++++exists",exists)
                 if(exists){
                   flag = true
                 } 
               }
             }
           }
-          console.log("++++++++++++++++++++++++++++++++++5",flag)
 
           if ((item?.servicerName != '' && !servicerData)) {
             flag = false
           }
           if ((!flag && flag != undefined && item.hasOwnProperty("servicerName") && req.role == "Admin")) {
+            item.exit = true;
             item.status = "Servicer not found"
           }
           if (contractData && contractData.status != "Active") {
