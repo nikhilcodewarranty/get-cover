@@ -2904,7 +2904,6 @@ exports.saveBulkClaim = async (req, res) => {
         }
       })
 
-      console.log("totalDataComing---------------------",totalDataComing)
       //Check contract is exist or not using contract id
       const contractArrayPromise = totalDataComing.map(item => {
         if (!item.exit) return contractService.getContractById({
