@@ -1764,7 +1764,6 @@ exports.getDealerServicers = async (req, res) => {
         let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
         if (dealerResellerServicer.length > 0) {
             let dealerResellerServicer = await servicerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
-
             servicer = servicer.concat(dealerResellerServicer);
         }
         if (checkDealer.isServicer) {

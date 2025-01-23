@@ -3052,7 +3052,7 @@ exports.saveBulkClaim = async (req, res) => {
       })
 
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
-      
+
 
 
       let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
@@ -3228,28 +3228,30 @@ exports.saveBulkClaim = async (req, res) => {
             item.exit = true;
           }
 
-          console.log("dealer++++++++++++++++++++++++++++++++",allDataArray[0]?.order.dealer)
-          console.log("servicer++++++++++++++++++++++++++++++++",allDataArray[0]?.order.dealer.dealerServicer)
+          console.log("dealer++++++++++++++++++++++++++++++++", allDataArray[0]?.order.dealer)
+          console.log("servicer++++++++++++++++++++++++++++++++", allDataArray[0]?.order.dealer.dealerServicer)
           if (allDataArray.length > 0 && servicerData) {
-
             flag = false;
             if (allDataArray[0]?.order.dealer.dealerServicer.length > 0) {
               //Find Servicer with dealer Servicer
               const servicerCheck = allDataArray[0]?.order.dealer.dealerServicer.find(item => item.servicerId?.toString() === servicerData._id?.toString())
               if (servicerCheck) {
-
                 flag = true
               }
-            }
-            //Check dealer itself servicer
-            if (allDataArray[0]?.order.dealer?.isServicer && allDataArray[0]?.order.dealer?.accountStatus && allDataArray[0]?.order.dealer._id?.toString() === servicerData.dealerId?.toString()) {
-
-              flag = true
-            }
-
-            if (allDataArray[0]?.order.reseller?.isServicer && allDataArray[0]?.order.reseller?.status && allDataArray[0]?.order.reseller?._id?.toString() === servicerData.resellerId?.toString()) {
-
-              flag = true
+              //Check Dealer itself servicer
+              if (allDataArray[0]?.order.dealer?.isServicer && allDataArray[0]?.order.dealer?.accountStatus && allDataArray[0]?.order.dealer._id?.toString() === servicerData.dealerId?.toString()) {
+                flag = true
+              }
+              //Check Dealer Reseller servicer
+              let dealerResellerServicer = await resellerService.getResellers({ dealerId: allDataArray[0]?.order.dealer._id, isServicer: true, status: true })
+              let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
+              if (dealerResellerServicer.length > 0) {
+                let dealerResellerServicer = await servicerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
+                const exists = dealerResellerServicer.some(item => item?._id?.toString() === servicerData?._id?.toString());
+                if(exists){
+                  flag = true
+                }
+              }
             }
           }
           if ((item?.servicerName != '' && !servicerData)) {
