@@ -3261,6 +3261,7 @@ exports.saveBulkClaim = async (req, res) => {
           if ((item?.servicerName != '' && !servicerData)) {
             flag = false
           }
+          console.log("flag---------------------------",typeof(flag),flag)
           if ((!flag && flag != undefined && item.hasOwnProperty("servicerName") && req.role == "Admin")) {
             console.log("sdfsdfsddsffdsdfsdsfdfsdsfdfsdfsfdsdfssdf")
             item.status = "Servicer not found"
