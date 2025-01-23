@@ -2904,6 +2904,7 @@ exports.saveBulkClaim = async (req, res) => {
         }
       })
 
+      console.log("totalDataComing---------------------",totalDataComing)
       //Check contract is exist or not using contract id
       const contractArrayPromise = totalDataComing.map(item => {
         if (!item.exit) return contractService.getContractById({
@@ -3054,7 +3055,7 @@ exports.saveBulkClaim = async (req, res) => {
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
       
 
-      console.log("contractAllDataArray---------------------",contractAllDataArray)
+
       let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
       let checkSerialCache = {};
       //Filter data which is contract , servicer and not active
