@@ -3247,12 +3247,13 @@ exports.saveBulkClaim = async (req, res) => {
               //Check Dealer Reseller servicer
               let dealerResellerServicer = await resellerService.getResellers({ dealerId: allDataArray[0]?.order.dealer._id, isServicer: true, status: true })
               let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
-              if (dealerResellerServicer.length > 0) {
-                console.log("++++++++++++++++++++++++++++++++++3",dealerResellerServicer)
-                console.log("++++++++++++++++++++++++++++++++++4",servicerData)
+              if (dealerResellerServicer.length > 0) {       
 
                 let dealerResellerServicer = await servicerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
                 let exists = dealerResellerServicer.some(item => item?._id?.toString() === servicerData?._id?.toString());
+                console.log("++++++++++++++++++++++++++++++++++3",dealerResellerServicer)
+                console.log("++++++++++++++++++++++++++++++++++4",servicerData)
+                console.log("++++++++++++++++++++++++++++++++++exists",exists)
                 if(exists){
                   flag = true
                 } 
