@@ -59,6 +59,7 @@ module.exports = class mailLogService {
     static async getMailLogs(Query) {
         try {
             let getMailLog = await MAILLOG.find(Query)
+            return getMailLog
         } catch (err) {
             console.log("catch error------------", err.stack)
         }
