@@ -3250,7 +3250,7 @@ exports.saveBulkClaim = async (req, res) => {
                 const exists = dealerResellerServicer.some(item => item?._id?.toString() === servicerData?._id?.toString());
                 if(exists){
                   flag = true
-                }
+                } 
               }
             }
           }
@@ -3271,7 +3271,7 @@ exports.saveBulkClaim = async (req, res) => {
         }
       }
 
-      return;
+      // return;
       let finalArray = []
       //Save bulk claim
 
