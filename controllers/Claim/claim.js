@@ -3262,7 +3262,7 @@ exports.saveBulkClaim = async (req, res) => {
             flag = false
           }
           console.log("flag---------------------------",typeof(flag),flag)
-          if ((!flag  && item.hasOwnProperty("servicerName") && req.role == "Admin")) {
+          if ((!flag && req.role == "Admin")) {
             console.log("sdfsdfsddsffdsdfsdsfdfsdsfdfsdfsfdsdfssdf")
             item.status = "Servicer not found"
             item.exit = true;
