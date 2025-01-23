@@ -1,32 +1,45 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
+const connection = require('../../db')
 
 const mailLogs = new Schema({
-    email:{
-        type:String
+    email: {
+        type: String,
+        default: ""
     },
-    content:{
-        type:String
+    content: {
+        type: String,
+        default: ""
     },
-    smtp_id:{
-        type:String
+    keysValues: {
+        type: {},
+        default: {}
     },
-    sg_message_id:{
-        type:String
+    smtp_id: {
+        type: String,
+        default: ""
     },
-    sentOn:{
-        type:Date,
-        default:()=>Date.now()
+    sg_message_id: {
+        type: String,
+        default: ""
     },
-    event:{
-        type:String,
-        default:"Sent"
+    sentOn: {
+        type: Date,
+        default: () => Date.now()
     },
-    userId:{
-        type:mongoose.Schema.Types.ObjectId,
-        default:null
+    event: {
+        type: String,
+        default: "Sent"
+    },
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        default: null
+    },
+    isShow: {
+        type: Boolean,
+        default: false
     }
-   
-},{timestamps:true})
 
-module.exports = mongoose.model("maillogs",mailLogs)
+}, { timestamps: true })
+
+module.exports = connection.userConnection.model("maillogs", mailLogs)

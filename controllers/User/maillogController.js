@@ -1,14 +1,15 @@
 const mailLogService = require("../../services/User/maillogServices")
+const constant = require("../../config/constant");
 
 
 console.log("sljdhlsjflskdjflksjdflksjdf")
 exports.webhookData = async (req, res) => {
-        console.log( "+++++++++++++++++++++++++++++++++++++++++++++")
-        try {
+    console.log("+++++++++++++++++++++++++++++++++++++++++++++")
+    try {
         let data = req.body
         console.log(data, "+++++++++++++++++++++++++++++++++++++++++++++")
         res.send({
-            code:"5555"
+            code: "5555"
         })
     } catch (err) {
         console.log("catch errr:-", err.message)
@@ -19,11 +20,36 @@ exports.webhookData = async (req, res) => {
 }
 
 
-exports.checkApi = async(req,res)=>{
-    try{
+exports.checkApi = async (req, res) => {
+    try {
         console.log("sdhflsjflksjdflksjdflksjdflksjdflksjflskjdf00000000000000000")
-    }catch(err){
+    } catch (err) {
 
+    }
+}
+
+
+
+exports.getMaillogData = async (req, res) => {
+    try {
+        let getData = await mailLogService.getMailLogs()
+        if (!getData) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to get the data"
+            })
+        } else {
+            res.send({
+                code: constant.successCode,
+                message: "success",
+                result: getData
+            })
+        }
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
     }
 }
 

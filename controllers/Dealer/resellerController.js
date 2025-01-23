@@ -179,8 +179,8 @@ exports.createReseller = async (req, res) => {
 
 
         // Send Email code here
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
-        mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
+        letmailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+       mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
 
         if (data.status) {
             for (let i = 0; i < saveMembers.length; i++) {
@@ -190,7 +190,7 @@ exports.createReseller = async (req, res) => {
                     let resetPasswordCode = randtoken.generate(4, '123456789')
                     let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
                     let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-                    const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email,
+                    constmailing = await sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email,
                         {
                             flag: "created",
                             link: resetLink,
@@ -1098,9 +1098,9 @@ exports.editResellers = async (req, res) => {
             content: "Your details have been updated. To view the details, please login into your account.",
             subject: "Update Info"
         }
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
-        mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
-        mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ['noreply@getcover.com'], emailData))
+        letmailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+       mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
+       mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ['noreply@getcover.com'], emailData))
 
 
         //Save Logs update reseller
@@ -1306,7 +1306,7 @@ exports.addResellerUser = async (req, res) => {
             let resetPasswordCode = randtoken.generate(4, '123456789')
             let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
             let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
-            const mailing = sgMail.send(emailConstant.servicerApproval(email,
+            constmailing = await sgMail.send(emailConstant.servicerApproval(email,
                 {
                     flag: "created",
                     link: resetLink,
@@ -2357,7 +2357,7 @@ exports.changeResellerStatus = async (req, res) => {
                 subject: "Update Status"
             }
 
-            let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, ["noreply@getcover.com"], emailData))
+            letmailing = await sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, ["noreply@getcover.com"], emailData))
 
             emailData = {
                 senderName: singleReseller.name,
@@ -2370,10 +2370,10 @@ exports.changeResellerStatus = async (req, res) => {
                 subject: "Update Status"
             }
             emailData.senderName = "Dear Admin"
-            mailing = sgMail.send(emailConstant.sendEmailTemplate(adminEmail, ["noreply@getcover.com"], emailData))
+           mailing = await sgMail.send(emailConstant.sendEmailTemplate(adminEmail, ["noreply@getcover.com"], emailData))
             emailData.senderName = `Dear ${getPrimary.metaData[0]?.firstName + " " + getPrimary.metaData[0]?.lastName}`
 
-            mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
+           mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
 
             //Save Logs change reseller status
             let logData = {

@@ -4,6 +4,8 @@ const priceBookService = require("../../services/PriceBook/priceBookService");
 const dealerService = require("../../services/Dealer/dealerService");
 const orderService = require("../../services/Order/orderService");
 const userService = require("../../services/User/userService");
+const axios = require("axios")
+const maillogservice = require("../../services/User/maillogServices")
 const dealerPriceService = require("../../services/Dealer/dealerPriceService");
 const maillogService = require("../../services/User/maillogServices")
 const eligibilityService = require("../../services/Dealer/eligibilityService");
@@ -343,11 +345,12 @@ exports.createPriceBook = async (req, res, next) => {
         content: `A new company pricebook ${data.pName} has been added with the following data:`,
         subject: "Create Price Book"
       }
-
-
+      console.log("checking the data++++++++++++", notificationEmails)
 
       let mailing = await sgMail.send(emailConstant.sendPriceBookNotification(notificationEmails, [], emailData))
-      console.log("mail log data ++++++++++++++",mailing)
+
+      maillogservice.createMailLogFunction(mailing, emailData, notificationEmails, process.env.price_book)
+      console.log("mail log data ++++++++++++++", mailing)
       let logData = {
         userId: req.teammateId,
         endpoint: "price/createPriceBook",
@@ -676,7 +679,7 @@ exports.updatePriceBookById = async (req, res, next) => {
         redirectId: base_url + "companyPriceBook/" + existingPriceBook[0]?.name
       }
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "noreply@getcover.com", emailData))
+    letmailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "noreply@getcover.com", emailData))
     let logData = {
       userId: req.teammateId,
       endpoint: "price/updatePriceBook",
@@ -841,7 +844,7 @@ exports.createPriceBookCat = async (req, res) => {
       content: `A new Price Book Category ${data.name} has been added to the system by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
       subject: "New Category Added"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+    letmailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
 
     let logData = {
       userId: req.teammateId,
@@ -1172,7 +1175,7 @@ exports.updatePriceBookCat = async (req, res) => {
       content: "The category " + data.name + " updated successfully.",
       subject: "Update Category"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+    letmailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
     let logData = {
       userId: req.teammateId,
       endpoint: "price/updatePricebookCat",
@@ -1764,7 +1767,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
           }
         });
         const htmlTableString = convertArrayToHTMLTable(totalDataOriginal1);
-        const mailing = sgMail.send(emailConstant.sendPriceBookFile(("yashasvi@codenomad.net"), ["anil@codenomad.net"], htmlTableString));
+        constmailing = await sgMail.send(emailConstant.sendPriceBookFile(("yashasvi@codenomad.net"), ["anil@codenomad.net"], htmlTableString));
 
         res.send({
           code: constant.successCode,
@@ -1964,7 +1967,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
           }
         });
         const htmlTableString = convertArrayToHTMLTable(totalDataOriginal1);
-        const mailing = sgMail.send(emailConstant.sendPriceBookFile(("yashasvi@codenomad.net"), ["noreply@getcover.com"], htmlTableString));
+        constmailing = await sgMail.send(emailConstant.sendPriceBookFile(("yashasvi@codenomad.net"), ["noreply@getcover.com"], htmlTableString));
 
 
         res.send({
@@ -2210,7 +2213,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
           }
         });
         const htmlTableString = convertArrayToHTMLTable(totalDataOriginal1);
-        const mailing = sgMail.send(emailConstant.sendPriceBookFile(("yashasvi@codenomad.net"), ["anil@codenomad.net"], htmlTableString));
+        constmailing = await sgMail.send(emailConstant.sendPriceBookFile(("yashasvi@codenomad.net"), ["anil@codenomad.net"], htmlTableString));
 
         res.send({
           code: constant.successCode,
