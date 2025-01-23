@@ -3258,7 +3258,6 @@ exports.saveBulkClaim = async (req, res) => {
             flag = false
           }
           if ((!flag && flag != undefined && item.hasOwnProperty("servicerName") && req.role == "Super Admin")) {
-            console.log("sdfsdfsddsffdsdfsdsfdfsdsfdfsdfsfdsdfssdf")
             item.status = "Servicer not found"
             item.exit = true;
           }
