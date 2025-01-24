@@ -3379,9 +3379,10 @@ exports.getResellerAsServicerClaims = async (req, res) => {
         let dateMatch = {}
         let statusMatch = {}
         const checkServicer = await providerService.getAllServiceProvider({ resellerId: new mongoose.Types.ObjectId(resellerId) });
+        let servicerIdToCheck = checkServicer[0]?._id
+
         let servicerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer?._id))
         servicerIds.push(new mongoose.Types.ObjectId(resellerId))
-
         servicerMatch = {
             $or: [
                 { "servicerId": { $in: servicerIds } }
@@ -3511,7 +3512,7 @@ exports.getResellerAsServicerClaims = async (req, res) => {
                     $and: [
                         { "contracts.orders.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         { "contracts.orders.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                        { "contracts.orders.resellerId": new mongoose.Types.ObjectId(resellerId) },
+                        // { "contracts.orders.resellerId": new mongoose.Types.ObjectId(resellerId) },
                     ]
                 },
             },
@@ -3573,8 +3574,9 @@ exports.getResellerAsServicerClaims = async (req, res) => {
             { _id: { $in: allServicerIds }, status: true },
             {}
         );
-        let result_Array = await Promise.all(resultFiter.map(async (item1) => {
 
+
+        let result_Array = await Promise.all(resultFiter.map(async (item1) => {
             servicer = []
             let mergedData = []
             if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
@@ -3584,17 +3586,22 @@ exports.getResellerAsServicerClaims = async (req, res) => {
             }
             let servicerName = '';
             let selfServicer = false;
-            let selfResellerServicer = false;
-
-            let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
-                const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId.toString());
-                servicer.push(dealerOfServicer)
-            });
+            await Promise.all(item1.contracts.orders.dealers.dealerServicer.map(async (matched) => {
+                const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId?.toString());
+                if (dealerOfServicer) {
+                    servicer.push(dealerOfServicer);
+                }
+            }));
 
             if (item1.contracts.orders.servicers[0]?.length > 0) {
                 servicer.unshift(item1.contracts.orders.servicers[0])
             }
 
+
+            // if (item1.contracts.orders.resellers[0]?.isServicer && item1.contracts.orders.resellers[0]?.status) {
+            //     let checkResellerServicer = await providerService.getServiceProviderById({ resellerId: item1.contracts.orders.resellers[0]._id })
+            //     servicer.push(checkResellerServicer)
+            // }
             let dealerResellerServicer = await resellerService.getResellers({ dealerId: item1.contracts.orders.dealers._id, isServicer: true, status: true })
             let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
             if (dealerResellerServicer.length > 0) {
@@ -3607,7 +3614,6 @@ exports.getResellerAsServicerClaims = async (req, res) => {
 
                 servicer.push(checkDealerServicer)
             }
-
             if (item1.servicerId != null) {
                 servicerName = servicer.find(servicer => servicer._id.toString() === item1.servicerId.toString());
                 const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
@@ -3631,6 +3637,7 @@ exports.getResellerAsServicerClaims = async (req, res) => {
                 }
             }
         }));
+
         let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0
         res.send({
             code: constant.successCode,
