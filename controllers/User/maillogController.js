@@ -8,6 +8,9 @@ exports.webhookData = async (req, res) => {
     try {
         let data = req.body
         console.log(data, "+++++++++++++++++++++++++++++++++++++++++++++")
+        for (let i=0;i<data.length;i++) {
+            
+        }
         res.send({
             code: "5555"
         })
