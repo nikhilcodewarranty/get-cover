@@ -1873,7 +1873,7 @@ exports.createOrder1 = async (req, res) => {
                         let mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails, customerEmails)
                         console.log("dealerEmails------------------", dealerEmails);
                         console.log("notificationEmails------------------", notificationEmails);
-                        console.log("resellerEmails------------------", resellerEmails);
+                        console.log("resellerEmails------------------", resellerEmails); 
                         console.log("customerEmails------------------", customerEmails);
                         //Email to Dealer
                         let emailData = {
