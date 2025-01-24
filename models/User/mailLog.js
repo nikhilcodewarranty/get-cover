@@ -11,7 +11,7 @@ const mailLogs = new Schema({
         type: String,
         default: ""
     },
-    keysValues: {
+    keyValues: {
         type: {},
         default: {}
     },
