@@ -3239,7 +3239,7 @@ exports.getResellerAsServicerClaims = async (req, res) => {
         const singleReseller = await resellerService.getReseller({ _id: resellerId });
 
         if (!singleReseller) {
-            res.send({
+            res.send({ 
                 code: constant.errorCode,
                 message: "Reseller not found"
             })
