@@ -3383,9 +3383,10 @@ exports.getResellerAsServicerClaims = async (req, res) => {
 
         let servicerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer?._id))
         servicerIds.push(new mongoose.Types.ObjectId(resellerId))
+        servicerIds.push(servicerIdToCheck)
         servicerMatch = {
             $or: [
-                { "servicerId": { $in: servicerIds } }
+                { "servicerId": { $in: servicerIds  } }
             ]
         };
         // if (data.servicerName != '' && data.servicerName != undefined) {
