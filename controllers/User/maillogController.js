@@ -12,16 +12,20 @@ exports.webhookData = async (req, res) => {
             let webhookData = data[i]
             let splitId = webhookData.sg_message_id.split('.')[0]
             let findLog = await mailLogService.getMailLog({ email: webhookData.email, sg_message_id: { '$regex': splitId ? splitId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
-            findLog.sg_event_id = webhookData.sg_event_id
-            findLog.event = webhookData.event
-            findLog.response = webhookData.response
-            let newValues = {
-                $set: {
-                    findLog
+            console.log(findLog, webhookData, splitId, "+++++++++++++++++++++++++++++++++++++++++++++")
+            if (findLog) {
+                findLog.sg_event_id = webhookData.sg_event_id
+                findLog.event = webhookData.event
+                findLog.response = webhookData.response
+                let newValues = {
+                    $set: {
+                        findLog
+                    }
                 }
+                let updateData = await mailLogService.updateMailLog({ _id: findLog._id }, newValues)
+                console.log("update data")
             }
-            let updateData = await mailLogService.updateMailLog({ _id: findLog._id }, newValues)
-            console.log("update data")
+
         }
         res.send({
             code: constant.successCode
@@ -29,7 +33,7 @@ exports.webhookData = async (req, res) => {
     } catch (err) {
         console.log("catch errr:-", err.message)
         res.send({
-            message: err.message
+            message: err.stack
         })
     }
 }
