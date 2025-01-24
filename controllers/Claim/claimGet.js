@@ -300,7 +300,7 @@ exports.getAllClaims = async (req, res, next) => {
       }
     }
     let lookupQuery = [
-      { $sort: { createdAt: -1 } },
+      { $sort: { unique_key_number: -1 } },
       {
         $match:
         {
@@ -493,11 +493,8 @@ exports.getAllClaims = async (req, res, next) => {
       if (item1.servicerId != null) {
         servicerName = servicer.find(servicer => servicer?._id?.toString() === item1.servicerId?.toString());
         let checkItselfServicer = await servicerService.getServiceProviderById({ _id: item1.servicerId })
-        // console.log("checkItselfServicer-------------------",checkItselfServicer)
-        // console.log("dealerId-------------------",item1.contracts?.orders?.dealerId)
         selfServicer = req.role == "Customer" ? false : checkItselfServicer?.dealerId?.toString() === item1.contracts?.orders?.dealerId.toString() ? true : false;
-        // selfResellerServicer = item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString();
-        selfResellerServicer = checkItselfServicer?.resellerId?.toString() === item1.contracts?.orders?.resellerId?.toString();
+        selfResellerServicer = checkItselfServicer?.resellerId?.toString() === item1.contracts?.orders?.resellerId?.toString() ? true : false;
       }
 
       if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {

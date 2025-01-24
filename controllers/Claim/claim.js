@@ -3053,6 +3053,8 @@ exports.saveBulkClaim = async (req, res) => {
 
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
 
+
+
       let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
       let checkSerialCache = {};
       //Filter data which is contract , servicer and not active
@@ -3065,7 +3067,6 @@ exports.saveBulkClaim = async (req, res) => {
           const claimData = claimArray;
           const servicerData = servicerArray == undefined || servicerArray == null ? allDataArray[0]?.order?.servicer : servicerArray[i]
           let flag;
-
           item.contractData = contractData;
           item.claimType = ''
           item.servicerData = servicerData;
@@ -3227,32 +3228,38 @@ exports.saveBulkClaim = async (req, res) => {
           }
 
           if (allDataArray.length > 0 && servicerData) {
-
             flag = false;
             if (allDataArray[0]?.order.dealer.dealerServicer.length > 0) {
               //Find Servicer with dealer Servicer
               const servicerCheck = allDataArray[0]?.order.dealer.dealerServicer.find(item => item.servicerId?.toString() === servicerData._id?.toString())
               if (servicerCheck) {
-
                 flag = true
               }
-            }
-            //Check dealer itself servicer
-            if (allDataArray[0]?.order.dealer?.isServicer && allDataArray[0]?.order.dealer?.accountStatus && allDataArray[0]?.order.dealer._id?.toString() === servicerData.dealerId?.toString()) {
+              //Check Dealer itself servicer
+              if (allDataArray[0]?.order.dealer?.isServicer && allDataArray[0]?.order.dealer?.accountStatus && allDataArray[0]?.order.dealer._id?.toString() === servicerData.dealerId?.toString()) {
+                flag = true
 
-              flag = true
-            }
+              }
+              //Check Dealer Reseller servicer
+              let dealerResellerServicer = await resellerService.getResellers({ dealerId: allDataArray[0]?.order.dealer._id, isServicer: true, status: true })
+              let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
+              if (dealerResellerServicer.length > 0) {       
 
-            if (allDataArray[0]?.order.reseller?.isServicer && allDataArray[0]?.order.reseller?.status && allDataArray[0]?.order.reseller?._id?.toString() === servicerData.resellerId?.toString()) {
-
-              flag = true
+                let dealerResellerServicer = await servicerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
+                let exists = dealerResellerServicer.some(item => item?._id?.toString() === servicerData?._id?.toString());
+                if(exists){
+                  flag = true
+                } 
+              }
             }
           }
+
           if ((item?.servicerName != '' && !servicerData)) {
             flag = false
           }
-          if ((!flag && flag != undefined && item.hasOwnProperty("servicerName") && req.role == "Admin")) {
+          if ((!flag && flag != undefined && item.hasOwnProperty("servicerName") && req.role == "Super Admin")) {
             item.status = "Servicer not found"
+            item.exit = true;
           }
           if (contractData && contractData.status != "Active") {
             item.status = "Contract is not active";
@@ -3262,8 +3269,12 @@ exports.saveBulkClaim = async (req, res) => {
         } else {
           item.contractData = null
           item.servicerData = null
-        }
+        } 
       }
+
+      // console.log("totalDataComing-----------------------------",totalDataComing)
+      // return;
+      // return;
       let finalArray = []
       //Save bulk claim
 
@@ -4415,7 +4426,6 @@ exports.statusClaim = async (req, res) => {
       const latestServicerShippedDate = new Date(latestServicerShipped);
       const sevenDaysAfterShippedDate = new Date(latestServicerShippedDate);
       sevenDaysAfterShippedDate.setDate(sevenDaysAfterShippedDate.getDate() + 14);
-
       if (new Date() === sevenDaysAfterShippedDate || new Date() > sevenDaysAfterShippedDate) {
         // Update status for track status
         messageData.trackStatus = [

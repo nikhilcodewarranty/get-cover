@@ -1115,7 +1115,7 @@ exports.createOrder1 = async (req, res) => {
         const base_url = `${process.env.SITE_URL}`
         let notificationData;
         let notificationArrayData = []
-        let notificationEmails
+        let notificationEmails;
         let emailData;
         let projection = { isDeleted: 0 };
         let settingData = await userService.getSetting({});
@@ -1871,8 +1871,10 @@ exports.createOrder1 = async (req, res) => {
                         let resellerEmails = resellerUsers.map(user => user.email)
                         let customerEmails = customerUsers.map(user => user.email)
                         let mergedEmail = notificationEmails.concat(dealerEmails, resellerEmails, customerEmails)
-
                         console.log("dealerEmails------------------", dealerEmails);
+                        console.log("notificationEmails------------------", notificationEmails);
+                        console.log("resellerEmails------------------", resellerEmails); 
+                        console.log("customerEmails------------------", customerEmails);
                         //Email to Dealer
                         let emailData = {
                             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -1931,6 +1933,9 @@ exports.createOrder1 = async (req, res) => {
             return
 
         } else {
+            console.log("notificationEmails------------------",notificationEmails)
+            console.log("dealerEmails------------------",dealerEmails)
+            console.log("resellerEmails------------------",resellerEmails)
             let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
             emailData.redirectId = base_url + "dealer/editOrder/" + savedResponse._id
             mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))

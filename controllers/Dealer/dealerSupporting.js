@@ -1764,7 +1764,6 @@ exports.getDealerServicers = async (req, res) => {
         let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
         if (dealerResellerServicer.length > 0) {
             let dealerResellerServicer = await servicerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
-
             servicer = servicer.concat(dealerResellerServicer);
         }
         if (checkDealer.isServicer) {
@@ -1867,13 +1866,17 @@ exports.getDealerServicers = async (req, res) => {
                 item1?.resellerId?.toString() === matchingItem?.metaId?.toString();
             const claimValue = valueClaim.find(claim => claim._id?.toString() === item1._id?.toString())
             const claimNumber = numberOfClaims.find(claim => claim._id?.toString() === item1._id?.toString())
-
+            const filtered = resellerIds.filter(id => id.toString() === item1?.resellerId?.toString());
+            let matchDealerSelf = req.params.dealerId.toString()===item1?.dealerId?.toString()
+            // let isAction = resellerIds.find(resellerId=>resellerId?.toString()===item1?.resellerId.toString())
+            // console.log("isAction=============",isAction)
             if (matchingItem) {
                 return {
                     ...matchingItem, // Use toObject() to convert Mongoose document to plain JavaScript object
                     servicerData: {
                         ...item1.toObject(),
-                        isServicer: isServicer ? true : false
+                        isServicer: isServicer ? true : false,
+                        actionShow: filtered.length > 0 || matchDealerSelf ? false : true
                     },
                     claimNumber: claimNumber ? claimNumber : 0,
                     claimValue: claimValue ? claimValue : 0

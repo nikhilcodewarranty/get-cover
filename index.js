@@ -101,10 +101,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 var cron = require('node-cron');
 
-var cronOptions = {
-  'method': 'POST',
-  'url': `${process.env.API_ENDPOINT}api-v1/order/cronJobStatus`,
-};
+// var cronOptions = {
+//   'method': 'POST',
+//   'url': `${process.env.API_ENDPOINT}api-v1/order/cronJobStatus`,
+// };
 
 cron.schedule('2 0 * * *', () => {
   axios.get(`${process.env.API_ENDPOINT}api-v1/order/cronJobStatus`)   //live
