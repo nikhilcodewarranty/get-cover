@@ -3,7 +3,6 @@ const constant = require("../../config/constant")
 const maillogservice = require("../../services/User/maillogServices");
 
 
-console.log("sljdhlsjflskdjflksjdflksjdf")
 exports.webhookData = async (req, res) => {
     console.log("+++++++++++++++++++++++++++++++++++++++++++++")
     try {
@@ -24,7 +23,6 @@ exports.webhookData = async (req, res) => {
                         response : webhookData.response
                     }
                 }
-                console.log(findLog, webhookData, "+++++++++++++++++++++++++++++++++++++++++++++")
                 let updateData = await mailLogService.updateMailLog({ _id: findLog._id }, newValues)
                 console.log("update data")
             }
