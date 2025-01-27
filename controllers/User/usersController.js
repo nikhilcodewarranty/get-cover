@@ -1625,6 +1625,11 @@ exports.deleteUser = async (req, res) => {
     let notificationData;
     let notificationArray = [];
     let notificationEmails
+    let adminUsers;
+    let dealerUsers;
+    let resellerUsers;
+    let customerUsers;
+    let servicerUsers;
     let resellerEmails;
     let dealerEmails
     let servicerEmails
@@ -1655,8 +1660,8 @@ exports.deleteUser = async (req, res) => {
           }
         },
       }
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDeleteQuery, { email: 1, metaData: 1 })
-      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerDeleteQuery, { email: 1, metaData: 1 })
+       adminUsers = await supportingFunction.getNotificationEligibleUser(adminDeleteQuery, { email: 1, metaData: 1 })
+       servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerDeleteQuery, { email: 1, metaData: 1 })
       const IDs = adminUsers.map(user => user._id)
       const servicerIds = servicerUsers.map(user => user._id)
       notificationEmails = adminUsers.map(user => user.email);
@@ -1742,7 +1747,6 @@ exports.deleteUser = async (req, res) => {
     }
     if (checkReseller) {
       const dealerData = await dealerService.getDealerById(checkReseller.dealerId)
-
       adminDeleteQuery = {
         metaData: {
           $elemMatch: {
@@ -1776,9 +1780,9 @@ exports.deleteUser = async (req, res) => {
           }
         },
       }
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDeleteQuery, { email: 1, metaData: 1 })
-      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDeleteQuery, { email: 1, metaData: 1 })
-      let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerDeleteQuery, { email: 1, metaData: 1 })
+       adminUsers = await supportingFunction.getNotificationEligibleUser(adminDeleteQuery, { email: 1, metaData: 1 })
+       dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDeleteQuery, { email: 1, metaData: 1 })
+       resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerDeleteQuery, { email: 1, metaData: 1 })
       const IDs = adminUsers.map(user => user._id)
       const dealerId = dealerUsers.map(user => user._id)
       const resellerId = resellerUsers.map(user => user._id)
@@ -1872,10 +1876,10 @@ exports.deleteUser = async (req, res) => {
           }
         },
       }
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDeleteQuery, { email: 1, metaData: 1 })
-      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDeleteQuery, { email: 1, metaData: 1 })
-      let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerDeleteQuery, { email: 1, metaData: 1 })
-      let customerUsers = await supportingFunction.getNotificationEligibleUser(customerDeleteQuery, { email: 1, metaData: 1 })
+       adminUsers = await supportingFunction.getNotificationEligibleUser(adminDeleteQuery, { email: 1, metaData: 1 })
+       dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDeleteQuery, { email: 1, metaData: 1 })
+       resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerDeleteQuery, { email: 1, metaData: 1 })
+       customerUsers = await supportingFunction.getNotificationEligibleUser(customerDeleteQuery, { email: 1, metaData: 1 })
 
       const IDs = adminUsers.map(user => user._id)
       const dealerId = dealerUsers.map(user => user._id)
@@ -2448,7 +2452,7 @@ exports.addMembers = async (req, res) => {
           }
         },
       }
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminAddMemberyQuery, { email: 1 })
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminAddMemberyQuery, { email: 1, metaData: 1 })
       const IDs = adminUsers.map(user => user._id)
       let notificationData = {
         title: "New Admin User added",
@@ -2464,7 +2468,6 @@ exports.addMembers = async (req, res) => {
     }
     if (req.role == "Dealer") {
       let checkDealer = await dealerService.getDealerByName({ _id: req.userId }, {})
-
       const adminDealerQuery = {
         metaData: {
           $elemMatch: {
@@ -2487,8 +2490,8 @@ exports.addMembers = async (req, res) => {
           }
         },
       }
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerQuery, { email: 1 })
-      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDealerQuery, { email: 1 })
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerQuery, { email: 1, metaData: 1 })
+      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDealerQuery, { email: 1, metaData: 1 })
       const IDs = adminUsers.map(user => user._id)
       const IDs1 = dealerUsers.map(user => user._id)
       let notificationData = {
