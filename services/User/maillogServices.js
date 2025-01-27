@@ -72,6 +72,7 @@ module.exports = class mailLogService {
                     let maillog = await MAILLOG(mailLogObject).save()
                     // console.log("checking the save data +++++++", mailLogObject)
                 }
+                console.log("i am hererrrrrrrrrrrrrrrrrrrrrr------------------------")
                 return { code: 200, message: "Success" }
             } else {
                 console.log("--------------error------------------------------")
