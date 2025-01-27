@@ -748,11 +748,11 @@ exports.updateUserData = async (req, res) => {
         }
         let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
         // notificationEmails1.concat(adminUsers,servicerUsers)
-        maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+       await maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
 
         // emailData.senderName = `Dear ${updateUser.metaData[0].firstName}`
         mailing = await sgMail.send(emailConstant.sendEmailTemplate(servicerEmails, ['noreply@getcover.com'], emailData))
-        maillogservice.createMailLogFunction(mailing, emailData, servicerUsers, process.env.update_status)
+        await maillogservice.createMailLogFunction(mailing, emailData, servicerUsers, process.env.update_status)
 
       }
       else {
@@ -1023,13 +1023,13 @@ exports.updateUserData = async (req, res) => {
           subject: "Update User Info"
         }
         let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
-        maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+        await maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
         emailData.senderName = ``
         mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
-        maillogservice.createMailLogFunction(mailing, emailData, dealerUsers, process.env.update_status)
+        await maillogservice.createMailLogFunction(mailing, emailData, dealerUsers, process.env.update_status)
         // emailData.senderName = `Dear ${updateUser.metaData[0].firstName}`
         mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ['noreply@getcover.com'], emailData))
-        maillogservice.createMailLogFunction(mailing, emailData, resellerUsers, process.env.update_status)
+        await maillogservice.createMailLogFunction(mailing, emailData, resellerUsers, process.env.update_status)
 
       }
       else {

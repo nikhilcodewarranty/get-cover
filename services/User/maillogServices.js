@@ -20,7 +20,7 @@ module.exports = class mailLogService {
     static async createMailLogFunction(dataFromSendgrid, dataFromApi, emails, templateId) {
         try {
             let body = dataFromSendgrid[0]
-            console.log(body, dataFromApi, "******************")
+            // console.log(body, dataFromApi, "******************")
             let mailContent = await axios.get(`https://api.sendgrid.com/v3/templates/${templateId}`, {
                 headers: {
                     Authorization: `Bearer ${process.env.sendgrid_key}`,
@@ -36,10 +36,10 @@ module.exports = class mailLogService {
                     let role = checkRole.role
                     let userId = emails[i]?.metaData[0]._id
                     let accountName
-                    console.log("******************", emails[i])
+                    // console.log("******************", emails[i])
                     if (checkRole.role == "Dealer") {
                         let getAccountName = await dealerService.findOne({ _id: emails[i]?.metaData[0].metaId })
-                        console.log("***********fffff*******", getAccountName)
+                        // console.log("***********fffff*******", getAccountName)
                         accountName = getAccountName.name
                     }
                     if (checkRole.role == "Super Admin") {
@@ -74,6 +74,7 @@ module.exports = class mailLogService {
                 }
                 return { code: 200, message: "Success" }
             } else {
+                console.log("--------------error------------------------------")
                 return { code: 401, message: "Mail not sent" }
             }
 
