@@ -663,16 +663,10 @@ exports.updateUserData = async (req, res) => {
 
     //Get role by id
     const checkRole = await userService.getRoleById({ _id: updateUser.metaData[0].roleId }, {});
-
     const checkDealer = await dealerService.getDealerById(updateUser.metaData[0].metaId)
-
     const checkReseller = await resellerService.getReseller({ _id: updateUser.metaData[0].metaId }, { isDeleted: false })
-
     const checkCustomer = await customerService.getCustomerById({ _id: updateUser.metaData[0].metaId })
-
     const checkServicer = await providerService.getServiceProviderById({ _id: updateUser.metaData[0].metaId })
-
-
     const status_content = req.body.status ? 'Active' : 'Inactive';
 
     //send notification to dealer when status change
@@ -683,6 +677,7 @@ exports.updateUserData = async (req, res) => {
     let notificationArray = []
     let mergedEmail
     let notificationEmails;
+    let notificationEmails1 = [];
     const content = req.body.status ? 'Congratulations, you can now login to our system. Please click the following link to login to the system' : "Your account has been made inactive. If you think, this is a mistake, please contact our support team at support@getcover.com"
     let resetPasswordCode = randtoken.generate(4, '123456789')
 
@@ -710,12 +705,13 @@ exports.updateUserData = async (req, res) => {
           }
         },
       }
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdatePrimaryQuery, { email: 1 })
-      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerUpdatePrimaryQuery, { email: 1 })
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdatePrimaryQuery, { email: 1, metaData: 1 })
+      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerUpdatePrimaryQuery, { email: 1, metaData: 1 })
       const IDs = adminUsers.map(user => user._id)
       const servicerId = servicerUsers.map(user => user._id)
       const servicerEmails = servicerUsers.map(user => user.email)
       notificationEmails = adminUsers.map(user => user.email)
+      notificationEmails1 = adminUsers.map(user => user.email)
       mergedEmail = notificationEmails.concat(servicerEmails);
       if (data.firstName) {
         notificationData = {
@@ -752,7 +748,8 @@ exports.updateUserData = async (req, res) => {
           subject: "Update User Info"
         }
         let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
-        maillogservice.createMailLogFunction(mailing, emailData, notificationEmails, process.env.update_status)
+        notificationEmails1.concat(adminUsers,servicerUsers)
+        maillogservice.createMailLogFunction(mailing, emailData, notificationEmails1, process.env.update_status)
 
         // emailData.senderName = `Dear ${updateUser.metaData[0].firstName}`
         mailing = await sgMail.send(emailConstant.sendEmailTemplate(servicerEmails, ['noreply@getcover.com'], emailData))
