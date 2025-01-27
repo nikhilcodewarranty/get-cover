@@ -809,12 +809,12 @@ exports.updateUserData = async (req, res) => {
           mailing = await sgMail.send(emailConstant.sendEmailTemplate(servicerEmails, ['noreply@getcover.com'], emailData))
           maillogservice.createMailLogFunction(mailing, emailData, servicerUsers, process.env.update_status)
         }
-       
+
         if (notificationEmails.length > 0) {
           mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
           maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
         }
-      
+
       }
 
     }
@@ -1987,20 +1987,31 @@ exports.deleteUser = async (req, res) => {
       content: "Your account has been deleted by Get-Cover team.",
       subject: "Delete User"
     }
-    let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-    maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+    if (notificationEmails.length > 0) {
+      let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+      maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+    }
 
-    mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
-    maillogservice.createMailLogFunction(mailing, emailData, dealerUsers, process.env.update_status)
+    if (dealerEmails.length > 0) {
+      mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
+      maillogservice.createMailLogFunction(mailing, emailData, dealerUsers, process.env.update_status)
+    }
 
-    mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ["noreply@getcover.com"], emailData))
-    maillogservice.createMailLogFunction(mailing, emailData, resellerUsers, process.env.update_status)
+    if (resellerEmails.length > 0) {
+      mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ["noreply@getcover.com"], emailData))
+      maillogservice.createMailLogFunction(mailing, emailData, resellerUsers, process.env.update_status)
+    }
 
-    mailing = await sgMail.send(emailConstant.sendEmailTemplate(customerEmails, ["noreply@getcover.com"], emailData))
-    maillogservice.createMailLogFunction(mailing, emailData, customerUsers, process.env.update_status)
+    if (customerEmails.length > 0) {
+      mailing = await sgMail.send(emailConstant.sendEmailTemplate(customerEmails, ["noreply@getcover.com"], emailData))
+      maillogservice.createMailLogFunction(mailing, emailData, customerUsers, process.env.update_status)
+    }
 
-    mailing = await sgMail.send(emailConstant.sendEmailTemplate(servicerEmails, ["noreply@getcover.com"], emailData))
-    maillogservice.createMailLogFunction(mailing, emailData, servicerUsers, process.env.update_status)
+
+    if (servicerEmails.length > 0) {
+      mailing = await sgMail.send(emailConstant.sendEmailTemplate(servicerEmails, ["noreply@getcover.com"], emailData))
+      maillogservice.createMailLogFunction(mailing, emailData, servicerUsers, process.env.update_status)
+    }
 
 
     //Save Logs delete user
