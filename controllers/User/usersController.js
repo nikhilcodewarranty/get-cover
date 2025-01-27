@@ -1,5 +1,6 @@
 require("dotenv").config();
 const userService = require("../../services/User/userService");
+const maillogservice = require("../../services/User/maillogServices");
 const customerService = require("../../services/Customer/customerService");
 const dealerService = require('../../services/Dealer/dealerService')
 const resellerService = require('../../services/Dealer/resellerService')
@@ -750,9 +751,12 @@ exports.updateUserData = async (req, res) => {
           content: "The user information has been updated successfully!",
           subject: "Update User Info"
         }
-        letmailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+        let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+        maillogservice.createMailLogFunction(mailing, emailData, notificationEmails, process.env.update_status)
+
         // emailData.senderName = `Dear ${updateUser.metaData[0].firstName}`
-       mailing = await sgMail.send(emailConstant.sendEmailTemplate(servicerEmails, ['noreply@getcover.com'], emailData))
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(servicerEmails, ['noreply@getcover.com'], emailData))
+        maillogservice.createMailLogFunction(mailing, emailData, servicerEmails, process.env.update_status)
 
       }
       else {
@@ -789,7 +793,9 @@ exports.updateUserData = async (req, res) => {
           subject: "Update Status",
           redirectId: status_content == "Active" ? resetLink : '',
         }
-        letmailing = await sgMail.send(emailConstant.sendEmailTemplate(updateUser.email, ['noreply@getcover.com'], emailData))
+        let mailing = await sgMail.send(emailConstant.sendEmailTemplate(updateUser.email, ['noreply@getcover.com'], emailData))
+        maillogservice.createMailLogFunction(mailing, emailData, updateUser.email, process.env.update_status)
+
         emailData = {
           darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
           lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -799,8 +805,12 @@ exports.updateUserData = async (req, res) => {
           content: `Status has been changed to  ${status_content} for ${updateUser.metaData[0].firstName + " " + updateUser.metaData[0].lastName}`,
           subject: "Update Status"
         }
-       mailing = await sgMail.send(emailConstant.sendEmailTemplate(servicerEmails, ['noreply@getcover.com'], emailData))
-       mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(servicerEmails, ['noreply@getcover.com'], emailData))
+        maillogservice.createMailLogFunction(mailing, emailData, servicerEmails, process.env.update_status)
+
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+        maillogservice.createMailLogFunction(mailing, emailData, notificationEmails, process.env.update_status)
+
       }
 
     }
@@ -868,9 +878,11 @@ exports.updateUserData = async (req, res) => {
           content: "The user information has been updated successfully!",
           subject: "Update User Info"
         }
-        letmailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+        let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+        maillogservice.createMailLogFunction(mailing, emailData, notificationEmails, process.env.update_status)
         // emailData.senderName = `Dear ${updateUser.metaData[0].firstName}`
-       mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
+        maillogservice.createMailLogFunction(mailing, emailData, dealerEmails, process.env.update_status)
       }
       else {
         notificationData = {
@@ -907,7 +919,8 @@ exports.updateUserData = async (req, res) => {
           subject: "Update Status",
           redirectId: status_content == "Active" ? resetLink : '',
         }
-        letmailing = await sgMail.send(emailConstant.sendEmailTemplate(updateUser.email, ['noreply@getcover.com'], emailData))
+        let mailing = await sgMail.send(emailConstant.sendEmailTemplate(updateUser.email, ['noreply@getcover.com'], emailData))
+        maillogservice.createMailLogFunction(mailing, emailData, updateUser.email, process.env.update_status)
         emailData = {
           darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
           lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -917,8 +930,10 @@ exports.updateUserData = async (req, res) => {
           content: `Status has been changed to  ${status_content} for ${updateUser.metaData[0].firstName + " " + updateUser.metaData[0].lastName}`,
           subject: "Update Status"
         }
-       mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
-       mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
+        maillogservice.createMailLogFunction(mailing, emailData, dealerEmails, process.env.update_status)
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+        maillogservice.createMailLogFunction(mailing, emailData, notificationEmails, process.env.update_status)
       }
     }
     if (checkReseller) {
@@ -1012,11 +1027,12 @@ exports.updateUserData = async (req, res) => {
           content: "The user information has been updated successfully!",
           subject: "Update User Info"
         }
-        letmailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+        let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+        maillogservice.createMailLogFunction(mailing, emailData, notificationEmails, process.env.update_status)
         emailData.senderName = ``
-       mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
         // emailData.senderName = `Dear ${updateUser.metaData[0].firstName}`
-       mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ['noreply@getcover.com'], emailData))
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ['noreply@getcover.com'], emailData))
       }
       else {
         notificationData = {
@@ -1066,7 +1082,7 @@ exports.updateUserData = async (req, res) => {
           subject: "Update Status",
           redirectId: status_content == "Active" ? resetLink : '',
         }
-        letmailing = await sgMail.send(emailConstant.sendEmailTemplate(updateUser.email, ['noreply@getcover.com'], emailData))
+        let mailing = await sgMail.send(emailConstant.sendEmailTemplate(updateUser.email, ['noreply@getcover.com'], emailData))
         emailData = {
           darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
           lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -1076,9 +1092,9 @@ exports.updateUserData = async (req, res) => {
           content: `Status has been changed to  ${status_content} for ${updateUser.metaData[0].firstName + " " + updateUser.metaData[0].lastName}`,
           subject: "Update Status"
         }
-       mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
-       mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
-       mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ['noreply@getcover.com'], emailData))
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ['noreply@getcover.com'], emailData))
       }
     }
     if (checkCustomer) {
@@ -1206,13 +1222,13 @@ exports.updateUserData = async (req, res) => {
           content: "The user information has been updated successfully!",
           subject: "Update User Info"
         }
-        letmailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+        let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
         // emailData.senderName = `Dear ${updateUser.metaData[0].firstName}`
-       mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
         // emailData.senderName = `Dear ${updateUser.metaData[0].firstName}`
-       mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ['noreply@getcover.com'], emailData))
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ['noreply@getcover.com'], emailData))
         // emailData.senderName = `Dear ${updateUser.metaData[0].firstName}`
-       mailing = await sgMail.send(emailConstant.sendEmailTemplate(customerEmails, ['noreply@getcover.com'], emailData))
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(customerEmails, ['noreply@getcover.com'], emailData))
 
       }
       else {
@@ -1275,7 +1291,7 @@ exports.updateUserData = async (req, res) => {
           subject: "Update Status",
           redirectId: status_content == "Active" ? resetLink : '',
         }
-        letmailing = await sgMail.send(emailConstant.sendEmailTemplate(updateUser.email, ['noreply@getcover.com'], emailData))
+        let mailing = await sgMail.send(emailConstant.sendEmailTemplate(updateUser.email, ['noreply@getcover.com'], emailData))
         emailData = {
           darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
           lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -1285,10 +1301,10 @@ exports.updateUserData = async (req, res) => {
           content: `Status has been changed to  ${status_content} for ${updateUser.metaData[0].firstName + " " + updateUser.metaData[0].lastName}`,
           subject: "Update Status"
         }
-       mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
-       mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
-       mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ['noreply@getcover.com'], emailData))
-       mailing = await sgMail.send(emailConstant.sendEmailTemplate(customerEmails, ['noreply@getcover.com'], emailData))
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ['noreply@getcover.com'], emailData))
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(customerEmails, ['noreply@getcover.com'], emailData))
       }
     }
     let getPrimary = await supportingFunction.getPrimaryUser({
@@ -1912,11 +1928,11 @@ exports.deleteUser = async (req, res) => {
       content: "Your account has been deleted by Get-Cover team.",
       subject: "Delete User"
     }
-    letmailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-   mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
-   mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ["noreply@getcover.com"], emailData))
-   mailing = await sgMail.send(emailConstant.sendEmailTemplate(customerEmails, ["noreply@getcover.com"], emailData))
-   mailing = await sgMail.send(emailConstant.sendEmailTemplate(servicerEmails, ["noreply@getcover.com"], emailData))
+    let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+    mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
+    mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ["noreply@getcover.com"], emailData))
+    mailing = await sgMail.send(emailConstant.sendEmailTemplate(customerEmails, ["noreply@getcover.com"], emailData))
+    mailing = await sgMail.send(emailConstant.sendEmailTemplate(servicerEmails, ["noreply@getcover.com"], emailData))
 
     //Save Logs delete user
     let logData = {
@@ -3448,7 +3464,7 @@ exports.contactUs = async (req, res) => {
     }
 
     //Send email to user
-    letmailing = await sgMail.send(emailConstant.sendContactUsTemplate(data.email, adminCC, emailData))
+    let mailing = await sgMail.send(emailConstant.sendContactUsTemplate(data.email, adminCC, emailData))
 
     //Send to admin
     const admin = await supportingFunction.getPrimaryUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true });
@@ -3468,7 +3484,7 @@ exports.contactUs = async (req, res) => {
 
     }
     //Send email to admin
-   mailing = await sgMail.send(emailConstant.sendContactUsTemplateAdmin(adminCC, ["noreply@getcover.com"], emailData))
+    mailing = await sgMail.send(emailConstant.sendContactUsTemplateAdmin(adminCC, ["noreply@getcover.com"], emailData))
     res.send({
       code: constant.successCode,
       message: "Record save successfully!"

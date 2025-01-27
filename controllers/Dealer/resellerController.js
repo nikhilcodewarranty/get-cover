@@ -179,7 +179,7 @@ exports.createReseller = async (req, res) => {
 
 
         // Send Email code here
-        letmailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+        let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
        mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
 
         if (data.status) {
@@ -1098,7 +1098,7 @@ exports.editResellers = async (req, res) => {
             content: "Your details have been updated. To view the details, please login into your account.",
             subject: "Update Info"
         }
-        letmailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+        let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
        mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
        mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ['noreply@getcover.com'], emailData))
 
@@ -2356,7 +2356,7 @@ exports.changeResellerStatus = async (req, res) => {
                 subject: "Update Status"
             }
 
-            letmailing = await sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, ["noreply@getcover.com"], emailData))
+            let mailing = await sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, ["noreply@getcover.com"], emailData))
 
             emailData = {
                 senderName: singleReseller.name,

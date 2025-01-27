@@ -10,7 +10,8 @@ let claimService = require('../../services/Claim/claimService')
 let userService = require('../../services/User/userService')
 let servicerService = require('../../services/Provider/providerService')
 let orderService = require('../../services/Order/orderService')
-const constant = require("../../config/constant");
+const constant = require("../../config/constant")
+const maillogservice = require("../../services/User/maillogServices");
 const emailConstant = require('../../config/emailConstant');
 const supportingFunction = require('../../config/supportingFunction')
 const { default: mongoose } = require("mongoose");
@@ -209,7 +210,7 @@ exports.createCustomer = async (req, res, next) => {
     }
 
     // Send Email code here
-    letmailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+    let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
    mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
    mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ['noreply@getcover.com'], emailData))
 
@@ -848,7 +849,7 @@ exports.editCustomer = async (req, res) => {
     }
 
 
-    letmailing = await sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ["noreply@getcover.com"], emailData))
+    let mailing = await sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ["noreply@getcover.com"], emailData))
 
     //Save Logs editCustomer
     let logData = {
@@ -1056,7 +1057,7 @@ exports.changePrimaryUser = async (req, res) => {
           notificationFor: servicerId
         };
         notificationArray.push(notificationData)
-        letmailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+        let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
        mailing = await sgMail.send(emailConstant.sendEmailTemplate(servicerEmails, ["noreply@getcover.com"], emailData))
       }
       if (checkDealer) {
@@ -1111,7 +1112,7 @@ exports.changePrimaryUser = async (req, res) => {
         };
         notificationArray.push(notificationData)
         console.log("notificationEmails--------------------------", notificationEmails)
-        letmailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+        let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
        mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
 
 
@@ -1198,7 +1199,7 @@ exports.changePrimaryUser = async (req, res) => {
         notificationArray.push(notificationData)
 
 
-        letmailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+        let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
        mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
        mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ["noreply@getcover.com"], emailData))
 
@@ -1316,7 +1317,7 @@ exports.changePrimaryUser = async (req, res) => {
           notificationFor: customerId
         };
         notificationArray.push(notificationData)
-        letmailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+        let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
        mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
        mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ["noreply@getcover.com"], emailData))
        mailing = await sgMail.send(emailConstant.sendEmailTemplate(customerEmails, ["noreply@getcover.com"], emailData))
@@ -2934,7 +2935,7 @@ exports.createCustomerNew = async (req, res, next) => {
     }
 
     // Send Email code here
-    letmailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+    let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
 
     // if (saveMembers.length > 0) {
     //   if (data.status) {

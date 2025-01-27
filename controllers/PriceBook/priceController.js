@@ -9,7 +9,7 @@ const maillogservice = require("../../services/User/maillogServices")
 const dealerPriceService = require("../../services/Dealer/dealerPriceService");
 const maillogService = require("../../services/User/maillogServices")
 const eligibilityService = require("../../services/Dealer/eligibilityService");
-const constant = require("../../config/constant");
+const constant = require("../../config/constant")
 const randtoken = require('rand-token').generator()
 const mongoose = require('mongoose');
 const logs = require("../../models/User/logs");
@@ -679,7 +679,9 @@ exports.updatePriceBookById = async (req, res, next) => {
         redirectId: base_url + "companyPriceBook/" + existingPriceBook[0]?.name
       }
     }
-    letmailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "noreply@getcover.com", emailData))
+    let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "noreply@getcover.com", emailData))
+    maillogservice.createMailLogFunction(mailing, emailData, notificationEmails, process.env.update_status)
+
     let logData = {
       userId: req.teammateId,
       endpoint: "price/updatePriceBook",
@@ -844,7 +846,8 @@ exports.createPriceBookCat = async (req, res) => {
       content: `A new Price Book Category ${data.name} has been added to the system by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
       subject: "New Category Added"
     }
-    letmailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+    let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+    maillogservice.createMailLogFunction(mailing, emailData, notificationEmails, process.env.update_status)
 
     let logData = {
       userId: req.teammateId,
@@ -1175,7 +1178,9 @@ exports.updatePriceBookCat = async (req, res) => {
       content: "The category " + data.name + " updated successfully.",
       subject: "Update Category"
     }
-    letmailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+    let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+    maillogservice.createMailLogFunction(mailing, emailData, notificationEmails, process.env.update_status)
+
     let logData = {
       userId: req.teammateId,
       endpoint: "price/updatePricebookCat",
@@ -1767,7 +1772,8 @@ exports.uploadRegularPriceBook = async (req, res) => {
           }
         });
         const htmlTableString = convertArrayToHTMLTable(totalDataOriginal1);
-        constmailing = await sgMail.send(emailConstant.sendPriceBookFile(("yashasvi@codenomad.net"), ["anil@codenomad.net"], htmlTableString));
+        let mailing = await sgMail.send(emailConstant.sendPriceBookFile(("yashasvi@codenomad.net"), ["anil@codenomad.net"], htmlTableString));
+        // maillogservice.createMailLogFunction(mailing, htmlTableString, "yashasvi@codenomad.net", process.env.update_status)
 
         res.send({
           code: constant.successCode,
