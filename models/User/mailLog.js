@@ -7,6 +7,14 @@ const mailLogs = new Schema({
         type: String,
         default: ""
     },
+    accountName:{
+        type: String,
+        default:""
+    },
+    role:{
+        type:String,
+        default:null
+    },
     content: {
         type: String,
         default: ""
