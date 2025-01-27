@@ -680,7 +680,7 @@ exports.updatePriceBookById = async (req, res, next) => {
       }
     }
     let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "noreply@getcover.com", emailData))
-    maillogservice.createMailLogFunction(mailing, emailData, notificationEmails, process.env.update_status)
+    maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
 
     let logData = {
       userId: req.teammateId,
@@ -847,7 +847,7 @@ exports.createPriceBookCat = async (req, res) => {
       subject: "New Category Added"
     }
     let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-    maillogservice.createMailLogFunction(mailing, emailData, notificationEmails, process.env.update_status)
+    maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
 
     let logData = {
       userId: req.teammateId,
@@ -1179,7 +1179,7 @@ exports.updatePriceBookCat = async (req, res) => {
       subject: "Update Category"
     }
     let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-    maillogservice.createMailLogFunction(mailing, emailData, notificationEmails, process.env.update_status)
+    maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
 
     let logData = {
       userId: req.teammateId,

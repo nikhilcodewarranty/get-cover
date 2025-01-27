@@ -27,31 +27,34 @@ module.exports = class mailLogService {
                     'Content-Type': 'application/json',
                 },
             })
-            console.log(body.Response, dataFromApi, "******************")
+            console.log("******************")
 
             if (body.statusCode == 202) {
                 for (let i = 0; i < emails.length; i++) {
                     let checkRole = await userService.getRoleById({ _id: emails[i]?.metaData[0].roleId })
-                    let role = checkRole[0].role
+                    console.log("***********fffff*******", checkRole)
+                    let role = checkRole.role
                     let userId = emails[i]?.metaData[0]._id
                     let accountName
-                    if (checkRole[0].role = "Dealer") {
+                    console.log("******************", emails[i])
+                    if (checkRole.role == "Dealer") {
                         let getAccountName = await dealerService.findOne({ _id: emails[i]?.metaData[0].metaId })
+                        console.log("***********fffff*******", getAccountName)
                         accountName = getAccountName.name
                     }
-                    if (checkRole[0].role = "Super Admin") {
+                    if (checkRole.role == "Super Admin") {
                         accountName = emails[i]?.metaData[0].firstName + " " + emails[i]?.metaData[0].lastName
 
                     }
-                    if (checkRole[0].role = "Servicer") {
+                    if (checkRole.role == "Servicer") {
                         let getAccountName = await servicerService.findOne({ _id: emails[i]?.metaData[0].metaId })
                         accountName = getAccountName.name
                     }
-                    if (checkRole[0].role = "Reseller") {
+                    if (checkRole.role == "Reseller") {
                         let getAccountName = await resellerService.findOne({ _id: emails[i]?.metaData[0].metaId })
                         accountName = getAccountName.name
                     }
-                    if (checkRole[0].role = "Customer") {
+                    if (checkRole.role == "Customer") {
                         let getAccountName = await customerService.findOne({ _id: emails[i]?.metaData[0].metaId })
                         accountName = getAccountName.name
                     }
