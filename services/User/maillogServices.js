@@ -56,7 +56,7 @@ module.exports = class mailLogService {
                     }
                     if (checkRole.role == "Customer") {
                         let getAccountName = await customerService.findOne({ _id: emails[i]?.metaData[0].metaId })
-                        accountName = getAccountName.name
+                        accountName = getAccountName.username
                     }
 
                     let mailLogObject = {
