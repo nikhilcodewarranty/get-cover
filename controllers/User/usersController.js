@@ -1660,8 +1660,8 @@ exports.deleteUser = async (req, res) => {
           }
         },
       }
-       adminUsers = await supportingFunction.getNotificationEligibleUser(adminDeleteQuery, { email: 1, metaData: 1 })
-       servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerDeleteQuery, { email: 1, metaData: 1 })
+      adminUsers = await supportingFunction.getNotificationEligibleUser(adminDeleteQuery, { email: 1, metaData: 1 })
+      servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerDeleteQuery, { email: 1, metaData: 1 })
       const IDs = adminUsers.map(user => user._id)
       const servicerIds = servicerUsers.map(user => user._id)
       notificationEmails = adminUsers.map(user => user.email);
@@ -1780,9 +1780,9 @@ exports.deleteUser = async (req, res) => {
           }
         },
       }
-       adminUsers = await supportingFunction.getNotificationEligibleUser(adminDeleteQuery, { email: 1, metaData: 1 })
-       dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDeleteQuery, { email: 1, metaData: 1 })
-       resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerDeleteQuery, { email: 1, metaData: 1 })
+      adminUsers = await supportingFunction.getNotificationEligibleUser(adminDeleteQuery, { email: 1, metaData: 1 })
+      dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDeleteQuery, { email: 1, metaData: 1 })
+      resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerDeleteQuery, { email: 1, metaData: 1 })
       const IDs = adminUsers.map(user => user._id)
       const dealerId = dealerUsers.map(user => user._id)
       const resellerId = resellerUsers.map(user => user._id)
@@ -1876,10 +1876,10 @@ exports.deleteUser = async (req, res) => {
           }
         },
       }
-       adminUsers = await supportingFunction.getNotificationEligibleUser(adminDeleteQuery, { email: 1, metaData: 1 })
-       dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDeleteQuery, { email: 1, metaData: 1 })
-       resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerDeleteQuery, { email: 1, metaData: 1 })
-       customerUsers = await supportingFunction.getNotificationEligibleUser(customerDeleteQuery, { email: 1, metaData: 1 })
+      adminUsers = await supportingFunction.getNotificationEligibleUser(adminDeleteQuery, { email: 1, metaData: 1 })
+      dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDeleteQuery, { email: 1, metaData: 1 })
+      resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerDeleteQuery, { email: 1, metaData: 1 })
+      customerUsers = await supportingFunction.getNotificationEligibleUser(customerDeleteQuery, { email: 1, metaData: 1 })
 
       const IDs = adminUsers.map(user => user._id)
       const dealerId = dealerUsers.map(user => user._id)
@@ -2562,10 +2562,10 @@ exports.addMembers = async (req, res) => {
         },
       }
 
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerQuery, { email: 1 })
-      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDealerQuery, { email: 1 })
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerQuery, { email: 1, metaData: 1 })
+      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDealerQuery, { email: 1, metaData: 1 })
 
-      let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerDealerQuery, { email: 1 })
+      let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerDealerQuery, { email: 1, metaData: 1 })
       const IDs = adminUsers.map(user => user._id)
       const dealerId = dealerUsers.map(user => user._id)
       const resellerId = resellerUsers.map(user => user._id)
@@ -2654,10 +2654,10 @@ exports.addMembers = async (req, res) => {
         },
       }
 
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerQuery, { email: 1 })
-      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDealerQuery, { email: 1 })
-      let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerDealerQuery, { email: 1 })
-      let customerUsers = await supportingFunction.getNotificationEligibleUser(customerDealerQuery, { email: 1 })
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerQuery, { email: 1,metaData: 1 })
+      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDealerQuery, { email: 1,metaData: 1 })
+      let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerDealerQuery, { email: 1,metaData: 1 })
+      let customerUsers = await supportingFunction.getNotificationEligibleUser(customerDealerQuery, { email: 1,metaData: 1 })
       const IDs = adminUsers.map(user => user._id)
       let notificationArray = []
       const dealerId = dealerUsers.map(user => user._id)
@@ -2751,8 +2751,8 @@ exports.addMembers = async (req, res) => {
           }
         },
       }
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminServicerUserQuery, { email: 1 })
-      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerServicerUserQuery, { email: 1 })
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminServicerUserQuery, { email: 1,metaData: 1 })
+      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerServicerUserQuery, { email: 1,metaData: 1 })
       const IDs = adminUsers.map(user => user._id)
       const servicerId = servicerUsers.map(user => user._id)
       if (adminUsers.length > 0) {
@@ -2788,6 +2788,18 @@ exports.addMembers = async (req, res) => {
     let resetPasswordCode = randtoken.generate(4, '123456789')
     let checkPrimaryEmail2 = await userService.updateSingleUser({ email: data.email }, { resetPasswordCode: resetPasswordCode }, { new: true });
     let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
+    let emailData = {
+      flag: "created",
+      link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address, role: req.role == 'Super Admin' ? 'Admin' : req.role,
+      subject: "Set Password",
+      link: resetLink,
+      title: settingData[0]?.title,
+      servicerName: data.firstName,
+      role: req.role == 'Super Admin' ? 'Admin' : req.role,
+      servicerName: data.firstName
+    }
     const resetPassword = sgMail.send(emailConstant.servicerApproval(data.email, {
       flag: "created",
       link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -2800,6 +2812,7 @@ exports.addMembers = async (req, res) => {
       role: req.role == 'Super Admin' ? 'Admin' : req.role,
       servicerName: data.firstName
     }))
+    maillogservice.createMailLogFunction(resetPassword, emailData, [checkPrimaryEmail2], process.env.servicer_approval)
     // // Create the user
     res.send({
       code: constant.successCode,
