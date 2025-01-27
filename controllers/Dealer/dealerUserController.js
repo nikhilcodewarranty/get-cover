@@ -664,7 +664,7 @@ exports.createCustomer = async (req, res, next) => {
         }
 
         // Send Email code here
-        letmailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+        let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
         mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
         mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ['noreply@getcover.com'], emailData))
 
@@ -947,7 +947,7 @@ exports.createReseller = async (req, res) => {
         }
 
         // Send Email code here
-        letmailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+        let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
         mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
 
 
@@ -1344,7 +1344,7 @@ exports.createOrder = async (req, res) => {
             redirectId: base_url + "editOrder/" + savedResponse._id,
         }
         if (req.body.sendNotification) {
-            letmailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+            let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
             emailData.redirectId = base_url + "reseller/editOrder/" + savedResponse._id
            mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ["noreply@getcover.com"], emailData))
             emailData.redirectId = base_url + "dealer/editOrder/" + savedResponse._id
@@ -2024,7 +2024,7 @@ exports.editOrderDetail = async (req, res) => {
                             redirectId: base_url + "orderDetails/" + checkOrder._id,
                         }
                         if (req.body.sendNotification) {
-                            letmailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+                            let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
                             emailData.redirectId = base_url + "dealer/orderDetails/" + checkOrder._id
                            mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
                             emailData.redirectId = base_url + "reseller/orderDetails/" + checkOrder._id
@@ -2163,7 +2163,7 @@ exports.editOrderDetail = async (req, res) => {
             }
             if (req.body.sendNotification) {
                 emailData.redirectId = base_url + "dealer/editOrder/" + checkOrder._id
-                letmailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
+                let mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
                 emailData.redirectId = base_url + "reseller/editOrder/" + checkOrder._id
                mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ["noreply@getcover.com"], emailData))
                 emailData.redirectId = base_url + "editOrder/" + checkOrder._id
@@ -2466,7 +2466,7 @@ async function generateTC(orderData) {
                 redirectId: base_url + "orderDetails/" + checkOrder._id
             }
 
-            letmailing = await sgMail.send(emailConstant.sendTermAndCondition(notificationEmails, ["noreply@getcover.com"], emailData, attachment))
+            let mailing = await sgMail.send(emailConstant.sendTermAndCondition(notificationEmails, ["noreply@getcover.com"], emailData, attachment))
             emailData.redirectId = base_url + "dealer/orderDetails/" + checkOrder._id
            mailing = await sgMail.send(emailConstant.sendTermAndCondition(dealerEmails, ["noreply@getcover.com"], emailData, attachment))
             emailData.redirectId = base_url + "customer/orderDetails/" + checkOrder._id

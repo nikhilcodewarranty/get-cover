@@ -17,7 +17,8 @@ const supportingFunction = require('../../config/supportingFunction')
 let dealerController = require("../../controllers/Dealer/dealerController")
 const jwt = require("jsonwebtoken");
 const emailConstant = require('../../config/emailConstant');
-const constant = require("../../config/constant");
+const constant = require("../../config/constant")
+const maillogservice = require("../../services/User/maillogServices");
 const sgMail = require('@sendgrid/mail');
 const moment = require("moment");
 sgMail.setApiKey(process.env.sendgrid_key);
@@ -1071,7 +1072,7 @@ exports.editClaim = async (req, res) => {
         subject: `Update on Repair Information for Claim  ID ${checkClaim.unique_key}`
       }
       emailData.senderName = "Dear Admin"
-      letmailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+      let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
       emailData.senderName = servicerPrimary ? servicerPrimary.metaData[0]?.firstName : '',
        mailing = await sgMail.send(emailConstant.sendEmailTemplate(servicerEmails, ["noreply@getcover.com"], emailData))
 
@@ -1502,7 +1503,7 @@ exports.editClaimStatus = async (req, res) => {
         subject: `Customer Status Updated for ${checkClaim.unique_key}`,
         redirectId: base_url
       }
-      letmailing = await sgMail.send(emailConstant.sendEmailTemplate(adminEmail, ["noreply@getcover.com"], emailData))
+      let mailing = await sgMail.send(emailConstant.sendEmailTemplate(adminEmail, ["noreply@getcover.com"], emailData))
      mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.com"], emailData))
      mailing = await sgMail.send(emailConstant.sendEmailTemplate(customerEmail, ["noreply@getcover.com"], emailData))
      mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ["noreply@getcover.com"], emailData))
@@ -1721,7 +1722,7 @@ exports.editClaimStatus = async (req, res) => {
         subject: `Repair Status Updated for ${checkClaim.unique_key}`,
         redirectId: base_url
       }
-      letmailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.cover"], emailData))
+      let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.cover"], emailData))
      mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.cover"], emailData))
      mailing = await sgMail.send(emailConstant.sendEmailTemplate(customerEmail, ["noreply@getcover.cover"], emailData))
      mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ["noreply@getcover.cover"], emailData))
@@ -1938,7 +1939,7 @@ exports.editClaimStatus = async (req, res) => {
           content2: `If you believe there has been an error or if you would like further clarification, please feel free to reach out to our support team at support@getcover.com. Our team is here to assist you with any questions you may have.`,
           subject: `Claim Rejection Notice -Claim ID:  ${checkClaim.unique_key}`
         }
-        letmailing = await sgMail.send(emailConstant.sendClaimStatusNotification(sendRejectionDealerNotification, ["noreply@getcover.com"], emailData))
+        let mailing = await sgMail.send(emailConstant.sendClaimStatusNotification(sendRejectionDealerNotification, ["noreply@getcover.com"], emailData))
         emailData = {
           darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
           lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -2014,7 +2015,7 @@ exports.editClaimStatus = async (req, res) => {
           content2: '',
           subject: `Claim Completion Notification – Claim ID:  ${checkClaim.unique_key}`
         }
-        letmailing = await sgMail.send(emailConstant.sendClaimStatusNotification(sendCompletionDealerNotification, ["noreply@getcover.com"], emailData))
+        let mailing = await sgMail.send(emailConstant.sendClaimStatusNotification(sendCompletionDealerNotification, ["noreply@getcover.com"], emailData))
         if (checkReseller) {// if reseller exist for claim
           emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -2615,7 +2616,7 @@ exports.editServicer = async (req, res) => {
 
     }
     emailData.senderName = "Admin"
-    letmailing = await sgMail.send(emailConstant.sendServicerClaimNotification(adminEmail, ["noreply@getcover.com"], emailData))
+    let mailing = await sgMail.send(emailConstant.sendServicerClaimNotification(adminEmail, ["noreply@getcover.com"], emailData))
     emailData.senderName = getPrimary ? getPrimary.metaData[0].firstName : ""
    mailing = await sgMail.send(emailConstant.sendServicerClaimNotification(servicerEmail, ["noreply@getcover.com"], emailData))
     res.send({
@@ -4364,7 +4365,7 @@ exports.sendMessages = async (req, res) => {
       redirectId: base_url
     }
 
-    letmailing = await sgMail.send(emailConstant.sendCommentNotification(emailTo?.email, ["noreply@getcover.com"], emailData))
+    let mailing = await sgMail.send(emailConstant.sendCommentNotification(emailTo?.email, ["noreply@getcover.com"], emailData))
    mailing = await sgMail.send(emailConstant.sendCommentNotification(adminEmail, ["noreply@getcover.com"], emailData))
     res.send({
       code: constant.successCode,
@@ -5577,7 +5578,7 @@ exports.updateClaimDate = async (req, res) => {
     //   content: "The new message for " + "checkClaim.unique_key" + " claim",
     //   subject: "New Message"
     // }
-    // letmailing = await sgMail.send(emailConstant.sendEmailTemplate("anil@codenomad.net", ["amit@codenomad.net"], "emailData"))
+    // let mailing = await sgMail.send(emailConstant.sendEmailTemplate("anil@codenomad.net", ["amit@codenomad.net"], "emailData"))
     // res.send({
     //   mailing
     // })

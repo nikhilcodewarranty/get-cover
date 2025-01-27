@@ -13,7 +13,8 @@ const dealerPriceService = require("../../services/Dealer/dealerPriceService");
 let userService = require('../../services/User/userService')
 let servicerService = require('../../services/Provider/providerService')
 let orderService = require('../../services/Order/orderService')
-const constant = require("../../config/constant");
+const constant = require("../../config/constant")
+const maillogservice = require("../../services/User/maillogServices");
 const { default: mongoose } = require("mongoose");
 const reportingController = require('../../controllers/User/reportingController')
 

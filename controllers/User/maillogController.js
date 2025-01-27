@@ -1,5 +1,6 @@
 const mailLogService = require("../../services/User/maillogServices")
-const constant = require("../../config/constant");
+const constant = require("../../config/constant")
+const maillogservice = require("../../services/User/maillogServices");
 
 
 console.log("sljdhlsjflskdjflksjdflksjdf")
@@ -7,21 +8,23 @@ exports.webhookData = async (req, res) => {
     console.log("+++++++++++++++++++++++++++++++++++++++++++++")
     try {
         let data = req.body
-        console.log(data, "+++++++++++++++++++++++++++++++++++++++++++++")
+        // console.log(data, "+++++++++++++++++++++++++++++++++++++++++++++")
         for (let i = 0; i < data.length; i++) {
             let webhookData = data[i]
             let splitId = webhookData.sg_message_id.split('.')[0]
             let findLog = await mailLogService.getMailLog({ email: webhookData.email, sg_message_id: { '$regex': splitId ? splitId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
-            console.log(findLog, webhookData, splitId, "+++++++++++++++++++++++++++++++++++++++++++++")
             if (findLog) {
                 findLog.sg_event_id = webhookData.sg_event_id
                 findLog.event = webhookData.event
                 findLog.response = webhookData.response
                 let newValues = {
                     $set: {
-                        findLog
+                        sg_event_id : webhookData.sg_event_id,
+                        event : webhookData.event,
+                        response : webhookData.response
                     }
                 }
+                console.log(findLog, webhookData, "+++++++++++++++++++++++++++++++++++++++++++++")
                 let updateData = await mailLogService.updateMailLog({ _id: findLog._id }, newValues)
                 console.log("update data")
             }

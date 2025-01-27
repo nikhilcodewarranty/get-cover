@@ -17,7 +17,8 @@ const claimService = require("../../services/Claim/claimService");
 const pdf = require('html-pdf');
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey('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');
-const constant = require("../../config/constant");
+const constant = require("../../config/constant")
+const maillogservice = require("../../services/User/maillogServices");
 const mongoose = require("mongoose");
 const multer = require("multer");
 const path = require("path");
@@ -1885,7 +1886,7 @@ exports.createOrder1 = async (req, res) => {
                             redirectId: base_url + "orderDetails/" + checkOrder._id
                         }
 
-                        letmailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+                        let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
                         emailData.redirectId = base_url + "dealer/orderDetails/" + checkOrder._id
                        mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
                         emailData.redirectId = base_url + "reseller/orderDetails/" + checkOrder._id
@@ -1931,7 +1932,7 @@ exports.createOrder1 = async (req, res) => {
             return
 
         } else {
-            letmailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+            let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
             emailData.redirectId = base_url + "dealer/editOrder/" + savedResponse._id
            mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
             emailData.redirectId = base_url + "reseller/editOrder/" + savedResponse._id
@@ -3045,7 +3046,7 @@ exports.editOrderDetail = async (req, res) => {
                             redirectId: base_url + "orderDetails/" + checkOrder._id,
                         }
 
-                        letmailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+                        let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
                         emailData.redirectId = base_url + "dealer/orderDetails/" + checkOrder._id
                        mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
                         emailData.redirectId = base_url + "reseller/orderDetails/" + checkOrder._id
@@ -3087,7 +3088,7 @@ exports.editOrderDetail = async (req, res) => {
             });
         } else {
             if (data.sendNotification) {
-                letmailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+                let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
                 emailData.redirectId = base_url + "reseller/editOrder/" + checkOrder._id
                mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ["noreply@getcover.com"], emailData))
                 emailData.redirectId = base_url + "dealer/editOrder/" + checkOrder._id

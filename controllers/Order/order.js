@@ -10,7 +10,8 @@ const servicerService = require("../../services/Provider/providerService");
 const contractService = require("../../services/Contract/contractService");
 const customerService = require("../../services/Customer/customerService");
 const priceBookService = require("../../services/PriceBook/priceBookService");
-const constant = require("../../config/constant");
+const constant = require("../../config/constant")
+const maillogservice = require("../../services/User/maillogServices");
 const dealerPriceService = require("../../services/Dealer/dealerPriceService");
 const userService = require("../../services/User/userService");
 const claimService = require("../../services/Claim/claimService");
@@ -1512,7 +1513,7 @@ exports.archiveOrder = async (req, res) => {
             redirectId: base_url + `archiveOrder/${checkOrder.unique_key}`
         }
         if (checkOrder.sendNotification) {
-            letmailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+            let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
             emailData.redirectId = base_url + `archiveOrder/${checkOrder.unique_key}`
            mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
             emailData.redirectId = base_url + `dealer/archiveOrder/${checkOrder.unique_key}`
@@ -2279,7 +2280,7 @@ exports.markAsPaid = async (req, res) => {
                     redirectId: base_url + "orderDetails/" + checkOrder._id,
                 }
                 if (checkOrder.sendNotification && !checkOrder.termCondition) {
-                    letmailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+                    let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
                     emailData.redirectId = base_url + "dealer/orderDetails/" + checkOrder._id
                    mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
                     emailData.redirectId = base_url + "reseller/orderDetails/" + checkOrder._id
@@ -2937,7 +2938,7 @@ async function generateTC(orderData) {
                 redirectId: base_url + "orderDetails/" + checkOrder._id
             }
 
-            letmailing = await sgMail.send(emailConstant.sendTermAndCondition(notificationEmails, ["noreply@getcover.com"], emailData, attachment))
+            let mailing = await sgMail.send(emailConstant.sendTermAndCondition(notificationEmails, ["noreply@getcover.com"], emailData, attachment))
             emailData.redirectId = base_url + "dealer/orderDetails/" + checkOrder._id
            mailing = await sgMail.send(emailConstant.sendTermAndCondition(dealerEmails, ["noreply@getcover.com"], emailData, attachment))
             emailData.redirectId = base_url + "customer/orderDetails/" + checkOrder._id
