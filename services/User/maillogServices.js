@@ -1,4 +1,9 @@
 const MAILLOG = require("../../models/User/mailLog")
+const userService = require("../../services/User/userService")
+const dealerService = require("../../models/Dealer/dealer")
+const resellerService = require("../../models/Dealer/reseller")
+const servicerService = require("../../models/Provider/serviceProvider")
+const customerService = require("../../models/Customer/customer")
 const axios = require("axios")
 
 
@@ -26,9 +31,37 @@ module.exports = class mailLogService {
 
             if (body.statusCode == 202) {
                 for (let i = 0; i < emails.length; i++) {
+                    let checkRole = await userService.getRoleById({ _id: emails[i]?.metaData[0].roleId })
+                    let role = checkRole[0].role
+                    let userId = emails[i]?.metaData[0]._id
+                    let accountName
+                    if (checkRole[0].role = "Dealer") {
+                        let getAccountName = await dealerService.findOne({ _id: emails[i]?.metaData[0].metaId })
+                        accountName = getAccountName.name
+                    }
+                    if (checkRole[0].role = "Super Admin") {
+                        accountName = emails[i]?.metaData[0].firstName + " " + emails[i]?.metaData[0].lastName
+
+                    }
+                    if (checkRole[0].role = "Servicer") {
+                        let getAccountName = await servicerService.findOne({ _id: emails[i]?.metaData[0].metaId })
+                        accountName = getAccountName.name
+                    }
+                    if (checkRole[0].role = "Reseller") {
+                        let getAccountName = await resellerService.findOne({ _id: emails[i]?.metaData[0].metaId })
+                        accountName = getAccountName.name
+                    }
+                    if (checkRole[0].role = "Customer") {
+                        let getAccountName = await customerService.findOne({ _id: emails[i]?.metaData[0].metaId })
+                        accountName = getAccountName.name
+                    }
+
                     let mailLogObject = {
                         sg_message_id: body.headers['x-message-id'],
-                        email: emails[i],
+                        email: emails[i]?.email,
+                        userId: userId,
+                        accountName: accountName,
+                        role: role,
                         // sentOn: new Date(body.date),
                         keyValues: dataFromApi,
                         content: mailContent?.data?.versions[0]?.html_content

@@ -711,7 +711,6 @@ exports.updateUserData = async (req, res) => {
       const servicerId = servicerUsers.map(user => user._id)
       const servicerEmails = servicerUsers.map(user => user.email)
       notificationEmails = adminUsers.map(user => user.email)
-      notificationEmails1 = adminUsers.map(user => user.email)
       mergedEmail = notificationEmails.concat(servicerEmails);
       if (data.firstName) {
         notificationData = {

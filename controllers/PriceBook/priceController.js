@@ -349,7 +349,7 @@ exports.createPriceBook = async (req, res, next) => {
 
       let mailing = await sgMail.send(emailConstant.sendPriceBookNotification(notificationEmails, [], emailData))
 
-      maillogservice.createMailLogFunction(mailing, emailData, notificationEmails, process.env.price_book)
+      maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.price_book)
       console.log("mail log data ++++++++++++++", mailing)
       let logData = {
         userId: req.teammateId,
