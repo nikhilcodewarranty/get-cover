@@ -5,6 +5,7 @@ const randtoken = require('rand-token').generator()
 const dealerService = require("../../services/Dealer/dealerService");
 const dealerRelationService = require("../../services/Dealer/dealerRelationService");
 const customerService = require("../../services/Customer/customerService");
+const maillogservice = require("../../services/User/maillogServices")
 const dealerPriceService = require("../../services/Dealer/dealerPriceService");
 const priceBookService = require("../../services/PriceBook/priceBookService");
 const dealerRelation = require("../../models/Provider/dealerServicer");
@@ -244,7 +245,7 @@ exports.registerDealer = async (req, res) => {
 
     // Check if the dealer already exists
     const existingDealer = await dealerService.getDealerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') } }, { isDeleted: 0, __v: 0 });
-    console.log("checking the data for dealer ak +++++++++++++++",existingDealer)
+    console.log("checking the data for dealer ak +++++++++++++++", existingDealer)
     if (existingDealer) {
       res.send({
         code: constant.errorCode,
@@ -377,6 +378,7 @@ exports.registerDealer = async (req, res) => {
       role: "Dealer"
     }
     let mailing = await sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
+    await maillogservice.createMailLogFunction(mailing, emailData, [userMetaData], process.env.main_template)
 
     const admin = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true } } })
     const notificationEmail = adminUsers.map(user => user.email)
@@ -389,7 +391,12 @@ exports.registerDealer = async (req, res) => {
       subject: "Notification of New Dealer Registration",
       content: "A new dealer " + createdDealer.name + " has been registered"
     }
-   mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmail, [], emailData))
+    if (notificationEmail.length > 0) {
+      mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmail, [], emailData))
+      await maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+    }
+
+
     let logData = {
       endpoint: "register dealer",
       body: data,
@@ -605,8 +612,14 @@ exports.statusUpdate = async (req, res) => {
       subject: "Update Price Book"
     }
     //check if account create true
-    let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-   mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
+    if (notificationEmails.length > 0) {
+      let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+      await maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+    }
+    if (dealerEmails.length > 0) {
+      mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
+      await maillogservice.createMailLogFunction(mailing, emailData, dealerUsers, process.env.update_status)
+    }
 
 
     let logData = {
@@ -797,6 +810,8 @@ exports.changeDealerStatus = async (req, res) => {
       }
 
       let mailing = await sgMail.send(emailConstant.sendEmailTemplate(primaryUser.email, ["noreply@getcover.com"], emailData))
+      await maillogservice.createMailLogFunction(mailing, emailData, [primaryUser], process.env.update_status)
+
       emailData = {
         senderName: singleDealer.name,
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -808,10 +823,15 @@ exports.changeDealerStatus = async (req, res) => {
         subject: "Update Status"
       }
       emailData.senderName = "Dear Admin"
-     mailing = await sgMail.send(emailConstant.sendEmailTemplate(adminEmails, ["noreply@getcover.com"], emailData))
+      if (adminEmails.length > 0) {
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(adminEmails, ["noreply@getcover.com"], emailData))
+        await maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+      }
       emailData.senderName = `Dear ${primaryUser.metaData[0]?.firstName + "" + primaryUser.metaData[0]?.lastName}`
-     mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
-
+      if (dealerEmails.length > 0) {
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
+        await maillogservice.createMailLogFunction(mailing, emailData, dealerUsers, process.env.update_status)
+      }
       let logData = {
         userId: req.teammateId,
         endpoint: "dealer/changeDealerStatus",
@@ -1005,9 +1025,14 @@ exports.createDealerPriceBook = async (req, res) => {
         content: "The price book name" + " " + checkPriceBookMain[0]?.pName + " has been created successfully! effective immediately.",
         subject: "New Price Book"
       }
-      let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-     mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
-
+      if (notificationEmails.length > 0) {
+        let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+        await maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+      }
+      if (dealerEmails.length > 0) {
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
+        await maillogservice.createMailLogFunction(mailing, emailData, dealerUsers, process.env.update_status)
+      }
       let logData = {
         userId: req.teammateId,
         endpoint: "dealer/createPriceBook",
@@ -1259,8 +1284,13 @@ exports.rejectDealer = async (req, res) => {
       // Send Email code here
       if (singleDealer.isAccountCreate) {
         let mailing = await sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+        await maillogservice.createMailLogFunction(mailing, emailData, [getPrimary], process.env.update_status)
+
       } else {
-        let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+        if (notificationEmails.length > 0) {
+          let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+          await maillogservice.createMailLogFunction(mailing, emailData, [getPrimary], process.env.update_status)
+        }
       }
 
       //Delete the user
@@ -1424,8 +1454,10 @@ exports.updateDealerMeta = async (req, res) => {
       content: "Your details have been updated. To view the details, please login into your account.",
       subject: "Update Info"
     }
-    let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-
+    if (notificationEmails.length > 0) {
+      let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+      await maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+    }
     //Save Logs update dealer
     let logData = {
       userId: req.userId,
@@ -1490,12 +1522,12 @@ exports.updateDealerSetting = async (req, res) => {
       await userService.updateUser({ metaData: { $elemMatch: { metaId: req.params.dealerId } } }, { status: false }, { new: true })
     }
     //Update Meta in servicer also 
-    console.log("typeOf",typeof(data.isServicer))
+    console.log("typeOf", typeof (data.isServicer))
 
     if (data.isServicer) {
       const checkServicer = await servicerService.getServiceProviderById({ dealerId: checkDealerId._id })
       if (!checkServicer) {
-      console.log("if mai")
+        console.log("if mai")
 
         const CountServicer = await servicerService.getServicerCount();
         let servicerObject = {
@@ -1511,12 +1543,12 @@ exports.updateDealerSetting = async (req, res) => {
           unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
         }
         let createData = await servicerService.createServiceProvider(servicerObject)
-        console.log("createData-----------------",createData)
-        console.log("servicerObject-----------------",servicerObject)
+        console.log("createData-----------------", createData)
+        console.log("servicerObject-----------------", servicerObject)
       }
 
       else {
-      console.log("else mai")
+        console.log("else mai")
 
         let criteria = { dealerId: checkDealerId._id }
         let option = { new: true }
@@ -1684,6 +1716,8 @@ exports.addDealerUser = async (req, res) => {
       let userId = saveData._id;
       let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
       let mailing = await sgMail.send(emailConstant.dealerApproval(email, { subject: "Set Password", link: resetLink, role: req.role + " " + "User", dealerName: data.firstName + " " + data?.lastName }))
+      let emailData = { subject: "Set Password", link: resetLink, role: req.role + " " + "User", dealerName: data.firstName + " " + data?.lastName }
+      await maillogservice.createMailLogFunction(mailing, emailData, saveData, process.env.approval_mail)
       let updateStatus = await userService.updateUser({ _id: userId }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
       //Save Logs create Customer
       let logData = {
@@ -2012,7 +2046,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
         let notificationEmails = adminUsers.map(user => user.email)
         let dealerEmails = dealerUsers.map(user => user.email)
         let mailing = await sgMail.send(emailConstant.sendCsvFile(notificationEmails, ["noreply@getcover.com"], htmlTableString));
-       mailing = await sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlTableString));
+        mailing = await sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlTableString));
       }
       res.send({
         code: constant.successCode,
@@ -2307,7 +2341,7 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
       let mailing = await sgMail.send(emailConstant.sendCsvFile(dealerEmail, "noreply@getcover.com", htmlTableString));
 
 
-     mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, "noreply@getcover.com", htmlTableString));
+      mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, "noreply@getcover.com", htmlTableString));
 
 
 

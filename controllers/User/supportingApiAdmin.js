@@ -5,6 +5,8 @@ const dealerPriceService = require('../../services/Dealer/dealerPriceService')
 const priceBookService = require('../../services/PriceBook/priceBookService')
 const providerService = require('../../services/Provider/providerService')
 const users = require("../../models/User/users");
+const maillogservice = require("../../services/User/maillogServices");
+
 const role = require("../../models/User/role");
 const logs = require('../../models/User/logs');
 const setting = require("../../models/User/setting");
@@ -296,7 +298,7 @@ exports.createDealer = async (req, res) => {
 
                 }
 
-                let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
+                let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1, metaData: 1 })
 
                 const IDs = adminUsers.map(user => user._id)
 
@@ -320,8 +322,13 @@ exports.createDealer = async (req, res) => {
                     content: "We are delighted to inform you that the dealer account for " + singleDealer.name + " has been approved.",
                     subject: "Dealer Account Approved - " + singleDealer.name,
                 }
+                let mailing;
+
                 // Send Email code here
-                sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+                if (notificationEmails.length > 0) {
+                    mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+                    maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+                }
 
                 if (req.body.isAccountCreate) {
                     for (let i = 0; i < createUsers.length; i++) {
@@ -331,14 +338,19 @@ exports.createDealer = async (req, res) => {
                             let email = createUsers[i].email;
                             let userId = createUsers[i]._id;
                             let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
-                            sgMail.send(emailConstant.dealerApproval(email, { subject: "Set Password", link: resetLink, role: req.role, dealerName: createUsers[i].metaData[0].firstName + " " + createUsers[i].metaData[0].lastName }))
+                            mailing = await sgMail.send(emailConstant.dealerApproval(email, { subject: "Set Password", link: resetLink, role: req.role, dealerName: createUsers[i].metaData[0].firstName + " " + createUsers[i].metaData[0].lastName }))
+                            let emailData = { subject: "Set Password", link: resetLink, role: req.role, dealerName: createUsers[i].metaData[0].firstName + " " + createUsers[i].metaData[0].lastName }
+                            maillogservice.createMailLogFunction(mailing, emailData, [createUsers[i]], process.env.approval_mail)
+
                             await userService.updateUser({ _id: userId }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
                         }
                     }
                     // Send mail to  primary
                     let resetPrimaryCode = randtoken.generate(4, '123456789')
                     let resetPrimaryLink = `${process.env.SITE_URL}newPassword/${singleDealerUser._id}/${resetPrimaryCode}`
-                    sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { subject: "Set Password", link: resetPrimaryLink, role: req.role, dealerName: singleDealerUser.firstName }))
+                    mailing = await sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { subject: "Set Password", link: resetPrimaryLink, role: req.role, dealerName: singleDealerUser.firstName }))
+                    maillogservice.createMailLogFunction(mailing, { subject: "Set Password", link: resetPrimaryLink, role: req.role, dealerName: singleDealerUser.firstName }, [singleDealerUser], process.env.approval_mail)
+
                     await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPrimaryCode, isResetPassword: true }, { new: true })
 
                 }
@@ -494,7 +506,7 @@ exports.createDealer = async (req, res) => {
 
                 }
 
-                let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
+                let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1, metaData: 1 })
 
                 const IDs = adminUsers.map(user => user._id)
 
@@ -511,7 +523,6 @@ exports.createDealer = async (req, res) => {
                 };
                 let createNotification = await userService.createNotification(notificationData);
 
-                console.log("sdffffffffdsdsddsddfs",typeof(data.isServicer))
                 // Create the user
                 if (data.isServicer && data.isServicer == "true") {
                     const CountServicer = await providerService.getServicerCount();
@@ -568,8 +579,14 @@ exports.createDealer = async (req, res) => {
                     content: "We are delighted to inform you that the dealer account for " + createMetaData.name + " has been created.",
                     subject: "Dealer Account Created - " + createMetaData.name
                 }
+                let mailing;
 
-                sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+                if (notificationEmails.length > 0) {
+                    mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+                    maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+
+                }
+
                 // Send Email code here
                 if (req.body.isAccountCreate) {
                     for (let i = 0; i < createUsers.length; i++) {
@@ -578,7 +595,8 @@ exports.createDealer = async (req, res) => {
                             let email = createUsers[i].email;
                             let userId = createUsers[i]._id;
                             let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
-                            let mailing = await sgMail.send(emailConstant.dealerApproval(email, { subject: "Set Password", link: resetLink, role: req.role, dealerName: createUsers[i].metaData[0].firstName + " " + createUsers[i].metaData[0].lastName }))
+                            mailing = await sgMail.send(emailConstant.dealerApproval(email, { subject: "Set Password", link: resetLink, role: req.role, dealerName: createUsers[i].metaData[0].firstName + " " + createUsers[i].metaData[0].lastName }))
+                            maillogservice.createMailLogFunction(mailing, { subject: "Set Password", link: resetLink, role: req.role, dealerName: createUsers[i].metaData[0].firstName + " " + createUsers[i].metaData[0].lastName }, [createUsers[i]], process.env.approval_mail)
                             let updateStatus = await userService.updateUser({ _id: userId }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
                         }
 
