@@ -347,7 +347,7 @@ exports.registerDealer = async (req, res) => {
 
     }
 
-    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1,metaData:1 })
 
     const IDs = adminUsers.map(user => user._id)
 
@@ -1255,7 +1255,7 @@ exports.rejectDealer = async (req, res) => {
 
       }
 
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1,metaData:1 })
       const IDs = adminUsers.map(user => user._id)
       const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
 
@@ -2479,9 +2479,9 @@ exports.createDeleteRelation = async (req, res) => {
           }
         },
       }
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminAssignServicerQuery, { email: 1 })
-      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerQuery, { email: 1 })
-      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerQuery, { email: 1 })
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminAssignServicerQuery, { email: 1,metaData:1 })
+      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerQuery, { email: 1,metaData:1 })
+      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerQuery, { email: 1,metaData:1 })
 
       const IDs = adminUsers.map(user => user._id)
       const dealerId = dealerUsers.map(user => user._id)
@@ -2639,9 +2639,9 @@ exports.unAssignServicer = async (req, res) => {
           }
         },
       }
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminAssignServicerQuery, { email: 1 })
-      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerQuery, { email: 1 })
-      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerQuery, { email: 1 })
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminAssignServicerQuery, { email: 1,metaData:1 })
+      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerQuery, { email: 1,metaData:1 })
+      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerQuery, { email: 1,metaData:1 })
 
       const IDs = adminUsers.map(user => user._id)
       const dealerId = dealerUsers.map(user => user._id)

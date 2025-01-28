@@ -2179,7 +2179,7 @@ exports.editClaimStatus = async (req, res) => {
           content1: '',
           subject: "Action Notification – Claim Completion Processed"
         }
-        if (sendServicerCompletionNotification.length > 0) {
+        if (sendAdminNotification.length > 0) {
           mailing = await sgMail.send(emailConstant.sendClaimStatusNotification(sendAdminNotification, ['noreply@getcover.com'], emailData))
           maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.claim_status)
         }
