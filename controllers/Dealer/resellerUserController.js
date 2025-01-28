@@ -6,6 +6,7 @@ const contractService = require("../../services/Contract/contractService");
 const resellerService = require("../../services/Dealer/resellerService");
 let claimService = require('../../services/Claim/claimService')
 const randtoken = require('rand-token').generator()
+const maillogservice = require("../../services/User/maillogServices")
 
 const LOG = require('../../models/User/logs')
 const supportingFunction = require('../../config/supportingFunction')
@@ -300,9 +301,9 @@ exports.createCustomer = async (req, res, next) => {
             },
         }
 
-        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1,metaData:1 })
-        let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerQuery, { email: 1,metaData:1 })
-        let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerQuery, { email: 1,metaData:1 })
+        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1, metaData: 1 })
+        let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerQuery, { email: 1, metaData: 1 })
+        let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerQuery, { email: 1, metaData: 1 })
         const IDs = adminUsers.map(user => user._id)
         const dealerId = dealerUsers.map(user => user._id)
         const resellerId = resellerUsers.map(user => user._id)
@@ -359,14 +360,26 @@ exports.createCustomer = async (req, res, next) => {
             subject: "New Customer Added"
         }
         // Send Email code here
-        let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
-      maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+        let mailing
+        if (notificationEmails.length > 0) {
+            mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+            maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+        }
 
-       mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ['noreply@getcover.com'], emailData))
-      maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+        if (resellerEmails.length > 0) {
+            mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ['noreply@getcover.com'], emailData))
+            maillogservice.createMailLogFunction(mailing, emailData, resellerUsers, process.env.update_status)
+        }
 
-       mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
-      maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+        if (dealerEmails.length > 0) {
+            mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
+            maillogservice.createMailLogFunction(mailing, emailData, dealerUsers, process.env.update_status)
+        }
+
+
+
+
+
 
         res.send({
             code: constant.successCode,
@@ -469,7 +482,7 @@ exports.createOrder = async (req, res) => {
         data.resellerId = req.userId;
         data.dealerId = checkReseller.dealerId;
         data.customerId = data.customerId != "" ? data.customerId : null;
-        data.servicerId =  data.servicerId ?  data.servicerId : null
+        data.servicerId = data.servicerId ? data.servicerId : null
 
         let currentYear = new Date().getFullYear();
         let currentYearWithoutHypen = new Date().getFullYear();
@@ -673,9 +686,9 @@ exports.createOrder = async (req, res) => {
             },
         }
 
-        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminPendingQuery, { email: 1,metaData:1 })
-        let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerPendingQuery, { email: 1,metaData:1 })
-        let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerPendingQuery, { email: 1,metaData:1 })
+        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminPendingQuery, { email: 1, metaData: 1 })
+        let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerPendingQuery, { email: 1, metaData: 1 })
+        let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerPendingQuery, { email: 1, metaData: 1 })
         let IDs = adminUsers.map(user => user._id)
         let IDs1 = dealerUsers.map(user => user._id)
         let IDs2 = resellerUsers.map(user => user._id)
@@ -921,12 +934,23 @@ exports.createOrder = async (req, res) => {
         } else {
             let createNotification = await userService.saveNotificationBulk(notificationArrayData);
             if (req.body.sendNotification) {
+                if (notificationEmails.length > 0) {
+                    mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+                    maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+                }
 
-                let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-                emailData.redirectId = base_url + "dealer/editOrder/" + checkOrder._id
-               mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.com"], emailData))
-                emailData.redirectId = base_url + "reseller/editOrder/" + checkOrder._id
-               mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ["noreply@getcover.com"], emailData))
+                if (dealerEmail.length > 0) {
+                    emailData.redirectId = base_url + "dealer/editOrder/" + checkOrder._id
+                    mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.com"], emailData))
+                    maillogservice.createMailLogFunction(mailing, emailData, dealerUsers, process.env.update_status)
+                }
+
+
+                if (resellerEmail.length > 0) {
+                    emailData.redirectId = base_url + "reseller/editOrder/" + checkOrder._id
+                    mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ["noreply@getcover.com"], emailData))
+                    maillogservice.createMailLogFunction(mailing, emailData, resellerUsers, process.env.update_status)
+                }
             }
 
             let logData = {
@@ -1549,10 +1573,10 @@ exports.editOrderDetail = async (req, res) => {
                         },
                     }
 
-                    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdateOrderQuery, { email: 1 })
-                    let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerUpdateOrderQuery, { email: 1 })
-                    let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerUpdateOrderQuery, { email: 1 })
-                    let customerUsers = await supportingFunction.getNotificationEligibleUser(customerUpdateOrderQuery, { email: 1 })
+                    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdateOrderQuery, { email: 1, metaData: 1 })
+                    let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerUpdateOrderQuery, { email: 1, metaData: 1 })
+                    let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerUpdateOrderQuery, { email: 1, metaData: 1 })
+                    let customerUsers = await supportingFunction.getNotificationEligibleUser(customerUpdateOrderQuery, { email: 1, metaData: 1 })
                     const IDs = adminUsers.map(user => user._id)
                     const IDs1 = dealerUsers.map(user => user._id)
                     const IDs2 = resellerUsers.map(user => user._id)
@@ -1621,14 +1645,30 @@ exports.editOrderDetail = async (req, res) => {
                             redirectId: base_url + "orderDetails/" + savedResponse._id,
                         }
                         if (req.body.sendNotification) {
+                            let mailing
+                            if (notificationEmails.length > 0) {
+                                mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+                                maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
 
-                            let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-                            emailData.redirectId = base_url + "dealer/orderDetails/" + savedResponse._id
-                           mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.com"], emailData))
-                            emailData.redirectId = base_url + "reseller/orderDetails/" + savedResponse._id
-                           mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ["noreply@getcover.com"], emailData))
-                            emailData.redirectId = base_url + "customer/orderDetails/" + savedResponse._id
-                           mailing = await sgMail.send(emailConstant.sendEmailTemplate(custmerEmail, ["noreply@getcover.com"], emailData))
+                            }
+                            if (dealerEmail.length > 0) {
+                                emailData.redirectId = base_url + "dealer/orderDetails/" + savedResponse._id
+                                mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.com"], emailData))
+                                maillogservice.createMailLogFunction(mailing, emailData, dealerUsers, process.env.update_status)
+
+                            }
+                            if (resellerEmail.length > 0) {
+                                emailData.redirectId = base_url + "reseller/orderDetails/" + savedResponse._id
+                                mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ["noreply@getcover.com"], emailData))
+                                maillogservice.createMailLogFunction(mailing, emailData, resellerUsers, process.env.update_status)
+
+                            }
+                            if (custmerEmail.length > 0) {
+                                emailData.redirectId = base_url + "customer/orderDetails/" + savedResponse._id
+                                mailing = await sgMail.send(emailConstant.sendEmailTemplate(custmerEmail, ["noreply@getcover.com"], emailData))
+                                maillogservice.createMailLogFunction(mailing, emailData, customerUsers, process.env.update_status)
+                            }
+
                         }
                     }
 
@@ -1695,9 +1735,9 @@ exports.editOrderDetail = async (req, res) => {
                     }
                 },
             }
-            let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdateOrderQuery, { email: 1 })
-            let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerUpdateOrderQuery, { email: 1 })
-            let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerUpdateOrderQuery, { email: 1 })
+            let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdateOrderQuery, { email: 1, metaData: 1 })
+            let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerUpdateOrderQuery, { email: 1, metaData: 1 })
+            let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerUpdateOrderQuery, { email: 1, metaData: 1 })
             const IDs = adminUsers.map(user => user._id)
             const IDs1 = dealerUsers.map(user => user._id)
             const IDs2 = resellerUsers.map(user => user._id)
@@ -1775,9 +1815,20 @@ exports.editOrderDetail = async (req, res) => {
                 redirectId: base_url + "reseller/editOrder/" + checkOrder._id,
             }
             if (req.body.sendNotification) {
-                let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-               mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.com"], dealerEmailContent))
-               mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ["noreply@getcover.com"], resellerEmailContent))
+                let mailing
+                if (notificationEmails.length > 0) {
+                    emailData.redirectId = base_url + "reseller/orderDetails/" + savedResponse._id
+                    mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+                    maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+                }
+                if (dealerEmail.length > 0) {
+                    mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.com"], dealerEmailContent))
+                    maillogservice.createMailLogFunction(mailing, emailData, dealerUsers, process.env.update_status)
+                }
+                if (resellerEmail.length > 0) {
+                    mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ["noreply@getcover.com"], resellerEmailContent))
+                    maillogservice.createMailLogFunction(mailing, emailData, resellerUsers, process.env.update_status)
+                }
             }
             logData.response = {
                 code: constant.successCode,
@@ -3537,10 +3588,10 @@ async function generateTC(orderData) {
                     }
                 },
             }
-            let adminUsers = await supportingFunction.getNotificationEligibleUser(adminActiveOrderQuery, { email: 1 })
-            let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerActiveOrderQuery, { email: 1 })
-            let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerActiveOrderQuery, { email: 1 })
-            let customerUsers = await supportingFunction.getNotificationEligibleUser(customerActiveOrderQuery, { email: 1 })
+            let adminUsers = await supportingFunction.getNotificationEligibleUser(adminActiveOrderQuery, { email: 1, metaData: 1 })
+            let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerActiveOrderQuery, { email: 1, metaData: 1 })
+            let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerActiveOrderQuery, { email: 1, metaData: 1 })
+            let customerUsers = await supportingFunction.getNotificationEligibleUser(customerActiveOrderQuery, { email: 1, metaData: 1 })
 
             let notificationEmails = adminUsers.map(user => user.email)
             let dealerEmails = dealerUsers.map(user => user.email)
@@ -3560,17 +3611,29 @@ async function generateTC(orderData) {
                 subject: "Process Order",
                 redirectId: base_url + "orderDetails/" + checkOrder._id
             }
+            let mailing
+            if (notificationEmails.length > 0) {
+                mailing = await sgMail.send(emailConstant.sendTermAndCondition(notificationEmails, ["noreply@getcover.com"], emailData, attachment))
+                maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+            }
 
-            let mailing = await sgMail.send(emailConstant.sendTermAndCondition(notificationEmails, ["noreply@getcover.com"], emailData, attachment))
-            emailData.redirectId = base_url + "dealer/orderDetails/" + checkOrder._id
-           mailing = await sgMail.send(emailConstant.sendTermAndCondition(dealerEmails, ["noreply@getcover.com"], emailData, attachment))
-            emailData.redirectId = base_url + "customer/orderDetails/" + checkOrder._id
+            if (dealerEmails.length > 0) {
+                emailData.redirectId = base_url + "dealer/orderDetails/" + checkOrder._id
+                mailing = await sgMail.send(emailConstant.sendTermAndCondition(dealerEmails, ["noreply@getcover.com"], emailData, attachment))
+                maillogservice.createMailLogFunction(mailing, emailData, dealerUsers, process.env.update_status)
+            }
 
-           mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerEmails, ["noreply@getcover.com"], emailData, attachment))
-            emailData.redirectId = base_url + "reseller/orderDetails/" + checkOrder._id
-           mailing = await sgMail.send(emailConstant.sendTermAndCondition(resellerEmails, ["noreply@getcover.com"], emailData, attachment))
+            if (customerEmails.length > 0) {
+                emailData.redirectId = base_url + "customer/orderDetails/" + checkOrder._id
+                mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerEmails, ["noreply@getcover.com"], emailData, attachment))
+                maillogservice.createMailLogFunction(mailing, emailData, customerUsers, process.env.update_status)
+            }
 
-
+            if (resellerEmails.length > 0) {
+                emailData.redirectId = base_url + "reseller/orderDetails/" + checkOrder._id
+                mailing = await sgMail.send(emailConstant.sendTermAndCondition(resellerEmails, ["noreply@getcover.com"], emailData, attachment))
+                maillogservice.createMailLogFunction(mailing, emailData, resellerUsers, process.env.update_status)
+            }
         })
         return 1
 
