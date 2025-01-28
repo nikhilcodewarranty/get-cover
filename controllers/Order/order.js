@@ -5,7 +5,7 @@ const LOG = require('../../models/User/logs')
 const emailConstant = require('../../config/emailConstant');
 const dealerService = require("../../services/Dealer/dealerService");
 const dealerRelationService = require("../../services/Dealer/dealerRelationService");
-const maillogservice = require("../../services/User/maillogServices");
+// const maillogservice = require("../../services/User/maillogServices");
 
 const resellerService = require("../../services/Dealer/resellerService");
 const servicerService = require("../../services/Provider/providerService");
