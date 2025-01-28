@@ -15,6 +15,9 @@ router.post("/claimReporting", [verifyToken], servicerController.claimReporting)
 router.post("/claimReportinDropdown", [verifyToken], servicerController.claimReportinDropdown); // claim reporting dropdown 
 
 router.get("/getClaimReportingDropdown/:flag", [verifyToken], servicerController.getClaimReportingDropdown); // claim reporting dropdown 
+// router.get("/getClaimReportingDropdown1/:flag", [verifyToken], servicerController.getClaimReportingDropdown1); // claim reporting dropdown 
+
+
 // PUT routes
 router.put("/changePrimaryUser", [verifyToken], servicerController.changePrimaryUser); // change primary user
 router.put("/editUserDetail/:userId", [verifyToken], servicerController.editUserDetail); // edit user detail

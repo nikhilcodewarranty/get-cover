@@ -399,7 +399,15 @@ exports.addClaim = async (req, res, next) => {
         if (!checkPriceBookData) {
           checkServicerData.priceBookArray.push({ priceBookId: filterPriceBook[0]?.priceBookId })
         }
-        await servicerService.updateServicerPriceBook({ servicerId: checkServicer._id }, checkServicerData, { new: true })
+        console.log("checkServicerData2----------------------",checkServicerData)
+        let newValue = {
+          $set:{
+            categoryArray:checkServicerData.categoryArray,
+            priceBookArray:checkServicerData.priceBookArray,
+          }
+        }
+
+        await servicerService.updateServicerPriceBook({ _id: checkServicerData._id }, checkServicerData, { new: true })
       }
 
       data.servicerId = checkServicer._id ? checkServicer._id : null

@@ -31,6 +31,19 @@ module.exports = class providerService {
     }
 
   }
+
+    // Get top five service providers based on a query
+    static async getServicerPriceBook(query) {
+      try {
+        const priceBooks = await servicePriceBook.aggregate(query);
+        return priceBooks;
+      } catch (error) {
+        return `Could not find servicer: ${error}`;
+      }
+  
+    }
+
+
   // Create a new service provider
   static async createServiceProvider(data) {
     try {
@@ -94,7 +107,7 @@ module.exports = class providerService {
     //Save Servicer Price Book
     static async updateServicerPriceBook(criteria,data,option) {
       try {
-        const response =  await serviceProvider.findOneAndUpdate(criteria, data,option );
+        const response =  await servicePriceBook.findOneAndUpdate(criteria, data,option );
         return response;
       } catch (error) {
         return `Could not update servicer price book: ${error}`;
