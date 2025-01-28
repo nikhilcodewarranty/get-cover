@@ -1318,10 +1318,10 @@ exports.changePrimaryUser = async (req, res) => {
             }
           },
         }
-        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdatePrimaryQuery, { email: 1,metaData:1 })
-        let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerUpdatePrimaryQuery, { email: 1,metaData:1 })
-        let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerUpdatePrimaryQuery, { email: 1,metaData:1 })
-        let customerUsers = await supportingFunction.getNotificationEligibleUser(customerUpdatePrimaryQuery, { email: 1,metaData:1 })
+        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdatePrimaryQuery, { email: 1, metaData: 1 })
+        let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerUpdatePrimaryQuery, { email: 1, metaData: 1 })
+        let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerUpdatePrimaryQuery, { email: 1, metaData: 1 })
+        let customerUsers = await supportingFunction.getNotificationEligibleUser(customerUpdatePrimaryQuery, { email: 1, metaData: 1 })
         const IDs = adminUsers.map(user => user._id)
         const dealerId = dealerUsers.map(user => user._id)
         const resellerId = resellerUsers.map(user => user._id)
@@ -1552,10 +1552,10 @@ exports.addCustomerUser = async (req, res) => {
         },
       }
 
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerQuery, { email: 1 })
-      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDealerQuery, { email: 1 })
-      let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerDealerQuery, { email: 1 })
-      let customerUsers = await supportingFunction.getNotificationEligibleUser(customerDealerQuery, { email: 1 })
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerQuery, { email: 1, metaData: 1 })
+      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDealerQuery, { email: 1, metaData: 1 })
+      let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerDealerQuery, { email: 1, metaData: 1 })
+      let customerUsers = await supportingFunction.getNotificationEligibleUser(customerDealerQuery, { email: 1, metaData: 1 })
       const IDs = adminUsers.map(user => user._id)
       let notificationArray = []
       const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
@@ -1626,7 +1626,7 @@ exports.addCustomerUser = async (req, res) => {
 
       let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
 
-      constmailing = await sgMail.send(emailConstant.servicerApproval(email, {
+      const mailing = await sgMail.send(emailConstant.servicerApproval(email, {
         flag: "created", title: settingData[0]?.title,
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -1634,6 +1634,15 @@ exports.addCustomerUser = async (req, res) => {
         servicerName: data.firstName + " " + data.lastName,
         address: settingData[0]?.address,
       }))
+       let emailData = {
+        flag: "created", title: settingData[0]?.title,
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        link: resetLink, subject: "Set Password", role: "Customer User",
+        servicerName: data.firstName + " " + data.lastName,
+        address: settingData[0]?.address,
+      }
+      maillogservice.createMailLogFunction(mailing, emailData, [checkPrimaryEmail2], process.env.servicer_approval)
 
       //Save Logs
       let logData = {
