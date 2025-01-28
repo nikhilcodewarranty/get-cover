@@ -408,7 +408,7 @@ exports.addClaim = async (req, res, next) => {
         }
         console.log("checkServicerData---------------------",checkServicerData._id)
         console.log("newValue---------------------",newValue)
-        
+
         await servicerService.updateServicerPriceBook({ _id: checkServicerData._id }, newValue, { new: true })
       }
 
@@ -416,6 +416,7 @@ exports.addClaim = async (req, res, next) => {
 
     }
 
+    return;
 
     let checkCoverageStartDate = new Date(checkContract.coverageStartDate).setHours(0, 0, 0, 0)
     if (new Date(checkCoverageStartDate) > new Date(data.lossDate)) {
