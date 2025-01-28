@@ -385,6 +385,7 @@ exports.addClaim = async (req, res, next) => {
           },
           servicerId: checkServicer._id
         }
+        console.log("checkServicerData1----------------------",checkServicerData)
         let checkCategoryData = await servicerService.servicerPriceBook(checkCategoryQuery, {})
         if (!checkCategoryData) {
           checkServicerData.categoryArray.push({ categoryId: filterPriceBook[0]?.categoryId })
@@ -399,6 +400,8 @@ exports.addClaim = async (req, res, next) => {
         if (!checkPriceBookData) {
           checkServicerData.priceBookArray.push({ priceBookId: filterPriceBook[0]?.priceBookId })
         }
+        console.log("checkServicerData2----------------------",checkServicerData)
+
         await servicerService.updateServicerPriceBook({ servicerId: checkServicer._id }, checkServicerData, { new: true })
       }
 
