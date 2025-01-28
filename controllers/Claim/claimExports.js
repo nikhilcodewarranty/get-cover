@@ -1234,15 +1234,15 @@ exports.paidUnpaidClaimReporting = async (req, res) => {
     let dateQuery = {}
     const paidFlag = req.body.paidFlag == 1 ? 'Paid' : 'Unpaid'
 
-    if (data.noOfDays) {
-      let end = moment().startOf('day')
-      // end.setHours(23, 59, 999, 0)
+    if (data.noOfDays != '') {
+      let end = moment().endOf('day').set({ millisecond: 0 })
       const start = moment().subtract(data.noOfDays, 'days').startOf('day')
       dateQuery = {
-        claimDate: {
-          $gt: new Date(start),
-          $lte: new Date(end),
-        }
+        claimDate: { $lte: new Date(start) }
+        // claimDate: {
+        //   $gt: new Date(start),
+        //   $lte: new Date(end),
+        // }
       }
     }
 
@@ -1295,22 +1295,6 @@ exports.paidUnpaidClaimReporting = async (req, res) => {
     if (req.role == 'Customer') {
       match = { 'contracts.orders.customerId': new mongoose.Types.ObjectId(req.userId) }
     }
-    let dateString = Date.now()
-
-    let dataForClaimReporting = {
-      fileName: "claim-report-" + dateString,
-      userId: req.teammateId,
-      filePath: "claimReporting/claim-report-" + dateString + ".xlsx",
-      date: new Date(),
-      status: "Pending",
-      reportName: data.reportName,
-      remark: data.remark,
-      category: "Claim",
-      subCategory: "Paid"
-    }
-
-    let createReporting = await claimReportingService.createReporting(dataForClaimReporting)
-  
 
     let newQuery = [];
     newQuery.push({
@@ -1345,86 +1329,85 @@ exports.paidUnpaidClaimReporting = async (req, res) => {
           },
           {
             $project: {
-              // "contractId": 1,
-              // "claimFile": 1,
-              // "lossDate": 1,
-              // "claimType": 1,
-              // "receiptImage": 1,
-              // reason: 1,
+              "contractId": 1,
+              "claimFile": 1,
+              "lossDate": 1,
+              "claimType": 1,
+              "receiptImage": 1,
+              reason: 1,
               "unique_key": 1,
+              ClaimType: 1,
+              note: 1,
               approveDate: 1,
               totalAmount: 1,
-              _id:0
-              // ClaimType: 1,
-              // note: 1,
-              // servicerId: 1,
-              // getcoverOverAmount: 1,
-              // customerOverAmount: 1,
-              // approveDate: 1,
-              // customerClaimAmount: 1,
-              // getCoverClaimAmount: 1,
-              // customerStatus: 1,
-              // repairParts: 1,
-              // diagnosis: 1,
-              // dealerSku: 1,
-              // claimDate: 1,
-              // claimType: 1,
-              // approveDate: 1,
-              // claimStatus: 1,
-              // claimPaymentStatus: 1,
-              // repairStatus: 1,
-              // "contracts.unique_key": 1,
-              // "contracts.productName": 1,
-              // "contracts.pName": 1,
-              // "contracts.coverageType": 1,
-              // "contracts.model": 1,
-              // "contracts.coverageType": 1,
-              // "contracts.manufacture": 1,
-              // "contracts.serial": 1,
-              // "contracts.orders.dealerId": 1,
-              // trackingNumber: 1,
-              // trackingType: 1,
-              // "contracts.orders._id": 1,
-              // "contracts.orders.servicerId": 1,
-              // "contracts.orders.customerId": 1,
-              // "contracts.orders.resellerId": 1,
-              // "contracts.orders.dealers.name": 1,
-              // "contracts.orders.dealers.isServicer": 1,
-              // "contracts.orders.dealers._id": 1,
-              // "contracts.orders.dealers.accountStatus": 1,
-              // "contracts.orders.customer.username": 1,
-              // "contracts.orders.dealers.dealerServicer": {
-              //   $map: {
-              //     input: "$contracts.orders.dealers.dealerServicer",
-              //     as: "dealerServicer",
-              //     in: {
-              //       "_id": "$$dealerServicer._id",
-              //       "servicerId": "$$dealerServicer.servicerId",
-              //     }
-              //   }
-              // },
-              // "contracts.orders.servicers": {
-              //   $map: {
-              //     input: "$contracts.orders.servicers",
-              //     as: "servicer",
-              //     in: {
-              //       "_id": "$$servicer._id",
-              //       "name": "$$servicer.name",
-              //     }
-              //   }
-              // },
-              // "contracts.orders.resellers": {
-              //   $map: {
-              //     input: "$contracts.orders.resellers",
-              //     as: "reseller",
-              //     in: {
-              //       "_id": "$$reseller._id",
-              //       "name": "$$reseller.name",
-              //       "isServicer": "$$reseller.isServicer",
-              //       "status": "$$reseller.status"
-              //     }
-              //   }
-              // }
+              servicerId: 1,
+              getcoverOverAmount: 1,
+              customerOverAmount: 1,
+              approveDate: 1,
+              customerClaimAmount: 1,
+              getCoverClaimAmount: 1,
+              customerStatus: 1,
+              repairParts: 1,
+              diagnosis: 1,
+              dealerSku: 1,
+              claimDate: 1,
+              claimType: 1,
+              approveDate: 1,
+              claimStatus: 1,
+              claimPaymentStatus: 1,
+              repairStatus: 1,
+              "contracts.unique_key": 1,
+              "contracts.productName": 1,
+              "contracts.pName": 1,
+              "contracts.coverageType": 1,
+              "contracts.model": 1,
+              "contracts.coverageType": 1,
+              "contracts.manufacture": 1,
+              "contracts.serial": 1,
+              "contracts.orders.dealerId": 1,
+              trackingNumber: 1,
+              trackingType: 1,
+              "contracts.orders._id": 1,
+              "contracts.orders.servicerId": 1,
+              "contracts.orders.customerId": 1,
+              "contracts.orders.resellerId": 1,
+              "contracts.orders.dealers.name": 1,
+              "contracts.orders.dealers.isServicer": 1,
+              "contracts.orders.dealers._id": 1,
+              "contracts.orders.dealers.accountStatus": 1,
+              "contracts.orders.customer.username": 1,
+              "contracts.orders.dealers.dealerServicer": {
+                $map: {
+                  input: "$contracts.orders.dealers.dealerServicer",
+                  as: "dealerServicer",
+                  in: {
+                    "_id": "$$dealerServicer._id",
+                    "servicerId": "$$dealerServicer.servicerId",
+                  }
+                }
+              },
+              "contracts.orders.servicers": {
+                $map: {
+                  input: "$contracts.orders.servicers",
+                  as: "servicer",
+                  in: {
+                    "_id": "$$servicer._id",
+                    "name": "$$servicer.name",
+                  }
+                }
+              },
+              "contracts.orders.resellers": {
+                $map: {
+                  input: "$contracts.orders.resellers",
+                  as: "reseller",
+                  in: {
+                    "_id": "$$reseller._id",
+                    "name": "$$reseller.name",
+                    "isServicer": "$$reseller.isServicer",
+                    "status": "$$reseller.status"
+                  }
+                }
+              }
             }
           },
         ]
