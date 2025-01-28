@@ -3888,10 +3888,12 @@ exports.saveBulkClaim = async (req, res) => {
         let allResellersDealer = await supportingFunction.getNotificationEligibleUser(resellerDealerEmailBulkQuery, { email: 1 })
         let resellerEmails = allReseller.map(customer => customer.email);
         let dealerEmails = allResellersDealer.map(customer => customer.email);
+        let adminEmail = adminUsers.map(user => user.email);
         if (failureEntries.length > 0) {
           htmlTableString = convertArrayToHTMLTable([], failureEntries);
           mailing = sgMail.send(emailConstant.sendCsvFile(resellerEmails, ["noreply@getcover.com"], htmlTableString));
           mailing = sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlTableString));
+          mailing = sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlTableString));
         }
 
         else {
@@ -3929,6 +3931,7 @@ exports.saveBulkClaim = async (req, res) => {
           //htmlTableString = convertArrayToHTMLTable([], failureEntries);
           mailing = sgMail.send(emailConstant.sendCsvFile(resellerEmails, ["noreply@getcover.com"], htmlContent));
           mailing = sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlContent));
+          mailing = sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlTableString));
         }
       }
       if (req.role == "Customer") {
@@ -3967,6 +3970,8 @@ exports.saveBulkClaim = async (req, res) => {
             }
           },
         }
+        let adminEmail = adminUsers.map(user => user.email);
+
         let allCustomers = await supportingFunction.getNotificationEligibleUser(customerEmailBulkQuery, { email: 1 })
         let allCustomersDealer = await supportingFunction.getNotificationEligibleUser(customerDealerEmailBulkQuery, { email: 1 })
         let allCustomersReseller = await supportingFunction.getNotificationEligibleUser(customerResellerEmailBulkQuery, { email: 1 })
@@ -3978,6 +3983,7 @@ exports.saveBulkClaim = async (req, res) => {
           mailing = sgMail.send(emailConstant.sendCsvFile(customerEmails, ["noreply@getcover.com"], htmlTableString));
           mailing = sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlTableString));
           mailing = sgMail.send(emailConstant.sendCsvFile(resellerEmails, ["noreply@getcover.com"], htmlTableString));
+          mailing = sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlTableString));
         }
 
         else {
@@ -4016,6 +4022,8 @@ exports.saveBulkClaim = async (req, res) => {
           mailing = sgMail.send(emailConstant.sendCsvFile(customerEmails, ["noreply@getcover.com"], htmlContent));
           mailing = sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlContent));
           mailing = sgMail.send(emailConstant.sendCsvFile(resellerEmails, ["noreply@getcover.com"], htmlContent));
+          mailing = sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlTableString));
+
         }
       }
       //send Email to admin

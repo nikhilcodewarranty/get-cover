@@ -3236,10 +3236,11 @@ exports.getDashboardData = async (req, res) => {
 exports.getResellerAsServicerClaims = async (req, res) => {
     try {
         const resellerId = req.userId
+
         const singleReseller = await resellerService.getReseller({ _id: resellerId });
 
         if (!singleReseller) {
-            res.send({
+            res.send({ 
                 code: constant.errorCode,
                 message: "Reseller not found"
             })
@@ -3383,9 +3384,10 @@ exports.getResellerAsServicerClaims = async (req, res) => {
 
         let servicerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer?._id))
         servicerIds.push(new mongoose.Types.ObjectId(resellerId))
+        servicerIds.push(servicerIdToCheck)
         servicerMatch = {
             $or: [
-                { "servicerId": { $in: servicerIds } }
+                { "servicerId": { $in: servicerIds  } }
             ]
         };
         // if (data.servicerName != '' && data.servicerName != undefined) {
@@ -3415,7 +3417,7 @@ exports.getResellerAsServicerClaims = async (req, res) => {
             dealerMatch = { dealerId: { $in: dealerIds } }
 
         }
-        data.resellerMatch = data.resellerMatch ? data.resellerMatch : ""
+        data.resellerName = data.resellerName ? data.resellerName : ""
         if (data.resellerName != "") {
             let getReseller = await resellerService.getResellers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
             let resellerIds = getReseller.map(ID => new mongoose.Types.ObjectId(ID._id))
@@ -3570,12 +3572,10 @@ exports.getResellerAsServicerClaims = async (req, res) => {
         //Get Dealer and Reseller Servicers
         let servicer;
         let servicerName = '';
-        allServicer = await providerService.getAllServiceProvider(
+        let allServicer = await providerService.getAllServiceProvider(
             { _id: { $in: allServicerIds }, status: true },
             {}
         );
-
-
         let result_Array = await Promise.all(resultFiter.map(async (item1) => {
             servicer = []
             let mergedData = []
@@ -3643,7 +3643,8 @@ exports.getResellerAsServicerClaims = async (req, res) => {
             code: constant.successCode,
             message: "Success",
             result: result_Array,
-            totalCount
+            totalCount,
+            lookupQuery
         })
     } catch (err) {
         res.send({
