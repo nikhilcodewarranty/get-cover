@@ -2296,7 +2296,7 @@ exports.changeResellerStatus = async (req, res) => {
             }
             let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerrQuery, { email: 1 })
             let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerrQuery, { email: 1 })
-            let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerQuery, { email: 1:metaData:1 })
+            let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerQuery, { email: 1,metaData:1 })
             let notificationArray = []
             let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: singleReseller.dealerId, isPrimary: true } } })
             let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.params.resellerId, isPrimary: true } } })
