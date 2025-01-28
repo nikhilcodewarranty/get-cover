@@ -360,8 +360,14 @@ exports.createCustomer = async (req, res, next) => {
         }
         // Send Email code here
         let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+      maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+
        mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ['noreply@getcover.com'], emailData))
+      maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+
        mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
+      maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+
         res.send({
             code: constant.successCode,
             message: "Customer created successfully",
@@ -668,9 +674,9 @@ exports.createOrder = async (req, res) => {
             },
         }
 
-        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminPendingQuery, { email: 1 })
-        let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerPendingQuery, { email: 1 })
-        let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerPendingQuery, { email: 1 })
+        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminPendingQuery, { email: 1,metaData:1 })
+        let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerPendingQuery, { email: 1,metaData:1 })
+        let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerPendingQuery, { email: 1,metaData:1 })
         let IDs = adminUsers.map(user => user._id)
         let IDs1 = dealerUsers.map(user => user._id)
         let IDs2 = resellerUsers.map(user => user._id)
