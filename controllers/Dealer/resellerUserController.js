@@ -372,7 +372,6 @@ exports.createCustomer = async (req, res, next) => {
             code: constant.successCode,
             message: "Customer created successfully",
             result: createdCustomer
-
         })
     } catch (err) {
         res.send({
