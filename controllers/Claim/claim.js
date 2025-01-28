@@ -402,7 +402,7 @@ exports.addClaim = async (req, res, next) => {
         }
         console.log("checkServicerData2----------------------",checkServicerData)
 
-        await servicerService.updateServicerPriceBook({ servicerId: checkServicer._id }, checkServicerData, { new: true })
+        await servicerService.updateServicerPriceBook({ _id: checkServicerData._id }, checkServicerData, { new: true })
       }
 
       data.servicerId = checkServicer._id ? checkServicer._id : null
