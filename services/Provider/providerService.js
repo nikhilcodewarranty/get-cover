@@ -107,7 +107,7 @@ module.exports = class providerService {
     //Save Servicer Price Book
     static async updateServicerPriceBook(criteria,data,option) {
       try {
-        const response =  await serviceProvider.findOneAndUpdate(criteria, data,option );
+        const response =  await servicePriceBook.findOneAndUpdate(criteria, data,option );
         return response;
       } catch (error) {
         return `Could not update servicer price book: ${error}`;

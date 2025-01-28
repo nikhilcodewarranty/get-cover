@@ -399,24 +399,21 @@ exports.addClaim = async (req, res, next) => {
         if (!checkPriceBookData) {
           checkServicerData.priceBookArray.push({ priceBookId: filterPriceBook[0]?.priceBookId })
         }
-
+        console.log("checkServicerData2----------------------",checkServicerData)
         let newValue = {
-          '$set': {
-            'categoryArray.$.categoryId': filterPriceBook[0]?.categoryId,
-            'priceBookArray.$.priceBookId': filterPriceBook[0]?.priceBookId
+          $set:{
+            categoryArray:checkServicerData.categoryArray,
+            priceBookArray:checkServicerData.priceBookArray,
           }
         }
-        console.log("checkServicerData---------------------",checkServicerData._id)
-        console.log("newValue---------------------",newValue)
 
-        await servicerService.updateServicerPriceBook({ _id: checkServicerData._id }, newValue, { new: true })
+        await servicerService.updateServicerPriceBook({ _id: checkServicerData._id }, checkServicerData, { new: true })
       }
 
       data.servicerId = checkServicer._id ? checkServicer._id : null
 
     }
 
-    return;
 
     let checkCoverageStartDate = new Date(checkContract.coverageStartDate).setHours(0, 0, 0, 0)
     if (new Date(checkCoverageStartDate) > new Date(data.lossDate)) {
@@ -3254,13 +3251,13 @@ exports.saveBulkClaim = async (req, res) => {
               //Check Dealer Reseller servicer
               let dealerResellerServicer = await resellerService.getResellers({ dealerId: allDataArray[0]?.order.dealer._id, isServicer: true, status: true })
               let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
-              if (dealerResellerServicer.length > 0) {
+              if (dealerResellerServicer.length > 0) {       
 
                 let dealerResellerServicer = await servicerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
                 let exists = dealerResellerServicer.some(item => item?._id?.toString() === servicerData?._id?.toString());
-                if (exists) {
+                if(exists){
                   flag = true
-                }
+                } 
               }
             }
           }
@@ -3280,7 +3277,7 @@ exports.saveBulkClaim = async (req, res) => {
         } else {
           item.contractData = null
           item.servicerData = null
-        }
+        } 
       }
 
       // console.log("totalDataComing-----------------------------",totalDataComing)
