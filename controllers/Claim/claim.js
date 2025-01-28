@@ -406,7 +406,9 @@ exports.addClaim = async (req, res, next) => {
             'priceBookArray.$.priceBookId': filterPriceBook[0]?.priceBookId
           }
         }
-
+        console.log("checkServicerData---------------------",checkServicerData._id)
+        console.log("newValue---------------------",newValue)
+        
         await servicerService.updateServicerPriceBook({ _id: checkServicerData._id }, newValue, { new: true })
       }
 
