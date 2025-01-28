@@ -546,7 +546,7 @@ exports.createCustomer = async (req, res, next) => {
                     }
                 },
             }
-            resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerQuery, { email: 1:metaData:1 })
+            resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerQuery, { email: 1,metaData:1 })
 
         }
 
