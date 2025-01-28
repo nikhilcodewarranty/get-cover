@@ -68,12 +68,12 @@ exports.createCustomer = async (req, res, next) => {
           }
         },
       }
-      resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerQuery, { email: 1 })
+      resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerQuery, { email: 1:metaData:1 })
 
     }
 
-    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
-    let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerQuery, { email: 1 })
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1,metaData:1 })
+    let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerQuery, { email: 1,metaData:1 })
     const IDs = adminUsers.map(user => user._id)
     const dealerId = dealerUsers.map(user => user._id)
     const resellerId = resellerUsers.map(user => user._id)

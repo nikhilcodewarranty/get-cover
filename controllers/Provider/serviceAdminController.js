@@ -2065,7 +2065,7 @@ exports.createDeleteRelation = async (req, res) => {
       }
       let adminUsers = await supportingFunction.getNotificationEligibleUser(adminAssignServicerQuery, { email: 1 })
       let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerQuery, { email: 1 })
-      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerQuery, { email: 1 })
+      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerQuery, { email: 1,metaData:1 })
 
       const IDs = adminUsers.map(user => user._id)
       const dealerId = dealerUsers.map(user => user._id)
