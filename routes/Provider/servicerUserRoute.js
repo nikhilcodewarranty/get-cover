@@ -15,7 +15,7 @@ router.post("/claimReporting", [verifyToken], servicerController.claimReporting)
 router.post("/claimReportinDropdown", [verifyToken], servicerController.claimReportinDropdown); // claim reporting dropdown 
 
 router.get("/getClaimReportingDropdown/:flag", [verifyToken], servicerController.getClaimReportingDropdown); // claim reporting dropdown 
-router.get("/getClaimReportingDropdown1/:flag", [verifyToken], servicerController.getClaimReportingDropdown1); // claim reporting dropdown 
+// router.get("/getClaimReportingDropdown1/:flag", [verifyToken], servicerController.getClaimReportingDropdown1); // claim reporting dropdown 
 
 
 // PUT routes
