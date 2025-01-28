@@ -347,7 +347,7 @@ exports.registerDealer = async (req, res) => {
 
     }
 
-    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1,metaData:1 })
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1, metaData: 1 })
 
     const IDs = adminUsers.map(user => user._id)
 
@@ -534,8 +534,8 @@ exports.statusUpdate = async (req, res) => {
         }
       },
     }
-    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerPriceUpdateQuery, { email: 1 })
-    let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerPriceUpdateQuery, { email: 1 })
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerPriceUpdateQuery, { email: 1, metaData: 1 })
+    let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerPriceUpdateQuery, { email: 1, metaData: 1 })
     const IDs = adminUsers.map(user => user._id)
     const IDs1 = dealerUsers.map(user => user._id)
     let settingData = await userService.getSetting({});
@@ -753,8 +753,8 @@ exports.changeDealerStatus = async (req, res) => {
           }
         },
       }
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerrQuery, { email: 1 })
-      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerrQuery, { email: 1 })
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerrQuery, { email: 1, metaData: 1 })
+      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerrQuery, { email: 1, metaData: 1 })
       let IDs = adminUsers.map(user => user._id)
       let adminEmails = adminUsers.map(user => user.email)
       let IDs1 = dealerUsers.map(user => user._id)
@@ -977,8 +977,8 @@ exports.createDealerPriceBook = async (req, res) => {
           }
         },
       }
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerPriceBookQuery, { email: 1 })
-      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerPriceBookQuery, { email: 1 })
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerPriceBookQuery, { email: 1, metaData: 1 })
+      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerPriceBookQuery, { email: 1, metaData: 1 })
       const IDs = adminUsers.map(user => user._id)
       const IDs1 = dealerUsers.map(user => user._id)
       let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: data.dealerId, isPrimary: true } } })
@@ -1255,7 +1255,7 @@ exports.rejectDealer = async (req, res) => {
 
       }
 
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1,metaData:1 })
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1, metaData: 1 })
       const IDs = adminUsers.map(user => user._id)
       const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
 
@@ -1410,8 +1410,8 @@ exports.updateDealerMeta = async (req, res) => {
         }
       },
     }
-    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerrQuery, { email: 1 })
-    let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerrQuery, { email: 1 })
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerrQuery, { email: 1, metaData: 1 })
+    let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerrQuery, { email: 1, metaData: 1 })
     const IDs = adminUsers.map(user => user._id)
     const IDs1 = dealerUsers.map(user => user._id)
     let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
@@ -1676,8 +1676,8 @@ exports.addDealerUser = async (req, res) => {
           }
         },
       }
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerQuery, { email: 1 })
-      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDealerQuery, { email: 1 })
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerQuery, { email: 1, metaData: 1 })
+      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDealerQuery, { email: 1, metaData: 1 })
       const IDs = adminUsers.map(user => user._id)
       const IDs1 = dealerUsers.map(user => user._id)
       let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkDealer._id, isPrimary: true } } })
@@ -1717,7 +1717,7 @@ exports.addDealerUser = async (req, res) => {
       let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
       let mailing = await sgMail.send(emailConstant.dealerApproval(email, { subject: "Set Password", link: resetLink, role: req.role + " " + "User", dealerName: data.firstName + " " + data?.lastName }))
       let emailData = { subject: "Set Password", link: resetLink, role: req.role + " " + "User", dealerName: data.firstName + " " + data?.lastName }
-      await maillogservice.createMailLogFunction(mailing, emailData, saveData, process.env.approval_mail)
+      await maillogservice.createMailLogFunction(mailing, emailData, [saveData], process.env.approval_mail)
       let updateStatus = await userService.updateUser({ _id: userId }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
       //Save Logs create Customer
       let logData = {
@@ -2013,8 +2013,8 @@ exports.uploadDealerPriceBook = async (req, res) => {
             }
           },
         }
-        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUploadQuery, { email: 1 })
-        let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerUploadQuery, { email: 1 })
+        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUploadQuery, { email: 1, metaData: 1 })
+        let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerUploadQuery, { email: 1, metaData: 1 })
 
 
         const IDs = adminUsers.map(user => user._id)
@@ -2045,8 +2045,16 @@ exports.uploadDealerPriceBook = async (req, res) => {
         // Send Email code here
         let notificationEmails = adminUsers.map(user => user.email)
         let dealerEmails = dealerUsers.map(user => user.email)
-        let mailing = await sgMail.send(emailConstant.sendCsvFile(notificationEmails, ["noreply@getcover.com"], htmlTableString));
-        mailing = await sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlTableString));
+        if (notificationEmails.length > 0) {
+          let mailing = await sgMail.send(emailConstant.sendCsvFile(notificationEmails, ["noreply@getcover.com"], htmlTableString));
+         // maillogservice.createMailLogFunction(mailing, emailData, dealerUsers, process.env.update_status)
+
+        }
+        if (notificationEmails.length > 0) {
+          let mailing = await sgMail.send(emailConstant.sendCsvFile(notificationEmails, ["noreply@getcover.com"], htmlTableString));
+         // maillogservice.createMailLogFunction(mailing, emailData, dealerUsers, process.env.update_status)
+
+        }
       }
       res.send({
         code: constant.successCode,
@@ -2479,9 +2487,9 @@ exports.createDeleteRelation = async (req, res) => {
           }
         },
       }
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminAssignServicerQuery, { email: 1,metaData:1 })
-      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerQuery, { email: 1,metaData:1 })
-      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerQuery, { email: 1,metaData:1 })
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminAssignServicerQuery, { email: 1, metaData: 1 })
+      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerQuery, { email: 1, metaData: 1 })
+      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerQuery, { email: 1, metaData: 1 })
 
       const IDs = adminUsers.map(user => user._id)
       const dealerId = dealerUsers.map(user => user._id)
@@ -2639,9 +2647,9 @@ exports.unAssignServicer = async (req, res) => {
           }
         },
       }
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminAssignServicerQuery, { email: 1,metaData:1 })
-      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerQuery, { email: 1,metaData:1 })
-      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerQuery, { email: 1,metaData:1 })
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminAssignServicerQuery, { email: 1, metaData: 1 })
+      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerQuery, { email: 1, metaData: 1 })
+      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerQuery, { email: 1, metaData: 1 })
 
       const IDs = adminUsers.map(user => user._id)
       const dealerId = dealerUsers.map(user => user._id)
