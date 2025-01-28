@@ -3621,19 +3621,19 @@ async function generateTC(orderData) {
             if (dealerEmails.length > 0) {
                 emailData.redirectId = base_url + "dealer/orderDetails/" + checkOrder._id
                 mailing = await sgMail.send(emailConstant.sendTermAndCondition(dealerEmails, ["noreply@getcover.com"], emailData, attachment))
-                maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+                maillogservice.createMailLogFunction(mailing, emailData, dealerUsers, process.env.update_status)
             }
 
             if (customerEmails.length > 0) {
                 emailData.redirectId = base_url + "customer/orderDetails/" + checkOrder._id
                 mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerEmails, ["noreply@getcover.com"], emailData, attachment))
-                maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+                maillogservice.createMailLogFunction(mailing, emailData, customerUsers, process.env.update_status)
             }
 
             if (resellerEmails.length > 0) {
                 emailData.redirectId = base_url + "reseller/orderDetails/" + checkOrder._id
                 mailing = await sgMail.send(emailConstant.sendTermAndCondition(resellerEmails, ["noreply@getcover.com"], emailData, attachment))
-                maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+                maillogservice.createMailLogFunction(mailing, emailData, resellerUsers, process.env.update_status)
             }
         })
         return 1
