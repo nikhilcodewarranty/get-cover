@@ -18,9 +18,9 @@ exports.webhookData = async (req, res) => {
                 findLog.response = webhookData.response
                 let newValues = {
                     $set: {
-                        sg_event_id : webhookData.sg_event_id,
-                        event : webhookData.event,
-                        response : webhookData.response
+                        sg_event_id: webhookData.sg_event_id,
+                        event: webhookData.event,
+                        response: webhookData.response
                     }
                 }
                 let updateData = await mailLogService.updateMailLog({ _id: findLog._id }, newValues)
@@ -52,7 +52,7 @@ exports.checkApi = async (req, res) => {
 
 exports.getMaillogData = async (req, res) => {
     try {
-        let getData = await mailLogService.getMailLogs()
+        let getData = await mailLogService.getMailLogs().sort({ createdAt: -1 })
         if (!getData) {
             res.send({
                 code: constant.errorCode,
