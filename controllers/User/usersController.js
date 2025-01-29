@@ -1013,7 +1013,7 @@ exports.updateUserData = async (req, res) => {
           subject: "Update User Info"
         }
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
-        emailData.senderName = ``
+        emailData.senderName = `Dear ${updateUser.metaData[0].firstName}`
         mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
         // emailData.senderName = `Dear ${updateUser.metaData[0].firstName}`
         mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ['noreply@getcover.com'], emailData))
