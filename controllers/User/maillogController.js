@@ -52,7 +52,7 @@ exports.checkApi = async (req, res) => {
 
 exports.getMaillogData = async (req, res) => {
     try {
-        let getData = await mailLogService.getMailLogs().sort({ createdAt: -1 })
+        let getData = await mailLogService.getMailLogs()
         if (!getData) {
             res.send({
                 code: constant.errorCode,
