@@ -1428,9 +1428,9 @@ exports.getResellerServicers = async (req, res) => {
         }
 
         let checkResellerAsServicer = await resellerService.getResellers({ dealerId: checkDealer._id, status: true, isServicer: true })
-        let resellerAsServicerIds = checkResellerAsServicer.map(ID => new mongoose.Types.ObjectId(ID._id))
+        let resellerAsServicerIds = checkResellerAsServicer.map(ID=>new mongoose.Types.ObjectId(ID._id))
+        // let resellerAsServicerIds = checkResellerAsServicer.map(ID => new mongoose.Types.ObjectId(ID._id))
         console.log("checking the data++++++++++++++++", resellerAsServicerIds)
-
         let result_Array = []
         //Get Dealer Servicer
         let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: checkReseller.dealerId })
@@ -1461,9 +1461,9 @@ exports.getResellerServicers = async (req, res) => {
             servicer.unshift(checkDealer);
         }
 
-        if (checkReseller.isServicer) {
-            servicer.unshift(checkReseller);
-        }
+        // if (checkReseller.isServicer) {
+        //     servicer.unshift(checkReseller);
+        // }
 
         let servicerIds = servicer.map(obj => obj._id);
         let servicerIds1 = servicer.map(obj => new mongoose.Types.ObjectId(obj.dealerId));
