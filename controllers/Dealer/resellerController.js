@@ -1429,13 +1429,8 @@ exports.getResellerServicers = async (req, res) => {
 
         let checkResellerAsServicer = await resellerService.getResellers({ dealerId: checkDealer._id, status: true, isServicer: true })
         let resellerAsServicerIds = checkResellerAsServicer.map(ID=>new mongoose.Types.ObjectId(ID._id))
-        let resellerAsServicerIds = checkResellerAsServicer.map(ID => new mongoose.Types.ObjectId(ID._id))
+        // let resellerAsServicerIds = checkResellerAsServicer.map(ID => new mongoose.Types.ObjectId(ID._id))
         console.log("checking the data++++++++++++++++", resellerAsServicerIds)
-<<<<<<< HEAD
-=======
-        
-
->>>>>>> 041eec330fecf96cfb09911f03bbf3575335589c
         let result_Array = []
         //Get Dealer Servicer
         let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: checkReseller.dealerId })
