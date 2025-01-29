@@ -1147,6 +1147,7 @@ exports.getClaimReportingDropdown = async (req, res) => {
                     },
 
                 },
+
                 {
                     $lookup: {
                         from: "pricebooks",
@@ -1166,7 +1167,7 @@ exports.getClaimReportingDropdown = async (req, res) => {
                 },
                 {
                     $project: {
-                       // priceBookArray: 1,
+                        // priceBookArray: 1,
                         categories: {
                             $map: {
                                 input: "$categories", // Input from categoryData
@@ -1215,8 +1216,23 @@ exports.getClaimReportingDropdown = async (req, res) => {
                             }
                         }
                     }
+                },
+                {
+                    $unwind:
+                    {
+                        path: "$categories",
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $project: {
+                        categoryName: "$categories.categoryName",
+                        categoryId: "$categories.categoryId",
+                        priceBooks: "$categories.priceBooks",
+
+                    }
                 }
-                
+
             ]
 
             response = await providerService.getServicerPriceBook(servicerCategoryQuery)
