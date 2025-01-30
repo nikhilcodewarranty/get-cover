@@ -402,6 +402,7 @@ const userSchema = new mongoose.Schema({
 
 // Helper function to set all notification keys to true
 const setAllNotificationsTrue = (notificationObj) => {
+    console.log("checking the function ------model++++++++++++++++++++++", notificationObj)
     if (!notificationObj || typeof notificationObj !== "object") return {};
     return Object.keys(notificationObj).reduce((acc, key) => {
         acc[key] = true;
@@ -414,6 +415,7 @@ userSchema.pre("save", function (next) {
     if (this.metaData && Array.isArray(this.metaData)) {
         this.metaData = this.metaData.map((meta) => {
             if (meta.isPrimary) {
+                console.log("checking the function ------222222222222222++++++++++++++++++++++", meta)
                 return {
                     ...meta,
                     orderNotifications: setAllNotificationsTrue(meta.orderNotifications),
