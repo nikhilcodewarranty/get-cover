@@ -97,7 +97,7 @@ module.exports = class mailLogService {
 
     static async getMailLogs(Query,limitData,skipLimit) {
         try {
-            let getMailLog = await MAILLOG.find(Query).sort({ createdAt: -1 }).skip(skipLimit).limit(limitData);
+            let getMailLog = await MAILLOG.find(Query).sort({ sentOn: -1 }).skip(skipLimit).limit(limitData);
             return getMailLog
         } catch (err) {
             console.log("catch error------------", err.stack)
