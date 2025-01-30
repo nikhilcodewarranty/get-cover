@@ -1656,16 +1656,16 @@ exports.deleteUser = async (req, res) => {
     let adminDeleteQuery
     let notificationData;
     let notificationArray = [];
-    let notificationEmails
+    let notificationEmails = []
     let adminUsers;
     let dealerUsers;
     let resellerUsers;
     let customerUsers;
     let servicerUsers;
     let resellerEmails;
-    let dealerEmails
-    let servicerEmails
-    let customerEmails
+    let dealerEmails =  []
+    let servicerEmails = []
+    let customerEmails = []
     let mergedEmail
     if (checkServicer) {
       adminDeleteQuery = {
