@@ -400,4 +400,36 @@ const userSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
+// Helper function to set all notification keys to true
+const setAllNotificationsTrue = (notificationObj) => {
+    if (!notificationObj || typeof notificationObj !== "object") return {};
+    return Object.keys(notificationObj).reduce((acc, key) => {
+        acc[key] = true;
+        return acc;
+    }, {});
+};
+
+// Middleware to update notifications before saving
+userSchema.pre("save", function (next) {
+    if (this.metaData && Array.isArray(this.metaData)) {
+        this.metaData = this.metaData.map((meta) => {
+            if (meta.isPrimary) {
+                return {
+                    ...meta,
+                    orderNotifications: setAllNotificationsTrue(meta.orderNotifications),
+                    claimNotification: setAllNotificationsTrue(meta.claimNotification),
+                    adminNotification: setAllNotificationsTrue(meta.adminNotification),
+                    servicerNotification: setAllNotificationsTrue(meta.servicerNotification),
+                    dealerNotifications: setAllNotificationsTrue(meta.dealerNotifications),
+                    resellerNotifications: setAllNotificationsTrue(meta.resellerNotifications),
+                    customerNotifications: setAllNotificationsTrue(meta.customerNotifications),
+                    registerNotifications: setAllNotificationsTrue(meta.registerNotifications),
+                };
+            }
+            return meta;
+        });
+    }
+    next();
+});
+
 module.exports = connection.userConnection.model("user", userSchema);
