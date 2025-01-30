@@ -82,6 +82,7 @@ exports.getMaillogData = async (req, res) => {
             start.setDate(start.getDate() + 1);
             query.sentOn = { $gte: new Date(start), $lte: new Date(data.endDate) }
         }
+        console.log("query----------------------",query)
         let getData = await mailLogService.getMailLogs(query)
         if (!getData) {
             res.send({
