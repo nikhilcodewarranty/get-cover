@@ -411,28 +411,28 @@ const setAllNotificationsTrue = (notificationObj) => {
 };
 
 // Middleware to update notifications before saving
-userSchema.pre("save", function (next) {
-    if (this.metaData && Array.isArray(this.metaData)) {
-        this.metaData = this.metaData.map((meta) => {
-            if (meta.isPrimary) {
-                console.log("checking the function ------222222222222222++++++++++++++++++++++", meta)
-                return {
-                    ...meta,
-                    orderNotifications: setAllNotificationsTrue(meta.orderNotifications),
-                    claimNotification: setAllNotificationsTrue(meta.claimNotification),
-                    adminNotification: setAllNotificationsTrue(meta.adminNotification),
-                    servicerNotification: setAllNotificationsTrue(meta.servicerNotification),
-                    dealerNotifications: setAllNotificationsTrue(meta.dealerNotifications),
-                    resellerNotifications: setAllNotificationsTrue(meta.resellerNotifications),
-                    customerNotifications: setAllNotificationsTrue(meta.customerNotifications),
-                    registerNotifications: setAllNotificationsTrue(meta.registerNotifications),
-                };
-            }
-            return meta;
-        });
-    }
-    next();
-});
+// userSchema.pre("save", function (next) {
+//     if (this.metaData && Array.isArray(this.metaData)) {
+//         this.metaData = this.metaData.map((meta) => {
+//             if (meta.isPrimary) {
+//                 console.log("checking the function ------222222222222222++++++++++++++++++++++", meta)
+//                 return {
+//                     ...meta,
+//                     orderNotifications: setAllNotificationsTrue(meta.orderNotifications),
+//                     claimNotification: setAllNotificationsTrue(meta.claimNotification),
+//                     adminNotification: setAllNotificationsTrue(meta.adminNotification),
+//                     servicerNotification: setAllNotificationsTrue(meta.servicerNotification),
+//                     dealerNotifications: setAllNotificationsTrue(meta.dealerNotifications),
+//                     resellerNotifications: setAllNotificationsTrue(meta.resellerNotifications),
+//                     customerNotifications: setAllNotificationsTrue(meta.customerNotifications),
+//                     registerNotifications: setAllNotificationsTrue(meta.registerNotifications),
+//                 };
+//             }
+//             return meta;
+//         });
+//     }
+//     next();
+// });
 
 // userSchema.pre("findOneAndUpdate", function (next) {
 //     if (this.metaData && Array.isArray(this.metaData)) {
@@ -518,6 +518,7 @@ userSchema.pre("insertMany", function (next, docs) {
                         meta.servicerNotifications = {
                             servicerAdded: false,
                             userAdded: false,
+                            servicerUpdate: false,
                             userUpdate: false,
                             primaryUpdate: false,
                             userDelete: false
@@ -525,6 +526,7 @@ userSchema.pre("insertMany", function (next, docs) {
                         meta.dealerNotifications = {
                             dealerAdded: false,
                             userAdded: false,
+                            dealerUpdate: false,
                             userUpdate: false,
                             primaryChanged: false,
                             userDelete: false,
@@ -535,6 +537,7 @@ userSchema.pre("insertMany", function (next, docs) {
                         meta.resellerNotifications = {
                             resellerAdded: false,
                             userAdd: false,
+                            resellerUpdate: false,
                             userUpdate: false,
                             primaryChange: false,
                             userDelete: false,
@@ -542,6 +545,7 @@ userSchema.pre("insertMany", function (next, docs) {
                         meta.customerNotifications = {
                             customerAdded: false,
                             userAdd: false,
+                            customerUpdate: false,
                             userUpdate: false,
                             primaryChange: false,
                             userDelete: false,
