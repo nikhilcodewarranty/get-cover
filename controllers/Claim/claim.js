@@ -2665,7 +2665,7 @@ exports.editServicer = async (req, res) => {
             { status: true },
             {
               $or: [
-                { metaId: eq.body.servicerId },
+                { metaId: req.body.servicerId },
               ]
             },
           ]
