@@ -160,6 +160,11 @@ app.use((req, res, next) => {
   })
 
 })
+app.use((req, res, next) => {
+  const ip = req.ip 
+  console.log("Client IP:", ip);
+  next();
+})
 const PORT = 3002
 
 

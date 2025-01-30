@@ -268,6 +268,7 @@ exports.validateData = async (req, res) => {
 // Login User 
 exports.login = async (req, res) => {
   try {
+    console.log("req-------------",req.ip)
     // Check if the user with the provided email exists
     const user = await userService.findOneUser({ email: req.body.email.toLowerCase() }, {});
     if (!user) {
