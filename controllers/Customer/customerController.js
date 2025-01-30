@@ -1039,7 +1039,7 @@ exports.changePrimaryUser = async (req, res) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: ``,
+        senderName: `${updateLastPrimary.metaData[0]?.firstName}`,
         content: "The primary user for your account has been changed from " + updateLastPrimary.metaData[0]?.firstName + " to " + updatePrimary.metaData[0]?.firstName + ".",
         subject: "Primary User change"
       };
