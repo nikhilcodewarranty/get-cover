@@ -434,27 +434,34 @@ userSchema.pre("save", function (next) {
     next();
 });
 
-userSchema.pre("insertMany", function (next) {
-    if (this.metaData && Array.isArray(this.metaData)) {
-        this.metaData = this.metaData.map((meta) => {
-            if (meta.isPrimary) {
-                console.log("checking the function ------222222222222222++++++++++++++++++++++", meta)
-                return {
-                    ...meta,
-                    orderNotifications: setAllNotificationsTrue(meta.orderNotifications),
-                    claimNotification: setAllNotificationsTrue(meta.claimNotification),
-                    adminNotification: setAllNotificationsTrue(meta.adminNotification),
-                    servicerNotification: setAllNotificationsTrue(meta.servicerNotification),
-                    dealerNotifications: setAllNotificationsTrue(meta.dealerNotifications),
-                    resellerNotifications: setAllNotificationsTrue(meta.resellerNotifications),
-                    customerNotifications: setAllNotificationsTrue(meta.customerNotifications),
-                    registerNotifications: setAllNotificationsTrue(meta.registerNotifications),
-                };
+userSchema.pre("insertMany", function (next, docs) {
+    console.log("Before InsertMany --------Middleware Triggered", docs);
+
+    if (Array.isArray(docs)) {
+        docs.forEach((doc) => {
+            if (doc.metaData && Array.isArray(doc.metaData)) {
+                doc.metaData = doc.metaData.map((meta) => {
+                    if (meta.isPrimary) {
+                        console.log("Processing Primary Metadata:", meta);
+                        return {
+                            ...meta,
+                            orderNotifications: setAllNotificationsTrue(meta.orderNotifications),
+                            claimNotification: setAllNotificationsTrue(meta.claimNotification),
+                            adminNotification: setAllNotificationsTrue(meta.adminNotification),
+                            servicerNotification: setAllNotificationsTrue(meta.servicerNotification),
+                            dealerNotifications: setAllNotificationsTrue(meta.dealerNotifications),
+                            resellerNotifications: setAllNotificationsTrue(meta.resellerNotifications),
+                            customerNotifications: setAllNotificationsTrue(meta.customerNotifications),
+                            registerNotifications: setAllNotificationsTrue(meta.registerNotifications),
+                        };
+                    }
+                    return meta;
+                });
             }
-            return meta;
         });
     }
     next();
 });
+
 
 module.exports = connection.userConnection.model("user", userSchema);
