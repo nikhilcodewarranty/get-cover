@@ -37,7 +37,7 @@ router.get('/setting/preLoginData', userController.preLoginData);
 router.get('/setting/setDefault', [verifyToken], userController.setDefault);
 
 //Save Contact form 
-router.post('/contact-us',  userController.contactUs);
+router.post('/contact-us', userController.contactUs);
 //Option Dropdown 
 router.post('/saveOptions', [verifyToken], userController.saveOptions);
 //edit Dropdown
@@ -84,7 +84,10 @@ router.post('/createServicer', [verifyToken], validator("create_service_provider
 
 
 router.get('/updateContracts', [verifyToken], userController.updateContracts);
+router.get('/webhookData', [verifyToken], maillogController.webhookData);
 
-
-router.post('/webhookData',maillogController.webhookData)
+console.log("under webhook data +++++++++++")
+router.post('/webhookData', maillogController.webhookData)
+router.post('/getMaillogData', [verifyToken], maillogController.getMaillogData)
+// router.post('/webhookData', maillogController.webhookData)
 module.exports = router;
