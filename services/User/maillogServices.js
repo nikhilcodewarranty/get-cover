@@ -99,7 +99,7 @@ module.exports = class mailLogService {
         try {
             let getMailLog = await MAILLOG.find(Query).sort({ createdAt: -1 })
             return getMailLog
-        } catch (err) { 
+        } catch (err) {
             console.log("catch error------------", err.stack)
         }
     }

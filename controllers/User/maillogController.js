@@ -16,6 +16,14 @@ exports.webhookData = async (req, res) => {
                 findLog.sg_event_id = webhookData.sg_event_id
                 findLog.event = webhookData.event
                 findLog.response = webhookData.response
+                if (webhookData.event == "dropped") {
+                    webhookData.event = "failed"
+                }
+                function capitalizeFirstLetter(str) {
+                    if (!str) return str; // Handle empty string
+                    return str.charAt(0).toUpperCase() + str.slice(1);
+                }
+                webhookData.event = capitalizeFirstLetter(webhookData.event);
                 let newValues = {
                     $set: {
                         sg_event_id: webhookData.sg_event_id,
