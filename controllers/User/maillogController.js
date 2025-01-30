@@ -63,6 +63,8 @@ exports.getMaillogData = async (req, res) => {
 
         let data = req.body
         let query = {}
+        let pageLimit = data.pageLimit ? Number(data.pageLimit) : 10
+        let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
         if (data.role != '') {
             query.role = data.role
         }
@@ -82,8 +84,8 @@ exports.getMaillogData = async (req, res) => {
             start.setDate(start.getDate() + 1);
             query.sentOn = { $gte: new Date(start), $lte: new Date(data.endDate) }
         }
-        console.log("query----------------------",query)
-        let getData = await mailLogService.getMailLogs(query)
+        console.log("query----------------------", query)
+        let getData = await mailLogService.getMailLogs(query, pageLimit, skipLimit)
         if (!getData) {
             res.send({
                 code: constant.errorCode,
