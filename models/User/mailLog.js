@@ -5,15 +5,18 @@ const connection = require('../../db')
 const mailLogs = new Schema({
     email: {
         type: String,
-        default: ""
+        default: "",
+        index:true
     },
     accountName:{
         type: String,
-        default:""
+        default:"",
+        index:true
     },
     role:{
         type:String,
-        default:null
+        default:null,
+        index:true
     },
     content: {
         type: String,
@@ -33,11 +36,13 @@ const mailLogs = new Schema({
     },
     sentOn: {
         type: Date,
-        default: () => Date.now()
+        default: () => Date.now(),
+        index:true
     },
     event: {
         type: String,
-        default: "Sent"
+        default: "Sent",
+        index:true
     },
     userId: {
         type: mongoose.Schema.Types.ObjectId,

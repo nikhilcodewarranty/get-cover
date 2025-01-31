@@ -60,7 +60,32 @@ exports.checkApi = async (req, res) => {
 
 exports.getMaillogData = async (req, res) => {
     try {
-        let getData = await mailLogService.getMailLogs()
+
+        let data = req.body
+        let query = {}
+        let pageLimit = data.pageLimit ? Number(data.pageLimit) : 10
+        let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+        if (data.role != '') {
+            query.role = data.role
+        }
+        if (data.accountName != '') {
+            query.accountName = { '$regex': data.accountName ? data.accountName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' }
+        }
+        if (data.status != '') {
+            query.event = data.status
+        }
+        if (data.email != '') {
+            query.email = { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' }
+        }
+        if (data.startDate != "" && data.endDate != "") {
+            let start = new Date(data.startDate); // Replace with your start date
+            data.endDate = new Date(data.endDate)
+            data.endDate.setHours(23, 59, 999, 0)
+            start.setDate(start.getDate() + 1);
+            query.sentOn = { $gte: new Date(start), $lte: new Date(data.endDate) }
+        }
+        console.log("query----------------------", query)
+        let getData = await mailLogService.getMailLogs(query, pageLimit, skipLimit)
         if (!getData) {
             res.send({
                 code: constant.errorCode,
