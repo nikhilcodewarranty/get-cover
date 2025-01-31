@@ -4253,6 +4253,15 @@ exports.sendMessages = async (req, res) => {
       })
       return
     }
+
+    let checkServicer = await servicerService.getServiceProviderById({
+      $or: [
+        { _id: checkClaim?.servicerId ? checkClaim?.servicerId : orderData?.servicerId },
+        { dealerId:checkClaim?.servicerId ? checkClaim?.servicerId : orderData?.servicerId },
+        { resellerId: checkClaim?.servicerId ? checkClaim?.servicerId : orderData?.servicerId },
+      ]
+    })
+
     let settingData = await userService.getSetting({});
 
     data.claimId = req.params.claimId
@@ -4391,6 +4400,8 @@ exports.sendMessages = async (req, res) => {
         }
       },
     }
+
+   
     const servicerCommentQuery = {
       metaData: {
         $elemMatch: {
@@ -4399,7 +4410,10 @@ exports.sendMessages = async (req, res) => {
             { status: true },
             {
               $or: [
-                { metaId: new mongoose.Types.ObjectId(checkClaim?.servicerId ? checkClaim?.servicerId : orderData?.servicerId) },
+                
+                { metaId: new mongoose.Types.ObjectId(checkServicer?._id) },
+                { metaId: new mongoose.Types.ObjectId(checkServicer?.dealerId) },
+                { metaId: new mongoose.Types.ObjectId(checkServicer?.resellerId) },
               ]
             },
 
@@ -4408,6 +4422,7 @@ exports.sendMessages = async (req, res) => {
       },
     }
 
+    
     let adminUsers = await supportingFunction.getNotificationEligibleUser(adminCommentQuery, { email: 1 })
     let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerCommentQuery, { email: 1 })
     let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerCommentQuery, { email: 1 })
@@ -4425,7 +4440,14 @@ exports.sendMessages = async (req, res) => {
     let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.dealerId, isPrimary: true } } })
     let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.customerId, isPrimary: true } } })
     let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.resellerId, isPrimary: true } } })
-    let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.servicerId, isPrimary: true } } })
+    // let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.servicerId, isPrimary: true } } })
+    let servicerPrimary = await supportingFunction.getPrimaryUser({
+      $or: [
+        { metaData: { $elemMatch: { metaId: orderData.servicerId, isPrimary: true } } },
+        { metaData: { $elemMatch: { metaId: orderData.servicerId, isPrimary: true } } },
+        { metaData: { $elemMatch: { metaId: orderData.servicerId, isPrimary: true } } }]
+    })
+
     if (adminUsers.length > 0) {
       let notificationData1 = {
         title: "New Claim Comment added",
@@ -4504,7 +4526,9 @@ exports.sendMessages = async (req, res) => {
             {
               $or: [
                 { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                { metaId: new mongoose.Types.ObjectId(checkClaim?.servicerId) },
+                { metaId: new mongoose.Types.ObjectId(checkServicer?._id) },
+                { metaId: new mongoose.Types.ObjectId(checkServicer?.dealerId) },
+                { metaId: new mongoose.Types.ObjectId(checkServicer?.resellerId) },
               ]
             },
 
