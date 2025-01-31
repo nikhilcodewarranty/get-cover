@@ -2294,7 +2294,10 @@ exports.markAsPaid = async (req, res) => {
                     subject: "Mark as paid",
                     redirectId: base_url + "orderDetails/" + checkOrder._id,
                 }
-                if (checkOrder.sendNotification && !checkOrder.termCondition) {
+
+                console.log("I am hereeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",checkOrder);
+
+                if (!checkOrder.termCondition) {
                     console.log("I am gereee");
                     let mailing
                     if (notificationEmails.length > 0) {
