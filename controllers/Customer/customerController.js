@@ -1401,6 +1401,7 @@ exports.changePrimaryUser = async (req, res) => {
       }
       let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkUser.metaData[0]?.metaId }, isPrimary: true } })
       let createNotification = await userService.saveNotificationBulk(notificationArray);
+      
       // Send Email code here
 
 
