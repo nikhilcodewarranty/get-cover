@@ -1295,10 +1295,12 @@ exports.addResellerUser = async (req, res) => {
             let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerDealerQuery, { email: 1, metaData: 1 })
 
             const IDs = adminUsers.map(user => user._id)
+            const adminEmails = adminUsers.map(user => user.email)
             let notificationArray = []
             const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
             const base_url = `${process.env.SITE_URL}`
             const dealerId = dealerUsers.map(user => user._id)
+            const dealerEmail = dealerUsers.map(user => user.email)
             const resellerId = resellerUsers.map(user => user._id)
             let notificationData = {
                 title: "Reseller User Added",
@@ -1337,13 +1339,35 @@ exports.addResellerUser = async (req, res) => {
             notificationArray.push(notificationData)
             let createNotification = await userService.saveNotificationBulk(notificationArray);
             let settingData = await userService.getSetting({});
+            let emailData = {
+                darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                address: settingData[0]?.address,
+                websiteSetting: settingData[0],
+                senderName: `Dear ${checkUser.metaData[0].firstName + " " + checkUser.metaData[0].lastName}`,
+                content: `A new user for Reseller ${checkReseller.name} has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+                subject: "Reseller User Added"
+            };
+            let mailing = await sgMail.send(emailConstant.sendEmailTemplate(adminEmails, ["noreply@getcover.com"], emailData))
+            await maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
 
+            emailData = {
+                darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                address: settingData[0]?.address,
+                websiteSetting: settingData[0],
+                senderName: `Dear ${checkUser.metaData[0].firstName + " " + checkUser.metaData[0].lastName}`,
+                content: `A new user has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+                subject: "User Added"
+            };
+            mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.com"], emailData))
+            await maillogservice.createMailLogFunction(mailing, emailData, dealerUsers, process.env.update_status)
             let email = data.email
             let userId = saveData._id
             let resetPasswordCode = randtoken.generate(4, '123456789')
             let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
             let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
-            let emailData = {
+            emailData = {
                 flag: "created",
                 link: resetLink,
                 darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -1354,7 +1378,7 @@ exports.addResellerUser = async (req, res) => {
                 role: "Reseller User",
                 servicerName: data.firstName + " " + data.lastName
             }
-            const mailing = await sgMail.send(emailConstant.servicerApproval(email,
+            mailing = await sgMail.send(emailConstant.servicerApproval(email,
                 {
                     flag: "created",
                     link: resetLink,
@@ -1428,7 +1452,7 @@ exports.getResellerServicers = async (req, res) => {
         }
 
         let checkResellerAsServicer = await resellerService.getResellers({ dealerId: checkDealer._id, status: true, isServicer: true })
-        let resellerAsServicerIds = checkResellerAsServicer.map(ID=>new mongoose.Types.ObjectId(ID._id))
+        let resellerAsServicerIds = checkResellerAsServicer.map(ID => new mongoose.Types.ObjectId(ID._id))
         // let resellerAsServicerIds = checkResellerAsServicer.map(ID => new mongoose.Types.ObjectId(ID._id))
         console.log("checking the data++++++++++++++++", resellerAsServicerIds)
         let result_Array = []
