@@ -400,11 +400,11 @@ exports.addClaim = async (req, res, next) => {
         if (!checkPriceBookData) {
           checkServicerData.priceBookArray.push({ priceBookId: filterPriceBook[0]?.priceBookId })
         }
-        console.log("checkServicerData2----------------------",checkServicerData)
+        console.log("checkServicerData2----------------------", checkServicerData)
         let newValue = {
-          $set:{
-            categoryArray:checkServicerData.categoryArray,
-            priceBookArray:checkServicerData.priceBookArray,
+          $set: {
+            categoryArray: checkServicerData.categoryArray,
+            priceBookArray: checkServicerData.priceBookArray,
           }
         }
 
@@ -699,7 +699,9 @@ exports.addClaim = async (req, res, next) => {
             { status: true },
             {
               $or: [
-                { metaId: data?.servicerId },
+                { metaId: checkServicer?._id },
+                { metaId: checkServicer?.dealerId },
+                { metaId: checkServicer?.resellerId },
               ]
             },
           ]
@@ -725,7 +727,12 @@ exports.addClaim = async (req, res, next) => {
     let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } })
     let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } })
     let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } })
-    let servicerPrimary = await supportingFunction.getPrimaryUser({ $or: [{ metaData: { $elemMatch: { metaId: data?.servicerId, isPrimary: true } } }, { metaData: { $elemMatch: { metaId: checkServicer?.dealerId, isPrimary: true } } }, { metaData: { $elemMatch: { metaId: checkServicer?.resellerId, isPrimary: true } } }] })
+    let servicerPrimary = await supportingFunction.getPrimaryUser({
+      $or: [
+        { metaData: { $elemMatch: { metaId: checkServicer?._id, isPrimary: true } } },
+        { metaData: { $elemMatch: { metaId: checkServicer?.dealerId, isPrimary: true } } },
+        { metaData: { $elemMatch: { metaId: checkServicer?.resellerId, isPrimary: true } } }]
+    })
 
     let createNotification = await userService.saveNotificationBulk(notificationArray);
 
@@ -844,8 +851,6 @@ exports.addClaim = async (req, res, next) => {
         mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ["noreply@getcover.com"], emailData))
         maillogservice.createMailLogFunction(mailing, emailData, resellerUser, process.env.update_status)
       }
-
-
     }
     // Email to servicer and cc to admin 
     if (servicerPrimary) {
@@ -869,7 +874,9 @@ exports.addClaim = async (req, res, next) => {
                 {
                   $or: [
                     { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                    { metaId: checkServicer._id },
+                    { metaId: checkServicer?._id },
+                    { metaId: checkServicer?.dealerId },
+                    { metaId: checkServicer?.resellerId },
                   ]
                 },
 
@@ -1054,7 +1061,9 @@ exports.editClaim = async (req, res) => {
               { status: true },
               {
                 $or: [
-                  { metaId: checkClaim?.servicerId },
+                  { metaId: checkServicer?._id },
+                  { metaId: checkServicer?.dealerId },
+                  { metaId: checkServicer?.resellerId },
                 ]
               },
 
@@ -1497,7 +1506,9 @@ exports.editClaimStatus = async (req, res) => {
               { status: true },
               {
                 $or: [
-                  { metaId: checkClaim?.servicerId },
+                  { metaId: checkServicer?._id },
+                  { metaId: checkServicer?.dealerId },
+                  { metaId: checkServicer?.resellerId },
                 ]
               },
             ]
@@ -1733,7 +1744,10 @@ exports.editClaimStatus = async (req, res) => {
               { status: true },
               {
                 $or: [
-                  { metaId: new mongoose.Types.ObjectId(checkClaim?.servicerId) },
+                  // { metaId: new mongoose.Types.ObjectId(checkClaim?.servicerId) },
+                  { metaId: checkServicer?._id },
+                  { metaId: checkServicer?.dealerId },
+                  { metaId: checkServicer?.resellerId },
                 ]
               },
 
@@ -1905,7 +1919,10 @@ exports.editClaimStatus = async (req, res) => {
               { status: true },
               {
                 $or: [
-                  { metaId: checkClaim?.servicerId },
+                  // { metaId: checkClaim?.servicerId },
+                  { metaId: checkServicer?._id },
+                  { metaId: checkServicer?.dealerId },
+                  { metaId: checkServicer?.resellerId },
                 ]
               },
 
@@ -2410,6 +2427,7 @@ exports.editServicer = async (req, res) => {
     const checkOrder = await orderService.getOrder({ _id: checkContract.orderId }, { isDeleted: false })
     const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
     const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
+    let checkServicer
     if (!checkClaim) {
       res.send({
         code: constant.errorCode,
@@ -2423,7 +2441,7 @@ exports.editServicer = async (req, res) => {
     let isPureServicer = ''
     if (req.body.servicerId != "") {
       criteria = { _id: req.body.servicerId }
-      let checkServicer = await servicerService.getServiceProviderById({
+      checkServicer = await servicerService.getServiceProviderById({
         $or: [
           { _id: req.body.servicerId },
           { dealerId: req.body.servicerId },
@@ -2665,7 +2683,9 @@ exports.editServicer = async (req, res) => {
             { status: true },
             {
               $or: [
-                { metaId: req.body.servicerId },
+                { metaId: checkServicer?._id },
+                { metaId: checkServicer?.dealerId },
+                { metaId: checkServicer?.resellerId },
               ]
             },
           ]
@@ -2704,7 +2724,9 @@ exports.editServicer = async (req, res) => {
             {
               $or: [
                 { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                { metaId: req.body.servicerId },
+                { metaId: checkServicer?._id },
+                { metaId: checkServicer?.dealerId },
+                { metaId: checkServicer?.resellerId },
               ]
             },
 
@@ -3368,13 +3390,13 @@ exports.saveBulkClaim = async (req, res) => {
               //Check Dealer Reseller servicer
               let dealerResellerServicer = await resellerService.getResellers({ dealerId: allDataArray[0]?.order.dealer._id, isServicer: true, status: true })
               let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
-              if (dealerResellerServicer.length > 0) {       
+              if (dealerResellerServicer.length > 0) {
 
                 let dealerResellerServicer = await servicerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
                 let exists = dealerResellerServicer.some(item => item?._id?.toString() === servicerData?._id?.toString());
-                if(exists){
+                if (exists) {
                   flag = true
-                } 
+                }
               }
             }
           }
@@ -3394,7 +3416,7 @@ exports.saveBulkClaim = async (req, res) => {
         } else {
           item.contractData = null
           item.servicerData = null
-        } 
+        }
       }
 
       // console.log("totalDataComing-----------------------------",totalDataComing)
@@ -3837,11 +3859,11 @@ exports.saveBulkClaim = async (req, res) => {
         },
       }
 
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminBulkQuery, { email: 1,metaData:1 })
-      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerBulkQuery, { email: 1,metaData:1 })
-      let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerBulkQuery, { email: 1,metaData:1 })
-      let customerUsers = await supportingFunction.getNotificationEligibleUser(customerBulkQuery, { email: 1,metaData:1 })
-      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerrBulkQuery, { email: 1,metaData:1 })
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminBulkQuery, { email: 1, metaData: 1 })
+      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerBulkQuery, { email: 1, metaData: 1 })
+      let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerBulkQuery, { email: 1, metaData: 1 })
+      let customerUsers = await supportingFunction.getNotificationEligibleUser(customerBulkQuery, { email: 1, metaData: 1 })
+      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerrBulkQuery, { email: 1, metaData: 1 })
       if (saveBulkClaim.length > 0) {
 
         let notificationArray = []
@@ -3934,7 +3956,7 @@ exports.saveBulkClaim = async (req, res) => {
             }
           },
         }
-        let allDealer = await supportingFunction.getNotificationEligibleUser(dealerEmailBulkQuery, { email: 1 })
+        let allDealer = await supportingFunction.getNotificationEligibleUser(dealerEmailBulkQuery, { email: 1, metaData: 1 })
 
         let adminEmail = adminUsers.map(user => user.email);
         let dealerEmail = allDealer.map(user => user.email);
@@ -3942,6 +3964,8 @@ exports.saveBulkClaim = async (req, res) => {
         if (failureEntries.length > 0) {
           htmlTableString = convertArrayToHTMLTable([], failureEntries);
           mailing = await sgMail.send(emailConstant.sendCsvFile(dealerEmail, ["noreply@getcover.com"], htmlTableString));
+          // maillogservice.createMailLogFunction(mailing, emailData, resellerUsers, process.env.update_status)
+
           mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlTableString));
         }
 
@@ -4231,6 +4255,15 @@ exports.sendMessages = async (req, res) => {
       })
       return
     }
+
+    let checkServicer = await servicerService.getServiceProviderById({
+      $or: [
+        { _id: checkClaim?.servicerId ? checkClaim?.servicerId : orderData?.servicerId },
+        { dealerId: checkClaim?.servicerId ? checkClaim?.servicerId : orderData?.servicerId },
+        { resellerId: checkClaim?.servicerId ? checkClaim?.servicerId : orderData?.servicerId },
+      ]
+    })
+
     let settingData = await userService.getSetting({});
 
     data.claimId = req.params.claimId
@@ -4369,6 +4402,8 @@ exports.sendMessages = async (req, res) => {
         }
       },
     }
+
+
     const servicerCommentQuery = {
       metaData: {
         $elemMatch: {
@@ -4377,7 +4412,10 @@ exports.sendMessages = async (req, res) => {
             { status: true },
             {
               $or: [
-                { metaId: new mongoose.Types.ObjectId(checkClaim?.servicerId ? checkClaim?.servicerId : orderData?.servicerId) },
+
+                { metaId: new mongoose.Types.ObjectId(checkServicer?._id) },
+                { metaId: new mongoose.Types.ObjectId(checkServicer?.dealerId) },
+                { metaId: new mongoose.Types.ObjectId(checkServicer?.resellerId) },
               ]
             },
 
@@ -4385,6 +4423,7 @@ exports.sendMessages = async (req, res) => {
         }
       },
     }
+
 
     let adminUsers = await supportingFunction.getNotificationEligibleUser(adminCommentQuery, { email: 1 })
     let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerCommentQuery, { email: 1 })
@@ -4403,7 +4442,14 @@ exports.sendMessages = async (req, res) => {
     let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.dealerId, isPrimary: true } } })
     let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.customerId, isPrimary: true } } })
     let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.resellerId, isPrimary: true } } })
-    let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.servicerId, isPrimary: true } } })
+    // let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.servicerId, isPrimary: true } } })
+    let servicerPrimary = await supportingFunction.getPrimaryUser({
+      $or: [
+        { metaData: { $elemMatch: { metaId: orderData.servicerId, isPrimary: true } } },
+        { metaData: { $elemMatch: { metaId: orderData.servicerId, isPrimary: true } } },
+        { metaData: { $elemMatch: { metaId: orderData.servicerId, isPrimary: true } } }]
+    })
+
     if (adminUsers.length > 0) {
       let notificationData1 = {
         title: "New Claim Comment added",
@@ -4482,7 +4528,9 @@ exports.sendMessages = async (req, res) => {
             {
               $or: [
                 { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                { metaId: new mongoose.Types.ObjectId(checkClaim?.servicerId) },
+                { metaId: new mongoose.Types.ObjectId(checkServicer?._id) },
+                { metaId: new mongoose.Types.ObjectId(checkServicer?.dealerId) },
+                { metaId: new mongoose.Types.ObjectId(checkServicer?.resellerId) },
               ]
             },
 
