@@ -2844,6 +2844,7 @@ exports.addMembers = async (req, res) => {
       role: req.role == 'Super Admin' ? 'Admin' : req.role,
       servicerName: data.firstName
     }
+    console.log("sdfsfsddfsfdsdsd",emailData)
     const resetPassword = sgMail.send(emailConstant.servicerApproval(data.email, {
       flag: "created",
       link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -2856,6 +2857,8 @@ exports.addMembers = async (req, res) => {
       role: req.role == 'Super Admin' ? 'Admin' : req.role,
       servicerName: data.firstName
     }))
+    console.log("resetPassword",resetPassword)
+
     maillogservice.createMailLogFunction(resetPassword, emailData, [checkPrimaryEmail2], process.env.servicer_approval)
     // // Create the user
     res.send({
