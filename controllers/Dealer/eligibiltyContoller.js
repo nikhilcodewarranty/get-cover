@@ -3,6 +3,7 @@ const dealerService = require("../../services/Dealer/dealerService")
 const userService = require("../../services/User/userService")
 const orderService = require("../../services/Order/orderService")
 const constants = require("../../config/constant")
+const maillogservice = require("../../services/User/maillogServices")
 const mongoose = require("mongoose")
 
 exports.createEligibility = async (req, res) => {

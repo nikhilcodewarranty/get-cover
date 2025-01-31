@@ -37,5 +37,12 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+console.log("app js ----------------------")
+
+app.use((req, res, next) => {
+  const ip = req.ip || req.connection.remoteAddress;
+  console.log("Client IP:", ip);
+  next();
+})
 
 module.exports = app;
