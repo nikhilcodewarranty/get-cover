@@ -3956,7 +3956,7 @@ exports.saveBulkClaim = async (req, res) => {
             }
           },
         }
-        let allDealer = await supportingFunction.getNotificationEligibleUser(dealerEmailBulkQuery, { email: 1 })
+        let allDealer = await supportingFunction.getNotificationEligibleUser(dealerEmailBulkQuery, { email: 1, metaData: 1 })
 
         let adminEmail = adminUsers.map(user => user.email);
         let dealerEmail = allDealer.map(user => user.email);
@@ -3964,6 +3964,8 @@ exports.saveBulkClaim = async (req, res) => {
         if (failureEntries.length > 0) {
           htmlTableString = convertArrayToHTMLTable([], failureEntries);
           mailing = await sgMail.send(emailConstant.sendCsvFile(dealerEmail, ["noreply@getcover.com"], htmlTableString));
+          // maillogservice.createMailLogFunction(mailing, emailData, resellerUsers, process.env.update_status)
+
           mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlTableString));
         }
 
@@ -4257,7 +4259,7 @@ exports.sendMessages = async (req, res) => {
     let checkServicer = await servicerService.getServiceProviderById({
       $or: [
         { _id: checkClaim?.servicerId ? checkClaim?.servicerId : orderData?.servicerId },
-        { dealerId:checkClaim?.servicerId ? checkClaim?.servicerId : orderData?.servicerId },
+        { dealerId: checkClaim?.servicerId ? checkClaim?.servicerId : orderData?.servicerId },
         { resellerId: checkClaim?.servicerId ? checkClaim?.servicerId : orderData?.servicerId },
       ]
     })
@@ -4401,7 +4403,7 @@ exports.sendMessages = async (req, res) => {
       },
     }
 
-   
+
     const servicerCommentQuery = {
       metaData: {
         $elemMatch: {
@@ -4410,7 +4412,7 @@ exports.sendMessages = async (req, res) => {
             { status: true },
             {
               $or: [
-                
+
                 { metaId: new mongoose.Types.ObjectId(checkServicer?._id) },
                 { metaId: new mongoose.Types.ObjectId(checkServicer?.dealerId) },
                 { metaId: new mongoose.Types.ObjectId(checkServicer?.resellerId) },
@@ -4422,7 +4424,7 @@ exports.sendMessages = async (req, res) => {
       },
     }
 
-    
+
     let adminUsers = await supportingFunction.getNotificationEligibleUser(adminCommentQuery, { email: 1 })
     let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerCommentQuery, { email: 1 })
     let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerCommentQuery, { email: 1 })

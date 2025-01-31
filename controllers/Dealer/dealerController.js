@@ -1445,6 +1445,8 @@ exports.updateDealerMeta = async (req, res) => {
     let createNotification = await userService.saveNotificationBulk(notificationArrayData);
     // Send Email code here 
     let notificationEmails = adminUsers.map(user => user.email)
+    const dealerEmail = dealerUsers.map(user => user.email)
+
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -1457,6 +1459,10 @@ exports.updateDealerMeta = async (req, res) => {
     if (notificationEmails.length > 0) {
       let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
       await maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+    }
+    if (dealerEmail.length > 0) {
+      let mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.com"], emailData))
+      await maillogservice.createMailLogFunction(mailing, emailData, dealerUsers, process.env.update_status)
     }
     //Save Logs update dealer
     let logData = {
