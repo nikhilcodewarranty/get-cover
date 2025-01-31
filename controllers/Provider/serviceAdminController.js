@@ -2166,7 +2166,7 @@ exports.createDeleteRelation = async (req, res) => {
       const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
       const base_url = `${process.env.SITE_URL}`
       let notificationArray = {
-        title: "Servicer Assigned to Dealer",
+        title: "Dealer Assigned to Servicer",
         description: `We are reaching out to notify you about a recent update regarding the dealer list assigned to ${checkServicer.name}`,
         userId: req.teammateId,
         contentId: null,
@@ -2181,7 +2181,7 @@ exports.createDeleteRelation = async (req, res) => {
       let createNotification = await userService.createNotification(notificationArray);
 
       notificationArray = {
-        title: "Servicer Assigned",
+        title: "Dealer Assigned",
         description: `We are reaching out to notify you about a recent update regarding the servicer list assigned to you`,
         userId: req.teammateId,
         contentId: null,
