@@ -3066,7 +3066,7 @@ exports.editOrderDetail = async (req, res) => {
                     notificationArrayData.push(notificationData3)
                     let createNotification = await userService.saveNotificationBulk(notificationArrayData);
                     // Send Email code here
-                    if (!checkOrder?.termCondition) {
+                       if (Object.keys(checkOrder.termCondition).length == 0) {
                         let notificationEmails = adminUsers.map(user => user.email)
                         let dealerEmails = dealerUsers.map(user => user.email)
                         let resellerEmails = resellerUsers.map(user => user.email)
