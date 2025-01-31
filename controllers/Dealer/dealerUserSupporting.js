@@ -4239,6 +4239,7 @@ exports.getDealerAsServicerClaims = async (req, res) => {
                 ...item1,
                 servicerData: servicerName,
                 selfServicer: selfServicer,
+                customerStatusShow:customerStatusShow,
                 contracts: {
                     ...item1.contracts,
                     allServicer: servicer,
