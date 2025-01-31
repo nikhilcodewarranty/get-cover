@@ -2295,7 +2295,7 @@ exports.markAsPaid = async (req, res) => {
                     redirectId: base_url + "orderDetails/" + checkOrder._id,
                 }
 
-                console.log("I am hereeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",checkOrder);
+                console.log("I am hereeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",checkOrder.termCondition);
 
                 if (!checkOrder.termCondition) {
                     console.log("I am gereee");
