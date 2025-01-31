@@ -4213,7 +4213,7 @@ exports.saveBulkClaim = async (req, res) => {
           htmlTableString = convertArrayToHTMLTable([], failureEntries);
           // let adminEmail = adminUsers.map
           mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlTableString));
-          maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlContent);
+          maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString);
 
         }
 
@@ -5862,4 +5862,73 @@ exports.updateClaimDate = async (req, res) => {
     })
   }
 }
+
+exports.sendMailStatic = async (req, res) => {
+  try {
+    let arrayEmail = [
+      {
+        "Contract# / Serial#": "5CD4192999",
+        "Claim#": "CC-2025-100022",
+        "Loss Date": "12/23/2024",
+        Diagnosis: "won't turn on",
+        "Coverage Type": "Accidental",
+        "Submitted By": "bschiffner@natomasunified.org",
+        "Ship To": "1931 Arena Blvd., Sacramento, California, 95834"
+      },
+      {
+        "Contract# / Serial#": "5CD419299Y",
+        "Claim#": "CC-2025-100023",
+        "Loss Date": "11/01/2024",
+        Diagnosis: "SCREEN AND HINGE",
+        "Coverage Type": "Accidental",
+        "Submitted By": "amarecoronado@natomasunified.org",
+        "Ship To": "1931 Arena Blvd., Sacramento, California, 95834"
+      },
+      {
+        "Contract# / Serial#": "5CD41929H7",
+        "Claim#": "CC-2025-100024",
+        "Loss Date": "12/10/2024",
+        Diagnosis: "WONT TURN ON",
+        "Coverage Type": "Accidental",
+        "Submitted By": "amarecoronado@natomasunified.org",
+        "Ship To": "1931 Arena Blvd., Sacramento, California, 95834"
+      },
+      {
+        "Contract# / Serial#": "5CD4192999",
+        "Claim#": "CC-2025-100022",
+        "Loss Date": "12/23/2024",
+        Diagnosis: "WONT TURN ON",
+        "Coverage Type": "Accidental",
+        "Submitted By": "amarecoronado@natomasunified.org",
+        "Ship To": "1931 Arena Blvd., Sacramento, California, 95834"
+      },
+      {
+        "Contract# / Serial#": "5CD4192999",
+        "Claim#": "CC-2025-100022",
+        "Loss Date": "12/23/2024",
+        Diagnosis: "WONT TURN ON",
+        "Coverage Type": "Accidental",
+        "Submitted By": "amarecoronado@natomasunified.org",
+        "Ship To": "1931 Arena Blvd., Sacramento, California, 95834"
+      },
+      {
+        "Contract# / Serial#": "5CD4192999",
+        "Claim#": "CC-2025-100022",
+        "Loss Date": "12/23/2024",
+        Diagnosis: "WONT TURN ON",
+        "Coverage Type": "Accidental",
+        "Submitted By": "amarecoronado@natomasunified.org",
+        "Ship To": "1931 Arena Blvd., Sacramento, California, 95834"
+      },
+    ]
+
+  } catch (err) {
+    res.send({
+      code: err.stack
+    })
+  }
+}
+
+
+
 
