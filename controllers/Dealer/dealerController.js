@@ -1724,32 +1724,32 @@ exports.addDealerUser = async (req, res) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: `Dear ${getPrimary.metaData[0].firstName + " "+ getPrimary.metaData[0].lastName}`,
+        senderName: `Dear ${getPrimary.metaData[0].firstName + " " + getPrimary.metaData[0].lastName}`,
         content: `A new user for Dealer ${checkDealer.name} has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
         subject: "Dealer User Added"
       };
       let mailing = await sgMail.send(emailConstant.sendEmailTemplate(adminEmails, ["noreply@getcover.com"], emailData))
-      await maillogservice.createMailLogFunction(mailing, emailData,adminUsers, process.env.update_status)
+      await maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
 
       emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: `Dear ${getPrimary.metaData[0].firstName + " "+ getPrimary.metaData[0].lastName}`,
+        senderName: `Dear ${getPrimary.metaData[0].firstName + " " + getPrimary.metaData[0].lastName}`,
         content: `A new user has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
         subject: "User Added"
       };
-       mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
-       await maillogservice.createMailLogFunction(mailing, emailData,dealerUsers, process.env.update_status)
+      mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
+      await maillogservice.createMailLogFunction(mailing, emailData, dealerUsers, process.env.update_status)
 
       //Send Reset Password
       let resetPasswordCode = randtoken.generate(4, '123456789')
       let email = data.email;
       let userId = saveData._id;
       let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
-       mailing = await sgMail.send(emailConstant.dealerApproval(email, { subject: "Set Password", link: resetLink, role: req.role + " " + "User", dealerName: data.firstName + " " + data?.lastName }))
-       emailData = { subject: "Set Password", link: resetLink, role: req.role + " " + "User", dealerName: data.firstName + " " + data?.lastName }
+      mailing = await sgMail.send(emailConstant.dealerApproval(email, { subject: "Set Password", link: resetLink, role: req.role + " " + "User", dealerName: data.firstName + " " + data?.lastName }))
+      emailData = { subject: "Set Password", link: resetLink, role: req.role + " " + "User", dealerName: data.firstName + " " + data?.lastName }
       await maillogservice.createMailLogFunction(mailing, emailData, [saveData], process.env.approval_mail)
       let updateStatus = await userService.updateUser({ _id: userId }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
       //Save Logs create Customer
@@ -2344,8 +2344,8 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
           }
         },
       }
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUploadQuery, { email: 1 })
-      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerUploadQuery, { email: 1 })
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUploadQuery, { email: 1, metaData: 1 })
+      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerUploadQuery, { email: 1, metaData: 1 })
       const IDs = adminUsers.map(user => user._id)
       const adminEmail = adminUsers.map(user => user.email)
       const IDs1 = dealerUsers.map(user => user._id)
@@ -2380,10 +2380,12 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
       let notificationEmails = await supportingFunction.getUserEmails();
 
       let mailing = await sgMail.send(emailConstant.sendCsvFile(dealerEmail, "noreply@getcover.com", htmlTableString));
+      maillogservice.createMailLogFunctionWithHtml(mailing, dealerUsers, htmlTableString)
 
 
       mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, "noreply@getcover.com", htmlTableString));
 
+      maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString)
 
 
       res.send({
