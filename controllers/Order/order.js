@@ -1772,7 +1772,9 @@ exports.getSingleOrder = async (req, res) => {
 
         if (dealer && dealer.isServicer) {
             if (dealer.accountStatus) {
-                servicer.unshift(dealer);
+            let dealerServicer = await servicerService.getAllServiceProvider({ dealerId: { $in: dealer._id } })
+
+            servicer = servicer.concat(dealerServicer);
             }
         }
 
