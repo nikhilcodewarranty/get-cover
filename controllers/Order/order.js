@@ -2295,15 +2295,14 @@ exports.markAsPaid = async (req, res) => {
                     redirectId: base_url + "orderDetails/" + checkOrder._id,
                 }
 
-                console.log("I am hereeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",checkOrder.termCondition);
 
-                if (!checkOrder.termCondition) {
+                if (Object.keys(checkOrder.termCondition).length == 0) {
                     console.log("I am gereee");
                     let mailing
                     if (notificationEmails.length > 0) {
                         mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-                       console.log("adminUsers",adminUsers);
-                       console.log("mailing1",adminUsers);
+                        console.log("adminUsers", adminUsers);
+                        console.log("mailing1", adminUsers);
 
                         maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
 
@@ -2311,7 +2310,7 @@ exports.markAsPaid = async (req, res) => {
                     if (dealerEmails.length > 0) {
                         emailData.redirectId = base_url + "dealer/orderDetails/" + checkOrder._id
                         mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
-                       console.log("mailing2",mailing);
+                        console.log("mailing2", mailing);
 
                         maillogservice.createMailLogFunction(mailing, emailData, dealerUsers, process.env.update_status)
 
@@ -2319,7 +2318,7 @@ exports.markAsPaid = async (req, res) => {
                     if (resellerEmails.length > 0) {
                         emailData.redirectId = base_url + "reseller/orderDetails/" + checkOrder._id
                         mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmails, ["noreply@getcover.com"], emailData))
-                       console.log("mailing3",mailing);
+                        console.log("mailing3", mailing);
 
                         maillogservice.createMailLogFunction(mailing, emailData, resellerUsers, process.env.update_status)
 
@@ -2327,7 +2326,7 @@ exports.markAsPaid = async (req, res) => {
                     if (customerEmails.length > 0) {
                         emailData.redirectId = base_url + "customer/orderDetails/" + checkOrder._id
                         mailing = await sgMail.send(emailConstant.sendEmailTemplate(customerEmails, ["noreply@getcover.com"], emailData))
-                       console.log("mailing4",mailing);
+                        console.log("mailing4", mailing);
 
                         maillogservice.createMailLogFunction(mailing, emailData, customerUsers, process.env.update_status)
 
