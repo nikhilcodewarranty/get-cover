@@ -1773,7 +1773,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
         });
         const htmlTableString = convertArrayToHTMLTable(totalDataOriginal1);
         let mailing = await sgMail.send(emailConstant.sendPriceBookFile(("yashasvi@codenomad.net"), ["anil@codenomad.net"], htmlTableString));
-        // maillogservice.createMailLogFunction(mailing, htmlTableString, "yashasvi@codenomad.net", process.env.update_status)
+         maillogservice.createMailLogFunction(mailing,users,htmlTableString)
 
         res.send({
           code: constant.successCode,

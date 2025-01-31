@@ -1350,7 +1350,6 @@ exports.addResellerUser = async (req, res) => {
             };
             let mailing = await sgMail.send(emailConstant.sendEmailTemplate(adminEmails, ["noreply@getcover.com"], emailData))
             await maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
-
             emailData = {
                 darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
                 lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -1358,10 +1357,11 @@ exports.addResellerUser = async (req, res) => {
                 websiteSetting: settingData[0],
                 senderName: `Dear ${checkUser.metaData[0].firstName + " " + checkUser.metaData[0].lastName}`,
                 content: `A new user has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
-                subject: "User Added"
+                subject: "Reseller user Added"
             };
             mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.com"], emailData))
             await maillogservice.createMailLogFunction(mailing, emailData, dealerUsers, process.env.update_status)
+            
             let email = data.email
             let userId = saveData._id
             let resetPasswordCode = randtoken.generate(4, '123456789')

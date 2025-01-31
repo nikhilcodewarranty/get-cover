@@ -1629,7 +1629,7 @@ exports.editOrderDetail = async (req, res) => {
                     let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: savedResponse.dealerId, isPrimary: true } } })
                     let createNotification = await userService.saveNotificationBulk(notificationArrayData);
                     // Send Email code here
-                    if (!checkOrder?.termCondition) {
+                    if (!checkOrder?.termCondition ||  Object.keys(checkOrder?.termCondition).length==0) {
                         let notificationEmails = adminUsers.map(user => user.email)
                         let dealerEmail = dealerUsers.map(user => user.email)
                         let resellerEmail = resellerUsers.map(user => user.email)
