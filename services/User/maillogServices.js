@@ -104,6 +104,15 @@ module.exports = class mailLogService {
         }
     }
 
+    static async getMailLogsCount(Query,limitData,skipLimit) {
+        try {
+            let getMailLog = await MAILLOG.find(Query).countDocuments()
+            return getMailLog
+        } catch (err) {
+            console.log("catch error------------", err.stack)
+        }
+    }
+
     static async getMailLogsWithAggregate(Query) {
         try {
             let getMailLog = await MAILLOG.aggregate(Query)

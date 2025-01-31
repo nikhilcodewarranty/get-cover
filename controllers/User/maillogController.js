@@ -85,6 +85,7 @@ exports.getMaillogData = async (req, res) => {
         }
         console.log("query----------------------", query)
         let getData = await mailLogService.getMailLogs(query, pageLimit, skipLimit)
+        let getCount = await mailLogService.getMailLogsCount(query)
         if (!getData) {
             res.send({
                 code: constant.errorCode,
@@ -94,7 +95,8 @@ exports.getMaillogData = async (req, res) => {
             res.send({
                 code: constant.successCode,
                 message: "success",
-                result: getData
+                result: getData,
+                totalCount: getCount
             })
         }
     } catch (err) {
