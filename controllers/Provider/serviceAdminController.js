@@ -1669,7 +1669,7 @@ exports.registerServiceProvider = async (req, res) => {
     }
     if (notificationEmail.length > 0) {
       mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmail, ["noreply@getcover.com"], emailData))
-      maillogservice.createMailLogFunction(mailing, emailData, adminUser, process.env.update_status)
+      maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
     }
 
     let logData = {
