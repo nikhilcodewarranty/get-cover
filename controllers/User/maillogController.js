@@ -81,7 +81,6 @@ exports.getMaillogData = async (req, res) => {
             let start = new Date(data.startDate); // Replace with your start date
             data.endDate = new Date(data.endDate)
             data.endDate.setHours(23, 59, 999, 0)
-            start.setDate(start.getDate() + 1);
             query.sentOn = { $gte: new Date(start), $lte: new Date(data.endDate) }
         }
         console.log("query----------------------", query)

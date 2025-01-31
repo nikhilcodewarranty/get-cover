@@ -27,7 +27,7 @@ exports.createServiceProvider = async (req, res, next) => {
   try {
     let data = req.body
 
-    console.log("data+++++++++++++++++++++++++",data)
+    console.log("data+++++++++++++++++++++++++", data)
     data.accountName = data.accountName.trim().replace(/\s+/g, ' ');
     const count = await providerService.getServicerCount();
     const admin = await userService.getUserById1({ metaData: { $elemMatch: { metaId: new mongoose.Types.ObjectId(req.userId), isPrimary: true } } }, {})
@@ -1669,7 +1669,7 @@ exports.registerServiceProvider = async (req, res) => {
     }
     if (notificationEmail.length > 0) {
       mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmail, ["noreply@getcover.com"], emailData))
-      maillogservice.createMailLogFunction(mailing, emailData, notificationEmail, process.env.update_status)
+      maillogservice.createMailLogFunction(mailing, emailData, adminUser, process.env.update_status)
     }
 
     let logData = {
