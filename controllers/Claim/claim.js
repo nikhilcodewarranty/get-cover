@@ -1506,7 +1506,9 @@ exports.editClaimStatus = async (req, res) => {
               { status: true },
               {
                 $or: [
-                  { metaId: checkClaim?.servicerId },
+                  { metaId: checkServicer?._id },
+                  { metaId: checkServicer?.dealerId },
+                  { metaId: checkServicer?.resellerId },
                 ]
               },
             ]
@@ -1742,7 +1744,10 @@ exports.editClaimStatus = async (req, res) => {
               { status: true },
               {
                 $or: [
-                  { metaId: new mongoose.Types.ObjectId(checkClaim?.servicerId) },
+                  // { metaId: new mongoose.Types.ObjectId(checkClaim?.servicerId) },
+                  { metaId: checkServicer?._id },
+                  { metaId: checkServicer?.dealerId },
+                  { metaId: checkServicer?.resellerId },
                 ]
               },
 
@@ -1914,7 +1919,10 @@ exports.editClaimStatus = async (req, res) => {
               { status: true },
               {
                 $or: [
-                  { metaId: checkClaim?.servicerId },
+                  // { metaId: checkClaim?.servicerId },
+                  { metaId: checkServicer?._id },
+                  { metaId: checkServicer?.dealerId },
+                  { metaId: checkServicer?.resellerId },
                 ]
               },
 
@@ -2419,6 +2427,7 @@ exports.editServicer = async (req, res) => {
     const checkOrder = await orderService.getOrder({ _id: checkContract.orderId }, { isDeleted: false })
     const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
     const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
+    let checkServicer
     if (!checkClaim) {
       res.send({
         code: constant.errorCode,
@@ -2432,7 +2441,7 @@ exports.editServicer = async (req, res) => {
     let isPureServicer = ''
     if (req.body.servicerId != "") {
       criteria = { _id: req.body.servicerId }
-      let checkServicer = await servicerService.getServiceProviderById({
+      checkServicer = await servicerService.getServiceProviderById({
         $or: [
           { _id: req.body.servicerId },
           { dealerId: req.body.servicerId },
@@ -2674,7 +2683,9 @@ exports.editServicer = async (req, res) => {
             { status: true },
             {
               $or: [
-                { metaId: req.body.servicerId },
+                { metaId: checkServicer?._id },
+                { metaId: checkServicer?.dealerId },
+                { metaId: checkServicer?.resellerId },
               ]
             },
           ]
@@ -2713,7 +2724,9 @@ exports.editServicer = async (req, res) => {
             {
               $or: [
                 { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                { metaId: req.body.servicerId },
+                { metaId: checkServicer?._id },
+                { metaId: checkServicer?.dealerId },
+                { metaId: checkServicer?.resellerId },
               ]
             },
 
