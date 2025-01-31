@@ -2076,7 +2076,7 @@ exports.createDeleteRelation = async (req, res) => {
       const base_url = `${process.env.SITE_URL}`
       let notificationArray = {
         title: "Servicer Assigned to Dealer",
-        description: `We are reaching out to notify you about a recent update regarding the servicer list assigned to ${checkDealer.name}`,
+        description: `We are reaching out to notify you about a recent update regarding the dealer list assigned to ${checkServicer.name}`,
         userId: req.teammateId,
         contentId: null,
         flag: 'Assigned Servicer',
