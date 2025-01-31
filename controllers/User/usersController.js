@@ -2845,7 +2845,7 @@ exports.addMembers = async (req, res) => {
       servicerName: data.firstName
     }
     console.log("sdfsfsddfsfdsdsd",emailData)
-    const resetPassword = sgMail.send(emailConstant.servicerApproval(data.email, {
+    const resetPassword = await sgMail.send(emailConstant.servicerApproval(data.email, {
       flag: "created",
       link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
