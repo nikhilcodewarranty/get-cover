@@ -222,9 +222,14 @@ exports.cronJobStatus = async (req, res) => {
                     eligibilty = false;
                     status = 'Waiting'
                 }
+                // if (claimStatus == 'Active') {
+                //     status = 'Active'
+                //     eligibilty = true;
+                // }
                 if (claimStatus == 'Active') {
+                    let checkContract = await contractService.getContractById({orderProductId:orderProductId},{})
                     status = 'Active'
-                    eligibilty = true;
+                    // eligibilty = !checkContract.notEligibleByCustom ? true : false;
                 }
                 let updateDoc = {
                     'updateMany': {
@@ -1165,7 +1170,6 @@ exports.getServicerInOrders = async (req, res) => {
         return;
     }
 
-    console.log("sdfsfsdfsdfsdfsdfsddfs",servicerUser);
     const result_Array = servicer.map((item1) => {
         const matchingItem = servicerUser.find(
             (item2) => item2.metaId?.toString() === item1?._id?.toString());

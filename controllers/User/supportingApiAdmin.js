@@ -341,7 +341,7 @@ exports.createDealer = async (req, res) => {
                     await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPrimaryCode, isResetPassword: true }, { new: true })
   
                 }
-                if (req.body.isServicer) {
+                if (req.body.isServicer && req.body.isServicer == "true") {
                     const CountServicer = await providerService.getServicerCount();
                     let servicerObject = {
                         name: data.name,
@@ -355,7 +355,7 @@ exports.createDealer = async (req, res) => {
                         accountStatus: "Approved",
                         unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
                     }
-  
+
                     let createData = await providerService.createServiceProvider(servicerObject)
                 }
   
@@ -510,7 +510,8 @@ exports.createDealer = async (req, res) => {
                 };
                 let createNotification = await userService.createNotification(notificationData);
                 // Create the user
-                if (data.isServicer) {
+  
+                if (data.isServicer && data.isServicer == "true") {
                     const CountServicer = await providerService.getServicerCount();
                     let servicerObject = {
                         name: data.name,
@@ -524,10 +525,11 @@ exports.createDealer = async (req, res) => {
                         accountStatus: "Approved",
                         unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
                     }
-  
+
                     let createData = await providerService.createServiceProvider(servicerObject)
                 }
-  
+
+
                 let allUsersData = allUserData.map((obj, index) => ({
                     ...obj,
                     approvedStatus: 'Approved',

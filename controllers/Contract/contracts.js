@@ -615,25 +615,28 @@ exports.cronJobEligible = async (req, res) => {
         let product = result[i];
         let contractId = product._id;
         let check = new Date() >= new Date(product.minDate) && new Date() <= new Date(product.coverageEndDate) ? true : false
-        if (new Date() >= new Date(product.minDate) && new Date() <= new Date(product.coverageEndDate)) {
-          contractIds.push(product._id);
-          updateDoc = {
-            'updateMany': {
-              'filter': { '_id': contractId },
-              'update': { $set: { eligibilty: true } },
-              'upsert': false
-            }
-          };
-        } else {
-          updateDoc = {
-            'updateMany': {
-              'filter': { '_id': contractId },
-              'update': { $set: { eligibilty: false } },
-              'upsert': false
-            }
-          };
+        if (!product.notEligibleByCustom) {
+          if (new Date() >= new Date(product.minDate) && new Date() <= new Date(product.coverageEndDate)) {
+            contractIds.push(product._id);
+            updateDoc = {
+              'updateMany': {
+                'filter': { '_id': contractId },
+                'update': { $set: { eligibilty: true } },
+                'upsert': false
+              }
+            };
+          } else {
+            updateDoc = {
+              'updateMany': {
+                'filter': { '_id': contractId },
+                'update': { $set: { eligibilty: false } },
+                'upsert': false
+              }
+            };
+          }
+          bulk.push(updateDoc);
         }
-        bulk.push(updateDoc);
+
       }
 
 
@@ -672,15 +675,19 @@ exports.cronJobEligible = async (req, res) => {
             ]
             let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
             let obj = result.find(el => el._id.toString() === notOpenContractIds[j].toString());
-            if (obj?.productValue > claimTotal[0]?.amount) {
-              bulk.push({
-                'updateMany': {
-                  'filter': { '_id': notOpenContractIds[j] },
-                  'update': { $set: { eligibilty: true } },
-                  'upsert': false
-                }
-              });
+            let checkContract = await contractService.getContractById({ _id: notOpenContractIds[j] })
+            if (!checkContract.notEligibleByCustom) {
+              if (obj?.productValue > claimTotal[0]?.amount) {
+                bulk.push({
+                  'updateMany': {
+                    'filter': { '_id': notOpenContractIds[j] },
+                    'update': { $set: { eligibilty: true } },
+                    'upsert': false
+                  }
+                });
+              }
             }
+
           }
 
           else {

@@ -1942,6 +1942,7 @@ exports.editClaimStatus = async (req, res) => {
 
       }
       if (data.claimStatus == 'completed') {
+        let updateClaimDate = await claimService.updateClaim(criteria, { claimDate: new Date() }, { new: true })
         //Email to dealer,customer,reseller
         let sendCompletionDealerNotification = dealerUser.map(user => user.email);
         let sendCompletionResellerNotification = resellerUsers.map(user => user.email);
@@ -3150,7 +3151,8 @@ exports.saveBulkClaim = async (req, res) => {
           if ((item?.servicerName != '' && !servicerData)) {
             flag = false
           }
-          if ((!flag && flag != undefined && item.hasOwnProperty("servicerName") && req.role == "Admin")) {
+          if ((!flag && flag != undefined && item.hasOwnProperty("servicerName") && req.role == "Super Admin")) {
+            item.exit = true;
             item.status = "Servicer not found"
           }
           if (contractData && contractData.status != "Active") {
@@ -4344,13 +4346,17 @@ exports.statusClaim = async (req, res) => {
         // Update Eligibilty true and false
         if (checkContract.isMaxClaimAmount) {
           if (checkContract.productValue > claimTotal[0]?.amount) {
-            const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: true }, { new: true })
+            if (!checkContract.notEligibleByCustom) {
+              const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: true }, { new: true })
+            }
           }
           else if (checkContract.productValue < claimTotal[0]?.amount) {
             const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: false }, { new: true })
           }
         } else {
-          const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: true }, { new: true })
+          if (!checkContract.notEligibleByCustom) {
+            const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: true }, { new: true })
+          }
         }
 
       }
