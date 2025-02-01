@@ -2995,13 +2995,16 @@ exports.paidUnpaidClaim = async (req, res) => {
     })
     let servicerIdToCheck = checkServicer._id
     let match = {};
-    if (req.role == 'Dealer') {
-      match = { 'contracts.orders.dealerId': new mongoose.Types.ObjectId(req.userId) }
-      checkServicer = await providerService.getServiceProviderById({ dealerId: req.userId })
-      servicerIdToCheck = checkServicer._id
-      servicerId = req.userId
 
-    }
+    // id is getting in the param from the frontend side
+
+    // if (req.role == 'Dealer') {
+    //   match = { 'contracts.orders.dealerId': new mongoose.Types.ObjectId(req.userId) }
+    //   checkServicer = await providerService.getServiceProviderById({ dealerId: req.userId })
+    //   servicerIdToCheck = checkServicer._id
+    //   servicerId = req.userId
+
+    // }
     if (req.role == 'Reseller') {
       match = { 'contracts.orders.resellerId': new mongoose.Types.ObjectId(req.userId) }
       checkServicer = await providerService.getServiceProviderById({ resellerId: req.userId })
