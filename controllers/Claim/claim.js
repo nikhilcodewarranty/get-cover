@@ -4461,11 +4461,11 @@ exports.sendMessages = async (req, res) => {
     }
 
 
-    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminCommentQuery, { email: 1 })
-    let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerCommentQuery, { email: 1 })
-    let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerCommentQuery, { email: 1 })
-    let customerUsers = await supportingFunction.getNotificationEligibleUser(customerCommentQuery, { email: 1 })
-    let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerCommentQuery, { email: 1 })
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminCommentQuery, { email: 1,metaData:1 })
+    let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerCommentQuery, { email: 1,metaData:1  })
+    let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerCommentQuery, { email: 1,metaData:1  })
+    let customerUsers = await supportingFunction.getNotificationEligibleUser(customerCommentQuery, { email: 1,metaData:1  })
+    let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerCommentQuery, { email: 1,metaData:1  })
     let notificationArray = []
 
     let IDs = adminUsers.map(user => user._id)
@@ -4574,7 +4574,7 @@ exports.sendMessages = async (req, res) => {
         }
       },
     }
-    let commentNotification = await supportingFunction.getNotificationEligibleUser(commentCaseQuery, { email: 1 })
+    let commentNotification = await supportingFunction.getNotificationEligibleUser(commentCaseQuery, { email: 1,metaData:1 })
     let notificationEmails = commentNotification.map(user => user.email);
     const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
     let emailData = {
@@ -4591,8 +4591,13 @@ exports.sendMessages = async (req, res) => {
       redirectId: base_url
     }
 
+
     let mailing = await sgMail.send(emailConstant.sendCommentNotification(emailTo?.email, ["noreply@getcover.com"], emailData))
+    maillogservice.createMailLogFunction(mailing, emailData, [emailTo], process.env.comment_notification)
+
     mailing = await sgMail.send(emailConstant.sendCommentNotification(adminEmail, ["noreply@getcover.com"], emailData))
+    maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.comment_notification)
+
     res.send({
       code: constant.successCode,
       messages: 'Message Sent!',
