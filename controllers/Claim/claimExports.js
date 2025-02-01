@@ -53,7 +53,7 @@ const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, d
   data.forEach((sheetData, index) => {
     let sheetName;
 
-console.log("role===================================",sheetData)
+    console.log("role===================================", sheetData)
     if (role == "Super Admin") {
       if (index == 0) {
         sheetName = "summary"
@@ -121,7 +121,7 @@ console.log("role===================================",sheetData)
     }
 
     if (role == "paid") {
-      console.log("role===================================",role)
+      console.log("role===================================", role)
 
       if (index == 0) {
         sheetName = "detail"
@@ -130,13 +130,13 @@ console.log("role===================================",sheetData)
 
 
     const sheet = workbook.addWorksheet(`${sheetName}`);
-    console.log("role===================================",role)
+    console.log("role===================================", role)
 
     if (sheetData.length > 0) {
 
       const headers = Object.keys(sheetData[0]); // Get keys from the first object as column headers
       sheet.columns = headers.map(header => ({ header, key: header }));
-      console.log("role=============eeeeeeee======================",sheet)
+      console.log("role=============eeeeeeee======================", sheet)
 
       // Add rows to the sheet
       sheetData.forEach(row => {
@@ -250,9 +250,7 @@ exports.exportDataForClaim = async (req, res) => {
     let dateMatch = {}
     // checking the user type from token
     // checking the user type from token
-    if (req.role == 'Dealer') {
-      match = { 'contracts.orders.dealerId': new mongoose.Types.ObjectId(req.userId) }
-    }
+
     if (req.role == 'Customer') {
       match = { 'contracts.orders.customerId': new mongoose.Types.ObjectId(req.userId) }
     }
@@ -260,9 +258,7 @@ exports.exportDataForClaim = async (req, res) => {
     if (req.role == 'Servicer') {
       match = { servicerId: new mongoose.Types.ObjectId(req.userId) }
     }
-    if (req.role == 'Reseller') {
-      match = { resellerId: new mongoose.Types.ObjectId(req.userId) }
-    }
+
 
     if (data.flag == "Dealer") {
       match1 = { dealerId: new mongoose.Types.ObjectId(data.userId) }
@@ -283,6 +279,26 @@ exports.exportDataForClaim = async (req, res) => {
     if (data.flag == "Contract") {
       match1 = { contractId: new mongoose.Types.ObjectId(data.userId) }
 
+    }
+
+    if (req.role == 'Reseller') {
+      match = { resellerId: new mongoose.Types.ObjectId(req.userId) }
+      if (data.flag == "Servicer") {
+        let getServicer = await servicerService.getServicerByName({ resellerId: data.userId })
+        match1 = { servicerId: new mongoose.Types.ObjectId(getServicer?._id) }
+        match = {}
+
+      }
+    }
+
+    if (req.role == 'Dealer') {
+      match = { 'contracts.orders.dealerId': new mongoose.Types.ObjectId(req.userId) }
+      if (data.flag == "Servicer") {
+        let getServicer = await servicerService.getServicerByName({ dealerId: data.userId })
+        match1 = { servicerId: new mongoose.Types.ObjectId(getServicer?._id) }
+        match = {}
+
+      }
     }
 
     // building the query for claims
@@ -1311,7 +1327,7 @@ exports.paidUnpaidClaimReporting = async (req, res) => {
     }
 
     let createReporting = await claimReportingService.createReporting(dataForClaimReporting)
-  
+
 
     let newQuery = [];
     newQuery.push({
@@ -1355,7 +1371,7 @@ exports.paidUnpaidClaimReporting = async (req, res) => {
               "unique_key": 1,
               approveDate: 1,
               totalAmount: 1,
-              _id:0
+              _id: 0
               // ClaimType: 1,
               // note: 1,
               // servicerId: 1,
@@ -1646,9 +1662,9 @@ exports.paidUnpaidClaimReporting = async (req, res) => {
     //     }
     //   }
     // }));
- 
- 
-    console.log("checking the data _-------------------",result_Array)
+
+
+    console.log("checking the data _-------------------", result_Array)
     await createExcelFileWithMultipleSheets1(result_Array, process.env.bucket_name, 'claimReporting', dateString, "paid")
       .then((res) => {
         claimReportingService.updateReporting({ _id: createReporting._id }, { status: "Active" }, { new: true })
@@ -1658,10 +1674,10 @@ exports.paidUnpaidClaimReporting = async (req, res) => {
         claimReportingService.updateReporting({ _id: createReporting._id }, { status: "Failed" }, { new: true })
 
       })
-      res.send({
-        code: constant.successCode,
-        message: "Success",
-      })
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+    })
     // res.send({
     //   code: constant.successCode,
     //   message: "Success",
