@@ -2280,7 +2280,7 @@ exports.claimReportinDropdown1 = async (req, res) => {
                                         $map: {
                                             input: {
                                                 $filter: {
-                                                    input: "$pricebookData", // Filter pricebooks
+                                                     input: "$pricebookData", // Filter pricebooks
                                                     as: "pb",               // Alias for pricebook
                                                     cond: { $eq: ["$$pb.category", "$$cat._id"] }  // Match pricebooks for the current category
                                                 }
