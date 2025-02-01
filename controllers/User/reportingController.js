@@ -2210,7 +2210,7 @@ exports.claimReportinDropdown1 = async (req, res) => {
                         $and: [
                             { status: true },
                             { accountStatus: "Approved" },
-                            { dealerId: new mongoose.Types.ObjectId("679c9ec8bde26c8b52dc78b6") }
+                            { dealerId: "679c9ec8bde26c8b52dc78b6"}
                         ]
                     }
                 },
