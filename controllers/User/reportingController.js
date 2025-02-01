@@ -4,6 +4,7 @@ const dealerService = require('../../services/Dealer/dealerService')
 const servicerService = require("../../services/Provider/providerService")
 const resellerService = require('../../services/Dealer/resellerService')
 const dealerPriceService = require('../../services/Dealer/dealerPriceService')
+const customerService = require('../../services/Customer/customerService')
 const priceBookService = require('../../services/PriceBook/priceBookService')
 const providerService = require('../../services/Provider/providerService')
 const role = require("../../models/User/role");
@@ -2335,8 +2336,31 @@ exports.claimReportinDropdown1 = async (req, res) => {
                     }
                 }
             ]
-
             response = await servicerService.getTopFiveServicer(servicerQuery)
+            if (req.role == "Customer") {
+                let checkCustomer = await customerService.getCustomerById({ _id: req.userId })
+                let checkDealer = await dealerService.getDealerById(checkCustomer.dealerId)
+                let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId:checkCustomer.dealerId })
+                let ids = getServicersIds.map((item) => item.servicerId)
+                let servicer = await servicerService.getAllServiceProvider({ _id: { $in: ids }, status: true }, {})
+                let dealerResellerServicer = await resellerService.getResellers({ dealerId: checkCustomer.dealerId, isServicer: true })
+                let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
+                if (dealerResellerServicer.length > 0) {
+                    let dealerResellerServicer = await servicerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
+                    servicer = servicer.concat(dealerResellerServicer);
+                }
+                if (checkDealer.isServicer) {
+                    // servicer.unshift(checkDealer);
+                    let checkDealerServicer = await servicerService.getServiceProviderById({ dealerId: checkDealer._id })
+                    checkDealerServicer.isServicer = true
+                    servicer.push(checkDealerServicer)
+                };
+                response = response.filter(item => 
+                    servicer.some(check => check._id.toString() === item._id.toString())
+                  );
+                    console.log("filteredData------------------",response)
+            }
+
         }
         if (flag == "category") {
             let catQuery = [
