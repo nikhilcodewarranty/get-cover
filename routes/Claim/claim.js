@@ -22,6 +22,9 @@ router.put("/editClaim/:claimId", [verifyToken], claimController.editClaim); // 
 router.put("/editClaimType/:claimId", [verifyToken], claimController.editClaimType); // edit claim type by ID
 router.put("/editClaimStatus/:claimId", [verifyToken], claimController.editClaimStatus); // edit claim status by ID
 router.put("/editServicer/:claimId", [verifyToken], claimController.editServicer); // edit servicer for a claim by ID
+router.get("/sendStaticEmail", claimController.sendStaticEmail); // edit servicer for a claim by ID
+
+
 //GET Routes
 router.get("/statusClaim", claimController.statusClaim); // get claim status
 router.get("/getContractById/:contractId", [verifyToken], supportingFunction.checkObjectId, claimGetController.getContractById); // get contract by ID

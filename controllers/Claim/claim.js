@@ -5369,6 +5369,26 @@ exports.checkNumberOfCertainPeriod = async (req, res) => {
   }
 }
 
+exports.sendStaticEmail = async (req, res) => {
+  let settingData = await userService.getSetting({});
+  let adminCC = await supportingFunction.getUserEmails();
+  const base_url = `${process.env.SITE_URL}claim-listing/CC-2025-100024`
+
+  let emailData = {
+    darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+    lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+    address: settingData[0]?.address,
+    websiteSetting: settingData[0],
+    senderName: '',
+    content: `The Repair Status has been updated on the claim # CC-2025-100024 to be Request Approved. Please review the information at`,
+    subject: `Repair Status Updated for CC- 2025-100024`,
+    redirectId: base_url
+  }
+  let mailing = await sgMail.send(emailConstant.sendEmailTemplate(["bschiffner@natomasunified.org"], ["noreply@getcover.cover"], emailData))
+  res.send({
+    response:mailing
+  })
+}
 exports.updateClaimDate = async (req, res) => {
   try {
 
@@ -5535,4 +5555,7 @@ exports.updateClaimDate = async (req, res) => {
     })
   }
 }
+
+
+
 
