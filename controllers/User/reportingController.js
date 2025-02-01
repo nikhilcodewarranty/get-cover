@@ -2210,7 +2210,6 @@ exports.claimReportinDropdown1 = async (req, res) => {
                         $and: [
                             { status: true },
                             { accountStatus: "Approved" },
-                            { dealerId: "679c9ec8bde26c8b52dc78b6"}
                         ]
                     }
                 },
