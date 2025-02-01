@@ -31,7 +31,7 @@ exports.weeklySales = async (data, req, res) => {
         // Calculate start and end of the week for the given dates
         const startOfWeekDate = moment(startDate).startOf('isoWeek');
         const endOfWeekDate = moment(endDate).endOf('isoWeek');
-        console.log("endofisoweek",endDate)
+        console.log("endofisoweek", endDate)
         // Create an array of dates for each week within the specified range
         const datesArray = [];
         let currentDate = moment(startOfWeekDate);
@@ -235,7 +235,7 @@ exports.weeklySales = async (data, req, res) => {
         }
 
     } catch (err) {
-        return { code: constant.errorCode, message: err.message,stack: err.stack }
+        return { code: constant.errorCode, message: err.message, stack: err.stack }
     }
 };
 
@@ -435,7 +435,7 @@ exports.dailySales1 = async (data, req, res) => {
         let currentDate = new Date(startOfMonth);
 
         while (currentDate <= endOfMonth) {
-            console.log("new Date(currentDate)2222222222",new Date(currentDate))
+            console.log("new Date(currentDate)2222222222", new Date(currentDate))
             datesArray.push(new Date(currentDate));
             currentDate.setDate(currentDate.getDate() + 1);
         }
@@ -615,7 +615,7 @@ exports.dailySales1 = async (data, req, res) => {
         }
 
     } catch (err) {
-        return { code: constant.errorCode, message: err.message,stack: err.stack }
+        return { code: constant.errorCode, message: err.message, stack: err.stack }
     }
 };
 
@@ -1720,6 +1720,14 @@ exports.getReportingDropdowns1 = async (req, res) => {
             if (flag == "dealer") {
                 let dealerQuery = [
                     {
+                        $match: {
+                            $and: [
+                                { status: "Approved" },
+                                { accountStatus: true }
+                            ]
+                        }
+                    },
+                    {
                         $lookup: {
                             from: "dealerpricebooks",
                             localField: "_id",
@@ -2037,6 +2045,14 @@ exports.claimReportinDropdown1 = async (req, res) => {
         if (flag == "dealer") {
             let dealerQuery = [
                 {
+                    $match: {
+                        $and: [
+                            { status: "Approved" },
+                            { accountStatus: true }
+                        ]
+                    }
+                },
+                {
                     $lookup: {
                         from: "servicer_dealer_relations",
                         localField: "_id",
@@ -2189,6 +2205,14 @@ exports.claimReportinDropdown1 = async (req, res) => {
         }
         if (flag == "servicer") {
             let servicerQuery = [
+                {
+                    $match: {
+                        $and: [
+                            { status: true },
+                            { accountStatus: "Approved" }
+                        ]
+                    }
+                },
                 {
                     $lookup: {
                         from: "servicer_dealer_relations",
