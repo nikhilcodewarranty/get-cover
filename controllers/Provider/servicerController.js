@@ -1033,7 +1033,7 @@ exports.getClaimReportingDropdown = async (req, res) => {
                         from: "servicer_dealer_relations",
                         localField: "_id",
                         foreignField: "servicerId",
-                        as: "relatedDealer" // Keep dealerPricebookData as an array
+                        as: "relatedDealer"
                     }
                 },
                 {
@@ -1041,7 +1041,7 @@ exports.getClaimReportingDropdown = async (req, res) => {
                         from: "dealers",
                         localField: "relatedDealer.dealerId",
                         foreignField: "_id",
-                        as: "dealers" // Keep dealerPricebookData as an array
+                        as: "dealers"
                     }
                 },
                 {
@@ -1049,79 +1049,70 @@ exports.getClaimReportingDropdown = async (req, res) => {
                         from: "dealerpricebooks",
                         localField: "dealers._id",
                         foreignField: "dealerId",
-                        as: "dealerPricebookData" // Keep dealerPricebookData as an array
+                        as: "dealerPricebookData"
                     }
                 },
                 {
                     $lookup: {
                         from: "pricebooks",
-                        localField: "dealerPricebookData.priceBook", // Array of priceBook IDs
+                        localField: "dealerPricebookData.priceBook",
                         foreignField: "_id",
-                        as: "pricebookData" // Keep pricebookData as an array
-                    },
-
+                        as: "pricebookData"
+                    }
                 },
                 {
                     $lookup: {
                         from: "pricecategories",
-                        localField: "pricebookData.category", // Array of priceBook IDs
+                        localField: "pricebookData.category",
                         foreignField: "_id",
-                        as: "categories" // Keep pricebookData as an array
-                    },
-
+                        as: "categories"
+                    }
+                },
+                {
+                    "$unwind": "$dealers" // Extract each dealer separately
                 },
                 {
                     "$project": {
-                        "_id": 1,
-                        "name": "$name",
-                        "dealers": {
+                        "_id": "$dealers._id", // Bringing dealer ID to main level
+                        "name": "$dealers.name", // Bringing dealer name to main level
+                        "categories": {
                             "$map": {
-                                "input": "$dealers",
-                                "as": "dealer",
+                                "input": "$categories",
+                                "as": "cat",
                                 "in": {
-                                    "_id": "$$dealer._id",
-                                    "name": "$$dealer.name",
-                                    "categories": {
+                                    "categoryName": "$$cat.name",
+                                    "categoryId": "$$cat._id",
+                                    "priceBooks": {
                                         "$map": {
-                                            "input": "$categories",
-                                            "as": "cat",
+                                            "input": {
+                                                "$filter": {
+                                                    "input": "$pricebookData",
+                                                    "as": "pb",
+                                                    "cond": { "$eq": ["$$pb.category", "$$cat._id"] }
+                                                }
+                                            },
+                                            "as": "pb",
                                             "in": {
-                                                "categoryName": "$$cat.name",
-                                                "categoryId": "$$cat._id",
-                                                "priceBooks": {
+                                                "priceBookName": "$$pb.name",
+                                                "priceBookId": "$$pb._id",
+                                                "dealerSku": {
                                                     "$map": {
                                                         "input": {
                                                             "$filter": {
-                                                                "input": "$pricebookData",
-                                                                "as": "pb",
-                                                                "cond": { "$eq": ["$$pb.category", "$$cat._id"] }
-                                                            }
-                                                        },
-                                                        "as": "pb",
-                                                        "in": {
-                                                            "priceBookName": "$$pb.name",
-                                                            "priceBookId": "$$pb._id",
-                                                            "dealerSku": {
-                                                                "$map": {
-                                                                    "input": {
-                                                                        "$filter": {
-                                                                            "input": "$dealerPricebookData",
-                                                                            "as": "dpb",
-                                                                            "cond": {
-                                                                                "$and": [
-                                                                                    { "$eq": ["$$dpb.priceBook", "$$pb._id"] },
-                                                                                    { "$eq": ["$$dpb.dealerId", "$$dealer._id"] }
-                                                                                ]
-                                                                            }
-                                                                        }
-                                                                    },
-                                                                    "as": "dpb",
-                                                                    "in": {
-                                                                        "sku": "$$dpb.dealerSku",
-                                                                        "dealerId": "$$dpb.dealerId"
-                                                                    }
+                                                                "input": "$dealerPricebookData",
+                                                                "as": "dpb",
+                                                                "cond": {
+                                                                    "$and": [
+                                                                        { "$eq": ["$$dpb.priceBook", "$$pb._id"] },
+                                                                        { "$eq": ["$$dpb.dealerId", "$dealers._id"] } // Only SKUs from this dealer
+                                                                    ]
                                                                 }
                                                             }
+                                                        },
+                                                        "as": "dpb",
+                                                        "in": {
+                                                            "sku": "$$dpb.dealerSku",
+                                                            "dealerId": "$$dpb.dealerId"
                                                         }
                                                     }
                                                 }
@@ -1133,9 +1124,7 @@ exports.getClaimReportingDropdown = async (req, res) => {
                         }
                     }
                 }
-                
             ]
-
             response = await providerService.getTopFiveServicer(servicerQuery)
         }
         if (flag == "category") {
