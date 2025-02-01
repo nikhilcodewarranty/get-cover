@@ -4,6 +4,7 @@ const dealerService = require('../../services/Dealer/dealerService')
 const servicerService = require("../../services/Provider/providerService")
 const resellerService = require('../../services/Dealer/resellerService')
 const dealerPriceService = require('../../services/Dealer/dealerPriceService')
+const customerService = require('../../services/Customer/customerService')
 const priceBookService = require('../../services/PriceBook/priceBookService')
 const providerService = require('../../services/Provider/providerService')
 const role = require("../../models/User/role");
@@ -31,7 +32,7 @@ exports.weeklySales = async (data, req, res) => {
         // Calculate start and end of the week for the given dates
         const startOfWeekDate = moment(startDate).startOf('isoWeek');
         const endOfWeekDate = moment(endDate).endOf('isoWeek');
-        console.log("endofisoweek",endDate)
+        console.log("endofisoweek", endDate)
         // Create an array of dates for each week within the specified range
         const datesArray = [];
         let currentDate = moment(startOfWeekDate);
@@ -235,7 +236,7 @@ exports.weeklySales = async (data, req, res) => {
         }
 
     } catch (err) {
-        return { code: constant.errorCode, message: err.message,stack: err.stack }
+        return { code: constant.errorCode, message: err.message, stack: err.stack }
     }
 };
 
@@ -435,7 +436,7 @@ exports.dailySales1 = async (data, req, res) => {
         let currentDate = new Date(startOfMonth);
 
         while (currentDate <= endOfMonth) {
-            console.log("new Date(currentDate)2222222222",new Date(currentDate))
+            console.log("new Date(currentDate)2222222222", new Date(currentDate))
             datesArray.push(new Date(currentDate));
             currentDate.setDate(currentDate.getDate() + 1);
         }
@@ -615,7 +616,7 @@ exports.dailySales1 = async (data, req, res) => {
         }
 
     } catch (err) {
-        return { code: constant.errorCode, message: err.message,stack: err.stack }
+        return { code: constant.errorCode, message: err.message, stack: err.stack }
     }
 };
 
@@ -1720,6 +1721,14 @@ exports.getReportingDropdowns1 = async (req, res) => {
             if (flag == "dealer") {
                 let dealerQuery = [
                     {
+                        $match: {
+                            $and: [
+                                { status: "Approved" },
+                                { accountStatus: true }
+                            ]
+                        }
+                    },
+                    {
                         $lookup: {
                             from: "dealerpricebooks",
                             localField: "_id",
@@ -2037,6 +2046,14 @@ exports.claimReportinDropdown1 = async (req, res) => {
         if (flag == "dealer") {
             let dealerQuery = [
                 {
+                    $match: {
+                        $and: [
+                            { status: "Approved" },
+                            { accountStatus: true }
+                        ]
+                    }
+                },
+                {
                     $lookup: {
                         from: "servicer_dealer_relations",
                         localField: "_id",
@@ -2190,6 +2207,14 @@ exports.claimReportinDropdown1 = async (req, res) => {
         if (flag == "servicer") {
             let servicerQuery = [
                 {
+                    $match: {
+                        $and: [
+                            { status: true },
+                            { accountStatus: "Approved" },
+                        ]
+                    }
+                },
+                {
                     $lookup: {
                         from: "servicer_dealer_relations",
                         localField: "_id",
@@ -2311,8 +2336,31 @@ exports.claimReportinDropdown1 = async (req, res) => {
                     }
                 }
             ]
-
             response = await servicerService.getTopFiveServicer(servicerQuery)
+            if (req.role == "Customer") {
+                let checkCustomer = await customerService.getCustomerById({ _id: req.userId })
+                let checkDealer = await dealerService.getDealerById(checkCustomer.dealerId)
+                let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId:checkCustomer.dealerId })
+                let ids = getServicersIds.map((item) => item.servicerId)
+                let servicer = await servicerService.getAllServiceProvider({ _id: { $in: ids }, status: true }, {})
+                let dealerResellerServicer = await resellerService.getResellers({ dealerId: checkCustomer.dealerId, isServicer: true })
+                let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
+                if (dealerResellerServicer.length > 0) {
+                    let dealerResellerServicer = await servicerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
+                    servicer = servicer.concat(dealerResellerServicer);
+                }
+                if (checkDealer.isServicer) {
+                    // servicer.unshift(checkDealer);
+                    let checkDealerServicer = await servicerService.getServiceProviderById({ dealerId: checkDealer._id })
+                    checkDealerServicer.isServicer = true
+                    servicer.push(checkDealerServicer)
+                };
+                response = response.filter(item => 
+                    servicer.some(check => check._id.toString() === item._id.toString())
+                  );
+                    console.log("filteredData------------------",response)
+            }
+
         }
         if (flag == "category") {
             let catQuery = [
