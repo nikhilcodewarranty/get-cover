@@ -5730,6 +5730,26 @@ exports.checkNumberOfCertainPeriod = async (req, res) => {
   }
 }
 
+exports.sendStaticEmail = async (req, res) => {
+  let settingData = await userService.getSetting({});
+  let adminCC = await supportingFunction.getUserEmails();
+  const base_url = `${process.env.SITE_URL}claim-listing/CC-2025-100024`
+
+  let emailData = {
+    darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+    lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+    address: settingData[0]?.address,
+    websiteSetting: settingData[0],
+    senderName: '',
+    content: `The Repair Status has been updated on the claim # CC-2025-100024 to be Request Approved. Please review the information at`,
+    subject: `Repair Status Updated for CC- 2025-100024`,
+    redirectId: base_url
+  }
+  let mailing = await sgMail.send(emailConstant.sendEmailTemplate(["bschiffner@natomasunified.org"], ["noreply@getcover.cover"], emailData))
+  res.send({
+    response:mailing
+  })
+}
 exports.updateClaimDate = async (req, res) => {
   try {
 
@@ -5889,72 +5909,6 @@ exports.updateClaimDate = async (req, res) => {
     //   }
     // }
     // let updateClaim = await claimService.markAsPaid({ orderId: "GC-2024-100003" }, updateObject, { new: true })
-
-  } catch (err) {
-    res.send({
-      code: err.stack
-    })
-  }
-}
-
-exports.sendMailStatic = async (req, res) => {
-  try {
-    let arrayEmail = [
-      {
-        "Contract# / Serial#": "5CD4192999",
-        "Claim#": "CC-2025-100022",
-        "Loss Date": "12/23/2024",
-        Diagnosis: "won't turn on",
-        "Coverage Type": "Accidental",
-        "Submitted By": "bschiffner@natomasunified.org",
-        "Ship To": "1931 Arena Blvd., Sacramento, California, 95834"
-      },
-      {
-        "Contract# / Serial#": "5CD419299Y",
-        "Claim#": "CC-2025-100023",
-        "Loss Date": "11/01/2024",
-        Diagnosis: "SCREEN AND HINGE",
-        "Coverage Type": "Accidental",
-        "Submitted By": "amarecoronado@natomasunified.org",
-        "Ship To": "1931 Arena Blvd., Sacramento, California, 95834"
-      },
-      {
-        "Contract# / Serial#": "5CD41929H7",
-        "Claim#": "CC-2025-100024",
-        "Loss Date": "12/10/2024",
-        Diagnosis: "WONT TURN ON",
-        "Coverage Type": "Accidental",
-        "Submitted By": "amarecoronado@natomasunified.org",
-        "Ship To": "1931 Arena Blvd., Sacramento, California, 95834"
-      },
-      {
-        "Contract# / Serial#": "5CD4192999",
-        "Claim#": "CC-2025-100022",
-        "Loss Date": "12/23/2024",
-        Diagnosis: "WONT TURN ON",
-        "Coverage Type": "Accidental",
-        "Submitted By": "amarecoronado@natomasunified.org",
-        "Ship To": "1931 Arena Blvd., Sacramento, California, 95834"
-      },
-      {
-        "Contract# / Serial#": "5CD4192999",
-        "Claim#": "CC-2025-100022",
-        "Loss Date": "12/23/2024",
-        Diagnosis: "WONT TURN ON",
-        "Coverage Type": "Accidental",
-        "Submitted By": "amarecoronado@natomasunified.org",
-        "Ship To": "1931 Arena Blvd., Sacramento, California, 95834"
-      },
-      {
-        "Contract# / Serial#": "5CD4192999",
-        "Claim#": "CC-2025-100022",
-        "Loss Date": "12/23/2024",
-        Diagnosis: "WONT TURN ON",
-        "Coverage Type": "Accidental",
-        "Submitted By": "amarecoronado@natomasunified.org",
-        "Ship To": "1931 Arena Blvd., Sacramento, California, 95834"
-      },
-    ]
 
   } catch (err) {
     res.send({
