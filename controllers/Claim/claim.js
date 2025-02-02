@@ -490,11 +490,13 @@ exports.addClaim = async (req, res, next) => {
 
     data.receiptImage = data.file
     let currentYear = new Date().getFullYear();
+    let currentYearWithoutHypen = new Date().getFullYear();
+
     currentYear = "-" + currentYear + "-"
     let count = await claimService.getClaimCount({ 'unique_key': { '$regex': currentYear, '$options': 'i' } });
 
     data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
-    data.unique_key_search = "CC" + currentYear + data.unique_key_number
+    data.unique_key_search = "CC" + currentYearWithoutHypen + data.unique_key_number
     data.unique_key = "CC" + currentYear + data.unique_key_number
     data.orderId = checkOrder.unique_key
     data.venderOrder = checkOrder.venderOrder
@@ -3425,6 +3427,8 @@ exports.saveBulkClaim = async (req, res) => {
 
       let currentYear = new Date().getFullYear();
       currentYear = "-" + currentYear + "-"
+    let currentYearWithoutHypen = new Date().getFullYear();
+
 
       let count = await claimService.getClaimCount({ 'unique_key': { '$regex': currentYear, '$options': 'i' } });
       let unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
@@ -3472,7 +3476,7 @@ exports.saveBulkClaim = async (req, res) => {
             model: data.contractData.model,
             manufacture: data.contractData.manufacture,
             unique_key_number: unique_key_number,
-            unique_key_search: "CC" + currentYear + unique_key_number,
+            unique_key_search: "CC" + currentYearWithoutHypen + unique_key_number,
             unique_key: "CC" + currentYear + unique_key_number,
             diagnosis: issue,
             lossDate: data.lossDate,
