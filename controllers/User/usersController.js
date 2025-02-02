@@ -3569,7 +3569,7 @@ exports.contactUs = async (req, res) => {
     }
 
     //Send email to user
-    let mailing = await sgMail.send(emailConstant.sendContactUsTemplate(data.email, adminCC, emailData))
+    let mailing = sgMail.send(emailConstant.sendContactUsTemplate(data.email, adminCC, emailData))
 
     //Send to admin
     const admin = await supportingFunction.getPrimaryUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true });
@@ -3589,7 +3589,7 @@ exports.contactUs = async (req, res) => {
 
     }
     //Send email to admin
-    mailing = await sgMail.send(emailConstant.sendContactUsTemplateAdmin(adminCC, ["noreply@getcover.com"], emailData))
+    mailing = sgMail.send(emailConstant.sendContactUsTemplateAdmin(adminCC, ["noreply@getcover.com"], emailData))
     res.send({
       code: constant.successCode,
       message: "Record save successfully!"
