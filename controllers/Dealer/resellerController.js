@@ -3103,9 +3103,9 @@ exports.getResellerAsServicerClaims = async (req, res) => {
 
         }
 
-        if (req.role != "Dealer") {
+        if (req.role == "Dealer") {
             // let getDealer = await dealerService.getAllDealers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
-            let dealerIds = getDealer.map(ID => new mongoose.Types.ObjectId(req.userID))
+            let dealerIds =[new mongoose.Types.ObjectId(req.userId)]
             dealerMatch = { dealerId: { $in: dealerIds } }
 
         }

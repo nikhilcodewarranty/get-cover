@@ -2964,7 +2964,7 @@ exports.paidUnpaidClaim = async (req, res) => {
     }
 
     let approveQuery = {}
-    if (data.startDate != "" && data.endDate != "" && flag == "Paid") {
+    if (data.startDate != "" && data.endDate != "" && paidFlag == "Paid") {
       let start = new Date(data.startDate); // Replace with your start date
       let end = new Date(data.endDate);
       end.setHours(23, 59, 999, 0)
