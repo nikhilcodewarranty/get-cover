@@ -4,6 +4,8 @@ const resellerService = require("../../services/Dealer/resellerService");
 const dealerRelationService = require("../../services/Dealer/dealerRelationService");
 const role = require("../../models/User/role");
 const claimService = require("../../services/Claim/claimService");
+const maillogservice = require("../../services/User/maillogServices");
+
 const LOG = require('../../models/User/logs')
 const userService = require("../../services/User/userService");
 const constant = require('../../config/constant')
@@ -24,6 +26,8 @@ const randtoken = require('rand-token').generator()
 exports.createServiceProvider = async (req, res, next) => {
   try {
     let data = req.body
+
+    console.log("data+++++++++++++++++++++++++", data)
     data.accountName = data.accountName.trim().replace(/\s+/g, ' ');
     const count = await providerService.getServicerCount();
     const admin = await userService.getUserById1({ metaData: { $elemMatch: { metaId: new mongoose.Types.ObjectId(req.userId), isPrimary: true } } }, {})
@@ -125,7 +129,7 @@ exports.createServiceProvider = async (req, res, next) => {
           }
         },
       }
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1, metaData: 1 })
       const IDs = adminUsers.map(user => user._id)
       let notificationEmails = adminUsers.map(user => user.email)
 
@@ -144,7 +148,12 @@ exports.createServiceProvider = async (req, res, next) => {
       }
 
       // Send Email code here
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+      let mailing
+      if (notificationEmails.length > 0) {
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+        maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+
+      }
       if (data.status) {
         for (let i = 0; i < saveMembers.length; i++) {
           if (saveMembers[i].metaData[0]?.status) {
@@ -153,7 +162,7 @@ exports.createServiceProvider = async (req, res, next) => {
             let resetPasswordCode = randtoken.generate(4, '123456789')
             let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
             let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-            const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email,
+            const mailing = await sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email,
               {
                 flag: "Approved",
                 link: resetLink,
@@ -166,6 +175,20 @@ exports.createServiceProvider = async (req, res, next) => {
                 servicerName: saveMembers[i].metaData[0].firstName + " " + saveMembers[i].metaData[0].lastName
 
               }))
+            let emailData = {
+              flag: "Approved",
+              link: resetLink,
+              darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+              lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+              title: settingData[0]?.title,
+              subject: "Set Password",
+              role: "Servicer",
+              address: settingData[0]?.address,
+              servicerName: saveMembers[i].metaData[0].firstName + " " + saveMembers[i].metaData[0].lastName
+
+            }
+            maillogservice.createMailLogFunction(mailing, emailData, [checkPrimaryEmail2], process.env.servicer_approval)
+
           }
 
         }
@@ -300,7 +323,7 @@ exports.createServiceProvider = async (req, res, next) => {
           }
         },
       }
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1, metaData: 1 })
       const IDs = adminUsers.map(user => user._id)
 
       let notificationEmails = adminUsers.map(user => user.email)
@@ -316,7 +339,12 @@ exports.createServiceProvider = async (req, res, next) => {
         subject: "Servicer Account Approved - " + checkDetail.name
       }
       // Send Email code here
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+      let mailing
+      if (notificationEmails.length > 0) {
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+        maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+
+      }
 
       let primaryEmail = teamMembers[0].email
       let primaryCode = randtoken.generate(4, '123456789')
@@ -330,7 +358,7 @@ exports.createServiceProvider = async (req, res, next) => {
       }, { new: true });
 
       let updatePrimaryLInk = `${process.env.SITE_URL}newPassword/${updatePrimaryCode._id}/${primaryCode}`
-      mailing = sgMail.send(emailConstant.servicerApproval(updatePrimaryCode.email,
+      mailing = await sgMail.send(emailConstant.servicerApproval(updatePrimaryCode.email,
         {
           darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
           lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -342,6 +370,18 @@ exports.createServiceProvider = async (req, res, next) => {
           link: updatePrimaryLInk, role: "Servicer",
           servicerName: updatePrimaryCode?.metaData[0].firstName
         }))
+      emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        flag: "Approved",
+        subject: "Set Password",
+        address: settingData[0]?.address,
+        title: settingData[0]?.title,
+        websiteSetting: settingData[0],
+        link: updatePrimaryLInk, role: "Servicer",
+        servicerName: updatePrimaryCode?.metaData[0].firstName
+      }
+      maillogservice.createMailLogFunction(mailing, emailData, [updatePrimaryCode], process.env.servicer_approval)
 
       teamMembers = teamMembers.slice(1).map(member => ({
         ...member,
@@ -373,7 +413,7 @@ exports.createServiceProvider = async (req, res, next) => {
               let resetPasswordCode = randtoken.generate(4, '123456789')
               let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
               let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-              const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email,
+              const mailing = await sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email,
                 {
                   darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
                   lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -526,7 +566,7 @@ exports.approveServicer = async (req, res, next) => {
     let saveMembers = await userService.insertManyUser(teamMembers)
     let resetPasswordCode = randtoken.generate(4, '123456789')
     let resetLink = `${process.env.SITE_URL}newPassword/${getUserId._id}/${resetPasswordCode}`
-    const mailing = sgMail.send(emailConstant.servicerApproval(data.email, { subject: "Set Password", link: resetLink }))
+    const mailing = await sgMail.send(emailConstant.servicerApproval(data.email, { subject: "Set Password", link: resetLink }))
 
     res.send({
       code: constant.successCode,
@@ -783,7 +823,7 @@ exports.rejectServicer = async (req, res) => {
 
     }
 
-    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1, metaData: 1 })
     const IDs = adminUsers.map(user => user._id)
     const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
 
@@ -811,7 +851,12 @@ exports.rejectServicer = async (req, res) => {
     }
     const notificationEmails = adminUsers.map(user => user._id)
     // Send Email code here
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+    if (notificationEmails.length > 0) {
+      let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+      maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+    }
+
+
     res.send({
       code: constant.successCode,
       message: "Deleted Successfully!"
@@ -941,8 +986,8 @@ exports.editServicerDetail = async (req, res) => {
         }
       },
     }
-    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdateServicerQuery, { email: 1 })
-    let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerUpdateServicerQuery, { email: 1 })
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdateServicerQuery, { email: 1, metaData: 1 })
+    let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerUpdateServicerQuery, { email: 1, metaData: 1 })
     const IDs = adminUsers.map(user => user._id)
     const servicerIds = servicerUsers.map(user => user._id)
     let notificationArray = []
@@ -990,7 +1035,15 @@ exports.editServicerDetail = async (req, res) => {
       content: "Information has been updated successfully! effective immediately.",
       subject: "Update Info"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(mergedEmail, ["noreply@getcover.com"], emailData))
+    let mailing
+    if (notificationEmails.length > 0) {
+      mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+      maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+    }
+    if (servicerEmail.length > 0) {
+      mailing = await sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, ["noreply@getcover.com"], emailData))
+      maillogservice.createMailLogFunction(mailing, emailData, servicerUsers, process.env.update_status)
+    }
     //Save Logs
     let logData = {
       userId: req.userId,
@@ -1099,10 +1152,10 @@ exports.updateStatus = async (req, res) => {
         }
       },
     }
-    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdateStatusQuery, { email: 1 })
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminUpdateStatusQuery, { email: 1, metaData: 1 })
     let notificationArray = []
 
-    let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerUpdateStatusQuery, { email: 1 })
+    let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerUpdateStatusQuery, { email: 1, metaData: 1 })
     if (data.status == "false" || !data.status) {
       let criteria1 = { metaData: { $elemMatch: { metaId: checkServicer._id } } }
 
@@ -1199,8 +1252,12 @@ exports.updateStatus = async (req, res) => {
           redirectId: status_content == "Active" ? resetLink : '',
           subject: "Update Status"
         }
+        let mailing
+        if (getPrimary) {
+          mailing = await sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, 'noreply@getcover.com', emailData))
+          maillogservice.createMailLogFunction(mailing, emailData, [getPrimary], process.env.update_status)
 
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, 'noreply@getcover.com', emailData))
+        }
         emailData = {
           darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
           lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -1213,9 +1270,15 @@ exports.updateStatus = async (req, res) => {
         }
 
         emailData.senderName = "Dear Admin"
-        mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, 'noreply@getcover.com', emailData))
+        if (notificationEmails.length > 0) {
+          mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, 'noreply@getcover.com', emailData))
+          maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+        }
         emailData.senderName = "Dear " + checkServicer.name
-        mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, 'noreply@getcover.com', emailData))
+        if (servicerEmail.length > 0) {
+          mailing = await sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, 'noreply@getcover.com', emailData))
+          maillogservice.createMailLogFunction(mailing, emailData, servicerUsers, process.env.update_status)
+        }
         res.send({
           code: constant.successCode,
           message: "Updated Successfully 'false'",
@@ -1290,8 +1353,10 @@ exports.updateStatus = async (req, res) => {
             redirectId: status_content == "Active" ? resetLink : '',
             subject: "Update Status"
           }
-
-          let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, 'noreply@getcover.com', emailData))
+          if (getPrimary) {
+            mailing = await sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, 'noreply@getcover.com', emailData))
+            maillogservice.createMailLogFunction(mailing, emailData, [getPrimary], process.env.update_status)
+          }
           emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -1305,9 +1370,17 @@ exports.updateStatus = async (req, res) => {
 
 
           emailData.senderName = "Dear Admin"
-          mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, 'noreply@getcover.com', emailData))
+          if (notificationEmails.length > 0) {
+            mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, 'noreply@getcover.com', emailData))
+            maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+          }
+
           emailData.senderName = "Dear " + checkServicer.name
-          mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, 'noreply@getcover.com', emailData))
+          if (servicerEmail.length > 0) {
+            mailing = await sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, 'noreply@getcover.com', emailData))
+            maillogservice.createMailLogFunction(mailing, emailData, servicerUsers, process.env.update_status)
+          }
+
           res.send({
             code: constant.successCode,
             message: "Updated Successfully 'false'",
@@ -1542,7 +1615,7 @@ exports.registerServiceProvider = async (req, res) => {
 
     }
 
-    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1, metaData: 1 })
 
     const IDs = adminUsers.map(user => user._id)
 
@@ -1576,9 +1649,12 @@ exports.registerServiceProvider = async (req, res) => {
       role: "Servicer!",
       subject: "New Servicer Registration Request Received",
     }
-
+    let mailing
     // Send Email code here
-    let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
+    if (createdUser) {
+      mailing = await sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
+      maillogservice.createMailLogFunction(mailing, emailData, [createdUser], process.env.main_template)
+    }
     const admin = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true } } })
 
     const notificationEmail = adminUsers.map(user => user.email)
@@ -1591,7 +1667,11 @@ exports.registerServiceProvider = async (req, res) => {
       content: "A new servicer " + ServicerMeta.name + " has been registered",
       subject: 'New Servicer Registration'
     }
-    mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmail, ["noreply@getcover.com"], emailData))
+    if (notificationEmail.length > 0) {
+      mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmail, ["noreply@getcover.com"], emailData))
+      maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+    }
+
     let logData = {
       userId: req.teammateId,
       endpoint: "servicer/register",
@@ -1892,8 +1972,8 @@ exports.addServicerUser = async (req, res) => {
           }
         },
       }
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminServicerUserQuery, { email: 1 })
-      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerServicerUserQuery, { email: 1 })
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminServicerUserQuery, { email: 1, metaData: 1 })
+      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerServicerUserQuery, { email: 1, metaData: 1 })
       const IDs = adminUsers.map(user => user._id)
       const servicerId = servicerUsers.map(user => user._id)
       if (adminUsers.length > 0) {
@@ -1933,7 +2013,7 @@ exports.addServicerUser = async (req, res) => {
       let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
       let settingData = await userService.getSetting({});
 
-      const mailing = sgMail.send(emailConstant.servicerApproval(email,
+      const mailing = await sgMail.send(emailConstant.servicerApproval(email,
         {
           flag: "Approved",
           link: resetLink,
@@ -1945,6 +2025,19 @@ exports.addServicerUser = async (req, res) => {
           address: settingData[0]?.address,
           servicerName: data.firstName + " " + data.lastName
         }))
+      let emailData = {
+        flag: "Approved",
+        link: resetLink,
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        title: settingData[0]?.title,
+        subject: "Set Password",
+        role: "Servicer User",
+        address: settingData[0]?.address,
+        servicerName: data.firstName + " " + data.lastName
+      }
+      maillogservice.createMailLogFunction(mailing, emailData, [saveData], process.env.servicer_approval)
+
       const notificationEmails = adminUsers.map(user => user.email)
 
       res.send({
@@ -2063,9 +2156,9 @@ exports.createDeleteRelation = async (req, res) => {
           }
         },
       }
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminAssignServicerQuery, { email: 1 })
-      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerQuery, { email: 1 })
-      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerQuery, { email: 1 })
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminAssignServicerQuery, { email: 1, metaData: 1 })
+      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerQuery, { email: 1, metaData: 1 })
+      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerQuery, { email: 1, metaData: 1 })
 
       const IDs = adminUsers.map(user => user._id)
       const dealerId = dealerUsers.map(user => user._id)
@@ -2073,8 +2166,8 @@ exports.createDeleteRelation = async (req, res) => {
       const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
       const base_url = `${process.env.SITE_URL}`
       let notificationArray = {
-        title: "Servicer Assigned to Dealer",
-        description: `We are reaching out to notify you about a recent update regarding the servicer list assigned to ${checkDealer.name}`,
+        title: "Dealer Assigned to Servicer",
+        description: `We are reaching out to notify you about a recent update regarding the dealer list assigned to ${checkServicer.name}`,
         userId: req.teammateId,
         contentId: null,
         flag: 'Assigned Servicer',
@@ -2088,7 +2181,7 @@ exports.createDeleteRelation = async (req, res) => {
       let createNotification = await userService.createNotification(notificationArray);
 
       notificationArray = {
-        title: "Servicer Assigned",
+        title: "Dealer Assigned",
         description: `We are reaching out to notify you about a recent update regarding the servicer list assigned to you`,
         userId: req.teammateId,
         contentId: null,
@@ -2602,7 +2695,7 @@ exports.getServicerClaims = async (req, res) => {
     statusMatch = {}
 
     if (data.dateFilter != "") {
-      data.endDate = new Date(data.endDate).setHours(11, 59, 0, 0)
+      data.endDate = new Date(data.endDate).setHours(23, 59, 999, 0)
       if (data.dateFilter == "damageDate") {
         dateMatch = { lossDate: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
         // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
@@ -2779,6 +2872,7 @@ exports.getServicerClaims = async (req, res) => {
         }
       }
     })
+
     let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0
     let getTheThresholdLimit = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
 
@@ -2855,18 +2949,17 @@ exports.paidUnpaidClaim = async (req, res) => {
   try {
     let data = req.body
     let dateQuery = {}
-    const flag = req.body.flag == 1 ? 'Paid' : 'Unpaid'
+    const paidFlag = req.body.paidFlag == 1 ? 'Paid' : 'Unpaid'
 
-    if (data.noOfDays) {
+    if (data.noOfDays != '') {
       let end = moment().endOf('day').set({ millisecond: 0 })
-      // end.setHours(23, 59, 999, 0)
       const start = moment().subtract(data.noOfDays, 'days').startOf('day')
       dateQuery = {
+        claimDate: { $lte: new Date(start) }
         // claimDate: {
         //   $gt: new Date(start),
         //   $lte: new Date(end),
         // }
-        claimDate: { $lte: new Date(start) }
       }
     }
 
@@ -2887,19 +2980,54 @@ exports.paidUnpaidClaim = async (req, res) => {
 
     }
 
+    // let approveQuery = {}
+    // if (data.startDate != "" && data.endDate != "" && paidFlag == "Paid") {
+    //   let start = new Date(data.startDate); // Replace with your start date
+    //   data.endDate = new Date(data.endDate)
+    //   data.endDate.setHours(23, 59, 999, 0)
+    //   // Add one day to the end date
+    //   // end.setDate(end.getDate() + 1);
+    //   start.setDate(start.getDate() + 1);
+    //   approveQuery = {
+    //     approveDate: {
+    //       $gte: new Date(start),
+    //       $lte: new Date(data.endDate),
+    //     }
+    //   }
+
+    // }
+
     let query = { isDeleted: false };
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
     let servicerId = req.params.servicerId
+    let checkServicer = await providerService.getServiceProviderById({
+      $or: [
+        { _id: req.params.servicerId },
+        { resellerId: req.params.servicerId },
+        { dealerId: req.params.servicerId },
+
+      ]
+    })
+    let servicerIdToCheck = checkServicer._id
     let match = {};
-    if (req.role == 'Dealer') {
-      match = { 'contracts.orders.dealerId': new mongoose.Types.ObjectId(req.userId) }
-      servicerId = req.userId
-    }
+
+    // id is getting in the param from the frontend side
+
+    // if (req.role == 'Dealer') {
+    //   match = { 'contracts.orders.dealerId': new mongoose.Types.ObjectId(req.userId) }
+    //   checkServicer = await providerService.getServiceProviderById({ dealerId: req.userId })
+    //   servicerIdToCheck = checkServicer._id
+    //   servicerId = req.userId
+
+    // }
     if (req.role == 'Reseller') {
       match = { 'contracts.orders.resellerId': new mongoose.Types.ObjectId(req.userId) }
+      checkServicer = await providerService.getServiceProviderById({ resellerId: req.userId })
+      servicerIdToCheck = checkServicer._id
       servicerId = req.userId
+
     }
     if (req.role == 'Customer') {
       match = { 'contracts.orders.customerId': new mongoose.Types.ObjectId(req.userId) }
@@ -2983,6 +3111,7 @@ exports.paidUnpaidClaim = async (req, res) => {
               "contracts.orders.dealers.name": 1,
               "contracts.orders.dealers.isServicer": 1,
               "contracts.orders.dealers._id": 1,
+              "contracts.orders.dealers.accountStatus": 1,
               "contracts.orders.customer.username": 1,
               "contracts.orders.dealers.dealerServicer": {
                 $map: {
@@ -3011,7 +3140,8 @@ exports.paidUnpaidClaim = async (req, res) => {
                   in: {
                     "_id": "$$reseller._id",
                     "name": "$$reseller.name",
-                    "isServicer": "$$reseller.isServicer"
+                    "isServicer": "$$reseller.isServicer",
+                    "status": "$$reseller.status"
                   }
                 }
               }
@@ -3063,10 +3193,10 @@ exports.paidUnpaidClaim = async (req, res) => {
 
             { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { 'productName': { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { claimPaymentStatus: flag },
+            { claimPaymentStatus: paidFlag },
             dateQuery,
             approveQuery,
-            { 'servicerId': new mongoose.Types.ObjectId(servicerId) }
+            { 'servicerId': { $in: [new mongoose.Types.ObjectId(servicerId), new mongoose.Types.ObjectId(servicerIdToCheck)] } }
           ]
         },
       },
@@ -3188,7 +3318,7 @@ exports.paidUnpaidClaim = async (req, res) => {
 
     const dynamicOption = await userService.getOptions({ name: 'coverage_type' })
 
-    const result_Array = resultFiter.map((item1) => {
+    let result_Array = await Promise.all(resultFiter.map(async (item1) => {
       servicer = []
       let servicerName = '';
       item1.approveDate = item1?.approveDate ? item1.approveDate : ''
@@ -3206,11 +3336,18 @@ exports.paidUnpaidClaim = async (req, res) => {
       if (item1.contracts.orders.servicers[0]?.length > 0) {
         servicer.unshift(item1.contracts.orders.servicers[0])
       }
-      if (item1.contracts.orders.resellers[0]?.isServicer) {
-        servicer.unshift(item1.contracts.orders.resellers[0])
+
+
+      let dealerResellerServicer = await resellerService.getResellers({ dealerId: item1.contracts.orders.dealers._id, isServicer: true, status: true })
+      let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
+      if (dealerResellerServicer.length > 0) {
+        let dealerResellerServicer = await providerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
+        servicer = servicer.concat(dealerResellerServicer);
       }
-      if (item1.contracts.orders.dealers.isServicer) {
-        servicer.unshift(item1.contracts.orders.dealers)
+
+      if (item1.contracts.orders.dealers.isServicer && item1.contracts.orders.dealers.accountStatus) {
+        let checkDealerServicer = await providerService.getServiceProviderById({ dealerId: item1.contracts.orders.dealers._id })
+        servicer.push(checkDealerServicer)
       }
       if (item1.servicerId != null) {
         servicerName = servicer.find(servicer => servicer._id?.toString() === item1.servicerId?.toString());
@@ -3227,7 +3364,7 @@ exports.paidUnpaidClaim = async (req, res) => {
           mergedData: mergedData
         }
       }
-    })
+    }));
     let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0
     res.send({
       code: constant.successCode,
@@ -3292,7 +3429,7 @@ exports.saveServicerSetting = async (req, res) => {
   }
 }
 
-//Reset Setting 
+//Reset Setting
 exports.resetServicerSetting = async (req, res) => {
   try {
     // if (req.role != "Super Admin") {
@@ -3306,70 +3443,33 @@ exports.resetServicerSetting = async (req, res) => {
 
     let data = req.body;
     const adminSetting = await userService.getSetting({ userId: req.userId });
-
-    let servicerId = req.body.servicerId
-
+    let servicerId = data.id
     let response;
     const getData = await userService.getSetting({ userId: servicerId });
-    let defaultResetColor = [];
-    let defaultPaymentDetail = '';
-    let defaultLightLogo = {};
-    let defaultDarkLogo = {};
-    let defaultFavIcon = {};
-    let defaultAddress = '';
-    let defaultTitle = '';
-    if (getData[0]?.defaultColor.length > 0) {
-      defaultResetColor = getData[0]?.defaultColor
-      defaultPaymentDetail = getData[0]?.defaultPaymentDetail
-      defaultLightLogo = {
-        fileName: getData[0].defaultLightLogo.fileName,
-        name: getData[0].defaultLightLogo.name,
-        size: getData[0].defaultLightLogo.size
-      }
-      defaultDarkLogo = {
-        fileName: getData[0].defaultDarkLogo.fileName,
-        name: getData[0].defaultDarkLogo.name,
-        size: getData[0].defaultDarkLogo.size
-      }
-      defaultFavIcon = {
-        fileName: getData[0].defaultFavIcon.fileName,
-        name: getData[0].defaultFavIcon.name,
-        size: getData[0].defaultFavIcon.size
-      }
-      defaultAddress = getData[0]?.defaultAddress
-      defaultTitle = getData[0]?.defaultTitle
-    }
-    else {
-      defaultResetColor = adminSetting[0]?.defaultColor
-      defaultPaymentDetail = adminSetting[0]?.defaultPaymentDetail
-      defaultLightLogo = {
-        fileName: adminSetting[0].defaultLightLogo.fileName,
-        name: adminSetting[0].defaultLightLogo.name,
-        size: adminSetting[0].defaultLightLogo.size
-      }
-      defaultDarkLogo = {
-        fileName: adminSetting[0].defaultDarkLogo.fileName,
-        name: adminSetting[0].defaultDarkLogo.name,
-        size: adminSetting[0].defaultDarkLogo.size
-      }
-      defaultFavIcon = {
-        fileName: adminSetting[0].defaultFavIcon.fileName,
-        name: adminSetting[0].defaultFavIcon.name,
-        size: adminSetting[0].defaultFavIcon.size
-      }
-      defaultAddress = adminSetting[0]?.defaultAddress
-      defaultTitle = adminSetting[0]?.defaultTitle
-    }
     response = await userService.updateSetting({ _id: getData[0]?._id }, {
-      colorScheme: defaultResetColor,
-      logoLight: defaultLightLogo,
-      logoDark: defaultDarkLogo,
-      favIcon: defaultFavIcon,
-      title: defaultTitle,
-      address: defaultAddress,
-      paymentDetail: defaultPaymentDetail,
+      colorScheme: [],
+      defaultColor: [],
+      logoLight: {
+        fileName: adminSetting[0].logoLight.fileName,
+        name: adminSetting[0].logoLight.name,
+        size: adminSetting[0].logoLight.size
+      },
+      logoDark: {
+        fileName: adminSetting[0].logoDark.fileName,
+        name: adminSetting[0].logoDark.name,
+        size: adminSetting[0].logoDark.size
+      },
+      favIcon: {
+        fileName: adminSetting[0].favIcon.fileName,
+        name: adminSetting[0].favIcon.name,
+        size: adminSetting[0].favIcon.size
+      },
+      title: adminSetting[0]?.title,
+      address: adminSetting[0]?.address,
+      paymentDetail: adminSetting[0]?.paymentDetail,
       setDefault: 1
     }, { new: true })
+
     res.send({
       code: constant.successCode,
       message: "Reset Successfully!!",
@@ -3450,6 +3550,10 @@ exports.getServicerColorSetting = async (req, res) => {
 
     let setting = await userService.getSetting({ userId: servicerId });
     const baseUrl = process.env.API_ENDPOINT;
+    if (!setting[0] || setting[0].colorScheme.length == 0) {
+      setting = await userService.getSetting({});
+    }
+
     if (setting.length > 0) {
       setting[0].base_url = baseUrl;
 
@@ -3483,3 +3587,34 @@ exports.getServicerColorSetting = async (req, res) => {
 
 
 
+
+exports.updateClaimsApproveDate = async (req, res) => {
+  try {
+    let data = req.body
+    let claims = await claimService.getClaims()
+    console.log("---------------------dddd------", claims.length)
+    for (let i = 0; i < claims.length; i++) {
+      console.log(i, "----------------ddddgggggg-----------", claims[i].updatedAt, claims[i].unique_key)
+      let approveDate = claims[i].claimDate
+      console.log(i, "---------------------dddd------", approveDate)
+
+
+
+      if (!claims[i].approveDate || claims[i].approveDate == null) {
+        let newValue = {
+          $set: {
+            approveDate: approveDate
+          }
+        }
+        let updateData = await claimService.updateClaim({ _id: claims[i]._id }, newValue, { new: true })
+        console.log(i, "---------------------------", updateData.approveDate)
+      }
+
+    }
+
+  } catch (err) {
+    res.send({
+      message: err.message
+    })
+  }
+}

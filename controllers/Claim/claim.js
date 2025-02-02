@@ -17,7 +17,8 @@ const supportingFunction = require('../../config/supportingFunction')
 let dealerController = require("../../controllers/Dealer/dealerController")
 const jwt = require("jsonwebtoken");
 const emailConstant = require('../../config/emailConstant');
-const constant = require("../../config/constant");
+const constant = require("../../config/constant")
+const maillogservice = require("../../services/User/maillogServices");
 const sgMail = require('@sendgrid/mail');
 const moment = require("moment");
 sgMail.setApiKey(process.env.sendgrid_key);
@@ -327,6 +328,8 @@ exports.addClaim = async (req, res, next) => {
     let data = req.body;
 
     let checkContract = await contractService.getContractById({ _id: data.contractId })
+    const checkOrder = await orderService.getOrder({ _id: checkContract.orderId }, { isDeleted: false })
+
     // data.lossDate = new Date(data.lossDate).setDate(new Date(data.lossDate).getDate() + 1)
     // data.lossDate = new Date(data.lossDate)
     const submittedUser = await userService.getUserById1({ _id: data.submittedBy }, {})
@@ -357,7 +360,61 @@ exports.addClaim = async (req, res, next) => {
         })
         return;
       }
+      //check servicer price book and category exist in the database
+      let filterPriceBook = checkOrder.productsArray.filter(product => product._id.toString() === checkContract.orderProductId.toString());
+      let priceBookData = {}
+      let checkServicerData = await servicerService.servicerPriceBook({ servicerId: checkServicer._id }, {})
+      if (!checkServicerData) {
+        priceBookData.servicerId = checkServicer._id
+        priceBookData.categoryArray = [
+          {
+            categoryId: filterPriceBook[0]?.categoryId
+          }
+        ]
+        priceBookData.priceBookArray = [
+          {
+            priceBookId: filterPriceBook[0]?.priceBookId
+          }
+        ]
+
+        const saveData = await servicerService.saveServicerPriceBook(priceBookData)
+      }
+      else {
+        let checkCategoryQuery = {
+          categoryArray: {
+            $elemMatch: { categoryId: filterPriceBook[0]?.categoryId }
+          },
+          servicerId: checkServicer._id
+        }
+        let checkCategoryData = await servicerService.servicerPriceBook(checkCategoryQuery, {})
+        if (!checkCategoryData) {
+          checkServicerData.categoryArray.push({ categoryId: filterPriceBook[0]?.categoryId })
+        }
+        let checkPriceBookQuery = {
+          priceBookArray: {
+            $elemMatch: { priceBookId: filterPriceBook[0]?.priceBookId }
+          },
+          servicerId: checkServicer._id
+        }
+        const checkPriceBookData = await servicerService.servicerPriceBook(checkPriceBookQuery, {})
+        if (!checkPriceBookData) {
+          checkServicerData.priceBookArray.push({ priceBookId: filterPriceBook[0]?.priceBookId })
+        }
+        console.log("checkServicerData2----------------------", checkServicerData)
+        let newValue = {
+          $set: {
+            categoryArray: checkServicerData.categoryArray,
+            priceBookArray: checkServicerData.priceBookArray,
+          }
+        }
+
+        await servicerService.updateServicerPriceBook({ _id: checkServicerData._id }, checkServicerData, { new: true })
+      }
+
+      data.servicerId = checkServicer._id ? checkServicer._id : null
+
     }
+
 
     let checkCoverageStartDate = new Date(checkContract.coverageStartDate).setHours(0, 0, 0, 0)
     if (new Date(checkCoverageStartDate) > new Date(data.lossDate)) {
@@ -432,9 +489,6 @@ exports.addClaim = async (req, res, next) => {
     }
 
     data.receiptImage = data.file
-    data.servicerId = data.servicerId ? data.servicerId : null
-
-    const checkOrder = await orderService.getOrder({ _id: checkContract.orderId }, { isDeleted: false })
     let currentYear = new Date().getFullYear();
     currentYear = "-" + currentYear + "-"
     let count = await claimService.getClaimCount({ 'unique_key': { '$regex': currentYear, '$options': 'i' } });
@@ -519,7 +573,7 @@ exports.addClaim = async (req, res, next) => {
         }
       },
     }
-    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminAddClaimQuery, { email: 1 })
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminAddClaimQuery, { email: 1, metaData: 1 })
     const IDs = adminUsers.map(user => user._id)
     if (adminUsers.length > 0) {
       let notificationAdmin = {
@@ -551,7 +605,7 @@ exports.addClaim = async (req, res, next) => {
         }
       },
     }
-    let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerAddClaimQuery, { email: 1 })
+    let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerAddClaimQuery, { email: 1, metaData: 1 })
     const dealerIds = dealerUsers.map(user => user._id)
     if (dealerUsers.length > 0) {
       let notificationDealer = {
@@ -576,7 +630,7 @@ exports.addClaim = async (req, res, next) => {
             { status: true },
             {
               $or: [
-                { metaId: checkOrder.resellerId },
+                { metaId: checkOrder?.resellerId },
                 // { metaId: data?.servicerId },
               ]
             },
@@ -584,7 +638,7 @@ exports.addClaim = async (req, res, next) => {
         }
       },
     }
-    let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerAddClaimQuery, { email: 1 })
+    let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerAddClaimQuery, { email: 1, metaData: 1 })
     const resellerIds = resellerUsers.map(user => user._id)
 
     if (resellerUsers.length > 0) {
@@ -619,7 +673,7 @@ exports.addClaim = async (req, res, next) => {
         }
       },
     }
-    let customerUsers = await supportingFunction.getNotificationEligibleUser(customerAddClaimQuery, { email: 1 })
+    let customerUsers = await supportingFunction.getNotificationEligibleUser(customerAddClaimQuery, { email: 1, metaData: 1 })
     const customerIds = customerUsers.map(user => user._id)
     if (customerUsers.length > 0) {
       let notificationCustomer = {
@@ -644,14 +698,16 @@ exports.addClaim = async (req, res, next) => {
             { status: true },
             {
               $or: [
-                { metaId: data?.servicerId },
+                { metaId: checkServicer?._id },
+                { metaId: checkServicer?.dealerId },
+                { metaId: checkServicer?.resellerId },
               ]
             },
           ]
         }
       },
     }
-    let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerAddClaimQuery, { email: 1 })
+    let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerAddClaimQuery, { email: 1, metaData: 1 })
     const servicerIds = servicerUsers.map(user => user._id)
     if (servicerUsers.length > 0) {
       let notificationServicer = {
@@ -670,10 +726,15 @@ exports.addClaim = async (req, res, next) => {
     let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } })
     let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } })
     let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } })
-    let servicerPrimary = await supportingFunction.getPrimaryUser({ $or: [{ metaData: { $elemMatch: { metaId: data?.servicerId, isPrimary: true } } }, { metaData: { $elemMatch: { metaId: checkServicer?.dealerId, isPrimary: true } } }, { metaData: { $elemMatch: { metaId: checkServicer?.resellerId, isPrimary: true } } }] })
+    let servicerPrimary = await supportingFunction.getPrimaryUser({
+      $or: [
+        { metaData: { $elemMatch: { metaId: checkServicer?._id, isPrimary: true } } },
+        { metaData: { $elemMatch: { metaId: checkServicer?.dealerId, isPrimary: true } } },
+        { metaData: { $elemMatch: { metaId: checkServicer?.resellerId, isPrimary: true } } }]
+    })
 
     let createNotification = await userService.saveNotificationBulk(notificationArray);
-    console.log("-----------------------------------------------------11111")
+
     // Send Email code here
     let settingData = await userService.getSetting({});
     let adminCC = await supportingFunction.getUserEmails();
@@ -723,13 +784,27 @@ exports.addClaim = async (req, res, next) => {
       emailData.subject = `Claim Received -${claimResponse.unique_key}`
       emailData.content = `The Claim # ${claimResponse.unique_key} has been successfully filed for the Contract # ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here :`
       emailData.senderName = `Dear Admin`
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(adminEmail, ["noreply@getcover.com"], emailData))
-      emailData.senderName = `Dear ${dealerPrimary.metaData[0]?.firstName}`
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.com"], emailData))
-      emailData.senderName = `Dear ${resellerPrimary?.metaData[0]?.firstName}`
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ["noreply@getcover.com"], emailData))
-      emailData.senderName = `Dear ${customerPrimary.metaData[0]?.firstName}`
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(customerEmail, ["noreply@getcover.com"], emailData))
+      if (adminEmail.length > 0) {
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(adminEmail, ["noreply@getcover.com"], emailData))
+        maillogservice.createMailLogFunction(mailing, emailData, adminUser, process.env.update_status)
+      }
+      if (dealerEmail.length > 0) {
+        emailData.senderName = `Dear ${dealerPrimary.metaData[0]?.firstName}`
+
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.com"], emailData))
+        maillogservice.createMailLogFunction(mailing, emailData, dealerUser, process.env.update_status)
+      }
+      if (resellerEmail.length > 0) {
+        emailData.senderName = `Dear ${resellerPrimary?.metaData[0]?.firstName}`
+
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ["noreply@getcover.com"], emailData))
+        maillogservice.createMailLogFunction(mailing, emailData, resellerUser, process.env.update_status)
+      }
+      if (customerEmail.length > 0) {
+        emailData.senderName = `Dear ${customerPrimary.metaData[0]?.firstName}`
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(customerEmail, ["noreply@getcover.com"], emailData))
+        maillogservice.createMailLogFunction(mailing, emailData, customerUser, process.env.update_status)
+      }
     }
     else {
       const customerCaseNotification = {
@@ -758,18 +833,24 @@ exports.addClaim = async (req, res, next) => {
       const adminEmail = adminUser.map(user => user.email)
       const dealerEmail = dealerUser.map(user => user.email)
       const resellerEmail = resellerUser.map(user => user.email)
-
-      emailData.subject = `Claim Received - ${claimResponse.unique_key}`
-      emailData.content = `The Claim # ${claimResponse.unique_key} has been successfully filed for the Contract #  ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here :`
-      emailData.senderName = `Dear Admin`
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(adminEmail, ["noreply@getcover.com"], emailData))
-      emailData.senderName = `Dear ${dealerPrimary.metaData[0]?.firstName}`
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.com"], emailData))
-      emailData.senderName = `Dear ${resellerPrimary?.metaData[0]?.firstName}`
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ["noreply@getcover.com"], emailData))
+      if (adminEmail.length > 0) {
+        emailData.subject = `Claim Received - ${claimResponse.unique_key}`
+        emailData.content = `The Claim # ${claimResponse.unique_key} has been successfully filed for the Contract #  ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here :`
+        emailData.senderName = `Dear Admin`
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(adminEmail, ["noreply@getcover.com"], emailData))
+        maillogservice.createMailLogFunction(mailing, emailData, adminUser, process.env.update_status)
+      }
+      if (dealerEmail.length > 0) {
+        emailData.senderName = `Dear ${dealerPrimary.metaData[0]?.firstName}`
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.com"], emailData))
+        maillogservice.createMailLogFunction(mailing, emailData, dealerUser, process.env.update_status)
+      }
+      if (resellerEmail.length > 0) {
+        emailData.senderName = `Dear ${resellerPrimary?.metaData[0]?.firstName}`
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ["noreply@getcover.com"], emailData))
+        maillogservice.createMailLogFunction(mailing, emailData, resellerUser, process.env.update_status)
+      }
     }
-    console.log("-----------------------------------------------------2222222")
-
     // Email to servicer and cc to admin 
     if (servicerPrimary) {
       emailData = {
@@ -792,7 +873,9 @@ exports.addClaim = async (req, res, next) => {
                 {
                   $or: [
                     { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                    { metaId: checkServicer._id },
+                    { metaId: checkServicer?._id },
+                    { metaId: checkServicer?.dealerId },
+                    { metaId: checkServicer?.resellerId },
                   ]
                 },
 
@@ -809,14 +892,16 @@ exports.addClaim = async (req, res, next) => {
         emailData.subject = `New Device Received for Repair - ID: ${claimResponse.unique_key}`
         emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device detailed below:`
         // emailData.senderName = "Admin"
-        // mailing = sgMail.send(emailConstant.sendServicerClaimNotification(adminEmail, ["noreply@getcover.com"], emailData))
+        //mailing = await sgMail.send(emailConstant.sendServicerClaimNotification(adminEmail, ["noreply@getcover.com"], emailData))
         emailData.senderName = servicerPrimary?.metaData[0]?.firstName
-        mailing = sgMail.send(emailConstant.sendServicerClaimNotification(servicerEmail, ["noreply@getcover.com"], emailData))
+        if (servicerEmail.length > 0) {
+          mailing = await sgMail.send(emailConstant.sendServicerClaimNotification(servicerEmail, ["noreply@getcover.com"], emailData))
+          maillogservice.createMailLogFunction(mailing, emailData, servicerUser, process.env.update_status)
+        }
+
       }
 
     }
-    console.log("-----------------------------------------------------333333")
-
     res.send({
       code: constant.successCode,
       message: 'Success!',
@@ -856,6 +941,18 @@ exports.editClaim = async (req, res) => {
         message: "Invalid claim ID"
       })
       return
+    }
+    if (checkClaim.claimFile === "completed" || checkClaim.claimFile === "rejected") {
+      const message =
+        checkClaim.claimFile === "completed"
+          ? "The claim has already been processed and is marked as completed."
+          : "The claim has been rejected. Please contact support for further assistance.";
+
+      res.send({
+        code: constant.errorCode,
+        message: message,
+      });
+      return;
     }
     if (checkClaim.claimFile == 'open') {
       let contract = await contractService.getContractById({ _id: checkClaim.contractId });
@@ -934,7 +1031,7 @@ exports.editClaim = async (req, res) => {
           }
         },
       }
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminEditClaimQuery, { email: 1 })
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminEditClaimQuery, { email: 1, metaData: 1 })
       const IDs = adminUsers.map(user => user._id)
       let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkClaim?.servicerId, isPrimary: true } } })
       //chek servicer status
@@ -962,7 +1059,9 @@ exports.editClaim = async (req, res) => {
               { status: true },
               {
                 $or: [
-                  { metaId: checkClaim?.servicerId },
+                  { metaId: checkServicer?._id },
+                  { metaId: checkServicer?.dealerId },
+                  { metaId: checkServicer?.resellerId },
                 ]
               },
 
@@ -970,7 +1069,7 @@ exports.editClaim = async (req, res) => {
           }
         },
       }
-      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerEditClaimQuery, { email: 1 })
+      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerEditClaimQuery, { email: 1, metaData: 1 })
       const servicerIDs = servicerUsers.map(user => user._id)
       if (servicerUsers.length > 0) {
         let notificationAdmin = {
@@ -1016,9 +1115,16 @@ exports.editClaim = async (req, res) => {
         subject: `Update on Repair Information for Claim  ID ${checkClaim.unique_key}`
       }
       emailData.senderName = "Dear Admin"
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-      emailData.senderName = servicerPrimary ? servicerPrimary.metaData[0]?.firstName : '',
-        mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmails, ["noreply@getcover.com"], emailData))
+      if (notificationEmails.length > 0) {
+        let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+        maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+
+      }
+      if (servicerEmails.length > 0) {
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(servicerEmails, ["noreply@getcover.com"], emailData))
+        maillogservice.createMailLogFunction(mailing, emailData, servicerUsers, process.env.update_status)
+
+      }
 
 
       let totalClaimQuery1 = [
@@ -1277,7 +1383,7 @@ exports.editClaimStatus = async (req, res) => {
           }
         },
       }
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminCustomerStatusUpdateQuery, { email: 1 })
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminCustomerStatusUpdateQuery, { email: 1, metaData: 1 })
       const IDs = adminUsers.map(user => user._id)
       if (adminUsers.length > 0) {
         let notificationAdmin = {
@@ -1310,7 +1416,7 @@ exports.editClaimStatus = async (req, res) => {
         },
       }
 
-      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerAddClaimQuery, { email: 1 })
+      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerAddClaimQuery, { email: 1, metaData: 1 })
       const dealerIds = dealerUsers.map(user => user._id)
       if (dealerUsers.length > 0) {
         let notificationDealer = {
@@ -1341,7 +1447,7 @@ exports.editClaimStatus = async (req, res) => {
           }
         },
       }
-      let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerAddClaimQuery, { email: 1 })
+      let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerAddClaimQuery, { email: 1, metaData: 1 })
       const resellerIds = resellerUsers.map(user => user._id)
 
       if (resellerUsers.length > 0) {
@@ -1375,7 +1481,7 @@ exports.editClaimStatus = async (req, res) => {
           }
         },
       }
-      let customerUsers = await supportingFunction.getNotificationEligibleUser(customerAddClaimQuery, { email: 1 })
+      let customerUsers = await supportingFunction.getNotificationEligibleUser(customerAddClaimQuery, { email: 1, metaData: 1 })
       const customerIds = customerUsers.map(user => user._id)
       if (customerUsers.length > 0) {
         let notificationCustomer = {
@@ -1398,14 +1504,16 @@ exports.editClaimStatus = async (req, res) => {
               { status: true },
               {
                 $or: [
-                  { metaId: checkClaim?.servicerId },
+                  { metaId: checkServicer?._id },
+                  { metaId: checkServicer?.dealerId },
+                  { metaId: checkServicer?.resellerId },
                 ]
               },
             ]
           }
         },
       }
-      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerAddClaimQuery, { email: 1 })
+      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerAddClaimQuery, { email: 1, metaData: 1 })
       const servicerIds = servicerUsers.map(user => user._id)
       if (servicerUsers.length > 0) {
         let notificationServicer = {
@@ -1447,11 +1555,30 @@ exports.editClaimStatus = async (req, res) => {
         subject: `Customer Status Updated for ${checkClaim.unique_key}`,
         redirectId: base_url
       }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(adminEmail, ["noreply@getcover.com"], emailData))
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.com"], emailData))
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(customerEmail, ["noreply@getcover.com"], emailData))
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ["noreply@getcover.com"], emailData))
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, ["noreply@getcover.com"], emailData))
+      if (adminEmail.length > 0) {
+        let mailing = await sgMail.send(emailConstant.sendEmailTemplate(adminEmail, ["noreply@getcover.com"], emailData))
+        maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+
+      }
+      if (dealerEmail.length > 0) {
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.com"], emailData))
+        maillogservice.createMailLogFunction(mailing, emailData, dealerUsers, process.env.update_status)
+
+      }
+      if (customerEmail.length > 0) {
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(customerEmail, ["noreply@getcover.com"], emailData))
+        maillogservice.createMailLogFunction(mailing, emailData, customerUsers, process.env.update_status)
+
+      }
+      if (resellerEmail.length > 0) {
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ["noreply@getcover.com"], emailData))
+        maillogservice.createMailLogFunction(mailing, emailData, resellerUsers, process.env.update_status)
+
+      }
+      if (servicerEmail.length > 0) {
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, ["noreply@getcover.com"], emailData))
+        maillogservice.createMailLogFunction(mailing, emailData, servicerUsers, process.env.update_status)
+      }
 
     }
     if (data.hasOwnProperty("repairStatus")) {
@@ -1490,7 +1617,7 @@ exports.editClaimStatus = async (req, res) => {
           }
         },
       }
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminRepairStatusUpdateQuery, { email: 1 })
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminRepairStatusUpdateQuery, { email: 1, metaData: 1 })
       const IDs = adminUsers.map(user => user._id)
       if (adminUsers.length > 0) {
         //Get submitted user
@@ -1524,7 +1651,7 @@ exports.editClaimStatus = async (req, res) => {
           }
         },
       }
-      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerRepairStatusUpdateQuery, { email: 1 })
+      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerRepairStatusUpdateQuery, { email: 1, metaData: 1 })
 
       const dealerids = dealerUsers.map(user => user._id)
       if (dealerUsers.length > 0) {
@@ -1557,7 +1684,7 @@ exports.editClaimStatus = async (req, res) => {
           }
         },
       }
-      let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerRepairStatusUpdateQuery, { email: 1 })
+      let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerRepairStatusUpdateQuery, { email: 1, metaData: 1 })
 
       const reselerids = resellerUsers.map(user => user._id)
       if (resellerUsers.length > 0) {
@@ -1590,7 +1717,7 @@ exports.editClaimStatus = async (req, res) => {
           }
         },
       }
-      let customerUsers = await supportingFunction.getNotificationEligibleUser(customerRepairStatusUpdateQuery, { email: 1 })
+      let customerUsers = await supportingFunction.getNotificationEligibleUser(customerRepairStatusUpdateQuery, { email: 1, metaData: 1 })
 
       const customerids = customerUsers.map(user => user._id)
       if (customerUsers.length > 0) {
@@ -1615,7 +1742,10 @@ exports.editClaimStatus = async (req, res) => {
               { status: true },
               {
                 $or: [
-                  { metaId: new mongoose.Types.ObjectId(checkClaim?.servicerId) },
+                  // { metaId: new mongoose.Types.ObjectId(checkClaim?.servicerId) },
+                  { metaId: checkServicer?._id },
+                  { metaId: checkServicer?.dealerId },
+                  { metaId: checkServicer?.resellerId },
                 ]
               },
 
@@ -1623,7 +1753,7 @@ exports.editClaimStatus = async (req, res) => {
           }
         },
       }
-      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerRepairStatusUpdateQuery, { email: 1 })
+      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerRepairStatusUpdateQuery, { email: 1, metaData: 1 })
 
       const servicerids = servicerUsers.map(user => user._id)
       if (servicerUsers.length > 0) {
@@ -1666,11 +1796,31 @@ exports.editClaimStatus = async (req, res) => {
         subject: `Repair Status Updated for ${checkClaim.unique_key}`,
         redirectId: base_url
       }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.cover"], emailData))
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.cover"], emailData))
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(customerEmail, ["noreply@getcover.cover"], emailData))
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ["noreply@getcover.cover"], emailData))
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, ["noreply@getcover.cover"], emailData))
+      let mailing;
+      if (notificationEmails.length > 0) {
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.cover"], emailData))
+        maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+      }
+      if (customerEmail.length > 0) {
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(customerEmail, ["noreply@getcover.cover"], emailData))
+        maillogservice.createMailLogFunction(mailing, emailData, customerUsers, process.env.update_status)
+      }
+
+      if (servicerEmail.length > 0) {
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, ["noreply@getcover.cover"], emailData))
+        maillogservice.createMailLogFunction(mailing, emailData, servicerUsers, process.env.update_status)
+      }
+
+      if (dealerEmail.length > 0) {
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.cover"], emailData))
+        maillogservice.createMailLogFunction(mailing, emailData, dealerUsers, process.env.update_status)
+      }
+
+      if (resellerEmail.length > 0) {
+        mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ["noreply@getcover.cover"], emailData))
+        maillogservice.createMailLogFunction(mailing, emailData, resellerUsers, process.env.update_status)
+      }
+
 
     }
     if (data.hasOwnProperty("claimStatus")) {
@@ -1767,7 +1917,10 @@ exports.editClaimStatus = async (req, res) => {
               { status: true },
               {
                 $or: [
-                  { metaId: checkClaim?.servicerId },
+                  // { metaId: checkClaim?.servicerId },
+                  { metaId: checkServicer?._id },
+                  { metaId: checkServicer?.dealerId },
+                  { metaId: checkServicer?.resellerId },
                 ]
               },
 
@@ -1776,11 +1929,11 @@ exports.editClaimStatus = async (req, res) => {
         },
       }
 
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminClaimStatusUpdateQuery, { email: 1 })
-      let dealerUser = await supportingFunction.getNotificationEligibleUser(dealerClaimStatusUpdateQuery, { email: 1 })
-      let customerUsers = await supportingFunction.getNotificationEligibleUser(customerClaimStatusUpdateQuery, { email: 1 })
-      let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerClaimStatusUpdateQuery, { email: 1 })
-      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerClaimStatusUpdateQuery, { email: 1 })
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminClaimStatusUpdateQuery, { email: 1, metaData: 1 })
+      let dealerUser = await supportingFunction.getNotificationEligibleUser(dealerClaimStatusUpdateQuery, { email: 1, metaData: 1 })
+      let customerUsers = await supportingFunction.getNotificationEligibleUser(customerClaimStatusUpdateQuery, { email: 1, metaData: 1 })
+      let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerClaimStatusUpdateQuery, { email: 1, metaData: 1 })
+      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerClaimStatusUpdateQuery, { email: 1, metaData: 1 })
       //Get all ids 
       let notificationArray = []
       const IDs = adminUsers.map(user => user._id)
@@ -1883,7 +2036,11 @@ exports.editClaimStatus = async (req, res) => {
           content2: `If you believe there has been an error or if you would like further clarification, please feel free to reach out to our support team at support@getcover.com. Our team is here to assist you with any questions you may have.`,
           subject: `Claim Rejection Notice -Claim ID:  ${checkClaim.unique_key}`
         }
-        let mailing = sgMail.send(emailConstant.sendClaimStatusNotification(sendRejectionDealerNotification, ["noreply@getcover.com"], emailData))
+        let mailing;
+        if (sendRejectionDealerNotification.length > 0) {
+          mailing = await sgMail.send(emailConstant.sendClaimStatusNotification(sendRejectionDealerNotification, ["noreply@getcover.com"], emailData))
+          maillogservice.createMailLogFunction(mailing, emailData, dealerUser, process.env.claim_status)
+        }
         emailData = {
           darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
           lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -1895,7 +2052,10 @@ exports.editClaimStatus = async (req, res) => {
           content2: `If you believe there has been an error or if you would like further clarification, please feel free to reach out to our support team at support@getcover.com. Our team is here to assist you with any questions you may have.`,
           subject: `Claim Rejection Notice -Claim ID:  ${checkClaim.unique_key}`
         }
-        mailing = sgMail.send(emailConstant.sendClaimStatusNotification(sendRejectionCustomerNotification, ["noreply@getcover.com"], emailData))
+        if (sendRejectionCustomerNotification.length > 0) {
+          mailing = await sgMail.send(emailConstant.sendClaimStatusNotification(sendRejectionCustomerNotification, ["noreply@getcover.com"], emailData))
+          maillogservice.createMailLogFunction(mailing, emailData, customerUsers, process.env.claim_status)
+        }
         if (resellerPrimary) {// If reseller exist for claim
           emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -1908,7 +2068,10 @@ exports.editClaimStatus = async (req, res) => {
             content2: `If you believe there has been an error or if you would like further clarification, please feel free to reach out to our support team at support@getcover.com. Our team is here to assist you with any questions you may have.`,
             subject: `Claim Rejection Notice -Claim ID:  ${checkClaim.unique_key}`
           }
-          mailing = sgMail.send(emailConstant.sendClaimStatusNotification(sendRejectionResellerNotification, ["noreply@getcover.com"], emailData))
+          if (sendRejectionResellerNotification.length > 0) {
+            mailing = await sgMail.send(emailConstant.sendClaimStatusNotification(sendRejectionResellerNotification, ["noreply@getcover.com"], emailData))
+            maillogservice.createMailLogFunction(mailing, emailData, resellerUsers, process.env.claim_status)
+          }
         }
 
         //Email to Servicer
@@ -1924,7 +2087,11 @@ exports.editClaimStatus = async (req, res) => {
             content1: `If you have any questions or require clarification, feel free to contact us`,
             subject: "Claim Update - No Further Action Required"
           }
-          mailing = sgMail.send(emailConstant.sendClaimStatusNotification(sendRejectionServicerNotification, ["noreply@getcover.com"], emailData))
+          if (sendRejectionServicerNotification.length > 0) {
+            mailing = await sgMail.send(emailConstant.sendClaimStatusNotification(sendRejectionServicerNotification, ["noreply@getcover.com"], emailData))
+            maillogservice.createMailLogFunction(mailing, emailData, servicerUsers, process.env.claim_status)
+          }
+
 
         }
         //Email to admin
@@ -1938,7 +2105,10 @@ exports.editClaimStatus = async (req, res) => {
           content: `This is to notify you that the claim rejection process for Claim ID - ${checkClaim.unique_key} has been completed successfully. The claim has been marked as rejected, and the customer has been notified with the reason provided`,
           subject: "Action Notification – Claim Rejection Completed"
         }
-        mailing = sgMail.send(emailConstant.sendClaimStatusNotification(sendRejectionAdminNotification, ['noreply@getcover.com'], emailData))
+        if (sendRejectionAdminNotification.length > 0) {
+          mailing = await sgMail.send(emailConstant.sendClaimStatusNotification(sendRejectionAdminNotification, ["noreply@getcover.com"], emailData))
+          maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.claim_status)
+        }
 
       }
       if (data.claimStatus == 'completed') {
@@ -1958,8 +2128,13 @@ exports.editClaimStatus = async (req, res) => {
           content2: '',
           subject: `Claim Completion Notification – Claim ID:  ${checkClaim.unique_key}`
         }
-        let mailing = sgMail.send(emailConstant.sendClaimStatusNotification(sendCompletionDealerNotification, ["noreply@getcover.com"], emailData))
-        if (checkReseller) {// if reseller exist for claim
+        let mailing;
+        if (sendCompletionDealerNotification.length > 0) {
+          mailing = await sgMail.send(emailConstant.sendClaimStatusNotification(sendCompletionDealerNotification, ["noreply@getcover.com"], emailData))
+          maillogservice.createMailLogFunction(mailing, emailData, dealerUser, process.env.claim_status)
+        }
+        if (checkReseller) {
+          // if reseller exist for claim
           emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -1971,7 +2146,10 @@ exports.editClaimStatus = async (req, res) => {
             content2: '',
             subject: `Claim Completion Notification – Claim ID:  ${checkClaim.unique_key}`
           }
-          mailing = sgMail.send(emailConstant.sendClaimStatusNotification(sendCompletionResellerNotification, ["noreply@getcover.com"], emailData))
+          if (sendCompletionResellerNotification.length > 0) {
+            mailing = await sgMail.send(emailConstant.sendClaimStatusNotification(sendCompletionResellerNotification, ["noreply@getcover.com"], emailData))
+            maillogservice.createMailLogFunction(mailing, emailData, resellerUsers, process.env.claim_status)
+          }
         }
 
         emailData = {
@@ -1985,10 +2163,13 @@ exports.editClaimStatus = async (req, res) => {
           content2: '',
           subject: `Claim Completion Notification – Claim ID:  ${checkClaim.unique_key}`
         }
-        mailing = sgMail.send(emailConstant.sendClaimStatusNotification(sendCompletionCustomerNotification, ["noreply@getcover.com"], emailData))
+        if (sendCompletionCustomerNotification.length > 0) {
+          mailing = await sgMail.send(emailConstant.sendClaimStatusNotification(sendCompletionCustomerNotification, ["noreply@getcover.com"], emailData))
+          maillogservice.createMailLogFunction(mailing, emailData, customerUsers, process.env.claim_status)
+        }
+
         //Email to Servicer
         if (servicerPrimary) {
-
           const sendServicerCompletionNotification = servicerUsers.map(user => user.email);
           emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -2001,7 +2182,11 @@ exports.editClaimStatus = async (req, res) => {
             content2: '',
             subject: "Claim Update – Service Completion Confirmed"
           }
-          mailing = sgMail.send(emailConstant.sendClaimStatusNotification(sendServicerCompletionNotification, ["noreply@getcover.com"], emailData))
+          if (sendServicerCompletionNotification.length > 0) {
+            mailing = await sgMail.send(emailConstant.sendClaimStatusNotification(sendServicerCompletionNotification, ["noreply@getcover.com"], emailData))
+            maillogservice.createMailLogFunction(mailing, emailData, servicerUsers, process.env.claim_status)
+          }
+          // mailing = await sgMail.send(emailConstant.sendClaimStatusNotification(sendServicerCompletionNotification, ["noreply@getcover.com"], emailData))
 
         }
         //Email to admin       
@@ -2017,7 +2202,11 @@ exports.editClaimStatus = async (req, res) => {
           content1: '',
           subject: "Action Notification – Claim Completion Processed"
         }
-        mailing = sgMail.send(emailConstant.sendClaimStatusNotification(sendAdminNotification, ['noreply@getcover.com'], emailData))
+        if (sendAdminNotification.length > 0) {
+          mailing = await sgMail.send(emailConstant.sendClaimStatusNotification(sendAdminNotification, ['noreply@getcover.com'], emailData))
+          maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.claim_status)
+        }
+
       }
     }
 
@@ -2236,6 +2425,7 @@ exports.editServicer = async (req, res) => {
     const checkOrder = await orderService.getOrder({ _id: checkContract.orderId }, { isDeleted: false })
     const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
     const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
+    let checkServicer
     if (!checkClaim) {
       res.send({
         code: constant.errorCode,
@@ -2249,7 +2439,7 @@ exports.editServicer = async (req, res) => {
     let isPureServicer = ''
     if (req.body.servicerId != "") {
       criteria = { _id: req.body.servicerId }
-      let checkServicer = await servicerService.getServiceProviderById({
+      checkServicer = await servicerService.getServiceProviderById({
         $or: [
           { _id: req.body.servicerId },
           { dealerId: req.body.servicerId },
@@ -2266,6 +2456,50 @@ exports.editServicer = async (req, res) => {
         return
       }
 
+      //check servicer price book and category exist in the database
+      let filterPriceBook = checkOrder.productsArray.filter(product => product._id.toString() === checkContract.orderProductId.toString());
+      let priceBookData = {}
+      let checkServicerData = await servicerService.servicerPriceBook({ servicerId: checkServicer._id }, {})
+      if (!checkServicerData) {
+        priceBookData.servicerId = checkServicer._id
+        priceBookData.categoryArray = [
+          {
+            categoryId: filterPriceBook[0]?.categoryId
+          }
+        ]
+        priceBookData.priceBookArray = [
+          {
+            priceBookId: filterPriceBook[0]?.priceBookId
+          }
+        ]
+
+        const saveData = await servicerService.saveServicerPriceBook(priceBookData)
+      }
+      else {
+        let checkCategoryQuery = {
+          categoryArray: {
+            $elemMatch: { categoryId: filterPriceBook[0]?.categoryId }
+          },
+          servicerId: checkServicer._id
+        }
+        let checkCategoryData = await servicerService.servicerPriceBook(checkCategoryQuery, {})
+        if (!checkCategoryData) {
+          checkServicerData.categoryArray.push({ categoryId: filterPriceBook[0]?.categoryId })
+        }
+        let checkPriceBookQuery = {
+          priceBookArray: {
+            $elemMatch: { priceBookId: filterPriceBook[0]?.priceBookId }
+          },
+          servicerId: checkServicer._id
+        }
+        const checkPriceBookData = await servicerService.servicerPriceBook(checkPriceBookQuery, {})
+        if (!checkPriceBookData) {
+          checkServicerData.priceBookArray.push({ priceBookId: filterPriceBook[0]?.priceBookId })
+        }
+        await servicerService.updateServicerPriceBook({ servicerId: checkServicer._id }, checkServicerData, { new: true })
+      }
+
+      data.servicerId = checkServicer._id
     }
 
 
@@ -2323,7 +2557,7 @@ exports.editServicer = async (req, res) => {
         }
       },
     }
-    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminServicerUpdateQuery, { email: 1 })
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminServicerUpdateQuery, { email: 1, metaData: 1 })
     const IDs = adminUsers.map(user => user._id)
     if (adminUsers.length > 0) {
       let notificationAdmin = {
@@ -2356,7 +2590,7 @@ exports.editServicer = async (req, res) => {
       },
     }
 
-    let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerAddClaimQuery, { email: 1 })
+    let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerAddClaimQuery, { email: 1, metaData: 1 })
     const dealerIds = dealerUsers.map(user => user._id)
     if (dealerUsers.length > 0) {
       let notificationDealer = {
@@ -2388,7 +2622,7 @@ exports.editServicer = async (req, res) => {
         }
       },
     }
-    let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerAddClaimQuery, { email: 1 })
+    let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerAddClaimQuery, { email: 1, metaData: 1 })
     const resellerIds = resellerUsers.map(user => user._id)
 
     if (resellerUsers.length > 0) {
@@ -2422,7 +2656,7 @@ exports.editServicer = async (req, res) => {
         }
       },
     }
-    let customerUsers = await supportingFunction.getNotificationEligibleUser(customerAddClaimQuery, { email: 1 })
+    let customerUsers = await supportingFunction.getNotificationEligibleUser(customerAddClaimQuery, { email: 1, metaData: 1 })
     const customerIds = customerUsers.map(user => user._id)
     if (customerUsers.length > 0) {
       let notificationCustomer = {
@@ -2447,14 +2681,16 @@ exports.editServicer = async (req, res) => {
             { status: true },
             {
               $or: [
-                { metaId: req.body.servicerId },
+                { metaId: checkServicer?._id },
+                { metaId: checkServicer?.dealerId },
+                { metaId: checkServicer?.resellerId },
               ]
             },
           ]
         }
       },
     }
-    let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerAddClaimQuery, { email: 1 })
+    let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerAddClaimQuery, { email: 1, metaData: 1 })
     const servicerIds = servicerUsers.map(user => user._id)
     if (servicerUsers.length > 0) {
       let notificationServicer = {
@@ -2486,7 +2722,9 @@ exports.editServicer = async (req, res) => {
             {
               $or: [
                 { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                { metaId: req.body.servicerId },
+                { metaId: checkServicer?._id },
+                { metaId: checkServicer?.dealerId },
+                { metaId: checkServicer?.resellerId },
               ]
             },
 
@@ -2494,7 +2732,7 @@ exports.editServicer = async (req, res) => {
         }
       },
     }
-    let servicerCaseUser = await supportingFunction.getNotificationEligibleUser(servicerCaseNotification, { email: 1 })
+    let servicerCaseUser = await supportingFunction.getNotificationEligibleUser(servicerCaseNotification, { email: 1, metaData: 1 })
     let adminUser = servicerCaseUser.filter(user => user.metaData[0]?.roleId.toString() === process.env.super_admin.toString());
     let servicerUser = servicerCaseUser.filter(user => user.metaData[0]?.roleId.toString() === process.env.servicer.toString());
     const adminEmail = adminUser.map(user => user.email)
@@ -2515,9 +2753,16 @@ exports.editServicer = async (req, res) => {
 
     }
     emailData.senderName = "Admin"
-    let mailing = sgMail.send(emailConstant.sendServicerClaimNotification(adminEmail, ["noreply@getcover.com"], emailData))
+    let mailing;
+    if (adminEmail.length > 0) {
+      mailing = await sgMail.send(emailConstant.sendServicerClaimNotification(adminEmail, ["noreply@getcover.com"], emailData))
+      maillogservice.createMailLogFunction(mailing, emailData, adminUser, process.env.servicer_claim_notification)
+    }
     emailData.senderName = getPrimary ? getPrimary.metaData[0].firstName : ""
-    mailing = sgMail.send(emailConstant.sendServicerClaimNotification(servicerEmail, ["noreply@getcover.com"], emailData))
+    if (servicerEmail.length > 0) {
+      mailing = await sgMail.send(emailConstant.sendServicerClaimNotification(servicerEmail, ["noreply@getcover.com"], emailData))
+      maillogservice.createMailLogFunction(mailing, emailData, servicerUser, process.env.servicer_claim_notification)
+    }
     res.send({
       code: constant.successCode,
       message: 'Success!',
@@ -2953,6 +3198,8 @@ exports.saveBulkClaim = async (req, res) => {
 
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
 
+
+
       let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
       let checkSerialCache = {};
       //Filter data which is contract , servicer and not active
@@ -2965,7 +3212,6 @@ exports.saveBulkClaim = async (req, res) => {
           const claimData = claimArray;
           const servicerData = servicerArray == undefined || servicerArray == null ? allDataArray[0]?.order?.servicer : servicerArray[i]
           let flag;
-
           item.contractData = contractData;
           item.claimType = ''
           item.servicerData = servicerData;
@@ -3127,33 +3373,38 @@ exports.saveBulkClaim = async (req, res) => {
           }
 
           if (allDataArray.length > 0 && servicerData) {
-
             flag = false;
             if (allDataArray[0]?.order.dealer.dealerServicer.length > 0) {
               //Find Servicer with dealer Servicer
               const servicerCheck = allDataArray[0]?.order.dealer.dealerServicer.find(item => item.servicerId?.toString() === servicerData._id?.toString())
               if (servicerCheck) {
-
                 flag = true
               }
-            }
-            //Check dealer itself servicer
-            if (allDataArray[0]?.order.dealer?.isServicer && allDataArray[0]?.order.dealer?.accountStatus && allDataArray[0]?.order.dealer._id?.toString() === servicerData.dealerId?.toString()) {
+              //Check Dealer itself servicer
+              if (allDataArray[0]?.order.dealer?.isServicer && allDataArray[0]?.order.dealer?.accountStatus && allDataArray[0]?.order.dealer._id?.toString() === servicerData.dealerId?.toString()) {
+                flag = true
 
-              flag = true
-            }
+              }
+              //Check Dealer Reseller servicer
+              let dealerResellerServicer = await resellerService.getResellers({ dealerId: allDataArray[0]?.order.dealer._id, isServicer: true, status: true })
+              let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
+              if (dealerResellerServicer.length > 0) {
 
-            if (allDataArray[0]?.order.reseller?.isServicer && allDataArray[0]?.order.reseller?.status && allDataArray[0]?.order.reseller?._id?.toString() === servicerData.resellerId?.toString()) {
-
-              flag = true
+                let dealerResellerServicer = await servicerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
+                let exists = dealerResellerServicer.some(item => item?._id?.toString() === servicerData?._id?.toString());
+                if (exists) {
+                  flag = true
+                }
+              }
             }
           }
+
           if ((item?.servicerName != '' && !servicerData)) {
             flag = false
           }
           if ((!flag && flag != undefined && item.hasOwnProperty("servicerName") && req.role == "Super Admin")) {
-            item.exit = true;
             item.status = "Servicer not found"
+            item.exit = true;
           }
           if (contractData && contractData.status != "Active") {
             item.status = "Contract is not active";
@@ -3165,6 +3416,10 @@ exports.saveBulkClaim = async (req, res) => {
           item.servicerData = null
         }
       }
+
+      // console.log("totalDataComing-----------------------------",totalDataComing)
+      // return;
+      // return;
       let finalArray = []
       //Save bulk claim
 
@@ -3190,12 +3445,12 @@ exports.saveBulkClaim = async (req, res) => {
 
       totalDataComing.map((data, index) => {
         let servicerId = data.servicerData?._id
-        if (data.servicerData?.dealerId) {
-          servicerId = data.servicerData?.dealerId
-        }
-        if (data.servicerData?.resellerId) {
-          servicerId = data.servicerData?.resellerId
-        }
+        // if (data.servicerData?.dealerId) {
+        //   servicerId = data.servicerData?.dealerId
+        // }
+        // if (data.servicerData?.resellerId) {
+        //   servicerId = data.servicerData?.resellerId
+        // }
         const issue = data.issue != "" ? data.issue + "-" + data.diagnosis : data.diagnosis
         // emailDealerId.push(data.orderData?.order?.dealerId);
         if (!data.exit) {
@@ -3602,11 +3857,11 @@ exports.saveBulkClaim = async (req, res) => {
         },
       }
 
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminBulkQuery, { email: 1 })
-      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerBulkQuery, { email: 1 })
-      let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerBulkQuery, { email: 1 })
-      let customerUsers = await supportingFunction.getNotificationEligibleUser(customerBulkQuery, { email: 1 })
-      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerrBulkQuery, { email: 1 })
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminBulkQuery, { email: 1, metaData: 1 })
+      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerBulkQuery, { email: 1, metaData: 1 })
+      let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerBulkQuery, { email: 1, metaData: 1 })
+      let customerUsers = await supportingFunction.getNotificationEligibleUser(customerBulkQuery, { email: 1, metaData: 1 })
+      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerrBulkQuery, { email: 1, metaData: 1 })
       if (saveBulkClaim.length > 0) {
 
         let notificationArray = []
@@ -3699,15 +3954,22 @@ exports.saveBulkClaim = async (req, res) => {
             }
           },
         }
-        let allDealer = await supportingFunction.getNotificationEligibleUser(dealerEmailBulkQuery, { email: 1 })
+        let allDealer = await supportingFunction.getNotificationEligibleUser(dealerEmailBulkQuery, { email: 1, metaData: 1 })
 
         let adminEmail = adminUsers.map(user => user.email);
         let dealerEmail = allDealer.map(user => user.email);
 
         if (failureEntries.length > 0) {
           htmlTableString = convertArrayToHTMLTable([], failureEntries);
-          mailing = sgMail.send(emailConstant.sendCsvFile(dealerEmail, ["noreply@getcover.com"], htmlTableString));
-          mailing = sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlTableString));
+          if (dealerEmail.length > 0) {
+            mailing = await sgMail.send(emailConstant.sendCsvFile(dealerEmail, ["noreply@getcover.com"], htmlTableString));
+            maillogservice.createMailLogFunctionWithHtml(mailing, allDealer, htmlTableString)
+          }
+          if (adminEmail.length > 0) {
+            mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlTableString));
+            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString)
+          }
+
         }
 
         else {
@@ -3743,10 +4005,17 @@ exports.saveBulkClaim = async (req, res) => {
           </html>`;
 
           //htmlTableString = convertArrayToHTMLTable([], failureEntries);
-          mailing = sgMail.send(emailConstant.sendCsvFile(dealerEmail, ["noreply@getcover.com"], htmlContent));
-          mailing = sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlContent));
+          if (dealerEmail.length > 0) {
+            mailing = await sgMail.send(emailConstant.sendCsvFile(dealerEmail, ["noreply@getcover.com"], htmlContent));
+            maillogservice.createMailLogFunctionWithHtml(mailing, allDealer, htmlTableString)
+          }
+          if (adminEmail.length > 0) {
+            mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlContent));
+            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString)
+          }
+
         }
-        // mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
+        //mailing = await sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
       }
       if (req.role == "Reseller") {
         const loginReseller = await resellerService.getReseller({ _id: req.userId }, {});
@@ -3774,14 +4043,25 @@ exports.saveBulkClaim = async (req, res) => {
           },
         }
 
-        let allReseller = await supportingFunction.getNotificationEligibleUser(resellerEmailBulkQuery, { email: 1 })
-        let allResellersDealer = await supportingFunction.getNotificationEligibleUser(resellerDealerEmailBulkQuery, { email: 1 })
+        let allReseller = await supportingFunction.getNotificationEligibleUser(resellerEmailBulkQuery, { email: 1, metaData: 1 })
+        let allResellersDealer = await supportingFunction.getNotificationEligibleUser(resellerDealerEmailBulkQuery, { email: 1, metaData: 1 })
         let resellerEmails = allReseller.map(customer => customer.email);
         let dealerEmails = allResellersDealer.map(customer => customer.email);
+        let adminEmail = adminUsers.map(user => user.email);
         if (failureEntries.length > 0) {
           htmlTableString = convertArrayToHTMLTable([], failureEntries);
-          mailing = sgMail.send(emailConstant.sendCsvFile(resellerEmails, ["noreply@getcover.com"], htmlTableString));
-          mailing = sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlTableString));
+          if (dealerEmails.length > 0) {
+            mailing = await sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlTableString));
+            maillogservice.createMailLogFunctionWithHtml(mailing, allResellersDealer, htmlTableString)
+          }
+          if (adminEmail.length > 0) {
+            mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlTableString));
+            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString)
+          }
+          if (resellerEmails.length > 0) {
+            mailing = await sgMail.send(emailConstant.sendCsvFile(resellerEmails, ["noreply@getcover.com"], htmlTableString));
+            maillogservice.createMailLogFunctionWithHtml(mailing, allReseller, htmlTableString)
+          }
         }
 
         else {
@@ -3817,8 +4097,18 @@ exports.saveBulkClaim = async (req, res) => {
           </html>`;
 
           //htmlTableString = convertArrayToHTMLTable([], failureEntries);
-          mailing = sgMail.send(emailConstant.sendCsvFile(resellerEmails, ["noreply@getcover.com"], htmlContent));
-          mailing = sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlContent));
+          if (dealerEmails.length > 0) {
+            mailing = await sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlContent));
+            maillogservice.createMailLogFunctionWithHtml(mailing, allResellersDealer, htmlContent)
+          }
+          if (adminEmail.length > 0) {
+            mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlContent));
+            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlContent)
+          }
+          if (resellerEmails.length > 0) {
+            mailing = await sgMail.send(emailConstant.sendCsvFile(resellerEmails, ["noreply@getcover.com"], htmlContent));
+            maillogservice.createMailLogFunctionWithHtml(mailing, allReseller, htmlContent)
+          }
         }
       }
       if (req.role == "Customer") {
@@ -3857,17 +4147,33 @@ exports.saveBulkClaim = async (req, res) => {
             }
           },
         }
-        let allCustomers = await supportingFunction.getNotificationEligibleUser(customerEmailBulkQuery, { email: 1 })
-        let allCustomersDealer = await supportingFunction.getNotificationEligibleUser(customerDealerEmailBulkQuery, { email: 1 })
-        let allCustomersReseller = await supportingFunction.getNotificationEligibleUser(customerResellerEmailBulkQuery, { email: 1 })
+        let adminEmail = adminUsers.map(user => user.email);
+
+        let allCustomers = await supportingFunction.getNotificationEligibleUser(customerEmailBulkQuery, { email: 1, metaData: 1 })
+        let allCustomersDealer = await supportingFunction.getNotificationEligibleUser(customerDealerEmailBulkQuery, { email: 1, metaData: 1 })
+        let allCustomersReseller = await supportingFunction.getNotificationEligibleUser(customerResellerEmailBulkQuery, { email: 1, metaData: 1 })
         let customerEmails = allCustomers.map(customer => customer.email);
         let dealerEmails = allCustomersDealer.map(customer => customer.email);
         let resellerEmails = allCustomersReseller.map(customer => customer.email);
         if (failureEntries.length > 0) {
           htmlTableString = convertArrayToHTMLTable([], failureEntries);
-          mailing = sgMail.send(emailConstant.sendCsvFile(customerEmails, ["noreply@getcover.com"], htmlTableString));
-          mailing = sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlTableString));
-          mailing = sgMail.send(emailConstant.sendCsvFile(resellerEmails, ["noreply@getcover.com"], htmlTableString));
+          if (dealerEmails.length > 0) {
+            mailing = await sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlTableString));
+            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomersDealer, htmlTableString)
+          }
+          if (adminEmail.length > 0) {
+            mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlTableString));
+            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString)
+          }
+          if (resellerEmails.length > 0) {
+            mailing = await sgMail.send(emailConstant.sendCsvFile(resellerEmails, ["noreply@getcover.com"], htmlTableString));
+            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomersReseller, htmlTableString)
+          }
+          if (customerEmails.length > 0) {
+            mailing = await sgMail.send(emailConstant.sendCsvFile(customerEmails, ["noreply@getcover.com"], htmlTableString));
+            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomers, htmlTableString)
+          }
+
         }
 
         else {
@@ -3903,9 +4209,23 @@ exports.saveBulkClaim = async (req, res) => {
           </html>`;
 
           //htmlTableString = convertArrayToHTMLTable([], failureEntries);
-          mailing = sgMail.send(emailConstant.sendCsvFile(customerEmails, ["noreply@getcover.com"], htmlContent));
-          mailing = sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlContent));
-          mailing = sgMail.send(emailConstant.sendCsvFile(resellerEmails, ["noreply@getcover.com"], htmlContent));
+          if (dealerEmails.length > 0) {
+            mailing = await sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlContent));
+            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomersDealer, htmlContent)
+          }
+          if (adminEmail.length > 0) {
+            mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlContent));
+            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlContent);
+          }
+          if (resellerEmails.length > 0) {
+            mailing = await sgMail.send(emailConstant.sendCsvFile(resellerEmails, ["noreply@getcover.com"], htmlContent));
+            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomersReseller, htmlContent)
+          }
+          if (customerEmails.length > 0) {
+            mailing = await sgMail.send(emailConstant.sendCsvFile(customerEmails, ["noreply@getcover.com"], htmlContent));
+            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomers, htmlContent)
+          }
+
         }
       }
       //send Email to admin
@@ -3914,7 +4234,9 @@ exports.saveBulkClaim = async (req, res) => {
         if (failureEntries.length > 0) {
           htmlTableString = convertArrayToHTMLTable([], failureEntries);
           // let adminEmail = adminUsers.map
-          mailing = sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlTableString));
+          mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlTableString));
+          maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString);
+
         }
 
         else {
@@ -3950,7 +4272,9 @@ exports.saveBulkClaim = async (req, res) => {
           </html>`;
 
           //htmlTableString = convertArrayToHTMLTable([], failureEntries);
-          mailing = sgMail.send(emailConstant.sendCsvFile(adminEmail, ccMail, htmlContent));
+          mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ccMail, htmlContent));
+          maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlContent);
+
         }
 
 
@@ -3989,6 +4313,15 @@ exports.sendMessages = async (req, res) => {
       })
       return
     }
+
+    let checkServicer = await servicerService.getServiceProviderById({
+      $or: [
+        { _id: checkClaim?.servicerId ? checkClaim?.servicerId : orderData?.servicerId },
+        { dealerId: checkClaim?.servicerId ? checkClaim?.servicerId : orderData?.servicerId },
+        { resellerId: checkClaim?.servicerId ? checkClaim?.servicerId : orderData?.servicerId },
+      ]
+    })
+
     let settingData = await userService.getSetting({});
 
     data.claimId = req.params.claimId
@@ -4127,6 +4460,8 @@ exports.sendMessages = async (req, res) => {
         }
       },
     }
+
+
     const servicerCommentQuery = {
       metaData: {
         $elemMatch: {
@@ -4135,7 +4470,10 @@ exports.sendMessages = async (req, res) => {
             { status: true },
             {
               $or: [
-                { metaId: new mongoose.Types.ObjectId(checkClaim?.servicerId ? checkClaim?.servicerId : orderData?.servicerId) },
+
+                { metaId: new mongoose.Types.ObjectId(checkServicer?._id) },
+                { metaId: new mongoose.Types.ObjectId(checkServicer?.dealerId) },
+                { metaId: new mongoose.Types.ObjectId(checkServicer?.resellerId) },
               ]
             },
 
@@ -4144,11 +4482,12 @@ exports.sendMessages = async (req, res) => {
       },
     }
 
-    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminCommentQuery, { email: 1 })
-    let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerCommentQuery, { email: 1 })
-    let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerCommentQuery, { email: 1 })
-    let customerUsers = await supportingFunction.getNotificationEligibleUser(customerCommentQuery, { email: 1 })
-    let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerCommentQuery, { email: 1 })
+
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminCommentQuery, { email: 1, metaData: 1 })
+    let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerCommentQuery, { email: 1, metaData: 1 })
+    let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerCommentQuery, { email: 1, metaData: 1 })
+    let customerUsers = await supportingFunction.getNotificationEligibleUser(customerCommentQuery, { email: 1, metaData: 1 })
+    let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerCommentQuery, { email: 1, metaData: 1 })
     let notificationArray = []
 
     let IDs = adminUsers.map(user => user._id)
@@ -4161,7 +4500,14 @@ exports.sendMessages = async (req, res) => {
     let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.dealerId, isPrimary: true } } })
     let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.customerId, isPrimary: true } } })
     let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.resellerId, isPrimary: true } } })
-    let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.servicerId, isPrimary: true } } })
+    // let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.servicerId, isPrimary: true } } })
+    let servicerPrimary = await supportingFunction.getPrimaryUser({
+      $or: [
+        { metaData: { $elemMatch: { metaId: orderData.servicerId, isPrimary: true } } },
+        { metaData: { $elemMatch: { metaId: orderData.servicerId, isPrimary: true } } },
+        { metaData: { $elemMatch: { metaId: orderData.servicerId, isPrimary: true } } }]
+    })
+
     if (adminUsers.length > 0) {
       let notificationData1 = {
         title: "New Claim Comment added",
@@ -4240,7 +4586,9 @@ exports.sendMessages = async (req, res) => {
             {
               $or: [
                 { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                { metaId: new mongoose.Types.ObjectId(checkClaim?.servicerId) },
+                { metaId: new mongoose.Types.ObjectId(checkServicer?._id) },
+                { metaId: new mongoose.Types.ObjectId(checkServicer?.dealerId) },
+                { metaId: new mongoose.Types.ObjectId(checkServicer?.resellerId) },
               ]
             },
 
@@ -4248,7 +4596,7 @@ exports.sendMessages = async (req, res) => {
         }
       },
     }
-    let commentNotification = await supportingFunction.getNotificationEligibleUser(commentCaseQuery, { email: 1 })
+    let commentNotification = await supportingFunction.getNotificationEligibleUser(commentCaseQuery, { email: 1, metaData: 1 })
     let notificationEmails = commentNotification.map(user => user.email);
     const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
     let emailData = {
@@ -4265,8 +4613,16 @@ exports.sendMessages = async (req, res) => {
       redirectId: base_url
     }
 
-    let mailing = sgMail.send(emailConstant.sendCommentNotification(emailTo?.email, ["noreply@getcover.com"], emailData))
-    mailing = sgMail.send(emailConstant.sendCommentNotification(adminEmail, ["noreply@getcover.com"], emailData))
+    console.log("emailTo---------------------", emailTo)
+    let mailing = await sgMail.send(emailConstant.sendCommentNotification(emailTo?.email, ["noreply@getcover.com"], emailData))
+
+    maillogservice.createMailLogFunction(mailing, emailData, [emailTo], process.env.comment_notification)
+    console.log("adminEmail---------------------", adminEmail)
+
+    mailing = await sgMail.send(emailConstant.sendCommentNotification(adminEmail, ["noreply@getcover.com"], emailData))
+
+    maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.comment_notification)
+
     res.send({
       code: constant.successCode,
       messages: 'Message Sent!',
@@ -4316,7 +4672,6 @@ exports.statusClaim = async (req, res) => {
       const latestServicerShippedDate = new Date(latestServicerShipped);
       const sevenDaysAfterShippedDate = new Date(latestServicerShippedDate);
       sevenDaysAfterShippedDate.setDate(sevenDaysAfterShippedDate.getDate() + 14);
-
       if (new Date() === sevenDaysAfterShippedDate || new Date() > sevenDaysAfterShippedDate) {
         // Update status for track status
         messageData.trackStatus = [
@@ -4721,8 +5076,9 @@ exports.getAllClaims = async (req, res, next) => {
       { _id: { $in: allServicerIds }, status: true },
       {}
     );
-    const result_Array = resultFiter.map((item1) => {
+    const result_Array = resultFiter.map(async (item1) => {
       servicer = []
+      console.log("sfgdfg23345435435")
       let servicerName = '';
       let selfServicer = false;
       let selfResellerServicer = false;
@@ -4738,11 +5094,16 @@ exports.getAllClaims = async (req, res, next) => {
       }
 
       if (item1.contracts.orders.resellers[0]?.isServicer && item1.contracts.orders.resellers[0]?.status) {
-        servicer.unshift(item1.contracts.orders.resellers[0])
+        let checkResellerServicer = await servicerService.getServiceProviderById({ resellerId: item1.contracts.orders.resellers[0]._id })
+        console.log("checkResellerServicer------------------", checkResellerServicer)
+        servicer.push(checkResellerServicer)
       }
 
       if (item1.contracts.orders.dealers.isServicer && item1.contracts.orders.dealers.accountStatus) {
-        servicer.unshift(item1.contracts.orders.dealers)
+        let checkDealerServicer = await servicerService.getServiceProviderById({ dealerId: item1.contracts.orders.dealers._id })
+        console.log("checkDealerServicer------------------", checkDealerServicer)
+
+        servicer.push(checkDealerServicer)
       }
 
       if (item1.servicerId != null) {
@@ -5476,7 +5837,7 @@ exports.updateClaimDate = async (req, res) => {
     //   content: "The new message for " + "checkClaim.unique_key" + " claim",
     //   subject: "New Message"
     // }
-    // let mailing = sgMail.send(emailConstant.sendEmailTemplate("anil@codenomad.net", ["amit@codenomad.net"], "emailData"))
+    // let mailing = await sgMail.send(emailConstant.sendEmailTemplate("anil@codenomad.net", ["amit@codenomad.net"], "emailData"))
     // res.send({
     //   mailing
     // })
@@ -5535,4 +5896,73 @@ exports.updateClaimDate = async (req, res) => {
     })
   }
 }
+
+exports.sendMailStatic = async (req, res) => {
+  try {
+    let arrayEmail = [
+      {
+        "Contract# / Serial#": "5CD4192999",
+        "Claim#": "CC-2025-100022",
+        "Loss Date": "12/23/2024",
+        Diagnosis: "won't turn on",
+        "Coverage Type": "Accidental",
+        "Submitted By": "bschiffner@natomasunified.org",
+        "Ship To": "1931 Arena Blvd., Sacramento, California, 95834"
+      },
+      {
+        "Contract# / Serial#": "5CD419299Y",
+        "Claim#": "CC-2025-100023",
+        "Loss Date": "11/01/2024",
+        Diagnosis: "SCREEN AND HINGE",
+        "Coverage Type": "Accidental",
+        "Submitted By": "amarecoronado@natomasunified.org",
+        "Ship To": "1931 Arena Blvd., Sacramento, California, 95834"
+      },
+      {
+        "Contract# / Serial#": "5CD41929H7",
+        "Claim#": "CC-2025-100024",
+        "Loss Date": "12/10/2024",
+        Diagnosis: "WONT TURN ON",
+        "Coverage Type": "Accidental",
+        "Submitted By": "amarecoronado@natomasunified.org",
+        "Ship To": "1931 Arena Blvd., Sacramento, California, 95834"
+      },
+      {
+        "Contract# / Serial#": "5CD4192999",
+        "Claim#": "CC-2025-100022",
+        "Loss Date": "12/23/2024",
+        Diagnosis: "WONT TURN ON",
+        "Coverage Type": "Accidental",
+        "Submitted By": "amarecoronado@natomasunified.org",
+        "Ship To": "1931 Arena Blvd., Sacramento, California, 95834"
+      },
+      {
+        "Contract# / Serial#": "5CD4192999",
+        "Claim#": "CC-2025-100022",
+        "Loss Date": "12/23/2024",
+        Diagnosis: "WONT TURN ON",
+        "Coverage Type": "Accidental",
+        "Submitted By": "amarecoronado@natomasunified.org",
+        "Ship To": "1931 Arena Blvd., Sacramento, California, 95834"
+      },
+      {
+        "Contract# / Serial#": "5CD4192999",
+        "Claim#": "CC-2025-100022",
+        "Loss Date": "12/23/2024",
+        Diagnosis: "WONT TURN ON",
+        "Coverage Type": "Accidental",
+        "Submitted By": "amarecoronado@natomasunified.org",
+        "Ship To": "1931 Arena Blvd., Sacramento, California, 95834"
+      },
+    ]
+
+  } catch (err) {
+    res.send({
+      code: err.stack
+    })
+  }
+}
+
+
+
 

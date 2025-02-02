@@ -120,7 +120,11 @@ cron.schedule('6 0 * * *', () => {
 cron.schedule('0 1 * * *', () => {
   axios.get(`${process.env.API_ENDPOINT}api-v1/claim/checkNumberOfCertainPeriod`)   //live
 });
- 
+
+// cron.schedule('0 1 * * *', () => {
+//   axios.get(`${process.env.API_ENDPOINT}api-v1/claim/checkNumberOfCertainPeriod`)   //live
+// });
+
 //common routing for server
 app.use("/api-v1/user", userRoutes);
 // app.use("/", htmlPage);
@@ -159,6 +163,11 @@ app.use((req, res, next) => {
     message: "Not Found"
   })
 
+})
+app.use((req, res, next) => {
+  const ip = req.ip 
+  console.log("Client IP:", ip);
+  next();
 })
 const PORT = 3002
 

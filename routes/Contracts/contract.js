@@ -12,6 +12,7 @@ router.get('/getContractById/:contractId', [verifyToken], supportingFunction.che
 router.get('/deleteOrdercontractbulk', [verifyToken], contractController.deleteOrdercontractbulk); // deleteOrdercontractbulk route
 router.get('/cronJobEligible', contractController.cronJobEligible); // cronJobEligible route
 router.get('/updateContract', contractController.updateContract); // cronJobEligible route
+router.post('/getContractClaims/:contractId', contractController.getContractClaims); // cronJobEligible route
 
 router.post('/exportContractReporting', [verifyToken], contractReportingController.exportContractReporting); // export contract reporting
 

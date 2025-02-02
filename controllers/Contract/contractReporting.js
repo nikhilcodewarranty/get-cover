@@ -19,7 +19,8 @@ const supportingFunction = require('../../config/supportingFunction')
 let dealerController = require("../../controllers/Dealer/dealerController")
 const jwt = require("jsonwebtoken");
 const emailConstant = require('../../config/emailConstant');
-const constant = require("../../config/constant");
+const constant = require("../../config/constant")
+const maillogservice = require("../../services/User/maillogServices");
 const sgMail = require('@sendgrid/mail');
 const moment = require("moment");
 sgMail.setApiKey(process.env.sendgrid_key);
@@ -361,15 +362,13 @@ exports.exportContractReporting = async (req, res) => {
             let startDate = new Date(data.startDate)
             let endDate = new Date(data.endDate)
             startDate.setHours(0, 0, 0, 0)
-            endDate.setHours(11, 59, 0, 0)
+            endDate.setHours(23, 59, 999, 0)
             let dateFilter = { createdAt: { $gte: startDate, $lte: endDate } }
             contractFilterWithEligibilty.push(dateFilter)
         }
 
         let mainQuery = []
         console.log("page+++++++++++++++++++++++++++++++++", skipLimit)
-
-        console.log("contractFilterWithEligibilty----------------------",contractFilterWithEligibilty)
 
         while (hasMore) {
             // let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100

@@ -5,6 +5,8 @@ const dealerPriceService = require('../../services/Dealer/dealerPriceService')
 const priceBookService = require('../../services/PriceBook/priceBookService')
 const providerService = require('../../services/Provider/providerService')
 const users = require("../../models/User/users");
+const maillogservice = require("../../services/User/maillogServices");
+
 const role = require("../../models/User/role");
 const logs = require('../../models/User/logs');
 const setting = require("../../models/User/setting");
@@ -90,10 +92,11 @@ exports.createDealer = async (req, res) => {
     try {
         upload(req, res, async () => {
             const data = req.body;
+            data.name = data.name.trim().replace(/\s+/, ' ');
             const loginUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: req.userId, isPrimary: true } } }, {});
             //get coverage type based on dealer coverageType
             const coverageType = data.coverageType
-  
+
             let priceFile
             let termFile;
             let isAccountCreate = req.body.isAccountCreate
@@ -120,7 +123,6 @@ exports.createDealer = async (req, res) => {
                 });
                 return;
             }
-  
             const primaryUserData = data.dealerPrimary ? data.dealerPrimary : [];
             const dealersUserData = data.dealers ? data.dealers : [];
             const allEmails = [...dealersUserData, ...primaryUserData].map((dealer) => dealer.email);
@@ -137,7 +139,6 @@ exports.createDealer = async (req, res) => {
             const allUserData = [...dealersUserData, ...primaryUserData];
             if (data.dealerId != 'null' && data.dealerId != undefined) {
                 let createUsers = [];
-  
                 if (data.email != data.oldEmail) {
                     let emailCheck = await userService.findOneUser({ email: data.email }, {});
                     if (emailCheck) {
@@ -148,7 +149,6 @@ exports.createDealer = async (req, res) => {
                         return;
                     }
                 }
-  
                 if (data.name != data.oldName) {
                     let nameCheck = await dealerService.getDealerByName({ name: data.name });
                     if (nameCheck) {
@@ -159,7 +159,6 @@ exports.createDealer = async (req, res) => {
                         return;
                     }
                 }
-  
                 const singleDealerUser = await userService.findOneUser({ metaData: { $elemMatch: { metaId: data.dealerId } } }, {});
                 const singleDealer = await dealerService.getDealerById({ _id: data.dealerId });
                 if (!singleDealer) {
@@ -169,12 +168,12 @@ exports.createDealer = async (req, res) => {
                     });
                     return;
                 }
-  
+
                 // check uniqueness of dealer sku                  
-  
+
                 const cleanStr1 = singleDealer.name.replace(/\s/g, '').toLowerCase();
                 const cleanStr2 = data.name.replace(/\s/g, '').toLowerCase();
-  
+
                 if (cleanStr1 !== cleanStr2) {
                     const existingDealer = await dealerService.getDealerByName({ name: { '$regex': data.name, '$options': 'i' } }, { isDeleted: 0, __v: 0 });
                     if (existingDealer) {
@@ -185,11 +184,11 @@ exports.createDealer = async (req, res) => {
                         return
                     }
                 }
-  
+
                 //Primary information edit
                 let userQuery = { metaData: { $elemMatch: { metaId: { $in: [data.dealerId] }, isPrimary: true } } }
-  
-  
+
+
                 let newValues1 = {
                     $set: {
                         email: allUserData[0].email,
@@ -199,13 +198,13 @@ exports.createDealer = async (req, res) => {
                         'metaData.$.phoneNumber': allUserData[0].phoneNumber,
                         'metaData.$.status': allUserData[0].status ? true : false,
                         'metaData.$.roleId': "656f08041eb1acda244af8c6"
-  
+
                     }
-  
+
                 }
-  
+
                 await userService.updateUser(userQuery, newValues1, { new: true })
-  
+
                 let allUsersData = allUserData.map((obj, index) => ({
                     ...obj,
                     metaData:
@@ -223,8 +222,8 @@ exports.createDealer = async (req, res) => {
                         ],
                 })
                 );
-  
-  
+
+
                 if (allUsersData.length > 1) {
                     allUsersData = [...allUsersData.slice(0, 0), ...allUsersData.slice(1)];
                     createUsers = await userService.insertManyUser(allUsersData);
@@ -236,8 +235,8 @@ exports.createDealer = async (req, res) => {
                         return;
                     }
                 }
-  
-  
+
+
                 let dealerQuery = { _id: data.dealerId }
                 let newValues = {
                     $set: {
@@ -253,7 +252,6 @@ exports.createDealer = async (req, res) => {
                         isServicer: data.isServicer ? data.isServicer : false
                     }
                 }
-  
                 let dealerStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
                 if (!dealerStatus) {
                     res.send({
@@ -292,15 +290,15 @@ exports.createDealer = async (req, res) => {
                             "dealerNotifications.dealerAdded": true,
                         }
                     },
-  
+
                 }
-  
-                let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
-  
+
+                let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1, metaData: 1 })
+
                 const IDs = adminUsers.map(user => user._id)
-  
+
                 const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
-  
+
                 let notificationData = {
                     title: "New Dealer Added",
                     description: `A New Dealer ${data.name} has been added and approved by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} on our portal.`,
@@ -310,7 +308,6 @@ exports.createDealer = async (req, res) => {
                     endPoint: base_url + "dealerDetails/" + data.dealerId,
                     notificationFor: IDs
                 };
-  
                 await userService.createNotification(notificationData);
                 // Primary User Welcoime email
                 let notificationEmails = adminUsers.map(user => user.email)
@@ -319,9 +316,14 @@ exports.createDealer = async (req, res) => {
                     content: "We are delighted to inform you that the dealer account for " + singleDealer.name + " has been approved.",
                     subject: "Dealer Account Approved - " + singleDealer.name,
                 }
+                let mailing;
+
                 // Send Email code here
-                sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
-  
+                if (notificationEmails.length > 0) {
+                    mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+                    maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+                }
+
                 if (req.body.isAccountCreate) {
                     for (let i = 0; i < createUsers.length; i++) {
                         // Send mail to all User except primary
@@ -330,16 +332,21 @@ exports.createDealer = async (req, res) => {
                             let email = createUsers[i].email;
                             let userId = createUsers[i]._id;
                             let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
-                            sgMail.send(emailConstant.dealerApproval(email, { subject: "Set Password", link: resetLink, role: req.role, dealerName: createUsers[i].metaData[0].firstName + " " + createUsers[i].metaData[0].lastName }))
+                            mailing = await sgMail.send(emailConstant.dealerApproval(email, { subject: "Set Password", link: resetLink, role: req.role, dealerName: createUsers[i].metaData[0].firstName + " " + createUsers[i].metaData[0].lastName }))
+                            let emailData = { subject: "Set Password", link: resetLink, role: req.role, dealerName: createUsers[i].metaData[0].firstName + " " + createUsers[i].metaData[0].lastName }
+                            maillogservice.createMailLogFunction(mailing, emailData, [createUsers[i]], process.env.approval_mail)
+
                             await userService.updateUser({ _id: userId }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
                         }
                     }
                     // Send mail to  primary
                     let resetPrimaryCode = randtoken.generate(4, '123456789')
                     let resetPrimaryLink = `${process.env.SITE_URL}newPassword/${singleDealerUser._id}/${resetPrimaryCode}`
-                    sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { subject: "Set Password", link: resetPrimaryLink, role: req.role, dealerName: singleDealerUser.firstName }))
+                    mailing = await sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { subject: "Set Password", link: resetPrimaryLink, role: req.role, dealerName: singleDealerUser.firstName }))
+                    maillogservice.createMailLogFunction(mailing, { subject: "Set Password", link: resetPrimaryLink, role: req.role, dealerName: singleDealerUser.firstName }, [singleDealerUser], process.env.approval_mail)
+
                     await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPrimaryCode, isResetPassword: true }, { new: true })
-  
+
                 }
                 if (req.body.isServicer && req.body.isServicer == "true") {
                     const CountServicer = await providerService.getServicerCount();
@@ -358,7 +365,6 @@ exports.createDealer = async (req, res) => {
 
                     let createData = await providerService.createServiceProvider(servicerObject)
                 }
-  
                 // Save Setting for dealer
                 const checkUser = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin } } })
                 let adminSetting = await userService.getSetting({ userId: checkUser.metaData[0].metaId });
@@ -390,13 +396,11 @@ exports.createDealer = async (req, res) => {
                     code: constant.successCode,
                     message: 'New Dealer Created Successfully',
                     result: dealerStatus
-  
                 });
                 return;
             }
             else {
                 const existingDealer = await dealerService.getDealerByName({ name: data.name }, { isDeleted: 0, __v: 0 });
-  
                 if (existingDealer) {
                     res.send({
                         code: constant.errorCode,
@@ -404,7 +408,6 @@ exports.createDealer = async (req, res) => {
                     });
                     return
                 }
-  
                 let emailCheck = await userService.findOneUser({ email: data.email }, {});
                 if (emailCheck) {
                     res.send({
@@ -413,9 +416,9 @@ exports.createDealer = async (req, res) => {
                     })
                     return;
                 }
-  
+
                 let count = await dealerService.getDealerCount();
-  
+
                 const dealerMeta = {
                     name: data.name,
                     street: data.street,
@@ -490,15 +493,15 @@ exports.createDealer = async (req, res) => {
                             "dealerNotifications.dealerAdded": true,
                         }
                     },
-  
+
                 }
-  
-                let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
-  
+
+                let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1, metaData: 1 })
+
                 const IDs = adminUsers.map(user => user._id)
-  
+
                 const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
-  
+
                 let notificationData = {
                     title: "New Dealer Added",
                     description: `A New Dealer ${createMetaData.name} has been added and approved by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} on our portal.`,
@@ -509,8 +512,9 @@ exports.createDealer = async (req, res) => {
                     notificationFor: IDs
                 };
                 let createNotification = await userService.createNotification(notificationData);
+
+                console.log("sdffffffffdsdsddsddfs", typeof (data.isServicer))
                 // Create the user
-  
                 if (data.isServicer && data.isServicer == "true") {
                     const CountServicer = await providerService.getServicerCount();
                     let servicerObject = {
@@ -528,7 +532,6 @@ exports.createDealer = async (req, res) => {
 
                     let createData = await providerService.createServiceProvider(servicerObject)
                 }
-
 
                 let allUsersData = allUserData.map((obj, index) => ({
                     ...obj,
@@ -550,7 +553,6 @@ exports.createDealer = async (req, res) => {
                 })
                 );
                 const createUsers = await userService.insertManyUser(allUsersData);
-  
                 if (!createUsers) {
                     res.send({
                         code: constant.errorCode,
@@ -558,17 +560,23 @@ exports.createDealer = async (req, res) => {
                     });
                     return;
                 }
-  
+
                 //Approve status 
                 let notificationEmails = adminUsers.map(user => user.email)
-  
+
                 let emailData = {
                     senderName: loginUser.metaData[0]?.firstName,
                     content: "We are delighted to inform you that the dealer account for " + createMetaData.name + " has been created.",
                     subject: "Dealer Account Created - " + createMetaData.name
                 }
-  
-                sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+                let mailing;
+
+                if (notificationEmails.length > 0) {
+                    mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+                    maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+
+                }
+
                 // Send Email code here
                 if (req.body.isAccountCreate) {
                     for (let i = 0; i < createUsers.length; i++) {
@@ -577,10 +585,11 @@ exports.createDealer = async (req, res) => {
                             let email = createUsers[i].email;
                             let userId = createUsers[i]._id;
                             let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
-                            let mailing = sgMail.send(emailConstant.dealerApproval(email, { subject: "Set Password", link: resetLink, role: req.role, dealerName: createUsers[i].metaData[0].firstName + " "+createUsers[i].metaData[0].lastName }))
+                            mailing = await sgMail.send(emailConstant.dealerApproval(email, { subject: "Set Password", link: resetLink, role: req.role, dealerName: createUsers[i].metaData[0].firstName + " " + createUsers[i].metaData[0].lastName }))
+                            maillogservice.createMailLogFunction(mailing, { subject: "Set Password", link: resetLink, role: req.role, dealerName: createUsers[i].metaData[0].firstName + " " + createUsers[i].metaData[0].lastName }, [createUsers[i]], process.env.approval_mail)
                             let updateStatus = await userService.updateUser({ _id: userId }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
                         }
-  
+
                     }
                 }
                 // Save Setting for dealer
@@ -599,17 +608,17 @@ exports.createDealer = async (req, res) => {
                     userId: createMetaData._id
                 }
                 const saveSetting = await userService.saveSetting(settingData)
-  
-  
+
+
                 res.send({
                     code: constant.successCode,
                     message: 'New Dealer Created Successfully',
                     result: createMetaData
                 });
                 return;
-  
+
             }
-  
+
         })
     } catch (err) {
         //Save Logs
@@ -627,9 +636,9 @@ exports.createDealer = async (req, res) => {
             code: constant.errorCode,
             message: err.message
         });
-  
+
     }
-  };
+};
 
 //Get File data from S3 bucket
 const getObjectFromS3 = (bucketReadUrl) => {

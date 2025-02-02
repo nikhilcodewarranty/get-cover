@@ -31,6 +31,7 @@ router.post('/getAllPriceBooksByFilter', [verifyToken], dealerUserSupportingCont
 router.post('/getDealerCustomers', [verifyToken], dealerUserSupportingController.getDealerCustomers); // get dealer customers
 router.post("/getResellerPriceBook/:resellerId", [verifyToken], supportingFunction.checkObjectId, dealerUserSupportingController.getResellerPriceBook); // get reseller price book
 router.post('/getCustomerInOrder', [verifyToken], dealerUserSupportingController.getCustomerInOrder); // get customer in order
+router.post('/getDealerAsServicerClaims', [verifyToken], dealerUserSupportingController.getDealerAsServicerClaims); //get claim for dealer as servicer
 router.post('/getServicerInOrders', [verifyToken], dealerUserSupportingController.getServicerInOrders); // get servicer in orders
 router.post('/getDealerResellers', [verifyToken], dealerUserSupportingController.getDealerResellers); // get dealer resellers
 router.post('/getDealerResellersInOrder', [verifyToken], dealerUserSupportingController.getDealerResellersInOrder); // get dealer resellers in order

@@ -64,6 +64,17 @@ module.exports = class claimService {
     }
   }
 
+
+  static async findContractCount(query) {
+    try {
+      const count = await claim.find(query).countDocuments();
+      return count
+    } catch (error) {
+      return `Could not fetch contract count: ${error}`;
+    }
+  }
+
+
   // Fetch a claim by its ID, with optional projection
   static async getClaimById(claimId, projection = {}) {
     try {

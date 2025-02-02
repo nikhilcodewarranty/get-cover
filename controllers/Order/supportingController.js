@@ -11,7 +11,8 @@ const servicerService = require("../../services/Provider/providerService");
 const contractService = require("../../services/Contract/contractService");
 const customerService = require("../../services/Customer/customerService");
 const priceBookService = require("../../services/PriceBook/priceBookService");
-const constant = require("../../config/constant");
+const constant = require("../../config/constant")
+const maillogservice = require("../../services/User/maillogServices");
 const dealerPriceService = require("../../services/Dealer/dealerPriceService");
 const userService = require("../../services/User/userService");
 const claimService = require("../../services/Claim/claimService");
@@ -767,77 +768,77 @@ ${term}
         // } 
         //else {
 
-            pdf.create(html, options).toFile(orderFile, async (err, result) => {
-                if (err) return console.log(err);
-                const { PDFDocument, rgb } = require('pdf-lib');
-                const fs = require('fs').promises;
-                const fileContent = await fs.readFile(orderFile);
-                const bucketName = process.env.bucket_name
-                const s3Key = `pdfs/${mergeFileName}`;
-                //Upload to S3 bucket
-                await uploadToS3(orderFile, bucketName, s3Key);     
+        pdf.create(html, options).toFile(orderFile, async (err, result) => {
+            if (err) return console.log(err);
+            const { PDFDocument, rgb } = require('pdf-lib');
+            const fs = require('fs').promises;
+            const fileContent = await fs.readFile(orderFile);
+            const bucketName = process.env.bucket_name
+            const s3Key = `pdfs/${mergeFileName}`;
+            //Upload to S3 bucket
+            await uploadToS3(orderFile, bucketName, s3Key);
 
-                const termConditionFile = checkOrder.termCondition.fileName
-                const termPath = termConditionFile
-                //Download from S3 bucket 
-                const termPathBucket = await downloadFromS3(bucketName, termPath);
-                const orderPathBucket = await downloadFromS3(bucketName, s3Key);
-                async function mergePDFs(pdfBytes1, pdfBytes2, outputPath) {
-                    const pdfDoc1 = await PDFDocument.load(pdfBytes1);
-                    const pdfDoc2 = await PDFDocument.load(pdfBytes2);
+            const termConditionFile = checkOrder.termCondition.fileName
+            const termPath = termConditionFile
+            //Download from S3 bucket 
+            const termPathBucket = await downloadFromS3(bucketName, termPath);
+            const orderPathBucket = await downloadFromS3(bucketName, s3Key);
+            async function mergePDFs(pdfBytes1, pdfBytes2, outputPath) {
+                const pdfDoc1 = await PDFDocument.load(pdfBytes1);
+                const pdfDoc2 = await PDFDocument.load(pdfBytes2);
 
-                    const mergedPdf = await PDFDocument.create();
+                const mergedPdf = await PDFDocument.create();
 
-                    const pdfDoc1Pages = await mergedPdf.copyPages(pdfDoc1, pdfDoc1.getPageIndices());
-                    pdfDoc1Pages.forEach((page) => mergedPdf.addPage(page));
+                const pdfDoc1Pages = await mergedPdf.copyPages(pdfDoc1, pdfDoc1.getPageIndices());
+                pdfDoc1Pages.forEach((page) => mergedPdf.addPage(page));
 
-                    const pdfDoc2Pages = await mergedPdf.copyPages(pdfDoc2, pdfDoc2.getPageIndices());
-                    pdfDoc2Pages.forEach((page) => mergedPdf.addPage(page));
+                const pdfDoc2Pages = await mergedPdf.copyPages(pdfDoc2, pdfDoc2.getPageIndices());
+                pdfDoc2Pages.forEach((page) => mergedPdf.addPage(page));
 
-                    const mergedPdfBytes = await mergedPdf.save();
+                const mergedPdfBytes = await mergedPdf.save();
 
-                    await fs.writeFile(outputPath, mergedPdfBytes);
-                    return mergedPdfBytes;
-                }
-                // Merge PDFs
-                const mergedPdf = await mergePDFs(termPathBucket, orderPathBucket, `/tmp/merged_${mergeFileName}`);
-                // Upload merged PDF to S3
-                const mergedKey = `mergedFile/${mergeFileName}`;
+                await fs.writeFile(outputPath, mergedPdfBytes);
+                return mergedPdfBytes;
+            }
+            // Merge PDFs
+            const mergedPdf = await mergePDFs(termPathBucket, orderPathBucket, `/tmp/merged_${mergeFileName}`);
+            // Upload merged PDF to S3
+            const mergedKey = `mergedFile/${mergeFileName}`;
 
-                await uploadToS3(`/tmp/merged_${mergeFileName}`, bucketName, mergedKey);
+            await uploadToS3(`/tmp/merged_${mergeFileName}`, bucketName, mergedKey);
 
-                const params = {
-                    Bucket: bucketName,
-                    Key: `mergedFile/${mergeFileName}`
-                };
-                //Read from the s3 bucket
-                const data = await S3.getObject(params).promise();
-                let attachment = data.Body.toString('base64');
+            const params = {
+                Bucket: bucketName,
+                Key: `mergedFile/${mergeFileName}`
+            };
+            //Read from the s3 bucket
+            const data = await S3.getObject(params).promise();
+            let attachment = data.Body.toString('base64');
 
-                //sendTermAndCondition
-                // Send Email code here
-                let notificationEmails = await supportingFunction.getUserEmails();
-                notificationEmails.push(DealerUser.email)
-                notificationEmails.push(resellerUser?.email)
-                let settingData = await userService.getSetting({});
-                // let emailData = {
-                //     darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-                //     lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-                //     address: settingData[0]?.address,
-                //     websiteSetting: settingData[0],
-                //     senderName: '',
-                //     content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
-                //     subject: 'Order Term and Condition-' + checkOrder.unique_key,
-                // }
-                // let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
-                response = { link: link, fileName: mergeFileName, bucketName: process.env.bucket_name, key: "mergedFile" }
-                res.send({
-                    code: constant.successCode,
-                    message: 'Success!',
-                    result: response
-                })
+            //sendTermAndCondition
+            // Send Email code here
+            let notificationEmails = await supportingFunction.getUserEmails();
+            notificationEmails.push(DealerUser.email)
+            notificationEmails.push(resellerUser?.email)
+            let settingData = await userService.getSetting({});
+            // let emailData = {
+            //     darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            //     lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            //     address: settingData[0]?.address,
+            //     websiteSetting: settingData[0],
+            //     senderName: '',
+            //     content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
+            //     subject: 'Order Term and Condition-' + checkOrder.unique_key,
+            // }
+            // let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
+            response = { link: link, fileName: mergeFileName, bucketName: process.env.bucket_name, key: "mergedFile" }
+            res.send({
+                code: constant.successCode,
+                message: 'Success!',
+                result: response
             })
-        
+        })
+
 
     }
     catch (err) {
@@ -1023,7 +1024,7 @@ exports.reportingDataReCreation = async (req, res) => {
                     productObject.brokerFee = productData.dealerPriceBookDetails[0].brokerFee
                     productObject.dealerPriceId = productData.dealerPriceBookDetails[0]._id
                     products.push(productObject)
-                    console.log("-----------------------",productObject)
+                    console.log("-----------------------", productObject)
 
                 }
                 reportingData.products = products
@@ -1090,31 +1091,41 @@ exports.getServicerInOrders = async (req, res) => {
             });
             return;
         }
-    }
-    if (data.resellerId) {
-        var checkReseller = await resellerService.getReseller({
-            _id: data.resellerId,
-        });
-    }
-    if (checkReseller && checkReseller.isServicer) {
-        //Get the servicer name if reseller as servicer
-        const checkServicer = await servicerService.getServiceProviderById({ resellerId: checkReseller._id })
-        if (checkReseller.status) {
-            servicer.unshift(checkReseller);
+
+
+
+        let dealerResellerServicer = await resellerService.getResellers({ dealerId: data.dealerId, isServicer: true, status: true })
+        let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
+
+        if (dealerResellerServicer.length > 0) {
+            let dealerResellerServicer = await servicerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
+            servicer = servicer.concat(dealerResellerServicer);
         }
     }
+    // if (data.resellerId) {
+    //     var checkReseller = await resellerService.getReseller({
+    //         _id: data.resellerId,
+    //     });
+    // }
+    // if (checkReseller && checkReseller.isServicer) {
+    //     //Get the servicer name if reseller as servicer
+    //     const checkServicer = await servicerService.getServiceProviderById({ resellerId: checkReseller._id })
+    //     if (checkReseller.status) {
+    //         servicer.unshift(checkServicer);
+    //     }
+    // }
 
     if (checkDealer && checkDealer.isServicer) {
         //Get the servicer name if dealer as servicer
         const checkServicer = await servicerService.getServiceProviderById({ dealerId: checkDealer._id })
         if (checkDealer.accountStatus) {
-            servicer.unshift(checkDealer);
+            servicer.unshift(checkServicer);
         }
     }
 
     const servicerIds = servicer.map((obj) => obj?._id);
-    const resellerIdss = servicer.map((obj) => obj?.resellerId);
-    const dealerIdss = servicer.map((obj) => obj?.dealerId);
+    const resellerIdss = servicer.map((obj) => new mongoose.Types.ObjectId(obj?.resellerId));
+    const dealerIdss = servicer.map((obj) => new mongoose.Types.ObjectId(obj?.dealerId));
     const query1 = {
         $and: [
             {
@@ -1170,10 +1181,11 @@ exports.getServicerInOrders = async (req, res) => {
         return;
     }
 
+    console.log("sdfsfsdfsdfsdfsdfsddfs", servicerUser);
     const result_Array = servicer.map((item1) => {
         const matchingItem = servicerUser.find(
-            (item2) => item2.metaId?.toString() === item1?._id?.toString());
-            
+            (item2) => item2.metaId?.toString() === item1?._id?.toString() || item2.metaId?.toString() === item1?.dealerId?.toString() || item2.metaId?.toString() === item1?.resellerId?.toString());
+
         let matchingItem2 = servicerUser.find(
             (item2) => item2.metaId?.toString() === item1?.resellerId?.toString() || item2.metaId?.toString() === item1?.dealerId?.toString());
         if (matchingItem) {

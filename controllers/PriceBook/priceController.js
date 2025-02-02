@@ -4,9 +4,12 @@ const priceBookService = require("../../services/PriceBook/priceBookService");
 const dealerService = require("../../services/Dealer/dealerService");
 const orderService = require("../../services/Order/orderService");
 const userService = require("../../services/User/userService");
+const axios = require("axios")
+const maillogservice = require("../../services/User/maillogServices")
 const dealerPriceService = require("../../services/Dealer/dealerPriceService");
+const maillogService = require("../../services/User/maillogServices")
 const eligibilityService = require("../../services/Dealer/eligibilityService");
-const constant = require("../../config/constant");
+const constant = require("../../config/constant")
 const randtoken = require('rand-token').generator()
 const mongoose = require('mongoose');
 const logs = require("../../models/User/logs");
@@ -342,10 +345,12 @@ exports.createPriceBook = async (req, res, next) => {
         content: `A new company pricebook ${data.pName} has been added with the following data:`,
         subject: "Create Price Book"
       }
+      console.log("checking the data++++++++++++", notificationEmails)
 
+      let mailing = await sgMail.send(emailConstant.sendPriceBookNotification(notificationEmails, [], emailData))
 
-
-      let mailing = sgMail.send(emailConstant.sendPriceBookNotification(notificationEmails, [], emailData))
+      maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.price_book)
+      console.log("mail log data ++++++++++++++", mailing)
       let logData = {
         userId: req.teammateId,
         endpoint: "price/createPriceBook",
@@ -620,27 +625,27 @@ exports.updatePriceBookById = async (req, res, next) => {
     const base_url = `${process.env.SITE_URL}`
     let notificationData
     if (req.body.priceType) {
-     notificationData = {
-      title: "GetCover Pricebook updated",
-      description: `GetCover Pricebook ${existingPriceBook[0]?.pName} has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
-      userId: req.userId,
-      flag: 'priceBook',
-      notificationFor: IDs,
-      endPoint: base_url + "companyPriceBook/" + existingPriceBook[0]?.name,
-      redirectionId: "companyPriceBook/" + existingPriceBook[0]?.name
-    };
-  }
-  else{
-    notificationData = {
-      title: "GetCover Pricebook Status Updated",
-      description: `GetCover Pricebook ${existingPriceBook[0]?.pName} status has been updated to ${body.status ? 'Active' : "Inactive"} by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
-      userId: req.userId,
-      flag: 'priceBook',
-      notificationFor: IDs,
-      endPoint: base_url + "companyPriceBook/" + existingPriceBook[0]?.name,
-      redirectionId: "companyPriceBook/" + existingPriceBook[0]?.name
-    };
-  }
+      notificationData = {
+        title: "GetCover Pricebook updated",
+        description: `GetCover Pricebook ${existingPriceBook[0]?.pName} has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        userId: req.userId,
+        flag: 'priceBook',
+        notificationFor: IDs,
+        endPoint: base_url + "companyPriceBook/" + existingPriceBook[0]?.name,
+        redirectionId: "companyPriceBook/" + existingPriceBook[0]?.name
+      };
+    }
+    else {
+      notificationData = {
+        title: "GetCover Pricebook Status Updated",
+        description: `GetCover Pricebook ${existingPriceBook[0]?.pName} status has been updated to ${body.status ? 'Active' : "Inactive"} by  ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        userId: req.userId,
+        flag: 'priceBook',
+        notificationFor: IDs,
+        endPoint: base_url + "companyPriceBook/" + existingPriceBook[0]?.name,
+        redirectionId: "companyPriceBook/" + existingPriceBook[0]?.name
+      };
+    }
     let createNotification = await userService.createNotification(notificationData);
 
     // Send Email code here
@@ -674,7 +679,9 @@ exports.updatePriceBookById = async (req, res, next) => {
         redirectId: base_url + "companyPriceBook/" + existingPriceBook[0]?.name
       }
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "noreply@getcover.com", emailData))
+    let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "noreply@getcover.com", emailData))
+    maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+
     let logData = {
       userId: req.teammateId,
       endpoint: "price/updatePriceBook",
@@ -839,7 +846,8 @@ exports.createPriceBookCat = async (req, res) => {
       content: `A new Price Book Category ${data.name} has been added to the system by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
       subject: "New Category Added"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+    let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+    maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
 
     let logData = {
       userId: req.teammateId,
@@ -1170,7 +1178,9 @@ exports.updatePriceBookCat = async (req, res) => {
       content: "The category " + data.name + " updated successfully.",
       subject: "Update Category"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+    let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
+    maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+
     let logData = {
       userId: req.teammateId,
       endpoint: "price/updatePricebookCat",
@@ -1761,8 +1771,10 @@ exports.uploadRegularPriceBook = async (req, res) => {
             };
           }
         });
+
         const htmlTableString = convertArrayToHTMLTable(totalDataOriginal1);
-        const mailing = sgMail.send(emailConstant.sendPriceBookFile(("yashasvi@codenomad.net"), ["anil@codenomad.net"], htmlTableString));
+        let mailing = await sgMail.send(emailConstant.sendPriceBookFile(("yashasvi@codenomad.net"), ["anil@codenomad.net"], htmlTableString));
+        maillogservice.createMailLogFunction(mailing, users, htmlTableString)
 
         res.send({
           code: constant.successCode,
@@ -1962,7 +1974,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
           }
         });
         const htmlTableString = convertArrayToHTMLTable(totalDataOriginal1);
-        const mailing = sgMail.send(emailConstant.sendPriceBookFile(("yashasvi@codenomad.net"), ["noreply@getcover.com"], htmlTableString));
+        const mailing = await sgMail.send(emailConstant.sendPriceBookFile(("yashasvi@codenomad.net"), ["noreply@getcover.com"], htmlTableString));
 
 
         res.send({
@@ -2208,7 +2220,7 @@ exports.uploadRegularPriceBook = async (req, res) => {
           }
         });
         const htmlTableString = convertArrayToHTMLTable(totalDataOriginal1);
-        const mailing = sgMail.send(emailConstant.sendPriceBookFile(("yashasvi@codenomad.net"), ["anil@codenomad.net"], htmlTableString));
+        const mailing = await sgMail.send(emailConstant.sendPriceBookFile(("yashasvi@codenomad.net"), ["anil@codenomad.net"], htmlTableString));
 
         res.send({
           code: constant.successCode,

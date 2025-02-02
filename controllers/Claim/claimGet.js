@@ -16,7 +16,8 @@ const resellerService = require("../../services/Dealer/resellerService");
 const dealerService = require("../../services/Dealer/dealerService");
 const supportingFunction = require('../../config/supportingFunction')
 const emailConstant = require('../../config/emailConstant');
-const constant = require("../../config/constant");
+const constant = require("../../config/constant")
+const maillogservice = require("../../services/User/maillogServices");
 const sgMail = require('@sendgrid/mail');
 const moment = require("moment");
 sgMail.setApiKey(process.env.sendgrid_key);
@@ -274,15 +275,15 @@ exports.getAllClaims = async (req, res, next) => {
       let newEndDate = new Date(data.endDate)
       newEndDate.setHours(23, 59, 59, 999);
       if (data.dateFilter == "damageDate") {
-        dateMatch = { lossDate: { $gte: new Date(data.startDate), $lte: newEndDate} }
+        dateMatch = { lossDate: { $gte: new Date(data.startDate), $lte: newEndDate } }
         // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
       }
       if (data.dateFilter == "openDate") {
-        dateMatch = { createdAt: { $gte: new Date(data.startDate), $lte: newEndDate} }
+        dateMatch = { createdAt: { $gte: new Date(data.startDate), $lte: newEndDate } }
         // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
       }
       if (data.dateFilter == "closeDate") {
-        dateMatch = { claimDate: { $gte: new Date(data.startDate), $lte: newEndDate} }
+        dateMatch = { claimDate: { $gte: new Date(data.startDate), $lte: newEndDate } }
         statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
       }
     }
@@ -300,7 +301,7 @@ exports.getAllClaims = async (req, res, next) => {
       }
     }
     let lookupQuery = [
-      { $sort: { createdAt: -1 } },
+      { $sort: { unique_key_number: -1 } },
       {
         $match:
         {
@@ -428,53 +429,74 @@ exports.getAllClaims = async (req, res, next) => {
         // Push the servicerId to the allServicerIds array
         allServicerIds.push(dealer.servicerId);
       });
+      // if (item.contracts.orders.dealers.isServicer && item.contracts.orders.dealers.accountStatus) {
+      //   allServicerIds.push(item.contracts.orders.dealers._id)
+      // }
     });
 
     //Get Dealer and Reseller Servicers
-    let servicer;
     //service call from claim services
+    // let allServicer = await servicerService.getAllServiceProvider(
+    //   { _id: { $in: allServicerIds }, status: true },
+    //   {}
+    // );
+
     let allServicer = await servicerService.getAllServiceProvider(
-      { _id: { $in: allServicerIds }, status: true },
+      {
+        $or: [
+          { "_id": allServicerIds },
+          { "dealerId": allServicerIds },
+          { "resellerId": allServicerIds }
+        ]
+      },
       {}
     );
 
     const dynamicOption = await userService.getOptions({ name: 'coverage_type' })
 
+    let result_Array = await Promise.all(resultFiter.map(async (item1) => {
+      let servicer = []
+      //  servicer =allServicer;
+      let mergedData = [];
 
-
-    let result_Array = resultFiter.map((item1) => {
-      servicer = []
-      let mergedData = []
-
-
-      let servicerName = ''
+      let servicerName = '';
       let selfServicer = false;
       let selfResellerServicer = false;
-      let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
+
+      await Promise.all(item1.contracts.orders.dealers.dealerServicer.map(async (matched) => {
         const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId?.toString());
         if (dealerOfServicer) {
-          servicer.push(dealerOfServicer)
+          servicer.push(dealerOfServicer);
         }
-      });
+      }));
 
       if (item1.contracts.orders.servicers[0]?.length > 0) {
-        servicer.unshift(item1.contracts.orders.servicers[0])
+        servicer.unshift(item1.contracts.orders.servicers[0]);
       }
 
-      if (item1.contracts.orders.resellers[0]?.isServicer && item1.contracts.orders.resellers[0]?.status) {
-        servicer.unshift(item1.contracts.orders.resellers[0])
+      // if (item1.contracts.orders.resellers[0]?.isServicer && item1.contracts.orders.resellers[0]?.status) {
+      //   let checkResellerServicer = await servicerService.getServiceProviderById({ resellerId: item1.contracts.orders.resellers[0]._id })
+      //   servicer.push(checkResellerServicer)
+      // }
+
+      let dealerResellerServicer = await resellerService.getResellers({ dealerId: item1.contracts.orders.dealers._id, isServicer: true, status: true })
+      let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
+      if (dealerResellerServicer.length > 0) {
+        let dealerResellerServicer = await servicerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
+        servicer = servicer.concat(dealerResellerServicer);
       }
 
       if (item1.contracts.orders.dealers.isServicer && item1.contracts.orders.dealers.accountStatus) {
-        servicer.unshift(item1.contracts.orders.dealers)
+        let checkDealerServicer = await servicerService.getServiceProviderById({ dealerId: item1.contracts.orders.dealers._id })
+        servicer.push(checkDealerServicer)
       }
 
       if (item1.servicerId != null) {
         servicerName = servicer.find(servicer => servicer?._id?.toString() === item1.servicerId?.toString());
-        selfServicer = req.role == "Customer" ? false : item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() ? true : false
-        selfResellerServicer = item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString()
+        let checkItselfServicer = await servicerService.getServiceProviderById({ _id: item1.servicerId })
+        selfServicer = req.role == "Customer" ? false : checkItselfServicer?.dealerId?.toString() === item1.contracts?.orders?.dealerId.toString() ? true : false;
+        selfResellerServicer = checkItselfServicer?.resellerId?.toString() === item1.contracts?.orders?.resellerId?.toString() ? true : false;
       }
-
 
       if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
         if (req.role == "Servicer") {
@@ -500,7 +522,6 @@ exports.getAllClaims = async (req, res, next) => {
             item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
           );
         }
-
       }
 
       return {
@@ -513,8 +534,8 @@ exports.getAllClaims = async (req, res, next) => {
           allServicer: servicer,
           mergedData: mergedData
         }
-      }
-    })
+      };
+    }));
 
     let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0 // getting the total count 
     let getTheThresholdLimit = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
@@ -526,12 +547,16 @@ exports.getAllClaims = async (req, res, next) => {
         if (req.role == "Customer") {
           if (claimObject?.submittedBy != '') {
             query = { email: claimObject?.submittedBy }
+            const checkCustomerExist = await userService.getUserById1(query)
+            if (!checkCustomerExist) {
+              query = { metaData: { $elemMatch: { metaId: claimObject.contracts.orders.customerId, isPrimary: true } } }
+            }
+
           }
           else {
             query = { metaData: { $elemMatch: { metaId: claimObject.contracts.orders.customerId, isPrimary: true } } }
           }
           const customerDetail = await userService.getUserById1(query)
-
           claimObject.contracts.orders.customer.username = customerDetail?.metaData[0]?.firstName + " " + customerDetail?.metaData[0]?.lastName
         }
 

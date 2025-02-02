@@ -172,6 +172,10 @@ const contractSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  notEligibleByCustom: {
+    type: Boolean,
+    default: false
+  },
 }, { timestamps: true });
 
 module.exports = connection.userConnection.model("contract", contractSchema);

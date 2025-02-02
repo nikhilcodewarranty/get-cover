@@ -5,6 +5,8 @@ const contractService = require("../../services/Contract/contractService");
 const resellerService = require("../../services/Dealer/resellerService")
 let claimService = require('../../services/Claim/claimService')
 const LOG = require('../../models/User/logs')
+const maillogservice = require("../../services/User/maillogServices");
+
 const dealerRelationService = require("../../services/Dealer/dealerRelationService");
 const customerService = require("../../services/Customer/customerService");
 const dealerPriceService = require("../../services/Dealer/dealerPriceService");
@@ -107,8 +109,8 @@ exports.createReseller = async (req, res) => {
                 }
             },
         }
-        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1 })
-        let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerQuery, { email: 1 })
+        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminQuery, { email: 1, metaData: 1 })
+        let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerQuery, { email: 1, metaData: 1 })
         const IDs = adminUsers.map(user => user._id)
         let notificationArray = []
         const dealerId = dealerUsers.map(user => user._id)
@@ -176,11 +178,17 @@ exports.createReseller = async (req, res) => {
             content: "We are delighted to inform you that the reseller account for " + createdReseler.name + " has been created.",
             subject: "Reseller Account Created - " + createdReseler.name
         }
-
-
+        let mailing
+        if (notificationEmails.length > 0) {
+            mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+            maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+        }
         // Send Email code here
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
-        mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
+        if (dealerEmails.length > 0) {
+            mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
+            maillogservice.createMailLogFunction(mailing, emailData, dealerUsers, process.env.update_status)
+        }
+
 
         if (data.status) {
             for (let i = 0; i < saveMembers.length; i++) {
@@ -190,8 +198,21 @@ exports.createReseller = async (req, res) => {
                     let resetPasswordCode = randtoken.generate(4, '123456789')
                     let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
                     let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-                    const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email,
-                        {
+
+                    if (checkPrimaryEmail2) {
+                        mailing = await sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email,
+                            {
+                                flag: "created",
+                                link: resetLink,
+                                darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                                lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                                subject: "Set Password",
+                                title: settingData[0]?.title,
+                                address: settingData[0]?.address,
+                                role: "Reseller",
+                                servicerName: saveMembers[i].metaData[0].firstName + " " + saveMembers[i].metaData[0].lastName
+                            }))
+                        let emailData = {
                             flag: "created",
                             link: resetLink,
                             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -200,9 +221,12 @@ exports.createReseller = async (req, res) => {
                             title: settingData[0]?.title,
                             address: settingData[0]?.address,
                             role: "Reseller",
-                            servicerName: saveMembers[i].firstName
-                        }))
+                            servicerName: saveMembers[i].metaData[0].firstName + " " + saveMembers[i].metaData[0].lastName
+                        }
+                        maillogservice.createMailLogFunction(mailing, emailData, [checkPrimaryEmail2], process.env.servicer_approval)
+                    }
                 }
+
 
             }
         }
@@ -989,9 +1013,9 @@ exports.editResellers = async (req, res) => {
             },
         }
 
-        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerrQuery, { email: 1 })
-        let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerrQuery, { email: 1 })
-        let resellerUsers = await supportingFunction.getNotificationEligibleUser(reellerQuery, { email: 1 })
+        let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerrQuery, { email: 1, metaData: 1 })
+        let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerrQuery, { email: 1, metaData: 1 })
+        let resellerUsers = await supportingFunction.getNotificationEligibleUser(reellerQuery, { email: 1, metaData: 1 })
         let notificationArray = []
 
         let IDs = adminUsers.map(user => user._id)
@@ -1098,9 +1122,22 @@ exports.editResellers = async (req, res) => {
             content: "Your details have been updated. To view the details, please login into your account.",
             subject: "Update Info"
         }
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
-        mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
-        mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ['noreply@getcover.com'], emailData))
+        let mailing
+        if (notificationEmails.length > 0) {
+            mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+            maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+        }
+        if (dealerEmails.length > 0) {
+            mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ['noreply@getcover.com'], emailData))
+            maillogservice.createMailLogFunction(mailing, emailData, dealerUsers, process.env.update_status)
+        }
+        if (resellerEmail.length > 0) {
+            mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ['noreply@getcover.com'], emailData))
+            maillogservice.createMailLogFunction(mailing, emailData, resellerUsers, process.env.update_status)
+        }
+
+
+
 
 
         //Save Logs update reseller
@@ -1150,7 +1187,6 @@ exports.addResellerUser = async (req, res) => {
         let checkReseller = await resellerService.getReseller({ _id: data.resellerId }, {})
         // let checkDealer = await resellerService.getReseller({ _id: checkReseller.dealerId }, {})
         let checkDealer = await dealerService.getDealerByName({ _id: checkReseller.dealerId }, {})
-  
         if (!checkReseller) {
             res.send({
                 code: constant.errorCode,
@@ -1158,9 +1194,9 @@ exports.addResellerUser = async (req, res) => {
             })
             return;
         };
-  
+
         let checkEmail = await userService.findOneUser({ email: data.email }, {})
-  
+
         if (checkEmail) {
             res.send({
                 code: constant.errorCode,
@@ -1168,17 +1204,16 @@ exports.addResellerUser = async (req, res) => {
             })
             return;
         }
-  
+
         let checkUser = await userService.getUserById1({ metaData: { $elemMatch: { metaId: data.resellerId, isPrimary: true } } }, { isDeleted: false })
         data.status = checkUser.metaData[0]?.status == 'no' || !checkUser.metaData[0]?.status || checkUser.metaData[0]?.status == 'false' || !data.status ? false : true;
+
         let statusCheck;
         if (!checkReseller.status) {
             statusCheck = false
         } else {
             statusCheck = data.status
         }
-        console.log("dsfsdfdsfdsfdfsdsfsd",statusCheck)
-        console.log("checkReseller",checkReseller)
         let metaData = {
             email: data.email,
             metaData: [
@@ -1192,12 +1227,12 @@ exports.addResellerUser = async (req, res) => {
                     position: data.position,
                     isPrimary: false,
                     dialCode: data.dialCode ? data.dialCode : "+1"
-  
+
                 }
             ]
-  
+
         }
-  
+
         let saveData = await userService.createUser(metaData)
         if (!saveData) {
             //Save Logs add reseller user
@@ -1251,18 +1286,20 @@ exports.addResellerUser = async (req, res) => {
                     }
                 },
             }
-  
-  
-            let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerQuery, { email: 1 })
-            let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDealerQuery, { email: 1 })
-  
-            let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerDealerQuery, { email: 1 })
-  
+
+
+            let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerQuery, { email: 1, metaData: 1 })
+            let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDealerQuery, { email: 1, metaData: 1 })
+
+            let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerDealerQuery, { email: 1, metaData: 1 })
+
             const IDs = adminUsers.map(user => user._id)
+            const adminEmails = adminUsers.map(user => user.email)
             let notificationArray = []
             const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
             const base_url = `${process.env.SITE_URL}`
             const dealerId = dealerUsers.map(user => user._id)
+            const dealerEmail = dealerUsers.map(user => user.email)
             const resellerId = resellerUsers.map(user => user._id)
             let notificationData = {
                 title: "Reseller User Added",
@@ -1301,13 +1338,46 @@ exports.addResellerUser = async (req, res) => {
             notificationArray.push(notificationData)
             let createNotification = await userService.saveNotificationBulk(notificationArray);
             let settingData = await userService.getSetting({});
-  
+            let emailData = {
+                darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                address: settingData[0]?.address,
+                websiteSetting: settingData[0],
+                senderName: `Dear ${checkUser.metaData[0].firstName + " " + checkUser.metaData[0].lastName}`,
+                content: `A new user for Reseller ${checkReseller.name} has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+                subject: "Reseller User Added"
+            };
+            let mailing = await sgMail.send(emailConstant.sendEmailTemplate(adminEmails, ["noreply@getcover.com"], emailData))
+            await maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+            emailData = {
+                darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                address: settingData[0]?.address,
+                websiteSetting: settingData[0],
+                senderName: `Dear ${checkUser.metaData[0].firstName + " " + checkUser.metaData[0].lastName}`,
+                content: `A new user has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+                subject: "Reseller user Added"
+            };
+            mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.com"], emailData))
+            await maillogservice.createMailLogFunction(mailing, emailData, dealerUsers, process.env.update_status)
+            
             let email = data.email
             let userId = saveData._id
             let resetPasswordCode = randtoken.generate(4, '123456789')
             let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
             let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
-            const mailing = sgMail.send(emailConstant.servicerApproval(email,
+            emailData = {
+                flag: "created",
+                link: resetLink,
+                darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                subject: "Set Password",
+                title: settingData[0]?.title,
+                address: settingData[0]?.address,
+                role: "Reseller User",
+                servicerName: data.firstName + " " + data.lastName
+            }
+            mailing = await sgMail.send(emailConstant.servicerApproval(email,
                 {
                     flag: "created",
                     link: resetLink,
@@ -1319,7 +1389,8 @@ exports.addResellerUser = async (req, res) => {
                     role: "Reseller User",
                     servicerName: data.firstName + " " + data.lastName
                 }))
-  
+            maillogservice.createMailLogFunction(mailing, emailData, [checkPrimaryEmail2], process.env.servicer_approval)
+
             //Save Logs add reseller user
             let logData = {
                 userId: req.userId,
@@ -1355,8 +1426,7 @@ exports.addResellerUser = async (req, res) => {
             message: err.message
         })
     }
-  }
-
+}
 
 //Get Reseller Servicer
 exports.getResellerServicers = async (req, res) => {
@@ -1380,6 +1450,10 @@ exports.getResellerServicers = async (req, res) => {
             return;
         }
 
+        let checkResellerAsServicer = await resellerService.getResellers({ dealerId: checkDealer._id, status: true, isServicer: true })
+        let resellerAsServicerIds = checkResellerAsServicer.map(ID => new mongoose.Types.ObjectId(ID._id))
+        // let resellerAsServicerIds = checkResellerAsServicer.map(ID => new mongoose.Types.ObjectId(ID._id))
+        console.log("checking the data++++++++++++++++", resellerAsServicerIds)
         let result_Array = []
         //Get Dealer Servicer
         let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: checkReseller.dealerId })
@@ -1392,7 +1466,13 @@ exports.getResellerServicers = async (req, res) => {
         }
 
         let ids = getServicersIds.map((item) => item.servicerId)
-        var servicer = await providerService.getAllServiceProvider({ _id: { $in: ids } }, {})
+        ids = ids.concat(resellerAsServicerIds)
+        var servicer = await providerService.getAllServiceProvider({
+            $or: [
+                { _id: { $in: ids } },
+                { resellerId: { $in: ids } }
+            ]
+        }, {})
         if (!servicer) {
             res.send({
                 code: constant.errorCode,
@@ -1404,11 +1484,16 @@ exports.getResellerServicers = async (req, res) => {
             servicer.unshift(checkDealer);
         }
 
-        if (checkReseller.isServicer) {
-            servicer.unshift(checkReseller);
-        }
+        // if (checkReseller.isServicer) {
+        //     servicer.unshift(checkReseller);
+        // }
 
-        const servicerIds = servicer.map(obj => obj._id);
+        let servicerIds = servicer.map(obj => obj._id);
+        let servicerIds1 = servicer.map(obj => new mongoose.Types.ObjectId(obj.dealerId));
+        let servicerIds2 = servicer.map(obj => new mongoose.Types.ObjectId(obj.resellerId));
+        servicerIds = servicerIds.concat(servicerIds1, servicerIds2)
+        console.log("checking the data++++++++++++++++", servicerIds)
+
         // Get servicer with claim
         const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "completed", resellerId: new mongoose.Types.ObjectId(req.params.resellerId) };
         const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "completed", resellerId: new mongoose.Types.ObjectId(req.params.resellerId) };
@@ -1473,6 +1558,7 @@ exports.getResellerServicers = async (req, res) => {
             }
         ]);
 
+        console.log(servicerUser.length, "---333-----------------")
 
 
         if (!servicerUser) {
@@ -1483,7 +1569,11 @@ exports.getResellerServicers = async (req, res) => {
             return;
         };
         result_Array = servicer.map(servicer => {
-            const matchingItem = servicerUser.find(user => user.metaId.toString() === servicer._id.toString())
+            const matchingItem = servicerUser.find(user =>
+                user.metaId?.toString() === servicer?._id?.toString() ||
+                user.metaId?.toString() === servicer?.dealerId?.toString() ||
+                user.metaId?.toString() === servicer?.resellerId?.toString()
+            )
             const claimValue = valueClaim.find(claim => claim._id.toString() === servicer._id.toString())
             const claimNumber = numberOfClaims.find(claim => claim._id.toString() === servicer._id.toString())
             if (matchingItem) {
@@ -2003,7 +2093,7 @@ exports.getResellerContract = async (req, res) => {
             let startDate = new Date(data.startDate)
             let endDate = new Date(data.endDate)
             startDate.setHours(0, 0, 0, 0)
-            endDate.setHours(11, 59, 0, 0)
+            endDate.setHours(23, 59, 999, 0)
             let dateFilter = { createdAt: { $gte: startDate, $lte: endDate } }
             contractFilterWithEligibilty.push(dateFilter)
         }
@@ -2147,8 +2237,11 @@ exports.getResellerContract = async (req, res) => {
                     result1[e].reason = "Contract has open claim"
 
                 }
-                if (checkClaims[0].totalAmount >= result1[e].productValue) {
-                    result1[e].reason = "Claim value exceed the product value limit"
+                if (checkClaims[0].isMaxClaimAmount) {
+
+                    if (checkClaims[0].totalAmount >= result1[e].productValue) {
+                        result1[e].reason = "Claim value exceed the product value limit"
+                    }
                 }
             }
             let thresholdLimitPercentage = getTheThresholdLimir.threshHoldLimit.value
@@ -2273,9 +2366,9 @@ exports.changeResellerStatus = async (req, res) => {
                     }
                 },
             }
-            let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerrQuery, { email: 1 })
-            let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerrQuery, { email: 1 })
-            let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerQuery, { email: 1 })
+            let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDealerrQuery, { email: 1, metaData: 1 })
+            let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerrQuery, { email: 1, metaData: 1 })
+            let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerQuery, { email: 1, metaData: 1 })
             let notificationArray = []
             let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: singleReseller.dealerId, isPrimary: true } } })
             let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.params.resellerId, isPrimary: true } } })
@@ -2335,8 +2428,12 @@ exports.changeResellerStatus = async (req, res) => {
                 redirectId: status_content == "Active" ? resetLink : '',
                 subject: "Update Status"
             }
+            let mailing
+            if (getPrimary) {
+                mailing = await sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, ["noreply@getcover.com"], emailData))
+                maillogservice.createMailLogFunction(mailing, emailData, [getPrimary], process.env.update_status)
+            }
 
-            let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, ["noreply@getcover.com"], emailData))
 
             emailData = {
                 senderName: singleReseller.name,
@@ -2349,10 +2446,18 @@ exports.changeResellerStatus = async (req, res) => {
                 subject: "Update Status"
             }
             emailData.senderName = "Dear Admin"
-            mailing = sgMail.send(emailConstant.sendEmailTemplate(adminEmail, ["noreply@getcover.com"], emailData))
-            emailData.senderName = `Dear ${getPrimary.metaData[0]?.firstName + " " + getPrimary.metaData[0]?.lastName}`
+            if (adminEmail.length > 0) {
+                mailing = await sgMail.send(emailConstant.sendEmailTemplate(adminEmail, ["noreply@getcover.com"], emailData))
+                maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+            }
 
-            mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
+            if (dealerEmails.length > 0) {
+                emailData.senderName = `Dear ${getPrimary.metaData[0]?.firstName + " " + getPrimary.metaData[0]?.lastName}`
+
+                mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
+                maillogservice.createMailLogFunction(mailing, emailData, dealerUsers, process.env.update_status)
+            }
+
 
             //Save Logs change reseller status
             let logData = {
@@ -2506,6 +2611,7 @@ exports.getResellerClaims = async (req, res) => {
                             "contracts.orders.coverageType": 1,
                             "contracts.orders.customerId": 1,
                             "contracts.orders.dealers.isShippingAllowed": 1,
+                            "contracts.orders.dealers.accountStatus": 1,
                             "contracts.orders.resellerId": 1,
                             "contracts.orders.dealers.name": 1,
                             "contracts.orders.dealers.isServicer": 1,
@@ -2539,7 +2645,8 @@ exports.getResellerClaims = async (req, res) => {
                                     in: {
                                         "_id": "$$reseller._id",
                                         "name": "$$reseller.name",
-                                        "isServicer": "$$reseller.isServicer"
+                                        "isServicer": "$$reseller.isServicer",
+                                        "status": "$$reseller.status"
                                     }
                                 }
                             }
@@ -2592,7 +2699,7 @@ exports.getResellerClaims = async (req, res) => {
         statusMatch = {}
 
         if (data.dateFilter != "") {
-            data.endDate = new Date(data.endDate).setHours(11, 59, 0, 0)
+            data.endDate = new Date(data.endDate).setHours(23, 59, 999, 0)
             if (data.dateFilter == "damageDate") {
                 dateMatch = { lossDate: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
                 // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
@@ -2735,14 +2842,13 @@ exports.getResellerClaims = async (req, res) => {
         });
 
         //Get Dealer and Reseller Servicers
-        let servicer;
         let servicerName = '';
         allServicer = await providerService.getAllServiceProvider(
             { _id: { $in: allServicerIds }, status: true },
             {}
         );
-        const result_Array = resultFiter.map((item1) => {
-            servicer = []
+        let result_Array = await Promise.all(resultFiter.map(async (item1) => {
+            let servicer = []
             let mergedData = []
             if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
                 mergedData = dynamicOption.value.filter(contract =>
@@ -2751,21 +2857,33 @@ exports.getResellerClaims = async (req, res) => {
             }
             let servicerName = '';
             let selfServicer = false;
-            let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
-                const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId.toString());
-                servicer.push(dealerOfServicer)
-            });
+            await Promise.all(item1.contracts.orders.dealers.dealerServicer.map(async (matched) => {
+                const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId?.toString());
+                if (dealerOfServicer) {
+                    servicer.push(dealerOfServicer);
+                }
+            }));
 
             if (item1.contracts.orders.servicers[0]?.length > 0) {
                 servicer.unshift(item1.contracts.orders.servicers[0])
             }
 
-            if (item1.contracts.orders.resellers[0]?.isServicer) {
-                servicer.unshift(item1.contracts.orders.resellers[0])
+            let dealerResellerServicer = await resellerService.getResellers({ dealerId: item1.contracts.orders.dealers._id, isServicer: true, status: true })
+            let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
+            if (dealerResellerServicer.length > 0) {
+                let dealerResellerServicer = await providerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
+                servicer = servicer.concat(dealerResellerServicer);
             }
+            // if (item1.contracts.orders.resellers[0]?.isServicer && item1.contracts.orders.resellers[0]?.status) {
+            //     let checkResellerServicer = await providerService.getServiceProviderById({ resellerId: item1.contracts.orders.resellers[0]._id })
 
-            if (item1.contracts.orders.dealers.isServicer) {
-                servicer.unshift(item1.contracts.orders.dealers)
+            //     servicer.push(checkResellerServicer)
+
+            //   }
+
+            if (item1.contracts.orders.dealers.isServicer && item1.contracts.orders.dealers.accountStatus) {
+                let checkDealerServicer = await providerService.getServiceProviderById({ dealerId: item1.contracts.orders.dealers._id })
+                servicer.push(checkDealerServicer)
             }
 
             if (item1.servicerId != null) {
@@ -2785,7 +2903,423 @@ exports.getResellerClaims = async (req, res) => {
 
                 }
             }
+        }));
+
+        let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            result: result_Array,
+            totalCount
         })
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
+exports.getResellerAsServicerClaims = async (req, res) => {
+    try {
+        const resellerId = req.params.resellerId ? req.params.resellerId : req.userId
+        const singleReseller = await resellerService.getReseller({ _id: resellerId });
+
+        if (!singleReseller) {
+            res.send({
+                code: constant.errorCode,
+                message: "Reseller not found"
+            })
+            return;
+        }
+
+        let data = req.body
+        let query = { isDeleted: false };
+        let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+        let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+        let limitData = Number(pageLimit)
+        let newQuery = [];
+        newQuery.push({
+            $facet: {
+                totalRecords: [
+                    {
+                        $count: "total"
+                    }
+                ],
+                data: [
+                    {
+                        $skip: skipLimit
+                    },
+                    {
+                        $limit: pageLimit
+                    },
+                    {
+                        $lookup: {
+                            from: "servicer_dealer_relations",
+                            localField: "contracts.orders.dealers._id",
+                            foreignField: "dealerId",
+                            as: "contracts.orders.dealers.dealerServicer",
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: "resellers",
+                            localField: "contracts.orders.resellerId",
+                            foreignField: "_id",
+                            as: "contracts.orders.resellers",
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: "serviceproviders",
+                            localField: "contracts.orders.servicerId",
+                            foreignField: "_id",
+                            as: "contracts.orders.servicers",
+                        }
+                    },
+                    {
+                        $project: {
+                            "contractId": 1,
+                            "claimFile": 1,
+                            "lossDate": 1,
+                            "receiptImage": 1,
+                            reason: 1,
+                            "unique_key": 1,
+                            note: 1,
+                            pName: 1,
+                            totalAmount: 1,
+                            getcoverOverAmount: 1,
+                            customerOverAmount: 1,
+                            customerClaimAmount: 1,
+                            getCoverClaimAmount: 1,
+                            dealerSku: 1,
+                            servicerId: 1,
+                            claimType: 1,
+                            customerStatus: 1,
+                            trackingNumber: 1,
+                            trackingType: 1,
+                            repairParts: 1,
+                            diagnosis: 1,
+                            claimStatus: 1,
+                            repairStatus: 1,
+                            // repairStatus: { $arrayElemAt: ['$repairStatus', -1] },
+                            "contracts.unique_key": 1,
+                            "contracts.productName": 1,
+                            "contracts.model": 1,
+                            "contracts.manufacture": 1,
+                            "contracts.serial": 1,
+                            "contracts.coverageType": 1,
+                            "contracts.orders.dealerId": 1,
+                            "contracts.orders._id": 1,
+                            "contracts.orders.servicerId": 1,
+                            "contracts.orders.serviceCoverageType": 1,
+                            "contracts.orders.coverageType": 1,
+                            "contracts.orders.customerId": 1,
+                            "contracts.orders.dealers.isShippingAllowed": 1,
+                            "contracts.orders.dealers.accountStatus": 1,
+                            "contracts.orders.resellerId": 1,
+                            "contracts.orders.dealers.name": 1,
+                            "contracts.orders.dealers.isServicer": 1,
+                            "contracts.orders.dealers._id": 1,
+                            "contracts.orders.customer.username": 1,
+                            // "contracts.orders.dealers.dealerServicer": 1,
+                            "contracts.orders.dealers.dealerServicer": {
+                                $map: {
+                                    input: "$contracts.orders.dealers.dealerServicer",
+                                    as: "dealerServicer",
+                                    in: {
+                                        "_id": "$$dealerServicer._id",
+                                        "servicerId": "$$dealerServicer.servicerId",
+                                    }
+                                }
+                            },
+                            "contracts.orders.servicers": {
+                                $map: {
+                                    input: "$contracts.orders.servicers",
+                                    as: "servicer",
+                                    in: {
+                                        "_id": "$$servicer._id",
+                                        "name": "$$servicer.name",
+                                    }
+                                }
+                            },
+                            "contracts.orders.resellers": {
+                                $map: {
+                                    input: "$contracts.orders.resellers",
+                                    as: "reseller",
+                                    in: {
+                                        "_id": "$$reseller._id",
+                                        "name": "$$reseller.name",
+                                        "isServicer": "$$reseller.isServicer"
+                                    }
+                                }
+                            }
+                        }
+                    },
+
+                ]
+            }
+        })
+        let servicerMatch = {}
+        let dealerMatch = {}
+        let resellerMatch = {}
+        let dateMatch = {}
+        let statusMatch = {}
+        const checkServicer = await providerService.getAllServiceProvider({ resellerId: new mongoose.Types.ObjectId(resellerId) });
+        let servicerIdToCheck = checkServicer[0]?._id
+
+        let servicerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer?._id))
+        servicerIds.push(new mongoose.Types.ObjectId(resellerId))
+        servicerMatch = {
+            $or: [
+                { "servicerId": { $in: servicerIds } }
+            ]
+        };
+        // if (data.servicerName != '' && data.servicerName != undefined) {
+        //     const checkServicer = await providerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } });
+        //     if (checkServicer.length > 0) {
+        //         let servicerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer._id))
+        //         let dealerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer.dealerId))
+        //         let resellerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer.resellerId))
+        //         servicerMatch = {
+        //             $or: [
+        //                 { "servicerId": { $in: servicerIds } },
+        //                 { "servicerId": { $in: dealerIds } },
+        //                 { "servicerId": { $in: resellerIds } }
+        //             ]
+        //         };
+        //     }
+        //     else {
+        //         servicerMatch = { 'servicerId': new mongoose.Types.ObjectId('5fa1c587ae2ac23e9c46510f') }
+        //     }
+        // }
+        data.dealerName = data.dealerName ? data.dealerName : ""
+
+
+        if (data.dealerName != "") {
+            let getDealer = await dealerService.getAllDealers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
+            let dealerIds = getDealer.map(ID => new mongoose.Types.ObjectId(ID._id))
+            dealerMatch = { dealerId: { $in: dealerIds } }
+
+        }
+        data.resellerMatch = data.resellerMatch ? data.resellerMatch : ""
+        if (data.resellerName != "") {
+            let getReseller = await resellerService.getResellers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
+            let resellerIds = getReseller.map(ID => new mongoose.Types.ObjectId(ID._id))
+            resellerMatch = { resellerId: { $in: resellerIds } }
+        }
+
+        statusMatch = {}
+
+        if (data.dateFilter != "") {
+            data.endDate = new Date(data.endDate).setHours(23, 59, 999, 0)
+            if (data.dateFilter == "damageDate") {
+                dateMatch = { lossDate: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
+                // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
+            }
+            if (data.dateFilter == "openDate") {
+                dateMatch = { createdAt: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
+                // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
+            }
+            if (data.dateFilter == "closeDate") {
+                dateMatch = { claimDate: { $gte: new Date(data.startDate), $lte: new Date(data.endDate) } }
+                statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
+            }
+        }
+
+        let claimPaidStatus = {}
+        const dynamicOption = await userService.getOptions({ name: 'coverage_type' })
+
+        if (data.claimPaidStatus != '' && data.claimPaidStatus != undefined) {
+            claimPaidStatus = { "claimPaymentStatus": data.claimPaidStatus }
+        }
+        else {
+            claimPaidStatus = {
+                $or: [
+                    { "claimPaymentStatus": "Paid" },
+                    { "claimPaymentStatus": "Unpaid" },
+                ]
+            }
+        }
+        let lookupQuery = [
+            { $sort: { unique_key_number: -1 } },
+            {
+                $match:
+                {
+                    $and: [
+                        { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        claimPaidStatus,
+                        { 'customerStatus.status': { '$regex': data.customerStatusValue ? data.customerStatusValue.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        servicerMatch,
+                        resellerMatch,
+                        dealerMatch,
+                        dateMatch,
+                        statusMatch,
+                    ]
+                },
+            },
+            {
+                $lookup: {
+                    from: "contracts",
+                    localField: "contractId",
+                    foreignField: "_id",
+                    as: "contracts",
+                }
+            },
+            {
+                $unwind: "$contracts"
+            },
+            {
+                $match:
+                {
+                    $and: [
+                        { 'contracts.unique_key': { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { "contracts.serial": { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { "contracts.productName": { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                    ]
+                },
+            },
+            {
+                $lookup: {
+                    from: "orders",
+                    localField: "contracts.orderId",
+                    foreignField: "_id",
+                    as: "contracts.orders",
+                },
+            },
+            {
+                $unwind: "$contracts.orders"
+            },
+            {
+                $match:
+                {
+                    $and: [
+                        { "contracts.orders.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { "contracts.orders.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        // { "contracts.orders.resellerId": new mongoose.Types.ObjectId(resellerId) },
+                    ]
+                },
+            },
+            {
+                $lookup: {
+                    from: "dealers",
+                    localField: "contracts.orders.dealerId",
+                    foreignField: "_id",
+                    as: "contracts.orders.dealers",
+                }
+            },
+            {
+                $unwind: "$contracts.orders.dealers"
+            },
+            {
+                $lookup: {
+                    from: "customers",
+                    localField: "contracts.orders.customerId",
+                    foreignField: "_id",
+                    as: "contracts.orders.customer",
+
+                }
+            },
+            {
+                $unwind: "$contracts.orders.customer"
+            },
+            {
+                $match:
+                {
+                    $and: [
+                        { "contracts.orders.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                    ]
+                },
+            },
+
+        ]
+
+        if (newQuery.length > 0) {
+            lookupQuery = lookupQuery.concat(newQuery);
+        }
+
+        let allClaims = await claimService.getClaimWithAggregate(lookupQuery);
+
+        let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
+        let allServicerIds = [];
+        // Iterate over the data array
+        resultFiter.forEach(item => {
+            // Iterate over the dealerServicer array in each item
+            item.contracts.orders.dealers.dealerServicer.forEach(dealer => {
+                // Push the servicerId to the allServicerIds array
+                allServicerIds.push(dealer.servicerId);
+            });
+        });
+
+        //Get Dealer and Reseller Servicers
+        let servicer;
+        let servicerName = '';
+        allServicer = await providerService.getAllServiceProvider(
+            { _id: { $in: allServicerIds }, status: true },
+            {}
+        );
+
+
+        let result_Array = await Promise.all(resultFiter.map(async (item1) => {
+            servicer = []
+            let mergedData = []
+            if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
+                mergedData = dynamicOption.value.filter(contract =>
+                    item1.contracts?.coverageType?.find(opt => opt.value === contract.value)
+                );
+            }
+            let servicerName = '';
+            let selfServicer = false;
+            await Promise.all(item1.contracts.orders.dealers.dealerServicer.map(async (matched) => {
+                const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId?.toString());
+                if (dealerOfServicer) {
+                    servicer.push(dealerOfServicer);
+                }
+            }));
+
+            if (item1.contracts.orders.servicers[0]?.length > 0) {
+                servicer.unshift(item1.contracts.orders.servicers[0])
+            }
+
+
+            // if (item1.contracts.orders.resellers[0]?.isServicer && item1.contracts.orders.resellers[0]?.status) {
+            //     let checkResellerServicer = await providerService.getServiceProviderById({ resellerId: item1.contracts.orders.resellers[0]._id })
+            //     servicer.push(checkResellerServicer)
+            // }
+            let dealerResellerServicer = await resellerService.getResellers({ dealerId: item1.contracts.orders.dealers._id, isServicer: true, status: true })
+            let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
+            if (dealerResellerServicer.length > 0) {
+                let dealerResellerServicer = await providerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
+                servicer = servicer.concat(dealerResellerServicer);
+            }
+
+            if (item1.contracts.orders.dealers.isServicer && item1.contracts.orders.dealers.accountStatus) {
+                let checkDealerServicer = await providerService.getServiceProviderById({ dealerId: item1.contracts.orders.dealers._id })
+
+                servicer.push(checkDealerServicer)
+            }
+            if (item1.servicerId != null) {
+                servicerName = servicer.find(servicer => servicer._id.toString() === item1.servicerId.toString());
+                const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
+                selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() || item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString() ? true : false
+
+            }
+            return {
+                ...item1,
+                servicerData: servicerName,
+                selfServicer: selfServicer,
+                contracts: {
+                    ...item1.contracts,
+                    allServicer: servicer,
+                    mergedData: mergedData
+
+                }
+            }
+        }));
+
         let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0
         res.send({
             code: constant.successCode,

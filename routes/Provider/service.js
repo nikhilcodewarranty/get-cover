@@ -12,6 +12,7 @@ router.post("/register", servicerAdminController.registerServiceProvider); // re
 router.post("/getSerivicerUsers/:servicerId", servicerAdminController.getSerivicerUsers); // get servicer users
 router.post("/servicers/:status", [verifyToken], servicerAdminController.getServicer); // get all dealers by status
 router.post("/getPaidUnpaidClaims/:servicerId", [verifyToken], servicerAdminController.paidUnpaidClaim); // get paid and unpaid claims by servicer ID
+router.get("/updateClaimsApproveDate", servicerAdminController.updateClaimsApproveDate); // get paid and unpaid claims by servicer ID
 router.post("/paidUnpaidClaim", [verifyToken], servicerAdminController.paidUnpaid); // get paid and unpaid claims
 router.post("/getServicerClaims/:servicerId", [verifyToken], servicerAdminController.getServicerClaims); // get servicer claims
 router.post("/createRelationWithDealer/:servicerId", [verifyToken], servicerAdminController.createDeleteRelation); // create relation with dealer

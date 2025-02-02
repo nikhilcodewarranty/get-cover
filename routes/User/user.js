@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const userController = require("../../controllers/User/usersController"); // user controller
+const maillogController = require("../../controllers/User/maillogController"); // mail log controller
 const supportingApiAdmin = require("../../controllers/User/supportingApiAdmin"); // admin supporting function for creation role controller
 const graphdataController = require("../../controllers/User/graphdataController"); // admin graph data  controller
 const dealerController = require("../../controllers/Dealer/dealerController"); // dealer controller
@@ -36,7 +37,7 @@ router.get('/setting/preLoginData', userController.preLoginData);
 router.get('/setting/setDefault', [verifyToken], userController.setDefault);
 
 //Save Contact form 
-router.post('/contact-us',  userController.contactUs);
+router.post('/contact-us', userController.contactUs);
 //Option Dropdown 
 router.post('/saveOptions', [verifyToken], userController.saveOptions);
 //edit Dropdown
@@ -81,4 +82,12 @@ router.post("/createDealer", [verifyToken], supportingApiAdmin.createDealer); //
 router.post("/convertToBase64", supportingApiAdmin.convertToBase64); // create dealer API from super admin
 router.post('/createServicer', [verifyToken], validator("create_service_provider_validation"), supportingApiAdmin.createServiceProvider);// create service provider API from super admin
 
+
+router.get('/updateContracts', [verifyToken], userController.updateContracts);
+router.get('/webhookData', [verifyToken], maillogController.webhookData);
+
+console.log("under webhook data +++++++++++")
+router.post('/webhookData', maillogController.webhookData)
+router.post('/getMaillogData', [verifyToken], maillogController.getMaillogData)
+// router.post('/webhookData', maillogController.webhookData)
 module.exports = router;
