@@ -1186,8 +1186,8 @@ exports.getClaimReportingDropdown = async (req, res) => {
                         }
                     }
                 }
-                
-                
+
+
             ]
             response = await providerService.getTopFiveServicer(servicerQuery)
         }
