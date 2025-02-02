@@ -1020,12 +1020,19 @@ exports.getClaimReportingDropdown = async (req, res) => {
         let flag = req.params.flag
         let response;
         let dealerId = req.userId;
-        console.log("dealer--------------------------------")
         if (flag == "dealer") {
             let servicerQuery = [
                 {
                     $match: {
                         _id: new mongoose.Types.ObjectId(req.userId)
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "servicerpricebooks",
+                        localField: "_id",
+                        foreignField: "servicerId",
+                        as: "servicerPriceBooks"
                     }
                 },
                 {
@@ -1073,11 +1080,39 @@ exports.getClaimReportingDropdown = async (req, res) => {
                 },
                 {
                     "$project": {
-                        "_id": "$dealers._id", // Bringing dealer ID to main level
-                        "name": "$dealers.name", // Bringing dealer name to main level
+                        "_id": "$dealers._id",
+                        "name": "$dealers.name",
                         "categories": {
                             "$map": {
-                                "input": "$categories",
+                                "input": {
+                                    "$filter": {
+                                        "input": "$categories",
+                                        "as": "category",
+                                        "cond": {
+                                            "$in": [
+                                                "$$category._id",
+                                                {
+                                                    "$reduce": {
+                                                        "input": "$servicerPriceBooks",
+                                                        "initialValue": [],
+                                                        "in": {
+                                                            "$concatArrays": [
+                                                                "$$value",
+                                                                {
+                                                                    "$map": {
+                                                                        "input": "$$this.categoryArray",
+                                                                        "as": "catArray",
+                                                                        "in": "$$catArray.categoryId"
+                                                                    }
+                                                                }
+                                                            ]
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
                                 "as": "cat",
                                 "in": {
                                     "categoryName": "$$cat.name",
@@ -1088,7 +1123,34 @@ exports.getClaimReportingDropdown = async (req, res) => {
                                                 "$filter": {
                                                     "input": "$pricebookData",
                                                     "as": "pb",
-                                                    "cond": { "$eq": ["$$pb.category", "$$cat._id"] }
+                                                    "cond": {
+                                                        "$and": [
+                                                            { "$eq": ["$$pb.category", "$$cat._id"] }, // Match category
+                                                            {
+                                                                "$in": [
+                                                                    "$$pb._id",
+                                                                    {
+                                                                        "$reduce": {
+                                                                            "input": "$servicerPriceBooks",
+                                                                            "initialValue": [],
+                                                                            "in": {
+                                                                                "$concatArrays": [
+                                                                                    "$$value",
+                                                                                    {
+                                                                                        "$map": {
+                                                                                            "input": "$$this.priceBookArray",
+                                                                                            "as": "pba",
+                                                                                            "in": "$$pba.priceBookId"
+                                                                                        }
+                                                                                    }
+                                                                                ]
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                ]
+                                                            } // Match priceBookId
+                                                        ]
+                                                    }
                                                 }
                                             },
                                             "as": "pb",
@@ -1104,7 +1166,7 @@ exports.getClaimReportingDropdown = async (req, res) => {
                                                                 "cond": {
                                                                     "$and": [
                                                                         { "$eq": ["$$dpb.priceBook", "$$pb._id"] },
-                                                                        { "$eq": ["$$dpb.dealerId", "$dealers._id"] } // Only SKUs from this dealer
+                                                                        { "$eq": ["$$dpb.dealerId", "$dealers._id"] }
                                                                     ]
                                                                 }
                                                             }
@@ -1124,6 +1186,8 @@ exports.getClaimReportingDropdown = async (req, res) => {
                         }
                     }
                 }
+                
+                
             ]
             response = await providerService.getTopFiveServicer(servicerQuery)
         }

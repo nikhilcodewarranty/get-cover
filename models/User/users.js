@@ -411,28 +411,96 @@ const setAllNotificationsTrue = (notificationObj) => {
 };
 
 // Middleware to update notifications before saving
-// userSchema.pre("save", function (next) {
-//     if (this.metaData && Array.isArray(this.metaData)) {
-//         this.metaData = this.metaData.map((meta) => {
-//             if (meta.isPrimary) {
-//                 console.log("checking the function ------222222222222222++++++++++++++++++++++", meta)
-//                 return {
-//                     ...meta,
-//                     orderNotifications: setAllNotificationsTrue(meta.orderNotifications),
-//                     claimNotification: setAllNotificationsTrue(meta.claimNotification),
-//                     adminNotification: setAllNotificationsTrue(meta.adminNotification),
-//                     servicerNotification: setAllNotificationsTrue(meta.servicerNotification),
-//                     dealerNotifications: setAllNotificationsTrue(meta.dealerNotifications),
-//                     resellerNotifications: setAllNotificationsTrue(meta.resellerNotifications),
-//                     customerNotifications: setAllNotificationsTrue(meta.customerNotifications),
-//                     registerNotifications: setAllNotificationsTrue(meta.registerNotifications),
-//                 };
-//             }
-//             return meta;
-//         });
-//     }
-//     next();
-// });
+userSchema.pre("save", function (next) {
+    if (this.metaData && Array.isArray(this.metaData)) {
+        this.metaData = this.metaData.map((meta) => {
+            if (meta.isPrimary) {
+                console.log("checking the function ------222222222222222++++++++++++++++++++++", meta)
+                meta.orderNotifications = {
+                    addingNewOrderPending: true,
+                    addingNewOrderActive: true,
+                    makingOrderPaid: true,
+                    updateOrderPending: true,
+                    updateOrderActive: true,
+                    archivinOrder: true,
+                }
+                meta.claimNotification = {
+                    newClaim: true,
+                    fileBulkClaim: true,
+                    servicerUpdate: true,
+                    customerStatusUpdate: true,
+                    repairStatusUpdate: true,
+                    claimStatusUpdate: true,
+                    partsUpdate: true,
+                    claimComment: true
+                }
+                meta.adminNotification = {
+                    newUserCreated: false,
+                    categoryUpdate: false,
+                    priceBookUpdate: false,
+                    priceBookAdd: false,
+                    unassignDealerServicer: false,
+                    assignDealerServicer: false,
+                    categoryAdded: false
+                }
+                meta.servicerNotifications = {
+                    servicerAdded: false,
+                    userAdded: false,
+                    servicerUpdate: false,
+                    userUpdate: false,
+                    primaryUpdate: false,
+                    userDelete: false
+                }
+                meta.dealerNotifications = {
+                    dealerAdded: false,
+                    userAdded: false,
+                    dealerUpdate: false,
+                    userUpdate: false,
+                    primaryChanged: false,
+                    userDelete: false,
+                    dealerPriceBookUpload: false,
+                    dealerPriceBookAdd: false,
+                    dealerPriceBookUpdate: false,
+                }
+                meta.resellerNotifications = {
+                    resellerAdded: false,
+                    userAdd: false,
+                    resellerUpdate: false,
+                    userUpdate: false,
+                    primaryChange: false,
+                    userDelete: false,
+                }
+                meta.customerNotifications = {
+                    customerAdded: false,
+                    userAdd: false,
+                    customerUpdate: false,
+                    userUpdate: false,
+                    primaryChange: false,
+                    userDelete: false,
+                }
+                meta.registerNotifications = {
+                    dealerRegistrationRequest: false,
+                    dealerServicerRequest: false,
+                    dealerDisapproved: false,
+                    servicerDisapproved: false,
+                }
+                return {
+                    ...meta,
+                    orderNotifications: setAllNotificationsTrue(meta.orderNotifications),
+                    claimNotification: setAllNotificationsTrue(meta.claimNotification),
+                    adminNotification: setAllNotificationsTrue(meta.adminNotification),
+                    servicerNotification: setAllNotificationsTrue(meta.servicerNotification),
+                    dealerNotifications: setAllNotificationsTrue(meta.dealerNotifications),
+                    resellerNotifications: setAllNotificationsTrue(meta.resellerNotifications),
+                    customerNotifications: setAllNotificationsTrue(meta.customerNotifications),
+                    registerNotifications: setAllNotificationsTrue(meta.registerNotifications),
+                };
+            }
+            return meta;
+        });
+    }
+    next();
+});
 
 // userSchema.pre("findOneAndUpdate", function (next) {
 //     if (this.metaData && Array.isArray(this.metaData)) {
