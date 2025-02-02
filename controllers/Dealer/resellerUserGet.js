@@ -3416,6 +3416,12 @@ exports.getResellerAsServicerClaims = async (req, res) => {
             dealerMatch = { dealerId: { $in: dealerIds } }
 
         }
+         if (req.role != "Dealer") {
+            // let getDealer = await dealerService.getAllDealers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
+            let dealerIds = getDealer.map(ID => new mongoose.Types.ObjectId(req.userId))
+            dealerMatch = { dealerId: { $in: dealerIds } }
+
+        }
         data.resellerName = data.resellerName ? data.resellerName : ""
         if (data.resellerName != "") {
             let getReseller = await resellerService.getResellers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
