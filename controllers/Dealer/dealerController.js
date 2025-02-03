@@ -319,6 +319,7 @@ exports.registerDealer = async (req, res) => {
           phoneNumber: data.phoneNumber,
           roleId: checkRole._id,
           metaId: createdDealer._id,
+          isPrimary:true
         }
       ]
 

@@ -1772,9 +1772,9 @@ exports.getSingleOrder = async (req, res) => {
 
         if (dealer && dealer.isServicer) {
             if (dealer.accountStatus) {
-            let dealerServicer = await servicerService.getAllServiceProvider({ dealerId: { $in: dealer._id } })
+                let dealerServicer = await servicerService.getAllServiceProvider({ dealerId: { $in: dealer._id } })
 
-            servicer = servicer.concat(dealerServicer);
+                servicer = servicer.concat(dealerServicer);
             }
         }
 
@@ -1931,6 +1931,8 @@ exports.markAsPaid = async (req, res) => {
         );
         let orderServiceCoverageType = savedResponse.serviceCoverageType
         let currentYear = new Date().getFullYear();
+        let currentYearWithoutHypen = new Date().getFullYear();
+
         console.log(currentYear); // Outputs: 2024
         currentYear = "-" + currentYear + "-"
         let count1 = await contractService.getContractsCountNew({ 'unique_key': { '$regex': currentYear, '$options': 'i' } });
@@ -2022,7 +2024,7 @@ exports.markAsPaid = async (req, res) => {
 
             totalDataComing.forEach((data, index) => {
                 let unique_key_number1 = increamentNumber
-                let unique_key_search1 = "OC" + currentYear + unique_key_number1
+                let unique_key_search1 = "OC" + currentYearWithoutHypen + unique_key_number1
                 let unique_key1 = "OC" + currentYear + unique_key_number1
                 let claimStatus = new Date(product.coverageStartDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0) ? "Waiting" : "Active"
                 claimStatus = new Date(product.coverageEndDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) ? "Expired" : claimStatus
