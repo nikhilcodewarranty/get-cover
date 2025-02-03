@@ -1652,6 +1652,7 @@ exports.registerServiceProvider = async (req, res) => {
     let mailing
     // Send Email code here
     if (createdUser) {
+      console.log("----------------------------",createdUser)
       mailing = await sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
       maillogservice.createMailLogFunction(mailing, emailData, [createdUser], process.env.main_template)
     }

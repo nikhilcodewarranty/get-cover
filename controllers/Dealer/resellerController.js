@@ -3103,12 +3103,16 @@ exports.getResellerAsServicerClaims = async (req, res) => {
 
         }
 
-        if (req.role == "Dealer") {
+            console.log("checking the data+++++++",req.role)
+            if (req.role == "Dealer") {
+            console.log("checking the data+++++++")
             // let getDealer = await dealerService.getAllDealers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
             let dealerIds =[new mongoose.Types.ObjectId(req.userId)]
             dealerMatch = { dealerId: { $in: dealerIds } }
 
         }
+        console.log("checking the data+++++++",dealerMatch)
+
         data.resellerMatch = data.resellerMatch ? data.resellerMatch : ""
         if (data.resellerName != "") {
             let getReseller = await resellerService.getResellers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
@@ -3332,7 +3336,7 @@ exports.getResellerAsServicerClaims = async (req, res) => {
             code: constant.successCode,
             message: "Success",
             result: result_Array,
-            totalCount
+            totalCount,lookupQuery
         })
     } catch (err) {
         res.send({
