@@ -1552,6 +1552,8 @@ exports.getDashboardInfo = async (req, res) => {
     ]
     const getLastNumberOfClaims = await claimService.getClaimWithAggregate(claimQuery, {})
 
+    //Get Top 5 dealers
+
     let lookupQuery = [
         {
             $match: { _id: { $in: dealerIds } }
@@ -1608,7 +1610,7 @@ exports.getDashboardInfo = async (req, res) => {
                 as: "claim",
                 pipeline: [
                     {
-                        $match: { status: "Active" }
+                        $match: { claimFile: "completed" }
                     },
                     {
                         "$group": {
@@ -1641,15 +1643,15 @@ exports.getDashboardInfo = async (req, res) => {
                 },
                 claimAmount: {
                     $cond: {
-                        if: { $gte: [{ $arrayElemAt: ["$claims.claimAmount", 0] }, 0] },
-                        then: { $arrayElemAt: ["$claims.claimAmount", 0] },
+                        if: { $gte: [{ $arrayElemAt: ["$claim.claimAmount", 0] }, 0] },
+                        then: { $arrayElemAt: ["$claim.claimAmount", 0] },
                         else: 0
                     }
                 },
                 totalClaim: {
                     $cond: {
-                        if: { $gt: [{ $arrayElemAt: ["$claims.totalClaim", 0] }, 0] },
-                        then: { $arrayElemAt: ["$claims.totalClaim", 0] },
+                        if: { $gt: [{ $arrayElemAt: ["$claim.totalClaim", 0] }, 0] },
+                        then: { $arrayElemAt: ["$claim.totalClaim", 0] },
                         else: 0
                     }
                 },
@@ -1664,6 +1666,8 @@ exports.getDashboardInfo = async (req, res) => {
     ]
 
     const topFiveDealer = await dealerService.getTopFiveDealers(lookupQuery);
+
+
     let lookupClaim = [
         {
             $match: {
