@@ -1659,11 +1659,11 @@ exports.deleteUser = async (req, res) => {
     let notificationData;
     let notificationArray = [];
     let notificationEmails = []
-    let adminUsers;
-    let dealerUsers;
-    let resellerUsers;
-    let customerUsers;
-    let servicerUsers;
+    let adminUsers= [];
+    let dealerUsers = [];
+    let resellerUsers = [];
+    let customerUsers = [];
+    let servicerUsers = [];
     let resellerEmails= [];
     let dealerEmails =  []
     let servicerEmails = []
@@ -1747,8 +1747,8 @@ exports.deleteUser = async (req, res) => {
           }
         },
       }
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminDeleteQuery, { email: 1, metaData: 1 })
-      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDeleteQuery, { email: 1, metaData: 1 })
+       adminUsers = await supportingFunction.getNotificationEligibleUser(adminDeleteQuery, { email: 1, metaData: 1 })
+       dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDeleteQuery, { email: 1, metaData: 1 })
       const IDs = adminUsers.map(user => user._id)
       const dealerId = dealerUsers.map(user => user._id)
       notificationEmails = adminUsers.map(user => user.email);
