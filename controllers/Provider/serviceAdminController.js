@@ -1654,6 +1654,7 @@ exports.registerServiceProvider = async (req, res) => {
     if (createdUser) {
       console.log("----------------------------",createdUser)
       mailing = await sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
+      console.log("mailing-----------------------",mailing,process.env.main_template)
       maillogservice.createMailLogFunction(mailing, emailData, [createdUser], process.env.main_template)
     }
     const admin = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true } } })
