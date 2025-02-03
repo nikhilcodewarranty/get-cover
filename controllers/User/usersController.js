@@ -1991,12 +1991,12 @@ exports.deleteUser = async (req, res) => {
     }
 
 
-    console.log("--------------------------------------------1",notificationEmails)
+    console.log("--------------------------------------------1",notificationEmails,adminUsers)
     if (notificationEmails.length > 0) {
       let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
       maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
     }
-    console.log("--------------------------------------------2",dealerEmails)
+    console.log("--------------------------------------------2",dealerEmails,dealerUsers)
 
     if (dealerEmails.length > 0) {
       mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
