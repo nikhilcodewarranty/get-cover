@@ -2215,14 +2215,7 @@ exports.claimReportinDropdown1 = async (req, res) => {
                         ]
                     }
                 },
-                {
-                    $lookup: {
-                        from: "servicerpricebooks",
-                        localField: "_id",
-                        foreignField: "servicerId",
-                        as: "servicerPriceBooks" // Keep dealerPricebookData as an array
-                    }
-                },
+
                 {
                     $lookup: {
                         from: "servicer_dealer_relations",
@@ -2249,12 +2242,38 @@ exports.claimReportinDropdown1 = async (req, res) => {
                 },
                 {
                     $lookup: {
+                        from: "servicerpricebooks",
+                        localField: "_id",
+                        foreignField: "servicerId",
+                        as: "servicerPriceBook" // servicer price books
+                    }
+                },
+                {
+                    $unwind: {
+                        path: "$servicerPriceBook",
+                        preserveNullAndEmptyArrays: true // Keep documents even if servicerPriceBook is null
+                    }
+                },
+                {
+                    $lookup: {
                         from: "pricebooks",
-                        localField: "dealerPricebookData.priceBook", // Array of priceBook IDs
-                        foreignField: "_id",
-                        as: "pricebookData" // Keep pricebookData as an array
-                    },
-
+                        let: {
+                            priceBookIds: {
+                                $ifNull: ["$servicerPriceBook.priceBookArray.priceBookId", []]
+                                // Ensures it's an array even if missing
+                            }
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $in: ["$_id", "$$priceBookIds"]
+                                    }
+                                }
+                            }
+                        ],
+                        as: "pricebookData"
+                    }
                 },
                 {
                     $lookup: {
@@ -2348,7 +2367,6 @@ exports.claimReportinDropdown1 = async (req, res) => {
                 response = response.filter(item =>
                     servicer.some(check => check._id.toString() === item._id.toString())
                 );
-                console.log("filteredData------------------", response)
             }
 
         }
@@ -2641,15 +2659,7 @@ exports.claimReportinDropdownForCustomer = async (req, res) => {
                         as: "servicerPriceBook" // servicer price books
                     }
                 },
-                // {
-                //     $lookup: {
-                //         from: "pricebooks",
-                //         localField: "dealerPricebookData.priceBook", // Array of priceBook IDs
-                //         foreignField: "_id",
-                //         as: "pricebookData", // Keep pricebookData as an array
-                //     },
 
-                // },
                 {
                     $unwind: {
                         path: "$servicerPriceBook",
