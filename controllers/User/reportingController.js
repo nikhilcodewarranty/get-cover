@@ -2217,6 +2217,14 @@ exports.claimReportinDropdown1 = async (req, res) => {
                 },
                 {
                     $lookup: {
+                        from: "servicerpricebooks",
+                        localField: "_id",
+                        foreignField: "servicerId",
+                        as: "servicerPriceBooks" // Keep dealerPricebookData as an array
+                    }
+                },
+                {
+                    $lookup: {
                         from: "servicer_dealer_relations",
                         localField: "_id",
                         foreignField: "servicerId",
@@ -2261,6 +2269,7 @@ exports.claimReportinDropdown1 = async (req, res) => {
                     $project: {
                         name: "$name", // Dealer name as per original dealer document
                         _id: 1,
+                        //  servicerPriceBooks:1,
                         dealers: {
                             $map: {
                                 input: "$dealers",
@@ -2312,7 +2321,8 @@ exports.claimReportinDropdown1 = async (req, res) => {
                                     }
                                 }
                             }
-                        }
+                        },
+
                     }
                 }
             ]
@@ -2419,7 +2429,7 @@ exports.claimReportinDropdownForCustomer = async (req, res) => {
         let getDealerId = await dealerService.getDealerByName({ _id: getCustomer?.dealerId })
         let getServicers = await dealerRelationService.getDealerRelations({ dealerId: getDealerId?._id })
         let servicersIds = getServicers.map(ID => new mongoose.Types.ObjectId(ID.servicerId))
-        console.log("checking the data",getServicers,servicersIds)
+        console.log("checking the data", getServicers, servicersIds)
         if (flag == "dealer") {
             let dealerQuery = [
                 {
@@ -2624,7 +2634,7 @@ exports.claimReportinDropdownForCustomer = async (req, res) => {
                     }
                 },
                 {
-                    $lookup:{
+                    $lookup: {
                         from: "servicerpricebooks",
                         localField: "_id",
                         foreignField: "servicerId",
@@ -2651,7 +2661,7 @@ exports.claimReportinDropdownForCustomer = async (req, res) => {
                         from: "pricebooks",
                         let: {
                             priceBookIds: {
-                                $ifNull: ["$servicerPriceBook.priceBookArray.priceBookId", []] 
+                                $ifNull: ["$servicerPriceBook.priceBookArray.priceBookId", []]
                                 // Ensures it's an array even if missing
                             }
                         },
@@ -2762,13 +2772,22 @@ exports.claimReportinDropdownForCustomer = async (req, res) => {
 
         }
         if (flag == "category") {
+            let dealerPriceBook = await dealerPriceService.findAllDealerPrice({ dealerId: getDealerId?._id })
+            let priceBookIds = dealerPriceBook.map(ID => new mongoose.Types.ObjectId(ID.priceBook))
+
             let catQuery = [
                 {
                     $lookup: {
                         from: "pricebooks",
                         localField: "_id", // Array of priceBook IDs
                         foreignField: "category",
-                        as: "pricebookData" // Keep pricebookData as an array
+                        as: "pricebookData", // Keep pricebookData as an array
+                        pipeline: [
+                            {
+                                $match:
+                                    { _id: { $in: priceBookIds } }
+                            }
+                        ]
                     },
 
                 },
