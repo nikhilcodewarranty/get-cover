@@ -206,7 +206,7 @@ const createExcelFileWithMultipleSheets1 = async (data, bucketName, folderName, 
   });
 
   // Write workbook locally for debugging
-  await workbook.xlsx.writeFile(`./debug-claim-report-${dateString}.xlsx`);
+  // await workbook.xlsx.writeFile(`./debug-claim-report-${dateString}.xlsx`);
   console.log("Workbook written locally for debugging.");
 
   // Prepare S3 upload
@@ -894,14 +894,14 @@ exports.exportDataForClaim = async (req, res) => {
       for (const item of resultArray) {
         // Extract servicer name
         let servicerName = item?.servicerId;
-        console.log("servicer name ====================================",servicerName)
-        if(servicerName==null){
-          servicerName=new mongoose.Types.ObjectId('679f52b0c9d8100000000000')
+        console.log("servicer name ====================================", servicerName)
+        if (servicerName == null) {
+          servicerName = new mongoose.Types.ObjectId('679f52b0c9d8100000000000')
         }
 
         try {
           const result = await servicerService.getServiceProviderById({
-            $and:[
+            $and: [
               {
                 $or: [
                   { _id: servicerName },
@@ -1382,9 +1382,17 @@ exports.paidUnpaidClaimReporting = async (req, res) => {
               // "claimType": 1,
               // "receiptImage": 1,
               // reason: 1,
-              "unique_key": 1,
-              approveDate: 1,
-              totalAmount: 1,
+              // "unique_key": 1,
+              // approveDate: 1,
+              // totalAmount: 1,
+              "Claim ID": "$unique_key",
+              "Approve Date": {
+                $dateToString: {
+                  format: "%Y-%m-%d", // Format to show only the date
+                  date: "$approveDate"  // The date field from your document
+                }
+              },
+              "Total Amount": "$totalAmount",
               _id: 0
               // ClaimType: 1,
               // note: 1,
