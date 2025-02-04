@@ -2206,6 +2206,8 @@ exports.claimReportinDropdown1 = async (req, res) => {
             response = await dealerService.getTopFiveDealers(dealerQuery)
         }
         if (flag == "servicer") {
+
+            console.log("iam hereerrrrrrrrrrrrrrrr");
             let servicerQuery = [
                 {
                     $match: {
@@ -2213,6 +2215,14 @@ exports.claimReportinDropdown1 = async (req, res) => {
                             { status: true },
                             { accountStatus: "Approved" },
                         ]
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "servicerpricebooks",
+                        localField: "_id",
+                        foreignField: "servicerId",
+                        as: "servicerPriceBooks" // Keep dealerPricebookData as an array
                     }
                 },
                 {
@@ -2261,6 +2271,7 @@ exports.claimReportinDropdown1 = async (req, res) => {
                     $project: {
                         name: "$name", // Dealer name as per original dealer document
                         _id: 1,
+                      //  servicerPriceBooks:1,
                         dealers: {
                             $map: {
                                 input: "$dealers",
@@ -2307,33 +2318,14 @@ exports.claimReportinDropdown1 = async (req, res) => {
                                                         }
                                                     }
                                                 }
-                                                // dealerSku: {
-                                                //     $arrayElemAt:[
-                                                //         {
-                                                //             $map: {
-                                                //                 input: {
-                                                //                     $filter: {
-                                                //                         input: "$dealerPricebookData", // Filter dealer pricebooks
-                                                //                         as: "dpb",                    // Alias for dealer pricebook
-                                                //                         cond: { $eq: ["$$dpb.priceBook", "$$pb._id"] } // Match dealer pricebooks with the current pricebook
-                                                //                     }
-                                                //                 },
-                                                //                 as: "dpb", // Alias for each dealer pricebook
-                                                //                 in: {
-                                                //                     sku: "$$dpb.dealerSku", // Include SKU field
-                                                //                     dealerId: "$$dpb.dealerId" // Include SKU field
-                                                //                 }
-                                                //             }
-                                                //         },
-                                                //         0
-                                                //     ]
-                                                // }
+                                               
                                             }
                                         }
                                     }
                                 }
                             }
-                        }
+                        },
+                        
                     }
                 }
             ]
