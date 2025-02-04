@@ -1630,10 +1630,16 @@ exports.editOrderDetail = async (req, res) => {
                     let createNotification = await userService.saveNotificationBulk(notificationArrayData);
                     // Send Email code here
                     if (!checkOrder?.termCondition ||  Object.keys(checkOrder?.termCondition).length==0) {
+
+                        console.log("hereeeeeeeeeeeeeeeeeeeeeeeee",checkOrder)
                         let notificationEmails = adminUsers.map(user => user.email)
                         let dealerEmail = dealerUsers.map(user => user.email)
                         let resellerEmail = resellerUsers.map(user => user.email)
                         let custmerEmail = customerUsers.map(user => user.email)
+                        console.log("notificationEmails",notificationEmails)
+                        console.log("resellerEmail",resellerEmail)
+                        console.log("dealerEmail",dealerEmail)
+
                         let emailData = {
                             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
                             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
