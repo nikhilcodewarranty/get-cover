@@ -136,7 +136,7 @@ const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, d
 
       const headers = Object.keys(sheetData[0]); // Get keys from the first object as column headers
       sheet.columns = headers.map(header => ({ header, key: header }));
-      console.log("role=============eeeeeeee======================", sheet)
+      // console.log("role=============eeeeeeee======================", sheet)
 
       // Add rows to the sheet
       sheetData.forEach(row => {
@@ -889,62 +889,66 @@ exports.exportDataForClaim = async (req, res) => {
     };
 
     const groupDataByServicer = async (resultArray) => {
-      const acc = new Map();
-      const servicerIds = [...new Set(resultArray.map(item => item.servicerId).filter(Boolean))];
-    
-      // Fetch all service providers in one go
-      let servicerDataMap = new Map();
-      try {
-        const servicerResults = await servicerService.getServiceProvidersByIds({
-          $or: [
-            { _id: { $in: servicerIds } },
-            { dealerId: { $in: servicerIds } },
-            { resellerId: { $in: servicerIds } },
-          ],
-        });
-    
-        servicerResults.forEach(servicer => {
-          servicerDataMap.set(servicer._id.toString(), servicer.name);
-        });
-      } catch (err) {
-        console.error("Error fetching servicer data:", err);
-        return []; // Return empty if there's an error fetching service providers
-      }
-    
+      const acc = [];
+
       for (const item of resultArray) {
-        // ❗ Skip items where servicerId is null or undefined
-        if (!item.servicerId) continue;
-    
-        const servicerName = servicerDataMap.get(item.servicerId?.toString());
-        if (!servicerName) continue; // Skip if no matching servicer name is found
-    
+        // Extract servicer name
+        let servicerName = item?.servicerId;
+        console.log("servicer name ====================================",servicerName)
+        if(servicerName==null){
+          servicerName=new mongoose.Types.ObjectId('679f52b0c9d8100000000000')
+        }
+
+        try {
+          const result = await servicerService.getServiceProviderById({
+            $and:[
+              {
+                $or: [
+                  { _id: servicerName },
+                  { dealerId: servicerName },
+                  { resellerId: servicerName },
+                ]
+              },
+            ]
+          });
+          servicerName = result?.name;
+        } catch (err) {
+          console.error("Error fetching servicer name:", err);
+          continue; // Skip this item if there's an error fetching servicer name
+        }
+
+        console.log("Servicer Name:", servicerName);
+
+        // Only process entries with valid servicer names
+        if (!servicerName) {
+          continue; // Skip entries with no valid servicer name
+        }
+
         const claimAmount = item.claimStatus.some(status => status.status === "completed")
           ? item.totalAmount || 0
           : 0;
-    
-        const statusCounts = {
-          completed: 0,
-          open: 0,
-          rejected: 0,
-          paid: 0,
-          unpaid: 0,
-        };
-    
-        // Categorize claim statuses
-        item.claimStatus.forEach(status => {
-          if (status.status === "completed") statusCounts.completed++;
-          if (status.status === "open") statusCounts.open++;
-          if (status.status === "rejected") statusCounts.rejected++;
-        });
-    
+        const isCompleted = item.claimStatus.some(status => status.status === "completed");
+        const isOpen = item.claimStatus.some(status => status.status === "open");
+        const isRejected = item.claimStatus.some(status => status.status === "rejected");
+
+        // Categorize Paid and Unpaid Claims based on claimFile and claimPaymentStatus
+        let paidClaims = 0;
+        let unpaidClaims = 0;
+
         if (item.claimFile === "completed") {
-          if (item.claimPaymentStatus === "Paid") statusCounts.paid++;
-          if (item.claimPaymentStatus === "Unpaid") statusCounts.unpaid++;
+          if (item.claimPaymentStatus === "Paid") {
+            paidClaims = 1;
+          } else if (item.claimPaymentStatus === "Unpaid") {
+            unpaidClaims = 1;
+          }
         }
-    
-        // Update or create servicer entry
-        if (!acc.has(servicerName)) {
-          acc.set(servicerName, {
+
+        // Check if servicer already exists in the accumulator
+        let servicerEntry = acc.find(entry => entry["Servicer Name"] === servicerName);
+
+        if (!servicerEntry) {
+          // If servicer does not exist, create a new entry
+          servicerEntry = {
             "Servicer Name": servicerName,
             "Total Claims": 0,
             "Completed Claims": 0,
@@ -953,28 +957,37 @@ exports.exportDataForClaim = async (req, res) => {
             "Paid Claims": 0,
             "Unpaid Claims": 0,
             "Total Amount of Claims": 0,
-            "Average Claim Amount": 0,
-          });
+            "Average Claim Amount": 0, // Initialize average claim amount
+          };
+          acc.push(servicerEntry);
         }
-    
-        const servicerEntry = acc.get(servicerName);
+
+        // Update servicer entry
         servicerEntry["Total Claims"] += 1;
-        servicerEntry["Completed Claims"] += statusCounts.completed;
-        servicerEntry["Open Claims"] += statusCounts.open;
-        servicerEntry["Rejected Claims"] += statusCounts.rejected;
-        servicerEntry["Paid Claims"] += statusCounts.paid;
-        servicerEntry["Unpaid Claims"] += statusCounts.unpaid;
         servicerEntry["Total Amount of Claims"] += claimAmount;
-    
-        // Calculate average claim amount
+
+        if (isCompleted) {
+          servicerEntry["Completed Claims"] += 1;
+          servicerEntry["Paid Claims"] += paidClaims;
+          servicerEntry["Unpaid Claims"] += unpaidClaims;
+        }
+
+        if (isRejected) {
+          servicerEntry["Rejected Claims"] += 1;
+        }
+
+        if (isOpen) {
+          servicerEntry["Open Claims"] += 1;
+        }
+
+        // Calculate average claim amount for completed claims
         servicerEntry["Average Claim Amount"] = servicerEntry["Completed Claims"]
           ? (servicerEntry["Total Amount of Claims"] / servicerEntry["Completed Claims"]).toFixed(2)
           : 0;
       }
-    
-      return Array.from(acc.values());
+
+      return acc;
     };
-    
 
     const groupDataByReseller = (resultArray) => {
       return resultArray.reduce((acc, item) => {
