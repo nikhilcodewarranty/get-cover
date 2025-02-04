@@ -889,58 +889,62 @@ exports.exportDataForClaim = async (req, res) => {
     };
 
     const groupDataByServicer = async (resultArray) => {
-      const acc = [];
-
+      const acc = new Map();
+      const servicerIds = [...new Set(resultArray.map(item => item.servicerId).filter(Boolean))];
+    
+      // Fetch all service providers in one go
+      let servicerDataMap = new Map();
+      try {
+        const servicerResults = await servicerService.getServiceProvidersByIds({
+          $or: [
+            { _id: { $in: servicerIds } },
+            { dealerId: { $in: servicerIds } },
+            { resellerId: { $in: servicerIds } },
+          ],
+        });
+    
+        servicerResults.forEach(servicer => {
+          servicerDataMap.set(servicer._id.toString(), servicer.name);
+        });
+      } catch (err) {
+        console.error("Error fetching servicer data:", err);
+        return []; // Return empty if there's an error fetching service providers
+      }
+    
       for (const item of resultArray) {
-        // Extract servicer name
-        let servicerName = item?.servicerId;
-
-        try {
-          const result = await servicerService.getServiceProviderById({
-            $or: [
-              { _id: servicerName },
-              { dealerId: servicerName },
-              { resellerId: servicerName },
-            ]
-          });
-          servicerName = result?.name;
-        } catch (err) {
-          console.error("Error fetching servicer name:", err);
-          continue; // Skip this item if there's an error fetching servicer name
-        }
-
-        console.log("Servicer Name:", servicerName);
-
-        // Only process entries with valid servicer names
-        if (!servicerName) {
-          continue; // Skip entries with no valid servicer name
-        }
-
+        // ❗ Skip items where servicerId is null or undefined
+        if (!item.servicerId) continue;
+    
+        const servicerName = servicerDataMap.get(item.servicerId?.toString());
+        if (!servicerName) continue; // Skip if no matching servicer name is found
+    
         const claimAmount = item.claimStatus.some(status => status.status === "completed")
           ? item.totalAmount || 0
           : 0;
-        const isCompleted = item.claimStatus.some(status => status.status === "completed");
-        const isOpen = item.claimStatus.some(status => status.status === "open");
-        const isRejected = item.claimStatus.some(status => status.status === "rejected");
-
-        // Categorize Paid and Unpaid Claims based on claimFile and claimPaymentStatus
-        let paidClaims = 0;
-        let unpaidClaims = 0;
-
+    
+        const statusCounts = {
+          completed: 0,
+          open: 0,
+          rejected: 0,
+          paid: 0,
+          unpaid: 0,
+        };
+    
+        // Categorize claim statuses
+        item.claimStatus.forEach(status => {
+          if (status.status === "completed") statusCounts.completed++;
+          if (status.status === "open") statusCounts.open++;
+          if (status.status === "rejected") statusCounts.rejected++;
+        });
+    
         if (item.claimFile === "completed") {
-          if (item.claimPaymentStatus === "Paid") {
-            paidClaims = 1;
-          } else if (item.claimPaymentStatus === "Unpaid") {
-            unpaidClaims = 1;
-          }
+          if (item.claimPaymentStatus === "Paid") statusCounts.paid++;
+          if (item.claimPaymentStatus === "Unpaid") statusCounts.unpaid++;
         }
-
-        // Check if servicer already exists in the accumulator
-        let servicerEntry = acc.find(entry => entry["Servicer Name"] === servicerName);
-
-        if (!servicerEntry) {
-          // If servicer does not exist, create a new entry
-          servicerEntry = {
+    
+        // Update or create servicer entry
+        if (!acc.has(servicerName)) {
+          acc.set(servicerName, {
             "Servicer Name": servicerName,
             "Total Claims": 0,
             "Completed Claims": 0,
@@ -949,37 +953,28 @@ exports.exportDataForClaim = async (req, res) => {
             "Paid Claims": 0,
             "Unpaid Claims": 0,
             "Total Amount of Claims": 0,
-            "Average Claim Amount": 0, // Initialize average claim amount
-          };
-          acc.push(servicerEntry);
+            "Average Claim Amount": 0,
+          });
         }
-
-        // Update servicer entry
+    
+        const servicerEntry = acc.get(servicerName);
         servicerEntry["Total Claims"] += 1;
+        servicerEntry["Completed Claims"] += statusCounts.completed;
+        servicerEntry["Open Claims"] += statusCounts.open;
+        servicerEntry["Rejected Claims"] += statusCounts.rejected;
+        servicerEntry["Paid Claims"] += statusCounts.paid;
+        servicerEntry["Unpaid Claims"] += statusCounts.unpaid;
         servicerEntry["Total Amount of Claims"] += claimAmount;
-
-        if (isCompleted) {
-          servicerEntry["Completed Claims"] += 1;
-          servicerEntry["Paid Claims"] += paidClaims;
-          servicerEntry["Unpaid Claims"] += unpaidClaims;
-        }
-
-        if (isRejected) {
-          servicerEntry["Rejected Claims"] += 1;
-        }
-
-        if (isOpen) {
-          servicerEntry["Open Claims"] += 1;
-        }
-
-        // Calculate average claim amount for completed claims
+    
+        // Calculate average claim amount
         servicerEntry["Average Claim Amount"] = servicerEntry["Completed Claims"]
           ? (servicerEntry["Total Amount of Claims"] / servicerEntry["Completed Claims"]).toFixed(2)
           : 0;
       }
-
-      return acc;
+    
+      return Array.from(acc.values());
     };
+    
 
     const groupDataByReseller = (resultArray) => {
       return resultArray.reduce((acc, item) => {
