@@ -136,7 +136,7 @@ const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, d
 
       const headers = Object.keys(sheetData[0]); // Get keys from the first object as column headers
       sheet.columns = headers.map(header => ({ header, key: header }));
-      console.log("role=============eeeeeeee======================", sheet)
+      // console.log("role=============eeeeeeee======================", sheet)
 
       // Add rows to the sheet
       sheetData.forEach(row => {
@@ -894,13 +894,21 @@ exports.exportDataForClaim = async (req, res) => {
       for (const item of resultArray) {
         // Extract servicer name
         let servicerName = item?.servicerId;
+        console.log("servicer name ====================================",servicerName)
+        if(servicerName==null){
+          servicerName=new mongoose.Types.ObjectId('679f52b0c9d8100000000000')
+        }
 
         try {
           const result = await servicerService.getServiceProviderById({
-            $or: [
-              { _id: servicerName },
-              { dealerId: servicerName },
-              { resellerId: servicerName },
+            $and:[
+              {
+                $or: [
+                  { _id: servicerName },
+                  { dealerId: servicerName },
+                  { resellerId: servicerName },
+                ]
+              },
             ]
           });
           servicerName = result?.name;
