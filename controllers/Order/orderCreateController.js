@@ -3085,7 +3085,7 @@ exports.editOrderDetail = async (req, res) => {
                         let mailing
                         if(notificationEmails.length>0){
                             mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-                            maillogservice.createMailLogFunction(mailing, emailData, adminUser, process.env.update_status)
+                            maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
                         }
                         if(dealerEmails.length>0){
                             emailData.redirectId = base_url + "dealer/orderDetails/" + checkOrder._id
