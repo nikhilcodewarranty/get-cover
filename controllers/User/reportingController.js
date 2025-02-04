@@ -745,6 +745,7 @@ exports.claimDailyReporting = async (data) => {
             dailyQuery2[0].$match.customerId = data.customerId
             dailyQuery3[0].$match.customerId = data.customerId
         }
+        let orderIds=[]
         if (data.priceBookId.length != 0) {
             let getOrders = await orderService.getOrders({ productsArray: { $elemMatch: { priceBookId: { $in: data.priceBookId } } } })
             if (!getOrders) {
@@ -754,7 +755,16 @@ exports.claimDailyReporting = async (data) => {
                 }
 
             }
-            let orderIds = getOrders.map(ID => ID.unique_key)
+            orderIds = getOrders.map(ID => ID.unique_key)
+            dailyQuery[0].$match.orderId = { $in: orderIds }
+            dailyQuery1[0].$match.orderId = { $in: orderIds }
+            dailyQuery2[0].$match.orderId = { $in: orderIds }
+            dailyQuery3[0].$match.orderId = { $in: orderIds }
+        }
+
+        if (data.categoryId != "") {
+            let getOrders = await orderService.getOrders({ productsArray: { $elemMatch: { categoryId: new mongoose.Types.ObjectId(data.categoryId) } } })
+            orderIds = orderIds.concat(getOrders.map(ID => ID.unique_key))
             dailyQuery[0].$match.orderId = { $in: orderIds }
             dailyQuery1[0].$match.orderId = { $in: orderIds }
             dailyQuery2[0].$match.orderId = { $in: orderIds }
