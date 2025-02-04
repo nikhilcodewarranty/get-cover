@@ -2476,9 +2476,42 @@ exports.claimReportinDropdown1 = async (req, res) => {
             let response;
             let getCustomer = await customerService.getCustomerByName({ _id: req.userId })
             let getDealerId = await dealerService.getDealerByName({ _id: getCustomer?.dealerId })
+
             let getServicers = await dealerRelationService.getDealerRelations({ dealerId: getDealerId?._id })
             let servicersIds = getServicers.map(ID => new mongoose.Types.ObjectId(ID.servicerId))
-            console.log("checking the data", getServicers, servicersIds)
+            let dealers1 = [
+                { name: getDealerId.name, _id: getDealerId._id }
+            ]
+
+
+            // if (getDealerId.isServicer) {
+            //     let checkServicer = await servicerService.getServiceProviderById({ dealerId: getDealerId._id })
+            //     let getDealerPriceBooks = await dealerPriceService.getAllDealerPrice({ dealerId: getDealerId._id })
+            //     let getPriceBook = await priceBookService.getAllPriceIds({ _id: { $in: getDealerPriceBooks.map(ID => new mongoose.Types.ObjectId(ID.priceBook)) } },{name:1,_id:1})
+            //     let getPriceBookCat = await priceBookService.getAllPriceCat({ _id: { $in: getPriceBook.map(ID => new mongoose.Types.ObjectId(ID.category)) } },{name:1,_id:1})
+            //     let newObjectToPush = {
+            //         name: checkServicer.name,
+            //         _id: checkServicer._id,
+            //         dealers: [{ name: getDealerId.name, _id: getDealerId._id }]
+            //     }
+            // }
+
+            if (getDealerId.isServicer) {
+                let checkServicer = await servicerService.getServiceProviderById({ dealerId: getDealerId._id })
+                servicersIds.push(new mongoose.Types.ObjectId(checkServicer._id))
+            }
+            let dealerResellerServicer = await resellerService.getResellers({ dealerId: getDealerId._id, isServicer: true })
+            let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
+            if (dealerResellerServicer.length > 0) {
+                let dealerResellerServicer = await servicerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
+
+                let servicersIds = dealerResellerServicer.map(ID => new mongoose.Types.ObjectId(ID._id))
+
+                let allIds = servicersIds.concat(servicersIds)
+
+
+            }
+            // console.log("checking the data", getServicers, servicersIds)
             if (flag == "dealer") {
                 let dealerQuery = [
                     {
@@ -2568,7 +2601,7 @@ exports.claimReportinDropdown1 = async (req, res) => {
                             from: "pricebooks",
                             localField: "dealerPricebookData.priceBook", // Array of priceBook IDs
                             foreignField: "_id",
-                            as: "pricebookData" // Keep pricebookData as an array
+                            as: "pricebookData",// Keep pricebookData as an array
                         }
                     },
                     {
@@ -2687,10 +2720,9 @@ exports.claimReportinDropdown1 = async (req, res) => {
                             from: "servicerpricebooks",
                             localField: "_id",
                             foreignField: "servicerId",
-                            as: "servicerPriceBook" // servicer price books
+                            as: "servicerPriceBook", // servicer price books
                         }
                     },
-
                     {
                         $unwind: {
                             path: "$servicerPriceBook",
@@ -2715,7 +2747,33 @@ exports.claimReportinDropdown1 = async (req, res) => {
                                     }
                                 }
                             ],
-                            as: "pricebookData"
+                            as: "pricebookData",
+                            pipeline: [
+                                {
+                                    $lookup: {
+                                        from: "dealerpricebooks",
+                                        localField: "_id",
+                                        foreignField: "priceBook",
+                                        as: "dealerPricebookData1",
+                                        pipeline:[
+                                            {
+                                                $match:{
+                                                    dealerId:new mongoose.Types.ObjectId(getDealerId._id)
+                                                }
+                                            },
+                                            {
+                                                $project:{
+                                                    dealerSku:"$dealerSku",
+                                                    _id:1,
+                                                    priceBook:1,
+                                                    dealerId:1,
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                               { $unwind:"$dealerPricebookData1"}
+                            ]
                         }
                     },
                     {
@@ -2731,6 +2789,8 @@ exports.claimReportinDropdown1 = async (req, res) => {
                         $project: {
                             name: "$name", // Dealer name as per original dealer document
                             _id: 1,
+                            // dealerAsServicer: 1,
+                            // "pricebookData":1,
                             dealers: {
                                 $map: {
                                     input: "$dealers",
@@ -2761,11 +2821,12 @@ exports.claimReportinDropdown1 = async (req, res) => {
                                                 in: {
                                                     priceBookName: "$$pb.name",  // Use pricebook name
                                                     priceBookId: "$$pb._id",      // Use pricebook _id
+                                                    // dealerSku:"$pricebookData.dealerPricebookData1",
                                                     dealerSku: {
                                                         $map: {
                                                             input: {
                                                                 $filter: {
-                                                                    input: "$dealerPricebookData", // Filter dealer pricebooks
+                                                                    input: "$pricebookData.dealerPricebookData1", // Filter dealer pricebooks
                                                                     as: "dpb",                    // Alias for dealer pricebook
                                                                     cond: { $eq: ["$$dpb.priceBook", "$$pb._id"] } // Match dealer pricebooks with the current pricebook
                                                                 }
@@ -2787,29 +2848,18 @@ exports.claimReportinDropdown1 = async (req, res) => {
                     }
                 ]
                 response = await servicerService.getTopFiveServicer(servicerQuery)
-                // if (req.role == "Customer") {
-                //     let checkCustomer = await customerService.getCustomerById({ _id: req.userId })
-                //     let checkDealer = await dealerService.getDealerById(checkCustomer.dealerId)
-                //     let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: checkCustomer.dealerId })
-                //     let ids = getServicersIds.map((item) => item.servicerId)
-                //     let servicer = await servicerService.getAllServiceProvider({ _id: { $in: ids }, status: true }, {})
-                //     let dealerResellerServicer = await resellerService.getResellers({ dealerId: checkCustomer.dealerId, isServicer: true })
-                //     let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
-                //     if (dealerResellerServicer.length > 0) {
-                //         let dealerResellerServicer = await servicerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
-                //         servicer = servicer.concat(dealerResellerServicer);
-                //     }
-                //     if (checkDealer.isServicer) {
-                //         // servicer.unshift(checkDealer);
-                //         let checkDealerServicer = await servicerService.getServiceProviderById({ dealerId: checkDealer._id })
-                //         checkDealerServicer.isServicer = true
-                //         servicer.push(checkDealerServicer)
-                //     };
-                //     response = response.filter(item =>
-                //         servicer.some(check => check._id.toString() === item._id.toString())
-                //     );
-                //     console.log("filteredData------------------", response)
+                console.log("response----------------", response)
+                // if (getDealerId.isServicer) {
+                //     console.log("dsddsfdsfdsfdsdf")
+                //     let servicer = await servicerService.getServiceProviderById({ dealerId: getDealerId._id })
+                //     console.log("---------------------------", response[0])
+                //     response.push({
+                //         name: servicer.name,
+                //         _id: servicer._id,
+                //         categories:response.length>0 ? response[0].categories : 
+                //     })
                 // }
+
 
             }
             if (flag == "category") {
