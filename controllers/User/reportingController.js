@@ -2659,7 +2659,6 @@ exports.claimReportinDropdownForCustomer = async (req, res) => {
                         as: "servicerPriceBook" // servicer price books
                     }
                 },
-
                 {
                     $unwind: {
                         path: "$servicerPriceBook",
