@@ -1991,18 +1991,15 @@ exports.deleteUser = async (req, res) => {
     }
 
 
-    console.log("--------------------------------------------1",notificationEmails,adminUsers)
     if (notificationEmails.length > 0) {
       let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
       maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
     }
-    console.log("--------------------------------------------2",dealerEmails,dealerUsers)
 
     if (dealerEmails.length > 0) {
       mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmails, ["noreply@getcover.com"], emailData))
       maillogservice.createMailLogFunction(mailing, emailData, dealerUsers, process.env.update_status)
     }
-    console.log("--------------------------------------------3",resellerEmails)
 
 
     if (resellerEmails.length > 0) {
@@ -2010,14 +2007,12 @@ exports.deleteUser = async (req, res) => {
       maillogservice.createMailLogFunction(mailing, emailData, resellerUsers, process.env.update_status)
     }
 
-    console.log("--------------------------------------------4",customerEmails)
 
     if (customerEmails.length > 0) {
       mailing = await sgMail.send(emailConstant.sendEmailTemplate(customerEmails, ["noreply@getcover.com"], emailData))
       maillogservice.createMailLogFunction(mailing, emailData, customerUsers, process.env.update_status)
     }
 
-    console.log("--------------------------------------------5",servicerEmails)
 
     if (servicerEmails.length > 0) {
       mailing = await sgMail.send(emailConstant.sendEmailTemplate(servicerEmails, ["noreply@getcover.com"], emailData))

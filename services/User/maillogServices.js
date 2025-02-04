@@ -85,7 +85,7 @@ module.exports = class mailLogService {
         }
     }
 
-    static async createMailLogFunctionWithHtml(dataFromSendgrid, emails, html) {
+    static async createMailLogFunctionWithHtml(dataFromSendgrid, emails, html,subject) {
         try {
             let body = dataFromSendgrid[0]
             // console.log(body, dataFromApi, "******************")
@@ -134,7 +134,9 @@ module.exports = class mailLogService {
                         accountName: accountName,
                         role: role,
                         // sentOn: new Date(body.date),
-                        // keyValues: dataFromApi,
+                         keyValues: {
+                            subject:subject
+                         },
                         content: html
                     }
                     let maillog = await MAILLOG(mailLogObject).save()

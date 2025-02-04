@@ -2380,12 +2380,12 @@ exports.uploadDealerPriceBookNew = async (req, res) => {
       let notificationEmails = await supportingFunction.getUserEmails();
 
       let mailing = await sgMail.send(emailConstant.sendCsvFile(dealerEmail, "noreply@getcover.com", htmlTableString));
-      maillogservice.createMailLogFunctionWithHtml(mailing, dealerUsers, htmlTableString)
+      maillogservice.createMailLogFunctionWithHtml(mailing, dealerUsers, htmlTableString,"Bulk Data Report")
 
 
       mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, "noreply@getcover.com", htmlTableString));
 
-      maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString)
+      maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString,"Bulk Data Report")
 
 
       res.send({
