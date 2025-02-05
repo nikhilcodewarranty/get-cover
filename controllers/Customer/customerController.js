@@ -1618,6 +1618,7 @@ exports.addCustomerUser = async (req, res) => {
       let createNotification = await userService.saveNotificationBulk(notificationArray);
 
       let email = data.email
+      
       let userId = saveData._id
       let settingData = await userService.getSetting({});
 
@@ -1634,14 +1635,19 @@ exports.addCustomerUser = async (req, res) => {
         servicerName: data.firstName + " " + data.lastName,
         address: settingData[0]?.address,
       }))
-       let emailData = {
-        flag: "created", title: settingData[0]?.title,
+
+      let emailData = {
+        flag: "created", 
+        title: settingData[0]?.title,
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        link: resetLink, subject: "Set Password", role: "Customer User",
+        link: resetLink, 
+        subject: "Set Password", 
+        role: "Customer User",
         servicerName: data.firstName + " " + data.lastName,
         address: settingData[0]?.address,
       }
+
       maillogservice.createMailLogFunction(mailing, emailData, [checkPrimaryEmail2], process.env.servicer_approval)
 
       //Save Logs

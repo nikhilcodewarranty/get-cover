@@ -1020,6 +1020,8 @@ exports.getClaimReportingDropdown = async (req, res) => {
         let flag = req.params.flag
         let response;
         let dealerId = req.userId;
+        let servicerDealer = await dealerRelationService.getDealerRelations({ servicerId: req.userId })
+        let dealerIds = servicerDealer.map(dealer => dealer.dealerId)
         if (flag == "dealer") {
             let servicerQuery = [
                 {
@@ -1056,7 +1058,7 @@ exports.getClaimReportingDropdown = async (req, res) => {
                         from: "dealerpricebooks",
                         localField: "dealers._id",
                         foreignField: "dealerId",
-                        as: "dealerPricebookData"
+                        as: "dealerPricebookData",
                     }
                 },
                 {
@@ -1222,7 +1224,12 @@ exports.getClaimReportingDropdown = async (req, res) => {
                         from: "dealerpricebooks",
                         localField: "pricebookData._id",
                         foreignField: "priceBook",
-                        as: "dealerPricebookData" // Keep dealerPricebookData as an array
+                        as: "dealerPricebookData", // Keep dealerPricebookData as an array
+                        pipeline: [
+                            {
+                                $match:{ dealerId: { $in: dealerIds } },
+                            }
+                        ]
                     }
                 },
                 {
