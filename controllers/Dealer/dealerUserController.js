@@ -588,6 +588,15 @@ exports.createCustomer = async (req, res, next) => {
             resellerId1: checkReseller ? checkReseller._id : null,
             zip: data.zip,
             state: data.state,
+            addresses: [
+                {
+                    state: data.state,
+                    address: data.street,
+                    city: data.city,
+                    zip: data.zip,
+                    isPrimary: true,
+                }
+            ],
             country: data.country,
             status: data.status,
             unique_key: data.unique_key,
@@ -2068,7 +2077,7 @@ exports.editOrderDetail = async (req, res) => {
                     let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: savedResponse.dealerId, isPrimary: true } } })
                     let createNotification = await userService.saveNotificationBulk(notificationArrayData);
                     // Send Email code here
-                    if (!checkOrder?.termCondition || checkOrder?.termCondition == null || checkOrder?.termCondition == '' || Object.keys(checkOrder?.termCondition).length==0) {
+                    if (!checkOrder?.termCondition || checkOrder?.termCondition == null || checkOrder?.termCondition == '' || Object.keys(checkOrder?.termCondition).length == 0) {
                         let notificationEmails = adminUsers.map(user => user.email)
                         let dealerEmails = dealerUsers.map(user => user.email)
                         let resellerEmails = resellerUsers.map(user => user.email)
@@ -2553,7 +2562,7 @@ async function generateTC(orderData) {
                 redirectId: base_url + "orderDetails/" + checkOrder._id
             }
             let mailing
-            if (notificationEmails.length > 0) {               
+            if (notificationEmails.length > 0) {
                 emailData.redirectId = base_url + "editOrder/" + checkOrder._id
                 mailing = await sgMail.send(emailConstant.sendTermAndCondition(notificationEmails, ["noreply@getcover.com"], emailData, attachment))
                 maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)

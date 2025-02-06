@@ -122,6 +122,15 @@ exports.createCustomer = async (req, res, next) => {
       resellerId: checkReseller ? checkReseller._id : null,
       resellerId1: checkReseller ? checkReseller._id : null,
       zip: data.zip,
+      addresses: [
+        {
+          state: data.state,
+          address: data.street,
+          city: data.city,
+          zip: data.zip,
+          isPrimary:true,
+        }
+      ],
       state: data.state,
       country: data.country,
       status: data.status,
@@ -1618,7 +1627,7 @@ exports.addCustomerUser = async (req, res) => {
       let createNotification = await userService.saveNotificationBulk(notificationArray);
 
       let email = data.email
-      
+
       let userId = saveData._id
       let settingData = await userService.getSetting({});
 
@@ -1637,12 +1646,12 @@ exports.addCustomerUser = async (req, res) => {
       }))
 
       let emailData = {
-        flag: "created", 
+        flag: "created",
         title: settingData[0]?.title,
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        link: resetLink, 
-        subject: "Set Password", 
+        link: resetLink,
+        subject: "Set Password",
         role: "Customer User",
         servicerName: data.firstName + " " + data.lastName,
         address: settingData[0]?.address,
@@ -3320,6 +3329,29 @@ exports.editaddress = async (req, res) => {
     })
   }
 }
+exports.getCustomerAddress = async (req, res) => {
+  try {
+    let data = req.body
+    let customerId = req.params.customerId
+    if (req.role == "Customer") {
+      customerId = req.userId
+    }
+
+    let response = await customerService.getCustomerById({ _id: customerId }, { addresses: 1 })
+
+    res.send({
+      code: constant.successCode,
+      message: "Success!",
+      result: response
+    })
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
 
 exports.justToCheck = async (req, res) => {
   let updateCustomer = await customerModel.updateMany(
