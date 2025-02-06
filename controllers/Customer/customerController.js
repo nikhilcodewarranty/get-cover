@@ -1486,6 +1486,7 @@ exports.addCustomerUser = async (req, res) => {
           roleId: process.env.customer,
           firstName: data.firstName,
           lastName: data.lastName,
+          addressId:data.addressId,
           phoneNumber: data.phoneNumber,
           position: data.position,
           isPrimary: false,

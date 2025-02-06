@@ -813,6 +813,7 @@ exports.addCustomerUser = async (req, res) => {
           lastName: data.lastName,
           phoneNumber: data.phoneNumber,
           position: data.position,
+          addressId:data.addressId,
           isPrimary: false,
           dialCode: data.dialCode ? data.dialCode : "+1"
 
@@ -820,7 +821,6 @@ exports.addCustomerUser = async (req, res) => {
       ]
 
     }
-
 
     let saveData = await userService.createUser(metaData)
     if (!saveData) {
