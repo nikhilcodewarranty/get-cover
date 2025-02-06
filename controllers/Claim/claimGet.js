@@ -1765,3 +1765,7 @@ exports.getClaimById = async (req, res) => {
     })
   }
 }
+
+exports.getClaimComments = async(req,res)=>{
+  
+}

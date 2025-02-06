@@ -4318,13 +4318,7 @@ exports.sendMessages = async (req, res) => {
       return
     }
 
-    let checkServicer = await servicerService.getServiceProviderById({
-      $or: [
-        { _id: checkClaim?.servicerId ? checkClaim?.servicerId : orderData?.servicerId },
-        { dealerId: checkClaim?.servicerId ? checkClaim?.servicerId : orderData?.servicerId },
-        { resellerId: checkClaim?.servicerId ? checkClaim?.servicerId : orderData?.servicerId },
-      ]
-    })
+   
 
     let settingData = await userService.getSetting({});
 
@@ -4337,6 +4331,13 @@ exports.sendMessages = async (req, res) => {
       })
       return
     }
+    let checkServicer = await servicerService.getServiceProviderById({
+      $or: [
+        { _id: checkClaim?.servicerId ? checkClaim?.servicerId : orderData?.servicerId },
+        { dealerId: checkClaim?.servicerId ? checkClaim?.servicerId : orderData?.servicerId },
+        { resellerId: checkClaim?.servicerId ? checkClaim?.servicerId : orderData?.servicerId },
+      ]
+    })
 
     data.commentedBy = req.userId
     data.commentedTo = req.userId;
