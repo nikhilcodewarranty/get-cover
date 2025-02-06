@@ -186,6 +186,15 @@ exports.createCustomer = async (req, res, next) => {
             resellerId: checkReseller ? checkReseller._id : null,
             resellerId1: checkReseller ? checkReseller._id : null,
             zip: data.zip,
+            addresses: [
+                {
+                    state: data.state,
+                    address: data.street,
+                    city: data.city,
+                    zip: data.zip,
+                    isPrimary: true,
+                }
+            ],
             state: data.state,
             country: data.country,
             status: data.status,
@@ -1629,16 +1638,16 @@ exports.editOrderDetail = async (req, res) => {
                     let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: savedResponse.dealerId, isPrimary: true } } })
                     let createNotification = await userService.saveNotificationBulk(notificationArrayData);
                     // Send Email code here
-                    if (!checkOrder?.termCondition ||  Object.keys(checkOrder?.termCondition).length==0) {
+                    if (!checkOrder?.termCondition || Object.keys(checkOrder?.termCondition).length == 0) {
 
-                        console.log("hereeeeeeeeeeeeeeeeeeeeeeeee",checkOrder)
+                        console.log("hereeeeeeeeeeeeeeeeeeeeeeeee", checkOrder)
                         let notificationEmails = adminUsers.map(user => user.email)
                         let dealerEmail = dealerUsers.map(user => user.email)
                         let resellerEmail = resellerUsers.map(user => user.email)
                         let custmerEmail = customerUsers.map(user => user.email)
-                        console.log("notificationEmails",notificationEmails)
-                        console.log("resellerEmail",resellerEmail)
-                        console.log("dealerEmail",dealerEmail)
+                        console.log("notificationEmails", notificationEmails)
+                        console.log("resellerEmail", resellerEmail)
+                        console.log("dealerEmail", dealerEmail)
 
                         let emailData = {
                             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,

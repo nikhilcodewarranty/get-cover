@@ -35,6 +35,10 @@ const userSchema = new mongoose.Schema({
                 metaId: {
                     type: mongoose.Schema.Types.ObjectId,
                 },
+                addressId: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    default:null
+                },
                 status: {
                     type: Boolean,
                     default: false
