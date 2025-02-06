@@ -1707,19 +1707,19 @@ exports.getCustomerById = async (req, res) => {
   try {
     let data = req.body
     let checkCustomer = await customerService.getCustomerById({ _id: req.params.customerId }, {})
-    if (checkCustomer?.addresses) {
-      checkCustomer.addresses.push({
-        address: checkCustomer?.street,
-        city: checkCustomer?.city,
-        state: checkCustomer?.state,
-        zip: checkCustomer?.zip,
-        isPrimary: true,
-      });
-      let filteredAddress = checkCustomer.addresses.filter(item => item && Object.keys(item).length > 0);
+    // if (checkCustomer?.addresses) {
+    //   checkCustomer.addresses.push({
+    //     address: checkCustomer?.street,
+    //     city: checkCustomer?.city,
+    //     state: checkCustomer?.state,
+    //     zip: checkCustomer?.zip,
+    //     isPrimary: true,
+    //   });
+    //   let filteredAddress = checkCustomer.addresses.filter(item => item && Object.keys(item).length > 0);
 
-      checkCustomer.addresses = filteredAddress.sort((a, b) => b.isPrimary - a.isPrimary);
+    //   checkCustomer.addresses = filteredAddress.sort((a, b) => b.isPrimary - a.isPrimary);
 
-    }
+    // }
     if (!checkCustomer) {
       res.send({
         code: constant.errorCode,
