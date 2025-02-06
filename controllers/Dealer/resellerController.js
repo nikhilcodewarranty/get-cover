@@ -3294,6 +3294,7 @@ exports.getResellerAsServicerClaims = async (req, res) => {
                 servicer.unshift(item1.contracts.orders.servicers[0])
             }
 
+            
 
             // if (item1.contracts.orders.resellers[0]?.isServicer && item1.contracts.orders.resellers[0]?.status) {
             //     let checkResellerServicer = await providerService.getServiceProviderById({ resellerId: item1.contracts.orders.resellers[0]._id })
