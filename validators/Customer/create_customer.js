@@ -14,7 +14,7 @@ const create_customer_validation = Joi.object({
     email: Joi.string().replace(/\s+/g, ' ').trim().optional(),
     firstName: Joi.string().replace(/\s+/g, ' ').trim().optional(),
     lastName: Joi.string().replace(/\s+/g, ' ').trim().optional(),
-    phoneNumber: Joi.number().optional(),
+    phoneNumber: Joi.string().optional(),
     isPrimary: Joi.boolean().optional(),
     status: Joi.boolean().optional(),
     position: Joi.string().trim().allow('').replace(/\s+/g, ' ').optional(),
