@@ -527,6 +527,7 @@ exports.getUserById = async (req, res) => {
           'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
           'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
           'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+          'addressId': { $arrayElemAt: ["$metaData.addressId", 0] },
           'position': { $arrayElemAt: ["$metaData.position", 0] },
           'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
           'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
@@ -612,6 +613,7 @@ exports.updateUserData = async (req, res) => {
           'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
           'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
           'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+          'addressId': { $arrayElemAt: ["$metaData.addressId", 0] },
           'position': { $arrayElemAt: ["$metaData.position", 0] },
           'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
           'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
@@ -628,6 +630,7 @@ exports.updateUserData = async (req, res) => {
     ])
 
     const settingData = await userService.getSetting({});
+
     let updateData = {
       $set: {
         notificationTo: ["anil@codenomad.net"],
@@ -635,6 +638,7 @@ exports.updateUserData = async (req, res) => {
         'metaData.$.lastName': data.lastName,
         'metaData.$.phoneNumber': data.phoneNumber,
         'metaData.$.position': data.position,
+        'metaData.$.addressId': data.addressId,
         'metaData.$.status': data.status,
         'metaData.$.metaId': checkUserId1[0].metaId,
         'metaData.$.roleId': checkUserId1[0].roleId
@@ -1406,6 +1410,7 @@ exports.updateUserData = async (req, res) => {
           'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
           'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
           'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+          'addressId': { $arrayElemAt: ["$metaData.addressId", 0] },
           'position': { $arrayElemAt: ["$metaData.position", 0] },
           'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
           'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },

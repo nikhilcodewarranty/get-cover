@@ -812,6 +812,7 @@ exports.addCustomerUser = async (req, res) => {
           firstName: data.firstName,
           lastName: data.lastName,
           phoneNumber: data.phoneNumber,
+          addressId: data.addressId,
           position: data.position,
           addressId:data.addressId,
           isPrimary: false,

@@ -1498,6 +1498,7 @@ exports.addCustomerUser = async (req, res) => {
 
     }
     let saveData = await userService.createUser(metaData)
+    console.log("saveData--------------------",saveData)
     if (!saveData) {
       //Save Logs
       let logData = {
