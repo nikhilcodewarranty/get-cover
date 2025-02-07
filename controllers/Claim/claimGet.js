@@ -1709,7 +1709,7 @@ exports.getClaimById = async (req, res) => {
       { $unwind: { path: "$resellerDetail", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
-          from: "servicers",
+          from: "serviceproviders",
           localField: "servicerId",
           foreignField: "_id",
           as: "servicerDetail",
@@ -1764,8 +1764,4 @@ exports.getClaimById = async (req, res) => {
       message: err.messasge
     })
   }
-}
-
-exports.getClaimComments = async(req,res)=>{
-  
 }
