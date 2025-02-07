@@ -269,7 +269,7 @@ exports.validateData = async (req, res) => {
 // Login User 
 exports.login = async (req, res) => {
   try {
-    console.log("req-------------",req.ip)
+    console.log("req-------------", req.ip)
     // Check if the user with the provided email exists
     const user = await userService.findOneUser({ email: req.body.email.toLowerCase() }, {});
     if (!user) {
@@ -1659,13 +1659,13 @@ exports.deleteUser = async (req, res) => {
     let notificationData;
     let notificationArray = [];
     let notificationEmails = []
-    let adminUsers= [];
+    let adminUsers = [];
     let dealerUsers = [];
     let resellerUsers = [];
     let customerUsers = [];
     let servicerUsers = [];
-    let resellerEmails= [];
-    let dealerEmails =  []
+    let resellerEmails = [];
+    let dealerEmails = []
     let servicerEmails = []
     let customerEmails = []
     let mergedEmail
@@ -1747,8 +1747,8 @@ exports.deleteUser = async (req, res) => {
           }
         },
       }
-       adminUsers = await supportingFunction.getNotificationEligibleUser(adminDeleteQuery, { email: 1, metaData: 1 })
-       dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDeleteQuery, { email: 1, metaData: 1 })
+      adminUsers = await supportingFunction.getNotificationEligibleUser(adminDeleteQuery, { email: 1, metaData: 1 })
+      dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDeleteQuery, { email: 1, metaData: 1 })
       const IDs = adminUsers.map(user => user._id)
       const dealerId = dealerUsers.map(user => user._id)
       notificationEmails = adminUsers.map(user => user.email);
@@ -2849,7 +2849,7 @@ exports.addMembers = async (req, res) => {
       role: req.role == 'Super Admin' ? 'Admin' : req.role,
       servicerName: data.firstName
     }
-    console.log("sdfsfsddfsfdsdsd",emailData)
+    console.log("sdfsfsddfsfdsdsd", emailData)
     const resetPassword = await sgMail.send(emailConstant.servicerApproval(data.email, {
       flag: "created",
       link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -2862,7 +2862,7 @@ exports.addMembers = async (req, res) => {
       role: req.role == 'Super Admin' ? 'Admin' : req.role,
       servicerName: data.firstName
     }))
-    console.log("resetPassword",resetPassword)
+    console.log("resetPassword", resetPassword)
 
     maillogservice.createMailLogFunction(resetPassword, emailData, [checkPrimaryEmail2], process.env.servicer_approval)
     // // Create the user
@@ -3562,18 +3562,36 @@ exports.contactUs = async (req, res) => {
       return
     }
 
-    let adminCC = await supportingFunction.getUserEmails();
+    // let adminCC = await supportingFunction.getUserEmails();
 
+    const adminNotification = {
+      metaData: {
+        $elemMatch: {
+          $and: [
+            { "registerNotifications.contactFormB2c": true },
+            { status: true },
+            { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") }
+
+          ]
+        }
+      },
+    }
+
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminNotification, { email: 1, metaData: 1 })
+
+    let adminCC = adminUsers.map(user => user.email)
+    
     let settingData = await userService.getSetting({});
 
     let emailData = {
       firstName: data.firstName,
       subject: 'Request Form Submision'
     }
-
     //Send email to user
-    let mailing = sgMail.send(emailConstant.sendContactUsTemplate(data.email, adminCC, emailData))
-
+    if (adminCC.length > 0) {
+      let mailing = await sgMail.send(emailConstant.sendContactUsTemplate(data.email, adminCC, emailData))
+     // maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.contact_us)
+    }
     //Send to admin
     const admin = await supportingFunction.getPrimaryUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true });
     const ip = data.ipAddress
@@ -3592,7 +3610,7 @@ exports.contactUs = async (req, res) => {
 
     }
     //Send email to admin
-    mailing = sgMail.send(emailConstant.sendContactUsTemplateAdmin(adminCC, ["noreply@getcover.com"], emailData))
+    mailing = await sgMail.send(emailConstant.sendContactUsTemplateAdmin(adminCC, ["noreply@getcover.com"], emailData))
     res.send({
       code: constant.successCode,
       message: "Record save successfully!"
