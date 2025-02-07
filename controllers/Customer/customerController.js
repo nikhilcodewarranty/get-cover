@@ -3224,6 +3224,7 @@ exports.addCustomerAddress = async (req, res) => {
     })
   }
 }
+
 exports.addAddress = async (req, res) => {
   try {
     let data = req.body
@@ -3261,6 +3262,7 @@ exports.addAddress = async (req, res) => {
     })
   }
 }
+
 exports.deleteAddress = async (req, res) => {
   try {
     let data = req.body
@@ -3333,6 +3335,7 @@ exports.editaddress = async (req, res) => {
     })
   }
 }
+
 exports.getCustomerAddress = async (req, res) => {
   try {
     let data = req.body
