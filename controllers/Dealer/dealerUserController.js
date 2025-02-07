@@ -644,6 +644,7 @@ exports.createCustomer = async (req, res, next) => {
                         lastName: member.lastName,
                         phoneNumber: member.phoneNumber,
                         metaId: createdCustomer._id,
+                        addressId: createdCustomer.addresses[0]._id,
                         roleId: process.env.customer,
                         position: member.position,
                         dialCode: member?.dialCode,

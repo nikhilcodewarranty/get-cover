@@ -128,7 +128,7 @@ exports.createCustomer = async (req, res, next) => {
           address: data.street,
           city: data.city,
           zip: data.zip,
-          isPrimary:true,
+          isPrimary: true,
         }
       ],
       state: data.state,
@@ -182,6 +182,7 @@ exports.createCustomer = async (req, res, next) => {
             lastName: member.lastName,
             phoneNumber: member.phoneNumber,
             metaId: createdCustomer._id,
+            addressId: createdCustomer.addresses[0]._id,
             roleId: process.env.customer,
             position: member.position,
             dialCode: member?.dialCode,
@@ -1486,7 +1487,7 @@ exports.addCustomerUser = async (req, res) => {
           roleId: process.env.customer,
           firstName: data.firstName,
           lastName: data.lastName,
-          addressId:data.addressId,
+          addressId: data.addressId,
           phoneNumber: data.phoneNumber,
           position: data.position,
           isPrimary: false,
@@ -3003,6 +3004,7 @@ exports.createCustomerNew = async (req, res, next) => {
             roleId: process.env.customer,
             firstName: teamMembers[m].firstName,
             lastName: teamMembers[m].lastName,
+            addressId: createdCustomer.addresses[0]._id,
             phoneNumber: teamMembers[m].phoneNumber,
             isPrimary: teamMembers[m].isPrimary,
           }

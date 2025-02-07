@@ -238,6 +238,7 @@ exports.createCustomer = async (req, res, next) => {
                         metaId: createdCustomer._id,
                         roleId: process.env.customer,
                         position: member.position,
+                        addressId: createdCustomer.addresses[0]._id,
                         dialCode: member.dialCode,
                         status: member.status,
                         isPrimary: member.isPrimary
