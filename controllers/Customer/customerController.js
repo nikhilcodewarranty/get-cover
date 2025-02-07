@@ -128,7 +128,7 @@ exports.createCustomer = async (req, res, next) => {
           address: data.street,
           city: data.city,
           zip: data.zip,
-          isPrimary:true,
+          isPrimary: true,
         }
       ],
       state: data.state,
@@ -1486,6 +1486,7 @@ exports.addCustomerUser = async (req, res) => {
           roleId: process.env.customer,
           firstName: data.firstName,
           lastName: data.lastName,
+          addressId: data.addressId,
           phoneNumber: data.phoneNumber,
           position: data.position,
           isPrimary: false,
