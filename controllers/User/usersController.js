@@ -527,6 +527,7 @@ exports.getUserById = async (req, res) => {
           'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
           'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
           'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+          'addressId': { $arrayElemAt: ["$metaData.addressId", 0] },
           'position': { $arrayElemAt: ["$metaData.position", 0] },
           'phoneNumber': { $arrayElemAt: ["$metaData.phoneNumber", 0] },
           'dialCode': { $arrayElemAt: ["$metaData.dialCode", 0] },
