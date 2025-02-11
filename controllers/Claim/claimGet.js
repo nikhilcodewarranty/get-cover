@@ -694,14 +694,12 @@ exports.getAllClaims1 = async (req, res, next) => {
               "unique_key": 1,
               note: 1,
               totalAmount: 1,
-              servicerName:"$servicerInfo.name",
               servicerId: 1,
               dealerSku: 1,
               customerStatus: 1,
               dealerName:"$contracts.orders.dealers.name",
+              servicerName:"$servicerInfo.name",
               customerName:"$contracts.orders.customer.username",
-              dealerName:"$contracts.orders.dealers.name",
-              dealerName:"$contracts.orders.dealers.name",
               trackingNumber: 1,
               claimPaymentStatus: 1,
               trackingType: 1,
@@ -1026,11 +1024,6 @@ exports.getAllClaims1 = async (req, res, next) => {
       if (item1.contracts.orders.servicers[0]?.length > 0) {
         servicer.unshift(item1.contracts.orders.servicers[0]);
       }
-
-      // if (item1.contracts.orders.resellers[0]?.isServicer && item1.contracts.orders.resellers[0]?.status) {
-      //   let checkResellerServicer = await servicerService.getServiceProviderById({ resellerId: item1.contracts.orders.resellers[0]._id })
-      //   servicer.push(checkResellerServicer)
-      // }
 
       let dealerResellerServicer = await resellerService.getResellers({ dealerId: item1.contracts.orders.dealers._id, isServicer: true, status: true })
       let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
