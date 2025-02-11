@@ -2187,3 +2187,137 @@ exports.getcustomerDetail = async (req, res) => {
     })
   }
 }
+
+exports.getClaimById = async (req, res) => {
+  try {
+    let data = req.body
+    let checkClaimId = await claimService.getClaimById({ _id: req.params.claimId })
+    if (!checkClaimId) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid claim ID"
+      })
+      return;
+    }
+    let query = [
+      {
+        $match: { _id: new mongoose.Types.ObjectId(req.params.claimId) }
+      },
+      {
+        $lookup: {
+          from: "contracts",
+          localField: "contractId",
+          foreignField: "_id",
+          as: "contractDetail",
+          pipeline: [
+            {
+              $project: {
+                orderId: "$unique_key"
+              }
+            }
+          ]
+        }
+      },
+      {
+        $unwind: {
+          path: "$contractDetail"
+        }
+      },
+      {
+        $lookup: {
+          from: "dealers",
+          localField: "dealerId",
+          foreignField: "_id",
+          as: "dealerDetail",
+          pipeline: [
+            {
+              $project: {
+                name: 1
+              }
+            }
+          ]
+        }
+      },
+      {
+        $unwind: {
+          path: "$dealerDetail"
+        }
+      },
+      {
+        $lookup: {
+          from: "resellers",
+          localField: "resellerId",
+          foreignField: "_id",
+          as: "resellerDetail",
+          pipeline: [
+            {
+              $project: {
+                name: 1
+              }
+            }
+          ]
+        }
+      },
+      { $unwind: { path: "$resellerDetail", preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: "servicers",
+          localField: "servicerId",
+          foreignField: "_id",
+          as: "servicerDetail",
+          pipeline: [
+            {
+              $project: {
+                name: 1
+              }
+            }
+          ]
+        }
+      },
+      { $unwind: { path: "$servicerDetail", preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: "customers",
+          localField: "customerId",
+          foreignField: "_id",
+          as: "customerDetail",
+          pipeline: [
+            {
+              $project: {
+                name: "$username"
+              }
+            }
+          ]
+        }
+      },
+      {
+        $unwind: {
+          path: "$customerDetail"
+        }
+      },
+    ]
+    let getclaimData = await claimService.getClaimWithAggregate(query)
+    if (!getclaimData[0]) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the claim detail"
+      })
+    } else {
+      res.send({
+        code: constant.successCode,
+        message: "Success",
+        result: getclaimData[0]
+      })
+    }
+
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.messasge
+    })
+  }
+}
+
+exports.getClaimComments = async(req,res)=>{
+  
+}
