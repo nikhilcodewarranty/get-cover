@@ -1007,6 +1007,9 @@ exports.getDealerClaims = async (req, res) => {
                             trackingType: 1,
                             repairParts: 1,
                             diagnosis: 1,
+                            dealerName: "$contracts.orders.dealers.name",
+                            servicerName: "$servicerInfo.name",
+                            customerName: "$contracts.orders.customer.username",
                             claimStatus: 1,
                             repairStatus: 1,
                             "contracts.unique_key": 1,
@@ -1086,6 +1089,17 @@ exports.getDealerClaims = async (req, res) => {
                         resellerMatch,
                     ]
                 },
+            },
+            {
+                $lookup: {
+                    from: "serviceproviders",
+                    localField: "servicerId",
+                    foreignField: "_id",
+                    as: "servicerInfo",
+                }
+            },
+            {
+                $unwind: "$servicerInfo"
             },
             {
                 $lookup: {
@@ -1867,7 +1881,7 @@ exports.getDealerServicers = async (req, res) => {
             const claimValue = valueClaim.find(claim => claim._id?.toString() === item1._id?.toString())
             const claimNumber = numberOfClaims.find(claim => claim._id?.toString() === item1._id?.toString())
             const filtered = resellerIds.filter(id => id.toString() === item1?.resellerId?.toString());
-            let matchDealerSelf = req.params.dealerId.toString()===item1?.dealerId?.toString()
+            let matchDealerSelf = req.params.dealerId.toString() === item1?.dealerId?.toString()
             // let isAction = resellerIds.find(resellerId=>resellerId?.toString()===item1?.resellerId.toString())
             // console.log("isAction=============",isAction)
             if (matchingItem) {

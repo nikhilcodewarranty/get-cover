@@ -15,7 +15,7 @@ router.post("/uploadCommentImage", [verifyToken], claimController.uploadCommentI
 router.post("/createClaim", [verifyToken], claimController.addClaim); // create a claim
 router.post("/getUnpaidAmount", [verifyToken], claimGetController.getUnpaidAmount); // get unpaid amount
 router.post("/getCoverageType/:contractId", [verifyToken], claimGetController.getCoverageType); // get coverage type by contract ID
-router.post("/getAllClaims", [verifyToken], claimGetController.getAllClaims); // get all claims
+router.post("/getAllClaims", [verifyToken], claimGetController.getAllClaims1); // get all claims
 router.post("/getClaims", [verifyToken], claimGetController.getClaims); // get claims
 //PUT Routes
 router.put("/editClaim/:claimId", [verifyToken], claimController.editClaim); // edit claim by ID
