@@ -37,19 +37,19 @@ const claimSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  approveDate:{
+  approveDate: {
     type: Date,
-    default:''
+    default: ''
   },
   pName: {
     type: String,
     default: ''
   },
-  shippingTo:{
+  shippingTo: {
     type: String,
     default: ''
   },
-  submittedBy:{
+  submittedBy: {
     type: String,
     default: ''
   },
@@ -57,11 +57,11 @@ const claimSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  manufacture: { 
+  manufacture: {
     type: String,
     default: ''
   },
-  
+
   claimFile: {
     type: 'String',
     enum: ['open', 'completed', 'rejected'],
@@ -118,6 +118,14 @@ const claimSchema = new mongoose.Schema({
     type: String,
   },
   receiptImage: {
+    type: [],
+    default: []
+  },
+  preRepairImage: {
+    type: [],
+    default: []
+  },
+  postRepairImage: {
     type: [],
     default: []
   },
@@ -254,7 +262,7 @@ const claimSchema = new mongoose.Schema({
         },
         date: {
           type: Date,
-          default: () => Date.now() 
+          default: () => Date.now()
 
         }
       },

@@ -5754,6 +5754,7 @@ exports.sendStaticEmail = async (req, res) => {
     response:mailing
   })
 }
+
 exports.updateClaimDate = async (req, res) => {
   try {
 
@@ -5921,6 +5922,25 @@ exports.updateClaimDate = async (req, res) => {
   }
 }
 
+exports.uploadPrePostImages = async(req,res)=>{
+  try{
+    let data = req.body
+    let checkClaimId = await claimService.getClaimById({_id:req.params.claimId})
+    if(!checkClaimId){
+      res.send({
+        code:constant.errorCode,
+        message:err.message
+      })
+      return
+    }
+    
+  }catch(err){
+    res.send({
+      code:constant.errorCode,
+      message:err.message
+    })
+  }
+}
 
 
 

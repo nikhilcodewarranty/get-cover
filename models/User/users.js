@@ -501,49 +501,6 @@ userSchema.pre("save", function (next,data) {
     next();
 });
 
-// userSchema.pre("findOneAndUpdate", function (next) {
-//     if (this.metaData && Array.isArray(this.metaData)) {
-//         this.metaData = this.metaData.map((meta) => {
-//             if (meta.isPrimary) {
-//                 return {
-//                     ...meta,
-//                     orderNotifications: setAllNotificationsTrue(meta.orderNotifications),
-//                     claimNotification: setAllNotificationsTrue(meta.claimNotification),
-//                     adminNotification: setAllNotificationsTrue(meta.adminNotification),
-//                     servicerNotification: setAllNotificationsTrue(meta.servicerNotification),
-//                     dealerNotifications: setAllNotificationsTrue(meta.dealerNotifications),
-//                     resellerNotifications: setAllNotificationsTrue(meta.resellerNotifications),
-//                     customerNotifications: setAllNotificationsTrue(meta.customerNotifications),
-//                     registerNotifications: setAllNotificationsTrue(meta.registerNotifications),
-//                 };
-//             }
-//             return meta;
-//         });
-//     }
-//     next();
-// });
-
-// userSchema.pre("updateOne", function (next) {
-//     if (this.metaData && Array.isArray(this.metaData)) {
-//         this.metaData = this.metaData.map((meta) => {
-//             if (meta.isPrimary) {
-//                 return {
-//                     ...meta,
-//                     orderNotifications: setAllNotificationsTrue(meta.orderNotifications),
-//                     claimNotification: setAllNotificationsTrue(meta.claimNotification),
-//                     adminNotification: setAllNotificationsTrue(meta.adminNotification),
-//                     servicerNotification: setAllNotificationsTrue(meta.servicerNotification),
-//                     dealerNotifications: setAllNotificationsTrue(meta.dealerNotifications),
-//                     resellerNotifications: setAllNotificationsTrue(meta.resellerNotifications),
-//                     customerNotifications: setAllNotificationsTrue(meta.customerNotifications),
-//                     registerNotifications: setAllNotificationsTrue(meta.registerNotifications),
-//                 };
-//             }
-//             return meta;
-//         });
-//     }
-//     next();
-// });
 
 userSchema.pre("insertMany", function (next, docs) {
 
