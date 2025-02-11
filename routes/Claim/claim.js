@@ -42,6 +42,7 @@ router.get("/checkNumberOfCertainPeriod", claimController.checkNumberOfCertainPe
 
 
 router.post("/exportDataForClaim", [verifyToken], claimExportController.exportDataForClaim); // check claim amount in edit claim and change coverage type
+router.post("/getClaimDetails", [verifyToken], claimExportController.getClaimDetails); // check claim amount in edit claim and change coverage type
 router.post("/paidUnpaidClaimReporting", [verifyToken], claimExportController.paidUnpaidClaimReporting); // check claim amount in edit claim and change coverage type
 router.post("/getClaimReportings", [verifyToken], claimExportController.getClaimReportings); // check claim amount in edit claim and change coverage type
 router.get("/getClaimReporting/:reportingId", [verifyToken], claimExportController.getClaimReporting); // check claim amount in edit claim and change coverage type
