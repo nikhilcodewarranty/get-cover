@@ -270,7 +270,7 @@ exports.getAllClaims = async (req, res, next) => {
 
     }
 
-    statusMatch = {}
+    let statusMatch = {}
     if (data.dateFilter != "") {
       let newEndDate = new Date(data.endDate)
       newEndDate.setHours(23, 59, 59, 999);
