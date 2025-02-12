@@ -2200,11 +2200,11 @@ exports.getClaimById = async (req, res) => {
         $lookup: {
           from: "contracts",
           localField: "contractId",
-          foreignField: "_id",
+          foreignField: "_id", 
           as: "contractDetail",
           pipeline: [
             {
-              $project: {
+              $project: { 
                 orderId: "$unique_key"
               }
             }
