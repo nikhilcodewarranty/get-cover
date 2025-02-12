@@ -2205,7 +2205,8 @@ exports.getClaimById = async (req, res) => {
           pipeline: [
             {
               $project: { 
-                orderId: "$unique_key"
+                contractId: "$unique_key",
+                orderId:1
               }
             }
           ]
