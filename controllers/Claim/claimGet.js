@@ -2262,7 +2262,9 @@ exports.getClaimById = async (req, res) => {
           pipeline: [
             {
               $project: {
-                name: 1
+                name: 1,
+                dealerId:1,
+                resellerId:1
               }
             }
           ]

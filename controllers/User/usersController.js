@@ -316,7 +316,7 @@ exports.login = async (req, res) => {
       }
     }
 
-    if (user.status == false) {
+    if (user.metaData[0].status == false) {
       res.send({
         code: constant.errorCode,
         message: "Your account is not active, please contact to the administration"
