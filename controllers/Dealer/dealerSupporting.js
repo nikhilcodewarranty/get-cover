@@ -1457,6 +1457,10 @@ exports.getDealerAsServicerClaims = async (req, res) => {
                             getcoverOverAmount: 1,
                             customerOverAmount: 1,
                             customerClaimAmount: 1,
+                            dealerName: "$contracts.orders.dealers.name",
+                            servicerName: "$servicerInfo.name",
+                            servicerName: "$servicerInfo.name",
+                            customerName: "$contracts.orders.customer.username",
                             getCoverClaimAmount: 1,
                             trackingNumber: 1,
                             trackingType: 1,
@@ -1541,6 +1545,17 @@ exports.getDealerAsServicerClaims = async (req, res) => {
                         { servicerId: { $in: [new mongoose.Types.ObjectId(req.params.dealerId), new mongoose.Types.ObjectId(servicerIdToCheck)] } }
                     ]
                 },
+            },
+            {
+                $lookup: {
+                    from: "serviceproviders",
+                    localField: "servicerId",
+                    foreignField: "_id",
+                    as: "servicerInfo",
+                }
+            },
+            {
+                $unwind: "$servicerInfo"
             },
             {
                 $lookup: {

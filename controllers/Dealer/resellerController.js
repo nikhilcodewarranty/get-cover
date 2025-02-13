@@ -3009,6 +3009,10 @@ exports.getResellerAsServicerClaims = async (req, res) => {
                             dealerSku: 1,
                             servicerId: 1,
                             claimType: 1,
+                            dealerName:"$contracts.orders.dealers.name",
+                            servicerName:"$servicerInfo.name",
+                            servicerName:"$servicerInfo.name",
+                            customerName:"$contracts.orders.customer.username",
                             customerStatus: 1,
                             trackingNumber: 1,
                             trackingType: 1,
@@ -3186,6 +3190,17 @@ exports.getResellerAsServicerClaims = async (req, res) => {
                     ]
                 },
             },
+            {
+                $lookup: {
+                  from: "serviceproviders",
+                  localField: "servicerId",
+                  foreignField: "_id",
+                  as: "servicerInfo",
+                }
+              },
+              {
+                $unwind: "$servicerInfo"
+              },
             {
                 $lookup: {
                     from: "contracts",
