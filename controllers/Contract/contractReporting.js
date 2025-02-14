@@ -1207,9 +1207,7 @@ exports.contractDetailReporting = async (req, res) => {
                             localField: "orderId",
                             foreignField: "_id",
                             as: "order",
-                            pipeline: [                             
-    
-                      
+                            pipeline: [
                                 {
                                     $lookup: {
                                         from: "dealers",
@@ -1272,7 +1270,6 @@ exports.contractDetailReporting = async (req, res) => {
                                 $limit: pageLimit
                             },
                             { $unwind: "$order" },
-                         
                             {
                                 "$project": {
                                     "_id": 1,
@@ -1316,8 +1313,8 @@ exports.contractDetailReporting = async (req, res) => {
                                     dealerName: "$order.dealer.name",
                                     resellerName: "$order.reseller.name",
                                     servicerName: "$order.servicer.name",
-                                    customerName: "$order.category",
-                                    "productDetails": {
+                                    customerName: "$order.customer.username",
+                                    "priceType": {
                                         "$arrayElemAt": [
                                             {
                                                 "$map": {
@@ -1329,15 +1326,30 @@ exports.contractDetailReporting = async (req, res) => {
                                                         }
                                                     },
                                                     "as": "filteredProduct",
-                                                    "in": {
-                                                        "priceType": "$$filteredProduct.priceType",
-                                                        "productDescription": "$$filteredProduct.description"
-                                                    }
+                                                    "in": "$$filteredProduct.priceType"
                                                 }
                                             },
                                             0
                                         ]
-                                    }
+                                    },
+                                    "productDescription": {
+                                        "$arrayElemAt": [
+                                            {
+                                                "$map": {
+                                                    "input": {
+                                                        "$filter": {
+                                                            "input": "$order.productsArray",
+                                                            "as": "productArray",
+                                                            "cond": { "$eq": ["$$productArray._id", "$orderProductId"] }
+                                                        }
+                                                    },
+                                                    "as": "filteredProduct",
+                                                    "in": "$$filteredProduct.description"
+                                                }
+                                            },
+                                            0
+                                        ]
+                                    },
                                 }
                             }
 

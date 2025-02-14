@@ -891,7 +891,6 @@ exports.exportDataForClaim = async (req, res) => {
       for (const item of resultArray) {
         // Extract servicer name
         let servicerName = item?.servicerId;
-        console.log("servicer name ====================================", servicerName)
         if (servicerName == null) {
           servicerName = new mongoose.Types.ObjectId('679f52b0c9d8100000000000')
         }
@@ -1046,11 +1045,6 @@ exports.exportDataForClaim = async (req, res) => {
     const servicerData = await groupDataByServicer(result_Array);
     const resellerData = groupDataByReseller(result_Array);
     let customerArray = groupDataByCustomer(result_Array)
-
-    // console.log("9999999999999999------------", servicerData)
-    // console.log("7777777777777777------------", resellerData)
-
-
     let summary = result_Array.reduce(
       (acc, item) => {
         // Increment total claims
