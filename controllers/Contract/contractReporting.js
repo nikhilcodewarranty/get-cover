@@ -1150,6 +1150,48 @@ exports.contractDetailReporting = async (req, res) => {
                                 {
                                     $limit: pageLimit
                                 },
+                                {
+                                    "$project": {
+                                        "_id": 1,
+                                        "orderId": 1,
+                                        "dealerSku": 1,
+                                        "orderUniqueKey": 1,
+                                        "venderOrder": 1,
+                                        "productName": 1,
+                                        "pName": 1,
+                                        "serviceCoverageType": 1,
+                                        "partsWarranty": 1,
+                                        "labourWarranty": 1,
+                                        "purchaseDate": 1,
+                                        "minDate": 1,
+                                        "orderProductId": 1,
+                                        "model": 1,
+                                        "manufacture": 1,
+                                        "productValue": 1,
+                                        "serial": 1,
+                                        "condition": 1,
+                                        "claimStatus": 1,
+                                        "claimAmount": 1,
+                                        "eligibilty": 1,
+                                        "unique_key": 1,
+                                        "coverageStartDate": 1,
+                                        "coverageEndDate": 1,
+                                        "coverageStartDate1": 1,
+                                        "coverageEndDate1": 1,
+                                        "unique_key_number": 1,
+                                        "unique_key_search": 1,
+                                        "status": 1,
+                                        "noOfClaimPerPeriod": 1,
+                                        "isManufacturerWarranty": 1,
+                                        "isMaxClaimAmount": 1,
+                                        "isDeleted": 1,
+                                        "deductible": 1,
+                                        "notEligibleByCustom": 1,
+                                        "regDate": 1,
+                                        "createdAt": 1,
+                                        "updatedAt": 1
+                                    }
+                                }
 
                             ],
                         },
@@ -1165,7 +1207,9 @@ exports.contractDetailReporting = async (req, res) => {
                             localField: "orderId",
                             foreignField: "_id",
                             as: "order",
-                            pipeline: [
+                            pipeline: [                             
+    
+                      
                                 {
                                     $lookup: {
                                         from: "dealers",
@@ -1174,6 +1218,7 @@ exports.contractDetailReporting = async (req, res) => {
                                         as: "dealer",
                                     }
                                 },
+                                { $unwind: "$dealer" },
                                 {
                                     $lookup: {
                                         from: "resellers",
@@ -1182,6 +1227,7 @@ exports.contractDetailReporting = async (req, res) => {
                                         as: "reseller",
                                     }
                                 },
+                                { $unwind: { path: "$reseller", preserveNullAndEmptyArrays: true } },
                                 {
                                     $lookup: {
                                         from: "customers",
@@ -1190,6 +1236,7 @@ exports.contractDetailReporting = async (req, res) => {
                                         as: "customer",
                                     }
                                 },
+                                { $unwind: "$customer" },
                                 {
                                     $lookup: {
                                         from: "serviceproviders",
@@ -1198,7 +1245,7 @@ exports.contractDetailReporting = async (req, res) => {
                                         as: "servicer",
                                     }
                                 },
-
+                                { $unwind: { path: "$servicer", preserveNullAndEmptyArrays: true } },
                             ],
 
                         }
@@ -1224,6 +1271,75 @@ exports.contractDetailReporting = async (req, res) => {
                             {
                                 $limit: pageLimit
                             },
+                            { $unwind: "$order" },
+                         
+                            {
+                                "$project": {
+                                    "_id": 1,
+                                    "orderId": 1,
+                                    "dealerSku": 1,
+                                    "orderUniqueKey": 1,
+                                    "venderOrder": 1,
+                                    "productName": 1,
+                                    "pName": 1,
+                                    "serviceCoverageType": 1,
+                                    "partsWarranty": 1,
+                                    "labourWarranty": 1,
+                                    "purchaseDate": 1,
+                                    "minDate": 1,
+                                    "orderProductId": 1,
+                                    "model": 1,
+                                    "manufacture": 1,
+                                    "productValue": 1,
+                                    "serial": 1,
+                                    "condition": 1,
+                                    "claimStatus": 1,
+                                    "claimAmount": 1,
+                                    "eligibilty": 1,
+                                    "unique_key": 1,
+                                    "coverageStartDate": 1,
+                                    "coverageEndDate": 1,
+                                    "coverageStartDate1": 1,
+                                    "coverageEndDate1": 1,
+                                    "unique_key_number": 1,
+                                    "unique_key_search": 1,
+                                    "status": 1,
+                                    "noOfClaimPerPeriod": 1,
+                                    "isManufacturerWarranty": 1,
+                                    "isMaxClaimAmount": 1,
+                                    "isDeleted": 1,
+                                    "deductible": 1,
+                                    "notEligibleByCustom": 1,
+                                    "regDate": 1,
+                                    "createdAt": 1,
+                                    "updatedAt": 1,
+                                    dealerName: "$order.dealer.name",
+                                    resellerName: "$order.reseller.name",
+                                    servicerName: "$order.servicer.name",
+                                    customerName: "$order.category",
+                                    "productDetails": {
+                                        "$arrayElemAt": [
+                                            {
+                                                "$map": {
+                                                    "input": {
+                                                        "$filter": {
+                                                            "input": "$order.productsArray",
+                                                            "as": "productArray",
+                                                            "cond": { "$eq": ["$$productArray._id", "$orderProductId"] }
+                                                        }
+                                                    },
+                                                    "as": "filteredProduct",
+                                                    "in": {
+                                                        "priceType": "$$filteredProduct.priceType",
+                                                        "productDescription": "$$filteredProduct.description"
+                                                    }
+                                                }
+                                            },
+                                            0
+                                        ]
+                                    }
+                                }
+                            }
 
 
                         ],
