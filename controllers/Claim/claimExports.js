@@ -1945,7 +1945,7 @@ exports.getClaimDetails = async (req, res) => {
 
     let getClaims = await claimService.getAllClaims(lookupQuery)
 
-    await createExcelFileWithMultipleSheets1(getClaims, process.env.bucket_name, 'claimReporting', new Date(), "paid")
+    await createExcelFileWithMultipleSheets1([getClaims], process.env.bucket_name, 'claimReporting', new Date(), "paid")
     res.send({
       code: constant.successCode,
       message: "Success",
