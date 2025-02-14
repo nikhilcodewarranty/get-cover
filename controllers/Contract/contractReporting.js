@@ -159,6 +159,56 @@ const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, d
     }
 };
 
+
+const createExcelFileWithMultipleSheets1 = async (data, bucketName, folderName, dateString, role) => {
+    const workbook = new ExcelJS.Workbook();
+    // Loop through data to create sheets dynamically
+    data.forEach((sheetData, index) => {
+        let sheetName;
+        if (index == 0) {
+            sheetName = "summary"
+        }
+
+
+        const sheet = workbook.addWorksheet(`${sheetName}`);
+
+        if (sheetData.length > 0) {
+            const headers = Object.keys(sheetData[0]); // Get keys from the first object as column headers
+            sheet.columns = headers.map(header => ({ header, key: header }));
+
+            // Add rows to the sheet
+            sheetData.forEach(row => {
+                sheet.addRow(row);
+            });
+        }
+    });
+
+    // Write workbook to buffer
+    const buffer = await workbook.xlsx.writeBuffer();
+
+    // Upload the file to the S3 bucket
+    const s3Key = `${folderName}/contract-report-${dateString}.xlsx`;
+
+    const params = {
+        Bucket: bucketName,
+        Key: s3Key,
+        Body: buffer,
+        ContentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    };
+    console.log(params);
+
+
+    try {
+        const uploadResponse = await s3Client1.send(new PutObjectCommand(params));
+
+        console.log('Upload successful');
+        return uploadResponse; // Return response from upload
+    } catch (error) {
+        console.error('Error uploading file to S3:', error);
+        throw error;
+    }
+};
+
 exports.exportContractReporting = async (req, res) => {
     try {
         let data = req.body
@@ -1359,14 +1409,6 @@ exports.contractDetailReporting = async (req, res) => {
 
                 })
             }
-            // let getContracts = await contractService.getAllContracts2(mainQuery, { maxTimeMS: 100000 })
-            // var result1 = getContracts[0]?.data ? getContracts[0]?.data : []
-            // console.log(result1.length, "================================")
-            // res.send({
-            //     result1
-            // })
-            // return;
-
             let getContracts = await contractService.getAllContracts2(mainQuery, { maxTimeMS: 100000 })
             var result1 = getContracts[0]?.data ? getContracts[0]?.data : []
             let totalRecords = getContracts[0]?.totalRecords?.[0]?.total || 0;
@@ -1452,6 +1494,14 @@ exports.contractDetailReporting = async (req, res) => {
             result1[e].threshHoldMessage = threshHoldMessage
             result1[e].overThreshold = overThreshold
         }
+        await createExcelFileWithMultipleSheets1([totalContractData], process.env.bucket_name, 'contractReporting', dateString, req.role)
+            .then((res) => {
+                claimReportingService.updateReporting({ _id: createReporting._id }, { status: "Active" }, { new: true })
+            })
+            .catch((err) => {
+                console.log("err:---------", err)
+                claimReportingService.updateReporting({ _id: createReporting._id }, { status: "Failed" }, { new: true })
+            })
 
         res.send({
             code: constant.successCode,
