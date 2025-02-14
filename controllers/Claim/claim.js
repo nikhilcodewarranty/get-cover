@@ -4927,96 +4927,158 @@ exports.sendStaticEmail = async (req, res) => {
 exports.updateClaimDate = async (req, res) => {
   try {
 
-    let baseDate = new Date('2024-07-03');
-    let newDateToCheck = new Date()
-    const newDayOfMonth = newDateToCheck.getDate();
-    const dayOfMonth = baseDate.getDate();
-
-    // Get the current year and month
-    const currentYear1 = new Date().getFullYear();
-    const currentMonth1 = new Date().getMonth(); // Note: 0 = January, so this is the current month index
-
-    // Create a new date with the current year, current month, and the day from baseDate
-    let newDateWithSameDay = new Date(currentYear1, currentMonth1, dayOfMonth);
-    if (Number(newDayOfMonth) > Number(dayOfMonth)) {
-      newDateWithSameDay = new Date(new Date(newDateWithSameDay).setMonth(newDateWithSameDay.getMonth() - 1));
-    }
-
-    const monthlyEndDate = new Date(new Date(newDateWithSameDay).setMonth(newDateWithSameDay.getMonth() + 1)); // Ends on August 11, 2024
-    const yearlyEndDate = new Date(new Date(newDateWithSameDay).setFullYear(newDateWithSameDay.getFullYear() + 1)); // Ends on July 11, 2025
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0); // Start of today (00:00)
-    const endOfToday = new Date();
-    endOfToday.setHours(23, 59, 59, 999); // End of today (23:59)
-
-    let getNoOfClaimQuery = [
-      {
-        $match: {
-          contractId: new mongoose.Types.ObjectId("6712381331a2529f6e009d85"),
-          claimFile: "completed"
-        }
-      },
-      {
-        $group: {
-          _id: null,
-          monthlyCount: {
-            $sum: {
-              $cond: [
-                {
-                  $and: [
-                    { $gte: ['$createdAt', newDateWithSameDay] },
-                    { $lt: ['$createdAt', monthlyEndDate] }
-                  ]
-                },
-                1,
-                0
-              ]
-            }
-          },
-          yearlyCount: {
-            $sum: {
-              $cond: [
-                {
-                  $and: [
-                    { $gte: ['$createdAt', newDateWithSameDay] },
-                    { $lt: ['$createdAt', yearlyEndDate] }
-                  ]
-                },
-                1,
-                0
-              ]
-            }
-          },
-          todayCount: {
-            $sum: {
-              $cond: [
-                {
-                  $and: [
+    claimService.updateClaim(
+      {},
+      [
+        {
+          $set: {
+            "trackStatus": {
+              $map: {
+                input: "$trackStatus",
+                as: "statusItem",
+                in: {
+                  $mergeObjects: [
+                    "$$statusItem",
                     {
-                      $gte: ['$createdAt', startOfToday
-                      ]
-                    },
-                    {
-                      $lt: ['$createdAt', endOfToday
-                      ]
+                      "statusName": {
+                        $switch: {
+                          branches: [
+                            { 
+                              case: { $in: ["$$statusItem.status", [
+                                "request_sent",
+                                "request_approved",
+                                "product_received",
+                                "repair_in_process",
+                                "parts_needed",
+                                "parts_ordered",
+                                "parts_received",
+                                "repair_complete",
+                                "servicer_shipped"
+                              ]]}, 
+                              then: "Repair Status" 
+                            },
+                            { 
+                              case: { $in: ["$$statusItem.status", [
+                                "open",
+                                "completed",
+                                "rejected"
+                              ]]}, 
+                              then: "Claim Status" 
+                            },
+                            { 
+                              case: { $in: ["$$statusItem.status", [
+                                "request_submitted",
+                                "shipping_label_received",
+                                "product_sent",
+                                "product_received"
+                              ]]}, 
+                              then: "Customer Status" 
+                            }
+                          ],
+                          default: "Unknown Status"
+                        }
+                      }
                     }
                   ]
-                },
-                1,
-                0
-              ]
+                }
+              }
             }
           }
         }
-      }
-    ];
+      ]
+    );
 
 
-    let checkNoOfClaims = await claimService.getClaimWithAggregate(getNoOfClaimQuery)
+    // let baseDate = new Date('2024-07-03');
+    // let newDateToCheck = new Date()
+    // const newDayOfMonth = newDateToCheck.getDate();
+    // const dayOfMonth = baseDate.getDate();
 
-    res.send({
-      checkNoOfClaims, getNoOfClaimQuery
-    })
+    // // Get the current year and month
+    // const currentYear1 = new Date().getFullYear();
+    // const currentMonth1 = new Date().getMonth(); // Note: 0 = January, so this is the current month index
+
+    // // Create a new date with the current year, current month, and the day from baseDate
+    // let newDateWithSameDay = new Date(currentYear1, currentMonth1, dayOfMonth);
+    // if (Number(newDayOfMonth) > Number(dayOfMonth)) {
+    //   newDateWithSameDay = new Date(new Date(newDateWithSameDay).setMonth(newDateWithSameDay.getMonth() - 1));
+    // }
+
+    // const monthlyEndDate = new Date(new Date(newDateWithSameDay).setMonth(newDateWithSameDay.getMonth() + 1)); // Ends on August 11, 2024
+    // const yearlyEndDate = new Date(new Date(newDateWithSameDay).setFullYear(newDateWithSameDay.getFullYear() + 1)); // Ends on July 11, 2025
+    // const startOfToday = new Date();
+    // startOfToday.setHours(0, 0, 0, 0); // Start of today (00:00)
+    // const endOfToday = new Date();
+    // endOfToday.setHours(23, 59, 59, 999); // End of today (23:59)
+
+    // let getNoOfClaimQuery = [
+    //   {
+    //     $match: {
+    //       contractId: new mongoose.Types.ObjectId("6712381331a2529f6e009d85"),
+    //       claimFile: "completed"
+    //     }
+    //   },
+    //   {
+    //     $group: {
+    //       _id: null,
+    //       monthlyCount: {
+    //         $sum: {
+    //           $cond: [
+    //             {
+    //               $and: [
+    //                 { $gte: ['$createdAt', newDateWithSameDay] },
+    //                 { $lt: ['$createdAt', monthlyEndDate] }
+    //               ]
+    //             },
+    //             1,
+    //             0
+    //           ]
+    //         }
+    //       },
+    //       yearlyCount: {
+    //         $sum: {
+    //           $cond: [
+    //             {
+    //               $and: [
+    //                 { $gte: ['$createdAt', newDateWithSameDay] },
+    //                 { $lt: ['$createdAt', yearlyEndDate] }
+    //               ]
+    //             },
+    //             1,
+    //             0
+    //           ]
+    //         }
+    //       },
+    //       todayCount: {
+    //         $sum: {
+    //           $cond: [
+    //             {
+    //               $and: [
+    //                 {
+    //                   $gte: ['$createdAt', startOfToday
+    //                   ]
+    //                 },
+    //                 {
+    //                   $lt: ['$createdAt', endOfToday
+    //                   ]
+    //                 }
+    //               ]
+    //             },
+    //             1,
+    //             0
+    //           ]
+    //         }
+    //       }
+    //     }
+    //   }
+    // ];
+
+
+    // let checkNoOfClaims = await claimService.getClaimWithAggregate(getNoOfClaimQuery)
+
+    // res.send({
+    //   checkNoOfClaims, getNoOfClaimQuery
+    // })
 
 
 
