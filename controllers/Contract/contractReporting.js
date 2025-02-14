@@ -216,7 +216,7 @@ exports.exportContractReporting = async (req, res) => {
 
         }
         if (data.flag == "Order") {
-            userSearchCheck=1
+            userSearchCheck = 1
             // match1 = { customerId: new mongoose.Types.ObjectId(data.userId) }
             orderIds = [new mongoose.Types.ObjectId(data.userId)]
         }
@@ -873,4 +873,472 @@ exports.exportContractReporting = async (req, res) => {
         })
     }
 };
+
+exports.contractDetailReporting = async (req, res) => {
+    try {
+        let data = req.body
+        let getTheThresholdLimir = await userService.getUserById1({ metaData: { $elemMatch: { roleId: process.env.super_admin, isPrimary: true } } })
+        const limit = 1000; // Adjust the limit based on your needs
+        let page = data.page > 0 ? ((Number(req.body.page) - 1) * Number(limit)) : 0
+        data.pageLimit = 1000
+        let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+        // let pageLimit = Number(req.body.pageLimit) || 10; // Default to 10 if pageLimit is not provided
+        let skipLimit = req.body.page > 0 ? (Number(req.body.page) - 1) * pageLimit : 0;
+        let totalContractData = []
+        let hasMore = true;
+        let limitData = Number(limit)
+        let dealerIds = [];
+        let customerIds = [];
+        let resellerIds = [];
+        let dateString = Date.now()
+        let orderIds = []
+        let servicerIds = [];
+        let userSearchCheck = 0
+
+        if (req.role == 'Dealer') {
+            // match = { 'contracts.orders.dealerId': new mongoose.Types.ObjectId(req.userId) }
+            dealerIds = [new mongoose.Types.ObjectId(req.userId)]
+        }
+        if (req.role == 'Customer') {
+            match = { 'contracts.orders.customerId': new mongoose.Types.ObjectId(req.userId) }
+            customerIds = [new mongoose.Types.ObjectId(req.userId)]
+        }
+        if (req.role == 'Servicer') {
+            servicerIds = [new mongoose.Types.ObjectId(req.userId)]
+            // match = { servicerId: new mongoose.Types.ObjectId(req.userId) }
+        }
+        if (req.role == 'Reseller') {
+            // match = { resellerId: new mongoose.Types.ObjectId(req.userId) }
+            resellerIds = [new mongoose.Types.ObjectId(req.userId)]
+
+        }
+
+        if (data.flag == "Dealer") {
+            dealerIds = [new mongoose.Types.ObjectId(data.userId)]
+
+        }
+        if (data.flag == "Reseller") {
+            resellerIds = [new mongoose.Types.ObjectId(data.userId)]
+
+        }
+        if (data.flag == "Servicer") {
+            servicerIds = [new mongoose.Types.ObjectId(data.userId)]
+
+        }
+        if (data.flag == "Customer") {
+            // match1 = { customerId: new mongoose.Types.ObjectId(data.userId) }
+            customerIds = [new mongoose.Types.ObjectId(data.userId)]
+
+        }
+        if (data.flag == "Order") {
+            userSearchCheck = 1
+            // match1 = { customerId: new mongoose.Types.ObjectId(data.userId) }
+            orderIds = [new mongoose.Types.ObjectId(data.userId)]
+        }
+
+        data.dealerName = data.dealerName ? data.dealerName : ""
+        data.customerName = data.customerName ? data.customerName : ""
+        data.resellerName = data.resellerName ? data.resellerName : ""
+        data.servicerName = data.servicerName ? data.servicerName : ""
+
+
+        if (data.dealerName != "") {
+            userSearchCheck = 1
+            let getData = await dealerService.getAllDealers({ name: { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
+            if (getData.length > 0) {
+                dealerIds = await getData.map(dealer => dealer._id)
+            } else {
+                dealerIds.push("1111121ccf9d400000000000")
+            }
+        };
+
+        if (data.customerName != "") {
+            userSearchCheck = 1
+            let getData = await customerService.getAllCustomers({ username: { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
+            if (getData.length > 0) {
+                customerIds = await getData.map(customer => customer._id)
+            } else {
+                customerIds.push("1111121ccf9d400000000000")
+            }
+        };
+
+        if (data.servicerName != "") {
+            userSearchCheck = 1
+            let getData = await providerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
+            if (getData.length > 0) {
+                servicerIds = await getData.map(servicer => servicer._id)
+                let asServicer = (await getData).reduce((acc, servicer) => {
+                    if (servicer.resellerId !== null && servicer.dealerId === null) {
+                        acc.push(servicer.resellerId);
+                    } else if (servicer.dealerId !== null && servicer.resellerId === null) {
+                        acc.push(servicer.dealerId);
+                    }
+                    return acc;
+                }, []);
+                servicerIds = servicerIds.concat(asServicer)
+            } else {
+                servicerIds.push("1111121ccf9d400000000000")
+            }
+        };
+
+        if (data.resellerName != "") {
+            userSearchCheck = 1
+            let getData = await resellerService.getResellers({ name: { '$regex': data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
+            if (getData.length > 0) {
+                resellerIds = await getData.map(servicer => servicer._id)
+            } else {
+                resellerIds.push("1111121ccf9d400000000000")
+            }
+        };
+
+        console.log("checking the reseller data ak +++++++++++", resellerIds)
+
+        let dataForClaimReporting = {
+            fileName: "contract-report-" + dateString,
+            userId: req.teammateId,
+            filePath: "contractReporting/contract-report-" + dateString + ".xlsx",
+            date: new Date(),
+            status: "Pending",
+            reportName: data.reportName,
+            remark: data.remark,
+            category: "Contract",
+            subCategory: "ContractDetail"
+        }
+        let createReporting = await claimReportingService.createReporting(dataForClaimReporting)
+        // res.send({
+        //     code: constant.successCode,
+        //     message: "Success",
+        //     // result: result1,
+        // })
+
+        let orderAndCondition = []
+
+        if (dealerIds.length > 0) {
+            userSearchCheck = 1
+            orderAndCondition.push({ dealerId: { $in: dealerIds } })
+        }
+        if (customerIds.length > 0) {
+            userSearchCheck = 1
+            orderAndCondition.push({ customerId: { $in: customerIds } })
+
+        }
+        if (servicerIds.length > 0) {
+            userSearchCheck = 1
+            orderAndCondition.push({ servicerId: { $in: servicerIds } })
+
+        }
+        if (resellerIds.length > 0) {
+            userSearchCheck = 1
+            orderAndCondition.push({ resellerId: { $in: resellerIds } })
+        }
+
+
+        if (orderAndCondition.length > 0) {
+            let getOrders = await orderService.getOrders({
+                $and: orderAndCondition
+            })
+            if (getOrders.length > 0) {
+                orderIds = await getOrders.map(order => order._id)
+            }
+        }
+
+        let contractFilterWithEligibilty = []
+        if (data.eligibilty != '') {
+            contractFilterWithEligibilty = [
+                { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { dealerSku: { '$regex': data.dealerSku ? data.dealerSku.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { eligibilty: data.eligibilty === "true" ? true : false },
+            ]
+        } else {
+            contractFilterWithEligibilty = [
+                { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { dealerSku: { '$regex': data.dealerSku ? data.dealerSku.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { venderOrder: { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { orderUniqueKey: { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            ]
+        }
+
+        if (userSearchCheck == 1) {
+            contractFilterWithEligibilty.push({ orderId: { $in: orderIds } })
+        }
+
+        if (data.startDate != "") {
+            let startDate = new Date(data.startDate)
+            let endDate = new Date(data.endDate)
+            startDate.setHours(0, 0, 0, 0)
+            endDate.setHours(23, 59, 999, 0)
+            let dateFilter = { createdAt: { $gte: startDate, $lte: endDate } }
+            contractFilterWithEligibilty.push(dateFilter)
+        }
+
+        let mainQuery = []
+        console.log("page+++++++++++++++++++++++++++++++++", skipLimit)
+
+        while (hasMore) {
+            // let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+            // let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+            if (data.contractId === "" && data.productName === "" && data.dealerSku === "" && data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
+                mainQuery = [
+                    { $sort: { unique_key_number: -1 } },
+                    {
+                        $lookup: {
+                            from: "orders",
+                            localField: "orderId",
+                            foreignField: "_id",
+                            as: "order",
+                            pipeline: [
+                                {
+                                    $lookup: {
+                                        from: "dealers",
+                                        localField: "dealerId",
+                                        foreignField: "_id",
+                                        as: "dealer",
+                                    }
+                                },
+                                {
+                                    $lookup: {
+                                        from: "resellers",
+                                        localField: "resellerId",
+                                        foreignField: "_id",
+                                        as: "reseller",
+                                    }
+                                },
+                                {
+                                    $lookup: {
+                                        from: "customers",
+                                        localField: "customerId",
+                                        foreignField: "_id",
+                                        as: "customer",
+                                    }
+                                },
+                                {
+                                    $lookup: {
+                                        from: "serviceproviders",
+                                        localField: "servicerId",
+                                        foreignField: "_id",
+                                        as: "servicer",
+                                    }
+                                },
+
+                            ],
+
+                        }
+                    },
+                    {
+                        $facet: {
+                            totalRecords: [
+                                {
+                                    $count: "total"
+                                }
+                            ],
+                            data: [
+                                {
+                                    $skip: skipLimit
+                                },
+                                {
+                                    $limit: pageLimit
+                                },
+
+                            ],
+                        },
+
+                    },
+                ]
+            } else {
+                mainQuery = [
+                    { $sort: { unique_key_number: -1 } },
+                    {
+                        $lookup: {
+                            from: "orders",
+                            localField: "orderId",
+                            foreignField: "_id",
+                            as: "order",
+                            pipeline: [
+                                {
+                                    $lookup: {
+                                        from: "dealers",
+                                        localField: "dealerId",
+                                        foreignField: "_id",
+                                        as: "dealer",
+                                    }
+                                },
+                                {
+                                    $lookup: {
+                                        from: "resellers",
+                                        localField: "resellerId",
+                                        foreignField: "_id",
+                                        as: "reseller",
+                                    }
+                                },
+                                {
+                                    $lookup: {
+                                        from: "customers",
+                                        localField: "customerId",
+                                        foreignField: "_id",
+                                        as: "customer",
+                                    }
+                                },
+                                {
+                                    $lookup: {
+                                        from: "serviceproviders",
+                                        localField: "servicerId",
+                                        foreignField: "_id",
+                                        as: "servicer",
+                                    }
+                                },
+
+                            ],
+
+                        }
+                    },
+                    {
+                        $match:
+                        {
+                            $and: contractFilterWithEligibilty
+                        },
+                    },
+                ]
+                mainQuery.push({
+                    $facet: {
+                        totalRecords: [
+                            {
+                                $count: "total"
+                            }
+                        ],
+                        data: [
+                            {
+                                $skip: skipLimit
+                            },
+                            {
+                                $limit: pageLimit
+                            },
+
+
+                        ],
+                    },
+
+                })
+            }
+            // let getContracts = await contractService.getAllContracts2(mainQuery, { maxTimeMS: 100000 })
+            // var result1 = getContracts[0]?.data ? getContracts[0]?.data : []
+            // console.log(result1.length, "================================")
+            // res.send({
+            //     result1
+            // })
+            // return;
+
+            let getContracts = await contractService.getAllContracts2(mainQuery, { maxTimeMS: 100000 })
+            var result1 = getContracts[0]?.data ? getContracts[0]?.data : []
+            let totalRecords = getContracts[0]?.totalRecords?.[0]?.total || 0;
+            // console.log(result1.length, getContracts[0]?.totalRecords, "================================")
+            if (result1.length === 0 || skipLimit >= totalRecords) {
+                hasMore = false;
+                break;
+            }
+
+            totalContractData = totalContractData.concat(result1);
+            skipLimit += pageLimit;
+
+        }
+        // let getContracts = await contractService.getAllContracts2(mainQuery, { maxTimeMS: 100000 })
+        // let totalCount = getContracts[0]?.totalRecords[0]?.total ? getContracts[0]?.totalRecords[0].total : 0
+        // let result1 = getContracts[0]?.data ? getContracts[0]?.data : []
+        // return
+        for (let e = 0; e < result1.length; e++) {
+            result1[e].reason = " "
+            if (!result1[e].eligibilty) {
+                result1[e].reason = "Claims limit cross for this contract"
+            }
+            if (result1[e].status != "Active") {
+                result1[e].reason = "Contract is not active"
+            }
+
+            if (new Date(result1[e].minDate) > new Date()) {
+                const options = {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                };
+                const formattedDate = new Date(result1[e].minDate).toLocaleDateString('en-US', options)
+                result1[e].reason = "Contract will be eligible on " + " " + formattedDate
+            }
+
+
+
+            let claimQuery = [
+                {
+                    $match: { contractId: new mongoose.Types.ObjectId(result1[e]._id) }
+                },
+                {
+                    $group: {
+                        _id: null,
+                        totalAmount: { $sum: "$totalAmount" }, // Calculate total amount from all claims
+                        openFileClaimsCount: { // Count of claims where claimfile is "Open"
+                            $sum: {
+                                $cond: {
+                                    if: { $eq: ["$claimFile", "open"] }, // Assuming "claimFile" field is correct
+                                    then: 1,
+                                    else: 0
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+
+            let checkClaims = await claimService.getClaimWithAggregate(claimQuery)
+
+            if (checkClaims[0]) {
+                if (checkClaims[0].openFileClaimsCount > 0) {
+                    result1[e].reason = "Contract has open claim"
+
+                }
+                if (checkClaims[0].totalAmount >= result1[e].productValue) {
+                    result1[e].reason = "Claim value exceed the product value limit"
+                }
+            }
+
+            let thresholdLimitPercentage = getTheThresholdLimir.threshHoldLimit.value
+            const thresholdLimitValue = (thresholdLimitPercentage / 100) * Number(result1[e].productValue);
+            let overThreshold = result1[e].claimAmount > thresholdLimitValue;
+            let threshHoldMessage = "This claim amount surpasses the maximum allowed threshold."
+            if (!overThreshold) {
+                threshHoldMessage = ""
+            }
+            if (!getTheThresholdLimir.isThreshHoldLimit) {
+                overThreshold = false
+                threshHoldMessage = ""
+            }
+            result1[e].threshHoldMessage = threshHoldMessage
+            result1[e].overThreshold = overThreshold
+        }
+
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            result: totalContractData
+        })
+
+
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
+
 

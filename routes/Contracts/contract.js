@@ -15,5 +15,6 @@ router.get('/updateContract', contractController.updateContract); // cronJobElig
 router.post('/getContractClaims/:contractId', contractController.getContractClaims); // cronJobEligible route
 
 router.post('/exportContractReporting', [verifyToken], contractReportingController.exportContractReporting); // export contract reporting
+router.post('/contractDetailReporting', [verifyToken], contractReportingController.contractDetailReporting); // export contract reporting
 
 module.exports = router;

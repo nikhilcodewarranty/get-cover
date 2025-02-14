@@ -171,7 +171,6 @@ const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, d
   }
 };
 
-
 const createExcelFileWithMultipleSheets1 = async (data, bucketName, folderName, dateString, role) => {
   console.log("Input data:", JSON.stringify(data, null, 2));
   console.log("Role:", role);
@@ -231,8 +230,6 @@ const createExcelFileWithMultipleSheets1 = async (data, bucketName, folderName, 
     throw error;
   }
 };
-
-
 
 exports.exportDataForClaim = async (req, res) => {
   try {
