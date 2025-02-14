@@ -991,6 +991,90 @@ exports.contractDetailReporting = async (req, res) => {
         data.resellerName = data.resellerName ? data.resellerName : ""
         data.servicerName = data.servicerName ? data.servicerName : ""
 
+        // projection handling
+
+
+        const projection = {};
+
+        // Loop through each field in req.body.projection and dynamically build the projection
+
+        function formatFieldName(fieldName) {
+            console.log("checking-------------", fieldName)
+            return fieldName
+                .replace(/([A-Z])/g, ' $1')   // Adds a space before each capital letter
+                .replace(/^./, (str) => str.toUpperCase());  // Capitalizes the first letter
+        }
+        Object.keys(req.body.projection).forEach(field => {
+            // Log the field if the value is 1 (inclusion)
+            if (req.body.projection[field] === 1) {
+
+
+                // Handle special fields that need transformation
+                console.log(field)
+
+                switch (field) {
+                    case 'dealerName':
+                        projection[field] = { $ifNull: [{ $arrayElemAt: ["$dealerDetail.name", 0] }, null] };
+                        break;
+                    case 'resellerName':
+                        projection[field] = { $ifNull: [{ $arrayElemAt: ["$resellerDetail.name", 0] }, null] };
+                        break;
+                    case 'servicerName':
+                        projection[field] = { $ifNull: [{ $arrayElemAt: ["$servicerDetail.name", 0] }, null] };
+                        break;
+                    case 'customerUsername':
+                        projection[field] = { $ifNull: [{ $arrayElemAt: ["$customerDetail.username", 0] }, null] };
+                        break;
+                    case 'priceType':
+                        projection[field] = {
+                            "$arrayElemAt": [
+                                {
+                                    "$map": {
+                                        "input": {
+                                            "$filter": {
+                                                "input": "$order.productsArray",
+                                                "as": "productArray",
+                                                "cond": { "$eq": ["$$productArray._id", "$orderProductId"] }
+                                            }
+                                        },
+                                        "as": "filteredProduct",
+                                        "in": "$$filteredProduct.priceType"
+                                    }
+                                },
+                                0
+                            ]
+                        };
+                        break;
+                    case 'productDescription':
+                        projection[field] = {
+                            "$arrayElemAt": [
+                                {
+                                    "$map": {
+                                        "input": {
+                                            "$filter": {
+                                                "input": "$order.productsArray",
+                                                "as": "productArray",
+                                                "cond": { "$eq": ["$$productArray._id", "$orderProductId"] }
+                                            }
+                                        },
+                                        "as": "filteredProduct",
+                                        "in": "$$filteredProduct.description"
+                                    }
+                                },
+                                0
+                            ]
+                        };
+                        break;
+                    default:
+                        let field1 = field
+                        field1 = formatFieldName(field1)
+                        // For other fields, simply include them as-is
+                        projection[field1] = `${"$" + field}`;
+                }
+            }
+        });
+
+
 
         if (data.dealerName != "") {
             userSearchCheck = 1
@@ -1239,7 +1323,47 @@ exports.contractDetailReporting = async (req, res) => {
                                         "notEligibleByCustom": 1,
                                         "regDate": 1,
                                         "createdAt": 1,
-                                        "updatedAt": 1
+                                        "updatedAt": 1,
+                                        dealerName: "$order.dealer.name",
+                                        resellerName: "$order.reseller.name",
+                                        servicerName: "$order.servicer.name",
+                                        customerName: "$order.customer.username",
+                                        "priceType": {
+                                            "$arrayElemAt": [
+                                                {
+                                                    "$map": {
+                                                        "input": {
+                                                            "$filter": {
+                                                                "input": "$order.productsArray",
+                                                                "as": "productArray",
+                                                                "cond": { "$eq": ["$$productArray._id", "$orderProductId"] }
+                                                            }
+                                                        },
+                                                        "as": "filteredProduct",
+                                                        "in": "$$filteredProduct.priceType"
+                                                    }
+                                                },
+                                                0
+                                            ]
+                                        },
+                                        "productDescription": {
+                                            "$arrayElemAt": [
+                                                {
+                                                    "$map": {
+                                                        "input": {
+                                                            "$filter": {
+                                                                "input": "$order.productsArray",
+                                                                "as": "productArray",
+                                                                "cond": { "$eq": ["$$productArray._id", "$orderProductId"] }
+                                                            }
+                                                        },
+                                                        "as": "filteredProduct",
+                                                        "in": "$$filteredProduct.description"
+                                                    }
+                                                },
+                                                0
+                                            ]
+                                        },
                                     }
                                 }
 
