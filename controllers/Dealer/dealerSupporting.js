@@ -2886,3 +2886,22 @@ exports.getUserByDealerId = async (req, res) => {
         });
     };
 };
+
+
+// exports.getDealerServicerInClaim = async(req,res)=>{
+//     try{
+//         let data = req.body
+//         let getServicers = await claimService.getClaimById({_id:req.params.claimId})
+//         if(!getServicers){
+//             res.send({
+//                 code:constant.errorCode,
+//                 message:"Invalid claim ID"
+//             })
+//         }
+//     }catch(err){
+//         res.send({
+//             code:constant.errorCode,
+//             message:err.message
+//         })
+//     }
+// }
