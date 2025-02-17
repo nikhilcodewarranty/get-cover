@@ -77,6 +77,39 @@ var uploadP = multer({
   },
 }).single("file");
 
+
+
+//Upload Claim Repair Images
+const claimRepairImages = multerS3({
+  s3: s3,
+  bucket: process.env.bucket_name,
+  metadata: (req, file, cb) => {
+    cb(null, { fieldName: file.fieldname });
+  },
+  key: (req, file, cb) => {
+
+    let flag = req.query.flag
+
+    console.log("preUpload--------------",flag)
+    let folderName;
+    // Example: Set folderName based on file.fieldname
+    if (flag === 'preUpload') {
+      folderName = 'preUploaded';
+    } else if (flag === 'postUpload') {
+      folderName = 'postUploaded';
+    }
+    const fileName = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
+    const fullPath = `claimFile/${folderName}/${fileName}`;
+    cb(null, fullPath);
+  }
+});
+
+var claimUploadedImages = multer({
+  storage: claimRepairImages,
+  limits: {
+    fileSize: 500 * 1024 * 1024, // 500 MB limit
+  },
+}).single('file');
 // search claim api  -- not using
 exports.searchClaim = async (req, res, next) => {
   try {
@@ -3427,7 +3460,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       let currentYear = new Date().getFullYear();
       currentYear = "-" + currentYear + "-"
-    let currentYearWithoutHypen = new Date().getFullYear();
+      let currentYearWithoutHypen = new Date().getFullYear();
 
 
       let count = await claimService.getClaimCount({ 'unique_key': { '$regex': currentYear, '$options': 'i' } });
@@ -3967,11 +4000,11 @@ exports.saveBulkClaim = async (req, res) => {
           htmlTableString = convertArrayToHTMLTable([], failureEntries);
           if (dealerEmail.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(dealerEmail, ["noreply@getcover.com"], htmlTableString));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allDealer, htmlTableString,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, allDealer, htmlTableString, "Bulk Data Report")
           }
           if (adminEmail.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlTableString));
-            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString, "Bulk Data Report")
           }
 
         }
@@ -4011,11 +4044,11 @@ exports.saveBulkClaim = async (req, res) => {
           //htmlTableString = convertArrayToHTMLTable([], failureEntries);
           if (dealerEmail.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(dealerEmail, ["noreply@getcover.com"], htmlContent));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allDealer, htmlTableString,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, allDealer, htmlTableString, "Bulk Data Report")
           }
           if (adminEmail.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlContent));
-            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString, "Bulk Data Report")
           }
 
         }
@@ -4056,15 +4089,15 @@ exports.saveBulkClaim = async (req, res) => {
           htmlTableString = convertArrayToHTMLTable([], failureEntries);
           if (dealerEmails.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlTableString));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allResellersDealer, htmlTableString,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, allResellersDealer, htmlTableString, "Bulk Data Report")
           }
           if (adminEmail.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlTableString));
-            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString, "Bulk Data Report")
           }
           if (resellerEmails.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(resellerEmails, ["noreply@getcover.com"], htmlTableString));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allReseller, htmlTableString,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, allReseller, htmlTableString, "Bulk Data Report")
           }
         }
 
@@ -4103,15 +4136,15 @@ exports.saveBulkClaim = async (req, res) => {
           //htmlTableString = convertArrayToHTMLTable([], failureEntries);
           if (dealerEmails.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlContent));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allResellersDealer, htmlContent,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, allResellersDealer, htmlContent, "Bulk Data Report")
           }
           if (adminEmail.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlContent));
-            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlContent,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlContent, "Bulk Data Report")
           }
           if (resellerEmails.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(resellerEmails, ["noreply@getcover.com"], htmlContent));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allReseller, htmlContent,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, allReseller, htmlContent, "Bulk Data Report")
           }
         }
       }
@@ -4163,19 +4196,19 @@ exports.saveBulkClaim = async (req, res) => {
           htmlTableString = convertArrayToHTMLTable([], failureEntries);
           if (dealerEmails.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlTableString));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomersDealer, htmlTableString,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomersDealer, htmlTableString, "Bulk Data Report")
           }
           if (adminEmail.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlTableString));
-            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString, "Bulk Data Report")
           }
           if (resellerEmails.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(resellerEmails, ["noreply@getcover.com"], htmlTableString));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomersReseller, htmlTableString,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomersReseller, htmlTableString, "Bulk Data Report")
           }
           if (customerEmails.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(customerEmails, ["noreply@getcover.com"], htmlTableString));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomers, htmlTableString,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomers, htmlTableString, "Bulk Data Report")
           }
 
         }
@@ -4215,19 +4248,19 @@ exports.saveBulkClaim = async (req, res) => {
           //htmlTableString = convertArrayToHTMLTable([], failureEntries);
           if (dealerEmails.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlContent));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomersDealer, htmlContent,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomersDealer, htmlContent, "Bulk Data Report")
           }
           if (adminEmail.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlContent));
-            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlContent,"Bulk Data Report");
+            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlContent, "Bulk Data Report");
           }
           if (resellerEmails.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(resellerEmails, ["noreply@getcover.com"], htmlContent));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomersReseller, htmlContent,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomersReseller, htmlContent, "Bulk Data Report")
           }
           if (customerEmails.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(customerEmails, ["noreply@getcover.com"], htmlContent));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomers, htmlContent,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomers, htmlContent, "Bulk Data Report")
           }
 
         }
@@ -4239,7 +4272,7 @@ exports.saveBulkClaim = async (req, res) => {
           htmlTableString = convertArrayToHTMLTable([], failureEntries);
           // let adminEmail = adminUsers.map
           mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlTableString));
-          maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString,"Bulk Data Report");
+          maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString, "Bulk Data Report");
 
         }
 
@@ -4277,7 +4310,7 @@ exports.saveBulkClaim = async (req, res) => {
 
           //htmlTableString = convertArrayToHTMLTable([], failureEntries);
           mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ccMail, htmlContent));
-          maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlContent,"Bulk Data Report");
+          maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlContent, "Bulk Data Report");
 
         }
 
@@ -4318,7 +4351,7 @@ exports.sendMessages = async (req, res) => {
       return
     }
 
-   
+
 
     let settingData = await userService.getSetting({});
 
@@ -4922,7 +4955,7 @@ exports.sendStaticEmail = async (req, res) => {
   }
   let mailing = await sgMail.send(emailConstant.sendEmailTemplate(["bschiffner@natomasunified.org"], ["noreply@getcover.cover"], emailData))
   res.send({
-    response:mailing
+    response: mailing
   })
 }
 
@@ -5093,25 +5126,28 @@ exports.updateClaimDate = async (req, res) => {
   }
 }
 
-exports.uploadPrePostImages = async(req,res)=>{
-  try{
-    let data = req.body
-    let checkClaimId = await claimService.getClaimById({_id:req.params.claimId})
-    if(!checkClaimId){
+exports.uploadPrePostImages = async (req, res) => {
+  try {
+    claimUploadedImages(req, res, async (err) => {
+      let file = req.file;
       res.send({
-        code:constant.errorCode,
-        message:err.message
+        code: constant.successCode,
+        message: 'Success!',
+        file
+
       })
-      return
-    }
-    
-  }catch(err){
-    res.send({
-      code:constant.errorCode,
-      message:err.message
     })
   }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+    return
+  }
 }
+
+
 
 
 

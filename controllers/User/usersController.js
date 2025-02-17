@@ -316,7 +316,7 @@ exports.login = async (req, res) => {
       }
     }
 
-    if (user.status == false) {
+    if (user.metaData[0].status == false) {
       res.send({
         code: constant.errorCode,
         message: "Your account is not active, please contact to the administration"
@@ -2299,7 +2299,7 @@ exports.updateProfile = async (req, res) => {
     newMetaData[0].firstName = data.firstName ? data.firstName : checkUser.metaData[0].firstName
     newMetaData[0].lastName = data.lastName ? data.lastName : checkUser.metaData[0].lastName
     newMetaData[0].phoneNumber = data.phoneNumber ? data.phoneNumber : checkUser.metaData[0].phoneNumber
-    newMetaData[0].status = data.status
+    // newMetaData[0].status = data.status
     newMetaData[0].position = data.position ? data.position : checkUser.metaData[0].position
     let updateProfile = await userService.updateSingleUser({ email: email }, { metaData: newMetaData }, { new: true })
 
