@@ -1091,3 +1091,60 @@ exports.updateNotificationData = async (req, res) => {
         })
     }
 }
+
+const reportingKeys = require("../../models/User/reportingKeys")
+
+exports.createReportinKeys = async (req, res) => {
+    try {
+        let data = req.body
+        let checkUser = await userService.getUserById({ metaData: { $elemMatch: { _id: data.userId } } })
+        if (!checkUser) {
+            res.send({
+                code: constant.errorCode,
+                message: "Invalid user ID"
+            })
+            return
+        }
+        let saveData = await reportingKeys(data).save()
+        if (!saveData) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to save the data"
+            })
+        } else {
+            res.send({
+                code: constant.successCode,
+                message: "Success"
+            })
+        }
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
+exports.getReportingKeys = async (req, res) => {
+    try {
+        let getUser = await userService.getUserById1({ _id: req.userId })
+        if (!getUser) {
+            res.send({
+                code: constant.errorCode,
+                message: "Invalid token"
+            })
+            return
+        }
+        let getKeys = await reportingKeys.findOne({ userId: getUser.metaData[0]._id })
+        res.send({
+            code: constant.successCode,
+            messsage: "Success",
+            result: getKeys
+        })
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
