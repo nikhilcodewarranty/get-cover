@@ -3587,9 +3587,6 @@ exports.getServicerColorSetting = async (req, res) => {
   }
 }
 
-
-
-
 exports.updateClaimsApproveDate = async (req, res) => {
   try {
     let data = req.body

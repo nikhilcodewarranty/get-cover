@@ -912,7 +912,8 @@ exports.getContractById = async (req, res) => {
     let allUsers = checkAllUser.map(user => ({
       label: user.metaData[0]?.firstName + " " + user.metaData[0]?.lastName,
       isPrimary: user.metaData[0]?.isPrimary,
-      value: user._id
+      value: user._id,
+      addressId:user.metaData[0]?.addressId
     }))
 
     allUsers.sort((a, b) => b.isPrimary - a.isPrimary);
