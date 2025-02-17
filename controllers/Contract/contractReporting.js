@@ -1412,7 +1412,6 @@ exports.contractDetailReporting = async (req, res) => {
             let getContracts = await contractService.getAllContracts2(mainQuery, { maxTimeMS: 100000 })
             var result1 = getContracts[0]?.data ? getContracts[0]?.data : []
             let totalRecords = getContracts[0]?.totalRecords?.[0]?.total || 0;
-            // console.log(result1.length, getContracts[0]?.totalRecords, "================================")
             if (result1.length === 0 || skipLimit >= totalRecords) {
                 hasMore = false;
                 break;
@@ -1422,10 +1421,6 @@ exports.contractDetailReporting = async (req, res) => {
             skipLimit += pageLimit;
 
         }
-        // let getContracts = await contractService.getAllContracts2(mainQuery, { maxTimeMS: 100000 })
-        // let totalCount = getContracts[0]?.totalRecords[0]?.total ? getContracts[0]?.totalRecords[0].total : 0
-        // let result1 = getContracts[0]?.data ? getContracts[0]?.data : []
-        // return
         for (let e = 0; e < result1.length; e++) {
             result1[e].reason = " "
             if (!result1[e].eligibilty) {
