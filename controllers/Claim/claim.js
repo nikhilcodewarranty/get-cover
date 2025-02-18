@@ -334,7 +334,7 @@ exports.addClaim = async (req, res, next) => {
     // data.lossDate = new Date(data.lossDate)
     const submittedUser = await userService.getUserById1({ _id: data.submittedBy }, {})
     const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
-    const validAddress = checkCustomer.addresses?.find(address => address._id.toString() === data.addressId.toString());
+    const validAddress = checkCustomer.addresses?.find(address => address._id.toString() === data.shippingTo.toString());
 
     let shipAddress = validAddress.address + "," + validAddress.city + "," + validAddress.state + "," + validAddress.zip
     data.submittedBy = submittedUser?.email || ''
