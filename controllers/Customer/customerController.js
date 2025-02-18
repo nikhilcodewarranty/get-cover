@@ -712,7 +712,10 @@ exports.editCustomer = async (req, res) => {
     let option = { new: true }
     let updateCustomer = await customerService.updateCustomer(criteria1, data, option)
     data.address = data.street
-     updateCustomer = await customerService.updateCustomer({ _id:req.params.customerId , 'addresses.isPrimary': true }, data, option)
+    console.log("updateCustomer---------------------",data)
+    updateCustomer = await customerService.updateCustomer({ _id: req.params.customerId, 'addresses.isPrimary': true }, data, option)
+    console.log("updateCustomer---------------------",updateCustomer)
+
     if (!updateCustomer) {
       //Save Logs editCustomer
       let logData = {
@@ -1501,7 +1504,7 @@ exports.addCustomerUser = async (req, res) => {
 
     }
     let saveData = await userService.createUser(metaData)
-    console.log("saveData--------------------",saveData)
+    console.log("saveData--------------------", saveData)
     if (!saveData) {
       //Save Logs
       let logData = {
