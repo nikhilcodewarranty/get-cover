@@ -913,7 +913,7 @@ exports.getContractById = async (req, res) => {
       label: user.metaData[0]?.firstName + " " + user.metaData[0]?.lastName,
       isPrimary: user.metaData[0]?.isPrimary,
       value: user._id,
-      addressId:user.metaData[0]?.addressId
+      addressId: user.metaData[0]?.addressId
     }))
 
     allUsers.sort((a, b) => b.isPrimary - a.isPrimary);
@@ -963,6 +963,52 @@ exports.getContractById = async (req, res) => {
   }
 }
 
+exports.getCustomerInformationForClaim = async (req, res) => {
+  try {
+    let checkCustomer = await customerService.getCustomerById({ _id: req.params.customerId }, {})
+    if (!checkCustomer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid Customer Id"
+      });
+      return;
+    }
+    const getCustomerUsers = await userService.findUserforCustomer1([
+      {
+        $match: {
+          $and: [
+            { metaData: { $elemMatch: { metaId: new mongoose.Types.ObjectId(req.params.customerId) } } }
+          ]
+        }
+      },
+      {
+        $project: {
+    
+          'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
+          'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
+          'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
+          'addressId': { $arrayElemAt: ["$metaData.addressId", 0] },
+        }
+      }
+    ]);
+
+    let customerObj = {
+      customerUsers:getCustomerUsers,
+      customerAddress:checkCustomer.addresses
+    }
+
+    res.send({
+      code:constant.successCode,
+      data:customerObj
+    })
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
 //Get customer detail by contract id
 
 //Get messages
