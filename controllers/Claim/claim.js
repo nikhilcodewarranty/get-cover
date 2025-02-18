@@ -333,8 +333,12 @@ exports.addClaim = async (req, res, next) => {
     // data.lossDate = new Date(data.lossDate).setDate(new Date(data.lossDate).getDate() + 1)
     // data.lossDate = new Date(data.lossDate)
     const submittedUser = await userService.getUserById1({ _id: data.submittedBy }, {})
+    const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
+    const validAddress = checkCustomer.addresses?.find(address => address._id.toString() === data.addressId.toString());
+
+    let shipAddress = validAddress.address + "," + validAddress.city + "," + validAddress.state + "," + validAddress.zip
     data.submittedBy = submittedUser?.email || ''
-    data.shippingTo = data.shippingTo || ''
+    data.shippingTo = shipAddress || ''
     if (!checkContract) {
       res.send({
         code: constant.errorCode,
@@ -554,7 +558,6 @@ exports.addClaim = async (req, res, next) => {
     //Get Dealer,reseller, customer status
     const checkDealer = await dealerService.getDealerById(checkOrder.dealerId)
     const checkReseller = await resellerService.getReseller({ _id: checkOrder?.resellerId }, {})
-    const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
     //Get submitted user
     const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
     const site_url = `${process.env.SITE_URL}`
