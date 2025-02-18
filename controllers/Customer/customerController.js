@@ -714,7 +714,7 @@ exports.editCustomer = async (req, res) => {
     data.address = data.street
     console.log("updateCustomer---------------------", data)
 
-    updateCustomer = await customerService.updateCustomer({ _id: req.params.customerId, 'addresses.isPrimary': true }, { $set: { "addresses.": data } }, option)
+    updateCustomer = await customerService.updateCustomer({ _id: req.params.customerId, 'addresses.isPrimary': true }, { $set: { "addresses": data } }, option)
     console.log("updateCustomer---------------------", updateCustomer)
 
     if (!updateCustomer) {
