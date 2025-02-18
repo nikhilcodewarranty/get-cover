@@ -711,6 +711,8 @@ exports.editCustomer = async (req, res) => {
     let criteria1 = { _id: checkDealer._id }
     let option = { new: true }
     let updateCustomer = await customerService.updateCustomer(criteria1, data, option)
+    data.address = data.street
+     updateCustomer = await customerService.updateCustomer({ _id:req.params.customerId , 'addresses.isPrimary': true }, data, option)
     if (!updateCustomer) {
       //Save Logs editCustomer
       let logData = {
@@ -730,6 +732,7 @@ exports.editCustomer = async (req, res) => {
       })
       return;
     }
+
     if (data.hasOwnProperty("isAccountCreate")) {
       if ((data.isAccountCreate || data.isAccountCreate == 'true')) {
         let updatePrimaryUser = await userService.updateSingleUser({ metaData: { $elemMatch: { metaId: req.params.customerId, isPrimary: true } } }, {
