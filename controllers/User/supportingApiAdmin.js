@@ -6,6 +6,8 @@ const priceBookService = require('../../services/PriceBook/priceBookService')
 const providerService = require('../../services/Provider/providerService')
 const users = require("../../models/User/users");
 const maillogservice = require("../../services/User/maillogServices");
+const reportingKeys = require("../../models/User/reportingKeys")
+
 
 const role = require("../../models/User/role");
 const logs = require('../../models/User/logs');
@@ -1092,31 +1094,49 @@ exports.updateNotificationData = async (req, res) => {
     }
 }
 
-const reportingKeys = require("../../models/User/reportingKeys")
 
 exports.createReportinKeys = async (req, res) => {
     try {
         let data = req.body
-        let checkUser = await userService.getUserById({ metaData: { $elemMatch: { _id: data.userId } } })
+        let checkUser = await userService.getUserById({ _id: req.userId })
         if (!checkUser) {
             res.send({
                 code: constant.errorCode,
-                message: "Invalid user ID"
+                message: "Invalid token"
             })
             return
         }
-        let saveData = await reportingKeys(data).save()
-        if (!saveData) {
-            res.send({
-                code: constant.errorCode,
-                message: "Unable to save the data"
-            })
+        data.userId = checkUser.metaData[0]._id
+        let checkReporting = await reportingKeys.findOne({ userId: checkUser.metaData[0]._id })
+        if (!checkReporting) {
+            let updateData = await reportingKeys.findOneAndUpdate({ _id: checkReporting._id }, data, { new: true })
+            if (!updateData) {
+                res.send({
+                    code: constant.errorCode,
+                    message: "Unable to save the data"
+                })
+            } else {
+                res.send({
+                    code: constant.successCode,
+                    message: "Success"
+                })
+            }
         } else {
-            res.send({
-                code: constant.successCode,
-                message: "Success"
-            })
+            let saveData = await reportingKeys(data).save()
+
+            if (!saveData) {
+                res.send({
+                    code: constant.errorCode,
+                    message: "Unable to save the data"
+                })
+            } else {
+                res.send({
+                    code: constant.successCode,
+                    message: "Success"
+                })
+            }
         }
+
     } catch (err) {
         res.send({
             code: constant.errorCode,
