@@ -2469,7 +2469,7 @@ exports.addMembers = async (req, res) => {
           status: data.status,
           roleId: getRole._id,
           firstName: data.firstName,
-          addressId:data.addressId,
+          addressId:data.addressId ? data.addressId : null,
           lastName: data.lastName,
           phoneNumber: data.phoneNumber,
           isPrimary: false,
