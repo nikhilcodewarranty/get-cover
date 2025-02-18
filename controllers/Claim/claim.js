@@ -3324,6 +3324,30 @@ exports.saveBulkClaim = async (req, res) => {
 
             }
           }
+          // check Shipping address
+          if (item.shippingTo != '') {
+            if (allDataArray[0]?.order.customers) {
+              let shipingAddress = item.shippingTo.split(',');   // Split the string by commas
+              let userZip = shipingAddress[shipingAddress.length - 1];
+              let addresses = allDataArray[0]?.order.customers.addresses
+              addresses.push(
+                {
+                  zip: allDataArray[0]?.order.customers.zip,
+                  state: allDataArray[0]?.order.customers.state,
+                  city: allDataArray[0]?.order.customers.city,
+                  street: allDataArray[0]?.order.customers.street,
+                  country: allDataArray[0]?.order.customers.country,
+                })
+
+              const validAddress = addresses?.find(address => Number(address.zip) === Number(userZip));
+              if (!validAddress) {
+                item.status = "Invalid user address!"
+                item.exit = true;
+              }
+            }
+            item.shippingTo = item.shippingTo
+          }
+
           // check login email
           if (item.userEmail != '') {
             item.submittedBy = item.userEmail
@@ -3347,29 +3371,6 @@ exports.saveBulkClaim = async (req, res) => {
             }
 
 
-          }
-          // check Shipping address
-          if (item.shippingTo != '') {
-            if (allDataArray[0]?.order.customers) {
-              let shipingAddress = item.shippingTo.split(',');   // Split the string by commas
-              let userZip = shipingAddress[shipingAddress.length - 1];
-              let addresses = allDataArray[0]?.order.customers.addresses
-              addresses.push(
-                {
-                  zip: allDataArray[0]?.order.customers.zip,
-                  state: allDataArray[0]?.order.customers.state,
-                  city: allDataArray[0]?.order.customers.city,
-                  street: allDataArray[0]?.order.customers.street,
-                  country: allDataArray[0]?.order.customers.country,
-                })
-
-              const validAddress = addresses?.find(address => Number(address.zip) === Number(userZip));
-              if (!validAddress) {
-                item.status = "Invalid user address!"
-                item.exit = true;
-              }
-            }
-            item.shippingTo = item.shippingTo
           }
 
           let checkCoverageStartDate = new Date(contractData?.coverageStartDate).setHours(0, 0, 0, 0)
