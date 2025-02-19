@@ -1586,14 +1586,14 @@ exports.getMessages = async (req, res) => {
         "commentBy1.roles": 1,
         internalMessage: {
           $cond: {
-            if: { $eq: ["$commentedBy", new mongoose.Types.ObjectId(req.userId)] },
+            if: { $eq: ["$commentedTo", new mongoose.Types.ObjectId(req.userId)] },
             then: true,
             else: false
           }
         },
 
       }
-    },
+    }, 
     // {
     //   $project: {
     //     _id: 1,
