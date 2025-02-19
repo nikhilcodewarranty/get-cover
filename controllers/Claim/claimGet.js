@@ -1812,3 +1812,38 @@ exports.getClaimById = async (req, res) => {
     })
   }
 }
+
+exports.getUsersForRole = async (req, res) => {
+  try {
+    let data = req.body
+    let query = [
+      {
+        $match: {
+          $and: [
+            { metaData: { $elemMatch: { metaId: data.roleId } } },
+            { metaData: { $elemMatch: { status: true } } },
+            // {metaData:{$elemMatch:{status:true}}},
+          ]
+        }
+      }
+    ]
+    let getUsers = await userService.findUserforCustomer(query)
+    if (!getUsers) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the detail"
+      })
+      return
+    }
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: getUsers
+    })
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
