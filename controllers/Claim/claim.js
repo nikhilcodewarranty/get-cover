@@ -3346,8 +3346,10 @@ exports.saveBulkClaim = async (req, res) => {
                 let addresses = allDataArray[0]?.order.customers.addresses
 
                 const validAddress = addresses?.find(address => address._id.toString() === validEmail?.metaData[0].addressId.toString());
+                if (validAddress) {
+                  shipAddress = validAddress.address + "," + validAddress.city + "," + validAddress.state + "," + validAddress.zip
 
-                shipAddress = validAddress.address + "," + validAddress.city + "," + validAddress.state + "," + validAddress.zip
+                }
               }
             }
           }
