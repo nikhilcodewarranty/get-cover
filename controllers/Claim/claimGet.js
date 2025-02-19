@@ -697,9 +697,9 @@ exports.getAllClaims1 = async (req, res, next) => {
               servicerId: 1,
               dealerSku: 1,
               customerStatus: 1,
-              dealerName:"$contracts.orders.dealers.name",
-              servicerName:"$servicerInfo.name",
-              customerName:"$contracts.orders.customer.username",
+              dealerName: "$contracts.orders.dealers.name",
+              servicerName: "$servicerInfo.name",
+              customerName: "$contracts.orders.customer.username",
               trackingNumber: 1,
               claimPaymentStatus: 1,
               trackingType: 1,
@@ -933,7 +933,7 @@ exports.getAllClaims1 = async (req, res, next) => {
           "contracts.orders.dealers.name": { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' },
         }
       },
-     
+
       {
         $lookup: {
           from: "serviceproviders",
@@ -1553,7 +1553,7 @@ exports.getMessages = async (req, res) => {
         from: "users",
         localField: "commentedByUser",
         foreignField: "_id",
-        as: "commentBy",
+        as: "commentBy1",
         pipeline: [
           {
             $lookup: {
@@ -1569,27 +1569,28 @@ exports.getMessages = async (req, res) => {
         ]
       }
     },
-    { $unwind: { path: "$commentBy", preserveNullAndEmptyArrays: true } },
-    
+    { $unwind: { path: "$commentBy1", preserveNullAndEmptyArrays: true } },
+
     {
       $project: {
         _id: 1,
         date: 1,
         type: 1,
-        internalMessage: {
-          $cond: {
-            if: { $eq: ["$commentBy", req.userId] },
-            then: true,
-            else: false
-          }
-        },
+        commentedId: "$commentedBy",
         messageFile: 1,
         content: 1,
         'commentTo.firstName': { $arrayElemAt: ["$commentTo.metaData.firstName", 0] },
         'commentTo.lastName': { $arrayElemAt: ["$commentTo.metaData.lastName", 0] },
-        'commentBy.lastName': { $arrayElemAt: ["$commentBy.metaData.lastName", 0] },
-        'commentBy.firstName': { $arrayElemAt: ["$commentBy.metaData.firstName", 0] },
-        "commentBy.roles": 1
+        'commentBy.lastName': { $arrayElemAt: ["$commentBy1.metaData.lastName", 0] },
+        'commentBy.firstName': { $arrayElemAt: ["$commentBy1.metaData.firstName", 0] },
+        "commentBy1.roles": 1,
+        internalMessage: {
+          $cond: {
+            if: { $eq: ["$commentedBy", new mongoose.Types.ObjectId(req.userId)] },
+            then: true,
+            else: false
+          }
+        },
 
       }
     },
@@ -2208,13 +2209,13 @@ exports.getClaimById = async (req, res) => {
         $lookup: {
           from: "contracts",
           localField: "contractId",
-          foreignField: "_id", 
+          foreignField: "_id",
           as: "contractDetail",
           pipeline: [
             {
-              $project: { 
+              $project: {
                 contractId: "$unique_key",
-                orderId:1
+                orderId: 1
               }
             }
           ]
@@ -2271,8 +2272,8 @@ exports.getClaimById = async (req, res) => {
             {
               $project: {
                 name: 1,
-                dealerId:1,
-                resellerId:1
+                dealerId: 1,
+                resellerId: 1
               }
             }
           ]
