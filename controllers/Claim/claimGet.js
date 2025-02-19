@@ -870,9 +870,7 @@ exports.getAllClaims1 = async (req, res, next) => {
           as: "servicerInfo",
         }
       },
-      {
-        $unwind: "$servicerInfo"
-      },
+      { $unwind: { path: "$servicerInfo", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: "contracts",
@@ -1553,7 +1551,7 @@ exports.getMessages = async (req, res) => {
         from: "users",
         localField: "commentedByUser",
         foreignField: "_id",
-        as: "commentBy",
+        as: "commentBy1",
         pipeline: [
           {
             $lookup: {
@@ -1569,22 +1567,31 @@ exports.getMessages = async (req, res) => {
         ]
       }
     },
-    { $unwind: { path: "$commentBy", preserveNullAndEmptyArrays: true } },
+    { $unwind: { path: "$commentBy1", preserveNullAndEmptyArrays: true } },
+
     {
       $project: {
         _id: 1,
         date: 1,
         type: 1,
+        commentedId: "$commentedBy",
         messageFile: 1,
         content: 1,
         'commentTo.firstName': { $arrayElemAt: ["$commentTo.metaData.firstName", 0] },
         'commentTo.lastName': { $arrayElemAt: ["$commentTo.metaData.lastName", 0] },
-        'commentBy.lastName': { $arrayElemAt: ["$commentBy.metaData.lastName", 0] },
-        'commentBy.firstName': { $arrayElemAt: ["$commentBy.metaData.firstName", 0] },
-        "commentBy.roles": 1
+        'commentBy.lastName': { $arrayElemAt: ["$commentBy1.metaData.lastName", 0] },
+        'commentBy.firstName': { $arrayElemAt: ["$commentBy1.metaData.firstName", 0] },
+        "commentBy.roles": "$commentBy1.roles",
+        selfMessage: {
+          $cond: {
+            if: { $eq: ["$commentedBy", new mongoose.Types.ObjectId(req.userId)] },
+            then: true,
+            else: false
+          }
+        },
 
       }
-    },
+    }, 
     // {
     //   $project: {
     //     _id: 1,

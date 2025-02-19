@@ -90,7 +90,7 @@ const claimRepairImages = multerS3({
 
     let flag = req.query.flag
 
-    console.log("preUpload--------------",flag)
+    console.log("preUpload--------------", flag)
     let folderName;
     // Example: Set folderName based on file.fieldname
     if (flag === 'preUpload') {
@@ -1368,6 +1368,19 @@ exports.editClaimStatus = async (req, res) => {
       const site_url = `${process.env.SITE_URL}`
       const checkCustomerStatus = await optionService.getOption({ name: "customer_status" })
       const matchedData = checkCustomerStatus?.value.find(status => status.value == data.customerStatus)
+      status.trackStatus = [
+        {
+          status: data.customerStatus,
+          date: new Date(),
+          statusName: checkCustomerStatus.name
+        }
+      ]
+      updateData.customerStatus = [
+        {
+          status: data.customerStatus,
+          date: new Date(),
+        }
+      ]
       if (data.customerStatus == 'product_received') {
         let option = { new: true }
         let claimStatus = await claimService.updateClaim(criteria, { claimFile: 'completed', claimDate: new Date() }, option)
@@ -1377,28 +1390,16 @@ exports.editClaimStatus = async (req, res) => {
             date: new Date()
           }
         ]
+
         status.trackStatus = [
           {
             status: 'completed',
-            date: new Date()
+            date: new Date(),
+            statusName: 'claim_status'
           }
         ]
         let statusClaim = await claimService.updateClaim(criteria, { updateData }, { new: true })
       }
-
-      updateData.customerStatus = [
-        {
-          status: data.customerStatus,
-          date: new Date()
-        }
-      ]
-
-      status.trackStatus = [
-        {
-          status: data.customerStatus,
-          date: new Date()
-        }
-      ]
 
       //Send notification to all
       let notificationArray = []
@@ -1622,17 +1623,20 @@ exports.editClaimStatus = async (req, res) => {
       let notificationArray = []
       const checkRepairStatus = await optionService.getOption({ name: "repair_status" })
       const matchedData = checkRepairStatus?.value.find(status => status.value == data.repairStatus)
+
       status.trackStatus = [
         {
           status: data.repairStatus,
-          date: new Date()
+          date: new Date(),
+          statusName: checkRepairStatus.name,
         }
       ]
 
       updateData.repairStatus = [
         {
           status: data.repairStatus,
-          date: new Date()
+          date: new Date(),
+
         }
       ]
       //Send notification to all
@@ -1867,7 +1871,10 @@ exports.editClaimStatus = async (req, res) => {
       status.trackStatus = [
         {
           status: data.claimStatus,
-          date: new Date()
+          date: new Date(),
+          statusName: checkClaimStatus.name,
+
+
         }
       ]
 
@@ -4715,7 +4722,8 @@ exports.statusClaim = async (req, res) => {
         messageData.trackStatus = [
           {
             status: 'completed',
-            date: new Date()
+            date: new Date(),
+            statusName: "claim_status"
           }
         ]
 
