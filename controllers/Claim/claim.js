@@ -1372,8 +1372,7 @@ exports.editClaimStatus = async (req, res) => {
         {
           status: data.customerStatus,
           date: new Date(),
-          statusName: data.customerStatus
-
+          statusName: checkCustomerStatus.name
         }
       ]
       updateData.customerStatus = [
@@ -1396,7 +1395,7 @@ exports.editClaimStatus = async (req, res) => {
           {
             status: 'completed',
             date: new Date(),
-            statusName: 'completed'
+            statusName: 'claim_status'
           }
         ]
         let statusClaim = await claimService.updateClaim(criteria, { updateData }, { new: true })
@@ -1629,7 +1628,7 @@ exports.editClaimStatus = async (req, res) => {
         {
           status: data.repairStatus,
           date: new Date(),
-          statusName: data.repairStatus,
+          statusName: checkRepairStatus.name,
         }
       ]
 
@@ -1873,7 +1872,8 @@ exports.editClaimStatus = async (req, res) => {
         {
           status: data.claimStatus,
           date: new Date(),
-          statusName: data.claimStatus,
+          statusName: checkClaimStatus.name,
+
 
         }
       ]
@@ -4723,7 +4723,7 @@ exports.statusClaim = async (req, res) => {
           {
             status: 'completed',
             date: new Date(),
-            statusName: "completed"
+            statusName: "claim_status"
           }
         ]
 
