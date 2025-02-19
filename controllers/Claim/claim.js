@@ -333,8 +333,12 @@ exports.addClaim = async (req, res, next) => {
     // data.lossDate = new Date(data.lossDate).setDate(new Date(data.lossDate).getDate() + 1)
     // data.lossDate = new Date(data.lossDate)
     const submittedUser = await userService.getUserById1({ _id: data.submittedBy }, {})
+    const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
+    const validAddress = checkCustomer.addresses?.find(address => address._id.toString() === data.shippingTo.toString());
+
+    let shipAddress = validAddress.address + "," + validAddress.city + "," + validAddress.state + "," + validAddress.zip
     data.submittedBy = submittedUser?.email || ''
-    data.shippingTo = data.shippingTo || ''
+    data.shippingTo = shipAddress || ''
     if (!checkContract) {
       res.send({
         code: constant.errorCode,
@@ -554,7 +558,6 @@ exports.addClaim = async (req, res, next) => {
     //Get Dealer,reseller, customer status
     const checkDealer = await dealerService.getDealerById(checkOrder.dealerId)
     const checkReseller = await resellerService.getReseller({ _id: checkOrder?.resellerId }, {})
-    const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
     //Get submitted user
     const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
     const site_url = `${process.env.SITE_URL}`
@@ -3207,6 +3210,7 @@ exports.saveBulkClaim = async (req, res) => {
       //Filter data which is contract , servicer and not active
       for (let k = 0; k < totalDataComing.length; k++) {
         let item = totalDataComing[k]
+        let shipAddress = ''
         let i = k
         if (!item.exit) {
           const contractData = contractArray[i];
@@ -3324,6 +3328,32 @@ exports.saveBulkClaim = async (req, res) => {
 
             }
           }
+
+          // check login email
+          if (item.userEmail != '') {
+            item.submittedBy = item.userEmail
+            if (item.orderData?.order?.customers) {
+              let memberEmail = await userService.getMembers({
+                metaData: { $elemMatch: { metaId: item.orderData?.order?.customers._id } }
+              }, {})
+
+              if (memberEmail.length > 0) {
+                const validEmail = memberEmail?.find(member => member.email === item.userEmail);
+                if (!validEmail || validEmail == undefined) {
+                  item.status = "Invalid Email"
+                  item.exit = true;
+                }
+                let addresses = allDataArray[0]?.order.customers.addresses
+
+                const validAddress = addresses?.find(address => address._id.toString() === validEmail?.metaData[0].addressId.toString());
+                if (validAddress) {
+                  shipAddress = validAddress.address + "," + validAddress.city + "," + validAddress.state + "," + validAddress.zip
+
+                }
+              }
+            }
+          }
+
           // check Shipping address
           if (item.shippingTo != '') {
             if (allDataArray[0]?.order.customers) {
@@ -3345,33 +3375,11 @@ exports.saveBulkClaim = async (req, res) => {
                 item.exit = true;
               }
             }
-            item.shippingTo = item.shippingTo
+            shipAddress = item.shippingTo
           }
 
-          // check login email
-          if (item.userEmail != '') {
-            item.submittedBy = item.userEmail
-            if (item.orderData?.order?.customers) {
-              let memberEmail = await userService.getMembers({
-                metaData: { $elemMatch: { metaId: item.orderData?.order?.customers._id } }
-              }, {})
+          item.shippingTo = shipAddress
 
-              if (memberEmail.length > 0) {
-                const validEmail = memberEmail?.find(member => member.email === item.userEmail);
-                if (!validEmail || validEmail == undefined) {
-                  item.status = "Invalid Email"
-                  item.exit = true;
-                }
-                let addresses = allDataArray[0]?.order.customers.addresses
-
-                const validAddress = addresses?.find(address => address._id.toString() === validEmail.metaData[0].addressId.toString());
-
-                item.shippingTo = validAddress.address + "," + validAddress.city + "," + validAddress.state + "," + validAddress.zip
-              }
-            }
-
-
-          }
 
           let checkCoverageStartDate = new Date(contractData?.coverageStartDate).setHours(0, 0, 0, 0)
           if (contractData && new Date(checkCoverageStartDate) > new Date(item.lossDate)) {
