@@ -224,6 +224,10 @@ const claimSchema = new mongoose.Schema({
           type: String,
           default: 'request_sent'
         },
+        statusName: {
+          type: String,
+        
+        },
         date: {
           type: Date,
           default: () => Date.now()

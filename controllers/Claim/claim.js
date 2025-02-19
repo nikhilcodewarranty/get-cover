@@ -4932,7 +4932,7 @@ exports.sendStaticEmail = async (req, res) => {
 exports.updateClaimDate = async (req, res) => {
   try {
 
-    claimService.updateClaim(
+    let check = await claimService.markAsPaid(
       {},
       [
         {
@@ -4999,7 +4999,9 @@ exports.updateClaimDate = async (req, res) => {
       ]
     );
 
-
+    res.send({
+      code:check
+    })
     // let baseDate = new Date('2024-07-03');
     // let newDateToCheck = new Date()
     // const newDayOfMonth = newDateToCheck.getDate();
