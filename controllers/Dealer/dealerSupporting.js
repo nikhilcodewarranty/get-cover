@@ -1552,9 +1552,8 @@ exports.getDealerAsServicerClaims = async (req, res) => {
                     as: "servicerInfo",
                 }
             },
-            {
-                $unwind: "$servicerInfo"
-            },
+            { $unwind: { path: "$servicerInfo", preserveNullAndEmptyArrays: true } },
+
             {
                 $lookup: {
                     from: "contracts",
