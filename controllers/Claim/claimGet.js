@@ -1583,7 +1583,7 @@ exports.getMessages = async (req, res) => {
         'commentTo.lastName': { $arrayElemAt: ["$commentTo.metaData.lastName", 0] },
         'commentBy.lastName': { $arrayElemAt: ["$commentBy1.metaData.lastName", 0] },
         'commentBy.firstName': { $arrayElemAt: ["$commentBy1.metaData.firstName", 0] },
-        "commentBy1.roles": 1,
+        "commentBy.roles": "$commentBy1.roles",
         selfMessage: {
           $cond: {
             if: { $eq: ["$commentedBy", new mongoose.Types.ObjectId(req.userId)] },
