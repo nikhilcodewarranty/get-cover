@@ -4330,6 +4330,7 @@ exports.sendMessages = async (req, res) => {
       })
       return
     }
+    let orderData = await orderService.getOrder({ _id: data.orderId }, { isDeleted: false })
 
     let checkServicer = await servicerService.getServiceProviderById({
       $or: [
@@ -4342,7 +4343,6 @@ exports.sendMessages = async (req, res) => {
     let settingData = await userService.getSetting({});
 
     data.claimId = req.params.claimId
-    let orderData = await orderService.getOrder({ _id: data.orderId }, { isDeleted: false })
     if (!orderData) {
       res.send({
         code: constant.errorCode,
