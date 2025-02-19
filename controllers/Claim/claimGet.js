@@ -697,9 +697,9 @@ exports.getAllClaims1 = async (req, res, next) => {
               servicerId: 1,
               dealerSku: 1,
               customerStatus: 1,
-              dealerName:"$contracts.orders.dealers.name",
-              servicerName:"$servicerInfo.name",
-              customerName:"$contracts.orders.customer.username",
+              dealerName: "$contracts.orders.dealers.name",
+              servicerName: "$servicerInfo.name",
+              customerName: "$contracts.orders.customer.username",
               trackingNumber: 1,
               claimPaymentStatus: 1,
               trackingType: 1,
@@ -933,7 +933,7 @@ exports.getAllClaims1 = async (req, res, next) => {
           "contracts.orders.dealers.name": { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' },
         }
       },
-     
+
       {
         $lookup: {
           from: "serviceproviders",
@@ -2200,13 +2200,13 @@ exports.getClaimById = async (req, res) => {
         $lookup: {
           from: "contracts",
           localField: "contractId",
-          foreignField: "_id", 
+          foreignField: "_id",
           as: "contractDetail",
           pipeline: [
             {
-              $project: { 
+              $project: {
                 contractId: "$unique_key",
-                orderId:1
+                orderId: 1
               }
             }
           ]
@@ -2263,8 +2263,8 @@ exports.getClaimById = async (req, res) => {
             {
               $project: {
                 name: 1,
-                dealerId:1,
-                resellerId:1
+                dealerId: 1,
+                resellerId: 1
               }
             }
           ]
@@ -2322,14 +2322,15 @@ exports.getUsersForRole = async (req, res) => {
       {
         $match: {
           $and: [
-            { metaData: { $elemMatch: { metaId: data.roleId } } },
-            { metaData: { $elemMatch: { status: true } } },
+            { metaData: { $elemMatch: { metaId: new mongoose.Types.ObjectId(data.roleId) } } },
+            // { metaData: { $elemMatch: { status: true } } },
             // {metaData:{$elemMatch:{status:true}}},
           ]
         }
-      }
+      },
+      
     ]
-    let getUsers = await userService.findUserforCustomer(query)
+    let getUsers = await userService.findUserforCustomer1(query)
     if (!getUsers) {
       res.send({
         code: constant.errorCode,
