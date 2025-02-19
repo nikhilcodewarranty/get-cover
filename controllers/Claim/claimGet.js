@@ -2329,14 +2329,15 @@ exports.getUsersForRole = async (req, res) => {
       {
         $match: {
           $and: [
-            { metaData: { $elemMatch: { metaId: data.roleId } } },
-            { metaData: { $elemMatch: { status: true } } },
+            { metaData: { $elemMatch: { metaId: new mongoose.Types.ObjectId(data.roleId) } } },
+            // { metaData: { $elemMatch: { status: true } } },
             // {metaData:{$elemMatch:{status:true}}},
           ]
         }
-      }
+      },
+      
     ]
-    let getUsers = await userService.findUserforCustomer(query)
+    let getUsers = await userService.findUserforCustomer1(query)
     if (!getUsers) {
       res.send({
         code: constant.errorCode,
