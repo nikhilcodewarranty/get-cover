@@ -2744,9 +2744,7 @@ exports.getServicerClaims = async (req, res) => {
           as: "servicerInfo",
         }
       },
-      {
-        $unwind: "$servicerInfo"
-      },
+      { $unwind: { path: "$servicerInfo", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: "contracts",
@@ -3229,9 +3227,7 @@ exports.paidUnpaidClaim = async (req, res) => {
           as: "servicerInfo",
         }
       },
-      {
-        $unwind: "$servicerInfo"
-      },
+      { $unwind: { path: "$servicerInfo", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: "contracts",
