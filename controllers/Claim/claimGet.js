@@ -870,9 +870,7 @@ exports.getAllClaims1 = async (req, res, next) => {
           as: "servicerInfo",
         }
       },
-      {
-        $unwind: "$servicerInfo"
-      },
+      { $unwind: { path: "$servicerInfo", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: "contracts",
