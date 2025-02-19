@@ -40,6 +40,7 @@ router.post("/checkClaimThreshHold/:claimId", [verifyToken], claimGetController.
 router.get("/getClaimById/:claimId", [verifyToken], claimGetController.getClaimById); // check claim amount in edit claim and change coverage type
 router.get("/updateClaimDate", claimController.updateClaimDate); // check claim amount in edit claim and change coverage type
 router.get("/checkNumberOfCertainPeriod", claimController.checkNumberOfCertainPeriod); // check claim amount in edit claim and change coverage type
+router.post("/getUsersForRole", [verifyToken], claimGetController.getUsersForRole); //get user for role 
 
 
 router.post("/exportDataForClaim", [verifyToken], claimExportController.exportDataForClaim); // check claim amount in edit claim and change coverage type
