@@ -1584,9 +1584,9 @@ exports.getMessages = async (req, res) => {
         'commentBy.lastName': { $arrayElemAt: ["$commentBy1.metaData.lastName", 0] },
         'commentBy.firstName': { $arrayElemAt: ["$commentBy1.metaData.firstName", 0] },
         "commentBy1.roles": 1,
-        internalMessage: {
+        selfMessage: {
           $cond: {
-            if: { $eq: ["$commentedTo", new mongoose.Types.ObjectId(req.userId)] },
+            if: { $eq: ["$commentedBy", new mongoose.Types.ObjectId(req.userId)] },
             then: true,
             else: false
           }
