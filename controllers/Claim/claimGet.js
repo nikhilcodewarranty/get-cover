@@ -1570,11 +1570,19 @@ exports.getMessages = async (req, res) => {
       }
     },
     { $unwind: { path: "$commentBy", preserveNullAndEmptyArrays: true } },
+    
     {
       $project: {
         _id: 1,
         date: 1,
         type: 1,
+        internalMessage: {
+          $cond: {
+            if: { $eq: ["$commentBy", req.userId] },
+            then: true,
+            else: false
+          }
+        },
         messageFile: 1,
         content: 1,
         'commentTo.firstName': { $arrayElemAt: ["$commentTo.metaData.firstName", 0] },
