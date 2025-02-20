@@ -157,7 +157,7 @@ const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, d
         console.error('Error uploading file to S3:', error);
         throw error;
     }
-};
+}   ;
 
 exports.exportContractReporting = async (req, res) => {
     try {
