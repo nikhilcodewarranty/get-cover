@@ -4970,7 +4970,7 @@ exports.updateClaimDate = async (req, res) => {
                                   "servicer_shipped"
                                 ]]
                               },
-                              then: "Repair Status"
+                              then: "repair_status"
                             },
                             {
                               case: {
@@ -4980,7 +4980,7 @@ exports.updateClaimDate = async (req, res) => {
                                   "rejected"
                                 ]]
                               },
-                              then: "Claim Status"
+                              then: "claim_status"
                             },
                             {
                               case: {
@@ -4991,7 +4991,7 @@ exports.updateClaimDate = async (req, res) => {
                                   "product_received"
                                 ]]
                               },
-                              then: "Customer Status"
+                              then: "customer_status"
                             }
                           ],
                           default: "Unknown Status"

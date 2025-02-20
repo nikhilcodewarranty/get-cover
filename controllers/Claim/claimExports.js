@@ -1718,6 +1718,7 @@ exports.getClaimDetails = async (req, res) => {
     let dealerMatch = {}
     let resellerMatch = {}
     let dateMatch = {}
+    let dateString = new Date()
     // checking the user type from token
     if (req.role == 'Dealer') {
       match = { dealerId: new mongoose.Types.ObjectId(req.userId) }
@@ -1815,9 +1816,9 @@ exports.getClaimDetails = async (req, res) => {
     const projection = {};
 
     // Loop through each field in req.body.projection and dynamically build the projection
-   
+
     function formatFieldName(fieldName) {
-      console.log("checking-------------",fieldName)
+      console.log("checking-------------", fieldName)
       return fieldName
         .replace(/([A-Z])/g, ' $1')   // Adds a space before each capital letter
         .replace(/^./, (str) => str.toUpperCase());  // Capitalizes the first letter
@@ -1825,7 +1826,7 @@ exports.getClaimDetails = async (req, res) => {
     Object.keys(req.body.projection).forEach(field => {
       // Log the field if the value is 1 (inclusion)
       if (req.body.projection[field] === 1) {
-      
+
 
         // Handle special fields that need transformation
         console.log(field)
@@ -1848,9 +1849,9 @@ exports.getClaimDetails = async (req, res) => {
             break;
           default:
             let field1 = field
-            field1= formatFieldName(field1)
+            field1 = formatFieldName(field1)
             // For other fields, simply include them as-is
-            projection[field1] = `${"$"+field}`;
+            projection[field1] = `${"$" + field}`;
         }
       }
     });
@@ -1936,10 +1937,35 @@ exports.getClaimDetails = async (req, res) => {
 
 
     ]
+    let dataForClaimReporting = {
+      fileName: "claim-report-" + dateString,
+      userId: req.teammateId,
+      filePath: "claimReporting/claim-report-" + dateString + ".xlsx",
+      date: new Date(),
+      status: "Pending",
+      reportName: data.reportName,
+      remark: data.remark,
+      category: "Claim",
+      subCategory: "Claim Detail",
+    }
+    let createReporting = await claimReportingService.createReporting(dataForClaimReporting)
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result_Array, lookupQuery
+    })
 
     let getClaims = await claimService.getAllClaims(lookupQuery)
 
-    await createExcelFileWithMultipleSheets1([getClaims], process.env.bucket_name, 'claimReporting', new Date(), "paid")
+    await createExcelFileWithMultipleSheets1([getClaims], process.env.bucket_name, 'claimReporting', dateString, "paid")
+      .then((res) => {
+        claimReportingService.updateReporting({ _id: createReporting._id }, { status: "Active" }, { new: true })
+      })
+      .catch((err) => {
+        console.log("err:---------", err)
+        claimReportingService.updateReporting({ _id: createReporting._id }, { status: "Failed" }, { new: true })
+
+      })
     res.send({
       code: constant.successCode,
       message: "Success",
