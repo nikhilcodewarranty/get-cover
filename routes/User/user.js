@@ -83,7 +83,7 @@ router.post("/convertToBase64", supportingApiAdmin.convertToBase64); // create d
 router.post('/createServicer', [verifyToken], validator("create_service_provider_validation"), supportingApiAdmin.createServiceProvider);// create service provider API from super admin
 
 //reporting keys functions
-router.post("/createReportinKeys", supportingApiAdmin.createReportinKeys); // 
+router.post("/createReportinKeys",[verifyToken], supportingApiAdmin.createReportinKeys); // 
 router.get("/getReportingKeys", [verifyToken], supportingApiAdmin.getReportingKeys); // 
 
 
