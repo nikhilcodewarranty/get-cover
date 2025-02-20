@@ -1949,11 +1949,11 @@ exports.getClaimDetails = async (req, res) => {
       subCategory: "Claim Detail",
     }
     let createReporting = await claimReportingService.createReporting(dataForClaimReporting)
-    res.send({
-      code: constant.successCode,
-      message: "Success",
-      result_Array, lookupQuery
-    })
+    // res.send({
+    //   code: constant.successCode,
+    //   message: "Success",
+    //   result_Array, lookupQuery
+    // })
 
     let getClaims = await claimService.getAllClaims(lookupQuery)
 
