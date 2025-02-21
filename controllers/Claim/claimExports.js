@@ -1847,6 +1847,29 @@ exports.getClaimDetails = async (req, res) => {
           case 'contractId':
             projection[field] = { $arrayElemAt: ["$contractDetail.contractId", 0] };
             break;
+          case 'productName':
+            projection["ProductSku"] = "$productName";
+            break;
+          case 'pName':
+            projection["Product Name"] = "$productName";
+            break;
+          case 'claimStatus':
+            projection[field] = {
+              $let: {
+                vars: {
+                  sortedStatuses: {
+                    $sortArray: {
+                      input: "$statusDetails", // Assuming the array is in the `statusDetails` field
+                      sortBy: { date: -1 } // Sort by date in descending order
+                    }
+                  }
+                },
+                in: {
+                  $ifNull: [{ $arrayElemAt: ["$$sortedStatuses.status", 0] }, null]
+                }
+              }
+            };
+            break;
           default:
             let field1 = field
             field1 = formatFieldName(field1)
