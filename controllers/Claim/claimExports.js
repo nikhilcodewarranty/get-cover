@@ -1848,7 +1848,7 @@ exports.getClaimDetails = async (req, res) => {
             projection[field] = { $arrayElemAt: ["$contractDetail.contractId", 0] };
             break;
           case 'productName':
-            projection["ProductSku"] = "$productName";
+            projection["Product Sku"] = "$productName";
             break;
           case 'pName':
             projection["Product Name"] = "$productName";
