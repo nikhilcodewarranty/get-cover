@@ -1859,7 +1859,7 @@ exports.getClaimDetails = async (req, res) => {
                 vars: {
                   sortedStatuses: {
                     $sortArray: {
-                      input: "$statusDetails", // Assuming the array is in the `statusDetails` field
+                      input: "$claimStatus", // Assuming the array is in the `statusDetails` field
                       sortBy: { date: -1 } // Sort by date in descending order
                     }
                   }
