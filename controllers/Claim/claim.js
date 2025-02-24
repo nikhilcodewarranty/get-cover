@@ -4658,11 +4658,9 @@ exports.sendMessages = async (req, res) => {
       redirectId: base_url
     }
 
-    console.log("emailTo---------------------", emailTo)
     let mailing = await sgMail.send(emailConstant.sendCommentNotification(emailTo?.email, ["noreply@getcover.com"], emailData))
 
     maillogservice.createMailLogFunction(mailing, emailData, [emailTo], process.env.comment_notification)
-    console.log("adminEmail---------------------", adminEmail)
 
     mailing = await sgMail.send(emailConstant.sendCommentNotification(adminEmail, ["noreply@getcover.com"], emailData))
 
