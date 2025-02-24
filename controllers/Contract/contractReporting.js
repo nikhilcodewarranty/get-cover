@@ -1025,6 +1025,9 @@ exports.contractDetailReporting = async (req, res) => {
                     case 'customerUsername':
                         projection[field] = { $ifNull: [{ $arrayElemAt: ["$customerDetail.username", 0] }, null] };
                         break;
+                    case 'unique_key':
+                        projection["Contract ID"] = "$unique_key";
+                        break;
                     case 'priceType':
                         projection[field] = {
                             "$arrayElemAt": [
@@ -1285,86 +1288,7 @@ exports.contractDetailReporting = async (req, res) => {
                                     $limit: pageLimit
                                 },
                                 {
-                                    "$project": {
-                                        "_id": 1,
-                                        "orderId": 1,
-                                        "dealerSku": 1,
-                                        "orderUniqueKey": 1,
-                                        "venderOrder": 1,
-                                        "productName": 1,
-                                        "pName": 1,
-                                        "serviceCoverageType": 1,
-                                        "partsWarranty": 1,
-                                        "labourWarranty": 1,
-                                        "purchaseDate": 1,
-                                        "minDate": 1,
-                                        "orderProductId": 1,
-                                        "model": 1,
-                                        "manufacture": 1,
-                                        "productValue": 1,
-                                        "serial": 1,
-                                        "condition": 1,
-                                        "claimStatus": 1,
-                                        "claimAmount": 1,
-                                        "eligibilty": 1,
-                                        "unique_key": 1,
-                                        "coverageStartDate": 1,
-                                        "coverageEndDate": 1,
-                                        "coverageStartDate1": 1,
-                                        "coverageEndDate1": 1,
-                                        "unique_key_number": 1,
-                                        "unique_key_search": 1,
-                                        "status": 1,
-                                        "noOfClaimPerPeriod": 1,
-                                        "isManufacturerWarranty": 1,
-                                        "isMaxClaimAmount": 1,
-                                        "isDeleted": 1,
-                                        "deductible": 1,
-                                        "notEligibleByCustom": 1,
-                                        "regDate": 1,
-                                        "createdAt": 1,
-                                        "updatedAt": 1,
-                                        dealerName: "$order.dealer.name",
-                                        resellerName: "$order.reseller.name",
-                                        servicerName: "$order.servicer.name",
-                                        customerName: "$order.customer.username",
-                                        "priceType": {
-                                            "$arrayElemAt": [
-                                                {
-                                                    "$map": {
-                                                        "input": {
-                                                            "$filter": {
-                                                                "input": "$order.productsArray",
-                                                                "as": "productArray",
-                                                                "cond": { "$eq": ["$$productArray._id", "$orderProductId"] }
-                                                            }
-                                                        },
-                                                        "as": "filteredProduct",
-                                                        "in": "$$filteredProduct.priceType"
-                                                    }
-                                                },
-                                                0
-                                            ]
-                                        },
-                                        "productDescription": {
-                                            "$arrayElemAt": [
-                                                {
-                                                    "$map": {
-                                                        "input": {
-                                                            "$filter": {
-                                                                "input": "$order.productsArray",
-                                                                "as": "productArray",
-                                                                "cond": { "$eq": ["$$productArray._id", "$orderProductId"] }
-                                                            }
-                                                        },
-                                                        "as": "filteredProduct",
-                                                        "in": "$$filteredProduct.description"
-                                                    }
-                                                },
-                                                0
-                                            ]
-                                        },
-                                    }
+                                    "$project": { ...projection, _id: 0 }
                                 }
 
                             ],
@@ -1445,86 +1369,7 @@ exports.contractDetailReporting = async (req, res) => {
                             },
                             { $unwind: "$order" },
                             {
-                                "$project": {
-                                    "_id": 1,
-                                    "orderId": 1,
-                                    "dealerSku": 1,
-                                    "orderUniqueKey": 1,
-                                    "venderOrder": 1,
-                                    "productName": 1,
-                                    "pName": 1,
-                                    "serviceCoverageType": 1,
-                                    "partsWarranty": 1,
-                                    "labourWarranty": 1,
-                                    "purchaseDate": 1,
-                                    "minDate": 1,
-                                    "orderProductId": 1,
-                                    "model": 1,
-                                    "manufacture": 1,
-                                    "productValue": 1,
-                                    "serial": 1,
-                                    "condition": 1,
-                                    "claimStatus": 1,
-                                    "claimAmount": 1,
-                                    "eligibilty": 1,
-                                    "unique_key": 1,
-                                    "coverageStartDate": 1,
-                                    "coverageEndDate": 1,
-                                    "coverageStartDate1": 1,
-                                    "coverageEndDate1": 1,
-                                    "unique_key_number": 1,
-                                    "unique_key_search": 1,
-                                    "status": 1,
-                                    "noOfClaimPerPeriod": 1,
-                                    "isManufacturerWarranty": 1,
-                                    "isMaxClaimAmount": 1,
-                                    "isDeleted": 1,
-                                    "deductible": 1,
-                                    "notEligibleByCustom": 1,
-                                    "regDate": 1,
-                                    "createdAt": 1,
-                                    "updatedAt": 1,
-                                    dealerName: "$order.dealer.name",
-                                    resellerName: "$order.reseller.name",
-                                    servicerName: "$order.servicer.name",
-                                    customerName: "$order.customer.username",
-                                    "priceType": {
-                                        "$arrayElemAt": [
-                                            {
-                                                "$map": {
-                                                    "input": {
-                                                        "$filter": {
-                                                            "input": "$order.productsArray",
-                                                            "as": "productArray",
-                                                            "cond": { "$eq": ["$$productArray._id", "$orderProductId"] }
-                                                        }
-                                                    },
-                                                    "as": "filteredProduct",
-                                                    "in": "$$filteredProduct.priceType"
-                                                }
-                                            },
-                                            0
-                                        ]
-                                    },
-                                    "productDescription": {
-                                        "$arrayElemAt": [
-                                            {
-                                                "$map": {
-                                                    "input": {
-                                                        "$filter": {
-                                                            "input": "$order.productsArray",
-                                                            "as": "productArray",
-                                                            "cond": { "$eq": ["$$productArray._id", "$orderProductId"] }
-                                                        }
-                                                    },
-                                                    "as": "filteredProduct",
-                                                    "in": "$$filteredProduct.description"
-                                                }
-                                            },
-                                            0
-                                        ]
-                                    },
-                                }
+                                "$project": { ...projection, _id: 0 }
                             }
 
 
