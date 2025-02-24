@@ -1856,8 +1856,8 @@ exports.getClaimDetails = async (req, res) => {
           case 'claimFile':
             projection["Coverage Type"] = "$claimFile";
             break;
-          case 'vendorOrder':
-            projection["Dealer Purchase Order #"] = "$vendorOrder";
+          case 'venderOrder':
+            projection["Dealer Purchase Order #"] = "$venderOrder";
             break;
           case 'claimStatus':
             projection[field] = {
