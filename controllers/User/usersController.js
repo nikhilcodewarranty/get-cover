@@ -267,7 +267,7 @@ exports.validateData = async (req, res) => {
 }
 
 // Login User 
-exports.login = async (req, res) => {
+exports.login= async (req, res) => {
   try {
     console.log("req-------------",req.ip)
     // Check if the user with the provided email exists

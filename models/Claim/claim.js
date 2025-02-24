@@ -139,7 +139,7 @@ const claimSchema = new mongoose.Schema({
   },
   claimDate: {
     type: Date,
-    default: () => Date.now()
+    default:null
   },
   lossDate: {
     type: Date,
