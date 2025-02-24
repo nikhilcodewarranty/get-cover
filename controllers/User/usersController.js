@@ -3964,7 +3964,11 @@ exports.updateContracts = async (req, res) => {
         notEligibleByCustom: true
       }
     }
-    let updateContracts = await contractService.updateManyContract({ orderId: "670d4ca5e7cbbc76c394ef51" }, newValue, { new: true })
+    // let updateContracts = await contractService.updateManyContract({ orderId: "6700495f8fd7504e91fc4b74" }, newValue, { new: true }) //lenox school
+    // let updateContracts = await contractService.updateManyContract({ orderId: "670045d28fd7504e91fc44cf" }, newValue, { new: true }) //natomas school
+    // let updateContracts = await contractService.updateManyContract({ orderId: "6721047d66ebe15c7c6d872c" }, newValue, { new: true }) //amethod school
+    // let updateContracts = await contractService.updateManyContract({ orderId: "670048ad8fd7504e91fc4945" }, newValue, { new: true }) //lemont  school
+
     res.send({
       data: updateContracts
     })

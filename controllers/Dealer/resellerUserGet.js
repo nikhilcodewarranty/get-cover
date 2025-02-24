@@ -1547,7 +1547,7 @@ exports.getResellerServicers = async (req, res) => {
         }
 
         let checkResellerAsServicer = await resellerService.getResellers({ dealerId: checkDealer._id, status: true, isServicer: true })
-        let resellerAsServicerIds = checkResellerAsServicer.map(ID=>new mongoose.Types.ObjectId(ID._id))
+        let resellerAsServicerIds = checkResellerAsServicer.map(ID => new mongoose.Types.ObjectId(ID._id))
 
         let result_Array = []
         //Get Dealer Servicer
@@ -1563,7 +1563,7 @@ exports.getResellerServicers = async (req, res) => {
         let ids = getServicersIds.map((item) => item.servicerId)
         ids = ids.concat(resellerAsServicerIds)
         var servicer = await providerService.getAllServiceProvider({
-            $or:[
+            $or: [
                 { _id: { $in: ids } },
                 { resellerId: { $in: ids } }
             ]
@@ -1587,7 +1587,7 @@ exports.getResellerServicers = async (req, res) => {
         let servicerIds1 = servicer.map(obj => new mongoose.Types.ObjectId(obj.dealerId));
         let servicerIds2 = servicer.map(obj => new mongoose.Types.ObjectId(obj.resellerId));
         servicerIds = servicerIds.concat(servicerIds1, servicerIds2)
-        console.log("checking the data++++++++++++++++",servicerIds)
+        console.log("checking the data++++++++++++++++", servicerIds)
 
         // Get servicer with claim
         const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "completed", resellerId: new mongoose.Types.ObjectId(req.userId) };
@@ -3239,7 +3239,7 @@ exports.getResellerAsServicerClaims = async (req, res) => {
         const singleReseller = await resellerService.getReseller({ _id: resellerId });
 
         if (!singleReseller) {
-            res.send({ 
+            res.send({
                 code: constant.errorCode,
                 message: "Reseller not found"
             })
@@ -3305,10 +3305,10 @@ exports.getResellerAsServicerClaims = async (req, res) => {
                             customerOverAmount: 1,
                             customerClaimAmount: 1,
                             getCoverClaimAmount: 1,
-                            dealerName:"$contracts.orders.dealers.name",
-                            servicerName:"$servicerInfo.name",
-                            servicerName:"$servicerInfo.name",
-                            customerName:"$contracts.orders.customer.username",
+                            dealerName: "$contracts.orders.dealers.name",
+                            servicerName: "$servicerInfo.name",
+                            servicerName: "$servicerInfo.name",
+                            customerName: "$contracts.orders.customer.username",
                             dealerSku: 1,
                             servicerId: 1,
                             claimType: 1,
@@ -3390,7 +3390,7 @@ exports.getResellerAsServicerClaims = async (req, res) => {
         servicerIds.push(servicerIdToCheck)
         servicerMatch = {
             $or: [
-                { "servicerId": { $in: servicerIds  } }
+                { "servicerId": { $in: servicerIds } }
             ]
         };
         // if (data.servicerName != '' && data.servicerName != undefined) {
@@ -3419,7 +3419,7 @@ exports.getResellerAsServicerClaims = async (req, res) => {
             dealerMatch = { dealerId: { $in: dealerIds } }
 
         }
-         if (req.role == "Dealer") {
+        if (req.role == "Dealer") {
             // let getDealer = await dealerService.getAllDealers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
             let dealerIds = [new mongoose.Types.ObjectId(req.userId)]
             dealerMatch = { dealerId: { $in: dealerIds } }
@@ -3486,15 +3486,14 @@ exports.getResellerAsServicerClaims = async (req, res) => {
             },
             {
                 $lookup: {
-                  from: "serviceproviders",
-                  localField: "servicerId",
-                  foreignField: "_id",
-                  as: "servicerInfo",
+                    from: "serviceproviders",
+                    localField: "servicerId",
+                    foreignField: "_id",
+                    as: "servicerInfo",
                 }
-              },
-              {
-                $unwind: "$servicerInfo"
-              },
+            },
+            { $unwind: { path: "$servicerInfo", preserveNullAndEmptyArrays: true } },
+
             {
                 $lookup: {
                     from: "contracts",
@@ -3638,7 +3637,7 @@ exports.getResellerAsServicerClaims = async (req, res) => {
             if (item1.servicerId != null) {
                 servicerName = servicer.find(servicer => servicer._id.toString() === item1.servicerId.toString());
                 const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
-                 checkItselfServicer = await providerService.getServiceProviderById({ _id: item1.servicerId })
+                checkItselfServicer = await providerService.getServiceProviderById({ _id: item1.servicerId })
                 selfServicer = req.role == "Customer" ? false : true
                 selfResellerServicer = true;
                 // selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() || item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString() ? true : false

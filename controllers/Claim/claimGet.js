@@ -2213,7 +2213,8 @@ exports.getClaimById = async (req, res) => {
             {
               $project: {
                 contractId: "$unique_key",
-                orderId: 1
+                orderId: 1,
+                coverageType:1,
               }
             }
           ]
