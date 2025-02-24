@@ -1028,6 +1028,12 @@ exports.contractDetailReporting = async (req, res) => {
                     case 'unique_key':
                         projection["Contract ID"] = "$unique_key";
                         break;
+                    case 'pName':
+                        projection["Product Name"] = "$pName";
+                        break;
+                    case 'vendorOrder':
+                        projection["Dealer Purchase Order #"] = "$vendorOrder";
+                        break;
                     case 'priceType':
                         projection[field] = {
                             "$arrayElemAt": [
