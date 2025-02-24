@@ -2326,8 +2326,8 @@ exports.getClaimById = async (req, res) => {
 exports.getUsersForRole = async (req, res) => {
   try {
     let data = req.body
-    if (req.role == "Super Admin") {
-      const checkSuperAdmin = await userService.getUserById1({ _id: req.userId })
+    if (data.role == "Super Admin") {
+      const checkSuperAdmin = await userService.getUserById1({ metaData:{$elemMatch:{roleId:process.env.super_admin,isPrimary:true}}})
       data.roleId = checkSuperAdmin._id
     }
     let query = [
