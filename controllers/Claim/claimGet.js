@@ -1591,7 +1591,7 @@ exports.getMessages = async (req, res) => {
         },
 
       }
-    }, 
+    },
     // {
     //   $project: {
     //     _id: 1,
@@ -2325,6 +2325,10 @@ exports.getClaimById = async (req, res) => {
 exports.getUsersForRole = async (req, res) => {
   try {
     let data = req.body
+    if (req.role == "Super Admin") {
+      const checkSuperAdmin = await userService.getUserById1({ _id: req.userId })
+      data.roleId = checkSuperAdmin._id
+    }
     let query = [
       {
         $match: {
@@ -2335,7 +2339,7 @@ exports.getUsersForRole = async (req, res) => {
           ]
         }
       },
-      
+
     ]
     let getUsers = await userService.findUserforCustomer1(query)
     if (!getUsers) {
