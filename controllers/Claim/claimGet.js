@@ -2303,7 +2303,7 @@ exports.getClaimById = async (req, res) => {
     let getclaimData = await claimService.getClaimWithAggregate(query)
     let trackingData = getclaimData[0]?.trackStatus
     for (let i = 0; i < trackingData.length; i++) {
-       let checkTrackingData = trackingData[i]
+      let checkTrackingData = trackingData[i]
       let checkUser = await userService.getUserById1({ metaData: { $elemMatch: { _id: checkTrackingData?.userId } } })
       let userDetail = checkUser ? checkUser?.metaData[0]?.firstName + " " + checkUser?.metaData[0]?.lastName : ''
       checkTrackingData.userName = userDetail
@@ -2332,6 +2332,47 @@ exports.getClaimById = async (req, res) => {
   }
 }
 
+exports.getTrackingDetail = async (req, res) => {
+  try {
+    let checkClaim = await claimService.getClaimById({ _id: req.params.claimId },{trackStatus:1});
+    let data = req.body
+    if (!checkClaim) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid Claim"
+      });
+      return;
+    }
+    let trackStatus = checkClaim.trackStatus
+    let filterTracking = []
+    if (data.status != '') {
+      trackStatus = trackStatus.filter(status => status.statusName == data.status);
+    }
+    for (let i = 0; i < trackStatus.length; i++) {
+      let trackingData = trackStatus[i].toObject()
+      let checkUser = await userService.getUserById1({ metaData: { $elemMatch: { _id: trackingData?.userId } } })
+      let userDetail = checkUser ? checkUser?.metaData[0]?.firstName + " " + checkUser?.metaData[0]?.lastName : ''
+      let object = {
+        status:trackingData.status,
+        statusName:trackingData.statusName,
+        date:trackingData.date,
+        userId:trackingData.userId,
+        userName:userDetail,
+      }
+      filterTracking.push(object)
+    }
+    res.send({
+      code: constant.successCode,
+      result: filterTracking
+    })
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
 
 exports.getUsersForRole = async (req, res) => {
   try {
