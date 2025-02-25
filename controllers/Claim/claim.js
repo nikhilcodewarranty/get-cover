@@ -544,11 +544,6 @@ exports.addClaim = async (req, res, next) => {
     data.manufacture = checkContract.manufacture
     data.serialNumber = checkContract.serial
     data.claimType = data.coverageType
-    data.trackStatus = [
-      {
-        userId:"656f0550d0d6e08fc8230000"
-      }
-    ]
 
     let claimResponse = await claimService.createClaim(data)
     if (!claimResponse) {
