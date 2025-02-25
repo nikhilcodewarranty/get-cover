@@ -2302,12 +2302,11 @@ exports.getClaimById = async (req, res) => {
     ]
     let getclaimData = await claimService.getClaimWithAggregate(query)
     let trackingData = getclaimData[0]?.trackStatus
-    console.log("333333333333333333",trackingData)
     for (let i = 0; i < trackingData.length; i++) {
-       trackingData = trackingData[i]
-      let checkUser = await userService.getUserById1({ metaData: { $elemMatch: { _id: trackingData.userId } } })
-      let userDetail = checkUser.metaData[0]?.firstName + " " + checkUser.metaData[0]?.lastName
-      trackingData.userName = userDetail
+       let checkTrackingData = trackingData[i]
+      let checkUser = await userService.getUserById1({ metaData: { $elemMatch: { _id: checkTrackingData?.userId } } })
+      let userDetail = checkUser ? checkUser?.metaData[0]?.firstName + " " + checkUser?.metaData[0]?.lastName : ''
+      checkTrackingData.userName = userDetail
     }
 
 
