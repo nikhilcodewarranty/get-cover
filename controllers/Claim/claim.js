@@ -544,6 +544,11 @@ exports.addClaim = async (req, res, next) => {
     data.manufacture = checkContract.manufacture
     data.serialNumber = checkContract.serial
     data.claimType = data.coverageType
+    data.trackStatus = [
+      {
+        userId:"11111111111111111"
+      }
+    ]
 
     let claimResponse = await claimService.createClaim(data)
     if (!claimResponse) {
@@ -1359,12 +1364,12 @@ exports.editClaimStatus = async (req, res) => {
     const checkReseller = await resellerService.getReseller({ _id: checkOrder?.resellerId }, {})
     const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
     const checkServicer = await servicerService.getServiceProviderById({ $or: [{ _id: checkClaim?.servicerId }, { dealerId: checkClaim?.servicerId }, { resellerId: checkClaim?.servicerId }] })
+    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
 
 
     if (data.hasOwnProperty("customerStatus")) {
 
       //Get submitted user
-      const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
       const site_url = `${process.env.SITE_URL}`
       const checkCustomerStatus = await optionService.getOption({ name: "customer_status" })
       const matchedData = checkCustomerStatus?.value.find(status => status.value == data.customerStatus)
@@ -1372,7 +1377,8 @@ exports.editClaimStatus = async (req, res) => {
         {
           status: data.customerStatus,
           date: new Date(),
-          statusName: checkCustomerStatus.name
+          statusName: checkCustomerStatus.name,
+          userId: checkLoginUser.metaData[0]?._id
         }
       ]
       updateData.customerStatus = [
@@ -1395,7 +1401,9 @@ exports.editClaimStatus = async (req, res) => {
           {
             status: 'completed',
             date: new Date(),
-            statusName: 'claim_status'
+            statusName: 'claim_status',
+            userId: checkLoginUser.metaData[0]?._id
+
           }
         ]
         let statusClaim = await claimService.updateClaim(criteria, { updateData }, { new: true })
@@ -1629,6 +1637,8 @@ exports.editClaimStatus = async (req, res) => {
           status: data.repairStatus,
           date: new Date(),
           statusName: checkRepairStatus.name,
+          userId: checkLoginUser.metaData[0]?._id
+
         }
       ]
 
@@ -1873,6 +1883,8 @@ exports.editClaimStatus = async (req, res) => {
           status: data.claimStatus,
           date: new Date(),
           statusName: checkClaimStatus.name,
+          userId: checkLoginUser.metaData[0]?._id
+
 
 
         }
@@ -4721,7 +4733,8 @@ exports.statusClaim = async (req, res) => {
           {
             status: 'completed',
             date: new Date(),
-            statusName: "claim_status"
+            statusName: "claim_status",
+            userId: null
           }
         ]
 

@@ -237,6 +237,10 @@ const claimSchema = new mongoose.Schema({
         },
         date: {
           type: Date,
+        },
+        userId:{
+          type: mongoose.Schema.Types.ObjectId,
+          default:null
         }
       },
     ],
@@ -244,7 +248,7 @@ const claimSchema = new mongoose.Schema({
       {
         status: 'open',
         statusName:"claim_status",
-        default: () => Date.now()
+        default: () => Date.now(),
       },
       {
         status: 'request_submitted',
@@ -254,8 +258,6 @@ const claimSchema = new mongoose.Schema({
       {
         status: 'request_sent',
         statusName:"repair_status",
-
-
         default: () => Date.now()
       },
     ]
