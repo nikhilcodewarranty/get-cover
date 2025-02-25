@@ -1999,7 +1999,6 @@ exports.editClaimStatus = async (req, res) => {
       let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkClaim?.servicerId, isPrimary: true } } })
 
       //Get submitted user
-      const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
       const site_url = `${process.env.SITE_URL}`
       if (adminUsers.length > 0) {
         let notificationData1 = {
