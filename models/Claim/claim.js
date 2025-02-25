@@ -247,7 +247,7 @@ const claimSchema = new mongoose.Schema({
     default: [
       {
         status: 'open',
-        statusName:"claim_status",
+        statusName:"claim_status",   
         date: () => Date.now(),
       },
       {
@@ -258,7 +258,7 @@ const claimSchema = new mongoose.Schema({
       {
         status: 'request_sent',
         statusName:"repair_status",
-        date: () => Date.now()
+        date: () => Date.now() 
       },
     ]
   },
