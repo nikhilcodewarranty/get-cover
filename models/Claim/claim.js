@@ -237,6 +237,7 @@ const claimSchema = new mongoose.Schema({
         },
         date: {
           type: Date,
+          default: () => Date.now()
         },
         userId:{
           type: mongoose.Schema.Types.ObjectId,
@@ -248,17 +249,14 @@ const claimSchema = new mongoose.Schema({
       {
         status: 'open',
         statusName:"claim_status",   
-        date: () => Date.now(),
       },
       {
         status: 'request_submitted',
         statusName:"customer_status",        
-        date: () => Date.now()
       },
       {
         status: 'request_sent',
         statusName:"repair_status",
-        date: () => Date.now() 
       },
     ]
   },
