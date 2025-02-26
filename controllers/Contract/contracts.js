@@ -506,6 +506,9 @@ exports.getContractClaims = async (req, res) => {
               customerStatus: 1,
               trackingNumber: 1,
               claimPaymentStatus: 1,
+              dealerName: "$contracts.orders.dealers.name",
+              servicerName: "$servicerInfo.name",
+              customerName: "$contracts.orders.customer.username",
               trackingType: 1,
               getcoverOverAmount: 1,
               customerOverAmount: 1,
@@ -667,6 +670,15 @@ exports.getContractClaims = async (req, res) => {
           ]
         },
       },
+      {
+        $lookup: {
+          from: "serviceproviders",
+          localField: "servicerId",
+          foreignField: "_id",
+          as: "servicerInfo",
+        }
+      },
+      { $unwind: { path: "$servicerInfo", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: "contracts",
