@@ -1845,12 +1845,49 @@ exports.getClaimDetails = async (req, res) => {
           case 'contractId':
             projection[field] = { $arrayElemAt: ["$contractDetail.contractId", 0] };
             break;
+            case 'model':
+            projection[field] = { $arrayElemAt: ["$contractDetail.model", 0] };
+            break;
+            case 'manufacturer':
+            projection[field] = { $arrayElemAt: ["$contractDetail.manufacturer", 0] };
+            break;
+            case 'serial':
+            projection[field] = { $arrayElemAt: ["$contractDetail.serial", 0] };
+            break;
+            case 'dealerSku':
+            projection[field] = { $arrayElemAt: ["$contractDetail.dealerSku", 0] };
+            break;
+            case 'coverageStartDate':
+            projection[field] = { $arrayElemAt: ["$contractDetail.coverageStartDate", 0] };
+            break;
+            case 'coverageEndDate':
+            projection[field] = { $arrayElemAt: ["$contractDetail.coverageEndDate", 0] };
+            break;
+            case 'partsWarrantyDate':
+            projection[field] = { $arrayElemAt: ["$contractDetail.partsWarrantyDate", 0] };
+            break;
+            case 'labourWarrantyDate':
+            projection[field] = { $arrayElemAt: ["$contractDetail.labourWarrantyDate", 0] };
+            break;
+            case 'purchaseDate':
+            projection[field] = { $arrayElemAt: ["$contractDetail.purchaseDate", 0] };
+            break;
+            case 'noOfClaimPerPeriod':
+            projection[field] = { $arrayElemAt: ["$contractDetail.noOfClaimPerPeriod", 0] };
+            break;
+            case 'noOfClaim':
+            projection[field] = { $arrayElemAt: ["$contractDetail.noOfClaim", 0] };
+            break;
+            case 'coverageStartDate':
+            projection[field] = { $arrayElemAt: ["$contractDetail.coverageStartDate", 0] };
+            break;
           case 'productName':
             projection["Product Sku"] = "$productName";
             break;
           case 'pName':
             projection["Product Name"] = "$pName";
             break;
+            
           case 'claimFile':
             projection["Coverage Type"] = "$claimFile";
             break;
