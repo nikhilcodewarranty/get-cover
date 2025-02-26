@@ -5186,14 +5186,8 @@ exports.uploadPrePostImages = async (req, res) => {
 exports.deletePrePostImages = async (req, res) => {
   let data = req.body;
   let checkClaim = await claimService.getClaimById({ _id: req.params.claimId });
-  var params = {  Bucket: 'getcover2', Key:data.key };
+  var params = { Bucket: process.env.bucket_name, Key: data.key };
 
-  S3Bucket.deleteObject(params, function(err, data) {
-    if (err) console.log(err, err.stack);  // error
-    else     console.log(data);                 // deleted
-  });
-
-  return
   if (!checkClaim) {
     res.send({
       code: constant.errorCode,
@@ -5203,17 +5197,25 @@ exports.deletePrePostImages = async (req, res) => {
   }
   let update
   if (data.flag == "preUploadImage") {
-     update = await claimService.updateClaim({ _id: req.params.claimId }, { $pull: { "preRepairImage": { key: data.key } } }, { new: true })
-
+    update = await claimService.updateClaim({ _id: req.params.claimId }, { $pull: { "preRepairImage": { key: data.key } } }, { new: true })
   }
   if (data.flag == "postUploadImage") {
-     update = await claimService.updateClaim({ _id: req.params.claimId }, { $pull: { "postRepairImage": { key: data.key } } }, { new: true })
+    update = await claimService.updateClaim({ _id: req.params.claimId }, { $pull: { "postRepairImage": { key: data.key } } }, { new: true })
   }
-  res.send({
-    code:constant.successCode,
-    message:"Delete Successfully",
-    result:update
-  })
+  if (update) {
+    S3Bucket.deleteObject(params, function (err, data) {
+      if (err) console.log(err, err.stack);
+      else {
+        console.log(data);
+      }
+    });
+    res.send({
+      code: constant.successCode,
+      message: "Delete Successfully",
+      result: update
+    })
+  }
+
 }
 
 
