@@ -5186,6 +5186,14 @@ exports.uploadPrePostImages = async (req, res) => {
 exports.deletePrePostImages = async (req, res) => {
   let data = req.body;
   let checkClaim = await claimService.getClaimById({ _id: req.params.claimId });
+  var params = {  Bucket: 'getcover2', Key:data.key };
+
+  s3.deleteObject(params, function(err, data) {
+    if (err) console.log(err, err.stack);  // error
+    else     console.log(data);                 // deleted
+  });
+
+  return
   if (!checkClaim) {
     res.send({
       code: constant.errorCode,
