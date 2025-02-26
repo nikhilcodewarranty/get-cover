@@ -53,7 +53,6 @@ const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, d
   data.forEach((sheetData, index) => {
     let sheetName;
 
-    console.log("role===================================", sheetData)
     if (role == "Super Admin") {
       if (index == 0) {
         sheetName = "summary"
@@ -127,7 +126,6 @@ const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, d
         sheetName = "detail"
       }
     }
-
 
     const sheet = workbook.addWorksheet(`${sheetName}`);
     console.log("role===================================", role)
