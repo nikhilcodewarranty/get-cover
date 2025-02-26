@@ -31,6 +31,7 @@ const { Upload } = require('@aws-sdk/lib-storage');
 const multerS3 = require('multer-s3');
 const aws = require('aws-sdk');
 const { default: axios } = require("axios");
+const { message } = require("../../validators/Dealer/update_dealer_price");
 
 aws.config.update({
   accessKeyId: process.env.aws_access_key_id,
@@ -5153,15 +5154,15 @@ exports.uploadPrePostImages = async (req, res) => {
         return;
 
       }
-      let preRepairImage =checkClaim.preRepairImage
+      let preRepairImage = checkClaim.preRepairImage
       let postRepairImage = checkClaim.postRepairImage
       let updateClaim;
       if (flag == "preUpload") {
-        preRepairImage.push(file)       
+        preRepairImage.push(file)
         updateClaim = await claimService.updateClaim({ _id: req.params.claimId }, { preRepairImage: preRepairImage }, { new: true })
       }
       if (flag == "postUpload") {
-        postRepairImage.push(file)   
+        postRepairImage.push(file)
         updateClaim = await claimService.updateClaim({ _id: req.params.claimId }, { postRepairImage: postRepairImage }, { new: true })
 
       }
@@ -5180,6 +5181,31 @@ exports.uploadPrePostImages = async (req, res) => {
     })
     return
   }
+}
+
+exports.deletePrePostImages = async (req, res) => {
+  let data = req.body;
+  let checkClaim = await claimService.getClaimById({ _id: req.params.claimId });
+  if (!checkClaim) {
+    res.send({
+      code: constant.errorCode,
+      message: "Invalid Claim Id!"
+    });
+    return;
+  }
+  let update
+  if (data.flag == "preUploadImage") {
+     update = await claimService.updateClaim({ _id: req.params.claimId }, { $pull: { "preRepairImage": { key: data.key } } }, { new: true })
+
+  }
+  if (data.flag == "postUploadImage") {
+     update = await claimService.updateClaim({ _id: req.params.claimId }, { $pull: { "postRepairImage": { key: data.key } } }, { new: true })
+  }
+  res.send({
+    code:constant.successCode,
+    message:"Delete Successfully",
+    result:update
+  })
 }
 
 
