@@ -5153,8 +5153,8 @@ exports.uploadPrePostImages = async (req, res) => {
         return;
 
       }
-      let preRepairImage = []
-      let postRepairImage = []
+      let preRepairImage =checkClaim.preRepairImage
+      let postRepairImage = checkClaim.postRepairImage
       let updateClaim;
       if (flag == "preUpload") {
         preRepairImage.push(file)       
