@@ -5143,10 +5143,30 @@ exports.uploadPrePostImages = async (req, res) => {
   try {
     claimUploadedImages(req, res, async (err) => {
       let file = req.file;
+      let flag = req.query.flag
+      let checkClaim = await claimService.getClaimById({ _id: req.params.claimId })
+      if (!checkClaim) {
+        res.send({
+          code: constant.errorCode,
+          message: "Invalid claim id"
+        })
+        return;
+
+      }
+      let updateClaim;
+      if (flag == "preUpload") {
+        const preRepairImage = [file]
+         updateClaim = await claimService.updateClaim({ _id: req.params.claimId }, { preRepairImage: preRepairImage }, { new: true })
+      }
+      if (flag == "postUpload") {
+        const postRepairImage = [file]
+         updateClaim = await claimService.updateClaim({ _id: req.params.claimId }, { postRepairImage: postRepairImage }, { new: true })     
+
+      }
       res.send({
         code: constant.successCode,
         message: 'Success!',
-        file
+        result:updateClaim
 
       })
     })
