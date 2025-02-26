@@ -5153,20 +5153,22 @@ exports.uploadPrePostImages = async (req, res) => {
         return;
 
       }
+      let preRepairImage = []
+      let postRepairImage = []
       let updateClaim;
       if (flag == "preUpload") {
-        const preRepairImage = [file]
-         updateClaim = await claimService.updateClaim({ _id: req.params.claimId }, { preRepairImage: preRepairImage }, { new: true })
+        preRepairImage.push(file)       
+        updateClaim = await claimService.updateClaim({ _id: req.params.claimId }, { preRepairImage: preRepairImage }, { new: true })
       }
       if (flag == "postUpload") {
-        const postRepairImage = [file]
-         updateClaim = await claimService.updateClaim({ _id: req.params.claimId }, { postRepairImage: postRepairImage }, { new: true })     
+        postRepairImage.push(file)   
+        updateClaim = await claimService.updateClaim({ _id: req.params.claimId }, { postRepairImage: postRepairImage }, { new: true })
 
       }
       res.send({
         code: constant.successCode,
         message: 'Success!',
-        result:updateClaim
+        result: updateClaim
 
       })
     })
