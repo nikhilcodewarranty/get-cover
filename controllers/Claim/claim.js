@@ -5188,7 +5188,7 @@ exports.deletePrePostImages = async (req, res) => {
   let checkClaim = await claimService.getClaimById({ _id: req.params.claimId });
   var params = {  Bucket: 'getcover2', Key:data.key };
 
-  s3.deleteObject(params, function(err, data) {
+  S3Bucket.deleteObject(params, function(err, data) {
     if (err) console.log(err, err.stack);  // error
     else     console.log(data);                 // deleted
   });
