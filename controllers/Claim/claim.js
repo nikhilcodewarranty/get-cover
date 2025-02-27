@@ -54,7 +54,6 @@ const StorageP = multerS3({
   s3: s3,
   bucket: process.env.bucket_name,
   metadata: (req, file, cb) => {
-    console.log(" process.env.bucket_name", process.env.bucket_name)
     cb(null, { fieldName: file.fieldname });
   },
   key: (req, file, cb) => {
@@ -91,7 +90,6 @@ const claimRepairImages = multerS3({
 
     let flag = req.query.flag
 
-    console.log("preUpload--------------", flag)
     let folderName;
     // Example: Set folderName based on file.fieldname
     if (flag === 'preUpload') {
@@ -434,7 +432,6 @@ exports.addClaim = async (req, res, next) => {
         if (!checkPriceBookData) {
           checkServicerData.priceBookArray.push({ priceBookId: filterPriceBook[0]?.priceBookId })
         }
-        console.log("checkServicerData2----------------------", checkServicerData)
         let newValue = {
           $set: {
             categoryArray: checkServicerData.categoryArray,
@@ -1199,7 +1196,6 @@ exports.editClaim = async (req, res) => {
     ]
     let getClaims = await claimService.getClaimWithAggregate(totalClaimQuery1)
     let updateTheContract = await contractService.updateContract({ _id: checkClaim._id }, { claimAmount: getClaims[0] ? getClaims[0].totalAmount : 0 }, { new: true })
-    console.log("updated contract ak", getClaims, updateTheContract.claimAmount)
 
     res.send({
       code: constant.successCode,
@@ -1282,13 +1278,11 @@ exports.editClaimType = async (req, res) => {
       }
       await LOG(logData).save()
       if (updateData.claimType != "" || updateData.claimType != "New") {
-        console.log("checking ak ++++++++++++++++++++++++++", req.header)
         let udpateclaimAmount = await axios.get(process.env.API_ENDPOINT + "api-v1/claim/checkClaimAmount/" + updateData._id, {
           headers: {
             "x-access-token": req.header["x-access-token"],  // Include the token in the Authorization header
           }
         });
-        console.log("updated data +++++++++++++++++++++++++++++++++++", udpateclaimAmount)
       }
       let checkUpdatedClaim = await claimService.getClaimById(criteria)
 
@@ -3466,7 +3460,6 @@ exports.saveBulkClaim = async (req, res) => {
         }
       }
 
-      // console.log("totalDataComing-----------------------------",totalDataComing)
       // return;
       // return;
       let finalArray = []

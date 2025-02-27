@@ -2755,24 +2755,24 @@ exports.claimReportinDropdown1 = async (req, res) => {
                                         localField: "_id",
                                         foreignField: "priceBook",
                                         as: "dealerPricebookData1",
-                                        pipeline:[
+                                        pipeline: [
                                             {
-                                                $match:{
-                                                    dealerId:new mongoose.Types.ObjectId(getDealerId._id)
+                                                $match: {
+                                                    dealerId: new mongoose.Types.ObjectId(getDealerId._id)
                                                 }
                                             },
                                             {
-                                                $project:{
-                                                    dealerSku:"$dealerSku",
-                                                    _id:1,
-                                                    priceBook:1,
-                                                    dealerId:1,
+                                                $project: {
+                                                    dealerSku: "$dealerSku",
+                                                    _id: 1,
+                                                    priceBook: 1,
+                                                    dealerId: 1,
                                                 }
                                             }
                                         ]
                                     }
                                 },
-                               { $unwind:"$dealerPricebookData1"}
+                                { $unwind: "$dealerPricebookData1" }
                             ]
                         }
                     },
@@ -2887,7 +2887,12 @@ exports.claimReportinDropdown1 = async (req, res) => {
                             from: "dealerpricebooks",
                             localField: "pricebookData._id",
                             foreignField: "priceBook",
-                            as: "dealerPricebookData" // Keep dealerPricebookData as an array
+                            as: "dealerPricebookData", // Keep dealerPricebookData as an array
+                            pipeline: [
+                                {
+                                    $match: { dealerId: new mongoose.Types.ObjectId(getDealerId) }
+                                }
+                            ]
                         }
                     },
                     {
