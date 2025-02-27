@@ -1878,9 +1878,12 @@ exports.getClaimDetails = async (req, res) => {
             case 'noOfClaim':
             projection[field] = { $arrayElemAt: ["$contractDetail.noOfClaim", 0] };
             break;
-            case 'coverageStartDate':
-            projection[field] = { $arrayElemAt: ["$contractDetail.coverageStartDate", 0] };
+            case 'isManufacturerWarranty':
+            projection[field] = { $arrayElemAt: ["$contractDetail.isManufacturerWarranty", 0] };
             break;
+            case 'isMaxClaimAmount':
+              projection[field] = { $arrayElemAt: ["$contractDetail.isMaxClaimAmount", 0] };
+              break;
           case 'productName':
             projection["Product Sku"] = "$productName";
             break;

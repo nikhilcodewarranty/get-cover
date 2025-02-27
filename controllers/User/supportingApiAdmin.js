@@ -1090,7 +1090,7 @@ exports.updateNotificationData = async (req, res) => {
     }
 }
 
-exports.createReportinKeys = async (req, res) => {
+exports.createReportingKeys = async (req, res) => {
     try {
         let data = req.body
         let checkUser = await userService.getUserById({ _id: req.userId })
