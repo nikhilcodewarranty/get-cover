@@ -1845,52 +1845,58 @@ exports.getClaimDetails = async (req, res) => {
           case 'contractId':
             projection[field] = { $arrayElemAt: ["$contractDetail.contractId", 0] };
             break;
-            case 'model':
+          case 'model':
             projection[field] = { $arrayElemAt: ["$contractDetail.model", 0] };
             break;
-            case 'manufacturer':
+          case 'manufacturer':
             projection[field] = { $arrayElemAt: ["$contractDetail.manufacturer", 0] };
             break;
-            case 'serial':
+          case 'category':
+            projection[field] = "$priceBookDetail.category";
+            break;
+          case 'description':
+            projection[field] = "$priceBookDetail.description";
+            break;
+          case 'serial':
             projection[field] = { $arrayElemAt: ["$contractDetail.serial", 0] };
             break;
-            case 'dealerSku':
+          case 'dealerSku':
             projection[field] = { $arrayElemAt: ["$contractDetail.dealerSku", 0] };
             break;
-            case 'coverageStartDate':
+          case 'coverageStartDate':
             projection[field] = { $arrayElemAt: ["$contractDetail.coverageStartDate", 0] };
             break;
-            case 'coverageEndDate':
+          case 'coverageEndDate':
             projection[field] = { $arrayElemAt: ["$contractDetail.coverageEndDate", 0] };
             break;
-            case 'partsWarrantyDate':
+          case 'partsWarrantyDate':
             projection[field] = { $arrayElemAt: ["$contractDetail.partsWarrantyDate", 0] };
             break;
-            case 'labourWarrantyDate':
+          case 'labourWarrantyDate':
             projection[field] = { $arrayElemAt: ["$contractDetail.labourWarrantyDate", 0] };
             break;
-            case 'purchaseDate':
+          case 'purchaseDate':
             projection[field] = { $arrayElemAt: ["$contractDetail.purchaseDate", 0] };
             break;
-            case 'noOfClaimPerPeriod':
+          case 'noOfClaimPerPeriod':
             projection[field] = { $arrayElemAt: ["$contractDetail.noOfClaimPerPeriod", 0] };
             break;
-            case 'noOfClaim':
+          case 'noOfClaim':
             projection[field] = { $arrayElemAt: ["$contractDetail.noOfClaim", 0] };
             break;
-            case 'isManufacturerWarranty':
+          case 'isManufacturerWarranty':
             projection[field] = { $arrayElemAt: ["$contractDetail.isManufacturerWarranty", 0] };
             break;
-            case 'isMaxClaimAmount':
-              projection[field] = { $arrayElemAt: ["$contractDetail.isMaxClaimAmount", 0] };
-              break;
+          case 'isMaxClaimAmount':
+            projection[field] = { $arrayElemAt: ["$contractDetail.isMaxClaimAmount", 0] };
+            break;
           case 'productName':
             projection["Product Sku"] = "$productName";
             break;
           case 'pName':
             projection["Product Name"] = "$pName";
             break;
-            
+
           case 'claimFile':
             projection["Coverage Type"] = "$claimFile";
             break;
@@ -2016,6 +2022,34 @@ exports.getClaimDetails = async (req, res) => {
           localField: "customerId",
           as: "customerDetail"
         }
+      },
+      {
+        $lookup: {
+          from: "pricebooks",
+          foreignField: "name",
+          localField: "productName",
+          as: "priceBookDetail",
+          pipeline: [
+            {
+              $lookup: {
+                from: "pricecategories",
+                localField: "category",
+                foreignField: "_id",
+                as: "pricecategory"
+              }
+            },
+            {
+              $project: {
+                category: { $arrayElemAt: ["$pricecategory.name", 0] },
+                description: 1,
+                name: 1,
+              }
+            }
+          ]
+        }
+      },
+      {
+        $unwind: { path: "$priceBookDetail", preserveNullAndEmptyArrays: true }
       },
       {
         $lookup: {
