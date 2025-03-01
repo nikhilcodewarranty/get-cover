@@ -1,5 +1,4 @@
 require("dotenv").config();
-
 const contract = require("../../models/Contract/contract");
 const { comments } = require("../../models/Claim/comment");
 const LOG = require('../../models/User/logs')
