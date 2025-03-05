@@ -269,7 +269,7 @@ exports.validateData = async (req, res) => {
 // Login User 
 exports.login = async (req, res) => {
   try {
-    console.log("req-------------",req.ip)
+    console.log("req-------------", req.ip)
     // Check if the user with the provided email exists
     const user = await userService.findOneUser({ email: req.body.email.toLowerCase() }, {});
     if (!user) {
@@ -1664,13 +1664,13 @@ exports.deleteUser = async (req, res) => {
     let notificationData;
     let notificationArray = [];
     let notificationEmails = []
-    let adminUsers= [];
+    let adminUsers = [];
     let dealerUsers = [];
     let resellerUsers = [];
     let customerUsers = [];
     let servicerUsers = [];
-    let resellerEmails= [];
-    let dealerEmails =  []
+    let resellerEmails = [];
+    let dealerEmails = []
     let servicerEmails = []
     let customerEmails = []
     let mergedEmail
@@ -1752,8 +1752,8 @@ exports.deleteUser = async (req, res) => {
           }
         },
       }
-       adminUsers = await supportingFunction.getNotificationEligibleUser(adminDeleteQuery, { email: 1, metaData: 1 })
-       dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDeleteQuery, { email: 1, metaData: 1 })
+      adminUsers = await supportingFunction.getNotificationEligibleUser(adminDeleteQuery, { email: 1, metaData: 1 })
+      dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerDeleteQuery, { email: 1, metaData: 1 })
       const IDs = adminUsers.map(user => user._id)
       const dealerId = dealerUsers.map(user => user._id)
       notificationEmails = adminUsers.map(user => user.email);
@@ -2469,7 +2469,7 @@ exports.addMembers = async (req, res) => {
           status: data.status,
           roleId: getRole._id,
           firstName: data.firstName,
-          addressId:data.addressId ? data.addressId : null,
+          addressId: data.addressId ? data.addressId : null,
           lastName: data.lastName,
           phoneNumber: data.phoneNumber,
           isPrimary: false,
@@ -2855,7 +2855,7 @@ exports.addMembers = async (req, res) => {
       role: req.role == 'Super Admin' ? 'Admin' : req.role,
       servicerName: data.firstName
     }
-    console.log("sdfsfsddfsfdsdsd",emailData)
+    console.log("sdfsfsddfsfdsdsd", emailData)
     const resetPassword = await sgMail.send(emailConstant.servicerApproval(data.email, {
       flag: "created",
       link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -2868,7 +2868,7 @@ exports.addMembers = async (req, res) => {
       role: req.role == 'Super Admin' ? 'Admin' : req.role,
       servicerName: data.firstName
     }))
-    console.log("resetPassword",resetPassword)
+    console.log("resetPassword", resetPassword)
 
     maillogservice.createMailLogFunction(resetPassword, emailData, [checkPrimaryEmail2], process.env.servicer_approval)
     // // Create the user
@@ -3569,6 +3569,10 @@ exports.contactUs = async (req, res) => {
     }
 
     let adminCC = await supportingFunction.getUserEmails();
+    
+    let modifiedCat = data?.products.map(str => str.replace(/_/g, ' '));
+
+    data.products = modifiedCat
 
     let settingData = await userService.getSetting({});
 
@@ -3860,6 +3864,7 @@ exports.updateThreshHoldLimit = async (req, res) => {
 
 const userModel = require("../../models/User/users");
 const contractService = require("../../services/Contract/contractService");
+const { constants } = require("buffer");
 exports.updateDataBase = async (req, res) => {
   try {
     let updateData = await userModel.updateMany(
@@ -3983,3 +3988,16 @@ exports.updateContracts = async (req, res) => {
   }
 }
 
+
+exports.sendContactFormData = async (req, res) => {
+  try { 
+    let data = req.body
+
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
