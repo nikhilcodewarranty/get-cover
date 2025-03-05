@@ -103,12 +103,20 @@ const claimRepairImages = multerS3({
   }
 });
 
+// var claimUploadedImages = multer({
+//   storage: claimRepairImages,
+//   limits: {
+//     fileSize: 500 * 1024 * 1024, // 500 MB limit
+//   },
+// }).single('file');
+
 var claimUploadedImages = multer({
   storage: claimRepairImages,
   limits: {
     fileSize: 500 * 1024 * 1024, // 500 MB limit
   },
-}).single('file');
+}).array("file", 100);
+
 // search claim api  -- not using
 exports.searchClaim = async (req, res, next) => {
   try {
@@ -5136,7 +5144,15 @@ exports.updateClaimDate = async (req, res) => {
 exports.uploadPrePostImages = async (req, res) => {
   try {
     claimUploadedImages(req, res, async (err) => {
-      let file = req.file;
+      let file = req.files;
+      if (file.length > 5) {
+        res.send({
+          code: constants.errorCode,
+          message: "Upload upto 5 images!"
+        })
+        return
+      }
+
       let flag = req.query.flag
       let checkClaim = await claimService.getClaimById({ _id: req.params.claimId })
       if (!checkClaim) {
@@ -5145,17 +5161,32 @@ exports.uploadPrePostImages = async (req, res) => {
           message: "Invalid claim id"
         })
         return;
-
       }
       let preRepairImage = checkClaim.preRepairImage ? checkClaim.preRepairImage : []
       let postRepairImage = checkClaim.postRepairImage ? checkClaim.postRepairImage : []
+      const checkPreRepairLength = Number(preRepairImage.length) + Number(file.length)
+      const checkPostRepairLength = Number(postRepairImage.length) + Number(file.length)
+      if (checkPostRepairLength > 5 && flag == "postUpload") {
+        res.send({
+          code: constant.errorCode,
+          message: "You cannot upload more than five images"
+        })
+        return
+      }
+      if (checkPreRepairLength > 5 && flag == "preUpload") {
+        res.send({
+          code: constant.errorCode,
+          message: "You cannot upload more than five images"
+        })
+        return
+      }
       let updateClaim;
       if (flag == "preUpload") {
-        preRepairImage.push(file)
+        preRepairImage = preRepairImage.concat(file)
         updateClaim = await claimService.updateClaim({ _id: req.params.claimId }, { preRepairImage: preRepairImage }, { new: true })
       }
       if (flag == "postUpload") {
-        postRepairImage.push(file)
+        postRepairImage = postRepairImage.concat(file)
         updateClaim = await claimService.updateClaim({ _id: req.params.claimId }, { postRepairImage: postRepairImage }, { new: true })
 
       }
