@@ -3599,6 +3599,7 @@ exports.contactUs = async (req, res) => {
     }
     //Send email to admin
     mailing = sgMail.send(emailConstant.sendContactUsTemplateAdmin(["aynr135001@gmail.com"], ["noreply@getcover.com"], emailData))
+    console.log("mailing---------------",mailing)
     res.send({
       code: constant.successCode,
       message: "Record save successfully!"
