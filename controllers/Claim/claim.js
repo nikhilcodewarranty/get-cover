@@ -366,6 +366,7 @@ exports.uploadCommentImage = async (req, res, next) => {
 exports.addClaim = async (req, res, next) => {
   try {
     let data = req.body;
+    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
 
     let checkContract = await contractService.getContractById({ _id: data.contractId })
     const checkOrder = await orderService.getOrder({ _id: checkContract.orderId }, { isDeleted: false })
@@ -550,6 +551,26 @@ exports.addClaim = async (req, res, next) => {
     data.manufacture = checkContract.manufacture
     data.serialNumber = checkContract.serial
     data.claimType = data.coverageType
+    data.trackStatus = [
+      {
+        status: "open",
+        date: new Date(),
+        statusName: 'claim_status',
+        userId: checkLoginUser.metaData[0]?._id
+      },
+      {
+        status: "request_submitted",
+        date: new Date(),
+        statusName: 'customer_status',
+        userId: checkLoginUser.metaData[0]?._id
+      },
+      {
+        status: "request_sent",
+        date: new Date(),
+        statusName: 'repair_status',
+        userId: checkLoginUser.metaData[0]?._id
+      }
+    ]
 
     let claimResponse = await claimService.createClaim(data)
     if (!claimResponse) {
@@ -595,7 +616,6 @@ exports.addClaim = async (req, res, next) => {
     const checkReseller = await resellerService.getReseller({ _id: checkOrder?.resellerId }, {})
     const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
     //Get submitted user
-    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
     const site_url = `${process.env.SITE_URL}`
 
     const checkServicer = await servicerService.getServiceProviderById({ $or: [{ _id: data?.servicerId }, { dealerId: data?.servicerId }, { resellerId: data?.servicerId }] })
@@ -2858,6 +2878,9 @@ exports.saveBulkClaim = async (req, res) => {
 
       const emailField = req.body.email;
 
+      const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+
+
       // // Parse the email field
       const emailArray = JSON.parse(emailField);
 
@@ -3529,6 +3552,26 @@ exports.saveBulkClaim = async (req, res) => {
             diagnosis: issue,
             lossDate: data.lossDate,
             claimFile: 'open',
+            trackStatus: [
+              {
+                status: "open",
+                date: new Date(),
+                statusName: 'claim_status',
+                userId: checkLoginUser.metaData[0]?._id
+              },
+              {
+                status: "request_submitted",
+                date: new Date(),
+                statusName: 'customer_status',
+                userId: checkLoginUser.metaData[0]?._id
+              },
+              {
+                status: "request_sent",
+                date: new Date(),
+                statusName: 'repair_status',
+                userId: checkLoginUser.metaData[0]?._id
+              }
+            ]
           }
           unique_key_number++
           finalArray.push(obj)
