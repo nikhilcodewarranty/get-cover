@@ -3571,6 +3571,8 @@ exports.contactUs = async (req, res) => {
       subject: 'Request Form Submision'
     }
 
+    let modifiedCat = data.products.map(str => str.replace(/_/g, ' '));
+    data.products = 
     //Send email to user
     let mailing = sgMail.send(emailConstant.sendContactUsTemplate(data.email, ["nikhil@codenomad.net"], emailData))
 
