@@ -3573,7 +3573,7 @@ exports.contactUs = async (req, res) => {
 
     let modifiedCat = data.products.map(str => str.replace(/_/g, ' '));
     data.products = modifiedCat
-    //Send email to user
+    //Send email to user and admin
     let mailing = sgMail.send(emailConstant.sendContactUsTemplate(data.email, ["nikhil@codenomad.net"], emailData))
 
     //Send to admin
