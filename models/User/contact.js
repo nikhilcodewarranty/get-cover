@@ -29,6 +29,10 @@ const contactUs = new Schema({
     },
     products: {
         type: Array,
+    },
+    country_code:{
+        type:String,
+        default:''
     }
 
 }, { timestamps: true })

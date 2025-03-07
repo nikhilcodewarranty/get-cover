@@ -3582,7 +3582,7 @@ exports.contactUs = async (req, res) => {
     data.products = modifiedCat
 
     //Send email to user
-    let mailing = sgMail.send(emailConstant.sendContactUsTemplate(data.email, ["aynr135001@gmail.com"], emailData))
+    let mailing = await sgMail.send(emailConstant.sendContactUsTemplate(data.email, [], emailData))
 
     //Send to admin
     const admin = await supportingFunction.getPrimaryUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true });
@@ -3595,7 +3595,7 @@ exports.contactUs = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName: admin.metaData[0]?.firstName,
+      senderName:'Nikhil',
       content: `A new user has submitted a request via the contact form`,
       subject: 'New Contact Form Submission',
       contactForm: data
@@ -3603,7 +3603,6 @@ exports.contactUs = async (req, res) => {
     }
     //Send email to admin
     mailing = await sgMail.send(emailConstant.sendContactUsTemplateAdmin(["nikhil@codenomad.net"], ["noreply@getcover.com"], emailData))
-    console.log("mailing---------------",mailing)
     res.send({
       code: constant.successCode,
       message: "Record save successfully!"
