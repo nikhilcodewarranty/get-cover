@@ -3595,14 +3595,14 @@ exports.contactUs = async (req, res) => {
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      senderName:'Nikhil',
+      senderName:'Nikhil Garg',
       content: `A new user has submitted a request via the contact form`,
       subject: 'New Contact Form Submission',
       contactForm: data
 
     }
     //Send email to admin
-    mailing = await sgMail.send(emailConstant.sendContactUsTemplateAdmin(["nikhil@codenomad.net"], ["noreply@getcover.com"], emailData))
+    mailing = await sgMail.send(emailConstant.sendContactUsTemplateAdmin(["aynr135001@gmail.com"], [], emailData))
     res.send({
       code: constant.successCode,
       message: "Record save successfully!"
