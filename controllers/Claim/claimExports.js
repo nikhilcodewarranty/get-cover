@@ -1863,6 +1863,9 @@ exports.getClaimDetails = async (req, res) => {
           case 'dealerSku':
             projection[field] = { $arrayElemAt: ["$contractDetail.dealerSku", 0] };
             break;
+            case 'condition':
+            projection[field] = { $arrayElemAt: ["$contractDetail.condition", 0] };
+            break;
           case 'coverageStartDate':
             projection[field] = { $arrayElemAt: ["$contractDetail.coverageStartDate", 0] };
             break;
