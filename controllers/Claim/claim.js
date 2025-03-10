@@ -53,7 +53,7 @@ const StorageP = multerS3({
   s3: s3,
   bucket: process.env.bucket_name,
   metadata: (req, file, cb) => {
-    console.log(" process.env.bucket_name", process.env.bucket_name)
+    console.log(" process.env.bucket_name", process.env.bucket_name)  
     cb(null, { fieldName: file.fieldname });
   },
   key: (req, file, cb) => {

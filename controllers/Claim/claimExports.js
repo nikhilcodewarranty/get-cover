@@ -1863,7 +1863,7 @@ exports.getClaimDetails = async (req, res) => {
           case 'dealerSku':
             projection[field] = { $arrayElemAt: ["$contractDetail.dealerSku", 0] };
             break;
-            case 'condition':
+          case 'condition':
             projection[field] = { $arrayElemAt: ["$contractDetail.condition", 0] };
             break;
           case 'coverageStartDate':
@@ -2048,6 +2048,7 @@ exports.getClaimDetails = async (req, res) => {
               $project: {
                 category: { $arrayElemAt: ["$pricecategory.name", 0] },
                 description: 1,
+                priceType: 1,
                 name: 1,
               }
             }
@@ -2068,8 +2069,35 @@ exports.getClaimDetails = async (req, res) => {
               $match: {
                 unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' }
               }
+            },
+            {
+              $lookup: {
+                from: "orders",  // Order collection
+                localField: "orderProductId",
+                foreignField: "productsArray._id",
+                as: "orderData"
+              }
+            },
+            { $unwind: "$orderData" },  // Unwind order data
+            { $unwind: "$orderData.productsArray" },  // Unwind productsArray
+            {
+              $match: {
+                $expr: { $eq: ["$orderProductId", "$orderData.productsArray._id"] }
+              }
+            },
+            {
+              $project: {
+                orderId: "$orderData._id",
+                productId: "$orderData.productsArray._id",
+                priceType: "$orderData.productsArray.priceType",  // Fetching priceType
+                contractDetail: "$$ROOT",
+                retailPrice: {
+                  $arrayElemAt: ["$orderData.productsArray.dealerPriceBookDetails.retailPrice", 0]
+                }
+              }
             }
-          ]
+          ],
+
 
         }
       },

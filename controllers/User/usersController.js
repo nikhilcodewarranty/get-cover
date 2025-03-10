@@ -87,7 +87,7 @@ const StorageP = multerS3({
   },
   key: (req, file, cb) => {
     const fileName = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
-    const fullPath = `${folderName}/${fileName}`;
+    const fullPath = `${fileName}`;
     cb(null, fullPath);
   }
 });
