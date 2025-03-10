@@ -1164,7 +1164,7 @@ exports.editClaim = async (req, res) => {
       let mergedEmail = notificationEmails.concat(servicerEmails)
       let settingData = await userService.getSetting({});
       const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
-      const lastElement = data.repairParts.pop();
+      // const lastElement = data.repairParts.pop();
       let emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
