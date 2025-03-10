@@ -103,12 +103,20 @@ const claimRepairImages = multerS3({
   }
 });
 
+// var claimUploadedImages = multer({
+//   storage: claimRepairImages,
+//   limits: {
+//     fileSize: 500 * 1024 * 1024, // 500 MB limit
+//   },
+// }).single('file');
+
 var claimUploadedImages = multer({
   storage: claimRepairImages,
   limits: {
     fileSize: 500 * 1024 * 1024, // 500 MB limit
   },
-}).single('file');
+}).array("file", 100);
+
 // search claim api  -- not using
 exports.searchClaim = async (req, res, next) => {
   try {
@@ -358,6 +366,7 @@ exports.uploadCommentImage = async (req, res, next) => {
 exports.addClaim = async (req, res, next) => {
   try {
     let data = req.body;
+    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
 
     let checkContract = await contractService.getContractById({ _id: data.contractId })
     const checkOrder = await orderService.getOrder({ _id: checkContract.orderId }, { isDeleted: false })
@@ -542,6 +551,26 @@ exports.addClaim = async (req, res, next) => {
     data.manufacture = checkContract.manufacture
     data.serialNumber = checkContract.serial
     data.claimType = data.coverageType
+    data.trackStatus = [
+      {
+        status: "open",
+        date: new Date(),
+        statusName: 'claim_status',
+        userId: checkLoginUser.metaData[0]?._id
+      },
+      {
+        status: "request_submitted",
+        date: new Date(),
+        statusName: 'customer_status',
+        userId: checkLoginUser.metaData[0]?._id
+      },
+      {
+        status: "request_sent",
+        date: new Date(),
+        statusName: 'repair_status',
+        userId: checkLoginUser.metaData[0]?._id
+      }
+    ]
 
     let claimResponse = await claimService.createClaim(data)
     if (!claimResponse) {
@@ -587,7 +616,6 @@ exports.addClaim = async (req, res, next) => {
     const checkReseller = await resellerService.getReseller({ _id: checkOrder?.resellerId }, {})
     const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
     //Get submitted user
-    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
     const site_url = `${process.env.SITE_URL}`
 
     const checkServicer = await servicerService.getServiceProviderById({ $or: [{ _id: data?.servicerId }, { dealerId: data?.servicerId }, { resellerId: data?.servicerId }] })
@@ -2850,6 +2878,9 @@ exports.saveBulkClaim = async (req, res) => {
 
       const emailField = req.body.email;
 
+      const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+
+
       // // Parse the email field
       const emailArray = JSON.parse(emailField);
 
@@ -3521,6 +3552,26 @@ exports.saveBulkClaim = async (req, res) => {
             diagnosis: issue,
             lossDate: data.lossDate,
             claimFile: 'open',
+            trackStatus: [
+              {
+                status: "open",
+                date: new Date(),
+                statusName: 'claim_status',
+                userId: checkLoginUser.metaData[0]?._id
+              },
+              {
+                status: "request_submitted",
+                date: new Date(),
+                statusName: 'customer_status',
+                userId: checkLoginUser.metaData[0]?._id
+              },
+              {
+                status: "request_sent",
+                date: new Date(),
+                statusName: 'repair_status',
+                userId: checkLoginUser.metaData[0]?._id
+              }
+            ]
           }
           unique_key_number++
           finalArray.push(obj)
@@ -5136,7 +5187,15 @@ exports.updateClaimDate = async (req, res) => {
 exports.uploadPrePostImages = async (req, res) => {
   try {
     claimUploadedImages(req, res, async (err) => {
-      let file = req.file;
+      let file = req.files;
+      if (file.length > 5) {
+        res.send({
+          code: constants.errorCode,
+          message: "Upload upto 5 images!"
+        })
+        return
+      }
+
       let flag = req.query.flag
       let checkClaim = await claimService.getClaimById({ _id: req.params.claimId })
       if (!checkClaim) {
@@ -5145,17 +5204,32 @@ exports.uploadPrePostImages = async (req, res) => {
           message: "Invalid claim id"
         })
         return;
-
       }
-      let preRepairImage = checkClaim.preRepairImage 
-      let postRepairImage = checkClaim.postRepairImage
+      let preRepairImage = checkClaim.preRepairImage ? checkClaim.preRepairImage : []
+      let postRepairImage = checkClaim.postRepairImage ? checkClaim.postRepairImage : []
+      const checkPreRepairLength = Number(preRepairImage.length) + Number(file.length)
+      const checkPostRepairLength = Number(postRepairImage.length) + Number(file.length)
+      if (checkPostRepairLength > 5 && flag == "postUpload") {
+        res.send({
+          code: constant.errorCode,
+          message: "You cannot upload more than five images"
+        })
+        return
+      }
+      if (checkPreRepairLength > 5 && flag == "preUpload") {
+        res.send({
+          code: constant.errorCode,
+          message: "You cannot upload more than five images"
+        })
+        return
+      }
       let updateClaim;
       if (flag == "preUpload") {
-        preRepairImage.push(file)
+        preRepairImage = preRepairImage.concat(file)
         updateClaim = await claimService.updateClaim({ _id: req.params.claimId }, { preRepairImage: preRepairImage }, { new: true })
       }
       if (flag == "postUpload") {
-        postRepairImage.push(file)
+        postRepairImage = postRepairImage.concat(file)
         updateClaim = await claimService.updateClaim({ _id: req.params.claimId }, { postRepairImage: postRepairImage }, { new: true })
       }
       res.send({
