@@ -1843,13 +1843,13 @@ exports.getClaimDetails = async (req, res) => {
             projection[field] = { $ifNull: [{ $arrayElemAt: ["$customerDetail.username", 0] }, null] };
             break;
           case 'contractId':
-            projection[field] = { $arrayElemAt: ["$contractDetail.contractId", 0] };
+            projection[field] = { $arrayElemAt: ["$contractDetail.contractDetail.contractId", 0] };
             break;
           case 'model':
-            projection[field] = { $arrayElemAt: ["$contractDetail.model", 0] };
+            projection[field] = { $arrayElemAt: ["$contractDetail.contractDetail.model", 0] };
             break;
           case 'manufacturer':
-            projection[field] = { $arrayElemAt: ["$contractDetail.manufacturer", 0] };
+            projection[field] = { $arrayElemAt: ["$contractDetail.contractDetail.manufacturer", 0] };
             break;
           case 'category':
             projection[field] = "$priceBookDetail.category";
@@ -1858,40 +1858,46 @@ exports.getClaimDetails = async (req, res) => {
             projection[field] = "$priceBookDetail.description";
             break;
           case 'serial':
-            projection[field] = { $arrayElemAt: ["$contractDetail.serial", 0] };
+            projection[field] = { $arrayElemAt: ["$contractDetail.contractDetail.serial", 0] };
             break;
           case 'dealerSku':
-            projection[field] = { $arrayElemAt: ["$contractDetail.dealerSku", 0] };
+            projection[field] = { $arrayElemAt: ["$contractDetail.contractDetail.dealerSku", 0] };
             break;
+            case 'priceType':
+              projection[field] = { $arrayElemAt: ["$contractDetail.priceType", 0] };
+              break;
+              case 'retailPrice':
+                projection[field] = { $arrayElemAt: ["$contractDetail.retailPrice", 0] };
+                break;
           case 'condition':
-            projection[field] = { $arrayElemAt: ["$contractDetail.condition", 0] };
+            projection[field] = { $arrayElemAt: ["$contractDetail.contractDetail.condition", 0] };
             break;
           case 'coverageStartDate':
-            projection[field] = { $arrayElemAt: ["$contractDetail.coverageStartDate", 0] };
+            projection[field] = { $arrayElemAt: ["$contractDetail.contractDetail.coverageStartDate", 0] };
             break;
           case 'coverageEndDate':
-            projection[field] = { $arrayElemAt: ["$contractDetail.coverageEndDate", 0] };
+            projection[field] = { $arrayElemAt: ["$contractDetail.contractDetail.coverageEndDate", 0] };
             break;
           case 'partsWarrantyDate':
-            projection[field] = { $arrayElemAt: ["$contractDetail.partsWarrantyDate", 0] };
+            projection[field] = { $arrayElemAt: ["$contractDetail.contractDetail.partsWarrantyDate", 0] };
             break;
           case 'labourWarrantyDate':
-            projection[field] = { $arrayElemAt: ["$contractDetail.labourWarrantyDate", 0] };
+            projection[field] = { $arrayElemAt: ["$contractDetail.contractDetail.labourWarrantyDate", 0] };
             break;
           case 'purchaseDate':
-            projection[field] = { $arrayElemAt: ["$contractDetail.purchaseDate", 0] };
+            projection[field] = { $arrayElemAt: ["$contractDetail.contractDetail.purchaseDate", 0] };
             break;
           case 'noOfClaimPerPeriod':
-            projection[field] = { $arrayElemAt: ["$contractDetail.noOfClaimPerPeriod", 0] };
+            projection[field] = { $arrayElemAt: ["$contractDetail.contractDetail.noOfClaimPerPeriod", 0] };
             break;
           case 'noOfClaim':
-            projection[field] = { $arrayElemAt: ["$contractDetail.noOfClaim", 0] };
+            projection[field] = { $arrayElemAt: ["$contractDetail.contractDetail.noOfClaim", 0] };
             break;
           case 'isManufacturerWarranty':
-            projection[field] = { $arrayElemAt: ["$contractDetail.isManufacturerWarranty", 0] };
+            projection[field] = { $arrayElemAt: ["$contractDetail.contractDetail.isManufacturerWarranty", 0] };
             break;
           case 'isMaxClaimAmount':
-            projection[field] = { $arrayElemAt: ["$contractDetail.isMaxClaimAmount", 0] };
+            projection[field] = { $arrayElemAt: ["$contractDetail.contractDetail.isMaxClaimAmount", 0] };
             break;
           case 'productName':
             projection["Product Sku"] = "$productName";
@@ -2048,7 +2054,6 @@ exports.getClaimDetails = async (req, res) => {
               $project: {
                 category: { $arrayElemAt: ["$pricecategory.name", 0] },
                 description: 1,
-                priceType: 1,
                 name: 1,
               }
             }
@@ -2096,8 +2101,8 @@ exports.getClaimDetails = async (req, res) => {
                 }
               }
             }
-          ],
-
+          ]
+        
 
         }
       },
