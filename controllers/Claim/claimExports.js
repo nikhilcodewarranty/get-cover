@@ -1911,6 +1911,9 @@ exports.getClaimDetails = async (req, res) => {
           case 'pName':
             projection["Product Name"] = "$pName";
             break;
+          case 'unique_key':
+            projection["Claim Id"] = "$unique_key";
+            break;
 
           case 'claimFile':
             projection["Claim Status"] = "$claimFile";
@@ -1970,58 +1973,58 @@ exports.getClaimDetails = async (req, res) => {
             };
             break;
 
-            case 'claimStatusDate':
-              projection["Claim Status Date"] = {
-                $let: {
-                  vars: {
-                    sortedStatuses: {
-                      $sortArray: {
-                        input: "$claimStatusDate", // Assuming the array is in the `statusDetails` field
-                        sortBy: { date: -1 } // Sort by date in descending order
-                      }
+          case 'claimStatusDate':
+            projection["Claim Status Date"] = {
+              $let: {
+                vars: {
+                  sortedStatuses: {
+                    $sortArray: {
+                      input: "$claimStatus", // Assuming the array is in the `statusDetails` field
+                      sortBy: { date: -1 } // Sort by date in descending order
                     }
-                  },
-                  in: {
-                    $ifNull: [{ $arrayElemAt: ["$$sortedStatuses.date", 0] }, null]
                   }
+                },
+                in: {
+                  $ifNull: [{ $arrayElemAt: ["$$sortedStatuses.date", 0] }, null]
                 }
-              };
-              break;
-            case 'customerStatusDate':
-              projection["Customer Status Date"] = {
-                $let: {
-                  vars: {
-                    sortedStatuses: {
-                      $sortArray: {
-                        input: "$customerStatusDate", // Assuming the array is in the `statusDetails` field
-                        sortBy: { date: -1 } // Sort by date in descending order
-                      }
+              }
+            };
+            break;
+          case 'customerStatusDate':
+            projection["Customer Status Date"] = {
+              $let: {
+                vars: {
+                  sortedStatuses: {
+                    $sortArray: {
+                      input: "$customerStatus", // Assuming the array is in the `statusDetails` field
+                      sortBy: { date: -1 } // Sort by date in descending order
                     }
-                  },
-                  in: {
-                    $ifNull: [{ $arrayElemAt: ["$$sortedStatuses.date", 0] }, null]
                   }
+                },
+                in: {
+                  $ifNull: [{ $arrayElemAt: ["$$sortedStatuses.date", 0] }, null]
                 }
-              };
-              break;
-            case 'repairStatusDate':
-              projection["Repair Status Date"] = {
-                $let: {
-                  vars: {
-                    sortedStatuses: {
-                      $sortArray: {
-                        input: "$repairStatusDate", // Assuming the array is in the `statusDetails` field
-                        sortBy: { date: -1 } // Sort by date in descending order
-                      }
+              }
+            };
+            break;
+          case 'repairStatusDate':
+            projection["Repair Status Date"] = {
+              $let: {
+                vars: {
+                  sortedStatuses: {
+                    $sortArray: {
+                      input: "$repairStatus", // Assuming the array is in the `statusDetails` field
+                      sortBy: { date: -1 } // Sort by date in descending order
                     }
-                  },
-                  in: {
-                    $ifNull: [{ $arrayElemAt: ["$$sortedStatuses.date", 0] }, null]
                   }
+                },
+                in: {
+                  $ifNull: [{ $arrayElemAt: ["$$sortedStatuses.date", 0] }, null]
                 }
-              };
-              break;
-  
+              }
+            };
+            break;
+
           default:
             let field1 = field
             field1 = formatFieldName(field1)
