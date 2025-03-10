@@ -2323,7 +2323,7 @@ exports.getClaimById = async (req, res) => {
 
 exports.getTrackingDetail = async (req, res) => {
   try {
-    let checkClaim = await claimService.getClaimById({ _id: req.params.claimId },{trackStatus:1});
+    let checkClaim = await claimService.getClaimById({ _id: req.params.claimId }, { trackStatus: 1 });
     let data = req.body
     if (!checkClaim) {
       res.send({
@@ -2333,6 +2333,8 @@ exports.getTrackingDetail = async (req, res) => {
       return;
     }
     let trackStatus = checkClaim.trackStatus
+    trackStatus.sort((a, b) => new Date(b.date) - new Date(a.date));
+
     let filterTracking = []
     if (data.status != '') {
       trackStatus = trackStatus.filter(status => status.statusName == data.status);
@@ -2342,11 +2344,11 @@ exports.getTrackingDetail = async (req, res) => {
       let checkUser = await userService.getUserById1({ metaData: { $elemMatch: { _id: trackingData?.userId } } })
       let userDetail = checkUser ? checkUser?.metaData[0]?.firstName + " " + checkUser?.metaData[0]?.lastName : ''
       let object = {
-        status:trackingData.status,
-        statusName:trackingData.statusName,
-        date:trackingData.date,
-        userId:trackingData.userId,
-        userName:userDetail,
+        status: trackingData.status,
+        statusName: trackingData.statusName,
+        date: trackingData.date,
+        userId: trackingData.userId,
+        userName: userDetail,
       }
       filterTracking.push(object)
     }

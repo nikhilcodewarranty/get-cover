@@ -5147,8 +5147,8 @@ exports.uploadPrePostImages = async (req, res) => {
         return;
 
       }
-      let preRepairImage = checkClaim.preRepairImage ? checkClaim.preRepairImage : []
-      let postRepairImage = checkClaim.postRepairImage ? checkClaim.postRepairImage : []
+      let preRepairImage = checkClaim.preRepairImage 
+      let postRepairImage = checkClaim.postRepairImage
       let updateClaim;
       if (flag == "preUpload") {
         preRepairImage.push(file)
@@ -5157,7 +5157,6 @@ exports.uploadPrePostImages = async (req, res) => {
       if (flag == "postUpload") {
         postRepairImage.push(file)
         updateClaim = await claimService.updateClaim({ _id: req.params.claimId }, { postRepairImage: postRepairImage }, { new: true })
-
       }
       res.send({
         code: constant.successCode,
