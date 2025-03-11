@@ -1279,18 +1279,11 @@ exports.contractDetailReporting = async (req, res) => {
                                         as: "servicer",
                                     }
                                 },
-                                {
-                                    $unwind: { path: "$dealer", preserveNullAndEmptyArrays: true },
-                                },
-                                {
-                                    $unwind: { path: "$reseller", preserveNullAndEmptyArrays: true },
-                                },
-                                {
-                                    $unwind: { path: "$servicer", preserveNullAndEmptyArrays: true },
-                                },
-                                {
-                                    $unwind: { path: "$customer", preserveNullAndEmptyArrays: true },
-                                },
+                                { $unwind: "$dealer" },
+                                { $unwind: { path: "$reseller", preserveNullAndEmptyArrays: true } },
+                                { $unwind: "$customer" },
+                                { $unwind: { path: "$servicer", preserveNullAndEmptyArrays: true } },
+
 
                             ],
 
