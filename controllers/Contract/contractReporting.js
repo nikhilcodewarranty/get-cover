@@ -1012,18 +1012,18 @@ exports.contractDetailReporting = async (req, res) => {
                 console.log(field)
 
                 switch (field) {
-                    case 'dealerName':
-                        projection["Dealer Name"] = { $ifNull: [{ $arrayElemAt: ["$order.dealer.name", 0] }, null] };
-                        break;
-                    case 'resellerName':
-                        projection["Reseller Name"] = { $ifNull: [{ $arrayElemAt: ["$order.reseller.name", 0] }, null] };
-                        break;
-                    case 'servicerName':
-                        projection["Servicer Name"] = { $ifNull: [{ $arrayElemAt: ["$order.servicer.name", 0] }, null] };
-                        break;
-                    case 'customerUsername':
-                        projection["Customer Name"] = { $ifNull: [{ $arrayElemAt: ["$order.customer.username", 0] }, null] };
-                        break;
+                    // case 'dealerName':
+                    //     projection["Dealer Name"] = { $ifNull: [{ $arrayElemAt: ["$order.dealer.name", 0] }, null] };
+                    //     break;
+                    // case 'resellerName':
+                    //     projection["Reseller Name"] = { $ifNull: [{ $arrayElemAt: ["$order.reseller.name", 0] }, null] };
+                    //     break;
+                    // case 'servicerName':
+                    //     projection["Servicer Name"] = { $ifNull: [{ $arrayElemAt: ["$order.servicer.name", 0] }, null] };
+                    //     break;
+                    // case 'customerUsername':
+                    //     projection["Customer Name"] = { $ifNull: [{ $arrayElemAt: ["$order.customer.username", 0] }, null] };
+                    //     break;
                     case 'orderId':
                         projection["Order ID"] = { $ifNull: [{ $arrayElemAt: ["$order.unique_key", 0] }, null] };
                         break;
