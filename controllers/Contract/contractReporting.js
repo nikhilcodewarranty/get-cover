@@ -1013,19 +1013,19 @@ exports.contractDetailReporting = async (req, res) => {
 
                 switch (field) {
                     case 'dealerName':
-                        projection[field] = { $ifNull: [{ $arrayElemAt: ["$order.dealer.name", 0] }, null] };
+                        projection["Dealer Name"] = { $ifNull: [{ $arrayElemAt: ["$order.dealer.name", 0] }, null] };
                         break;
                     case 'resellerName':
-                        projection[field] = { $ifNull: [{ $arrayElemAt: ["$order.reseller.name", 0] }, null] };
+                        projection["Reseller Name"] = { $ifNull: [{ $arrayElemAt: ["$order.reseller.name", 0] }, null] };
                         break;
                     case 'servicerName':
-                        projection[field] = { $ifNull: [{ $arrayElemAt: ["$order.servicer.name", 0] }, null] };
+                        projection["Servicer Name"] = { $ifNull: [{ $arrayElemAt: ["$order.servicer.name", 0] }, null] };
                         break;
                     case 'customerUsername':
-                        projection[field] = { $ifNull: [{ $arrayElemAt: ["$order.customer.username", 0] }, null] };
+                        projection["Customer Name"] = { $ifNull: [{ $arrayElemAt: ["$order.customer.username", 0] }, null] };
                         break;
                     case 'orderId':
-                        projection[field] = { $ifNull: [{ $arrayElemAt: ["$order.unique_key", 0] }, null] };
+                        projection["Order ID"] = { $ifNull: [{ $arrayElemAt: ["$order.unique_key", 0] }, null] };
                         break;
                     case 'unique_key':
                         projection["Contract ID"] = "$unique_key";
@@ -1040,7 +1040,7 @@ exports.contractDetailReporting = async (req, res) => {
                         projection["Dealer Purchase Order #"] = "$vendorOrder";
                         break;
                     case 'priceType':
-                        projection[field] = {
+                        projection["Price Type"] = {
                             "$arrayElemAt": [
                                 {
                                     "$map": {
@@ -1060,7 +1060,7 @@ exports.contractDetailReporting = async (req, res) => {
                         };
                         break;
                     case 'productDescription':
-                        projection[field] = {
+                        projection["Product Description"] = {
                             "$arrayElemAt": [
                                 {
                                     "$map": {
