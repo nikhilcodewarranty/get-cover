@@ -1013,7 +1013,7 @@ exports.contractDetailReporting = async (req, res) => {
 
                 switch (field) {
                     case 'dealerName':
-                        projection[field] = { $ifNull: [{ $arrayElemAt: ["$dealerDetail.name", 0] }, null] };
+                        projection[field] = { $ifNull: [{ $arrayElemAt: ["$order.orderDetail.dealerName", 0] }, null] };
                         break;
                     case 'resellerName':
                         projection[field] = { $ifNull: [{ $arrayElemAt: ["$resellerDetail.name", 0] }, null] };
@@ -1040,7 +1040,7 @@ exports.contractDetailReporting = async (req, res) => {
                                     "$map": {
                                         "input": {
                                             "$filter": {
-                                                "input": "$order.productsArray",
+                                                "input": "$order.orderDetail.productsArray",
                                                 "as": "productArray",
                                                 "cond": { "$eq": ["$$productArray._id", "$orderProductId"] }
                                             }
@@ -1060,7 +1060,7 @@ exports.contractDetailReporting = async (req, res) => {
                                     "$map": {
                                         "input": {
                                             "$filter": {
-                                                "input": "$order.productsArray",
+                                                "input": "$order.orderDetail.productsArray",
                                                 "as": "productArray",
                                                 "cond": { "$eq": ["$$productArray._id", "$orderProductId"] }
                                             }
@@ -1249,6 +1249,7 @@ exports.contractDetailReporting = async (req, res) => {
                                         as: "dealer",
                                     }
                                 },
+                                { $unwind: "$dealer" },
                                 {
                                     $lookup: {
                                         from: "resellers",
@@ -1273,7 +1274,12 @@ exports.contractDetailReporting = async (req, res) => {
                                         as: "servicer",
                                     }
                                 },
-
+                                {
+                                    $project: {
+                                        orderDetail: "$$ROOT",
+                                        dealerName: "$dealer.name"
+                                    }
+                                }
                             ],
 
                         }
