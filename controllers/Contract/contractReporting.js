@@ -1013,22 +1013,28 @@ exports.contractDetailReporting = async (req, res) => {
 
                 switch (field) {
                     case 'dealerName':
-                        projection[field] = { $ifNull: [{ $arrayElemAt: ["$dealerDetail.name", 0] }, null] };
+                        projection[field] = { $ifNull: [{ $arrayElemAt: ["$order.dealer.name", 0] }, null] };
                         break;
                     case 'resellerName':
-                        projection[field] = { $ifNull: [{ $arrayElemAt: ["$resellerDetail.name", 0] }, null] };
+                        projection[field] = { $ifNull: [{ $arrayElemAt: ["$order.reseller.name", 0] }, null] };
                         break;
                     case 'servicerName':
-                        projection[field] = { $ifNull: [{ $arrayElemAt: ["$servicerDetail.name", 0] }, null] };
+                        projection[field] = { $ifNull: [{ $arrayElemAt: ["$order.servicer.name", 0] }, null] };
                         break;
                     case 'customerUsername':
-                        projection[field] = { $ifNull: [{ $arrayElemAt: ["$customerDetail.username", 0] }, null] };
+                        projection[field] = { $ifNull: [{ $arrayElemAt: ["$order.customer.username", 0] }, null] };
+                        break;
+                    case 'orderId':
+                        projection[field] = { $ifNull: [{ $arrayElemAt: ["$order.unique_key", 0] }, null] };
                         break;
                     case 'unique_key':
                         projection["Contract ID"] = "$unique_key";
                         break;
                     case 'pName':
-                        projection["Product Name"] = "$pName";
+                        projection["Product Sku"] = "$pName";
+                        break;
+                    case 'productName':
+                        projection["Product Name"] = "$productName";
                         break;
                     case 'vendorOrder':
                         projection["Dealer Purchase Order #"] = "$vendorOrder";
@@ -1272,6 +1278,18 @@ exports.contractDetailReporting = async (req, res) => {
                                         foreignField: "_id",
                                         as: "servicer",
                                     }
+                                },
+                                {
+                                    $unwind: { path: "$dealer", preserveNullAndEmptyArrays: true },
+                                },
+                                {
+                                    $unwind: { path: "$reseller", preserveNullAndEmptyArrays: true },
+                                },
+                                {
+                                    $unwind: { path: "$servicer", preserveNullAndEmptyArrays: true },
+                                },
+                                {
+                                    $unwind: { path: "$customer", preserveNullAndEmptyArrays: true },
                                 },
 
                             ],
