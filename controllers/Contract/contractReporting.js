@@ -1013,34 +1013,40 @@ exports.contractDetailReporting = async (req, res) => {
 
                 switch (field) {
                     case 'dealerName':
-                        projection[field] = { $ifNull: [{ $arrayElemAt: ["$dealerDetail.name", 0] }, null] };
+                        projection["Dealer Name"] = { $ifNull: ["$order.dealerName", null] };
+                        break;
+                    case 'orderId':
+                        projection["Dealer Name"] = { $ifNull: ["$order.orderDetail.unique_key", null] };
                         break;
                     case 'resellerName':
-                        projection[field] = { $ifNull: [{ $arrayElemAt: ["$resellerDetail.name", 0] }, null] };
+                        projection["Reseller Name"] = { $ifNull: ["$order.resellerName", null] };
                         break;
                     case 'servicerName':
-                        projection[field] = { $ifNull: [{ $arrayElemAt: ["$servicerDetail.name", 0] }, null] };
+                        projection["Servicer Name"] = { $ifNull: ["$order.servicerName", null] };
                         break;
-                    case 'customerUsername':
-                        projection[field] = { $ifNull: [{ $arrayElemAt: ["$customerDetail.username", 0] }, null] };
+                    case 'customerName':
+                        projection["Customer Name"] = { $ifNull: ["$order.customerName", null] };
                         break;
                     case 'unique_key':
                         projection["Contract ID"] = "$unique_key";
                         break;
                     case 'pName':
-                        projection["Product Name"] = "$pName";
+                        projection["Product Sku"] = "$pName";
+                        break;
+                    case 'productName':
+                        projection["Product Name"] = "$productName";
                         break;
                     case 'vendorOrder':
                         projection["Dealer Purchase Order #"] = "$vendorOrder";
                         break;
                     case 'priceType':
-                        projection[field] = {
+                        projection["Price Type"] = {
                             "$arrayElemAt": [
                                 {
                                     "$map": {
                                         "input": {
                                             "$filter": {
-                                                "input": "$order.productsArray",
+                                                "input": "$order.orderDetail.productsArray",
                                                 "as": "productArray",
                                                 "cond": { "$eq": ["$$productArray._id", "$orderProductId"] }
                                             }
@@ -1054,13 +1060,13 @@ exports.contractDetailReporting = async (req, res) => {
                         };
                         break;
                     case 'productDescription':
-                        projection[field] = {
+                        projection["Product Description"] = {
                             "$arrayElemAt": [
                                 {
                                     "$map": {
                                         "input": {
                                             "$filter": {
-                                                "input": "$order.productsArray",
+                                                "input": "$order.orderDetail.productsArray",
                                                 "as": "productArray",
                                                 "cond": { "$eq": ["$$productArray._id", "$orderProductId"] }
                                             }
@@ -1249,6 +1255,7 @@ exports.contractDetailReporting = async (req, res) => {
                                         as: "dealer",
                                     }
                                 },
+                                { $unwind: "$dealer" },
                                 {
                                     $lookup: {
                                         from: "resellers",
@@ -1273,7 +1280,26 @@ exports.contractDetailReporting = async (req, res) => {
                                         as: "servicer",
                                     }
                                 },
-
+                                { $unwind: { path: "$reseller", preserveNullAndEmptyArrays: true } },
+                                { $unwind: "$customer" },
+                                { $unwind: { path: "$servicer", preserveNullAndEmptyArrays: true } },
+                                {
+                                    $match: {
+                                        $expr: { $eq: ["$orderProductId", "$orderData.productsArray._id"] }
+                                    }
+                                },
+                                {
+                                    $project: {
+                                        orderDetail: "$$ROOT",
+                                        dealerName: "$dealer.name",
+                                        resellerName: "$reseller.name",
+                                        servicerName: "$servicer.name",
+                                        customerName: "$customer.username",
+                                        retailPrice: {
+                                            $arrayElemAt: ["$orderData.productsArray.dealerPriceBookDetails.retailPrice", 0]
+                                        }
+                                    }
+                                }
                             ],
 
                         }
@@ -1292,9 +1318,9 @@ exports.contractDetailReporting = async (req, res) => {
                                 {
                                     $limit: pageLimit
                                 },
-                                {
-                                    "$project": { ...projection, _id: 0 }
-                                }
+                                // {
+                                //     "$project": { ...projection, _id: 0 }
+                                // }
 
                             ],
                         },
@@ -1347,6 +1373,15 @@ exports.contractDetailReporting = async (req, res) => {
                                     }
                                 },
                                 { $unwind: { path: "$servicer", preserveNullAndEmptyArrays: true } },
+                                {
+                                    $project: {
+                                        orderDetail: "$$ROOT",
+                                        dealerName: "$dealer.name",
+                                        resellerName: "$reseller.name",
+                                        servicerName: "$servicer.name",
+                                        customerName: "$customer.username",
+                                    }
+                                }
                             ],
 
                         }
