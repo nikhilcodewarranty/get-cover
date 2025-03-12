@@ -4837,10 +4837,13 @@ exports.contactUs = async (req, res) => {
       subject: "Request Form Submision",
     };
 
+    // let modifiedCat = data.products.map((item, index) =>
+    //   item.replace("_", index === 0 ? "," : "")
+    // );
 
-    let modifiedCat = data.products.map((item, index) =>
-      item.replace("_", index === 0 ? "," : "")
-    );
+    let modifiedCat = data.products
+      .map((item) => item.replace("_", " ")) // Replace underscore with space
+      .join(", "); // Join elements with a comma and space
 
     // let modifiedCat = data.products.map((str) => str.replace(/_/g, " "));
 
