@@ -156,7 +156,7 @@ const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, d
         console.error('Error uploading file to S3:', error);
         throw error;
     }
-}   ;
+};
 
 
 const createExcelFileWithMultipleSheets1 = async (data, bucketName, folderName, dateString, role) => {
@@ -1016,10 +1016,10 @@ exports.contractDetailReporting = async (req, res) => {
                         projection["Dealer Name"] = { $ifNull: ["$order.dealerName", null] };
                         break;
                     case 'category':
-                        projection["Dealer Name"] = { $ifNull: ["$order.category", null] };
+                        projection["category Name"] = { $ifNull: ["$priceCategory.name", null] };
                         break;
                     case 'orderId':
-                        projection["Dealer Name"] = { $ifNull: ["$order.orderDetail.unique_key", null] };
+                        projection["Order ID"] = { $ifNull: ["$order.orderDetail.unique_key", null] };
                         break;
                     case 'resellerName':
                         projection["Reseller Name"] = { $ifNull: ["$order.resellerName", null] };
@@ -1350,6 +1350,35 @@ exports.contractDetailReporting = async (req, res) => {
                                 {
                                     $limit: pageLimit
                                 },
+                                { $unwind: "$order" },
+                                {
+                                    "$addFields": {
+                                        "filteredProduct": {
+                                            "$filter": {
+                                                "input": "$order.orderDetail.productsArray",
+                                                "as": "product",
+                                                "cond": { "$eq": ["$$ROOT.orderProductId", "$$product._id"] }
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "$addFields": {
+                                        "filteredProductId": {
+                                            "$arrayElemAt": ["$filteredProduct.categoryId", 0]
+                                        }
+                                    }
+                                },
+                                {
+                                    $lookup: {
+                                        from: "pricecategories",
+                                        localField: "filteredProductId",
+                                        foreignField: "_id",
+                                        as: "priceCategory"
+
+                                    }
+                                },
+                                { $unwind: "$priceCategory" },
                                 // {
                                 //     "$project": { ...projection, _id: 0 }
                                 // }
@@ -1488,16 +1517,25 @@ exports.contractDetailReporting = async (req, res) => {
                                 }
                             },
                             {
-                                $project:{
-                                    filteredProduct:1,
-                                    i:"$$ROOT.orderProductId",
-                                    k:"$order.orderDetail.productsArray"
-                                    
+                                "$addFields": {
+                                    "filteredProductId": {
+                                        "$arrayElemAt": ["$filteredProduct.categoryId", 0]
+                                    }
                                 }
+                            },
+                            {
+                                $lookup: {
+                                    from: "pricecategories",
+                                    localField: "filteredProductId",
+                                    foreignField: "_id",
+                                    as: "priceCategory"
+
+                                }
+                            },
+                            { $unwind: "$priceCategory" },
+                            {
+                                "$project": { ...projection, _id: 0 }
                             }
-                            // {
-                            //     "$project": { ...projection, _id: 0 }
-                            // }
 
 
                         ],
