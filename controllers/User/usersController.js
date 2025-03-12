@@ -4890,7 +4890,7 @@ exports.contactUs = async (req, res) => {
     //Send email to admin
     mailing = await sgMail.send(
       emailConstant.sendContactUsTemplateAdmin(
-        ["aynr135001@gmail.com"],
+        ["nikhil@codenomad.net"],
         [],
         emailData
       )
