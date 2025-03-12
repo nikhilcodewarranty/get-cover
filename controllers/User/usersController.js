@@ -4837,7 +4837,6 @@ exports.contactUs = async (req, res) => {
       subject: "Request Form Submision",
     };
 
-    let data = ["CodeWarranty_CMS", "CodeWarran_ABC"];
 
     let modifiedCat = data.products.map((item, index) =>
       item.replace("_", index === 0 ? "," : "")
