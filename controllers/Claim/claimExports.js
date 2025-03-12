@@ -11,6 +11,7 @@ const servicerService = require("../../services/Provider/providerService");
 const optionService = require("../../services/User/optionsService");
 const priceBookService = require("../../services/PriceBook/priceBookService");
 const customerService = require("../../services/Customer/customerService");
+const reportingKeys = require("../../models/User/reportingKeys")
 const providerService = require("../../services/Provider/providerService");
 const resellerService = require("../../services/Dealer/resellerService");
 const dealerService = require("../../services/Dealer/dealerService");
@@ -1717,6 +1718,19 @@ exports.getClaimDetails = async (req, res) => {
     let resellerMatch = {}
     let dateMatch = {}
     let dateString = new Date()
+
+    let checkUser = await userService.getUserById({ _id: req.userId })
+    data.userId = checkUser.metaData[0]._id
+    data.claimKeys = data.projection
+    let checkReporting = await reportingKeys.findOne({ userId: checkUser.metaData[0]._id })
+    if (!checkReporting) {
+      let updateData = await reportingKeys.findOneAndUpdate({ _id: checkReporting._id }, data, { new: true })
+    } else {
+      let saveData = await reportingKeys(data).save()
+    }
+
+
+
     // checking the user type from token
     if (req.role == 'Dealer') {
       match = { dealerId: new mongoose.Types.ObjectId(req.userId) }

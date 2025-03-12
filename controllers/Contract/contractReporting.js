@@ -944,6 +944,17 @@ exports.contractDetailReporting = async (req, res) => {
         let servicerIds = [];
         let userSearchCheck = 0
 
+        const reportingKeys = require("../../models/User/reportingKeys")
+        let checkUser = await userService.getUserById({ _id: req.userId })
+        data.userId = checkUser.metaData[0]._id
+        data.contractKeys = data.projection
+        let checkReporting = await reportingKeys.findOne({ userId: checkUser.metaData[0]._id })
+        if (checkReporting) {
+            let updateData = await reportingKeys.findOneAndUpdate({ _id: checkReporting._id }, data, { new: true })
+        } else {
+            let saveData = await reportingKeys(data).save()
+        }
+
         if (req.role == 'Dealer') {
             // match = { 'contracts.orders.dealerId': new mongoose.Types.ObjectId(req.userId) }
             dealerIds = [new mongoose.Types.ObjectId(req.userId)]
@@ -1302,11 +1313,6 @@ exports.contractDetailReporting = async (req, res) => {
                                         "firstCategoryId": "$customer.username"
                                     }
                                 },
-                                // {
-                                //     "$addFields": {
-                                //       "firstCategoryId": { "$arrayElemAt": ["$customer.username", 0] }
-                                //     }
-                                // },
                                 {
                                     $lookup: {
                                         from: "pricecategories",
