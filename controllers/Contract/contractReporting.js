@@ -1015,6 +1015,9 @@ exports.contractDetailReporting = async (req, res) => {
                     case 'dealerName':
                         projection["Dealer Name"] = { $ifNull: ["$order.dealerName", null] };
                         break;
+                    case 'category':
+                        projection["Dealer Name"] = { $ifNull: ["$order.category", null] };
+                        break;
                     case 'orderId':
                         projection["Dealer Name"] = { $ifNull: ["$order.orderDetail.unique_key", null] };
                         break;
@@ -1289,14 +1292,43 @@ exports.contractDetailReporting = async (req, res) => {
                                     }
                                 },
                                 {
+                                    "$unwind": {
+                                        "path": "$order.productsArray",
+                                        "preserveNullAndEmptyArrays": true
+                                    }
+                                },
+                                {
+                                    "$addFields": {
+                                        "firstCategoryId": "$customer.username"
+                                    }
+                                },
+                                // {
+                                //     "$addFields": {
+                                //       "firstCategoryId": { "$arrayElemAt": ["$customer.username", 0] }
+                                //     }
+                                // },
+                                {
+                                    $lookup: {
+                                        from: "pricecategories",
+                                        localField: "firstCategoryId",
+                                        foreignField: "_id",
+                                        as: "categoryData"
+                                    }
+                                },
+                                {
+                                    $unwind: { path: "$categoryData", preserveNullAndEmptyArrays: true }
+                                },
+                                {
                                     $project: {
                                         orderDetail: "$$ROOT",
                                         dealerName: "$dealer.name",
                                         resellerName: "$reseller.name",
                                         servicerName: "$servicer.name",
                                         customerName: "$customer.username",
+                                        category: "$categoryData.name",
+                                        firstCategoryId: 1,
                                         retailPrice: {
-                                            $arrayElemAt: ["$orderData.productsArray.dealerPriceBookDetails.retailPrice", 0]
+                                            $arrayElemAt: ["$order.productsArray.dealerPriceBookDetails.retailPrice", 0]
                                         }
                                     }
                                 }
@@ -1372,6 +1404,36 @@ exports.contractDetailReporting = async (req, res) => {
                                         as: "servicer",
                                     }
                                 },
+                                // {
+                                //     $match: {
+                                //         $expr: { $eq: ["$orderProductId", "$orderData.productsArray._id"] }
+                                //     }
+                                // },
+                                {
+                                    "$addFields": {
+                                        "filteredProduct": {
+                                            "$filter": {
+                                                "input": "$order.productsArray",
+                                                "as": "product",
+                                                "cond": { "$eq": ["$ROOT.orderProductId", "$$product._id"] }
+                                            }
+                                        }
+                                    }
+                                },
+                                // { $unwind: "$orderData.productsArray" },
+                                {
+                                    "$addFields": {
+                                        "firstCategoryId": "$$ROOT.productsArray"
+                                    }
+                                },
+                                {
+                                    $lookup: {
+                                        from: "pricecategories",
+                                        localField: "firstCategoryId",
+                                        foreignField: "_id",
+                                        as: "categoryData"
+                                    }
+                                },
                                 { $unwind: { path: "$servicer", preserveNullAndEmptyArrays: true } },
                                 {
                                     $project: {
@@ -1380,6 +1442,12 @@ exports.contractDetailReporting = async (req, res) => {
                                         resellerName: "$reseller.name",
                                         servicerName: "$servicer.name",
                                         customerName: "$customer.username",
+                                        filteredProduct: 1,
+                                        checking: 1,
+                                        categoryData: "$categoryData",
+                                        retailPrice: {
+                                            $arrayElemAt: ["$order.productsArray.dealerPriceBookDetails.retailPrice", 0]
+                                        }
                                     }
                                 }
                             ],
@@ -1409,8 +1477,27 @@ exports.contractDetailReporting = async (req, res) => {
                             },
                             { $unwind: "$order" },
                             {
-                                "$project": { ...projection, _id: 0 }
+                                "$addFields": {
+                                    "filteredProduct": {
+                                        "$filter": {
+                                            "input": "$order.orderDetail.productsArray",
+                                            "as": "product",
+                                            "cond": { "$eq": ["$$ROOT.orderProductId", "$$product._id"] }
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                $project:{
+                                    filteredProduct:1,
+                                    i:"$$ROOT.orderProductId",
+                                    k:"$order.orderDetail.productsArray"
+                                    
+                                }
                             }
+                            // {
+                            //     "$project": { ...projection, _id: 0 }
+                            // }
 
 
                         ],
