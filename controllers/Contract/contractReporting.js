@@ -945,8 +945,9 @@ exports.contractDetailReporting = async (req, res) => {
         let userSearchCheck = 0
 
         const reportingKeys = require("../../models/User/reportingKeys")
-        let checkUser = await userService.getUserById({ _id: req.userId })
-        data.userId = checkUser.metaData[0]._id
+        let checkUser = await userService.getUserById1({ _id: req.userId })
+        console.log("check",checkUser,req.userId)
+        data.userId = checkUser.metaData[0]?._id
         data.contractKeys = data.projection
         let checkReporting = await reportingKeys.findOne({ userId: checkUser.metaData[0]._id })
         if (checkReporting) {
@@ -1648,7 +1649,7 @@ exports.contractDetailReporting = async (req, res) => {
     } catch (err) {
         res.send({
             code: constant.errorCode,
-            message: err.message
+            message: err.stack
         })
     }
 }
