@@ -31,6 +31,7 @@ const { Upload } = require('@aws-sdk/lib-storage');
 const multerS3 = require('multer-s3');
 const aws = require('aws-sdk');
 const { default: axios } = require("axios");
+const { message } = require("../../validators/Dealer/update_dealer_price");
 
 aws.config.update({
   accessKeyId: process.env.aws_access_key_id,
@@ -53,7 +54,6 @@ const StorageP = multerS3({
   s3: s3,
   bucket: process.env.bucket_name,
   metadata: (req, file, cb) => {
-    console.log(" process.env.bucket_name", process.env.bucket_name)  
     cb(null, { fieldName: file.fieldname });
   },
   key: (req, file, cb) => {
@@ -76,6 +76,46 @@ var uploadP = multer({
     fileSize: 500 * 1024 * 1024, // 500 MB limit
   },
 }).single("file");
+
+
+
+//Upload Claim Repair Images
+const claimRepairImages = multerS3({
+  s3: s3,
+  bucket: process.env.bucket_name,
+  metadata: (req, file, cb) => {
+    cb(null, { fieldName: file.fieldname });
+  },
+  key: (req, file, cb) => {
+
+    let flag = req.query.flag
+
+    let folderName;
+    // Example: Set folderName based on file.fieldname
+    if (flag === 'preUpload') {
+      folderName = 'preUploaded';
+    } else if (flag === 'postUpload') {
+      folderName = 'postUploaded';
+    }
+    const fileName = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
+    const fullPath = `claimFile/${folderName}/${fileName}`;
+    cb(null, fullPath);
+  }
+});
+
+// var claimUploadedImages = multer({
+//   storage: claimRepairImages,
+//   limits: {
+//     fileSize: 500 * 1024 * 1024, // 500 MB limit
+//   },
+// }).single('file');
+
+var claimUploadedImages = multer({
+  storage: claimRepairImages,
+  limits: {
+    fileSize: 500 * 1024 * 1024, // 500 MB limit
+  },
+}).array("file", 100);
 
 // search claim api  -- not using
 exports.searchClaim = async (req, res, next) => {
@@ -326,6 +366,7 @@ exports.uploadCommentImage = async (req, res, next) => {
 exports.addClaim = async (req, res, next) => {
   try {
     let data = req.body;
+    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
 
     let checkContract = await contractService.getContractById({ _id: data.contractId })
     const checkOrder = await orderService.getOrder({ _id: checkContract.orderId }, { isDeleted: false })
@@ -404,7 +445,6 @@ exports.addClaim = async (req, res, next) => {
         if (!checkPriceBookData) {
           checkServicerData.priceBookArray.push({ priceBookId: filterPriceBook[0]?.priceBookId })
         }
-        console.log("checkServicerData2----------------------", checkServicerData)
         let newValue = {
           $set: {
             categoryArray: checkServicerData.categoryArray,
@@ -515,6 +555,26 @@ exports.addClaim = async (req, res, next) => {
     data.manufacture = checkContract.manufacture
     data.serialNumber = checkContract.serial
     data.claimType = data.coverageType
+    data.trackStatus = [
+      {
+        status: "open",
+        date: new Date(),
+        statusName: 'claim_status',
+        userId: checkLoginUser.metaData[0]?._id
+      },
+      {
+        status: "request_submitted",
+        date: new Date(),
+        statusName: 'customer_status',
+        userId: checkLoginUser.metaData[0]?._id
+      },
+      {
+        status: "request_sent",
+        date: new Date(),
+        statusName: 'repair_status',
+        userId: checkLoginUser.metaData[0]?._id
+      }
+    ]
 
     let claimResponse = await claimService.createClaim(data)
     if (!claimResponse) {
@@ -559,7 +619,6 @@ exports.addClaim = async (req, res, next) => {
     const checkDealer = await dealerService.getDealerById(checkOrder.dealerId)
     const checkReseller = await resellerService.getReseller({ _id: checkOrder?.resellerId }, {})
     //Get submitted user
-    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
     const site_url = `${process.env.SITE_URL}`
 
     const checkServicer = await servicerService.getServiceProviderById({ $or: [{ _id: data?.servicerId }, { dealerId: data?.servicerId }, { resellerId: data?.servicerId }] })
@@ -1168,7 +1227,6 @@ exports.editClaim = async (req, res) => {
     ]
     let getClaims = await claimService.getClaimWithAggregate(totalClaimQuery1)
     let updateTheContract = await contractService.updateContract({ _id: checkClaim._id }, { claimAmount: getClaims[0] ? getClaims[0].totalAmount : 0 }, { new: true })
-    console.log("updated contract ak", getClaims, updateTheContract.claimAmount)
 
     res.send({
       code: constant.successCode,
@@ -1251,13 +1309,11 @@ exports.editClaimType = async (req, res) => {
       }
       await LOG(logData).save()
       if (updateData.claimType != "" || updateData.claimType != "New") {
-        console.log("checking ak ++++++++++++++++++++++++++", req.header)
         let udpateclaimAmount = await axios.get(process.env.API_ENDPOINT + "api-v1/claim/checkClaimAmount/" + updateData._id, {
           headers: {
             "x-access-token": req.header["x-access-token"],  // Include the token in the Authorization header
           }
         });
-        console.log("updated data +++++++++++++++++++++++++++++++++++", udpateclaimAmount)
       }
       let checkUpdatedClaim = await claimService.getClaimById(criteria)
 
@@ -1329,15 +1385,29 @@ exports.editClaimStatus = async (req, res) => {
     const checkReseller = await resellerService.getReseller({ _id: checkOrder?.resellerId }, {})
     const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
     const checkServicer = await servicerService.getServiceProviderById({ $or: [{ _id: checkClaim?.servicerId }, { dealerId: checkClaim?.servicerId }, { resellerId: checkClaim?.servicerId }] })
+    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
 
 
     if (data.hasOwnProperty("customerStatus")) {
 
       //Get submitted user
-      const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
       const site_url = `${process.env.SITE_URL}`
       const checkCustomerStatus = await optionService.getOption({ name: "customer_status" })
       const matchedData = checkCustomerStatus?.value.find(status => status.value == data.customerStatus)
+      status.trackStatus = [
+        {
+          status: data.customerStatus,
+          date: new Date(),
+          statusName: checkCustomerStatus.name,
+          userId: checkLoginUser.metaData[0]?._id
+        }
+      ]
+      updateData.customerStatus = [
+        {
+          status: data.customerStatus,
+          date: new Date(),
+        }
+      ]
       if (data.customerStatus == 'product_received') {
         let option = { new: true }
         let claimStatus = await claimService.updateClaim(criteria, { claimFile: 'completed', claimDate: new Date() }, option)
@@ -1347,28 +1417,18 @@ exports.editClaimStatus = async (req, res) => {
             date: new Date()
           }
         ]
+
         status.trackStatus = [
           {
             status: 'completed',
-            date: new Date()
+            date: new Date(),
+            statusName: 'claim_status',
+            userId: checkLoginUser.metaData[0]?._id
+
           }
         ]
         let statusClaim = await claimService.updateClaim(criteria, { updateData }, { new: true })
       }
-
-      updateData.customerStatus = [
-        {
-          status: data.customerStatus,
-          date: new Date()
-        }
-      ]
-
-      status.trackStatus = [
-        {
-          status: data.customerStatus,
-          date: new Date()
-        }
-      ]
 
       //Send notification to all
       let notificationArray = []
@@ -1592,17 +1652,22 @@ exports.editClaimStatus = async (req, res) => {
       let notificationArray = []
       const checkRepairStatus = await optionService.getOption({ name: "repair_status" })
       const matchedData = checkRepairStatus?.value.find(status => status.value == data.repairStatus)
+
       status.trackStatus = [
         {
           status: data.repairStatus,
-          date: new Date()
+          date: new Date(),
+          statusName: checkRepairStatus.name,
+          userId: checkLoginUser.metaData[0]?._id
+
         }
       ]
 
       updateData.repairStatus = [
         {
           status: data.repairStatus,
-          date: new Date()
+          date: new Date(),
+
         }
       ]
       //Send notification to all
@@ -1837,7 +1902,12 @@ exports.editClaimStatus = async (req, res) => {
       status.trackStatus = [
         {
           status: data.claimStatus,
-          date: new Date()
+          date: new Date(),
+          statusName: checkClaimStatus.name,
+          userId: checkLoginUser.metaData[0]?._id
+
+
+
         }
       ]
 
@@ -1955,7 +2025,6 @@ exports.editClaimStatus = async (req, res) => {
       let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkClaim?.servicerId, isPrimary: true } } })
 
       //Get submitted user
-      const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
       const site_url = `${process.env.SITE_URL}`
       if (adminUsers.length > 0) {
         let notificationData1 = {
@@ -2812,6 +2881,9 @@ exports.saveBulkClaim = async (req, res) => {
 
       const emailField = req.body.email;
 
+      const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+
+
       // // Parse the email field
       const emailArray = JSON.parse(emailField);
 
@@ -3432,7 +3504,6 @@ exports.saveBulkClaim = async (req, res) => {
         }
       }
 
-      // console.log("totalDataComing-----------------------------",totalDataComing)
       // return;
       // return;
       let finalArray = []
@@ -3494,6 +3565,26 @@ exports.saveBulkClaim = async (req, res) => {
             diagnosis: issue,
             lossDate: data.lossDate,
             claimFile: 'open',
+            trackStatus: [
+              {
+                status: "open",
+                date: new Date(),
+                statusName: 'claim_status',
+                userId: checkLoginUser.metaData[0]?._id
+              },
+              {
+                status: "request_submitted",
+                date: new Date(),
+                statusName: 'customer_status',
+                userId: checkLoginUser.metaData[0]?._id
+              },
+              {
+                status: "request_sent",
+                date: new Date(),
+                statusName: 'repair_status',
+                userId: checkLoginUser.metaData[0]?._id
+              }
+            ]
           }
           unique_key_number++
           finalArray.push(obj)
@@ -4332,13 +4423,7 @@ exports.sendMessages = async (req, res) => {
     }
     let orderData = await orderService.getOrder({ _id: data.orderId }, { isDeleted: false })
 
-    let checkServicer = await servicerService.getServiceProviderById({
-      $or: [
-        { _id: checkClaim?.servicerId ? checkClaim?.servicerId : orderData?.servicerId },
-        { dealerId: checkClaim?.servicerId ? checkClaim?.servicerId : orderData?.servicerId },
-        { resellerId: checkClaim?.servicerId ? checkClaim?.servicerId : orderData?.servicerId },
-      ]
-    })
+
 
     let settingData = await userService.getSetting({});
 
@@ -4350,6 +4435,13 @@ exports.sendMessages = async (req, res) => {
       })
       return
     }
+    let checkServicer = await servicerService.getServiceProviderById({
+      $or: [
+        { _id: checkClaim?.servicerId ? checkClaim?.servicerId : orderData?.servicerId },
+        { dealerId: checkClaim?.servicerId ? checkClaim?.servicerId : orderData?.servicerId },
+        { resellerId: checkClaim?.servicerId ? checkClaim?.servicerId : orderData?.servicerId },
+      ]
+    })
 
     data.commentedBy = req.userId
     data.commentedTo = req.userId;
@@ -4630,11 +4722,9 @@ exports.sendMessages = async (req, res) => {
       redirectId: base_url
     }
 
-    console.log("emailTo---------------------", emailTo)
     let mailing = await sgMail.send(emailConstant.sendCommentNotification(emailTo?.email, ["noreply@getcover.com"], emailData))
 
     maillogservice.createMailLogFunction(mailing, emailData, [emailTo], process.env.comment_notification)
-    console.log("adminEmail---------------------", adminEmail)
 
     mailing = await sgMail.send(emailConstant.sendCommentNotification(adminEmail, ["noreply@getcover.com"], emailData))
 
@@ -4694,7 +4784,9 @@ exports.statusClaim = async (req, res) => {
         messageData.trackStatus = [
           {
             status: 'completed',
-            date: new Date()
+            date: new Date(),
+            statusName: "claim_status",
+            userId: null
           }
         ]
 
@@ -4938,6 +5030,7 @@ exports.sendStaticEmail = async (req, res) => {
     response: mailing
   })
 }
+
 exports.updateClaimDate = async (req, res) => {
   try {
 
@@ -5174,6 +5267,107 @@ exports.updateClaimDate = async (req, res) => {
     })
   }
 }
+
+exports.uploadPrePostImages = async (req, res) => {
+  try {
+    claimUploadedImages(req, res, async (err) => {
+      let file = req.files;
+      if (file.length > 5) {
+        res.send({
+          code: constants.errorCode,
+          message: "Upload upto 5 images!"
+        })
+        return
+      }
+
+      let flag = req.query.flag
+      let checkClaim = await claimService.getClaimById({ _id: req.params.claimId })
+      if (!checkClaim) {
+        res.send({
+          code: constant.errorCode,
+          message: "Invalid claim id"
+        })
+        return;
+      }
+      let preRepairImage = checkClaim.preRepairImage ? checkClaim.preRepairImage : []
+      let postRepairImage = checkClaim.postRepairImage ? checkClaim.postRepairImage : []
+      const checkPreRepairLength = Number(preRepairImage.length) + Number(file.length)
+      const checkPostRepairLength = Number(postRepairImage.length) + Number(file.length)
+      if (checkPostRepairLength > 5 && flag == "postUpload") {
+        res.send({
+          code: constant.errorCode,
+          message: "You cannot upload more than five images"
+        })
+        return
+      }
+      if (checkPreRepairLength > 5 && flag == "preUpload") {
+        res.send({
+          code: constant.errorCode,
+          message: "You cannot upload more than five images"
+        })
+        return
+      }
+      let updateClaim;
+      if (flag == "preUpload") {
+        preRepairImage = preRepairImage.concat(file)
+        updateClaim = await claimService.updateClaim({ _id: req.params.claimId }, { preRepairImage: preRepairImage }, { new: true })
+      }
+      if (flag == "postUpload") {
+        postRepairImage = postRepairImage.concat(file)
+        updateClaim = await claimService.updateClaim({ _id: req.params.claimId }, { postRepairImage: postRepairImage }, { new: true })
+      }
+      res.send({
+        code: constant.successCode,
+        message: 'Success!',
+        result: updateClaim
+
+      })
+    })
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+    return
+  }
+}
+
+exports.deletePrePostImages = async (req, res) => {
+  let data = req.body;
+  let checkClaim = await claimService.getClaimById({ _id: req.params.claimId });
+  var params = { Bucket: process.env.bucket_name, Key: data.key };
+
+  if (!checkClaim) {
+    res.send({
+      code: constant.errorCode,
+      message: "Invalid Claim Id!"
+    });
+    return;
+  }
+  let update
+  if (data.flag == "preUploadImage") {
+    update = await claimService.updateClaim({ _id: req.params.claimId }, { $pull: { "preRepairImage": { key: data.key } } }, { new: true })
+  }
+  if (data.flag == "postUploadImage") {
+    update = await claimService.updateClaim({ _id: req.params.claimId }, { $pull: { "postRepairImage": { key: data.key } } }, { new: true })
+  }
+  if (update) {
+    S3Bucket.deleteObject(params, function (err, data) {
+      if (err) console.log(err, err.stack);
+      else {
+        console.log(data);
+      }
+    });
+    res.send({
+      code: constant.successCode,
+      message: "Delete Successfully",
+      result: update
+    })
+  }
+
+}
+
 
 
 
