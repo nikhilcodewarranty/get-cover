@@ -4867,6 +4867,7 @@ exports.contactUs = async (req, res) => {
       result.country_name +
       "," +
       result.postal;
+
     emailData = {
       darkLogo:
         process.env.API_ENDPOINT +
@@ -4886,7 +4887,7 @@ exports.contactUs = async (req, res) => {
     //Send email to admin
     mailing = await sgMail.send(
       emailConstant.sendContactUsTemplateAdmin(
-        ["nikhil@codenomad.net"],
+        ["aynr135001@gmail.com"],
         [],
         emailData
       )
