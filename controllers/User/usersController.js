@@ -267,7 +267,7 @@ exports.validateData = async (req, res) => {
 }
 
 // Login User 
-exports.login = async (req, res) => {
+exports.login= async (req, res) => {
   try {
     console.log("req-------------", req.ip)
     // Check if the user with the provided email exists
@@ -316,7 +316,7 @@ exports.login = async (req, res) => {
       }
     }
 
-    if (user.status == false) {
+    if (user.metaData[0].status == false) {
       res.send({
         code: constant.errorCode,
         message: "Your account is not active, please contact to the administration"
@@ -2304,7 +2304,7 @@ exports.updateProfile = async (req, res) => {
     newMetaData[0].firstName = data.firstName ? data.firstName : checkUser.metaData[0].firstName
     newMetaData[0].lastName = data.lastName ? data.lastName : checkUser.metaData[0].lastName
     newMetaData[0].phoneNumber = data.phoneNumber ? data.phoneNumber : checkUser.metaData[0].phoneNumber
-    newMetaData[0].status = data.status
+    // newMetaData[0].status = data.status
     newMetaData[0].position = data.position ? data.position : checkUser.metaData[0].position
     let updateProfile = await userService.updateSingleUser({ email: email }, { metaData: newMetaData }, { new: true })
 
@@ -3687,7 +3687,7 @@ exports.getOptions = async (req, res) => {
   catch (err) {
     res.send({
       code: constant.errorCode,
-      message: err.message
+      message: err.message 
     })
   }
 }
@@ -3975,7 +3975,11 @@ exports.updateContracts = async (req, res) => {
         notEligibleByCustom: true
       }
     }
-    let updateContracts = await contractService.updateManyContract({ orderId: "670d4ca5e7cbbc76c394ef51" }, newValue, { new: true })
+    // let updateContracts = await contractService.updateManyContract({ orderId: "6700495f8fd7504e91fc4b74" }, newValue, { new: true }) //lenox school
+    // let updateContracts = await contractService.updateManyContract({ orderId: "670045d28fd7504e91fc44cf" }, newValue, { new: true }) //natomas school
+    // let updateContracts = await contractService.updateManyContract({ orderId: "6721047d66ebe15c7c6d872c" }, newValue, { new: true }) //amethod school
+    // let updateContracts = await contractService.updateManyContract({ orderId: "670048ad8fd7504e91fc4945" }, newValue, { new: true }) //lemont  school
+
     res.send({
       data: updateContracts
     })

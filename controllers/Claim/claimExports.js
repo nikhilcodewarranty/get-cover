@@ -1825,7 +1825,6 @@ exports.getClaimDetails = async (req, res) => {
       // Log the field if the value is 1 (inclusion)
       if (req.body.projection[field] === 1) {
 
-
         // Handle special fields that need transformation
         console.log(field)
 

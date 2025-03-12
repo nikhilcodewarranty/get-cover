@@ -1360,7 +1360,7 @@ exports.addResellerUser = async (req, res) => {
             };
             mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.com"], emailData))
             await maillogservice.createMailLogFunction(mailing, emailData, dealerUsers, process.env.update_status)
-            
+
             let email = data.email
             let userId = saveData._id
             let resetPasswordCode = randtoken.generate(4, '123456789')
@@ -2587,6 +2587,9 @@ exports.getResellerClaims = async (req, res) => {
                             customerOverAmount: 1,
                             customerClaimAmount: 1,
                             getCoverClaimAmount: 1,
+                            dealerName: "$contracts.orders.dealers.name",
+                            servicerName: "$servicerInfo.name",
+                            customerName: "$contracts.orders.customer.username",
                             dealerSku: 1,
                             servicerId: 1,
                             claimType: 1,
@@ -2748,6 +2751,15 @@ exports.getResellerClaims = async (req, res) => {
                     ]
                 },
             },
+            {
+                $lookup: {
+                    from: "serviceproviders",
+                    localField: "servicerId",
+                    foreignField: "_id",
+                    as: "servicerInfo",
+                }
+            },
+            { $unwind: { path: "$servicerInfo", preserveNullAndEmptyArrays: true } },
             {
                 $lookup: {
                     from: "contracts",
@@ -2995,6 +3007,10 @@ exports.getResellerAsServicerClaims = async (req, res) => {
                             dealerSku: 1,
                             servicerId: 1,
                             claimType: 1,
+                            dealerName: "$contracts.orders.dealers.name",
+                            servicerName: "$servicerInfo.name",
+                            servicerName: "$servicerInfo.name",
+                            customerName: "$contracts.orders.customer.username",
                             customerStatus: 1,
                             trackingNumber: 1,
                             trackingType: 1,
@@ -3103,15 +3119,15 @@ exports.getResellerAsServicerClaims = async (req, res) => {
 
         }
 
-            console.log("checking the data+++++++",req.role)
-            if (req.role == "Dealer") {
+        console.log("checking the data+++++++", req.role)
+        if (req.role == "Dealer") {
             console.log("checking the data+++++++")
             // let getDealer = await dealerService.getAllDealers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
-            let dealerIds =[new mongoose.Types.ObjectId(req.userId)]
+            let dealerIds = [new mongoose.Types.ObjectId(req.userId)]
             dealerMatch = { dealerId: { $in: dealerIds } }
 
         }
-        console.log("checking the data+++++++",dealerMatch)
+        console.log("checking the data+++++++", dealerMatch)
 
         data.resellerMatch = data.resellerMatch ? data.resellerMatch : ""
         if (data.resellerName != "") {
@@ -3172,6 +3188,16 @@ exports.getResellerAsServicerClaims = async (req, res) => {
                     ]
                 },
             },
+            {
+                $lookup: {
+                    from: "serviceproviders",
+                    localField: "servicerId",
+                    foreignField: "_id",
+                    as: "servicerInfo",
+                }
+            },
+            { $unwind: { path: "$servicerInfo", preserveNullAndEmptyArrays: true } },
+
             {
                 $lookup: {
                     from: "contracts",
@@ -3274,7 +3300,7 @@ exports.getResellerAsServicerClaims = async (req, res) => {
 
 
         let result_Array = await Promise.all(resultFiter.map(async (item1) => {
-           let servicer = []
+            let servicer = []
             let mergedData = []
             if (Array.isArray(item1.contracts?.coverageType) && item1.contracts?.coverageType) {
                 mergedData = dynamicOption.value.filter(contract =>
@@ -3295,7 +3321,6 @@ exports.getResellerAsServicerClaims = async (req, res) => {
             }
 
 
-            
             // if (item1.contracts.orders.resellers[0]?.isServicer && item1.contracts.orders.resellers[0]?.status) {
             //     let checkResellerServicer = await providerService.getServiceProviderById({ resellerId: item1.contracts.orders.resellers[0]._id })
             //     servicer.push(checkResellerServicer)
@@ -3336,7 +3361,7 @@ exports.getResellerAsServicerClaims = async (req, res) => {
             code: constant.successCode,
             message: "Success",
             result: result_Array,
-            totalCount,lookupQuery
+            totalCount, lookupQuery
         })
     } catch (err) {
         res.send({
