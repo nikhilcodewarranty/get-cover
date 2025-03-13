@@ -4435,7 +4435,7 @@ exports.resetSetting = async (req, res) => {
           colorCode: "#f2f2f2",
           colorType: "backGroundColor",
         },
-        { 
+        {
           colorCode: "#333333",
           colorType: "textColor",
         },
@@ -4460,6 +4460,28 @@ exports.resetSetting = async (req, res) => {
           colorType: "modelColor",
         },
       ];
+      defaultLightLogo = {
+        fileName: getData[0].logoLight.fileName,
+        name: getData[0].logoLight.name,
+        size: getData[0].logoLight.size,
+      };
+      defaultWhiteLabelLogo = {
+        fileName: getData[0].whiteLabelLogo.fileName,
+        name: getData[0].whiteLabelLogo.name,
+        size: getData[0].whiteLabelLogo.size,
+      };
+      defaultDarkLogo = {
+        fileName: getData[0].logoDark.fileName,
+        name: getData[0].logoDark.name,
+        size: getData[0].logoDark.size,
+      };
+      defaultFavIcon = {
+        fileName: getData[0].favIcon.fileName,
+        name: getData[0].favIcon.name,
+        size: getData[0].favIcon.size,
+      };
+      defaultAddress = getData[0]?.address;
+      defaultTitle = getData[0]?.title;
     }
     response = await userService.updateSetting(
       { _id: getData[0]?._id },
