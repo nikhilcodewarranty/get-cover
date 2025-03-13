@@ -1719,7 +1719,7 @@ exports.getClaimDetails = async (req, res) => {
     let dateMatch = {}
     let dateString = new Date()
 
-    let checkUser = await userService.getUserBy1Id({ _id: req.userId })
+    let checkUser = await userService.getUserById1({ _id: req.userId })
     data.userId = checkUser.metaData[0]._id
     data.claimKeys = data.projection
     let checkReporting = await reportingKeys.findOne({ userId: checkUser.metaData[0]._id })
