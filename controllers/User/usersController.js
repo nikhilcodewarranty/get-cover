@@ -4435,7 +4435,7 @@ exports.resetSetting = async (req, res) => {
           colorCode: "#f2f2f2",
           colorType: "backGroundColor",
         },
-        {
+        { 
           colorCode: "#333333",
           colorType: "textColor",
         },
