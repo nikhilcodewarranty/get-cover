@@ -1903,20 +1903,103 @@ exports.getClaimDetails = async (req, res) => {
           case 'purchaseDate':
             projection["Purchase Date"] = { $arrayElemAt: ["$contractDetail.contractDetail.purchaseDate", 0] };
             break;
+          // case 'noOfClaimPerPeriod':
+          //   projection["# of Claim Per Period"] = { $arrayElemAt: ["$contractDetail.contractDetail.noOfClaimPerPeriod", 0] };
+          //   break;
           case 'noOfClaimPerPeriod':
-            projection["# of Claim Per Period"] = { $arrayElemAt: ["$contractDetail.contractDetail.noOfClaimPerPeriod", 0] };
+            projection["# of Claim Per Period"] = {
+              $let: {
+                vars: {
+                  claimValue: { $arrayElemAt: ["$contractDetail.contractDetail.noOfClaimPerPeriod", 0] }
+                },
+                in: {
+                  $cond: {
+                    if: { $eq: ["$$claimValue", -1] },
+                    then: "Unlimited",
+                    else: "$$claimValue"
+                  }
+                }
+              }
+            };
             break;
+          // case 'noOfClaim':
+          //   projection["No Of Claim"] = { $arrayElemAt: ["$contractDetail.contractDetail.noOfClaim", 0] };
+          //   break;
           case 'noOfClaim':
-            projection["No Of Claim"] = { $arrayElemAt: ["$contractDetail.contractDetail.noOfClaim", 0] };
+            projection["No Of Claim"] = {
+              $let: {
+                vars: {
+                  claimData: { $arrayElemAt: ["$contractDetail.contractDetail.noOfClaim", 0] }
+                },
+                in: {
+                  $cond: {
+                    if: { $eq: ["$$claimData.value", -1] },
+                    then: "Unlimited",
+                    else: { $concat: ["$$claimData.period", "-", { $toString: "$$claimData.value" }] }
+                  }
+                }
+              }
+            };
             break;
+
+          // case 'eligibilty':
+          //   projection["Eligibility"] = { $arrayElemAt: ["$contractDetail.contractDetail.eligibilty", 0] };
+          //   break;
           case 'eligibilty':
-            projection["Eligibility"] = { $arrayElemAt: ["$contractDetail.contractDetail.eligibilty", 0] };
+            projection["Eligible"] = {
+              $let: {
+                vars: {
+                  isEligible: { $arrayElemAt: ["$contractDetail.contractDetail.eligibilty", 0] }
+                },
+                in: {
+                  $cond: {
+                    if: { $eq: ["$$isEligible", true] },
+                    then: "Yes",
+                    else: "No"
+                  }
+                }
+              }
+            };
             break;
+          // case 'isManufacturerWarranty':
+          //   projection["Is Manufacturer Warranty"] = { $arrayElemAt: ["$contractDetail.contractDetail.isManufacturerWarranty", 0] };
+          //   break;
+          // case 'isMaxClaimAmount':
+          //   projection["Is Max Claim Amount"] = { $arrayElemAt: ["$contractDetail.contractDetail.isMaxClaimAmount", 0] };
+          //   break;
+
           case 'isManufacturerWarranty':
-            projection["Is Manufacturer Warranty"] = { $arrayElemAt: ["$contractDetail.contractDetail.isManufacturerWarranty", 0] };
+            projection["Is Manufacturer Warranty"] = {
+              $let: {
+                vars: {
+                  isWarranty: { $arrayElemAt: ["$contractDetail.contractDetail.isManufacturerWarranty", 0] }
+                },
+                in: {
+                  $cond: {
+                    if: { $eq: ["$$isWarranty", true] },
+                    then: "Yes",
+                    else: "No"
+                  }
+                }
+              }
+            };
             break;
+
           case 'isMaxClaimAmount':
-            projection["Is Max Claim Amount"] = { $arrayElemAt: ["$contractDetail.contractDetail.isMaxClaimAmount", 0] };
+            projection["Is Max Claim Amount"] = {
+              $let: {
+                vars: {
+                  isMaxClaim: { $arrayElemAt: ["$contractDetail.contractDetail.isMaxClaimAmount", 0] }
+                },
+                in: {
+                  $cond: {
+                    if: { $eq: ["$$isMaxClaim", true] },
+                    then: "Yes",
+                    else: "No"
+                  }
+                }
+              }
+            };
             break;
           case 'productName':
             projection["Product Sku"] = "$productName";

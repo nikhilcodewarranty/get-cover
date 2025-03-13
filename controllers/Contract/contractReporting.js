@@ -946,7 +946,7 @@ exports.contractDetailReporting = async (req, res) => {
 
         const reportingKeys = require("../../models/User/reportingKeys")
         let checkUser = await userService.getUserById1({ _id: req.userId })
-        console.log("check",checkUser,req.userId)
+        console.log("check", checkUser, req.userId)
         data.userId = checkUser.metaData[0]?._id
         data.contractKeys = data.projection
         let checkReporting = await reportingKeys.findOne({ userId: checkUser.metaData[0]._id })
@@ -1053,6 +1053,22 @@ exports.contractDetailReporting = async (req, res) => {
                         break;
                     case 'vendorOrder':
                         projection["Dealer Purchase Order #"] = "$vendorOrder";
+                        break;
+                    case 'eligibilty':
+                        projection["Eligible"] = {
+                            $let: {
+                                vars: {
+                                    isEligible: { $arrayElemAt: ["$eligibilty", 0] }
+                                },
+                                in: {
+                                    $cond: {
+                                        if: { $eq: ["$$isEligible", true] },
+                                        then: "Yes",
+                                        else: "No"
+                                    }
+                                }
+                            }
+                        };
                         break;
                     case 'priceType':
                         projection["Price Type"] = {
