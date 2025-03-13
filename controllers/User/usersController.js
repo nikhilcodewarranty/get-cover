@@ -4460,6 +4460,28 @@ exports.resetSetting = async (req, res) => {
           colorType: "modelColor",
         },
       ];
+      defaultLightLogo = {
+        fileName: getData[0].logoLight.fileName,
+        name: getData[0].logoLight.name,
+        size: getData[0].logoLight.size,
+      };
+      defaultWhiteLabelLogo = {
+        fileName: getData[0].whiteLabelLogo.fileName,
+        name: getData[0].whiteLabelLogo.name,
+        size: getData[0].whiteLabelLogo.size,
+      };
+      defaultDarkLogo = {
+        fileName: getData[0].logoDark.fileName,
+        name: getData[0].logoDark.name,
+        size: getData[0].logoDark.size,
+      };
+      defaultFavIcon = {
+        fileName: getData[0].favIcon.fileName,
+        name: getData[0].favIcon.name,
+        size: getData[0].favIcon.size,
+      };
+      defaultAddress = getData[0]?.address;
+      defaultTitle = getData[0]?.title;
     }
     response = await userService.updateSetting(
       { _id: getData[0]?._id },
@@ -4564,6 +4586,10 @@ exports.getSetting = async (req, res) => {
       let adminData = await userService.getSetting({
         userId: checkUser.metaData[0].metaId,
       });
+
+      // check if colors is alreday exit for login user
+      setting = setting[0].colorScheme.length <= 0 ? adminData : setting;
+
       setting[0].base_url = baseUrl;
       // Assuming setting[0].logoDark and setting[0].logoLight contain relative paths
       if (setting[0].logoDark && setting[0].logoDark.fileName) {
@@ -4597,8 +4623,6 @@ exports.getSetting = async (req, res) => {
       const chartSecondColorExist = setting[0].colorScheme.some(
         (color) => color.colorType === "chartSecondColor"
       );
-      console.log("chartSecondColorExist", chartSecondColorExist);
-      console.log("chartSecondColor", chartSecondColor);
 
       if (sideBarColor) {
         setting[0].adminSideBarColor = sideBarColor;
@@ -4684,14 +4708,11 @@ exports.preLoginData = async (req, res) => {
     //   return
     // }
 
-    console.log("ewewrwerwerwerwerwerwerr-------------------------");
-
     const checkUser = await userService.getUserById1({
       metaData: {
         $elemMatch: { roleId: process.env.super_admin, isPrimary: true },
       },
     });
-    console.log("checkUser-------------------------", checkUser);
     let setting = await userService.getSetting({
       userId: checkUser.metaData[0].metaId,
     });
