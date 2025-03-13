@@ -1723,7 +1723,7 @@ exports.getClaimDetails = async (req, res) => {
     data.userId = checkUser.metaData[0]._id
     data.claimKeys = data.projection
     let checkReporting = await reportingKeys.findOne({ userId: checkUser.metaData[0]._id })
-    if (!checkReporting) {
+    if (checkReporting) {
       let updateData = await reportingKeys.findOneAndUpdate({ _id: checkReporting._id }, data, { new: true })
     } else {
       let saveData = await reportingKeys(data).save()
@@ -2310,7 +2310,7 @@ exports.getClaimDetails = async (req, res) => {
   } catch (err) {
     res.send({
       code: constant.errorCode,
-      message: err.message
+      message: err.stack
     })
   }
 }
