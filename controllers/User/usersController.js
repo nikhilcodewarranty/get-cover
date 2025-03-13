@@ -4588,8 +4588,8 @@ exports.getSetting = async (req, res) => {
       });
 
       // check if colors is alreday exit for login user
-      setting = setting[0].colorScheme.length > 0 ? adminData : setting;
-      
+      setting = setting[0].colorScheme.length <= 0 ? adminData : setting;
+
       setting[0].base_url = baseUrl;
       // Assuming setting[0].logoDark and setting[0].logoLight contain relative paths
       if (setting[0].logoDark && setting[0].logoDark.fileName) {
