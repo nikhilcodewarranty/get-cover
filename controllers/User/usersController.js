@@ -4705,14 +4705,11 @@ exports.preLoginData = async (req, res) => {
     //   return
     // }
 
-    console.log("ewewrwerwerwerwerwerwerr-------------------------");
-
     const checkUser = await userService.getUserById1({
       metaData: {
         $elemMatch: { roleId: process.env.super_admin, isPrimary: true },
       },
     });
-    console.log("checkUser-------------------------", checkUser);
     let setting = await userService.getSetting({
       userId: checkUser.metaData[0].metaId,
     });
