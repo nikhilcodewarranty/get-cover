@@ -1140,9 +1140,13 @@ exports.createReportingKeys = async (req, res) => {
     }
 }
 
+const reportingConstant = require('../../config/reportingKeys')
+
 exports.getReportingKeys = async (req, res) => {
     try {
-        let getUser = await userService.getUserById1({ _id: req.userId })
+        let getUser = await userService.getUserById1({ _id: req.teammateId })
+
+        console.log(reportingConstant[req.role],req.role)
         if (!getUser) {
             res.send({
                 code: constant.errorCode,
@@ -1151,11 +1155,25 @@ exports.getReportingKeys = async (req, res) => {
             return
         }
         let getKeys = await reportingKeys.findOne({ userId: getUser.metaData[0]._id })
-        res.send({
-            code: constant.successCode,
-            messsage: "Success",
-            result: getKeys
-        })
+        if (!getKeys) {
+            getKeys = {
+                userId: req.userId,
+                claimKeys: reportingConstant[req.role]?.claimKeys,
+                contactKeys: reportingConstant[req.role]?.contractKeys
+            }
+            res.send({
+                code: constant.successCode,
+                messsage: "Success",
+                result: getKeys
+            })
+        } else {
+            res.send({
+                code: constant.successCode,
+                messsage: "Success",
+                result: getKeys
+            })
+        }
+
     } catch (err) {
         res.send({
             code: constant.errorCode,
