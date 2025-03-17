@@ -947,13 +947,22 @@ exports.contractDetailReporting = async (req, res) => {
         const reportingKeys = require("../../models/User/reportingKeys")
         let checkUser = await userService.getUserById1({ _id: req.userId })
         console.log("check", checkUser, req.userId)
-        data.userId = checkUser.metaData[0]?._id
-        data.contractKeys = data.projection
+        // data.userId = checkUser.metaData[0]?._id
+        // data.contractKeys = data.projection
+        let newReprotingValues = {
+            $set: {
+                contractKeys: data.projection
+            }
+        }
+        let newObjectValue = {
+            userId: checkUser.metaData[0]?._id,
+            contractKeys: data.projection
+        }
         let checkReporting = await reportingKeys.findOne({ userId: checkUser.metaData[0]._id })
         if (checkReporting) {
-            let updateData = await reportingKeys.findOneAndUpdate({ _id: checkReporting._id }, data, { new: true })
+            let updateData = await reportingKeys.findOneAndUpdate({ _id: checkReporting._id }, newReprotingValues, { new: true })
         } else {
-            let saveData = await reportingKeys(data).save()
+            let saveData = await reportingKeys(newObjectValue).save()
         }
 
         if (req.role == 'Dealer') {
