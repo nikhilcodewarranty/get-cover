@@ -1828,6 +1828,7 @@ exports.getClaimDetails = async (req, res) => {
     const projection = {};
 
     // Loop through each field in req.body.projection and dynamically build the projection
+    req.body.projection.unique_key = 1
 
     function formatFieldName(fieldName) {
       console.log("checking-------------", fieldName)
