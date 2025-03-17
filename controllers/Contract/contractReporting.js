@@ -1017,7 +1017,7 @@ exports.contractDetailReporting = async (req, res) => {
         const projection = {};
 
         // Loop through each field in req.body.projection and dynamically build the projection
-
+        req.body.projection.unique_key = 1
         function formatFieldName(fieldName) {
             console.log("checking-------------", fieldName)
             return fieldName
@@ -1118,19 +1118,10 @@ exports.contractDetailReporting = async (req, res) => {
                         // For other fields, simply include them as-is
                         projection[field1] = `${"$" + field}`;
                 }
-            } else if (req.body.projection.unique_key === 0) {
-                switch (field) {
-                    case 'unique_key':
-                        projection["Contract ID"] = "$unique_key";
-                        break;
-                    default:
-                        let field1 = field
-                        field1 = formatFieldName(field1)
-                        // For other fields, simply include them as-is
-                        projection[field1] = `${"$" + field}`;
-                }
             }
         });
+
+        console.log("checking the projection-------------", projection)
 
 
 
