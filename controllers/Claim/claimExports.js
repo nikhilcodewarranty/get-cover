@@ -2005,6 +2005,15 @@ exports.getClaimDetails = async (req, res) => {
           case 'productName':
             projection["Product Sku"] = "$productName";
             break;
+          case "totalAmount":
+            projection["Total Amount"] = {
+              $cond: {
+                if: { $eq: ["$claimFile", "completed"] },
+                then: "$totalAmount",
+                else: 0
+              }
+            };
+            break;
           case 'shippingTo':
             projection["Customer Shipping Address"] = "$shippingTo";
             break;
