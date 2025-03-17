@@ -1118,6 +1118,17 @@ exports.contractDetailReporting = async (req, res) => {
                         // For other fields, simply include them as-is
                         projection[field1] = `${"$" + field}`;
                 }
+            } else if (req.body.projection.unique_key === 0) {
+                switch (field) {
+                    case 'unique_key':
+                        projection["Contract ID"] = "$unique_key";
+                        break;
+                    default:
+                        let field1 = field
+                        field1 = formatFieldName(field1)
+                        // For other fields, simply include them as-is
+                        projection[field1] = `${"$" + field}`;
+                }
             }
         });
 
@@ -1404,9 +1415,9 @@ exports.contractDetailReporting = async (req, res) => {
                                     }
                                 },
                                 { $unwind: "$priceCategory" },
-                                // {
-                                //     "$project": { ...projection, _id: 0 }
-                                // }
+                                {
+                                    "$project": { ...projection, _id: 0 }
+                                }
 
                             ],
                         },
@@ -1458,11 +1469,6 @@ exports.contractDetailReporting = async (req, res) => {
                                         as: "servicer",
                                     }
                                 },
-                                // {
-                                //     $match: {
-                                //         $expr: { $eq: ["$orderProductId", "$orderData.productsArray._id"] }
-                                //     }
-                                // },
                                 {
                                     "$addFields": {
                                         "filteredProduct": {
@@ -1474,7 +1480,6 @@ exports.contractDetailReporting = async (req, res) => {
                                         }
                                     }
                                 },
-                                // { $unwind: "$orderData.productsArray" },
                                 {
                                     "$addFields": {
                                         "firstCategoryId": "$$ROOT.productsArray"
