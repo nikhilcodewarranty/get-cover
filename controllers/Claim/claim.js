@@ -77,8 +77,6 @@ var uploadP = multer({
   },
 }).single("file");
 
-
-
 //Upload Claim Repair Images
 const claimRepairImages = multerS3({
   s3: s3,
