@@ -1896,10 +1896,10 @@ exports.getClaimDetails = async (req, res) => {
             projection["Coverage End Date"] = { $arrayElemAt: ["$contractDetail.contractDetail.coverageEndDate", 0] };
             break;
           case 'partsWarrantyDate':
-            projection[field] = { $arrayElemAt: ["$contractDetail.contractDetail.partsWarrantyDate", 0] };
+            projection[field] = { $arrayElemAt: ["$contractDetail.contractDetail.partsWarranty", 0] };
             break;
           case 'labourWarrantyDate':
-            projection["Labour Warranty Date"] = { $arrayElemAt: ["$contractDetail.contractDetail.labourWarrantyDate", 0] };
+            projection["Labour Warranty Date"] = { $arrayElemAt: ["$contractDetail.contractDetail.labourWarranty", 0] };
             break;
           case 'purchaseDate':
             projection["Purchase Date"] = { $arrayElemAt: ["$contractDetail.contractDetail.purchaseDate", 0] };
@@ -1908,7 +1908,7 @@ exports.getClaimDetails = async (req, res) => {
           //   projection["# of Claim Per Period"] = { $arrayElemAt: ["$contractDetail.contractDetail.noOfClaimPerPeriod", 0] };
           //   break;
           case 'noOfClaimPerPeriod':
-            projection["# of Claim Per Period"] = {
+            projection["No of Claim Over the Certain Period"] = {
               $let: {
                 vars: {
                   claimValue: { $arrayElemAt: ["$contractDetail.contractDetail.noOfClaimPerPeriod", 0] }
@@ -1927,7 +1927,7 @@ exports.getClaimDetails = async (req, res) => {
           //   projection["No Of Claim"] = { $arrayElemAt: ["$contractDetail.contractDetail.noOfClaim", 0] };
           //   break;
           case 'noOfClaim':
-            projection["No Of Claim"] = {
+            projection["No of Claims in Coverage Period"] = {
               $let: {
                 vars: {
                   claimData: { $arrayElemAt: ["$contractDetail.contractDetail.noOfClaim", 0] }
