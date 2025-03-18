@@ -945,7 +945,7 @@ exports.contractDetailReporting = async (req, res) => {
         let userSearchCheck = 0
 
         const reportingKeys = require("../../models/User/reportingKeys")
-        let checkUser = await userService.getUserById1({ _id: req.userId })
+        let checkUser = await userService.getUserById1({ _id: req.teammateId })
         console.log("check", checkUser, req.userId)
         // data.userId = checkUser.metaData[0]?._id
         // data.contractKeys = data.projection
