@@ -123,7 +123,7 @@ module.exports = {
             "isMaxClaimAmount": 1,
             "venderOrder": 1
         },
-        "contractKeys": {
+        contractKeys: {
             "venderOrder": 1,
             "orderId": 1,
             "manufacture": 1,
@@ -153,7 +153,7 @@ module.exports = {
         }
     },
     Servicer: {
-        "claimKeys": {
+        claimKeys: {
             "orderId": 1,
             "dealerSku": 1,
             "submittedBy": 1,
