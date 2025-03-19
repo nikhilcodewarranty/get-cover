@@ -709,19 +709,7 @@ exports.exportDataForClaim = async (req, res) => {
         const { productValue, claimAmount } = claimObject.contracts;
         let query;
         claimObject.contracts.orders.customer.username = claimObject.contracts.orders.customer.username
-        // if (req.role == "Customer") {
-        //   if (claimObject?.submittedBy != '') {
-        //     query = { email: claimObject?.submittedBy }
-        //   }
-        //   else {
-        //     query = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: claimObject.contracts.orders.customer._id, isPrimary: true } } })
-
-        //   }
-        //   const customerDetail = await userService.getUserById1(query)
-        //   claimObject.contracts.orders.customer.username = customerDetail?.metaData[0]?.firstName + " " + customerDetail?.metaData[0]?.lastName
-        // }
-
-        // Simulate an async operation if needed (e.g., fetching data)
+    
         const thresholdLimitValue = (getTheThresholdLimit?.threshHoldLimit.value / 100) * productValue;
 
 
@@ -2202,6 +2190,18 @@ exports.getClaimDetails = async (req, res) => {
           as: "customerDetail"
         }
       },
+      {
+        $unwind: { path: "$resellerDetail", preserveNullAndEmptyArrays: true }
+      },
+      {
+        $unwind: { path: "$servicerDetail", preserveNullAndEmptyArrays: true }
+      },
+      // {
+      //   $unwind: { path: "$priceBookDetail", preserveNullAndEmptyArrays: true }
+      // },
+      // {
+      //   $unwind: { path: "$priceBookDetail", preserveNullAndEmptyArrays: true }
+      // },
       {
         $lookup: {
           from: "pricebooks",
