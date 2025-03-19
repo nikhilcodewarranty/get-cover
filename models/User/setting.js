@@ -1,106 +1,120 @@
 const mongoose = require("mongoose");
-const connection = require('../../db');
+const connection = require("../../db");
 // Define the default resetColor array
-
 
 const settingSchema = new mongoose.Schema({
   logoLight: {
     type: {},
-    default: {}
+    default: {},
   },
   whiteLabelLogo: {
     type: {},
-    default: {}
+    default: {},
   },
   isWhiteLabelShow: {
     type: Boolean,
-    default: false
+    default: false,
+  },
+  currencyFormat: {
+    type: {
+      currencyName: {
+        type: String,
+        enum: ["AUD", "GBP", "INR", "USD", "KWD", "EUR"],
+      },
+      currencySymbol: {
+        type: String,
+        enum: ["A$", "£", "₹", "$", "د.ك", "€"],
+      },
+    },
+  },
+  dateTimeFormat: {
+    type: String,
   },
   logoDark: {
     type: {},
-    default: {}
+    default: {},
   },
   favIcon: {
     type: {},
-    default: {}
+    default: {},
   },
   title: {
     type: String,
-    default: ''
+    default: "",
   },
   colorScheme: {
     type: [
       {
         colorCode: {
           type: String,
-          default: ''
+          default: "",
         },
         colorType: {
           type: String,
-          default: ''
-        }
-      }
-    ]
+          default: "",
+        },
+      },
+    ],
   },
   address: {
     type: String,
-    default: ''
+    default: "",
   },
   paymentDetail: {
     type: String,
-    default: ''
+    default: "",
   },
   defaultColor: {
     type: [
       {
         colorCode: {
           type: String,
-          default: ''
+          default: "",
         },
         colorType: {
           type: String,
-          default: ''
-        }
-      }
+          default: "",
+        },
+      },
     ],
-    default: [] // Set the default value
+    default: [], // Set the default value
   },
   defaultLightLogo: {
     type: {},
-    default: {}
+    default: {},
   },
   defaultWhiteLabelLogo: {
     type: {},
-    default: {}
+    default: {},
   },
   defaultDarkLogo: {
     type: {},
-    default: {}
+    default: {},
   },
   defaultFavIcon: {
     type: {},
-    default: {}
+    default: {},
   },
   defaultTitle: {
     type: String,
-    default: ''
+    default: "",
   },
   defaultPaymentDetail: {
     type: String,
-    default: ''
+    default: "",
   },
   defaultAddress: {
     type: String,
-    default: ''
+    default: "",
   },
   setDefault: {
     type: Number,
-    default: 0
+    default: 0,
   },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    default: null
-  }
+    default: null,
+  },
 });
 
 module.exports = connection.userConnection.model("setting", settingSchema);

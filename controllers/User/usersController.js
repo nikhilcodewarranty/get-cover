@@ -3970,23 +3970,32 @@ exports.addMembers = async (req, res) => {
       link: resetLink,
       title: settingData[0]?.title,
       servicerName: data.firstName,
-      role: req.role == 'Super Admin' ? 'Admin' : req.role,
-      servicerName: data.firstName
-    }
-    console.log("sdfsfsddfsfdsdsd", emailData)
-    const resetPassword = await sgMail.send(emailConstant.servicerApproval(data.email, {
-      flag: "created",
-      link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-      address: settingData[0]?.address, role: req.role == 'Super Admin' ? 'Admin' : req.role,
-      subject: "Set Password",
-      link: resetLink,
-      title: settingData[0]?.title,
+      role: req.role == "Super Admin" ? "Admin" : req.role,
       servicerName: data.firstName,
-      role: req.role == 'Super Admin' ? 'Admin' : req.role,
-      servicerName: data.firstName
-    }))
-  
+    };
+    console.log("sdfsfsddfsfdsdsd", emailData);
+    const resetPassword = await sgMail.send(
+      emailConstant.servicerApproval(data.email, {
+        flag: "created",
+        link: resetLink,
+        darkLogo:
+          process.env.API_ENDPOINT +
+          "uploads/logo/" +
+          settingData[0]?.logoDark.fileName,
+        lightLogo:
+          process.env.API_ENDPOINT +
+          "uploads/logo/" +
+          settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        role: req.role == "Super Admin" ? "Admin" : req.role,
+        subject: "Set Password",
+        link: resetLink,
+        title: settingData[0]?.title,
+        servicerName: data.firstName,
+        role: req.role == "Super Admin" ? "Admin" : req.role,
+        servicerName: data.firstName,
+      })
+    );
 
     maillogservice.createMailLogFunction(
       resetPassword,
@@ -4543,6 +4552,50 @@ exports.setDefault = async (req, res) => {
   }
 };
 
+//Update Currency and Date Format for super admin
+
+exports.UpdateCurrenyDateFormat = async (req, res) => {
+  try {
+    const checkUser = await userService.getUserById1({
+      metaData: {
+        $elemMatch: { roleId: process.env.super_admin, isPrimary: true },
+      },
+    });
+    if (!checkUser) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to find user!",
+      });
+      return;
+    }
+
+    let updateSetting = await userService.updateSetting(
+      { _id: checkUser.metaData[0].metaId },
+      data,
+      {
+        new: true,
+      }
+    );
+    
+    if (!updateSetting) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to update",
+      });
+    }
+    res.send({
+      code: constant.successCode,
+      message: "Success!",
+      result: updateSetting,
+    });
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message,
+    });
+  }
+};
+
 //Get Setting Data
 // exports.getSetting = async (req, res) => {
 //   try {
@@ -4781,6 +4834,7 @@ exports.getSetting = async (req, res) => {
         // Repeat for any other properties that need the base_url prepended
       }
     }
+
     res.send({
       code: constant.successCode,
       message: "Success!",
@@ -4954,17 +5008,19 @@ exports.contactUs = async (req, res) => {
           $and: [
             { "registerNotifications.contactFormB2c": true },
             { status: true },
-            { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") }
-
-          ]
-        }
+            { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+          ],
+        },
       },
-    }
+    };
 
-    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminNotification, { email: 1, metaData: 1 })
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(
+      adminNotification,
+      { email: 1, metaData: 1 }
+    );
 
-    let adminCC = adminUsers.map(user => user.email)
-    
+    let adminCC = adminUsers.map((user) => user.email);
+
     let settingData = await userService.getSetting({});
 
     let emailData = {
@@ -5023,7 +5079,13 @@ exports.contactUs = async (req, res) => {
       contactForm: data,
     };
     //Send email to admin
-    mailing = await sgMail.send(emailConstant.sendContactUsTemplateAdmin(adminCC, ["noreply@getcover.com"], emailData))
+    mailing = await sgMail.send(
+      emailConstant.sendContactUsTemplateAdmin(
+        adminCC,
+        ["noreply@getcover.com"],
+        emailData
+      )
+    );
     res.send({
       code: constant.successCode,
       message: "Record save successfully!",
