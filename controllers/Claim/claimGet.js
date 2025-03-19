@@ -2223,7 +2223,8 @@ exports.getClaimById = async (req, res) => {
           pipeline: [
             {
               $project: {
-                name: 1
+                name: 1,
+                isServicer:1
               }
             }
           ]
@@ -2243,7 +2244,9 @@ exports.getClaimById = async (req, res) => {
           pipeline: [
             {
               $project: {
-                name: 1
+                name: 1,
+                isServicer:1
+
               }
             }
           ]
