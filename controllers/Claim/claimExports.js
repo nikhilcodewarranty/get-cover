@@ -1747,16 +1747,16 @@ exports.getClaimDetails = async (req, res) => {
       match = { resellerId: new mongoose.Types.ObjectId(req.userId) }
     }
 
-    if (data.flag == "dealer") {
+    if (data.flag == "Dealer") {
       match1 = { dealerId: new mongoose.Types.ObjectId(data.userId) }
     }
-    if (data.flag == "reseller") {
+    if (data.flag == "Reseller") {
       match1 = { resellerId: new mongoose.Types.ObjectId(data.userId) }
     }
-    if (data.flag == "servicer") {
+    if (data.flag == "Servicer") {
       match1 = { servicerId: new mongoose.Types.ObjectId(data.userId) }
     }
-    if (data.flag == "customer") {
+    if (data.flag == "Customer") {
       match1 = { customerId: new mongoose.Types.ObjectId(data.userId) }
     }
 
