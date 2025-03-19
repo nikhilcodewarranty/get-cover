@@ -6,7 +6,7 @@ const priceBookService = require('../../services/PriceBook/priceBookService')
 const providerService = require('../../services/Provider/providerService')
 const users = require("../../models/User/users");
 const maillogservice = require("../../services/User/maillogServices");
-
+const reportingKeys = require("../../models/User/reportingKeys")
 const role = require("../../models/User/role");
 const logs = require('../../models/User/logs');
 const setting = require("../../models/User/setting");
@@ -759,7 +759,6 @@ exports.createServiceProvider = async (req, res) => {
     }
 };
 
-
 exports.updateData = async (req, res) => {
     try {
         let findUser = await userService.findUser()
@@ -795,7 +794,6 @@ exports.updateData = async (req, res) => {
         })
     }
 }
-
 
 exports.getUserNotificationData = async (req, res) => {
     try {
@@ -1084,6 +1082,98 @@ exports.updateNotificationData = async (req, res) => {
             message: "Successfully updated the data",
             result: { notifications: metaData, _id: updateUserData._id }
         })
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
+exports.createReportingKeys = async (req, res) => {
+    try {
+        let data = req.body
+        let checkUser = await userService.getUserById({ _id: req.userId })
+        if (!checkUser) {
+            res.send({
+                code: constant.errorCode,
+                message: "Invalid token"
+            })
+            return
+        }
+        data.userId = checkUser.metaData[0]._id
+        let checkReporting = await reportingKeys.findOne({ userId: checkUser.metaData[0]._id })
+        if (!checkReporting) {
+            let updateData = await reportingKeys.findOneAndUpdate({ _id: checkReporting._id }, data, { new: true })
+            if (!updateData) {
+                res.send({
+                    code: constant.errorCode,
+                    message: "Unable to save the data"
+                })
+            } else {
+                res.send({
+                    code: constant.successCode,
+                    message: "Success"
+                })
+            }
+        } else {
+            let saveData = await reportingKeys(data).save()
+
+            if (!saveData) {
+                res.send({
+                    code: constant.errorCode,
+                    message: "Unable to save the data"
+                })
+            } else {
+                res.send({
+                    code: constant.successCode,
+                    message: "Success"
+                })
+            }
+        }
+
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
+const reportingConstant = require('../../config/reportingKeys')
+
+exports.getReportingKeys = async (req, res) => {
+    try {
+        let getUser = await userService.getUserById1({ _id: req.teammateId })
+
+        console.log(reportingConstant[req.role],req.role)
+        if (!getUser) {
+            res.send({
+                code: constant.errorCode,
+                message: "Invalid token"
+            })
+            return
+        }
+        let getKeys = await reportingKeys.findOne({ userId: getUser.metaData[0]._id })
+        if (!getKeys) {
+            getKeys = {
+                userId: req.userId,
+                claimKeys: reportingConstant[req.role]?.claimKeys,
+                contactKeys: reportingConstant[req.role]?.contractKeys
+            }
+            res.send({
+                code: constant.successCode,
+                messsage: "Success",
+                result: getKeys
+            })
+        } else {
+            res.send({
+                code: constant.successCode,
+                messsage: "Success",
+                result: getKeys
+            })
+        }
+
     } catch (err) {
         res.send({
             code: constant.errorCode,

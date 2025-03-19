@@ -812,7 +812,9 @@ exports.addCustomerUser = async (req, res) => {
           firstName: data.firstName,
           lastName: data.lastName,
           phoneNumber: data.phoneNumber,
+          addressId: data.addressId,
           position: data.position,
+          addressId:data.addressId,
           isPrimary: false,
           dialCode: data.dialCode ? data.dialCode : "+1"
 
@@ -820,7 +822,6 @@ exports.addCustomerUser = async (req, res) => {
       ]
 
     }
-
 
     let saveData = await userService.createUser(metaData)
     if (!saveData) {
@@ -1598,17 +1599,17 @@ exports.getCustomerDetails = async (req, res) => {
     }
 
     // Add a new primary address to the addresses array
-    if (getCustomer[0]?.addresses) {
-      getCustomer[0].addresses.push({
-        address: getCustomer[0]?.street,
-        city: getCustomer[0]?.city,
-        state: getCustomer[0]?.state,
-        zip: getCustomer[0]?.zip,
-        isPrimary: true,
-      });
-      // Sort the addresses array to place isPrimary: true at the top
-      getCustomer[0].addresses.sort((a, b) => b.isPrimary - a.isPrimary);
-    }
+    // if (getCustomer[0]?.addresses) {
+    //   getCustomer[0].addresses.push({
+    //     address: getCustomer[0]?.street,
+    //     city: getCustomer[0]?.city,
+    //     state: getCustomer[0]?.state,
+    //     zip: getCustomer[0]?.zip,
+    //     isPrimary: true,
+    //   });
+    //   // Sort the addresses array to place isPrimary: true at the top
+    //   getCustomer[0].addresses.sort((a, b) => b.isPrimary - a.isPrimary);
+    // }
 
 
     // Prepare loginMember details

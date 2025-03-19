@@ -1007,6 +1007,9 @@ exports.getDealerClaims = async (req, res) => {
                             trackingType: 1,
                             repairParts: 1,
                             diagnosis: 1,
+                            dealerName: "$contracts.orders.dealers.name",
+                            servicerName: "$servicerInfo.name",
+                            customerName: "$contracts.orders.customer.username",
                             claimStatus: 1,
                             repairStatus: 1,
                             "contracts.unique_key": 1,
@@ -1087,6 +1090,15 @@ exports.getDealerClaims = async (req, res) => {
                     ]
                 },
             },
+            {
+                $lookup: {
+                    from: "serviceproviders",
+                    localField: "servicerId",
+                    foreignField: "_id",
+                    as: "servicerInfo",
+                }
+            },
+            { $unwind: { path: "$servicerInfo", preserveNullAndEmptyArrays: true } },
             {
                 $lookup: {
                     from: "contracts",
@@ -1443,6 +1455,10 @@ exports.getDealerAsServicerClaims = async (req, res) => {
                             getcoverOverAmount: 1,
                             customerOverAmount: 1,
                             customerClaimAmount: 1,
+                            dealerName: "$contracts.orders.dealers.name",
+                            servicerName: "$servicerInfo.name",
+                            servicerName: "$servicerInfo.name",
+                            customerName: "$contracts.orders.customer.username",
                             getCoverClaimAmount: 1,
                             trackingNumber: 1,
                             trackingType: 1,
@@ -1528,6 +1544,16 @@ exports.getDealerAsServicerClaims = async (req, res) => {
                     ]
                 },
             },
+            {
+                $lookup: {
+                    from: "serviceproviders",
+                    localField: "servicerId",
+                    foreignField: "_id",
+                    as: "servicerInfo",
+                }
+            },
+            { $unwind: { path: "$servicerInfo", preserveNullAndEmptyArrays: true } },
+
             {
                 $lookup: {
                     from: "contracts",
@@ -1867,7 +1893,7 @@ exports.getDealerServicers = async (req, res) => {
             const claimValue = valueClaim.find(claim => claim._id?.toString() === item1._id?.toString())
             const claimNumber = numberOfClaims.find(claim => claim._id?.toString() === item1._id?.toString())
             const filtered = resellerIds.filter(id => id.toString() === item1?.resellerId?.toString());
-            let matchDealerSelf = req.params.dealerId.toString()===item1?.dealerId?.toString()
+            let matchDealerSelf = req.params.dealerId.toString() === item1?.dealerId?.toString()
             // let isAction = resellerIds.find(resellerId=>resellerId?.toString()===item1?.resellerId.toString())
             // console.log("isAction=============",isAction)
             if (matchingItem) {
@@ -2872,3 +2898,22 @@ exports.getUserByDealerId = async (req, res) => {
         });
     };
 };
+
+
+// exports.getDealerServicerInClaim = async(req,res)=>{
+//     try{
+//         let data = req.body
+//         let getServicers = await claimService.getClaimById({_id:req.params.claimId})
+//         if(!getServicers){
+//             res.send({
+//                 code:constant.errorCode,
+//                 message:"Invalid claim ID"
+//             })
+//         }
+//     }catch(err){
+//         res.send({
+//             code:constant.errorCode,
+//             message:err.message
+//         })
+//     }
+// }

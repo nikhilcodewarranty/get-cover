@@ -2596,6 +2596,10 @@ exports.getServicerClaims = async (req, res) => {
               getcoverOverAmount: 1,
               customerOverAmount: 1,
               servicerId: 1,
+              dealerName:"$contracts.orders.dealers.name",
+              servicerName:"$servicerInfo.name",
+              servicerName:"$servicerInfo.name",
+              customerName:"$contracts.orders.customer.username",
               dealerSku: 1,
               customerStatus: 1,
               repairParts: 1,
@@ -2732,6 +2736,15 @@ exports.getServicerClaims = async (req, res) => {
           ]
         },
       },
+      {
+        $lookup: {
+          from: "serviceproviders",
+          localField: "servicerId",
+          foreignField: "_id",
+          as: "servicerInfo",
+        }
+      },
+      { $unwind: { path: "$servicerInfo", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: "contracts",
@@ -3081,6 +3094,10 @@ exports.paidUnpaidClaim = async (req, res) => {
               totalAmount: 1,
               servicerId: 1,
               getcoverOverAmount: 1,
+              dealerName:"$contracts.orders.dealers.name",
+              servicerName:"$servicerInfo.name",
+              servicerName:"$servicerInfo.name",
+              customerName:"$contracts.orders.customer.username",
               customerOverAmount: 1,
               approveDate: 1,
               customerClaimAmount: 1,
@@ -3202,6 +3219,15 @@ exports.paidUnpaidClaim = async (req, res) => {
           ]
         },
       },
+      {
+        $lookup: {
+          from: "serviceproviders",
+          localField: "servicerId",
+          foreignField: "_id",
+          as: "servicerInfo",
+        }
+      },
+      { $unwind: { path: "$servicerInfo", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: "contracts",
@@ -3586,9 +3612,6 @@ exports.getServicerColorSetting = async (req, res) => {
     })
   }
 }
-
-
-
 
 exports.updateClaimsApproveDate = async (req, res) => {
   try {

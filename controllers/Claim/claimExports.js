@@ -11,6 +11,7 @@ const servicerService = require("../../services/Provider/providerService");
 const optionService = require("../../services/User/optionsService");
 const priceBookService = require("../../services/PriceBook/priceBookService");
 const customerService = require("../../services/Customer/customerService");
+const reportingKeys = require("../../models/User/reportingKeys")
 const providerService = require("../../services/Provider/providerService");
 const resellerService = require("../../services/Dealer/resellerService");
 const dealerService = require("../../services/Dealer/dealerService");
@@ -53,7 +54,6 @@ const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, d
   data.forEach((sheetData, index) => {
     let sheetName;
 
-    console.log("role===================================", sheetData)
     if (role == "Super Admin") {
       if (index == 0) {
         sheetName = "summary"
@@ -128,7 +128,6 @@ const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, d
       }
     }
 
-
     const sheet = workbook.addWorksheet(`${sheetName}`);
     console.log("role===================================", role)
 
@@ -170,7 +169,6 @@ const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, d
     throw error;
   }
 };
-
 
 const createExcelFileWithMultipleSheets1 = async (data, bucketName, folderName, dateString, role) => {
   console.log("Input data:", JSON.stringify(data, null, 2));
@@ -231,8 +229,6 @@ const createExcelFileWithMultipleSheets1 = async (data, bucketName, folderName, 
     throw error;
   }
 };
-
-
 
 exports.exportDataForClaim = async (req, res) => {
   try {
@@ -894,7 +890,6 @@ exports.exportDataForClaim = async (req, res) => {
       for (const item of resultArray) {
         // Extract servicer name
         let servicerName = item?.servicerId;
-        console.log("servicer name ====================================", servicerName)
         if (servicerName == null) {
           servicerName = new mongoose.Types.ObjectId('679f52b0c9d8100000000000')
         }
@@ -1049,11 +1044,6 @@ exports.exportDataForClaim = async (req, res) => {
     const servicerData = await groupDataByServicer(result_Array);
     const resellerData = groupDataByReseller(result_Array);
     let customerArray = groupDataByCustomer(result_Array)
-
-    // console.log("9999999999999999------------", servicerData)
-    // console.log("7777777777777777------------", resellerData)
-
-
     let summary = result_Array.reduce(
       (acc, item) => {
         // Increment total claims
@@ -1707,6 +1697,627 @@ exports.paidUnpaidClaimReporting = async (req, res) => {
     // })
   }
   catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.stack
+    })
+  }
+}
+
+exports.getClaimDetails = async (req, res) => {
+  try {
+    let data = req.body
+    let query = { isDeleted: false };
+    let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+    let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+    let limitData = Number(pageLimit)
+    let match = {};
+    let match1 = {};
+    let servicerMatch = {}
+    let dealerMatch = {}
+    let resellerMatch = {}
+    let dateMatch = {}
+    let dateString = new Date()
+
+    let checkUser = await userService.getUserById1({ _id: req.teammateId })
+    data.userId = checkUser.metaData[0]._id
+    data.claimKeys = data.projection
+    let checkReporting = await reportingKeys.findOne({ userId: checkUser.metaData[0]._id })
+    if (checkReporting) {
+      let updateData = await reportingKeys.findOneAndUpdate({ _id: checkReporting._id }, data, { new: true })
+    } else {
+      let saveData = await reportingKeys(data).save()
+    }
+
+
+
+    // checking the user type from token
+    if (req.role == 'Dealer') {
+      match = { dealerId: new mongoose.Types.ObjectId(req.userId) }
+    }
+    if (req.role == 'Customer') {
+      match = { customerId: new mongoose.Types.ObjectId(req.userId) }
+    }
+    // Get Claim for servicer
+    if (req.role == 'Servicer') {
+      match = { servicerId: new mongoose.Types.ObjectId(req.userId) }
+    }
+
+    if (req.role == 'Reseller') {
+      match = { resellerId: new mongoose.Types.ObjectId(req.userId) }
+    }
+
+    if (data.flag == "dealer") {
+      match1 = { dealerId: new mongoose.Types.ObjectId(data.userId) }
+    }
+    if (data.flag == "reseller") {
+      match1 = { resellerId: new mongoose.Types.ObjectId(data.userId) }
+    }
+    if (data.flag == "servicer") {
+      match1 = { servicerId: new mongoose.Types.ObjectId(data.userId) }
+    }
+    if (data.flag == "customer") {
+      match1 = { customerId: new mongoose.Types.ObjectId(data.userId) }
+    }
+
+
+    let statusMatch = {}
+    if (data.dateFilter != "") {
+      let newEndDate = new Date(data.endDate)
+      newEndDate.setHours(23, 59, 59, 999);
+      if (data.dateFilter == "damageDate") {
+        dateMatch = { lossDate: { $gte: new Date(data.startDate), $lte: newEndDate } }
+        // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
+      }
+      if (data.dateFilter == "openDate") {
+        dateMatch = { createdAt: { $gte: new Date(data.startDate), $lte: newEndDate } }
+        // statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
+      }
+      if (data.dateFilter == "closeDate") {
+        dateMatch = { claimDate: { $gte: new Date(data.startDate), $lte: newEndDate } }
+        statusMatch = { "claimStatus.status": { $in: ["completed", "rejected"] } }
+      }
+    }
+
+    if (data.dealerName != "") {
+      let getDealer = await dealerService.getAllDealers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
+      let dealerIds = getDealer.map(ID => new mongoose.Types.ObjectId(ID._id))
+      dealerMatch = { dealerId: { $in: dealerIds } }
+      console.log(dealerMatch)
+
+    }
+
+    if (data.resellerName != "") {
+      let getReseller = await resellerService.getResellers({ name: { '$regex': data.resellerName ? data.resellerName : '', '$options': 'i' } }, { _id: 1 })
+      let resellerIds = getReseller.map(ID => new mongoose.Types.ObjectId(ID._id))
+      resellerMatch = { resellerId: { $in: resellerIds } }
+
+    }
+    data.servicerName = data.servicerName ? data.servicerName : ""
+    if (data.servicerName != '' && data.servicerName != undefined) {
+      const checkServicer = await providerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } });
+      if (checkServicer.length > 0) {
+        let servicerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer._id))
+        let dealerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer.dealerId))
+        let resellerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer.resellerId))
+        servicerMatch = {
+          $or: [
+            { "servicerId": { $in: servicerIds } },
+            { "servicerId": { $in: dealerIds } },
+            { "servicerId": { $in: resellerIds } }
+          ]
+        };
+      }
+      else {
+        servicerMatch = { 'servicerId': new mongoose.Types.ObjectId('5fa1c587ae2ac23e9c46510f') }
+      }
+    }
+    let claimPaidStatus = {}
+    if (data.claimPaidStatus != '' && data.claimPaidStatus != undefined) {
+      claimPaidStatus = { "claimPaymentStatus": data.claimPaidStatus }
+    }
+    else {
+      claimPaidStatus = {
+        $or: [
+          { "claimPaymentStatus": "Paid" },
+          { "claimPaymentStatus": "Unpaid" },
+        ]
+      }
+    }
+
+    const projection = {};
+
+    // Loop through each field in req.body.projection and dynamically build the projection
+    req.body.projection.unique_key = 1
+
+    function formatFieldName(fieldName) {
+      console.log("checking-------------", fieldName)
+      return fieldName
+        .replace(/([A-Z])/g, ' $1')   // Adds a space before each capital letter
+        .replace(/^./, (str) => str.toUpperCase());  // Capitalizes the first letter
+    }
+    Object.keys(req.body.projection).forEach(field => {
+      // Log the field if the value is 1 (inclusion)
+      if (req.body.projection[field] === 1) {
+
+        // Handle special fields that need transformation
+        console.log(field)
+
+        switch (field) {
+          case 'dealerName':
+            projection["Dealer Name"] = { $ifNull: [{ $arrayElemAt: ["$dealerDetail.name", 0] }, null] };
+            break;
+          case 'resellerName':
+            projection["Reseller Name"] = { $ifNull: [{ $arrayElemAt: ["$resellerDetail.name", 0] }, null] };
+            break;
+          case 'servicerName':
+            projection["Servicer Name"] = { $ifNull: [{ $arrayElemAt: ["$servicerDetail.name", 0] }, null] };
+            break;
+          case 'customerUsername':
+            projection["Customer Name"] = { $ifNull: [{ $arrayElemAt: ["$customerDetail.username", 0] }, null] };
+            break;
+          case 'contractId':
+            projection["Contract ID"] = { $arrayElemAt: ["$contractDetail.contractDetail.unique_key", 0] };
+            break;
+          case 'model':
+            projection["Model"] = { $arrayElemAt: ["$contractDetail.contractDetail.model", 0] };
+            break;
+          case 'manufacturer':
+            projection["Manufacturer"] = { $arrayElemAt: ["$contractDetail.contractDetail.manufacturer", 0] };
+            break;
+          case 'category':
+            projection["Category"] = "$priceBookDetail.category";
+            break;
+          // case 'description':
+          //   projection["Description"] = "$priceBookDetail.description";
+          //   break;
+          case 'serial':
+            projection["Serial"] = { $arrayElemAt: ["$contractDetail.contractDetail.serial", 0] };
+            break;
+          case 'dealerSku':
+            projection["Dealer Sku"] = { $arrayElemAt: ["$contractDetail.contractDetail.dealerSku", 0] };
+            break;
+          case 'priceType':
+            projection["Price Type"] = { $arrayElemAt: ["$contractDetail.priceType", 0] };
+            break;
+          case 'description':
+            projection["Product Description"] = { $arrayElemAt: ["$contractDetail.description", 0] };
+            break;
+          case 'retailPrice':
+            projection["Retail Price"] = { $arrayElemAt: ["$contractDetail.retailPrice", 0] };
+            break;
+          case 'condition':
+            projection["Condition"] = { $arrayElemAt: ["$contractDetail.contractDetail.condition", 0] };
+            break;
+          case 'coverageStartDate':
+            projection["Coverage Start Date"] = { $arrayElemAt: ["$contractDetail.contractDetail.coverageStartDate", 0] };
+            break;
+          case 'coverageEndDate':
+            projection["Coverage End Date"] = { $arrayElemAt: ["$contractDetail.contractDetail.coverageEndDate", 0] };
+            break;
+          case 'partsWarrantyDate':
+            projection[field] = { $arrayElemAt: ["$contractDetail.contractDetail.partsWarrantyDate", 0] };
+            break;
+          case 'labourWarrantyDate':
+            projection["Labour Warranty Date"] = { $arrayElemAt: ["$contractDetail.contractDetail.labourWarrantyDate", 0] };
+            break;
+          case 'purchaseDate':
+            projection["Purchase Date"] = { $arrayElemAt: ["$contractDetail.contractDetail.purchaseDate", 0] };
+            break;
+          // case 'noOfClaimPerPeriod':
+          //   projection["# of Claim Per Period"] = { $arrayElemAt: ["$contractDetail.contractDetail.noOfClaimPerPeriod", 0] };
+          //   break;
+          case 'noOfClaimPerPeriod':
+            projection["# of Claim Per Period"] = {
+              $let: {
+                vars: {
+                  claimValue: { $arrayElemAt: ["$contractDetail.contractDetail.noOfClaimPerPeriod", 0] }
+                },
+                in: {
+                  $cond: {
+                    if: { $eq: ["$$claimValue", -1] },
+                    then: "Unlimited",
+                    else: "$$claimValue"
+                  }
+                }
+              }
+            };
+            break;
+          // case 'noOfClaim':
+          //   projection["No Of Claim"] = { $arrayElemAt: ["$contractDetail.contractDetail.noOfClaim", 0] };
+          //   break;
+          case 'noOfClaim':
+            projection["No Of Claim"] = {
+              $let: {
+                vars: {
+                  claimData: { $arrayElemAt: ["$contractDetail.contractDetail.noOfClaim", 0] }
+                },
+                in: {
+                  $cond: {
+                    if: { $eq: ["$$claimData.value", -1] },
+                    then: "Unlimited",
+                    else: { $concat: ["$$claimData.period", "-", { $toString: "$$claimData.value" }] }
+                  }
+                }
+              }
+            };
+            break;
+
+          // case 'eligibilty':
+          //   projection["Eligibility"] = { $arrayElemAt: ["$contractDetail.contractDetail.eligibilty", 0] };
+          //   break;
+          case 'eligibilty':
+            projection["Eligible"] = {
+              $let: {
+                vars: {
+                  isEligible: { $arrayElemAt: ["$contractDetail.contractDetail.eligibilty", 0] }
+                },
+                in: {
+                  $cond: {
+                    if: { $eq: ["$$isEligible", true] },
+                    then: "Yes",
+                    else: "No"
+                  }
+                }
+              }
+            };
+            break;
+          // case 'isManufacturerWarranty':
+          //   projection["Is Manufacturer Warranty"] = { $arrayElemAt: ["$contractDetail.contractDetail.isManufacturerWarranty", 0] };
+          //   break;
+          // case 'isMaxClaimAmount':
+          //   projection["Is Max Claim Amount"] = { $arrayElemAt: ["$contractDetail.contractDetail.isMaxClaimAmount", 0] };
+          //   break;
+
+          case 'isManufacturerWarranty':
+            projection["Is Manufacturer Warranty"] = {
+              $let: {
+                vars: {
+                  isWarranty: { $arrayElemAt: ["$contractDetail.contractDetail.isManufacturerWarranty", 0] }
+                },
+                in: {
+                  $cond: {
+                    if: { $eq: ["$$isWarranty", true] },
+                    then: "Yes",
+                    else: "No"
+                  }
+                }
+              }
+            };
+            break;
+
+          case 'isMaxClaimAmount':
+            projection["Is Max Claim Amount"] = {
+              $let: {
+                vars: {
+                  isMaxClaim: { $arrayElemAt: ["$contractDetail.contractDetail.isMaxClaimAmount", 0] }
+                },
+                in: {
+                  $cond: {
+                    if: { $eq: ["$$isMaxClaim", true] },
+                    then: "Yes",
+                    else: "No"
+                  }
+                }
+              }
+            };
+            break;
+          case 'productName':
+            projection["Product Sku"] = "$productName";
+            break;
+          case "totalAmount":
+            projection["Total Amount"] = {
+              $cond: {
+                if: { $eq: ["$claimFile", "completed"] },
+                then: "$totalAmount",
+                else: 0
+              }
+            };
+            break;
+          case 'shippingTo':
+            projection["Customer Shipping Address"] = "$shippingTo";
+            break;
+          case 'pName':
+            projection["Product Name"] = "$pName";
+            break;
+          case 'unique_key':
+            projection["Claim Id"] = "$unique_key";
+            break;
+
+          case 'claimFile':
+            projection["Claim Status"] = "$claimFile";
+            break;
+          case 'venderOrder':
+            projection["Dealer Purchase Order #"] = "$venderOrder";
+            break;
+          case 'claimStatus':
+            projection["Claim Status"] = {
+              $let: {
+                vars: {
+                  sortedStatuses: {
+                    $sortArray: {
+                      input: "$claimStatus", // Assuming the array is in the `statusDetails` field
+                      sortBy: { date: -1 } // Sort by date in descending order
+                    }
+                  }
+                },
+                in: {
+                  $ifNull: [{ $arrayElemAt: ["$$sortedStatuses.status", 0] }, null]
+                }
+              }
+            };
+            break;
+          case 'customerStatus':
+            projection["Customer Status"] = {
+              $let: {
+                vars: {
+                  sortedStatuses: {
+                    $sortArray: {
+                      input: "$customerStatus", // Assuming the array is in the `statusDetails` field
+                      sortBy: { date: -1 } // Sort by date in descending order
+                    }
+                  }
+                },
+                in: {
+                  $ifNull: [{ $arrayElemAt: ["$$sortedStatuses.status", 0] }, null]
+                }
+              }
+            };
+            break;
+          case 'repairStatus':
+            projection["Repair Status"] = {
+              $let: {
+                vars: {
+                  sortedStatuses: {
+                    $sortArray: {
+                      input: "$repairStatus", // Assuming the array is in the `statusDetails` field
+                      sortBy: { date: -1 } // Sort by date in descending order
+                    }
+                  }
+                },
+                in: {
+                  $ifNull: [{ $arrayElemAt: ["$$sortedStatuses.status", 0] }, null]
+                }
+              }
+            };
+            break;
+
+          case 'claimStatusDate':
+            projection["Claim Status Date"] = {
+              $let: {
+                vars: {
+                  sortedStatuses: {
+                    $sortArray: {
+                      input: "$claimStatus", // Assuming the array is in the `statusDetails` field
+                      sortBy: { date: -1 } // Sort by date in descending order
+                    }
+                  }
+                },
+                in: {
+                  $ifNull: [{ $arrayElemAt: ["$$sortedStatuses.date", 0] }, null]
+                }
+              }
+            };
+            break;
+          case 'customerStatusDate':
+            projection["Customer Status Date"] = {
+              $let: {
+                vars: {
+                  sortedStatuses: {
+                    $sortArray: {
+                      input: "$customerStatus", // Assuming the array is in the `statusDetails` field
+                      sortBy: { date: -1 } // Sort by date in descending order
+                    }
+                  }
+                },
+                in: {
+                  $ifNull: [{ $arrayElemAt: ["$$sortedStatuses.date", 0] }, null]
+                }
+              }
+            };
+            break;
+          case 'repairStatusDate':
+            projection["Repair Status Date"] = {
+              $let: {
+                vars: {
+                  sortedStatuses: {
+                    $sortArray: {
+                      input: "$repairStatus", // Assuming the array is in the `statusDetails` field
+                      sortBy: { date: -1 } // Sort by date in descending order
+                    }
+                  }
+                },
+                in: {
+                  $ifNull: [{ $arrayElemAt: ["$$sortedStatuses.date", 0] }, null]
+                }
+              }
+            };
+            break;
+
+          default:
+            let field1 = field
+            field1 = formatFieldName(field1)
+            // For other fields, simply include them as-is
+            projection[field1] = `${"$" + field}`;
+        }
+      }
+    });
+
+
+    let matchCondition = {
+      $and: [
+        { orderId: { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { 'customerStatus.status': { '$regex': data.customerStatusValue ? data.customerStatusValue : '', '$options': 'i' } },
+        { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
+        { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus : '', '$options': 'i' } },
+        { 'productName': { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { 'dealerSku': { '$regex': data.dealerSku ? data.dealerSku.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { venderOrder: { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        servicerMatch,
+        claimPaidStatus,
+        dealerMatch,
+        resellerMatch,
+        dateMatch,
+        statusMatch,
+        match1
+      ]
+    }
+
+    let lookupQuery = [
+      {
+        $match: matchCondition
+      },
+      {
+        $lookup: {
+          from: "dealers",
+          foreignField: "_id",
+          localField: "dealerId",
+          as: "dealerDetail"
+        }
+      },
+      {
+        $lookup: {
+          from: "resellers",
+          foreignField: "_id",
+          localField: "resellerId",
+          as: "resellerDetail"
+        }
+      },
+      {
+        $lookup: {
+          from: "serviceproviders",
+          foreignField: "_id",
+          localField: "servicerId",
+          as: "servicerDetail"
+        }
+      },
+      {
+        $lookup: {
+          from: "customers",
+          foreignField: "_id",
+          localField: "customerId",
+          as: "customerDetail"
+        }
+      },
+      {
+        $lookup: {
+          from: "pricebooks",
+          foreignField: "name",
+          localField: "productName",
+          as: "priceBookDetail",
+          pipeline: [
+            {
+              $lookup: {
+                from: "pricecategories",
+                localField: "category",
+                foreignField: "_id",
+                as: "pricecategory"
+              }
+            },
+            {
+              $project: {
+                category: { $arrayElemAt: ["$pricecategory.name", 0] },
+                description: 1,
+                name: 1,
+              }
+            }
+          ]
+        }
+      },
+      {
+        $unwind: { path: "$priceBookDetail", preserveNullAndEmptyArrays: true }
+      },
+      {
+        $lookup: {
+          from: "contracts",
+          foreignField: "_id",
+          localField: "contractId",
+          as: "contractDetail",
+          pipeline: [
+            {
+              $match: {
+                unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' }
+              }
+            },
+            {
+              $lookup: {
+                from: "orders",  // Order collection
+                localField: "orderProductId",
+                foreignField: "productsArray._id",
+                as: "orderData"
+              }
+            },
+            { $unwind: "$orderData" },  // Unwind order data
+            { $unwind: "$orderData.productsArray" },  // Unwind productsArray
+            {
+              $match: {
+                $expr: { $eq: ["$orderProductId", "$orderData.productsArray._id"] }
+              }
+            },
+            {
+              $project: {
+                orderId: "$orderData._id",
+                productId: "$orderData.productsArray._id",
+                priceType: "$orderData.productsArray.priceType",  // Fetching priceType
+                description: "$orderData.productsArray.description",  // Fetching priceType
+                contractDetail: "$$ROOT",
+                retailPrice: {
+                  $arrayElemAt: ["$orderData.productsArray.dealerPriceBookDetails.retailPrice", 0]
+                }
+              }
+            }
+          ]
+
+
+        }
+      },
+      {
+        $project: { ...projection, _id: 0 }
+      }
+
+
+    ]
+    let dataForClaimReporting = {
+      fileName: "claim-report-" + dateString,
+      userId: req.teammateId,
+      filePath: "claimReporting/claim-report-" + dateString + ".xlsx",
+      date: new Date(),
+      status: "Pending",
+      reportName: data.reportName,
+      remark: data.remark,
+      category: "Claim",
+      subCategory: "Claim Detail",
+    }
+    let createReporting = await claimReportingService.createReporting(dataForClaimReporting)
+    // res.send({
+    //   code: constant.successCode,
+    //   message: "Success",
+    //   result_Array, lookupQuery
+    // })
+
+    let getClaims = await claimService.getAllClaims(lookupQuery)
+
+    await createExcelFileWithMultipleSheets1([getClaims], process.env.bucket_name, 'claimReporting', dateString, "paid")
+      .then((res) => {
+        claimReportingService.updateReporting({ _id: createReporting._id }, { status: "Active" }, { new: true })
+      })
+      .catch((err) => {
+        console.log("err:---------", err)
+        claimReportingService.updateReporting({ _id: createReporting._id }, { status: "Failed" }, { new: true })
+
+      })
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: getClaims, lookupQuery
+    })
+
+
+
+  } catch (err) {
     res.send({
       code: constant.errorCode,
       message: err.stack

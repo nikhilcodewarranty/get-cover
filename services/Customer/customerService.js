@@ -41,9 +41,9 @@ module.exports = class customerService {
     }
   }
   // Get customer by id 
-  static async getCustomerById(customerId) {
+  static async getCustomerById(customerId, projection = {}) {
     try {
-      const singleCustomerResponse = await customer.findOne(customerId);
+      const singleCustomerResponse = await customer.findOne(customerId,projection);
       return singleCustomerResponse;
     } catch (error) {
       return `Could not find the customer. ${error}`;

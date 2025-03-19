@@ -82,6 +82,10 @@ router.post("/createDealer", [verifyToken], supportingApiAdmin.createDealer); //
 router.post("/convertToBase64", supportingApiAdmin.convertToBase64); // create dealer API from super admin
 router.post('/createServicer', [verifyToken], validator("create_service_provider_validation"), supportingApiAdmin.createServiceProvider);// create service provider API from super admin
 
+//reporting keys functions
+router.post("/createReportingKeys",[verifyToken], supportingApiAdmin.createReportingKeys); // 
+router.get("/getReportingKeys", [verifyToken], supportingApiAdmin.getReportingKeys); // 
+
 
 router.get('/updateContracts', [verifyToken], userController.updateContracts);
 router.get('/webhookData', [verifyToken], maillogController.webhookData);

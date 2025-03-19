@@ -10,13 +10,19 @@ router.post("/searchClaim", [verifyToken], claimController.searchClaim); // sear
 router.post("/s3Bucket", claimController.s3Bucket); // s3 bucket operations
 router.post("/saveBulkClaim", [verifyToken], claimController.saveBulkClaim); // save bulk claim
 router.post("/uploadReceipt", [verifyToken], claimController.uploadReceipt); // upload receipt
+router.post("/uploadPrePostImages/:claimId", [verifyToken], claimController.uploadPrePostImages); // upload receipt
+router.post("/deletePrePostImages/:claimId", [verifyToken], claimController.deletePrePostImages); // upload receipt
+
 router.post("/sendMessages/:claimId", [verifyToken], claimController.sendMessages); // send messages for a add
 router.post("/uploadCommentImage", [verifyToken], claimController.uploadCommentImage); // upload comment image
 router.post("/createClaim", [verifyToken], claimController.addClaim); // create a claim
 router.post("/getUnpaidAmount", [verifyToken], claimGetController.getUnpaidAmount); // get unpaid amount
 router.post("/getCoverageType/:contractId", [verifyToken], claimGetController.getCoverageType); // get coverage type by contract ID
-router.post("/getAllClaims", [verifyToken], claimGetController.getAllClaims); // get all claims
+router.post("/getAllClaims", [verifyToken], claimGetController.getAllClaims1); // get all claims
 router.post("/getClaims", [verifyToken], claimGetController.getClaims); // get claims
+router.get("/getCustomerInformationForClaim/:customerId", [verifyToken], claimGetController.getCustomerInformationForClaim); // get claims
+
+
 //PUT Routes
 router.put("/editClaim/:claimId", [verifyToken], claimController.editClaim); // edit claim by ID
 router.put("/editClaimType/:claimId", [verifyToken], claimController.editClaimType); // edit claim type by ID
@@ -36,11 +42,19 @@ router.post("/checkCoverageTypeDateInContract", [verifyToken], claimGetControlle
 router.get("/checkClaimAmount/:claimId", claimGetController.checkClaimAmount); // check claim amount in edit claim and change coverage type
 router.get("/updateContracts", claimGetController.updateContracts); // check claim amount in edit claim and change coverage type
 router.post("/checkClaimThreshHold/:claimId", [verifyToken], claimGetController.checkClaimThreshHold); // check claim amount in edit claim and change coverage type
+// router.get("/getClaimById/:claimId", [verifyToken], claimGetController.getClaimById); // check claim amount in edit claim and change coverage type
 router.get("/updateClaimDate", claimController.updateClaimDate); // check claim amount in edit claim and change coverage type
 router.get("/checkNumberOfCertainPeriod", claimController.checkNumberOfCertainPeriod); // check claim amount in edit claim and change coverage type
+router.post("/getUsersForRole", [verifyToken], claimGetController.getUsersForRole); // check claim amount in edit claim and change coverage type
 
 
 router.post("/exportDataForClaim", [verifyToken], claimExportController.exportDataForClaim); // check claim amount in edit claim and change coverage type
+router.post("/claimDetailReporting", [verifyToken], claimExportController.getClaimDetails); // check claim amount in edit claim and change coverage type
+router.get("/getClaimById/:claimId", [verifyToken], claimGetController.getClaimById); // check claim amount in edit claim and change coverage type
+router.post("/getTrackingDetail/:claimId", [verifyToken], claimGetController.getTrackingDetail); // check claim amount in edit claim and change coverage type
+
+
+// router.post("/getClaimDetails", [verifyToken], claimExportController.getClaimDetails); // check claim amount in edit claim and change coverage type
 router.post("/paidUnpaidClaimReporting", [verifyToken], claimExportController.paidUnpaidClaimReporting); // check claim amount in edit claim and change coverage type
 router.post("/getClaimReportings", [verifyToken], claimExportController.getClaimReportings); // check claim amount in edit claim and change coverage type
 router.get("/getClaimReporting/:reportingId", [verifyToken], claimExportController.getClaimReporting); // check claim amount in edit claim and change coverage type

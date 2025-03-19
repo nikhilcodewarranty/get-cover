@@ -21,6 +21,7 @@ router.put('/addCustomerAddress/:customerId', [verifyToken], customerController.
 router.put('/addAddress/:customerId', [verifyToken], customerController.addAddress); //editCustomer route
 router.put('/deleteAddress/:customerId', [verifyToken], customerController.deleteAddress); //editCustomer route
 router.put('/editAddress', [verifyToken],customerController.editaddress); //editCustomer route
+router.get('/getCustomerAddress/:customerId', [verifyToken],customerController.getCustomerAddress); //editCustomer route
 //GET Routes
 router.get('/changePrimaryUser/:userId', [verifyToken], customerController.changePrimaryUser); //changePrimaryUser route
 router.get('/getCustomerById/:customerId', [verifyToken], supportingFunction.checkObjectId, customerController.getCustomerById); //getCustomerById route

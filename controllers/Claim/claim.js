@@ -31,6 +31,7 @@ const { Upload } = require('@aws-sdk/lib-storage');
 const multerS3 = require('multer-s3');
 const aws = require('aws-sdk');
 const { default: axios } = require("axios");
+const { message } = require("../../validators/Dealer/update_dealer_price");
 
 aws.config.update({
   accessKeyId: process.env.aws_access_key_id,
@@ -53,7 +54,6 @@ const StorageP = multerS3({
   s3: s3,
   bucket: process.env.bucket_name,
   metadata: (req, file, cb) => {
-    console.log(" process.env.bucket_name", process.env.bucket_name)
     cb(null, { fieldName: file.fieldname });
   },
   key: (req, file, cb) => {
@@ -76,6 +76,44 @@ var uploadP = multer({
     fileSize: 500 * 1024 * 1024, // 500 MB limit
   },
 }).single("file");
+
+//Upload Claim Repair Images
+const claimRepairImages = multerS3({
+  s3: s3,
+  bucket: process.env.bucket_name,
+  metadata: (req, file, cb) => {
+    cb(null, { fieldName: file.fieldname });
+  },
+  key: (req, file, cb) => {
+
+    let flag = req.query.flag
+
+    let folderName;
+    // Example: Set folderName based on file.fieldname
+    if (flag === 'preUpload') {
+      folderName = 'preUploaded';
+    } else if (flag === 'postUpload') {
+      folderName = 'postUploaded';
+    }
+    const fileName = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
+    const fullPath = `claimFile/${folderName}/${fileName}`;
+    cb(null, fullPath);
+  }
+});
+
+// var claimUploadedImages = multer({
+//   storage: claimRepairImages,
+//   limits: {
+//     fileSize: 500 * 1024 * 1024, // 500 MB limit
+//   },
+// }).single('file');
+
+var claimUploadedImages = multer({
+  storage: claimRepairImages,
+  limits: {
+    fileSize: 500 * 1024 * 1024, // 500 MB limit
+  },
+}).array("file", 100);
 
 // search claim api  -- not using
 exports.searchClaim = async (req, res, next) => {
@@ -326,6 +364,7 @@ exports.uploadCommentImage = async (req, res, next) => {
 exports.addClaim = async (req, res, next) => {
   try {
     let data = req.body;
+    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
 
     let checkContract = await contractService.getContractById({ _id: data.contractId })
     const checkOrder = await orderService.getOrder({ _id: checkContract.orderId }, { isDeleted: false })
@@ -333,8 +372,12 @@ exports.addClaim = async (req, res, next) => {
     // data.lossDate = new Date(data.lossDate).setDate(new Date(data.lossDate).getDate() + 1)
     // data.lossDate = new Date(data.lossDate)
     const submittedUser = await userService.getUserById1({ _id: data.submittedBy }, {})
+    const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
+    const validAddress = checkCustomer.addresses?.find(address => address._id.toString() === data.shippingTo.toString());
+
+    let shipAddress = validAddress.address + "," + validAddress.city + "," + validAddress.state + "," + validAddress.zip
     data.submittedBy = submittedUser?.email || ''
-    data.shippingTo = data.shippingTo || ''
+    data.shippingTo = shipAddress || ''
     if (!checkContract) {
       res.send({
         code: constant.errorCode,
@@ -400,7 +443,6 @@ exports.addClaim = async (req, res, next) => {
         if (!checkPriceBookData) {
           checkServicerData.priceBookArray.push({ priceBookId: filterPriceBook[0]?.priceBookId })
         }
-        console.log("checkServicerData2----------------------", checkServicerData)
         let newValue = {
           $set: {
             categoryArray: checkServicerData.categoryArray,
@@ -511,6 +553,26 @@ exports.addClaim = async (req, res, next) => {
     data.manufacture = checkContract.manufacture
     data.serialNumber = checkContract.serial
     data.claimType = data.coverageType
+    data.trackStatus = [
+      {
+        status: "open",
+        date: new Date(),
+        statusName: 'claim_status',
+        userId: checkLoginUser.metaData[0]?._id
+      },
+      {
+        status: "request_submitted",
+        date: new Date(),
+        statusName: 'customer_status',
+        userId: checkLoginUser.metaData[0]?._id
+      },
+      {
+        status: "request_sent",
+        date: new Date(),
+        statusName: 'repair_status',
+        userId: checkLoginUser.metaData[0]?._id
+      }
+    ]
 
     let claimResponse = await claimService.createClaim(data)
     if (!claimResponse) {
@@ -554,9 +616,7 @@ exports.addClaim = async (req, res, next) => {
     //Get Dealer,reseller, customer status
     const checkDealer = await dealerService.getDealerById(checkOrder.dealerId)
     const checkReseller = await resellerService.getReseller({ _id: checkOrder?.resellerId }, {})
-    const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
     //Get submitted user
-    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
     const site_url = `${process.env.SITE_URL}`
 
     const checkServicer = await servicerService.getServiceProviderById({ $or: [{ _id: data?.servicerId }, { dealerId: data?.servicerId }, { resellerId: data?.servicerId }] })
@@ -1105,7 +1165,7 @@ exports.editClaim = async (req, res) => {
       let mergedEmail = notificationEmails.concat(servicerEmails)
       let settingData = await userService.getSetting({});
       const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
-      const lastElement = data.repairParts.pop();
+      // const lastElement = data.repairParts.pop();
       let emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -1165,7 +1225,6 @@ exports.editClaim = async (req, res) => {
     ]
     let getClaims = await claimService.getClaimWithAggregate(totalClaimQuery1)
     let updateTheContract = await contractService.updateContract({ _id: checkClaim._id }, { claimAmount: getClaims[0] ? getClaims[0].totalAmount : 0 }, { new: true })
-    console.log("updated contract ak", getClaims, updateTheContract.claimAmount)
 
     res.send({
       code: constant.successCode,
@@ -1248,13 +1307,11 @@ exports.editClaimType = async (req, res) => {
       }
       await LOG(logData).save()
       if (updateData.claimType != "" || updateData.claimType != "New") {
-        console.log("checking ak ++++++++++++++++++++++++++", req.header)
         let udpateclaimAmount = await axios.get(process.env.API_ENDPOINT + "api-v1/claim/checkClaimAmount/" + updateData._id, {
           headers: {
             "x-access-token": req.header["x-access-token"],  // Include the token in the Authorization header
           }
         });
-        console.log("updated data +++++++++++++++++++++++++++++++++++", udpateclaimAmount)
       }
       let checkUpdatedClaim = await claimService.getClaimById(criteria)
 
@@ -1326,15 +1383,29 @@ exports.editClaimStatus = async (req, res) => {
     const checkReseller = await resellerService.getReseller({ _id: checkOrder?.resellerId }, {})
     const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
     const checkServicer = await servicerService.getServiceProviderById({ $or: [{ _id: checkClaim?.servicerId }, { dealerId: checkClaim?.servicerId }, { resellerId: checkClaim?.servicerId }] })
+    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
 
 
     if (data.hasOwnProperty("customerStatus")) {
 
       //Get submitted user
-      const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
       const site_url = `${process.env.SITE_URL}`
       const checkCustomerStatus = await optionService.getOption({ name: "customer_status" })
       const matchedData = checkCustomerStatus?.value.find(status => status.value == data.customerStatus)
+      status.trackStatus = [
+        {
+          status: data.customerStatus,
+          date: new Date(),
+          statusName: checkCustomerStatus.name,
+          userId: checkLoginUser.metaData[0]?._id
+        }
+      ]
+      updateData.customerStatus = [
+        {
+          status: data.customerStatus,
+          date: new Date(),
+        }
+      ]
       if (data.customerStatus == 'product_received') {
         let option = { new: true }
         let claimStatus = await claimService.updateClaim(criteria, { claimFile: 'completed', claimDate: new Date() }, option)
@@ -1344,28 +1415,18 @@ exports.editClaimStatus = async (req, res) => {
             date: new Date()
           }
         ]
+
         status.trackStatus = [
           {
             status: 'completed',
-            date: new Date()
+            date: new Date(),
+            statusName: 'claim_status',
+            userId: checkLoginUser.metaData[0]?._id
+
           }
         ]
         let statusClaim = await claimService.updateClaim(criteria, { updateData }, { new: true })
       }
-
-      updateData.customerStatus = [
-        {
-          status: data.customerStatus,
-          date: new Date()
-        }
-      ]
-
-      status.trackStatus = [
-        {
-          status: data.customerStatus,
-          date: new Date()
-        }
-      ]
 
       //Send notification to all
       let notificationArray = []
@@ -1589,17 +1650,22 @@ exports.editClaimStatus = async (req, res) => {
       let notificationArray = []
       const checkRepairStatus = await optionService.getOption({ name: "repair_status" })
       const matchedData = checkRepairStatus?.value.find(status => status.value == data.repairStatus)
+
       status.trackStatus = [
         {
           status: data.repairStatus,
-          date: new Date()
+          date: new Date(),
+          statusName: checkRepairStatus.name,
+          userId: checkLoginUser.metaData[0]?._id
+
         }
       ]
 
       updateData.repairStatus = [
         {
           status: data.repairStatus,
-          date: new Date()
+          date: new Date(),
+
         }
       ]
       //Send notification to all
@@ -1834,7 +1900,12 @@ exports.editClaimStatus = async (req, res) => {
       status.trackStatus = [
         {
           status: data.claimStatus,
-          date: new Date()
+          date: new Date(),
+          statusName: checkClaimStatus.name,
+          userId: checkLoginUser.metaData[0]?._id
+
+
+
         }
       ]
 
@@ -1952,7 +2023,6 @@ exports.editClaimStatus = async (req, res) => {
       let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkClaim?.servicerId, isPrimary: true } } })
 
       //Get submitted user
-      const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
       const site_url = `${process.env.SITE_URL}`
       if (adminUsers.length > 0) {
         let notificationData1 = {
@@ -2809,6 +2879,9 @@ exports.saveBulkClaim = async (req, res) => {
 
       const emailField = req.body.email;
 
+      const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+
+
       // // Parse the email field
       const emailArray = JSON.parse(emailField);
 
@@ -3207,6 +3280,7 @@ exports.saveBulkClaim = async (req, res) => {
       //Filter data which is contract , servicer and not active
       for (let k = 0; k < totalDataComing.length; k++) {
         let item = totalDataComing[k]
+        let shipAddress = ''
         let i = k
         if (!item.exit) {
           const contractData = contractArray[i];
@@ -3324,6 +3398,7 @@ exports.saveBulkClaim = async (req, res) => {
 
             }
           }
+
           // check login email
           if (item.userEmail != '') {
             item.submittedBy = item.userEmail
@@ -3334,16 +3409,21 @@ exports.saveBulkClaim = async (req, res) => {
 
               if (memberEmail.length > 0) {
                 const validEmail = memberEmail?.find(member => member.email === item.userEmail);
-
                 if (!validEmail || validEmail == undefined) {
                   item.status = "Invalid Email"
                   item.exit = true;
                 }
+                let addresses = allDataArray[0]?.order.customers.addresses
+
+                const validAddress = addresses?.find(address => address._id.toString() === validEmail?.metaData[0].addressId.toString());
+                if (validAddress) {
+                  shipAddress = validAddress.address + "," + validAddress.city + "," + validAddress.state + "," + validAddress.zip
+
+                }
               }
             }
-
-
           }
+
           // check Shipping address
           if (item.shippingTo != '') {
             if (allDataArray[0]?.order.customers) {
@@ -3353,7 +3433,7 @@ exports.saveBulkClaim = async (req, res) => {
               addresses.push(
                 {
                   zip: allDataArray[0]?.order.customers.zip,
-                  state: allDataArray[0]?.order.customers.zip,
+                  state: allDataArray[0]?.order.customers.state,
                   city: allDataArray[0]?.order.customers.city,
                   street: allDataArray[0]?.order.customers.street,
                   country: allDataArray[0]?.order.customers.country,
@@ -3365,8 +3445,11 @@ exports.saveBulkClaim = async (req, res) => {
                 item.exit = true;
               }
             }
-            item.shippingTo = item.shippingTo
+            shipAddress = item.shippingTo
           }
+
+          item.shippingTo = shipAddress
+
 
           let checkCoverageStartDate = new Date(contractData?.coverageStartDate).setHours(0, 0, 0, 0)
           if (contractData && new Date(checkCoverageStartDate) > new Date(item.lossDate)) {
@@ -3419,7 +3502,6 @@ exports.saveBulkClaim = async (req, res) => {
         }
       }
 
-      // console.log("totalDataComing-----------------------------",totalDataComing)
       // return;
       // return;
       let finalArray = []
@@ -3427,7 +3509,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       let currentYear = new Date().getFullYear();
       currentYear = "-" + currentYear + "-"
-    let currentYearWithoutHypen = new Date().getFullYear();
+      let currentYearWithoutHypen = new Date().getFullYear();
 
 
       let count = await claimService.getClaimCount({ 'unique_key': { '$regex': currentYear, '$options': 'i' } });
@@ -3481,6 +3563,26 @@ exports.saveBulkClaim = async (req, res) => {
             diagnosis: issue,
             lossDate: data.lossDate,
             claimFile: 'open',
+            trackStatus: [
+              {
+                status: "open",
+                date: new Date(),
+                statusName: 'claim_status',
+                userId: checkLoginUser.metaData[0]?._id
+              },
+              {
+                status: "request_submitted",
+                date: new Date(),
+                statusName: 'customer_status',
+                userId: checkLoginUser.metaData[0]?._id
+              },
+              {
+                status: "request_sent",
+                date: new Date(),
+                statusName: 'repair_status',
+                userId: checkLoginUser.metaData[0]?._id
+              }
+            ]
           }
           unique_key_number++
           finalArray.push(obj)
@@ -3967,11 +4069,11 @@ exports.saveBulkClaim = async (req, res) => {
           htmlTableString = convertArrayToHTMLTable([], failureEntries);
           if (dealerEmail.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(dealerEmail, ["noreply@getcover.com"], htmlTableString));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allDealer, htmlTableString,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, allDealer, htmlTableString, "Bulk Data Report")
           }
           if (adminEmail.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlTableString));
-            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString, "Bulk Data Report")
           }
 
         }
@@ -4011,11 +4113,11 @@ exports.saveBulkClaim = async (req, res) => {
           //htmlTableString = convertArrayToHTMLTable([], failureEntries);
           if (dealerEmail.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(dealerEmail, ["noreply@getcover.com"], htmlContent));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allDealer, htmlTableString,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, allDealer, htmlTableString, "Bulk Data Report")
           }
           if (adminEmail.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlContent));
-            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString, "Bulk Data Report")
           }
 
         }
@@ -4056,15 +4158,15 @@ exports.saveBulkClaim = async (req, res) => {
           htmlTableString = convertArrayToHTMLTable([], failureEntries);
           if (dealerEmails.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlTableString));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allResellersDealer, htmlTableString,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, allResellersDealer, htmlTableString, "Bulk Data Report")
           }
           if (adminEmail.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlTableString));
-            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString, "Bulk Data Report")
           }
           if (resellerEmails.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(resellerEmails, ["noreply@getcover.com"], htmlTableString));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allReseller, htmlTableString,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, allReseller, htmlTableString, "Bulk Data Report")
           }
         }
 
@@ -4103,15 +4205,15 @@ exports.saveBulkClaim = async (req, res) => {
           //htmlTableString = convertArrayToHTMLTable([], failureEntries);
           if (dealerEmails.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlContent));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allResellersDealer, htmlContent,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, allResellersDealer, htmlContent, "Bulk Data Report")
           }
           if (adminEmail.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlContent));
-            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlContent,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlContent, "Bulk Data Report")
           }
           if (resellerEmails.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(resellerEmails, ["noreply@getcover.com"], htmlContent));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allReseller, htmlContent,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, allReseller, htmlContent, "Bulk Data Report")
           }
         }
       }
@@ -4163,19 +4265,19 @@ exports.saveBulkClaim = async (req, res) => {
           htmlTableString = convertArrayToHTMLTable([], failureEntries);
           if (dealerEmails.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlTableString));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomersDealer, htmlTableString,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomersDealer, htmlTableString, "Bulk Data Report")
           }
           if (adminEmail.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlTableString));
-            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString, "Bulk Data Report")
           }
           if (resellerEmails.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(resellerEmails, ["noreply@getcover.com"], htmlTableString));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomersReseller, htmlTableString,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomersReseller, htmlTableString, "Bulk Data Report")
           }
           if (customerEmails.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(customerEmails, ["noreply@getcover.com"], htmlTableString));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomers, htmlTableString,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomers, htmlTableString, "Bulk Data Report")
           }
 
         }
@@ -4215,19 +4317,19 @@ exports.saveBulkClaim = async (req, res) => {
           //htmlTableString = convertArrayToHTMLTable([], failureEntries);
           if (dealerEmails.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlContent));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomersDealer, htmlContent,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomersDealer, htmlContent, "Bulk Data Report")
           }
           if (adminEmail.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlContent));
-            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlContent,"Bulk Data Report");
+            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlContent, "Bulk Data Report");
           }
           if (resellerEmails.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(resellerEmails, ["noreply@getcover.com"], htmlContent));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomersReseller, htmlContent,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomersReseller, htmlContent, "Bulk Data Report")
           }
           if (customerEmails.length > 0) {
             mailing = await sgMail.send(emailConstant.sendCsvFile(customerEmails, ["noreply@getcover.com"], htmlContent));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomers, htmlContent,"Bulk Data Report")
+            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomers, htmlContent, "Bulk Data Report")
           }
 
         }
@@ -4239,7 +4341,7 @@ exports.saveBulkClaim = async (req, res) => {
           htmlTableString = convertArrayToHTMLTable([], failureEntries);
           // let adminEmail = adminUsers.map
           mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlTableString));
-          maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString,"Bulk Data Report");
+          maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString, "Bulk Data Report");
 
         }
 
@@ -4277,7 +4379,7 @@ exports.saveBulkClaim = async (req, res) => {
 
           //htmlTableString = convertArrayToHTMLTable([], failureEntries);
           mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ccMail, htmlContent));
-          maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlContent,"Bulk Data Report");
+          maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlContent, "Bulk Data Report");
 
         }
 
@@ -4317,13 +4419,13 @@ exports.sendMessages = async (req, res) => {
       })
       return
     }
+    let orderData = await orderService.getOrder({ _id: data.orderId }, { isDeleted: false })
 
-   
+
 
     let settingData = await userService.getSetting({});
 
     data.claimId = req.params.claimId
-    let orderData = await orderService.getOrder({ _id: data.orderId }, { isDeleted: false })
     if (!orderData) {
       res.send({
         code: constant.errorCode,
@@ -4618,11 +4720,9 @@ exports.sendMessages = async (req, res) => {
       redirectId: base_url
     }
 
-    console.log("emailTo---------------------", emailTo)
     let mailing = await sgMail.send(emailConstant.sendCommentNotification(emailTo?.email, ["noreply@getcover.com"], emailData))
 
     maillogservice.createMailLogFunction(mailing, emailData, [emailTo], process.env.comment_notification)
-    console.log("adminEmail---------------------", adminEmail)
 
     mailing = await sgMail.send(emailConstant.sendCommentNotification(adminEmail, ["noreply@getcover.com"], emailData))
 
@@ -4682,7 +4782,9 @@ exports.statusClaim = async (req, res) => {
         messageData.trackStatus = [
           {
             status: 'completed',
-            date: new Date()
+            date: new Date(),
+            statusName: "claim_status",
+            userId: null
           }
         ]
 
@@ -4749,6 +4851,7 @@ const StorageP1 = multerS3({
     cb(null, fullPath);
   }
 });
+
 var imageUploadS3 = multer({
   storage: StorageP1,
   limits: {
@@ -4767,836 +4870,6 @@ exports.s3Bucket = async (req, res) => {
       res.send({ ddd: 'File uploaded successfully', ttt: req.files });
     });
   } catch (err) {
-    res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  }
-}
-
-// get all claims api
-exports.getAllClaims = async (req, res, next) => {
-  try {
-    let data = req.body
-    let query = { isDeleted: false };
-    let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
-    let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
-    let limitData = Number(pageLimit)
-    let match = {};
-    let servicerMatch = {}
-    // checking the user type from token
-    if (req.role == 'Dealer') {
-      match = { 'contracts.orders.dealerId': new mongoose.Types.ObjectId(req.userId) }
-    }
-    if (req.role == 'Customer') {
-      match = { 'contracts.orders.customerId': new mongoose.Types.ObjectId(req.userId) }
-    }
-    // Get Claim for servicer
-    if (req.role == 'Servicer') {
-      servicerMatch = { servicerId: new mongoose.Types.ObjectId(req.userId) }
-    }
-    // building the query for claims
-    let newQuery = [];
-    newQuery.push({
-      $facet: {
-        totalRecords: [
-          {
-            $count: "total"
-          }
-        ],
-        data: [
-          {
-            $skip: skipLimit
-          },
-          {
-            $limit: pageLimit
-          },
-          {
-            $lookup: {
-              from: "servicer_dealer_relations",
-              localField: "contracts.orders.dealers._id",
-              foreignField: "dealerId",
-              as: "contracts.orders.dealers.dealerServicer",
-            }
-          },
-          {
-            $lookup: {
-              from: "resellers",
-              localField: "contracts.orders.resellerId",
-              foreignField: "_id",
-              as: "contracts.orders.resellers",
-            }
-          },
-          {
-            $project: {
-              "contractId": 1,
-              "claimFile": 1,
-              "lossDate": 1,
-              "receiptImage": 1,
-              reason: 1,
-              "unique_key": 1,
-              note: 1,
-              totalAmount: 1,
-              servicerId: 1,
-              customerStatus: 1,
-              trackingNumber: 1,
-              trackingType: 1,
-              dealerSku: 1,
-              claimType: 1,
-              repairParts: 1,
-              diagnosis: 1,
-              claimStatus: 1,
-              repairStatus: 1,
-              "contracts.unique_key": 1,
-              "contracts.productName": 1,
-              "contracts.model": 1,
-              "contracts.pName": 1,
-              "contracts.manufacture": 1,
-              "contracts.serial": 1,
-              "contracts.orders.dealerId": 1,
-              "contracts.orders._id": 1,
-              "contracts.orders.servicerId": 1,
-              "contracts.orders.serviceCoverageType": 1,
-              "contracts.orders.coverageType": 1,
-              "contracts.orders.customerId": 1,
-              "contracts.orders.dealers.isShippingAllowed": 1,
-              "contracts.orders.resellerId": 1,
-              "contracts.orders.dealers.name": 1,
-              "contracts.orders.dealers.isServicer": 1,
-              "contracts.orders.dealers.accountStatus": 1,
-              "contracts.orders.dealers._id": 1,
-              "contracts.orders.customer.username": 1,
-              "contracts.orders.dealers.dealerServicer": {
-                $map: {
-                  input: "$contracts.orders.dealers.dealerServicer",
-                  as: "dealerServicer",
-                  in: {
-                    "_id": "$$dealerServicer._id",
-                    "servicerId": "$$dealerServicer.servicerId",
-                  }
-                }
-              },
-              "contracts.orders.servicers": {
-                $map: {
-                  input: "$contracts.orders.servicers",
-                  as: "servicer",
-                  in: {
-                    "_id": "$$servicer._id",
-                    "name": "$$servicer.name",
-                  }
-                }
-              },
-              "contracts.orders.resellers": {
-                $map: {
-                  input: "$contracts.orders.resellers",
-                  as: "reseller",
-                  in: {
-                    "_id": "$$reseller._id",
-                    "name": "$$reseller.name",
-                    "isServicer": "$$reseller.isServicer",
-                    "status": "$$reseller.status"
-                  }
-                }
-              }
-            }
-          },
-        ]
-      }
-    })
-
-    if (data.servicerName != '' && data.servicerName != undefined) {
-      const checkServicer = await providerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } });
-      if (checkServicer.length > 0) {
-        let servicerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer._id))
-        let dealerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer.dealerId))
-        let resellerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer.resellerId))
-        servicerMatch = {
-          $or: [
-            { "servicerId": { $in: servicerIds } },
-            { "servicerId": { $in: dealerIds } },
-            { "servicerId": { $in: resellerIds } }
-          ]
-        };
-      }
-      else {
-        servicerMatch = { 'servicerId': new mongoose.Types.ObjectId('5fa1c587ae2ac23e9c46510f') }
-      }
-    }
-
-    if (data.dealerName != "") {
-      let getDealer = await dealerService.getAllDealers({ name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } }, { _id: 1 })
-      let dealerIds = getDealer.map(ID => new mongoose.Types.ObjectId(ID._id))
-      dealerMatch = { dealerId: { $in: dealerIds } }
-      console.log(dealerMatch)
-
-    }
-
-    if (data.resellerName != "") {
-      let getReseller = await resellerService.getResellers({ name: { '$regex': data.resellerName ? data.resellerName : '', '$options': 'i' } }, { _id: 1 })
-      let resellerIds = getReseller.map(ID => new mongoose.Types.ObjectId(ID._id))
-      resellerMatch = { resellerId: { $in: resellerIds } }
-
-    }
-    let claimPaidStatus = {}
-    if (data.claimPaidStatus != '' && data.claimPaidStatus != undefined) {
-      claimPaidStatus = { "claimPaymentStatus": data.claimPaidStatus }
-    }
-    else {
-      claimPaidStatus = {
-        $or: [
-          { "claimPaymentStatus": "Paid" },
-          { "claimPaymentStatus": "Unpaid" },
-        ]
-      }
-    }
-    let lookupQuery = [
-      { $sort: { unique_key_number: -1 } },
-      {
-        $match:
-        {
-          $and: [
-            { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            claimPaidStatus,
-            { 'productName': { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { 'dealerSku': { '$regex': data.dealerSku ? data.dealerSku.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { 'customerStatus.status': { '$regex': data.customerStatusValue ? data.customerStatusValue : '', '$options': 'i' } },
-            { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
-            { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus : '', '$options': 'i' } },
-            servicerMatch
-          ]
-        },
-      },
-      {
-        $lookup: {
-          from: "contracts",
-          localField: "contractId",
-          foreignField: "_id",
-          as: "contracts",
-        }
-      },
-      {
-        $unwind: "$contracts"
-      },
-      {
-        $match:
-        {
-          $and: [
-            { 'contracts.unique_key': { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { "contracts.serial": { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { "contracts.productName": { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-          ]
-        },
-      },
-      {
-        $lookup: {
-          from: "orders",
-          localField: "contracts.orderId",
-          foreignField: "_id",
-          as: "contracts.orders",
-        },
-      },
-      {
-        $unwind: "$contracts.orders"
-      },
-      {
-        $match:
-        {
-          $and: [
-            { "contracts.orders.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { "contracts.orders.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { "contracts.orders.isDeleted": false },
-            match
-          ]
-        },
-      },
-      {
-        $lookup: {
-          from: "dealers",
-          localField: "contracts.orders.dealerId",
-          foreignField: "_id",
-          as: "contracts.orders.dealers",
-        }
-      },
-      {
-        $unwind: "$contracts.orders.dealers"
-      },
-      {
-        $match:
-        {
-          "contracts.orders.dealers.name": { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' },
-        }
-      },
-      {
-        $lookup: {
-          from: "serviceproviders",
-          localField: "contracts.orders.servicerId",
-          foreignField: "_id",
-          as: "contracts.orders.servicers",
-        }
-      },
-      {
-        $lookup: {
-          from: "customers",
-          localField: "contracts.orders.customerId",
-          foreignField: "_id",
-          as: "contracts.orders.customer",
-        }
-      },
-      {
-        $unwind: "$contracts.orders.customer"
-      },
-      {
-        $match:
-        {
-          $and: [
-            { "contracts.orders.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-          ]
-        },
-      },
-    ]
-
-    if (newQuery.length > 0) {
-      lookupQuery = lookupQuery.concat(newQuery);
-    }
-    let allClaims = await claimService.getClaimWithAggregate(lookupQuery);
-    let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
-
-    let allServicerIds = [];
-
-    // Iterate over the data array
-    resultFiter.forEach(item => {
-      // Iterate over the dealerServicer array in each item
-      item.contracts.orders.dealers.dealerServicer.forEach(dealer => {
-        // Push the servicerId to the allServicerIds array
-        allServicerIds.push(dealer.servicerId);
-      });
-    });
-
-    //Get Dealer and Reseller Servicers
-    let servicer;
-    let servicerName = '';
-    //service call from claim services
-    let allServicer = await servicerService.getAllServiceProvider(
-      { _id: { $in: allServicerIds }, status: true },
-      {}
-    );
-    const result_Array = resultFiter.map(async (item1) => {
-      servicer = []
-      console.log("sfgdfg23345435435")
-      let servicerName = '';
-      let selfServicer = false;
-      let selfResellerServicer = false;
-      let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
-        const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId?.toString());
-        if (dealerOfServicer) {
-          servicer.push(dealerOfServicer)
-        }
-      });
-
-      if (item1.contracts.orders.servicers[0]?.length > 0) {
-        servicer.unshift(item1.contracts.orders.servicers[0])
-      }
-
-      if (item1.contracts.orders.resellers[0]?.isServicer && item1.contracts.orders.resellers[0]?.status) {
-        let checkResellerServicer = await servicerService.getServiceProviderById({ resellerId: item1.contracts.orders.resellers[0]._id })
-        console.log("checkResellerServicer------------------", checkResellerServicer)
-        servicer.push(checkResellerServicer)
-      }
-
-      if (item1.contracts.orders.dealers.isServicer && item1.contracts.orders.dealers.accountStatus) {
-        let checkDealerServicer = await servicerService.getServiceProviderById({ dealerId: item1.contracts.orders.dealers._id })
-        console.log("checkDealerServicer------------------", checkDealerServicer)
-
-        servicer.push(checkDealerServicer)
-      }
-
-      if (item1.servicerId != null) {
-        servicerName = servicer.find(servicer => servicer?._id?.toString() === item1.servicerId?.toString());
-        selfServicer = req.role == "Customer" ? false : item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() ? true : false
-        selfResellerServicer = item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString()
-      }
-
-      return {
-        ...item1,
-        servicerData: servicerName,
-        selfResellerServicer: selfResellerServicer,
-        selfServicer: selfServicer,
-        contracts: {
-          ...item1.contracts,
-          allServicer: servicer
-        }
-      }
-    })
-
-    let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0 // getting the total count 
-
-    res.send({
-      code: constant.successCode,
-      message: "Success",
-      result: result_Array,
-      totalCount
-    })
-
-  }
-  catch (err) {
-    res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  }
-}
-
-// get claims api admin
-exports.getClaims = async (req, res) => {
-  try {
-    let data = req.body
-    let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
-    let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
-    let dealerIds = [];
-    let customerIds = [];
-    let resellerIds = [];
-    let servicerIds = [];
-    let userSearchCheck = 0
-    let contractIds = []
-    let contractCheck = 0
-    let orderIds = []
-    let mainQuery = []
-
-    if (data.customerName != "") {
-      userSearchCheck = 1
-      let getData = await customerService.getAllCustomers({ username: { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
-      if (getData.length > 0) {
-        customerIds = await getData.map(customer => customer._id)
-      } else {
-        customerIds.push("1111121ccf9d400000000000")
-      }
-    };
-    if (data.servicerName != "") {
-      userSearchCheck = 1
-      let getData = await providerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
-
-      if (getData.length > 0) {
-        servicerIds = await getData.map(servicer => servicer._id)
-      } else {
-        servicerIds.push("1111121ccf9d400000000000")
-      }
-    };
-
-    let orderAndCondition = []
-
-
-    //making the query on the bases of search query payload
-    if (dealerIds.length > 0) {
-      orderAndCondition.push({ dealerId: { $in: dealerIds } })
-    }
-    if (customerIds.length > 0) {
-      orderAndCondition.push({ customerId: { $in: customerIds } })
-    }
-    if (servicerIds.length > 0) {
-      orderAndCondition.push({ servicerId: { $in: servicerIds } })
-    }
-    if (resellerIds.length > 0) {
-      orderAndCondition.push({ resellerId: { $in: resellerIds } })
-    }
-    if (orderAndCondition.length > 0) {
-      let getOrders = await orderService.getOrders({
-        $and: orderAndCondition
-      })
-      if (getOrders.length > 0) {
-        orderIds = await getOrders.map(order => order.unique_key)
-      }
-    }
-
-    let claimFilter = [
-      { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-      { serial: { '$regex': data.serial ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-      { 'customerStatus.status': { '$regex': data.customerStatusValue ? data.customerStatusValue : '', '$options': 'i' } },
-      { venderOrder: { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
-      { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
-      { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus : '', '$options': 'i' } },
-    ]
-
-    if (data.contractId != "") {
-      let getContractId = await contractService.findContracts({ unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
-      contractCheck = 1
-      if (getContractId.length > 0) {
-        contractIds = getContractId.map(ID => ID._id)
-      } else {
-        contractIds.push("1111121ccf9d400000000000")
-      }
-    }
-    if (userSearchCheck == 1) {
-      claimFilter.push({ orderId: { $in: orderIds } })
-    }
-    if (contractCheck == 1) {
-      claimFilter.push({ contractId: { $in: contractIds } })
-    }
-
-    // checking if the user is searching or just getting the data
-    if (data.contractId === "" && data.productName === "" && data.pName === "" && data.serial === "" && data.customerStatusValue && data.repairStatus === "" && data.claimStatus === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0 && contractCheck == 0) {
-      mainQuery = [
-        { $sort: { unique_key_number: -1 } },
-        {
-          $facet: {
-            totalRecords: [
-              {
-                $count: "total"
-              }
-            ],
-            data: [
-              {
-                $skip: skipLimit
-              },
-              {
-                $limit: pageLimit
-              }
-            ],
-          },
-
-        },
-      ]
-    } else {
-      mainQuery = [
-        { $sort: { unique_key_number: -1 } },
-        {
-          $match:
-          {
-            $and: claimFilter
-          },
-        },
-      ]
-      mainQuery.push({
-        $facet: {
-          totalRecords: [
-            {
-              $count: "total"
-            }
-          ],
-          data: [
-            {
-              $skip: skipLimit
-            },
-            {
-              $limit: pageLimit
-            },
-
-          ],
-        },
-
-      })
-    }
-
-    let getClaims = await claimService.getClaimWithAggregate(mainQuery)
-
-    res.send({
-      code: constant.successCode,
-      message: "Success",
-      result: getClaims,
-      query: mainQuery
-    })
-
-  } catch (err) {
-    res.send({
-      code: constant.errorCode,
-      message: err.message, err: err.stack
-    })
-  }
-}
-
-//Get Unpaid claim value -- not using
-exports.getUnpaidAmount = async (req, res, next) => {
-  try {
-    const ids = req.body.claimIds;
-    const claimId = ids.map(id => new mongoose.Types.ObjectId(id))
-    let claimTotalQuery = [
-      { $match: { _id: { $in: claimId } } },
-      { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
-
-    ]
-    const response = await claimService.getClaimWithAggregate(claimTotalQuery);
-    res.send({
-      code: constant.successCode,
-      message: "Success!",
-      result: {
-        totalClaims: ids.length,
-        unpaidValue: response[0]?.amount
-      }
-    })
-  }
-  catch (err) {
-    res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  }
-}
-
-//Get contract by id
-exports.getContractById = async (req, res) => {
-  try {
-    let data = req.body
-    let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
-    let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
-    let limitData = Number(pageLimit)
-    // Get Claim Total of the contract
-    const totalCreteria = { contractId: new mongoose.Types.ObjectId(req.params.contractId) }
-    let claimTotalQuery = [
-      { $match: totalCreteria },
-      { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
-
-    ]
-
-    let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
-    let query = [
-      {
-        $match: { _id: new mongoose.Types.ObjectId(req.params.contractId) },
-      },
-      {
-        $lookup: {
-          from: "orders",
-          localField: "orderId",
-          foreignField: "_id",
-          as: "order",
-          pipeline: [
-            {
-              $lookup: {
-                from: "dealers",
-                localField: "dealerId",
-                foreignField: "_id",
-                as: "dealer",
-              }
-            },
-            {
-              $lookup: {
-                from: "resellers",
-                localField: "resellerId",
-                foreignField: "_id",
-                as: "reseller",
-              }
-            },
-            {
-              $lookup: {
-                from: "customers",
-                localField: "customerId",
-                foreignField: "_id",
-                as: "customer",
-              }
-            },
-            {
-              $lookup: {
-                from: "serviceproviders",
-                localField: "servicerId",
-                foreignField: "_id",
-                as: "servicer",
-              }
-            },
-
-          ],
-
-        }
-      },
-    ]
-    let getData = await contractService.getContracts(query, skipLimit, pageLimit)
-    getData[0].claimAmount = 0;
-    if (claimTotal.length > 0) {
-      getData[0].claimAmount = claimTotal[0]?.amount
-    }
-
-    let orderId = getData[0].orderProductId
-    let order = getData[0].order
-
-    for (let i = 0; i < order.length; i++) {
-      let productsArray = order[i].productsArray.filter(product => product._id.toString() == orderId.toString())
-      productsArray[0].priceBook = await priceBookService.getPriceBookById({ _id: new mongoose.Types.ObjectId(productsArray[0]?.priceBookId) })
-      getData[0].order[i].productsArray = productsArray
-    }
-    getData.map((data, index) => {
-      if (data.order[0]?.servicerId != null) {
-        if (data.order[0]?.dealer[0]?.isServicer && data.order[0]?.dealerId.toString() === data.order[0]?.servicerId.toString()) {
-          data.order[0]?.servicer.push(data.order[0]?.dealer[0])
-          getData[index] = data
-        }
-        if (data.order[0]?.reseller.length > 0) {
-          if (data.order[0]?.reseller[0]?.isServicer && data.order[0]?.resellerId.toString() === data.order[0]?.servicerId.toString()) {
-            data.order[0]?.servicer.push(data.order[0]?.reseller[0])
-            getData[index] = data
-          }
-
-        }
-      }
-
-    })
-
-    if (!getData) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to get contract"
-      })
-      return;
-    }
-
-    res.send({
-      code: constant.successCode,
-      message: "Success",
-      result: getData[0]
-    })
-  } catch (err) {
-    res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  }
-}
-
-//Get messages
-exports.getMessages = async (req, res) => {
-
-  const checkClaim = await claimService.getClaimById({ _id: req.params.claimId }, { isDeleted: false })
-  if (!checkClaim) {
-    res.send({
-      code: constant.errorCode,
-      message: 'Invalid Claim id!'
-    })
-    return;
-  }
-
-  let lookupQuery = [
-    {
-      $match:
-      {
-        $and: [
-          { claimId: new mongoose.Types.ObjectId(req.params.claimId) }
-        ]
-      },
-    },
-    {
-      $lookup: {
-        from: "users",
-        localField: "commentedTo",
-        foreignField: "metaId",
-        as: "commentTo",
-        pipeline: [
-          {
-            $match:
-            {
-              $and: [
-                { isPrimary: true },
-                { metaId: { $ne: null } }
-              ]
-            },
-          },
-          {
-            $project: {
-              firstName: 1,
-              lastName: 1,
-            }
-          }
-        ]
-
-      }
-    },
-    { $unwind: { path: "$commentTo", preserveNullAndEmptyArrays: true } },
-    {
-      $lookup: {
-        from: "users",
-        localField: "commentedByUser",
-        foreignField: "_id",
-        as: "commentBy",
-        pipeline: [
-          {
-            $lookup: {
-              from: 'roles',
-              localField: 'roleId',
-              foreignField: '_id',
-              as: 'roles'
-            }
-          },
-          {
-            $unwind: "$roles"
-          },
-          {
-            $project: {
-              firstName: 1,
-              lastName: 1,
-              "roles.role": 1,
-            }
-          }
-        ]
-      }
-    },
-    { $unwind: { path: "$commentBy", preserveNullAndEmptyArrays: true } },
-    {
-      $project: {
-        _id: 1,
-        date: 1,
-        type: 1,
-        messageFile: 1,
-        content: 1,
-        "commentBy": 1,
-        "commentTo": 1,
-      }
-    }
-  ]
-
-  let allMessages = await claimService.getAllMessages(lookupQuery);
-  res.send({
-    code: constant.successCode,
-    messages: 'Success!',
-    result: allMessages
-  })
-}
-
-//get max claim amout to claimed
-exports.getMaxClaimAmount = async (req, res) => {
-  try {
-    const query = { contractId: new mongoose.Types.ObjectId(req.params.contractId) }
-    let claimTotalQuery = [
-      { $match: query },
-      { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
-
-    ]
-    let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
-    const contract = await contractService.getContractById({ _id: req.params.contractId }, { productValue: 1 })
-    const claimAmount = claimTotal[0]?.amount ? claimTotal[0]?.amount : 0
-    const product = contract ? contract.productValue : 0
-    res.send({
-      code: constant.successCode,
-      message: 'Success!',
-      result: product - claimAmount
-    })
-  }
-  catch (err) {
-    res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  }
-}
-
-// get coverage type in claim
-exports.getCoverageType = async (req, res) => {
-  try {
-    const checkContract = await contractService.getContractById({ _id: req.params.contractId });
-    if (!checkContract) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to find Contract!"
-      });
-      return
-    }
-    const query = { _id: new mongoose.Types.ObjectId(checkContract.orderId) }
-
-    const orderData = await orderService.getOrder(query, { isDeleted: false })
-
-    res.send({
-      code: constant.successCode,
-      message: "Success!",
-      result: checkOrder
-    })
-
-  }
-  catch (err) {
     res.send({
       code: constant.errorCode,
       message: err.message
@@ -5752,102 +5025,173 @@ exports.sendStaticEmail = async (req, res) => {
   }
   let mailing = await sgMail.send(emailConstant.sendEmailTemplate(["bschiffner@natomasunified.org"], ["noreply@getcover.cover"], emailData))
   res.send({
-    response:mailing
+    response: mailing
   })
 }
+
 exports.updateClaimDate = async (req, res) => {
   try {
 
-    let baseDate = new Date('2024-07-03');
-    let newDateToCheck = new Date()
-    const newDayOfMonth = newDateToCheck.getDate();
-    const dayOfMonth = baseDate.getDate();
-
-    // Get the current year and month
-    const currentYear1 = new Date().getFullYear();
-    const currentMonth1 = new Date().getMonth(); // Note: 0 = January, so this is the current month index
-
-    // Create a new date with the current year, current month, and the day from baseDate
-    let newDateWithSameDay = new Date(currentYear1, currentMonth1, dayOfMonth);
-    if (Number(newDayOfMonth) > Number(dayOfMonth)) {
-      newDateWithSameDay = new Date(new Date(newDateWithSameDay).setMonth(newDateWithSameDay.getMonth() - 1));
-    }
-
-    const monthlyEndDate = new Date(new Date(newDateWithSameDay).setMonth(newDateWithSameDay.getMonth() + 1)); // Ends on August 11, 2024
-    const yearlyEndDate = new Date(new Date(newDateWithSameDay).setFullYear(newDateWithSameDay.getFullYear() + 1)); // Ends on July 11, 2025
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0); // Start of today (00:00)
-    const endOfToday = new Date();
-    endOfToday.setHours(23, 59, 59, 999); // End of today (23:59)
-
-    let getNoOfClaimQuery = [
-      {
-        $match: {
-          contractId: new mongoose.Types.ObjectId("6712381331a2529f6e009d85"),
-          claimFile: "completed"
-        }
-      },
-      {
-        $group: {
-          _id: null,
-          monthlyCount: {
-            $sum: {
-              $cond: [
-                {
-                  $and: [
-                    { $gte: ['$createdAt', newDateWithSameDay] },
-                    { $lt: ['$createdAt', monthlyEndDate] }
-                  ]
-                },
-                1,
-                0
-              ]
-            }
-          },
-          yearlyCount: {
-            $sum: {
-              $cond: [
-                {
-                  $and: [
-                    { $gte: ['$createdAt', newDateWithSameDay] },
-                    { $lt: ['$createdAt', yearlyEndDate] }
-                  ]
-                },
-                1,
-                0
-              ]
-            }
-          },
-          todayCount: {
-            $sum: {
-              $cond: [
-                {
-                  $and: [
+    let check = await claimService.markAsPaid(
+      {},
+      [
+        {
+          $set: {
+            "trackStatus": {
+              $map: {
+                input: "$trackStatus",
+                as: "statusItem",
+                in: {
+                  $mergeObjects: [
+                    "$$statusItem",
                     {
-                      $gte: ['$createdAt', startOfToday
-                      ]
-                    },
-                    {
-                      $lt: ['$createdAt', endOfToday
-                      ]
+                      "statusName": {
+                        $switch: {
+                          branches: [
+                            {
+                              case: {
+                                $in: ["$$statusItem.status", [
+                                  "request_sent",
+                                  "request_approved",
+                                  "product_received",
+                                  "repair_in_process",
+                                  "parts_needed",
+                                  "parts_ordered",
+                                  "parts_received",
+                                  "repair_complete",
+                                  "servicer_shipped"
+                                ]]
+                              },
+                              then: "repair_status"
+                            },
+                            {
+                              case: {
+                                $in: ["$$statusItem.status", [
+                                  "open",
+                                  "completed",
+                                  "rejected"
+                                ]]
+                              },
+                              then: "claim_status"
+                            },
+                            {
+                              case: {
+                                $in: ["$$statusItem.status", [
+                                  "request_submitted",
+                                  "shipping_label_received",
+                                  "product_sent",
+                                  "product_received"
+                                ]]
+                              },
+                              then: "customer_status"
+                            }
+                          ],
+                          default: "Unknown Status"
+                        }
+                      }
                     }
                   ]
-                },
-                1,
-                0
-              ]
+                }
+              }
             }
           }
         }
-      }
-    ];
-
-
-    let checkNoOfClaims = await claimService.getClaimWithAggregate(getNoOfClaimQuery)
+      ]
+    );
 
     res.send({
-      checkNoOfClaims, getNoOfClaimQuery
+      code:check
     })
+    // let baseDate = new Date('2024-07-03');
+    // let newDateToCheck = new Date()
+    // const newDayOfMonth = newDateToCheck.getDate();
+    // const dayOfMonth = baseDate.getDate();
+
+    // // Get the current year and month
+    // const currentYear1 = new Date().getFullYear();
+    // const currentMonth1 = new Date().getMonth(); // Note: 0 = January, so this is the current month index
+
+    // // Create a new date with the current year, current month, and the day from baseDate
+    // let newDateWithSameDay = new Date(currentYear1, currentMonth1, dayOfMonth);
+    // if (Number(newDayOfMonth) > Number(dayOfMonth)) {
+    //   newDateWithSameDay = new Date(new Date(newDateWithSameDay).setMonth(newDateWithSameDay.getMonth() - 1));
+    // }
+
+    // const monthlyEndDate = new Date(new Date(newDateWithSameDay).setMonth(newDateWithSameDay.getMonth() + 1)); // Ends on August 11, 2024
+    // const yearlyEndDate = new Date(new Date(newDateWithSameDay).setFullYear(newDateWithSameDay.getFullYear() + 1)); // Ends on July 11, 2025
+    // const startOfToday = new Date();
+    // startOfToday.setHours(0, 0, 0, 0); // Start of today (00:00)
+    // const endOfToday = new Date();
+    // endOfToday.setHours(23, 59, 59, 999); // End of today (23:59)
+
+    // let getNoOfClaimQuery = [
+    //   {
+    //     $match: {
+    //       contractId: new mongoose.Types.ObjectId("6712381331a2529f6e009d85"),
+    //       claimFile: "completed"
+    //     }
+    //   },
+    //   {
+    //     $group: {
+    //       _id: null,
+    //       monthlyCount: {
+    //         $sum: {
+    //           $cond: [
+    //             {
+    //               $and: [
+    //                 { $gte: ['$createdAt', newDateWithSameDay] },
+    //                 { $lt: ['$createdAt', monthlyEndDate] }
+    //               ]
+    //             },
+    //             1,
+    //             0
+    //           ]
+    //         }
+    //       },
+    //       yearlyCount: {
+    //         $sum: {
+    //           $cond: [
+    //             {
+    //               $and: [
+    //                 { $gte: ['$createdAt', newDateWithSameDay] },
+    //                 { $lt: ['$createdAt', yearlyEndDate] }
+    //               ]
+    //             },
+    //             1,
+    //             0
+    //           ]
+    //         }
+    //       },
+    //       todayCount: {
+    //         $sum: {
+    //           $cond: [
+    //             {
+    //               $and: [
+    //                 {
+    //                   $gte: ['$createdAt', startOfToday
+    //                   ]
+    //                 },
+    //                 {
+    //                   $lt: ['$createdAt', endOfToday
+    //                   ]
+    //                 }
+    //               ]
+    //             },
+    //             1,
+    //             0
+    //           ]
+    //         }
+    //       }
+    //     }
+    //   }
+    // ];
+
+
+    // let checkNoOfClaims = await claimService.getClaimWithAggregate(getNoOfClaimQuery)
+
+    // res.send({
+    //   checkNoOfClaims, getNoOfClaimQuery
+    // })
 
 
 
@@ -5921,6 +5265,107 @@ exports.updateClaimDate = async (req, res) => {
     })
   }
 }
+
+exports.uploadPrePostImages = async (req, res) => {
+  try {
+    claimUploadedImages(req, res, async (err) => {
+      let file = req.files;
+      if (file.length > 5) {
+        res.send({
+          code: constants.errorCode,
+          message: "Upload upto 5 images!"
+        })
+        return
+      }
+
+      let flag = req.query.flag
+      let checkClaim = await claimService.getClaimById({ _id: req.params.claimId })
+      if (!checkClaim) {
+        res.send({
+          code: constant.errorCode,
+          message: "Invalid claim id"
+        })
+        return;
+      }
+      let preRepairImage = checkClaim.preRepairImage ? checkClaim.preRepairImage : []
+      let postRepairImage = checkClaim.postRepairImage ? checkClaim.postRepairImage : []
+      const checkPreRepairLength = Number(preRepairImage.length) + Number(file.length)
+      const checkPostRepairLength = Number(postRepairImage.length) + Number(file.length)
+      if (checkPostRepairLength > 5 && flag == "postUpload") {
+        res.send({
+          code: constant.errorCode,
+          message: "You cannot upload more than five images"
+        })
+        return
+      }
+      if (checkPreRepairLength > 5 && flag == "preUpload") {
+        res.send({
+          code: constant.errorCode,
+          message: "You cannot upload more than five images"
+        })
+        return
+      }
+      let updateClaim;
+      if (flag == "preUpload") {
+        preRepairImage = preRepairImage.concat(file)
+        updateClaim = await claimService.updateClaim({ _id: req.params.claimId }, { preRepairImage: preRepairImage }, { new: true })
+      }
+      if (flag == "postUpload") {
+        postRepairImage = postRepairImage.concat(file)
+        updateClaim = await claimService.updateClaim({ _id: req.params.claimId }, { postRepairImage: postRepairImage }, { new: true })
+      }
+      res.send({
+        code: constant.successCode,
+        message: 'Success!',
+        result: updateClaim
+
+      })
+    })
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+    return
+  }
+}
+
+exports.deletePrePostImages = async (req, res) => {
+  let data = req.body;
+  let checkClaim = await claimService.getClaimById({ _id: req.params.claimId });
+  var params = { Bucket: process.env.bucket_name, Key: data.key };
+
+  if (!checkClaim) {
+    res.send({
+      code: constant.errorCode,
+      message: "Invalid Claim Id!"
+    });
+    return;
+  }
+  let update
+  if (data.flag == "preUploadImage") {
+    update = await claimService.updateClaim({ _id: req.params.claimId }, { $pull: { "preRepairImage": { key: data.key } } }, { new: true })
+  }
+  if (data.flag == "postUploadImage") {
+    update = await claimService.updateClaim({ _id: req.params.claimId }, { $pull: { "postRepairImage": { key: data.key } } }, { new: true })
+  }
+  if (update) {
+    S3Bucket.deleteObject(params, function (err, data) {
+      if (err) console.log(err, err.stack);
+      else {
+        console.log(data);
+      }
+    });
+    res.send({
+      code: constant.successCode,
+      message: "Delete Successfully",
+      result: update
+    })
+  }
+
+}
+
 
 
 

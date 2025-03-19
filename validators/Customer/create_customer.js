@@ -14,7 +14,7 @@ const create_customer_validation = Joi.object({
     email: Joi.string().replace(/\s+/g, ' ').trim().optional(),
     firstName: Joi.string().replace(/\s+/g, ' ').trim().optional(),
     lastName: Joi.string().replace(/\s+/g, ' ').trim().optional(),
-    phoneNumber: Joi.number().optional(),
+    phoneNumber: Joi.string().optional(),
     isPrimary: Joi.boolean().optional(),
     status: Joi.boolean().optional(),
     position: Joi.string().trim().allow('').replace(/\s+/g, ' ').optional(),
@@ -22,7 +22,7 @@ const create_customer_validation = Joi.object({
         email: Joi.string().replace(/\s+/g, ' ').trim().required(),
         firstName: Joi.string().replace(/\s+/g, ' ').trim().required(),
         lastName: Joi.string().replace(/\s+/g, ' ').trim().required(),
-        phoneNumber: Joi.number().required(),
+        phoneNumber: Joi.string().required(),
         isPrimary: Joi.boolean().required(),
         status: Joi.boolean().required(),
         position: Joi.string().trim().allow('').replace(/\s+/g, ' ').optional()

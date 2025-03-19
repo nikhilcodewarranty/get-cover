@@ -122,6 +122,15 @@ exports.createCustomer = async (req, res, next) => {
       resellerId: checkReseller ? checkReseller._id : null,
       resellerId1: checkReseller ? checkReseller._id : null,
       zip: data.zip,
+      addresses: [
+        {
+          state: data.state,
+          address: data.street,
+          city: data.city,
+          zip: data.zip,
+          isPrimary: true,
+        }
+      ],
       state: data.state,
       country: data.country,
       status: data.status,
@@ -173,6 +182,7 @@ exports.createCustomer = async (req, res, next) => {
             lastName: member.lastName,
             phoneNumber: member.phoneNumber,
             metaId: createdCustomer._id,
+            addressId: createdCustomer.addresses[0]._id,
             roleId: process.env.customer,
             position: member.position,
             dialCode: member?.dialCode,
@@ -701,6 +711,9 @@ exports.editCustomer = async (req, res) => {
     let criteria1 = { _id: checkDealer._id }
     let option = { new: true }
     let updateCustomer = await customerService.updateCustomer(criteria1, data, option)
+    data.address = data.street
+    let addressObj = { $set: { "addresses.$.address": data.street, "addresses.$.city": data.city, "addresses.$.state": data.state, "addresses.$.zip": data.zip, "addresses.$.isPrimary": true } }
+    updateCustomer = await customerService.updateCustomer({ _id: req.params.customerId, 'addresses.isPrimary': true }, addressObj, option)
     if (!updateCustomer) {
       //Save Logs editCustomer
       let logData = {
@@ -720,6 +733,7 @@ exports.editCustomer = async (req, res) => {
       })
       return;
     }
+
     if (data.hasOwnProperty("isAccountCreate")) {
       if ((data.isAccountCreate || data.isAccountCreate == 'true')) {
         let updatePrimaryUser = await userService.updateSingleUser({ metaData: { $elemMatch: { metaId: req.params.customerId, isPrimary: true } } }, {
@@ -1477,6 +1491,7 @@ exports.addCustomerUser = async (req, res) => {
           roleId: process.env.customer,
           firstName: data.firstName,
           lastName: data.lastName,
+          addressId: data.addressId,
           phoneNumber: data.phoneNumber,
           position: data.position,
           isPrimary: false,
@@ -1487,6 +1502,7 @@ exports.addCustomerUser = async (req, res) => {
 
     }
     let saveData = await userService.createUser(metaData)
+    console.log("saveData--------------------", saveData)
     if (!saveData) {
       //Save Logs
       let logData = {
@@ -1618,7 +1634,7 @@ exports.addCustomerUser = async (req, res) => {
       let createNotification = await userService.saveNotificationBulk(notificationArray);
 
       let email = data.email
-      
+
       let userId = saveData._id
       let settingData = await userService.getSetting({});
 
@@ -1637,12 +1653,12 @@ exports.addCustomerUser = async (req, res) => {
       }))
 
       let emailData = {
-        flag: "created", 
+        flag: "created",
         title: settingData[0]?.title,
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        link: resetLink, 
-        subject: "Set Password", 
+        link: resetLink,
+        subject: "Set Password",
         role: "Customer User",
         servicerName: data.firstName + " " + data.lastName,
         address: settingData[0]?.address,
@@ -1698,19 +1714,19 @@ exports.getCustomerById = async (req, res) => {
   try {
     let data = req.body
     let checkCustomer = await customerService.getCustomerById({ _id: req.params.customerId }, {})
-    if (checkCustomer?.addresses) {
-      checkCustomer.addresses.push({
-        address: checkCustomer?.street,
-        city: checkCustomer?.city,
-        state: checkCustomer?.state,
-        zip: checkCustomer?.zip,
-        isPrimary: true,
-      });
-      let filteredAddress = checkCustomer.addresses.filter(item => item && Object.keys(item).length > 0);
+    // if (checkCustomer?.addresses) {
+    //   checkCustomer.addresses.push({
+    //     address: checkCustomer?.street,
+    //     city: checkCustomer?.city,
+    //     state: checkCustomer?.state,
+    //     zip: checkCustomer?.zip,
+    //     isPrimary: true,
+    //   });
+    //   let filteredAddress = checkCustomer.addresses.filter(item => item && Object.keys(item).length > 0);
 
-      checkCustomer.addresses = filteredAddress.sort((a, b) => b.isPrimary - a.isPrimary);
+    //   checkCustomer.addresses = filteredAddress.sort((a, b) => b.isPrimary - a.isPrimary);
 
-    }
+    // }
     if (!checkCustomer) {
       res.send({
         code: constant.errorCode,
@@ -2612,6 +2628,9 @@ exports.customerClaims = async (req, res) => {
               getCoverClaimAmount: 1,
               servicerId: 1,
               customerStatus: 1,
+              dealerName:"$contracts.orders.dealers.name",
+              servicerName:"$servicerInfo.name",
+              customerName:"$contracts.orders.customer.username",
               trackingNumber: 1,
               trackingType: 1,
               repairParts: 1,
@@ -2695,6 +2714,15 @@ exports.customerClaims = async (req, res) => {
           ]
         },
       },
+      {
+        $lookup: {
+          from: "serviceproviders",
+          localField: "servicerId",
+          foreignField: "_id",
+          as: "servicerInfo",
+        }
+      },
+      { $unwind: { path: "$servicerInfo", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: "contracts",
@@ -2993,6 +3021,7 @@ exports.createCustomerNew = async (req, res, next) => {
             roleId: process.env.customer,
             firstName: teamMembers[m].firstName,
             lastName: teamMembers[m].lastName,
+            addressId: createdCustomer.addresses[0]._id,
             phoneNumber: teamMembers[m].phoneNumber,
             isPrimary: teamMembers[m].isPrimary,
           }
@@ -3211,6 +3240,7 @@ exports.addCustomerAddress = async (req, res) => {
     })
   }
 }
+
 exports.addAddress = async (req, res) => {
   try {
     let data = req.body
@@ -3248,6 +3278,7 @@ exports.addAddress = async (req, res) => {
     })
   }
 }
+
 exports.deleteAddress = async (req, res) => {
   try {
     let data = req.body
@@ -3320,6 +3351,30 @@ exports.editaddress = async (req, res) => {
     })
   }
 }
+
+exports.getCustomerAddress = async (req, res) => {
+  try {
+    let data = req.body
+    let customerId = req.params.customerId
+    if (req.role == "Customer") {
+      customerId = req.userId
+    }
+
+    let response = await customerService.getCustomerById({ _id: customerId }, { addresses: 1 })
+
+    res.send({
+      code: constant.successCode,
+      message: "Success!",
+      result: response
+    })
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
 
 exports.justToCheck = async (req, res) => {
   let updateCustomer = await customerModel.updateMany(

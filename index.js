@@ -172,7 +172,6 @@ app.use((req, res, next) => {
 const PORT = 3002
 
 
-
 httpServer.listen(PORT, '0.0.0.0', () => console.log(`app listening at http://localhost:${PORT}`))
 
 module.exports = app;
