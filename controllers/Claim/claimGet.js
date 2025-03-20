@@ -2042,6 +2042,7 @@ exports.getMessages = async (req, res) => {
     return;
   }
 
+  console.log("req.userId---------------",req.userId)
   let lookupQuery = [
     {
       $match: {
