@@ -29,6 +29,7 @@ const settingSchema = new mongoose.Schema({
   },
   dateTimeFormat: {
     type: String,
+    enum: ["mm/dd/yyyy", "dd/mm/yyyy"]
   },
   logoDark: {
     type: {},
