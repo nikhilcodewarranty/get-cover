@@ -1891,7 +1891,7 @@ exports.getClaimDetails = async (req, res) => {
             projection["Coverage End Date"] = { $arrayElemAt: ["$contractDetail.contractDetail.coverageEndDate", 0] };
             break;
           case 'partsWarrantyDate':
-            projection[field] = { $arrayElemAt: ["$contractDetail.contractDetail.partsWarranty", 0] };
+            projection["Parts Warranty Date"] = { $arrayElemAt: ["$contractDetail.contractDetail.partsWarranty", 0] };
             break;
           case 'labourWarrantyDate':
             projection["Labour Warranty Date"] = { $arrayElemAt: ["$contractDetail.contractDetail.labourWarranty", 0] };
@@ -1965,7 +1965,7 @@ exports.getClaimDetails = async (req, res) => {
           //   break;
 
           case 'isManufacturerWarranty':
-            projection["Is Manufacturer Warranty"] = {
+            projection["Is manufacturer warranty included"] = {
               $let: {
                 vars: {
                   isWarranty: { $arrayElemAt: ["$contractDetail.contractDetail.isManufacturerWarranty", 0] }
@@ -1982,7 +1982,7 @@ exports.getClaimDetails = async (req, res) => {
             break;
 
           case 'isMaxClaimAmount':
-            projection["Is Max Claim Amount"] = {
+            projection["Is There a Maximum Claim Amount"] = {
               $let: {
                 vars: {
                   isMaxClaim: { $arrayElemAt: ["$contractDetail.contractDetail.isMaxClaimAmount", 0] }
