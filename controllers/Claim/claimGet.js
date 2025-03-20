@@ -1586,9 +1586,6 @@ exports.getMessages = async (req, res) => {
     }
   }
 
-
-
-  console.log("req.userId---------------",req.userId)
   let lookupQuery = [
     {
       $match: queryMatch

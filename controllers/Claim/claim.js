@@ -645,6 +645,7 @@ exports.addClaim = async (req, res, next) => {
     }
 
     data.receiptImage = data.file;
+    data.preRepairImage = data.file;
     let currentYear = new Date().getFullYear();
     let currentYearWithoutHypen = new Date().getFullYear();
 
