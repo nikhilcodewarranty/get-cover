@@ -2963,12 +2963,12 @@ exports.getClaimById = async (req, res) => {
     ];
     let getclaimData = await claimService.getClaimWithAggregate(query);
     //Get Submmitefd by detail
-    if (getclaimData.submittedBy != "") {
-      query = { email: getclaimData?.submittedBy };
-      const userInfo = await userService.getUserById1(query);
-      getclaimData.userInfo =
-        userInfo.metaData[0]?.firstName + " " + userInfo.metaData[0]?.lastName;
-    }
+    // if (getclaimData.submittedBy != "") {
+    //   query = { email: getclaimData?.submittedBy };
+    //   const userInfo = await userService.getUserById1(query);
+    //   getclaimData.userInfo =
+    //     userInfo.metaData[0]?.firstName + " " + userInfo.metaData[0]?.lastName;
+    // }
 
     let trackingData = getclaimData[0]?.trackStatus;
     for (let i = 0; i < trackingData.length; i++) {
