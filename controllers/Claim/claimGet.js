@@ -2047,7 +2047,7 @@ exports.getMessages = async (req, res) => {
       $match: {
         $and: [
           { claimId: new mongoose.Types.ObjectId(req.params.claimId) },
-          { commentedTo: new mongoose.Types.ObjectId(req.userId) },
+          // { commentedTo: new mongoose.Types.ObjectId(req.userId) },
         ],
       },
     },
@@ -2065,8 +2065,8 @@ exports.getMessages = async (req, res) => {
                 {
                   metaData: {
                     $elemMatch: {
-                      isPrimary: true,
-                      metaId: new mongoose.Types.ObjectId(req.userId),
+                     // isPrimary: true,
+                     // metaId: new mongoose.Types.ObjectId(req.userId),
                     },
                   },
                 },
