@@ -121,7 +121,6 @@ const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, d
     }
 
     if (role == "paid") {
-      console.log("role===================================", role)
 
       if (index == 0) {
         sheetName = "detail"
@@ -129,13 +128,11 @@ const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, d
     }
 
     const sheet = workbook.addWorksheet(`${sheetName}`);
-    console.log("role===================================", role)
 
     if (sheetData.length > 0) {
 
       const headers = Object.keys(sheetData[0]); // Get keys from the first object as column headers
       sheet.columns = headers.map(header => ({ header, key: header }));
-      // console.log("role=============eeeeeeee======================", sheet)
 
       // Add rows to the sheet
       sheetData.forEach(row => {
@@ -156,7 +153,6 @@ const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, d
     Body: buffer,
     ContentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   };
-  console.log(params);
 
 
   try {
@@ -171,8 +167,6 @@ const createExcelFileWithMultipleSheets = async (data, bucketName, folderName, d
 };
 
 const createExcelFileWithMultipleSheets1 = async (data, bucketName, folderName, dateString, role) => {
-  console.log("Input data:", JSON.stringify(data, null, 2));
-  console.log("Role:", role);
 
   const workbook = new ExcelJS.Workbook();
 
@@ -182,7 +176,6 @@ const createExcelFileWithMultipleSheets1 = async (data, bucketName, folderName, 
       sheetName = "detail";
     }
 
-    console.log(`Creating sheet: ${sheetName}`);
     const sheet = workbook.addWorksheet(sheetName);
 
     if (sheetData.length > 0) {
@@ -195,7 +188,6 @@ const createExcelFileWithMultipleSheets1 = async (data, bucketName, folderName, 
           formattedRow.approveDate = new Date(formattedRow.approveDate).toISOString();
         }
 
-        console.log("Adding row:", formattedRow);
         sheet.addRow(formattedRow);
       });
     } else {
@@ -218,11 +210,9 @@ const createExcelFileWithMultipleSheets1 = async (data, bucketName, folderName, 
     ContentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   };
 
-  console.log("S3 upload parameters:", params);
 
   try {
     const uploadResponse = await s3Client1.send(new PutObjectCommand(params));
-    console.log('Upload successful:', uploadResponse);
     return uploadResponse;
   } catch (error) {
     console.error('Error uploading file to S3:', error);
@@ -264,6 +254,7 @@ exports.exportDataForClaim = async (req, res) => {
 
     if (data.flag == "Dealer") {
       match1 = { dealerId: new mongoose.Types.ObjectId(data.userId) }
+      console.log("checking the data+++++++++++++++", match1)
 
     }
     if (data.flag == "Reseller") {
@@ -1720,13 +1711,17 @@ exports.getClaimDetails = async (req, res) => {
     let dateString = new Date()
 
     let checkUser = await userService.getUserById1({ _id: req.teammateId })
-    data.userId = checkUser.metaData[0]._id
-    data.claimKeys = data.projection
+    // data.userId = checkUser.metaData[0]._id
+    // data.claimKeys = data.projection
     let checkReporting = await reportingKeys.findOne({ userId: checkUser.metaData[0]._id })
+    let objectToSave = {
+      userId: checkUser.metaData[0]?._id,
+      claimKeys: data.projection
+    }
     if (checkReporting) {
-      let updateData = await reportingKeys.findOneAndUpdate({ _id: checkReporting._id }, data, { new: true })
+      let updateData = await reportingKeys.findOneAndUpdate({ _id: checkReporting._id }, objectToSave, { new: true })
     } else {
-      let saveData = await reportingKeys(data).save()
+      let saveData = await reportingKeys(objectToSave).save()
     }
 
 
@@ -1747,16 +1742,18 @@ exports.getClaimDetails = async (req, res) => {
       match = { resellerId: new mongoose.Types.ObjectId(req.userId) }
     }
 
-    if (data.flag == "dealer") {
+    if (data.flag == "Dealer") {
       match1 = { dealerId: new mongoose.Types.ObjectId(data.userId) }
+      console.log("checking the data+++++++++++++++", data.userId, match1)
+
     }
-    if (data.flag == "reseller") {
+    if (data.flag == "Reseller") {
       match1 = { resellerId: new mongoose.Types.ObjectId(data.userId) }
     }
-    if (data.flag == "servicer") {
+    if (data.flag == "Servicer") {
       match1 = { servicerId: new mongoose.Types.ObjectId(data.userId) }
     }
-    if (data.flag == "customer") {
+    if (data.flag == "Customer") {
       match1 = { customerId: new mongoose.Types.ObjectId(data.userId) }
     }
 
@@ -1831,7 +1828,6 @@ exports.getClaimDetails = async (req, res) => {
     req.body.projection.unique_key = 1
 
     function formatFieldName(fieldName) {
-      console.log("checking-------------", fieldName)
       return fieldName
         .replace(/([A-Z])/g, ' $1')   // Adds a space before each capital letter
         .replace(/^./, (str) => str.toUpperCase());  // Capitalizes the first letter
@@ -1841,7 +1837,6 @@ exports.getClaimDetails = async (req, res) => {
       if (req.body.projection[field] === 1) {
 
         // Handle special fields that need transformation
-        console.log(field)
 
         switch (field) {
           case 'dealerName':
@@ -2146,22 +2141,22 @@ exports.getClaimDetails = async (req, res) => {
 
     let matchCondition = {
       $and: [
-        { orderId: { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        { 'customerStatus.status': { '$regex': data.customerStatusValue ? data.customerStatusValue : '', '$options': 'i' } },
-        { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
-        { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus : '', '$options': 'i' } },
-        { 'productName': { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        { 'dealerSku': { '$regex': data.dealerSku ? data.dealerSku.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        { venderOrder: { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        servicerMatch,
-        claimPaidStatus,
-        dealerMatch,
-        resellerMatch,
-        dateMatch,
-        statusMatch,
+        // { orderId: { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        // { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        // { 'customerStatus.status': { '$regex': data.customerStatusValue ? data.customerStatusValue : '', '$options': 'i' } },
+        // { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
+        // { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus : '', '$options': 'i' } },
+        // { 'productName': { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        // { 'dealerSku': { '$regex': data.dealerSku ? data.dealerSku.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        // { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        // { venderOrder: { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        // { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        // servicerMatch,
+        // claimPaidStatus,
+        // dealerMatch,
+        // resellerMatch,
+        // dateMatch,
+        // statusMatch,
         match1
       ]
     }
