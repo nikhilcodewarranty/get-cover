@@ -1,7 +1,7 @@
 require("dotenv").config();
 const path = require("path");
 const { comments } = require("../../models/Claim/comment");
-const LOG = require('../../models/User/logs')
+const LOG = require("../../models/User/logs");
 const claimService = require("../../services/Claim/claimService");
 const orderService = require("../../services/Order/orderService");
 const userService = require("../../services/User/userService");
@@ -13,23 +13,23 @@ const customerService = require("../../services/Customer/customerService");
 const providerService = require("../../services/Provider/providerService");
 const resellerService = require("../../services/Dealer/resellerService");
 const dealerService = require("../../services/Dealer/dealerService");
-const supportingFunction = require('../../config/supportingFunction')
-let dealerController = require("../../controllers/Dealer/dealerController")
+const supportingFunction = require("../../config/supportingFunction");
+let dealerController = require("../../controllers/Dealer/dealerController");
 const jwt = require("jsonwebtoken");
-const emailConstant = require('../../config/emailConstant');
-const constant = require("../../config/constant")
+const emailConstant = require("../../config/emailConstant");
+const constant = require("../../config/constant");
 const maillogservice = require("../../services/User/maillogServices");
-const sgMail = require('@sendgrid/mail');
+const sgMail = require("@sendgrid/mail");
 const moment = require("moment");
 sgMail.setApiKey(process.env.sendgrid_key);
 const multer = require("multer");
 const { default: mongoose } = require("mongoose");
 const XLSX = require("xlsx");
 const fs = require("fs");
-const { S3Client } = require('@aws-sdk/client-s3');
-const { Upload } = require('@aws-sdk/lib-storage');
-const multerS3 = require('multer-s3');
-const aws = require('aws-sdk');
+const { S3Client } = require("@aws-sdk/client-s3");
+const { Upload } = require("@aws-sdk/lib-storage");
+const multerS3 = require("multer-s3");
+const aws = require("aws-sdk");
 const { default: axios } = require("axios");
 const { message } = require("../../validators/Dealer/update_dealer_price");
 
@@ -45,10 +45,10 @@ const s3 = new S3Client({
   credentials: {
     accessKeyId: process.env.aws_access_key_id,
     secretAccessKey: process.env.aws_secret_access_key,
-  }
+  },
 });
 
-const folderName = 'claimFile'; // Replace with your specific folder name
+const folderName = "claimFile"; // Replace with your specific folder name
 
 const StorageP = multerS3({
   s3: s3,
@@ -57,10 +57,11 @@ const StorageP = multerS3({
     cb(null, { fieldName: file.fieldname });
   },
   key: (req, file, cb) => {
-    const fileName = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
+    const fileName =
+      file.fieldname + "-" + Date.now() + path.extname(file.originalname);
     const fullPath = `${folderName}/${fileName}`;
     cb(null, fullPath);
-  }
+  },
 });
 
 var imageUpload = multer({
@@ -70,6 +71,28 @@ var imageUpload = multer({
   },
 }).single("file");
 
+const claimRepairImages = multerS3({
+  s3: s3,
+  bucket: process.env.bucket_name,
+  metadata: (req, file, cb) => {
+    cb(null, { fieldName: file.fieldname });
+  },
+  key: (req, file, cb) => {
+    let flag = req.query.flag;
+    let folderName;
+    // Example: Set folderName based on file.fieldname
+    if (flag === "preUpload") {
+      folderName = "preUploaded";
+    } else if (flag === "postUpload") {
+      folderName = "postUploaded";
+    }
+    const fileName =
+      file.fieldname + "-" + Date.now() + path.extname(file.originalname);
+    const fullPath = `claimFile/${folderName}/${fileName}`;
+    cb(null, fullPath);
+  },
+});
+
 var uploadP = multer({
   storage: StorageP,
   limits: {
@@ -78,28 +101,6 @@ var uploadP = multer({
 }).single("file");
 
 //Upload Claim Repair Images
-const claimRepairImages = multerS3({
-  s3: s3,
-  bucket: process.env.bucket_name,
-  metadata: (req, file, cb) => {
-    cb(null, { fieldName: file.fieldname });
-  },
-  key: (req, file, cb) => {
-
-    let flag = req.query.flag
-
-    let folderName;
-    // Example: Set folderName based on file.fieldname
-    if (flag === 'preUpload') {
-      folderName = 'preUploaded';
-    } else if (flag === 'postUpload') {
-      folderName = 'postUploaded';
-    }
-    const fileName = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
-    const fullPath = `claimFile/${folderName}/${fileName}`;
-    cb(null, fullPath);
-  }
-});
 
 // var claimUploadedImages = multer({
 //   storage: claimRepairImages,
@@ -118,101 +119,154 @@ var claimUploadedImages = multer({
 // search claim api  -- not using
 exports.searchClaim = async (req, res, next) => {
   try {
-    let data = req.body
-    let lookupCondition = [{ isDeleted: false }]
-    let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
-    let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
-    let orderIds = []
-    let orderAndCondition = []
-    let userSearchCheck = 0
-    let customerIds = []
-    let checkCustomer = 0
+    let data = req.body;
+    let lookupCondition = [{ isDeleted: false }];
+    let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100;
+    let skipLimit =
+      data.page > 0 ? (Number(req.body.page) - 1) * Number(pageLimit) : 0;
+    let orderIds = [];
+    let orderAndCondition = [];
+    let userSearchCheck = 0;
+    let customerIds = [];
+    let checkCustomer = 0;
     let contractFilter;
 
     // query on the bases of payload
     if (data.customerName != "") {
-      userSearchCheck = 1
-      let getData = await customerService.getAllCustomers({ username: { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
+      userSearchCheck = 1;
+      let getData = await customerService.getAllCustomers({
+        username: {
+          $regex: data.customerName
+            ? data.customerName.replace(/\s+/g, " ").trim()
+            : "",
+          $options: "i",
+        },
+      });
       if (getData.length > 0) {
-        customerIds = await getData.map(customer => customer._id)
+        customerIds = await getData.map((customer) => customer._id);
       } else {
-        customerIds.push("1111121ccf9d400000000000")
+        customerIds.push("1111121ccf9d400000000000");
       }
-    };
-    if (req.role == 'Dealer') {
-      userSearchCheck = 1
-      orderAndCondition.push({ dealerId: { $in: [req.userId] } })
     }
-    if (req.role == 'Reseller') {
-      userSearchCheck = 1
-      orderAndCondition.push({ resellerId: { $in: [req.userId] } })
+    if (req.role == "Dealer") {
+      userSearchCheck = 1;
+      orderAndCondition.push({ dealerId: { $in: [req.userId] } });
     }
-    if (req.role == 'Customer') {
-      userSearchCheck = 1
-      orderAndCondition.push({ customerId: { $in: [req.userId] } })
+    if (req.role == "Reseller") {
+      userSearchCheck = 1;
+      orderAndCondition.push({ resellerId: { $in: [req.userId] } });
+    }
+    if (req.role == "Customer") {
+      userSearchCheck = 1;
+      orderAndCondition.push({ customerId: { $in: [req.userId] } });
     }
     if (customerIds.length > 0) {
-      orderAndCondition.push({ customerId: { $in: customerIds } })
+      orderAndCondition.push({ customerId: { $in: customerIds } });
     }
     if (orderAndCondition.length > 0) {
       let getOrders = await orderService.getOrders({
-        $and: orderAndCondition
-      })
+        $and: orderAndCondition,
+      });
       if (getOrders.length > 0) {
-        orderIds = await getOrders.map(order => order._id)
-      }
-      else {
-        orderIds.push("1111121ccf9d400000000000")
+        orderIds = await getOrders.map((order) => order._id);
+      } else {
+        orderIds.push("1111121ccf9d400000000000");
       }
     }
     if (data.contractId != "") {
-      data.contractId = data.contractId.replace(/-/g, '')
+      data.contractId = data.contractId.replace(/-/g, "");
     }
-
 
     if (userSearchCheck == 1) {
       contractFilter = [
         { orderId: { $in: orderIds } },
-        { 'venderOrder': { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        { "orderUniqueKey": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        { 'serial': { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        { 'unique_key_search': { '$regex': data.contractId ? data.contractId : '', '$options': 'i' } },
-        { status: 'Active' },
+        {
+          venderOrder: {
+            $regex: data.venderOrder
+              ? data.venderOrder.replace(/\s+/g, " ").trim()
+              : "",
+            $options: "i",
+          },
+        },
+        {
+          orderUniqueKey: {
+            $regex: data.orderId
+              ? data.orderId.replace(/\s+/g, " ").trim()
+              : "",
+            $options: "i",
+          },
+        },
+        {
+          serial: {
+            $regex: data.serial ? data.serial.replace(/\s+/g, " ").trim() : "",
+            $options: "i",
+          },
+        },
+        {
+          unique_key_search: {
+            $regex: data.contractId ? data.contractId : "",
+            $options: "i",
+          },
+        },
+        { status: "Active" },
         { eligibilty: true },
         // { claimFile: "completed" }
-      ]
+      ];
     } else {
       contractFilter = [
-        { 'venderOrder': { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        { "orderUniqueKey": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        { 'serial': { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        { 'unique_key_search': { '$regex': data.contractId ? data.contractId : '', '$options': 'i' } },
-        { status: 'Active' },
+        {
+          venderOrder: {
+            $regex: data.venderOrder
+              ? data.venderOrder.replace(/\s+/g, " ").trim()
+              : "",
+            $options: "i",
+          },
+        },
+        {
+          orderUniqueKey: {
+            $regex: data.orderId
+              ? data.orderId.replace(/\s+/g, " ").trim()
+              : "",
+            $options: "i",
+          },
+        },
+        {
+          serial: {
+            $regex: data.serial ? data.serial.replace(/\s+/g, " ").trim() : "",
+            $options: "i",
+          },
+        },
+        {
+          unique_key_search: {
+            $regex: data.contractId ? data.contractId : "",
+            $options: "i",
+          },
+        },
+        { status: "Active" },
         // { claimFile: "completed" },
-        { eligibilty: true }
-      ]
+        { eligibilty: true },
+      ];
     }
 
     let query = [
       {
-        $match:
-        {
-          $and: contractFilter
+        $match: {
+          $and: contractFilter,
         },
       },
       {
         $facet: {
           totalRecords: [
             {
-              $count: "total"
-            }
+              $count: "total",
+            },
           ],
           data: [
             {
-              $skip: skipLimit
+              $skip: skipLimit,
             },
             {
-              $limit: pageLimit
+              $limit: pageLimit,
             },
             {
               $lookup: {
@@ -227,15 +281,14 @@ exports.searchClaim = async (req, res, next) => {
                       localField: "customerId",
                       foreignField: "_id",
                       as: "customers",
-                    }
+                    },
                   },
                   { $unwind: "$customers" },
-                ]
-
-              }
+                ],
+              },
             },
             {
-              $unwind: "$order"
+              $unwind: "$order",
             },
             {
               $project: {
@@ -245,31 +298,30 @@ exports.searchClaim = async (req, res, next) => {
                 "order.customers.username": 1,
                 "order.unique_key": 1,
                 "order.venderOrder": 1,
-              }
-            }
-          ]
-        }
+              },
+            },
+          ],
+        },
       },
-    ]
+    ];
 
-    let getContracts = await contractService.getAllContracts2(query)
-    let totalCount = getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
+    let getContracts = await contractService.getAllContracts2(query);
+    let totalCount = getContracts[0].totalRecords[0]?.total
+      ? getContracts[0].totalRecords[0].total
+      : 0;
 
     res.send({
       code: constant.successCode,
       result: getContracts[0]?.data ? getContracts[0]?.data : [],
-      totalCount
-    })
-
+      totalCount,
+    });
   } catch (err) {
     res.send({
       code: constant.errorCode,
-      message: err.message
-    })
+      message: err.message,
+    });
   }
-
-
-}
+};
 
 //Get File data from S3 bucket
 const getObjectFromS3 = (bucketReadUrl) => {
@@ -279,10 +331,10 @@ const getObjectFromS3 = (bucketReadUrl) => {
         reject(err);
       } else {
         const wb = XLSX.read(data.Body, {
-          type: 'buffer',
+          type: "buffer",
           cellDates: true,
           cellNF: false,
-          cellText: false
+          cellText: false,
         });
         const sheetName = wb.SheetNames[0];
         const sheet = wb.Sheets[sheetName];
@@ -313,26 +365,29 @@ const getObjectFromS3 = (bucketReadUrl) => {
 //upload receipt data for claim
 exports.uploadReceipt = async (req, res, next) => {
   try {
-    uploadP(req, res, async (err) => {
-
-
+    claimUploadedImages(req, res, async (err) => {
       let file = req.files;
+      if (file.length > 5) {
+        res.send({
+          code: constants.errorCode,
+          message: "Upload upto 5 images!",
+        });
+        return;
+      }
       res.send({
         code: constant.successCode,
-        message: 'Success!',
-        file
-      })
-    })
-  }
-  catch (err) {
+        message: "Success!",
+        file,
+      });
+    });
+  } catch (err) {
     res.send({
       code: constant.errorCode,
-      message: err.message
-    })
-    return
+      message: err.message,
+    });
+    return;
   }
-
-}
+};
 
 //upload comment image data in claim
 exports.uploadCommentImage = async (req, res, next) => {
@@ -341,48 +396,67 @@ exports.uploadCommentImage = async (req, res, next) => {
       let file = req.file;
       res.send({
         code: constant.successCode,
-        message: 'Success!',
+        message: "Success!",
         messageFile: {
           fileName: file.key,
           originalName: file.originalname,
-          size: file.size
-        }
-      })
-    })
-  }
-  catch (err) {
+          size: file.size,
+        },
+      });
+    });
+  } catch (err) {
     res.send({
       code: constant.errorCode,
-      message: err.message
-    })
-    return
+      message: err.message,
+    });
+    return;
   }
+};
 
-}
-
-//add claim 
+//add claim
 exports.addClaim = async (req, res, next) => {
   try {
     let data = req.body;
-    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+    const checkLoginUser = await supportingFunction.getPrimaryUser({
+      _id: req.teammateId,
+    });
 
-    let checkContract = await contractService.getContractById({ _id: data.contractId })
-    const checkOrder = await orderService.getOrder({ _id: checkContract.orderId }, { isDeleted: false })
+    let checkContract = await contractService.getContractById({
+      _id: data.contractId,
+    });
+    const checkOrder = await orderService.getOrder(
+      { _id: checkContract.orderId },
+      { isDeleted: false }
+    );
 
     // data.lossDate = new Date(data.lossDate).setDate(new Date(data.lossDate).getDate() + 1)
     // data.lossDate = new Date(data.lossDate)
-    const submittedUser = await userService.getUserById1({ _id: data.submittedBy }, {})
-    const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
-    const validAddress = checkCustomer.addresses?.find(address => address._id.toString() === data.shippingTo.toString());
+    const submittedUser = await userService.getUserById1(
+      { _id: data.submittedBy },
+      {}
+    );
+    const checkCustomer = await customerService.getCustomerById({
+      _id: checkOrder.customerId,
+    });
+    const validAddress = checkCustomer.addresses?.find(
+      (address) => address._id.toString() === data.shippingTo.toString()
+    );
 
-    let shipAddress = validAddress.address + "," + validAddress.city + "," + validAddress.state + "," + validAddress.zip
-    data.submittedBy = submittedUser?.email || ''
-    data.shippingTo = shipAddress || ''
+    let shipAddress =
+      validAddress.address +
+      "," +
+      validAddress.city +
+      "," +
+      validAddress.state +
+      "," +
+      validAddress.zip;
+    data.submittedBy = submittedUser?.email || "";
+    data.shippingTo = shipAddress || "";
     if (!checkContract) {
       res.send({
         code: constant.errorCode,
-        message: "Contract not found!"
-      })
+        message: "Contract not found!",
+      });
       return;
     }
 
@@ -392,189 +466,232 @@ exports.addClaim = async (req, res, next) => {
           { _id: data.servicerId },
           { resellerId: data.servicerId },
           { dealerId: data.servicerId },
-
-        ]
-      })
+        ],
+      });
 
       if (!checkServicer) {
         res.send({
           code: constant.errorCode,
-          message: "Servicer not found!"
-        })
+          message: "Servicer not found!",
+        });
         return;
       }
       //check servicer price book and category exist in the database
-      let filterPriceBook = checkOrder.productsArray.filter(product => product._id.toString() === checkContract.orderProductId.toString());
-      let priceBookData = {}
-      let checkServicerData = await servicerService.servicerPriceBook({ servicerId: checkServicer._id }, {})
+      let filterPriceBook = checkOrder.productsArray.filter(
+        (product) =>
+          product._id.toString() === checkContract.orderProductId.toString()
+      );
+      let priceBookData = {};
+      let checkServicerData = await servicerService.servicerPriceBook(
+        { servicerId: checkServicer._id },
+        {}
+      );
       if (!checkServicerData) {
-        priceBookData.servicerId = checkServicer._id
+        priceBookData.servicerId = checkServicer._id;
         priceBookData.categoryArray = [
           {
-            categoryId: filterPriceBook[0]?.categoryId
-          }
-        ]
+            categoryId: filterPriceBook[0]?.categoryId,
+          },
+        ];
         priceBookData.priceBookArray = [
           {
-            priceBookId: filterPriceBook[0]?.priceBookId
-          }
-        ]
+            priceBookId: filterPriceBook[0]?.priceBookId,
+          },
+        ];
 
-        const saveData = await servicerService.saveServicerPriceBook(priceBookData)
-      }
-      else {
+        const saveData = await servicerService.saveServicerPriceBook(
+          priceBookData
+        );
+      } else {
         let checkCategoryQuery = {
           categoryArray: {
-            $elemMatch: { categoryId: filterPriceBook[0]?.categoryId }
+            $elemMatch: { categoryId: filterPriceBook[0]?.categoryId },
           },
-          servicerId: checkServicer._id
-        }
-        let checkCategoryData = await servicerService.servicerPriceBook(checkCategoryQuery, {})
+          servicerId: checkServicer._id,
+        };
+        let checkCategoryData = await servicerService.servicerPriceBook(
+          checkCategoryQuery,
+          {}
+        );
         if (!checkCategoryData) {
-          checkServicerData.categoryArray.push({ categoryId: filterPriceBook[0]?.categoryId })
+          checkServicerData.categoryArray.push({
+            categoryId: filterPriceBook[0]?.categoryId,
+          });
         }
         let checkPriceBookQuery = {
           priceBookArray: {
-            $elemMatch: { priceBookId: filterPriceBook[0]?.priceBookId }
+            $elemMatch: { priceBookId: filterPriceBook[0]?.priceBookId },
           },
-          servicerId: checkServicer._id
-        }
-        const checkPriceBookData = await servicerService.servicerPriceBook(checkPriceBookQuery, {})
+          servicerId: checkServicer._id,
+        };
+        const checkPriceBookData = await servicerService.servicerPriceBook(
+          checkPriceBookQuery,
+          {}
+        );
         if (!checkPriceBookData) {
-          checkServicerData.priceBookArray.push({ priceBookId: filterPriceBook[0]?.priceBookId })
+          checkServicerData.priceBookArray.push({
+            priceBookId: filterPriceBook[0]?.priceBookId,
+          });
         }
         let newValue = {
           $set: {
             categoryArray: checkServicerData.categoryArray,
             priceBookArray: checkServicerData.priceBookArray,
-          }
-        }
+          },
+        };
 
-        await servicerService.updateServicerPriceBook({ _id: checkServicerData._id }, checkServicerData, { new: true })
+        await servicerService.updateServicerPriceBook(
+          { _id: checkServicerData._id },
+          checkServicerData,
+          { new: true }
+        );
       }
 
-      data.servicerId = checkServicer._id ? checkServicer._id : null
-
+      data.servicerId = checkServicer._id ? checkServicer._id : null;
     }
 
-
-    let checkCoverageStartDate = new Date(checkContract.coverageStartDate).setHours(0, 0, 0, 0)
+    let checkCoverageStartDate = new Date(
+      checkContract.coverageStartDate
+    ).setHours(0, 0, 0, 0);
     if (new Date(checkCoverageStartDate) > new Date(data.lossDate)) {
       res.send({
         code: constant.errorCode,
-        message: 'Loss date should be in between coverage start date and present date!'
+        message:
+          "Loss date should be in between coverage start date and present date!",
       });
       return;
     }
 
-    if (checkContract.status != 'Active') {
+    if (checkContract.status != "Active") {
       res.send({
         code: constant.errorCode,
-        message: 'The contract is not active!'
+        message: "The contract is not active!",
       });
       return;
     }
 
-    let checkClaim = await claimService.getClaimById({ contractId: data.contractId, claimFile: 'open' })
+    let checkClaim = await claimService.getClaimById({
+      contractId: data.contractId,
+      claimFile: "open",
+    });
     if (checkClaim) {
       res.send({
         code: constant.errorCode,
-        message: 'The previous claim is still open!'
+        message: "The previous claim is still open!",
       });
-      return
+      return;
     }
 
-    const query = { contractId: new mongoose.Types.ObjectId(data.contractId) }
+    const query = { contractId: new mongoose.Types.ObjectId(data.contractId) };
     let claimTotalQuery = [
       { $match: query },
-      { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
-
-    ]
+      { $group: { _id: null, amount: { $sum: "$totalAmount" } } },
+    ];
 
     let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
 
-    let remainingPrice = checkContract.productValue - claimTotal[0]?.amount
+    let remainingPrice = checkContract.productValue - claimTotal[0]?.amount;
     if (data.coverageType != "") {
-      let checkCoverageTypeForContract = checkContract.coverageType.find(item => item.value == data.coverageType)
+      let checkCoverageTypeForContract = checkContract.coverageType.find(
+        (item) => item.value == data.coverageType
+      );
       if (!checkCoverageTypeForContract) {
         res.send({
           code: constant.errorCode,
-          message: 'Coverage type is not available for this contract!'
-        })
+          message: "Coverage type is not available for this contract!",
+        });
         return;
       }
-      let startDateToCheck = new Date(checkContract.coverageStartDate)
-      let coverageTypeDays = checkContract.adhDays
-      let serviceCoverageType = checkContract.serviceCoverageType
+      let startDateToCheck = new Date(checkContract.coverageStartDate);
+      let coverageTypeDays = checkContract.adhDays;
+      let serviceCoverageType = checkContract.serviceCoverageType;
 
-      let getDeductible = coverageTypeDays.filter(coverageType => coverageType.value == data.coverageType)
+      let getDeductible = coverageTypeDays.filter(
+        (coverageType) => coverageType.value == data.coverageType
+      );
 
-      let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0].waitingDays))
+      let checkCoverageTypeDate = startDateToCheck.setDate(
+        startDateToCheck.getDate() + Number(getDeductible[0].waitingDays)
+      );
 
-      let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
+      let getCoverageTypeFromOption = await optionService.getOption({
+        name: "coverage_type",
+      });
 
-      const result = getCoverageTypeFromOption.value.filter(item => item.value === data.coverageType).map(item => item.label);
-      checkCoverageTypeDate = new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0)
-      data.lossDate = new Date(data.lossDate).setHours(0, 0, 0, 0)
+      const result = getCoverageTypeFromOption.value
+        .filter((item) => item.value === data.coverageType)
+        .map((item) => item.label);
+      checkCoverageTypeDate = new Date(checkCoverageTypeDate).setHours(
+        0,
+        0,
+        0,
+        0
+      );
+      data.lossDate = new Date(data.lossDate).setHours(0, 0, 0, 0);
       if (new Date(checkCoverageTypeDate) > new Date(data.lossDate)) {
         // claim not allowed for that coverageType
         res.send({
           code: 403,
           tittle: `Claim not eligible for ${result[0]}.`,
           // message: `Your selected ${result[0]} is currently not eligible for the claim. You can file the claim for ${result[0]} on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}. Do you wish to proceed in rejecting this claim?`
-          message: `Your claim for ${result[0]} cannot be filed because it is not eligible based on the loss date. You will be able to file this claim starting on ${new Date(checkCoverageTypeDate).toLocaleDateString('en-US')}`
-        })
-        return
-
+          message: `Your claim for ${
+            result[0]
+          } cannot be filed because it is not eligible based on the loss date. You will be able to file this claim starting on ${new Date(
+            checkCoverageTypeDate
+          ).toLocaleDateString("en-US")}`,
+        });
+        return;
       }
-
     }
 
-    data.receiptImage = data.file
+    data.receiptImage = data.file;
     let currentYear = new Date().getFullYear();
     let currentYearWithoutHypen = new Date().getFullYear();
 
-    currentYear = "-" + currentYear + "-"
-    let count = await claimService.getClaimCount({ 'unique_key': { '$regex': currentYear, '$options': 'i' } });
+    currentYear = "-" + currentYear + "-";
+    let count = await claimService.getClaimCount({
+      unique_key: { $regex: currentYear, $options: "i" },
+    });
 
-    data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
-    data.unique_key_search = "CC" + currentYearWithoutHypen + data.unique_key_number
-    data.unique_key = "CC" + currentYear + data.unique_key_number
-    data.orderId = checkOrder.unique_key
-    data.venderOrder = checkOrder.venderOrder
-    data.serial = checkContract.serial
-    data.dealerSku = checkContract.dealerSku
-    data.productName = checkContract.productName
-    data.pName = checkContract?.pName
-    data.dealerId = checkOrder.dealerId
-    data.resellerId = checkOrder?.resellerId
-    data.customerId = checkOrder.customerId
-    data.model = checkContract.model
-    data.manufacture = checkContract.manufacture
-    data.serialNumber = checkContract.serial
-    data.claimType = data.coverageType
+    data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000;
+    data.unique_key_search =
+      "CC" + currentYearWithoutHypen + data.unique_key_number;
+    data.unique_key = "CC" + currentYear + data.unique_key_number;
+    data.orderId = checkOrder.unique_key;
+    data.venderOrder = checkOrder.venderOrder;
+    data.serial = checkContract.serial;
+    data.dealerSku = checkContract.dealerSku;
+    data.productName = checkContract.productName;
+    data.pName = checkContract?.pName;
+    data.dealerId = checkOrder.dealerId;
+    data.resellerId = checkOrder?.resellerId;
+    data.customerId = checkOrder.customerId;
+    data.model = checkContract.model;
+    data.manufacture = checkContract.manufacture;
+    data.serialNumber = checkContract.serial;
+    data.claimType = data.coverageType;
     data.trackStatus = [
       {
         status: "open",
         date: new Date(),
-        statusName: 'claim_status',
-        userId: checkLoginUser.metaData[0]?._id
+        statusName: "claim_status",
+        userId: checkLoginUser.metaData[0]?._id,
       },
       {
         status: "request_submitted",
         date: new Date(),
-        statusName: 'customer_status',
-        userId: checkLoginUser.metaData[0]?._id
+        statusName: "customer_status",
+        userId: checkLoginUser.metaData[0]?._id,
       },
       {
         status: "request_sent",
         date: new Date(),
-        statusName: 'repair_status',
-        userId: checkLoginUser.metaData[0]?._id
-      }
-    ]
+        statusName: "repair_status",
+        userId: checkLoginUser.metaData[0]?._id,
+      },
+    ];
 
-    let claimResponse = await claimService.createClaim(data)
+    let claimResponse = await claimService.createClaim(data);
     if (!claimResponse) {
       let logData = {
         userId: req.userId,
@@ -583,19 +700,23 @@ exports.addClaim = async (req, res, next) => {
         response: {
           code: constant.errorCode,
           message: "Unable to add claim of this contract!",
-          result: claimResponse
-        }
-      }
-      await LOG(logData).save()
+          result: claimResponse,
+        },
+      };
+      await LOG(logData).save();
       res.send({
         code: constant.errorCode,
-        message: 'Unable to add claim of this contract!'
+        message: "Unable to add claim of this contract!",
       });
-      return
+      return;
     }
 
     // Eligibility false when claim open
-    const updateContract = await contractService.updateContract({ _id: data.contractId }, { eligibilty: false }, { new: true })
+    const updateContract = await contractService.updateContract(
+      { _id: data.contractId },
+      { eligibilty: false },
+      { new: true }
+    );
 
     //Save logs add claim
     let logData = {
@@ -604,22 +725,31 @@ exports.addClaim = async (req, res, next) => {
       body: data,
       response: {
         code: constant.successCode,
-        message: 'Success!',
-        result: claimResponse
-      }
-    }
+        message: "Success!",
+        result: claimResponse,
+      },
+    };
 
-    await LOG(logData).save()
+    await LOG(logData).save();
 
     //Send notification to all
-    let notificationArray = []
+    let notificationArray = [];
     //Get Dealer,reseller, customer status
-    const checkDealer = await dealerService.getDealerById(checkOrder.dealerId)
-    const checkReseller = await resellerService.getReseller({ _id: checkOrder?.resellerId }, {})
+    const checkDealer = await dealerService.getDealerById(checkOrder.dealerId);
+    const checkReseller = await resellerService.getReseller(
+      { _id: checkOrder?.resellerId },
+      {}
+    );
     //Get submitted user
-    const site_url = `${process.env.SITE_URL}`
+    const site_url = `${process.env.SITE_URL}`;
 
-    const checkServicer = await servicerService.getServiceProviderById({ $or: [{ _id: data?.servicerId }, { dealerId: data?.servicerId }, { resellerId: data?.servicerId }] })
+    const checkServicer = await servicerService.getServiceProviderById({
+      $or: [
+        { _id: data?.servicerId },
+        { dealerId: data?.servicerId },
+        { resellerId: data?.servicerId },
+      ],
+    });
     const adminAddClaimQuery = {
       metaData: {
         $elemMatch: {
@@ -628,27 +758,40 @@ exports.addClaim = async (req, res, next) => {
             { status: true },
             {
               $or: [
-                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-              ]
+                {
+                  roleId: new mongoose.Types.ObjectId(
+                    "656f0550d0d6e08fc82379dc"
+                  ),
+                },
+              ],
             },
-          ]
-        }
+          ],
+        },
       },
-    }
-    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminAddClaimQuery, { email: 1, metaData: 1 })
-    const IDs = adminUsers.map(user => user._id)
+    };
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(
+      adminAddClaimQuery,
+      { email: 1, metaData: 1 }
+    );
+    const IDs = adminUsers.map((user) => user._id);
     if (adminUsers.length > 0) {
       let notificationAdmin = {
         title: "Claim Filed Successfully",
-        description: `A new claim # ${claimResponse.unique_key} for dealer ${checkDealer.name} has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+        description: `A new claim # ${claimResponse.unique_key} for dealer ${
+          checkDealer.name
+        } has been added by ${
+          checkLoginUser.metaData[0]?.firstName +
+          " " +
+          checkLoginUser.metaData[0]?.lastName
+        } - ${req.role}.`,
         userId: req.teammateId,
         contentId: claimResponse._id,
-        flag: 'claim',
+        flag: "claim",
         notificationFor: IDs,
         endPoint: site_url + "claim-listing/" + claimResponse.unique_key,
         redirectionId: "claim-listing/" + claimResponse.unique_key,
       };
-      notificationArray.push(notificationAdmin)
+      notificationArray.push(notificationAdmin);
     }
 
     //Dealer Notification
@@ -659,28 +802,35 @@ exports.addClaim = async (req, res, next) => {
             { "claimNotification.newClaim": true },
             { status: true },
             {
-              $or: [
-                { metaId: checkOrder.dealerId },
-              ]
+              $or: [{ metaId: checkOrder.dealerId }],
             },
-          ]
-        }
+          ],
+        },
       },
-    }
-    let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerAddClaimQuery, { email: 1, metaData: 1 })
-    const dealerIds = dealerUsers.map(user => user._id)
+    };
+    let dealerUsers = await supportingFunction.getNotificationEligibleUser(
+      dealerAddClaimQuery,
+      { email: 1, metaData: 1 }
+    );
+    const dealerIds = dealerUsers.map((user) => user._id);
     if (dealerUsers.length > 0) {
       let notificationDealer = {
         title: "Claim Filed Successfully",
-        description: `A new claim # ${claimResponse.unique_key} for customer ${checkCustomer.username} has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+        description: `A new claim # ${claimResponse.unique_key} for customer ${
+          checkCustomer.username
+        } has been added by ${
+          checkLoginUser.metaData[0]?.firstName +
+          " " +
+          checkLoginUser.metaData[0]?.lastName
+        } - ${req.role}.`,
         userId: req.teammateId,
         contentId: claimResponse._id,
-        flag: 'claim',
+        flag: "claim",
         notificationFor: dealerIds,
         endPoint: site_url + "claim-listing/" + claimResponse.unique_key,
         redirectionId: "claim-listing/" + claimResponse.unique_key,
       };
-      notificationArray.push(notificationDealer)
+      notificationArray.push(notificationDealer);
     }
 
     //Reseller Notification
@@ -694,27 +844,36 @@ exports.addClaim = async (req, res, next) => {
               $or: [
                 { metaId: checkOrder?.resellerId },
                 // { metaId: data?.servicerId },
-              ]
+              ],
             },
-          ]
-        }
+          ],
+        },
       },
-    }
-    let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerAddClaimQuery, { email: 1, metaData: 1 })
-    const resellerIds = resellerUsers.map(user => user._id)
+    };
+    let resellerUsers = await supportingFunction.getNotificationEligibleUser(
+      resellerAddClaimQuery,
+      { email: 1, metaData: 1 }
+    );
+    const resellerIds = resellerUsers.map((user) => user._id);
 
     if (resellerUsers.length > 0) {
       let notificationReseller = {
         title: "Claim Filed Successfully",
-        description: `A new claim # ${claimResponse.unique_key} for customer ${checkCustomer.username} has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+        description: `A new claim # ${claimResponse.unique_key} for customer ${
+          checkCustomer.username
+        } has been added by ${
+          checkLoginUser.metaData[0]?.firstName +
+          " " +
+          checkLoginUser.metaData[0]?.lastName
+        } - ${req.role}.`,
         userId: req.teammateId,
         contentId: claimResponse._id,
-        flag: 'claim',
+        flag: "claim",
         notificationFor: resellerIds,
         endPoint: site_url + "claim-listing/" + claimResponse.unique_key,
         redirectionId: "claim-listing/" + claimResponse.unique_key,
       };
-      notificationArray.push(notificationReseller)
+      notificationArray.push(notificationReseller);
     }
 
     //Customer Notification
@@ -729,26 +888,35 @@ exports.addClaim = async (req, res, next) => {
                 { metaId: checkOrder.customerId },
                 // { metaId: checkOrder.resellerId },
                 // { metaId: data?.servicerId },
-              ]
+              ],
             },
-          ]
-        }
+          ],
+        },
       },
-    }
-    let customerUsers = await supportingFunction.getNotificationEligibleUser(customerAddClaimQuery, { email: 1, metaData: 1 })
-    const customerIds = customerUsers.map(user => user._id)
+    };
+    let customerUsers = await supportingFunction.getNotificationEligibleUser(
+      customerAddClaimQuery,
+      { email: 1, metaData: 1 }
+    );
+    const customerIds = customerUsers.map((user) => user._id);
     if (customerUsers.length > 0) {
       let notificationCustomer = {
         title: "Claim Filed Successfully",
-        description: `A new claim # ${claimResponse.unique_key}  has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+        description: `A new claim # ${
+          claimResponse.unique_key
+        }  has been added by ${
+          checkLoginUser.metaData[0]?.firstName +
+          " " +
+          checkLoginUser.metaData[0]?.lastName
+        } - ${req.role}.`,
         userId: req.teammateId,
         contentId: claimResponse._id,
-        flag: 'claim',
+        flag: "claim",
         notificationFor: customerIds,
         endPoint: site_url + "claim-listing/" + claimResponse.unique_key,
         redirectionId: "claim-listing/" + claimResponse.unique_key,
       };
-      notificationArray.push(notificationCustomer)
+      notificationArray.push(notificationCustomer);
     }
 
     //Servicer Notification
@@ -763,53 +931,95 @@ exports.addClaim = async (req, res, next) => {
                 { metaId: checkServicer?._id },
                 { metaId: checkServicer?.dealerId },
                 { metaId: checkServicer?.resellerId },
-              ]
+              ],
             },
-          ]
-        }
+          ],
+        },
       },
-    }
-    let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerAddClaimQuery, { email: 1, metaData: 1 })
-    const servicerIds = servicerUsers.map(user => user._id)
+    };
+    let servicerUsers = await supportingFunction.getNotificationEligibleUser(
+      servicerAddClaimQuery,
+      { email: 1, metaData: 1 }
+    );
+    const servicerIds = servicerUsers.map((user) => user._id);
     if (servicerUsers.length > 0) {
       let notificationServicer = {
         title: "Claim Filed Successfully",
-        description: `A new claim # ${claimResponse.unique_key} for dealer ${checkDealer.name} has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}.`,
+        description: `A new claim # ${claimResponse.unique_key} for dealer ${
+          checkDealer.name
+        } has been added by ${
+          checkLoginUser.metaData[0]?.firstName +
+          " " +
+          checkLoginUser.metaData[0]?.lastName
+        } - ${req.role}.`,
         userId: req.teammateId,
         contentId: claimResponse._id,
-        flag: 'claim',
+        flag: "claim",
         notificationFor: servicerIds,
         endPoint: site_url + "claim-listing/" + claimResponse.unique_key,
         redirectionId: "claim-listing/" + claimResponse.unique_key,
       };
-      notificationArray.push(notificationServicer)
+      notificationArray.push(notificationServicer);
     }
 
-    let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } })
-    let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } })
-    let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } })
+    let dealerPrimary = await supportingFunction.getPrimaryUser({
+      metaData: {
+        $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true },
+      },
+    });
+    let customerPrimary = await supportingFunction.getPrimaryUser({
+      metaData: {
+        $elemMatch: { metaId: checkOrder.customerId, isPrimary: true },
+      },
+    });
+    let resellerPrimary = await supportingFunction.getPrimaryUser({
+      metaData: {
+        $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true },
+      },
+    });
     let servicerPrimary = await supportingFunction.getPrimaryUser({
       $or: [
-        { metaData: { $elemMatch: { metaId: checkServicer?._id, isPrimary: true } } },
-        { metaData: { $elemMatch: { metaId: checkServicer?.dealerId, isPrimary: true } } },
-        { metaData: { $elemMatch: { metaId: checkServicer?.resellerId, isPrimary: true } } }]
-    })
+        {
+          metaData: {
+            $elemMatch: { metaId: checkServicer?._id, isPrimary: true },
+          },
+        },
+        {
+          metaData: {
+            $elemMatch: { metaId: checkServicer?.dealerId, isPrimary: true },
+          },
+        },
+        {
+          metaData: {
+            $elemMatch: { metaId: checkServicer?.resellerId, isPrimary: true },
+          },
+        },
+      ],
+    });
 
-    let createNotification = await userService.saveNotificationBulk(notificationArray);
+    let createNotification = await userService.saveNotificationBulk(
+      notificationArray
+    );
 
     // Send Email code here
     let settingData = await userService.getSetting({});
     let adminCC = await supportingFunction.getUserEmails();
-    const base_url = `${process.env.SITE_URL}claim-listing/${claimResponse.unique_key}`
+    const base_url = `${process.env.SITE_URL}claim-listing/${claimResponse.unique_key}`;
 
     let emailData = {
-      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      darkLogo:
+        process.env.API_ENDPOINT +
+        "uploads/logo/" +
+        settingData[0]?.logoDark.fileName,
+      lightLogo:
+        process.env.API_ENDPOINT +
+        "uploads/logo/" +
+        settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
       senderName: `Dear ${customerPrimary.metaData[0]?.firstName}`,
-      redirectId: base_url
-    }
+      redirectId: base_url,
+    };
     let mailing;
     if (checkCustomer.isAccountCreate) {
       const customerCaseNotification = {
@@ -820,55 +1030,120 @@ exports.addClaim = async (req, res, next) => {
               { status: true },
               {
                 $or: [
-                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                  {
+                    roleId: new mongoose.Types.ObjectId(
+                      "656f0550d0d6e08fc82379dc"
+                    ),
+                  },
                   { metaId: checkOrder.dealerId },
                   { metaId: checkOrder.customerId },
                   { metaId: checkOrder.resellerId },
-                ]
+                ],
               },
-
-            ]
-          }
+            ],
+          },
         },
-      }
+      };
 
-      let customerCaseUser = await supportingFunction.getNotificationEligibleUser(customerCaseNotification, { email: 1, metaData: 1 })
-      let adminUser = customerCaseUser.filter(user => user.metaData[0]?.roleId.toString() === process.env.super_admin.toString())
-      let dealerUser = customerCaseUser.filter(user => user.metaData[0]?.roleId.toString() === process.env.dealer.toString())
-      let resellerUser = customerCaseUser.filter(user => user.metaData[0]?.roleId.toString() === process.env.reseller.toString())
-      let customerUser = customerCaseUser.filter(user => user.metaData[0]?.roleId.toString() === process.env.customer.toString())
+      let customerCaseUser =
+        await supportingFunction.getNotificationEligibleUser(
+          customerCaseNotification,
+          { email: 1, metaData: 1 }
+        );
+      let adminUser = customerCaseUser.filter(
+        (user) =>
+          user.metaData[0]?.roleId.toString() ===
+          process.env.super_admin.toString()
+      );
+      let dealerUser = customerCaseUser.filter(
+        (user) =>
+          user.metaData[0]?.roleId.toString() === process.env.dealer.toString()
+      );
+      let resellerUser = customerCaseUser.filter(
+        (user) =>
+          user.metaData[0]?.roleId.toString() ===
+          process.env.reseller.toString()
+      );
+      let customerUser = customerCaseUser.filter(
+        (user) =>
+          user.metaData[0]?.roleId.toString() ===
+          process.env.customer.toString()
+      );
 
-      const adminEmail = adminUser.map(user => user.email)
-      const dealerEmail = dealerUser.map(user => user.email)
-      const resellerEmail = resellerUser.map(user => user.email)
-      const customerEmail = customerUser.map(user => user.email)
+      const adminEmail = adminUser.map((user) => user.email);
+      const dealerEmail = dealerUser.map((user) => user.email);
+      const resellerEmail = resellerUser.map((user) => user.email);
+      const customerEmail = customerUser.map((user) => user.email);
 
-      emailData.subject = `Claim Received -${claimResponse.unique_key}`
-      emailData.content = `The Claim # ${claimResponse.unique_key} has been successfully filed for the Contract # ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here :`
-      emailData.senderName = `Dear Admin`
+      emailData.subject = `Claim Received -${claimResponse.unique_key}`;
+      emailData.content = `The Claim # ${claimResponse.unique_key} has been successfully filed for the Contract # ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here :`;
+      emailData.senderName = `Dear Admin`;
       if (adminEmail.length > 0) {
-        mailing = await sgMail.send(emailConstant.sendEmailTemplate(adminEmail, ["noreply@getcover.com"], emailData))
-        maillogservice.createMailLogFunction(mailing, emailData, adminUser, process.env.update_status)
+        mailing = await sgMail.send(
+          emailConstant.sendEmailTemplate(
+            adminEmail,
+            ["noreply@getcover.com"],
+            emailData
+          )
+        );
+        maillogservice.createMailLogFunction(
+          mailing,
+          emailData,
+          adminUser,
+          process.env.update_status
+        );
       }
       if (dealerEmail.length > 0) {
-        emailData.senderName = `Dear ${dealerPrimary.metaData[0]?.firstName}`
+        emailData.senderName = `Dear ${dealerPrimary.metaData[0]?.firstName}`;
 
-        mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.com"], emailData))
-        maillogservice.createMailLogFunction(mailing, emailData, dealerUser, process.env.update_status)
+        mailing = await sgMail.send(
+          emailConstant.sendEmailTemplate(
+            dealerEmail,
+            ["noreply@getcover.com"],
+            emailData
+          )
+        );
+        maillogservice.createMailLogFunction(
+          mailing,
+          emailData,
+          dealerUser,
+          process.env.update_status
+        );
       }
       if (resellerEmail.length > 0) {
-        emailData.senderName = `Dear ${resellerPrimary?.metaData[0]?.firstName}`
+        emailData.senderName = `Dear ${resellerPrimary?.metaData[0]?.firstName}`;
 
-        mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ["noreply@getcover.com"], emailData))
-        maillogservice.createMailLogFunction(mailing, emailData, resellerUser, process.env.update_status)
+        mailing = await sgMail.send(
+          emailConstant.sendEmailTemplate(
+            resellerEmail,
+            ["noreply@getcover.com"],
+            emailData
+          )
+        );
+        maillogservice.createMailLogFunction(
+          mailing,
+          emailData,
+          resellerUser,
+          process.env.update_status
+        );
       }
       if (customerEmail.length > 0) {
-        emailData.senderName = `Dear ${customerPrimary.metaData[0]?.firstName}`
-        mailing = await sgMail.send(emailConstant.sendEmailTemplate(customerEmail, ["noreply@getcover.com"], emailData))
-        maillogservice.createMailLogFunction(mailing, emailData, customerUser, process.env.update_status)
+        emailData.senderName = `Dear ${customerPrimary.metaData[0]?.firstName}`;
+        mailing = await sgMail.send(
+          emailConstant.sendEmailTemplate(
+            customerEmail,
+            ["noreply@getcover.com"],
+            emailData
+          )
+        );
+        maillogservice.createMailLogFunction(
+          mailing,
+          emailData,
+          customerUser,
+          process.env.update_status
+        );
       }
-    }
-    else {
+    } else {
       const customerCaseNotification = {
         metaData: {
           $elemMatch: {
@@ -877,54 +1152,115 @@ exports.addClaim = async (req, res, next) => {
               { status: true },
               {
                 $or: [
-                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                  {
+                    roleId: new mongoose.Types.ObjectId(
+                      "656f0550d0d6e08fc82379dc"
+                    ),
+                  },
                   { metaId: checkOrder.dealerId },
-                  { metaId: checkOrder?.resellerId ? checkOrder?.resellerId : "000008041eb1acda24111111" },
-                ]
+                  {
+                    metaId: checkOrder?.resellerId
+                      ? checkOrder?.resellerId
+                      : "000008041eb1acda24111111",
+                  },
+                ],
               },
-
-            ]
-          }
+            ],
+          },
         },
-      }
-      let customerCaseUser = await supportingFunction.getNotificationEligibleUser(customerCaseNotification, { email: 1, metaData: 1 })
+      };
+      let customerCaseUser =
+        await supportingFunction.getNotificationEligibleUser(
+          customerCaseNotification,
+          { email: 1, metaData: 1 }
+        );
 
-      let adminUser = customerCaseUser.filter(user => user.metaData[0]?.roleId.toString() === process.env.super_admin.toString())
-      let dealerUser = customerCaseUser.filter(user => user.metaData[0]?.roleId.toString() === process.env.dealer.toString())
-      let resellerUser = customerCaseUser.filter(user => user.metaData[0]?.roleId.toString() === process.env.reseller.toString())
-      const adminEmail = adminUser.map(user => user.email)
-      const dealerEmail = dealerUser.map(user => user.email)
-      const resellerEmail = resellerUser.map(user => user.email)
+      let adminUser = customerCaseUser.filter(
+        (user) =>
+          user.metaData[0]?.roleId.toString() ===
+          process.env.super_admin.toString()
+      );
+      let dealerUser = customerCaseUser.filter(
+        (user) =>
+          user.metaData[0]?.roleId.toString() === process.env.dealer.toString()
+      );
+      let resellerUser = customerCaseUser.filter(
+        (user) =>
+          user.metaData[0]?.roleId.toString() ===
+          process.env.reseller.toString()
+      );
+      const adminEmail = adminUser.map((user) => user.email);
+      const dealerEmail = dealerUser.map((user) => user.email);
+      const resellerEmail = resellerUser.map((user) => user.email);
       if (adminEmail.length > 0) {
-        emailData.subject = `Claim Received - ${claimResponse.unique_key}`
-        emailData.content = `The Claim # ${claimResponse.unique_key} has been successfully filed for the Contract #  ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here :`
-        emailData.senderName = `Dear Admin`
-        mailing = await sgMail.send(emailConstant.sendEmailTemplate(adminEmail, ["noreply@getcover.com"], emailData))
-        maillogservice.createMailLogFunction(mailing, emailData, adminUser, process.env.update_status)
+        emailData.subject = `Claim Received - ${claimResponse.unique_key}`;
+        emailData.content = `The Claim # ${claimResponse.unique_key} has been successfully filed for the Contract #  ${checkContract.unique_key}. We have informed the repair center also. You can view the progress of the claim here :`;
+        emailData.senderName = `Dear Admin`;
+        mailing = await sgMail.send(
+          emailConstant.sendEmailTemplate(
+            adminEmail,
+            ["noreply@getcover.com"],
+            emailData
+          )
+        );
+        maillogservice.createMailLogFunction(
+          mailing,
+          emailData,
+          adminUser,
+          process.env.update_status
+        );
       }
       if (dealerEmail.length > 0) {
-        emailData.senderName = `Dear ${dealerPrimary.metaData[0]?.firstName}`
-        mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.com"], emailData))
-        maillogservice.createMailLogFunction(mailing, emailData, dealerUser, process.env.update_status)
+        emailData.senderName = `Dear ${dealerPrimary.metaData[0]?.firstName}`;
+        mailing = await sgMail.send(
+          emailConstant.sendEmailTemplate(
+            dealerEmail,
+            ["noreply@getcover.com"],
+            emailData
+          )
+        );
+        maillogservice.createMailLogFunction(
+          mailing,
+          emailData,
+          dealerUser,
+          process.env.update_status
+        );
       }
       if (resellerEmail.length > 0) {
-        emailData.senderName = `Dear ${resellerPrimary?.metaData[0]?.firstName}`
-        mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ["noreply@getcover.com"], emailData))
-        maillogservice.createMailLogFunction(mailing, emailData, resellerUser, process.env.update_status)
+        emailData.senderName = `Dear ${resellerPrimary?.metaData[0]?.firstName}`;
+        mailing = await sgMail.send(
+          emailConstant.sendEmailTemplate(
+            resellerEmail,
+            ["noreply@getcover.com"],
+            emailData
+          )
+        );
+        maillogservice.createMailLogFunction(
+          mailing,
+          emailData,
+          resellerUser,
+          process.env.update_status
+        );
       }
     }
-    // Email to servicer and cc to admin 
+    // Email to servicer and cc to admin
     if (servicerPrimary) {
       emailData = {
-        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        darkLogo:
+          process.env.API_ENDPOINT +
+          "uploads/logo/" +
+          settingData[0]?.logoDark.fileName,
+        lightLogo:
+          process.env.API_ENDPOINT +
+          "uploads/logo/" +
+          settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
         model: checkContract.model,
         serial: checkContract.serial,
         manufacturer: checkContract.manufacture,
-        redirectId: base_url
-      }
+        redirectId: base_url,
+      };
       if (checkServicer?.isAccountCreate) {
         const servicerCaseNotification = {
           metaData: {
@@ -934,77 +1270,102 @@ exports.addClaim = async (req, res, next) => {
                 { status: true },
                 {
                   $or: [
-                    { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                    {
+                      roleId: new mongoose.Types.ObjectId(
+                        "656f0550d0d6e08fc82379dc"
+                      ),
+                    },
                     { metaId: checkServicer?._id },
                     { metaId: checkServicer?.dealerId },
                     { metaId: checkServicer?.resellerId },
-                  ]
+                  ],
                 },
-
-              ]
-            }
+              ],
+            },
           },
-        }
-        let servicerCaseUser = await supportingFunction.getNotificationEligibleUser(servicerCaseNotification, { email: 1, metaData: 1 })
-        let adminUser = servicerCaseUser.filter(user => user.metaData[0]?.roleId.toString() === process.env.super_admin.toString())
-        let servicerUser = servicerCaseUser.filter(user => user.metaData[0]?.roleId.toString() === process.env.servicer.toString())
-        const adminEmail = adminUser.map(user => user.email)
-        const servicerEmail = servicerUser.map(user => user.email)
+        };
+        let servicerCaseUser =
+          await supportingFunction.getNotificationEligibleUser(
+            servicerCaseNotification,
+            { email: 1, metaData: 1 }
+          );
+        let adminUser = servicerCaseUser.filter(
+          (user) =>
+            user.metaData[0]?.roleId.toString() ===
+            process.env.super_admin.toString()
+        );
+        let servicerUser = servicerCaseUser.filter(
+          (user) =>
+            user.metaData[0]?.roleId.toString() ===
+            process.env.servicer.toString()
+        );
+        const adminEmail = adminUser.map((user) => user.email);
+        const servicerEmail = servicerUser.map((user) => user.email);
         let notificationAdmin = await supportingFunction.getUserEmails();
-        emailData.subject = `New Device Received for Repair - ID: ${claimResponse.unique_key}`
-        emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device detailed below:`
+        emailData.subject = `New Device Received for Repair - ID: ${claimResponse.unique_key}`;
+        emailData.content = `We want to inform you that ${checkCustomer.username} has requested for the repair of a device detailed below:`;
         // emailData.senderName = "Admin"
         //mailing = await sgMail.send(emailConstant.sendServicerClaimNotification(adminEmail, ["noreply@getcover.com"], emailData))
-        emailData.senderName = servicerPrimary?.metaData[0]?.firstName
+        emailData.senderName = servicerPrimary?.metaData[0]?.firstName;
         if (servicerEmail.length > 0) {
-          mailing = await sgMail.send(emailConstant.sendServicerClaimNotification(servicerEmail, ["noreply@getcover.com"], emailData))
-          maillogservice.createMailLogFunction(mailing, emailData, servicerUser, process.env.update_status)
+          mailing = await sgMail.send(
+            emailConstant.sendServicerClaimNotification(
+              servicerEmail,
+              ["noreply@getcover.com"],
+              emailData
+            )
+          );
+          maillogservice.createMailLogFunction(
+            mailing,
+            emailData,
+            servicerUser,
+            process.env.update_status
+          );
         }
-
       }
-
     }
     res.send({
       code: constant.successCode,
-      message: 'Success!',
-      result: claimResponse
-    })
-
-  }
-  catch (err) {
+      message: "Success!",
+      result: claimResponse,
+    });
+  } catch (err) {
     //Save logs add claim
     let logData = {
       userId: req.userId,
       endpoint: "claim/addClaim",
-      body: req.body ? req.body : { 'type': "Catch" },
+      body: req.body ? req.body : { type: "Catch" },
       response: {
         code: constant.errorCode,
         message: err.message,
-        stack: err.stack
-      }
-    }
-    await LOG(logData).save()
+        stack: err.stack,
+      },
+    };
+    await LOG(logData).save();
     res.send({
       code: constant.errorCode,
       message: err.message,
-    })
+    });
   }
-}
+};
 // Edit Repair part Done
 exports.editClaim = async (req, res) => {
   try {
-    let data = req.body
-    let criteria = { _id: req.params.claimId }
+    let data = req.body;
+    let criteria = { _id: req.params.claimId };
 
-    let checkClaim = await claimService.getClaimById(criteria)
+    let checkClaim = await claimService.getClaimById(criteria);
     if (!checkClaim) {
       res.send({
         code: constant.errorCode,
-        message: "Invalid claim ID"
-      })
-      return
+        message: "Invalid claim ID",
+      });
+      return;
     }
-    if (checkClaim.claimFile === "completed" || checkClaim.claimFile === "rejected") {
+    if (
+      checkClaim.claimFile === "completed" ||
+      checkClaim.claimFile === "rejected"
+    ) {
       const message =
         checkClaim.claimFile === "completed"
           ? "The claim has already been processed and is marked as completed."
@@ -1016,17 +1377,23 @@ exports.editClaim = async (req, res) => {
       });
       return;
     }
-    if (checkClaim.claimFile == 'open') {
-      let contract = await contractService.getContractById({ _id: checkClaim.contractId });
-      const query = { contractId: new mongoose.Types.ObjectId(checkClaim.contractId), claimFile: 'completed' }
+    if (checkClaim.claimFile == "open") {
+      let contract = await contractService.getContractById({
+        _id: checkClaim.contractId,
+      });
+      const query = {
+        contractId: new mongoose.Types.ObjectId(checkClaim.contractId),
+        claimFile: "completed",
+      };
       let claimTotalQuery = [
         { $match: query },
-        { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
-
-      ]
-      let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
+        { $group: { _id: null, amount: { $sum: "$totalAmount" } } },
+      ];
+      let claimTotal = await claimService.getClaimWithAggregate(
+        claimTotalQuery
+      );
       if (claimTotal.length > 0) {
-        const remainingValue = contract.productValue - claimTotal[0]?.amount
+        const remainingValue = contract.productValue - claimTotal[0]?.amount;
         // if (remainingValue.toFixed(2) < data.totalAmount) {
         //   res.send({
         //     code: constant.errorCode,
@@ -1042,8 +1409,8 @@ exports.editClaim = async (req, res) => {
       //   });
       //   return;
       // }
-      let option = { new: true }
-      let updateData = await claimService.updateClaim(criteria, data, option)
+      let option = { new: true };
+      let updateData = await claimService.updateClaim(criteria, data, option);
       if (!updateData) {
         //Save Logs edit claim
         let logData = {
@@ -1052,31 +1419,36 @@ exports.editClaim = async (req, res) => {
           body: data,
           response: {
             code: constant.errorCode,
-            message: 'Failed to process your request!',
-            result: updateData
-          }
-        }
+            message: "Failed to process your request!",
+            result: updateData,
+          },
+        };
 
-
-
-        await LOG(logData).save()
+        await LOG(logData).save();
         res.send({
           code: constant.errorCode,
-          message: "Failed to process your request."
-        })
+          message: "Failed to process your request.",
+        });
         return;
       }
-      let udpateclaimAmount = await axios.get(process.env.API_ENDPOINT + "api-v1/claim/checkClaimAmount/" + updateData._id, {
-        headers: {
-          "x-access-token": req.header["x-access-token"],  // Include the token in the Authorization header
+      let udpateclaimAmount = await axios.get(
+        process.env.API_ENDPOINT +
+          "api-v1/claim/checkClaimAmount/" +
+          updateData._id,
+        {
+          headers: {
+            "x-access-token": req.header["x-access-token"], // Include the token in the Authorization header
+          },
         }
-      });
+      );
 
       //Send notification to all
       //Get submitted user
-      const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
-      let notificationArray = []
-      const site_url = `${process.env.SITE_URL}`
+      const checkLoginUser = await supportingFunction.getPrimaryUser({
+        _id: req.teammateId,
+      });
+      let notificationArray = [];
+      const site_url = `${process.env.SITE_URL}`;
       const adminEditClaimQuery = {
         metaData: {
           $elemMatch: {
@@ -1085,33 +1457,67 @@ exports.editClaim = async (req, res) => {
               { status: true },
               {
                 $or: [
-                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                ]
+                  {
+                    roleId: new mongoose.Types.ObjectId(
+                      "656f0550d0d6e08fc82379dc"
+                    ),
+                  },
+                ],
               },
-
-            ]
-          }
+            ],
+          },
         },
-      }
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminEditClaimQuery, { email: 1, metaData: 1 })
-      const IDs = adminUsers.map(user => user._id)
-      let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkClaim?.servicerId, isPrimary: true } } })
+      };
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(
+        adminEditClaimQuery,
+        { email: 1, metaData: 1 }
+      );
+      const IDs = adminUsers.map((user) => user._id);
+      let servicerPrimary = await supportingFunction.getPrimaryUser({
+        metaData: {
+          $elemMatch: { metaId: checkClaim?.servicerId, isPrimary: true },
+        },
+      });
       //chek servicer status
-      const checkServicer = await servicerService.getServiceProviderById({ $or: [{ _id: checkClaim?.servicerId }, { dealerId: checkClaim?.servicerId }, { resellerId: checkClaim?.servicerId }] })
+      const checkServicer = await servicerService.getServiceProviderById({
+        $or: [
+          { _id: checkClaim?.servicerId },
+          { dealerId: checkClaim?.servicerId },
+          { resellerId: checkClaim?.servicerId },
+        ],
+      });
       if (adminUsers.length > 0) {
         let notificationAdmin = {
           title: "Servicer charges added",
-          description: `Claim # ${checkClaim.unique_key} - Service charges has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
-          adminMessage: `Claim # ${checkClaim.unique_key} - Service charges has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
-          servicerMessage: `Claim # ${checkClaim.unique_key} - Service charges has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+          description: `Claim # ${
+            checkClaim.unique_key
+          } - Service charges has been updated by ${
+            checkLoginUser.metaData[0]?.firstName +
+            " " +
+            checkLoginUser.metaData[0]?.lastName
+          } - ${req.role}`,
+          adminMessage: `Claim # ${
+            checkClaim.unique_key
+          } - Service charges has been updated by ${
+            checkLoginUser.metaData[0]?.firstName +
+            " " +
+            checkLoginUser.metaData[0]?.lastName
+          } - ${req.role}`,
+          servicerMessage: `Claim # ${
+            checkClaim.unique_key
+          } - Service charges has been updated by ${
+            checkLoginUser.metaData[0]?.firstName +
+            " " +
+            checkLoginUser.metaData[0]?.lastName
+          } - ${req.role}`,
           userId: req.teammateId,
           contentId: checkClaim._id,
-          flag: 'claim',
+          flag: "claim",
           endPoint: site_url + "claim-listing/" + checkClaim.unique_key,
           redirectionId: "claim-listing/" + checkClaim.unique_key,
-          notificationFor: IDs
+          notificationFor: IDs,
         };
-        notificationArray.push(notificationAdmin)
+        notificationArray.push(notificationAdmin);
       }
       const servicerEditClaimQuery = {
         metaData: {
@@ -1124,29 +1530,39 @@ exports.editClaim = async (req, res) => {
                   { metaId: checkServicer?._id },
                   { metaId: checkServicer?.dealerId },
                   { metaId: checkServicer?.resellerId },
-                ]
+                ],
               },
-
-            ]
-          }
+            ],
+          },
         },
-      }
-      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerEditClaimQuery, { email: 1, metaData: 1 })
-      const servicerIDs = servicerUsers.map(user => user._id)
+      };
+      let servicerUsers = await supportingFunction.getNotificationEligibleUser(
+        servicerEditClaimQuery,
+        { email: 1, metaData: 1 }
+      );
+      const servicerIDs = servicerUsers.map((user) => user._id);
       if (servicerUsers.length > 0) {
         let notificationAdmin = {
           title: "Charges added",
-          description: `Claim # ${checkClaim.unique_key} - Service charges has been updated by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+          description: `Claim # ${
+            checkClaim.unique_key
+          } - Service charges has been updated by ${
+            checkLoginUser.metaData[0]?.firstName +
+            " " +
+            checkLoginUser.metaData[0]?.lastName
+          } - ${req.role}`,
           userId: req.teammateId,
           contentId: checkClaim._id,
-          flag: 'claim',
+          flag: "claim",
           endPoint: site_url + "claim-listing/" + checkClaim.unique_key,
           redirectionId: "claim-listing/" + checkClaim.unique_key,
-          notificationFor: servicerIDs
+          notificationFor: servicerIDs,
         };
-        notificationArray.push(notificationAdmin)
+        notificationArray.push(notificationAdmin);
       }
-      let createNotification = await userService.saveNotificationBulk(notificationArray);
+      let createNotification = await userService.saveNotificationBulk(
+        notificationArray
+      );
       //Save Logs edit claim
       let logData = {
         userId: req.userId,
@@ -1154,127 +1570,163 @@ exports.editClaim = async (req, res) => {
         body: data,
         response: {
           code: constant.successCode,
-          message: 'Updated successfully',
-          result: updateData
-        }
-      }
-      await LOG(logData).save()
+          message: "Updated successfully",
+          result: updateData,
+        },
+      };
+      await LOG(logData).save();
       // Send Email code here
-      let notificationEmails = adminUsers.map(user => user.email)
-      let servicerEmails = servicerUsers.map(user => user.email)
-      let mergedEmail = notificationEmails.concat(servicerEmails)
+      let notificationEmails = adminUsers.map((user) => user.email);
+      let servicerEmails = servicerUsers.map((user) => user.email);
+      let mergedEmail = notificationEmails.concat(servicerEmails);
       let settingData = await userService.getSetting({});
-      const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
+      const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`;
       // const lastElement = data.repairParts.pop();
       let emailData = {
-        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        darkLogo:
+          process.env.API_ENDPOINT +
+          "uploads/logo/" +
+          settingData[0]?.logoDark.fileName,
+        lightLogo:
+          process.env.API_ENDPOINT +
+          "uploads/logo/" +
+          settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: `Dear ${servicerPrimary ? servicerPrimary.metaData[0]?.firstName : ''}`,
+        senderName: `Dear ${
+          servicerPrimary ? servicerPrimary.metaData[0]?.firstName : ""
+        }`,
         redirectId: base_url,
         content: `We would like to inform you that the repair information for Claim ID  ${checkClaim.unique_key} has been successfully updated in our system. Please review the updated details and proceed accordingly.`,
-        subject: `Update on Repair Information for Claim  ID ${checkClaim.unique_key}`
-      }
-      emailData.senderName = "Dear Admin"
+        subject: `Update on Repair Information for Claim  ID ${checkClaim.unique_key}`,
+      };
+      emailData.senderName = "Dear Admin";
       if (notificationEmails.length > 0) {
-        let mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.com"], emailData))
-        maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
-
+        let mailing = await sgMail.send(
+          emailConstant.sendEmailTemplate(
+            notificationEmails,
+            ["noreply@getcover.com"],
+            emailData
+          )
+        );
+        maillogservice.createMailLogFunction(
+          mailing,
+          emailData,
+          adminUsers,
+          process.env.update_status
+        );
       }
       if (servicerEmails.length > 0) {
-        mailing = await sgMail.send(emailConstant.sendEmailTemplate(servicerEmails, ["noreply@getcover.com"], emailData))
-        maillogservice.createMailLogFunction(mailing, emailData, servicerUsers, process.env.update_status)
-
+        mailing = await sgMail.send(
+          emailConstant.sendEmailTemplate(
+            servicerEmails,
+            ["noreply@getcover.com"],
+            emailData
+          )
+        );
+        maillogservice.createMailLogFunction(
+          mailing,
+          emailData,
+          servicerUsers,
+          process.env.update_status
+        );
       }
-
 
       let totalClaimQuery1 = [
         {
           $match: {
-            contractId: new mongoose.Types.ObjectId(checkClaim.contractId)
-          }
+            contractId: new mongoose.Types.ObjectId(checkClaim.contractId),
+          },
         },
         {
           $group: {
-            _id: null,            // Group by null to aggregate over all documents
-            totalAmount: { $sum: "$totalAmount" }  // Sum the 'amount' field
-          }
-        }
-      ]
-      let getClaims = await claimService.getClaimWithAggregate(totalClaimQuery1)
-      let updateTheContract = await contractService.updateContract({ _id: checkClaim.contractId }, { claimAmount: getClaims[0] ? getClaims[0].totalAmount : 0 }, { new: true })
+            _id: null, // Group by null to aggregate over all documents
+            totalAmount: { $sum: "$totalAmount" }, // Sum the 'amount' field
+          },
+        },
+      ];
+      let getClaims = await claimService.getClaimWithAggregate(
+        totalClaimQuery1
+      );
+      let updateTheContract = await contractService.updateContract(
+        { _id: checkClaim.contractId },
+        { claimAmount: getClaims[0] ? getClaims[0].totalAmount : 0 },
+        { new: true }
+      );
       res.send({
         code: constant.successCode,
-        message: "Updated successfully"
-      })
+        message: "Updated successfully",
+      });
       return;
     }
     let totalClaimQuery1 = [
       {
         $match: {
-          contractId: new mongoose.Types.ObjectId(checkClaim.contractId)
-        }
+          contractId: new mongoose.Types.ObjectId(checkClaim.contractId),
+        },
       },
       {
         $group: {
-          _id: null,            // Group by null to aggregate over all documents
-          totalAmount: { $sum: "$totalAmount" }  // Sum the 'amount' field
-        }
-      }
-    ]
-    let getClaims = await claimService.getClaimWithAggregate(totalClaimQuery1)
-    let updateTheContract = await contractService.updateContract({ _id: checkClaim._id }, { claimAmount: getClaims[0] ? getClaims[0].totalAmount : 0 }, { new: true })
+          _id: null, // Group by null to aggregate over all documents
+          totalAmount: { $sum: "$totalAmount" }, // Sum the 'amount' field
+        },
+      },
+    ];
+    let getClaims = await claimService.getClaimWithAggregate(totalClaimQuery1);
+    let updateTheContract = await contractService.updateContract(
+      { _id: checkClaim._id },
+      { claimAmount: getClaims[0] ? getClaims[0].totalAmount : 0 },
+      { new: true }
+    );
 
     res.send({
       code: constant.successCode,
-      message: "Updated successfully"
-    })
-
+      message: "Updated successfully",
+    });
   } catch (err) {
     //Save Logs edit claim
     let logData = {
       userId: req.userId,
       endpoint: "claim/editClaim catch",
-      body: req.body ? req.body : { "type": "Catch Error" },
+      body: req.body ? req.body : { type: "Catch Error" },
       response: {
         code: constant.errorCode,
-        result: err.message
-      }
-    }
-    await LOG(logData).save()
+        result: err.message,
+      },
+    };
+    await LOG(logData).save();
 
     res.send({
       code: constant.errorCode,
-      message: err.message
-    })
+      message: err.message,
+    });
   }
-}
+};
 
 //edit claim type api
 exports.editClaimType = async (req, res) => {
   try {
-    let data = req.body
-    let criteria = { _id: req.params.claimId }
+    let data = req.body;
+    let criteria = { _id: req.params.claimId };
 
-    let checkClaim = await claimService.getClaimById(criteria)
+    let checkClaim = await claimService.getClaimById(criteria);
     if (!checkClaim) {
       res.send({
         code: constant.errorCode,
-        message: "Invalid claim ID"
-      })
-      return
+        message: "Invalid claim ID",
+      });
+      return;
     }
 
-    if (checkClaim.claimFile == 'open') {
+    if (checkClaim.claimFile == "open") {
       if (data.claimType == "theft_and_lost") {
-        data.servicerId = null
+        data.servicerId = null;
       }
-      let option = { new: true }
+      let option = { new: true };
 
-      let updateData = await claimService.updateClaim(criteria, data, option)
+      let updateData = await claimService.updateClaim(criteria, data, option);
       if (!updateData) {
-        //Save logs 
+        //Save logs
         let logData = {
           userId: req.userId,
           endpoint: "claim/editClaimType",
@@ -1282,19 +1734,19 @@ exports.editClaimType = async (req, res) => {
           response: {
             code: constant.errorCode,
             message: "Failed to process your request.",
-            result: updateData
-          }
-        }
-        await LOG(logData).save()
+            result: updateData,
+          },
+        };
+        await LOG(logData).save();
 
         res.send({
           code: constant.errorCode,
-          message: "Failed to process your request."
-        })
+          message: "Failed to process your request.",
+        });
         return;
       }
 
-      //Save logs 
+      //Save logs
       let logData = {
         userId: req.userId,
         endpoint: "claim/editClaimType",
@@ -1302,134 +1754,166 @@ exports.editClaimType = async (req, res) => {
         response: {
           code: constant.successCode,
           message: "Updated successfully",
-          result: updateData
-        }
-      }
-      await LOG(logData).save()
+          result: updateData,
+        },
+      };
+      await LOG(logData).save();
       if (updateData.claimType != "" || updateData.claimType != "New") {
-        let udpateclaimAmount = await axios.get(process.env.API_ENDPOINT + "api-v1/claim/checkClaimAmount/" + updateData._id, {
-          headers: {
-            "x-access-token": req.header["x-access-token"],  // Include the token in the Authorization header
+        let udpateclaimAmount = await axios.get(
+          process.env.API_ENDPOINT +
+            "api-v1/claim/checkClaimAmount/" +
+            updateData._id,
+          {
+            headers: {
+              "x-access-token": req.header["x-access-token"], // Include the token in the Authorization header
+            },
           }
-        });
+        );
       }
-      let checkUpdatedClaim = await claimService.getClaimById(criteria)
+      let checkUpdatedClaim = await claimService.getClaimById(criteria);
 
       res.send({
         code: constant.successCode,
         result: checkUpdatedClaim,
         message: "Updated successfully",
-      })
+      });
       return;
     }
 
     res.send({
       code: constant.successCode,
-      message: "Updated successfully"
-    })
-
+      message: "Updated successfully",
+    });
   } catch (err) {
     // Save Logs
     let logData = {
       userId: req.userId,
       endpoint: "claim/editClaimType catch",
-      body: req.body ? req.body : { "type": "Catch Error" },
+      body: req.body ? req.body : { type: "Catch Error" },
       response: {
         code: constant.errorCode,
-        result: err.message
-      }
-    }
-    await LOG(logData).save()
+        result: err.message,
+      },
+    };
+    await LOG(logData).save();
 
     res.send({
       code: constant.errorCode,
-      message: err.message
-    })
+      message: err.message,
+    });
   }
-}
+};
 
 // Claim Paid and unpaid api Done
 exports.editClaimStatus = async (req, res) => {
   try {
-    let data = req.body
-    let criteria = { _id: req.params.claimId }
+    let data = req.body;
+    let criteria = { _id: req.params.claimId };
     let settingData = await userService.getSetting({});
 
-    let checkClaim = await claimService.getClaimById(criteria)
+    let checkClaim = await claimService.getClaimById(criteria);
     if (!checkClaim) {
       res.send({
         code: constant.errorCode,
-        message: "Invalid claim ID"
-      })
-      return
+        message: "Invalid claim ID",
+      });
+      return;
     }
-    const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
+    const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`;
 
-    const query = { contractId: new mongoose.Types.ObjectId(checkClaim.contractId) }
-    let checkContract = await contractService.getContractById({ _id: checkClaim.contractId })
-    const checkOrder = await orderService.getOrder({ _id: checkContract.orderId }, { isDeleted: false })
+    const query = {
+      contractId: new mongoose.Types.ObjectId(checkClaim.contractId),
+    };
+    let checkContract = await contractService.getContractById({
+      _id: checkClaim.contractId,
+    });
+    const checkOrder = await orderService.getOrder(
+      { _id: checkContract.orderId },
+      { isDeleted: false }
+    );
     let claimTotalQuery = [
       { $match: query },
-      { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
-
-    ]
+      { $group: { _id: null, amount: { $sum: "$totalAmount" } } },
+    ];
     let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
 
     let status = {};
     let updateData = {};
 
     //Get Dealer,reseller, customer status
-    const checkDealer = await dealerService.getDealerById(checkOrder.dealerId)
-    const checkReseller = await resellerService.getReseller({ _id: checkOrder?.resellerId }, {})
-    const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
-    const checkServicer = await servicerService.getServiceProviderById({ $or: [{ _id: checkClaim?.servicerId }, { dealerId: checkClaim?.servicerId }, { resellerId: checkClaim?.servicerId }] })
-    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
-
+    const checkDealer = await dealerService.getDealerById(checkOrder.dealerId);
+    const checkReseller = await resellerService.getReseller(
+      { _id: checkOrder?.resellerId },
+      {}
+    );
+    const checkCustomer = await customerService.getCustomerById({
+      _id: checkOrder.customerId,
+    });
+    const checkServicer = await servicerService.getServiceProviderById({
+      $or: [
+        { _id: checkClaim?.servicerId },
+        { dealerId: checkClaim?.servicerId },
+        { resellerId: checkClaim?.servicerId },
+      ],
+    });
+    const checkLoginUser = await supportingFunction.getPrimaryUser({
+      _id: req.teammateId,
+    });
 
     if (data.hasOwnProperty("customerStatus")) {
-
       //Get submitted user
-      const site_url = `${process.env.SITE_URL}`
-      const checkCustomerStatus = await optionService.getOption({ name: "customer_status" })
-      const matchedData = checkCustomerStatus?.value.find(status => status.value == data.customerStatus)
+      const site_url = `${process.env.SITE_URL}`;
+      const checkCustomerStatus = await optionService.getOption({
+        name: "customer_status",
+      });
+      const matchedData = checkCustomerStatus?.value.find(
+        (status) => status.value == data.customerStatus
+      );
       status.trackStatus = [
         {
           status: data.customerStatus,
           date: new Date(),
           statusName: checkCustomerStatus.name,
-          userId: checkLoginUser.metaData[0]?._id
-        }
-      ]
+          userId: checkLoginUser.metaData[0]?._id,
+        },
+      ];
       updateData.customerStatus = [
         {
           status: data.customerStatus,
           date: new Date(),
-        }
-      ]
-      if (data.customerStatus == 'product_received') {
-        let option = { new: true }
-        let claimStatus = await claimService.updateClaim(criteria, { claimFile: 'completed', claimDate: new Date() }, option)
+        },
+      ];
+      if (data.customerStatus == "product_received") {
+        let option = { new: true };
+        let claimStatus = await claimService.updateClaim(
+          criteria,
+          { claimFile: "completed", claimDate: new Date() },
+          option
+        );
         updateData.claimStatus = [
           {
-            status: 'completed',
-            date: new Date()
-          }
-        ]
+            status: "completed",
+            date: new Date(),
+          },
+        ];
 
         status.trackStatus = [
           {
-            status: 'completed',
+            status: "completed",
             date: new Date(),
-            statusName: 'claim_status',
-            userId: checkLoginUser.metaData[0]?._id
-
-          }
-        ]
-        let statusClaim = await claimService.updateClaim(criteria, { updateData }, { new: true })
+            statusName: "claim_status",
+            userId: checkLoginUser.metaData[0]?._id,
+          },
+        ];
+        let statusClaim = await claimService.updateClaim(
+          criteria,
+          { updateData },
+          { new: true }
+        );
       }
 
       //Send notification to all
-      let notificationArray = []
+      let notificationArray = [];
       const adminCustomerStatusUpdateQuery = {
         metaData: {
           $elemMatch: {
@@ -1438,28 +1922,40 @@ exports.editClaimStatus = async (req, res) => {
               { status: true },
               {
                 $or: [
-                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                ]
+                  {
+                    roleId: new mongoose.Types.ObjectId(
+                      "656f0550d0d6e08fc82379dc"
+                    ),
+                  },
+                ],
               },
-
-            ]
-          }
+            ],
+          },
         },
-      }
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminCustomerStatusUpdateQuery, { email: 1, metaData: 1 })
-      const IDs = adminUsers.map(user => user._id)
+      };
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(
+        adminCustomerStatusUpdateQuery,
+        { email: 1, metaData: 1 }
+      );
+      const IDs = adminUsers.map((user) => user._id);
       if (adminUsers.length > 0) {
         let notificationAdmin = {
           title: "Claim Customer Status Updated",
-          description: `Claim # ${checkClaim.unique_key} customer status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+          description: `Claim # ${
+            checkClaim.unique_key
+          } customer status has been updated to ${matchedData?.label} by ${
+            checkLoginUser.metaData[0]?.firstName +
+            " " +
+            checkLoginUser.metaData[0]?.lastName
+          } - ${req.role}`,
           userId: req.teammateId,
           contentId: checkClaim._id,
-          flag: 'claim',
+          flag: "claim",
           notificationFor: IDs,
           endPoint: site_url + "claim-listing/" + checkClaim.unique_key,
           redirectionId: "claim-listing/" + checkClaim.unique_key,
         };
-        notificationArray.push(notificationAdmin)
+        notificationArray.push(notificationAdmin);
       }
 
       //Dealer Notification
@@ -1470,29 +1966,36 @@ exports.editClaimStatus = async (req, res) => {
               { "claimNotification.customerStatusUpdate": true },
               { status: true },
               {
-                $or: [
-                  { metaId: checkOrder.dealerId },
-                ]
+                $or: [{ metaId: checkOrder.dealerId }],
               },
-            ]
-          }
+            ],
+          },
         },
-      }
+      };
 
-      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerAddClaimQuery, { email: 1, metaData: 1 })
-      const dealerIds = dealerUsers.map(user => user._id)
+      let dealerUsers = await supportingFunction.getNotificationEligibleUser(
+        dealerAddClaimQuery,
+        { email: 1, metaData: 1 }
+      );
+      const dealerIds = dealerUsers.map((user) => user._id);
       if (dealerUsers.length > 0) {
         let notificationDealer = {
           title: "Claim Customer Status Updated",
-          description: `Claim # ${checkClaim.unique_key} customer status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+          description: `Claim # ${
+            checkClaim.unique_key
+          } customer status has been updated to ${matchedData?.label} by ${
+            checkLoginUser.metaData[0]?.firstName +
+            " " +
+            checkLoginUser.metaData[0]?.lastName
+          } - ${req.role}`,
           userId: req.teammateId,
           contentId: checkClaim._id,
-          flag: 'claim',
+          flag: "claim",
           notificationFor: dealerIds,
           endPoint: site_url + "claim-listing/" + checkClaim.unique_key,
           redirectionId: "claim-listing/" + checkClaim.unique_key,
         };
-        notificationArray.push(notificationDealer)
+        notificationArray.push(notificationDealer);
       }
       //Reseller Notification
       const resellerAddClaimQuery = {
@@ -1502,29 +2005,36 @@ exports.editClaimStatus = async (req, res) => {
               { "claimNotification.customerStatusUpdate": true },
               { status: true },
               {
-                $or: [
-                  { metaId: checkOrder.resellerId },
-                ]
+                $or: [{ metaId: checkOrder.resellerId }],
               },
-            ]
-          }
+            ],
+          },
         },
-      }
-      let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerAddClaimQuery, { email: 1, metaData: 1 })
-      const resellerIds = resellerUsers.map(user => user._id)
+      };
+      let resellerUsers = await supportingFunction.getNotificationEligibleUser(
+        resellerAddClaimQuery,
+        { email: 1, metaData: 1 }
+      );
+      const resellerIds = resellerUsers.map((user) => user._id);
 
       if (resellerUsers.length > 0) {
         let notificationReseller = {
           title: "Claim Customer Status Updated",
-          description: `Claim # ${checkClaim.unique_key} customer status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+          description: `Claim # ${
+            checkClaim.unique_key
+          } customer status has been updated to ${matchedData?.label} by ${
+            checkLoginUser.metaData[0]?.firstName +
+            " " +
+            checkLoginUser.metaData[0]?.lastName
+          } - ${req.role}`,
           userId: req.teammateId,
           contentId: checkClaim._id,
-          flag: 'claim',
+          flag: "claim",
           notificationFor: resellerIds,
           endPoint: site_url + "claim-listing/" + checkClaim.unique_key,
           redirectionId: "claim-listing/" + checkClaim.unique_key,
         };
-        notificationArray.push(notificationReseller)
+        notificationArray.push(notificationReseller);
       }
 
       //Customer Notification
@@ -1535,29 +2045,29 @@ exports.editClaimStatus = async (req, res) => {
               { "claimNotification.customerStatusUpdate": true },
               { status: true },
               {
-                $or: [
-                  { metaId: checkOrder.customerId },
-
-                ]
+                $or: [{ metaId: checkOrder.customerId }],
               },
-            ]
-          }
+            ],
+          },
         },
-      }
-      let customerUsers = await supportingFunction.getNotificationEligibleUser(customerAddClaimQuery, { email: 1, metaData: 1 })
-      const customerIds = customerUsers.map(user => user._id)
+      };
+      let customerUsers = await supportingFunction.getNotificationEligibleUser(
+        customerAddClaimQuery,
+        { email: 1, metaData: 1 }
+      );
+      const customerIds = customerUsers.map((user) => user._id);
       if (customerUsers.length > 0) {
         let notificationCustomer = {
           title: "Claim Customer Status Updated",
           description: `Claim # ${checkClaim.unique_key} customer status has been updated to ${matchedData?.label}`,
           userId: req.teammateId,
           contentId: checkClaim._id,
-          flag: 'claim',
+          flag: "claim",
           notificationFor: customerIds,
           endPoint: site_url + "claim-listing/" + checkClaim.unique_key,
           redirectionId: "claim-listing/" + checkClaim.unique_key,
         };
-        notificationArray.push(notificationCustomer)
+        notificationArray.push(notificationCustomer);
       }
       const servicerAddClaimQuery = {
         metaData: {
@@ -1570,104 +2080,190 @@ exports.editClaimStatus = async (req, res) => {
                   { metaId: checkServicer?._id },
                   { metaId: checkServicer?.dealerId },
                   { metaId: checkServicer?.resellerId },
-                ]
+                ],
               },
-            ]
-          }
+            ],
+          },
         },
-      }
-      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerAddClaimQuery, { email: 1, metaData: 1 })
-      const servicerIds = servicerUsers.map(user => user._id)
+      };
+      let servicerUsers = await supportingFunction.getNotificationEligibleUser(
+        servicerAddClaimQuery,
+        { email: 1, metaData: 1 }
+      );
+      const servicerIds = servicerUsers.map((user) => user._id);
       if (servicerUsers.length > 0) {
         let notificationServicer = {
           title: "Claim Customer Status Updated",
-          description: `Claim # ${checkClaim.unique_key} customer status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+          description: `Claim # ${
+            checkClaim.unique_key
+          } customer status has been updated to ${matchedData?.label} by ${
+            checkLoginUser.metaData[0]?.firstName +
+            " " +
+            checkLoginUser.metaData[0]?.lastName
+          } - ${req.role}`,
           userId: req.teammateId,
           contentId: checkClaim._id,
-          flag: 'claim',
+          flag: "claim",
           notificationFor: servicerIds,
           endPoint: site_url + "claim-listing/" + checkClaim.unique_key,
           redirectionId: "claim-listing/" + checkClaim.unique_key,
         };
-        notificationArray.push(notificationServicer)
+        notificationArray.push(notificationServicer);
       }
-      let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } })
-      let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } })
-      let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } })
-      let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkClaim?.servicerId, isPrimary: true } } })
+      let dealerPrimary = await supportingFunction.getPrimaryUser({
+        metaData: {
+          $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true },
+        },
+      });
+      let customerPrimary = await supportingFunction.getPrimaryUser({
+        metaData: {
+          $elemMatch: { metaId: checkOrder.customerId, isPrimary: true },
+        },
+      });
+      let resellerPrimary = await supportingFunction.getPrimaryUser({
+        metaData: {
+          $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true },
+        },
+      });
+      let servicerPrimary = await supportingFunction.getPrimaryUser({
+        metaData: {
+          $elemMatch: { metaId: checkClaim?.servicerId, isPrimary: true },
+        },
+      });
 
-
-      let createNotification = await userService.saveNotificationBulk(notificationArray);
+      let createNotification = await userService.saveNotificationBulk(
+        notificationArray
+      );
       // Send Email code here
 
-      let adminEmail = adminUsers.map(user => user.email)
-      let dealerEmail = dealerUsers.map(user => user.email)
-      let customerEmail = customerUsers.map(user => user.email)
-      let resellerEmail = resellerUsers.map(user => user.email)
-      let servicerEmail = servicerUsers.map(user => user.email)
-      const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
+      let adminEmail = adminUsers.map((user) => user.email);
+      let dealerEmail = dealerUsers.map((user) => user.email);
+      let customerEmail = customerUsers.map((user) => user.email);
+      let resellerEmail = resellerUsers.map((user) => user.email);
+      let servicerEmail = servicerUsers.map((user) => user.email);
+      const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`;
 
       //Email to customer
       let emailData = {
-        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        darkLogo:
+          process.env.API_ENDPOINT +
+          "uploads/logo/" +
+          settingData[0]?.logoDark.fileName,
+        lightLogo:
+          process.env.API_ENDPOINT +
+          "uploads/logo/" +
+          settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: '',
+        senderName: "",
         content: `The Customer Status has been updated on the claim # ${checkClaim.unique_key} to be ${matchedData?.label}. Please review the information on the following url.`,
         subject: `Customer Status Updated for ${checkClaim.unique_key}`,
-        redirectId: base_url
-      }
+        redirectId: base_url,
+      };
       if (adminEmail.length > 0) {
-        let mailing = await sgMail.send(emailConstant.sendEmailTemplate(adminEmail, ["noreply@getcover.com"], emailData))
-        maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
-
+        let mailing = await sgMail.send(
+          emailConstant.sendEmailTemplate(
+            adminEmail,
+            ["noreply@getcover.com"],
+            emailData
+          )
+        );
+        maillogservice.createMailLogFunction(
+          mailing,
+          emailData,
+          adminUsers,
+          process.env.update_status
+        );
       }
       if (dealerEmail.length > 0) {
-        mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.com"], emailData))
-        maillogservice.createMailLogFunction(mailing, emailData, dealerUsers, process.env.update_status)
-
+        mailing = await sgMail.send(
+          emailConstant.sendEmailTemplate(
+            dealerEmail,
+            ["noreply@getcover.com"],
+            emailData
+          )
+        );
+        maillogservice.createMailLogFunction(
+          mailing,
+          emailData,
+          dealerUsers,
+          process.env.update_status
+        );
       }
       if (customerEmail.length > 0) {
-        mailing = await sgMail.send(emailConstant.sendEmailTemplate(customerEmail, ["noreply@getcover.com"], emailData))
-        maillogservice.createMailLogFunction(mailing, emailData, customerUsers, process.env.update_status)
-
+        mailing = await sgMail.send(
+          emailConstant.sendEmailTemplate(
+            customerEmail,
+            ["noreply@getcover.com"],
+            emailData
+          )
+        );
+        maillogservice.createMailLogFunction(
+          mailing,
+          emailData,
+          customerUsers,
+          process.env.update_status
+        );
       }
       if (resellerEmail.length > 0) {
-        mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ["noreply@getcover.com"], emailData))
-        maillogservice.createMailLogFunction(mailing, emailData, resellerUsers, process.env.update_status)
-
+        mailing = await sgMail.send(
+          emailConstant.sendEmailTemplate(
+            resellerEmail,
+            ["noreply@getcover.com"],
+            emailData
+          )
+        );
+        maillogservice.createMailLogFunction(
+          mailing,
+          emailData,
+          resellerUsers,
+          process.env.update_status
+        );
       }
       if (servicerEmail.length > 0) {
-        mailing = await sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, ["noreply@getcover.com"], emailData))
-        maillogservice.createMailLogFunction(mailing, emailData, servicerUsers, process.env.update_status)
+        mailing = await sgMail.send(
+          emailConstant.sendEmailTemplate(
+            servicerEmail,
+            ["noreply@getcover.com"],
+            emailData
+          )
+        );
+        maillogservice.createMailLogFunction(
+          mailing,
+          emailData,
+          servicerUsers,
+          process.env.update_status
+        );
       }
-
     }
     if (data.hasOwnProperty("repairStatus")) {
-      const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
-      const site_url = `${process.env.SITE_URL}`
-      let notificationArray = []
-      const checkRepairStatus = await optionService.getOption({ name: "repair_status" })
-      const matchedData = checkRepairStatus?.value.find(status => status.value == data.repairStatus)
+      const checkLoginUser = await supportingFunction.getPrimaryUser({
+        _id: req.teammateId,
+      });
+      const site_url = `${process.env.SITE_URL}`;
+      let notificationArray = [];
+      const checkRepairStatus = await optionService.getOption({
+        name: "repair_status",
+      });
+      const matchedData = checkRepairStatus?.value.find(
+        (status) => status.value == data.repairStatus
+      );
 
       status.trackStatus = [
         {
           status: data.repairStatus,
           date: new Date(),
           statusName: checkRepairStatus.name,
-          userId: checkLoginUser.metaData[0]?._id
-
-        }
-      ]
+          userId: checkLoginUser.metaData[0]?._id,
+        },
+      ];
 
       updateData.repairStatus = [
         {
           status: data.repairStatus,
           date: new Date(),
-
-        }
-      ]
+        },
+      ];
       //Send notification to all
       const adminRepairStatusUpdateQuery = {
         metaData: {
@@ -1677,31 +2273,42 @@ exports.editClaimStatus = async (req, res) => {
               { status: true },
               {
                 $or: [
-                  { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-                ]
+                  {
+                    roleId: new mongoose.Types.ObjectId(
+                      "656f0550d0d6e08fc82379dc"
+                    ),
+                  },
+                ],
               },
-
-            ]
-          }
+            ],
+          },
         },
-      }
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminRepairStatusUpdateQuery, { email: 1, metaData: 1 })
-      const IDs = adminUsers.map(user => user._id)
+      };
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(
+        adminRepairStatusUpdateQuery,
+        { email: 1, metaData: 1 }
+      );
+      const IDs = adminUsers.map((user) => user._id);
       if (adminUsers.length > 0) {
         //Get submitted user
         let notificationAdmin = {
           title: "Claim Repair Status Updated",
-          description: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
-
+          description: `Claim # ${
+            checkClaim.unique_key
+          } repair status has been updated to ${matchedData?.label} by ${
+            checkLoginUser.metaData[0]?.firstName +
+            " " +
+            checkLoginUser.metaData[0]?.lastName
+          } - ${req.role}`,
 
           userId: req.teammateId,
           contentId: checkClaim._id,
-          flag: 'claim',
+          flag: "claim",
           redirectionId: `claim-listing/${checkClaim.unique_key}`,
           endPoint: site_url + `claim-listing/${checkClaim.unique_key}`,
-          notificationFor: IDs
+          notificationFor: IDs,
         };
-        notificationArray.push(notificationAdmin)
+        notificationArray.push(notificationAdmin);
       }
       const dealerRepairStatusUpdateQuery = {
         metaData: {
@@ -1712,29 +2319,37 @@ exports.editClaimStatus = async (req, res) => {
               {
                 $or: [
                   { metaId: new mongoose.Types.ObjectId(checkOrder.dealerId) },
-                ]
+                ],
               },
-
-            ]
-          }
+            ],
+          },
         },
-      }
-      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerRepairStatusUpdateQuery, { email: 1, metaData: 1 })
+      };
+      let dealerUsers = await supportingFunction.getNotificationEligibleUser(
+        dealerRepairStatusUpdateQuery,
+        { email: 1, metaData: 1 }
+      );
 
-      const dealerids = dealerUsers.map(user => user._id)
+      const dealerids = dealerUsers.map((user) => user._id);
       if (dealerUsers.length > 0) {
         //Get submitted user
         let notificationAdmin = {
           title: "Claim Repair Status Updated",
-          description: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+          description: `Claim # ${
+            checkClaim.unique_key
+          } repair status has been updated to ${matchedData?.label} by ${
+            checkLoginUser.metaData[0]?.firstName +
+            " " +
+            checkLoginUser.metaData[0]?.lastName
+          } - ${req.role}`,
           userId: req.teammateId,
           contentId: checkClaim._id,
-          flag: 'claim',
+          flag: "claim",
           redirectionId: `claim-listing/${checkClaim.unique_key}`,
           endPoint: site_url + `claim-listing/${checkClaim.unique_key}`,
-          notificationFor: dealerids
+          notificationFor: dealerids,
         };
-        notificationArray.push(notificationAdmin)
+        notificationArray.push(notificationAdmin);
       }
       const resellerRepairStatusUpdateQuery = {
         metaData: {
@@ -1744,30 +2359,40 @@ exports.editClaimStatus = async (req, res) => {
               { status: true },
               {
                 $or: [
-                  { metaId: new mongoose.Types.ObjectId(checkOrder.resellerId) },
-                ]
+                  {
+                    metaId: new mongoose.Types.ObjectId(checkOrder.resellerId),
+                  },
+                ],
               },
-
-            ]
-          }
+            ],
+          },
         },
-      }
-      let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerRepairStatusUpdateQuery, { email: 1, metaData: 1 })
+      };
+      let resellerUsers = await supportingFunction.getNotificationEligibleUser(
+        resellerRepairStatusUpdateQuery,
+        { email: 1, metaData: 1 }
+      );
 
-      const reselerids = resellerUsers.map(user => user._id)
+      const reselerids = resellerUsers.map((user) => user._id);
       if (resellerUsers.length > 0) {
         //Get submitted user
         let notificationAdmin = {
           title: "Claim Repair Status Updated",
-          description: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+          description: `Claim # ${
+            checkClaim.unique_key
+          } repair status has been updated to ${matchedData?.label} by ${
+            checkLoginUser.metaData[0]?.firstName +
+            " " +
+            checkLoginUser.metaData[0]?.lastName
+          } - ${req.role}`,
           userId: req.teammateId,
           contentId: checkClaim._id,
-          flag: 'claim',
+          flag: "claim",
           redirectionId: `claim-listing/${checkClaim.unique_key}`,
           endPoint: site_url + `claim-listing/${checkClaim.unique_key}`,
-          notificationFor: reselerids
+          notificationFor: reselerids,
         };
-        notificationArray.push(notificationAdmin)
+        notificationArray.push(notificationAdmin);
       }
       const customerRepairStatusUpdateQuery = {
         metaData: {
@@ -1777,17 +2402,21 @@ exports.editClaimStatus = async (req, res) => {
               { status: true },
               {
                 $or: [
-                  { metaId: new mongoose.Types.ObjectId(checkOrder.customerId) },
-                ]
+                  {
+                    metaId: new mongoose.Types.ObjectId(checkOrder.customerId),
+                  },
+                ],
               },
-
-            ]
-          }
+            ],
+          },
         },
-      }
-      let customerUsers = await supportingFunction.getNotificationEligibleUser(customerRepairStatusUpdateQuery, { email: 1, metaData: 1 })
+      };
+      let customerUsers = await supportingFunction.getNotificationEligibleUser(
+        customerRepairStatusUpdateQuery,
+        { email: 1, metaData: 1 }
+      );
 
-      const customerids = customerUsers.map(user => user._id)
+      const customerids = customerUsers.map((user) => user._id);
       if (customerUsers.length > 0) {
         //Get submitted user
         let notificationAdmin = {
@@ -1795,12 +2424,12 @@ exports.editClaimStatus = async (req, res) => {
           description: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label}`,
           userId: req.teammateId,
           contentId: checkClaim._id,
-          flag: 'claim',
+          flag: "claim",
           redirectionId: `claim-listing/${checkClaim.unique_key}`,
           endPoint: site_url + `claim-listing/${checkClaim.unique_key}`,
-          notificationFor: customerids
+          notificationFor: customerids,
         };
-        notificationArray.push(notificationAdmin)
+        notificationArray.push(notificationAdmin);
       }
       const servicerRepairStatusUpdateQuery = {
         metaData: {
@@ -1814,107 +2443,196 @@ exports.editClaimStatus = async (req, res) => {
                   { metaId: checkServicer?._id },
                   { metaId: checkServicer?.dealerId },
                   { metaId: checkServicer?.resellerId },
-                ]
+                ],
               },
-
-            ]
-          }
+            ],
+          },
         },
-      }
-      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerRepairStatusUpdateQuery, { email: 1, metaData: 1 })
+      };
+      let servicerUsers = await supportingFunction.getNotificationEligibleUser(
+        servicerRepairStatusUpdateQuery,
+        { email: 1, metaData: 1 }
+      );
 
-      const servicerids = servicerUsers.map(user => user._id)
+      const servicerids = servicerUsers.map((user) => user._id);
       if (servicerUsers.length > 0) {
         //Get submitted user
         let notificationAdmin = {
           title: "Claim Repair Status Updated",
-          description: `Claim # ${checkClaim.unique_key} repair status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+          description: `Claim # ${
+            checkClaim.unique_key
+          } repair status has been updated to ${matchedData?.label} by ${
+            checkLoginUser.metaData[0]?.firstName +
+            " " +
+            checkLoginUser.metaData[0]?.lastName
+          } - ${req.role}`,
           userId: req.teammateId,
           contentId: checkClaim._id,
-          flag: 'claim',
+          flag: "claim",
           redirectionId: `claim-listing/${checkClaim.unique_key}`,
           endPoint: site_url + `claim-listing/${checkClaim.unique_key}`,
-          notificationFor: servicerids
+          notificationFor: servicerids,
         };
-        notificationArray.push(notificationAdmin)
+        notificationArray.push(notificationAdmin);
       }
-      let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } })
-      let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } })
-      let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } })
-      let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkClaim?.servicerId, isPrimary: true } } })
+      let dealerPrimary = await supportingFunction.getPrimaryUser({
+        metaData: {
+          $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true },
+        },
+      });
+      let customerPrimary = await supportingFunction.getPrimaryUser({
+        metaData: {
+          $elemMatch: { metaId: checkOrder.customerId, isPrimary: true },
+        },
+      });
+      let resellerPrimary = await supportingFunction.getPrimaryUser({
+        metaData: {
+          $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true },
+        },
+      });
+      let servicerPrimary = await supportingFunction.getPrimaryUser({
+        metaData: {
+          $elemMatch: { metaId: checkClaim?.servicerId, isPrimary: true },
+        },
+      });
 
-      let createNotification = await userService.saveNotificationBulk(notificationArray);
-
+      let createNotification = await userService.saveNotificationBulk(
+        notificationArray
+      );
 
       // Send Email code here
-      let notificationEmails = adminUsers.map(user => user.email)
-      let dealerEmail = dealerUsers.map(user => user.email)
-      let customerEmail = customerUsers.map(user => user.email)
-      let resellerEmail = resellerUsers.map(user => user.email)
-      let servicerEmail = servicerUsers.map(user => user.email)
+      let notificationEmails = adminUsers.map((user) => user.email);
+      let dealerEmail = dealerUsers.map((user) => user.email);
+      let customerEmail = customerUsers.map((user) => user.email);
+      let resellerEmail = resellerUsers.map((user) => user.email);
+      let servicerEmail = servicerUsers.map((user) => user.email);
 
       // Email to Customer
       let emailData = {
-        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        darkLogo:
+          process.env.API_ENDPOINT +
+          "uploads/logo/" +
+          settingData[0]?.logoDark.fileName,
+        lightLogo:
+          process.env.API_ENDPOINT +
+          "uploads/logo/" +
+          settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
-        senderName: ''
-        , content: `The Repair Status has been updated on the claim #  ${checkClaim.unique_key} to be ${matchedData?.label} .Please review the information at`,
+        senderName: "",
+        content: `The Repair Status has been updated on the claim #  ${checkClaim.unique_key} to be ${matchedData?.label} .Please review the information at`,
         subject: `Repair Status Updated for ${checkClaim.unique_key}`,
-        redirectId: base_url
-      }
+        redirectId: base_url,
+      };
       let mailing;
       if (notificationEmails.length > 0) {
-        mailing = await sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ["noreply@getcover.cover"], emailData))
-        maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.update_status)
+        mailing = await sgMail.send(
+          emailConstant.sendEmailTemplate(
+            notificationEmails,
+            ["noreply@getcover.cover"],
+            emailData
+          )
+        );
+        maillogservice.createMailLogFunction(
+          mailing,
+          emailData,
+          adminUsers,
+          process.env.update_status
+        );
       }
       if (customerEmail.length > 0) {
-        mailing = await sgMail.send(emailConstant.sendEmailTemplate(customerEmail, ["noreply@getcover.cover"], emailData))
-        maillogservice.createMailLogFunction(mailing, emailData, customerUsers, process.env.update_status)
+        mailing = await sgMail.send(
+          emailConstant.sendEmailTemplate(
+            customerEmail,
+            ["noreply@getcover.cover"],
+            emailData
+          )
+        );
+        maillogservice.createMailLogFunction(
+          mailing,
+          emailData,
+          customerUsers,
+          process.env.update_status
+        );
       }
 
       if (servicerEmail.length > 0) {
-        mailing = await sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, ["noreply@getcover.cover"], emailData))
-        maillogservice.createMailLogFunction(mailing, emailData, servicerUsers, process.env.update_status)
+        mailing = await sgMail.send(
+          emailConstant.sendEmailTemplate(
+            servicerEmail,
+            ["noreply@getcover.cover"],
+            emailData
+          )
+        );
+        maillogservice.createMailLogFunction(
+          mailing,
+          emailData,
+          servicerUsers,
+          process.env.update_status
+        );
       }
 
       if (dealerEmail.length > 0) {
-        mailing = await sgMail.send(emailConstant.sendEmailTemplate(dealerEmail, ["noreply@getcover.cover"], emailData))
-        maillogservice.createMailLogFunction(mailing, emailData, dealerUsers, process.env.update_status)
+        mailing = await sgMail.send(
+          emailConstant.sendEmailTemplate(
+            dealerEmail,
+            ["noreply@getcover.cover"],
+            emailData
+          )
+        );
+        maillogservice.createMailLogFunction(
+          mailing,
+          emailData,
+          dealerUsers,
+          process.env.update_status
+        );
       }
 
       if (resellerEmail.length > 0) {
-        mailing = await sgMail.send(emailConstant.sendEmailTemplate(resellerEmail, ["noreply@getcover.cover"], emailData))
-        maillogservice.createMailLogFunction(mailing, emailData, resellerUsers, process.env.update_status)
+        mailing = await sgMail.send(
+          emailConstant.sendEmailTemplate(
+            resellerEmail,
+            ["noreply@getcover.cover"],
+            emailData
+          )
+        );
+        maillogservice.createMailLogFunction(
+          mailing,
+          emailData,
+          resellerUsers,
+          process.env.update_status
+        );
       }
-
-
     }
     if (data.hasOwnProperty("claimStatus")) {
-      let claimStatus = await claimService.updateClaim(criteria, { claimFile: data.claimStatus, reason: data.reason ? data.reason : '' }, { new: true })
-      const checkClaimStatus = await optionService.getOption({ name: "claim_status" })
+      let claimStatus = await claimService.updateClaim(
+        criteria,
+        { claimFile: data.claimStatus, reason: data.reason ? data.reason : "" },
+        { new: true }
+      );
+      const checkClaimStatus = await optionService.getOption({
+        name: "claim_status",
+      });
 
-      const matchedData = checkClaimStatus?.value.find(status => status.value == data.claimStatus)
+      const matchedData = checkClaimStatus?.value.find(
+        (status) => status.value == data.claimStatus
+      );
 
       status.trackStatus = [
         {
           status: data.claimStatus,
           date: new Date(),
           statusName: checkClaimStatus.name,
-          userId: checkLoginUser.metaData[0]?._id
-
-
-
-        }
-      ]
+          userId: checkLoginUser.metaData[0]?._id,
+        },
+      ];
 
       updateData.claimStatus = [
         {
           status: data.claimStatus,
-          date: new Date()
-        }
-      ]
+          date: new Date(),
+        },
+      ];
 
       //Send notification to all
       const adminClaimStatusUpdateQuery = {
@@ -1925,15 +2643,17 @@ exports.editClaimStatus = async (req, res) => {
               { status: true },
               {
                 $or: [
-                  { roleId: new mongoose.Types.ObjectId(process.env.super_admin) },
-
-                ]
+                  {
+                    roleId: new mongoose.Types.ObjectId(
+                      process.env.super_admin
+                    ),
+                  },
+                ],
               },
-
-            ]
-          }
+            ],
+          },
         },
-      }
+      };
       const dealerClaimStatusUpdateQuery = {
         metaData: {
           $elemMatch: {
@@ -1941,15 +2661,12 @@ exports.editClaimStatus = async (req, res) => {
               { "claimNotification.claimStatusUpdate": true },
               { status: true },
               {
-                $or: [
-                  { metaId: checkOrder?.dealerId },
-                ]
+                $or: [{ metaId: checkOrder?.dealerId }],
               },
-
-            ]
-          }
+            ],
+          },
         },
-      }
+      };
       const resellerClaimStatusUpdateQuery = {
         metaData: {
           $elemMatch: {
@@ -1957,15 +2674,12 @@ exports.editClaimStatus = async (req, res) => {
               { "claimNotification.claimStatusUpdate": true },
               { status: true },
               {
-                $or: [
-                  { metaId: checkOrder?.resellerId },
-                ]
+                $or: [{ metaId: checkOrder?.resellerId }],
               },
-
-            ]
-          }
+            ],
+          },
         },
-      }
+      };
       const customerClaimStatusUpdateQuery = {
         metaData: {
           $elemMatch: {
@@ -1973,15 +2687,12 @@ exports.editClaimStatus = async (req, res) => {
               { "claimNotification.claimStatusUpdate": true },
               { status: true },
               {
-                $or: [
-                  { metaId: checkOrder?.customerId },
-                ]
+                $or: [{ metaId: checkOrder?.customerId }],
               },
-
-            ]
-          }
+            ],
+          },
         },
-      }
+      };
       const servicerClaimStatusUpdateQuery = {
         metaData: {
           $elemMatch: {
@@ -1994,59 +2705,108 @@ exports.editClaimStatus = async (req, res) => {
                   { metaId: checkServicer?._id },
                   { metaId: checkServicer?.dealerId },
                   { metaId: checkServicer?.resellerId },
-                ]
+                ],
               },
-
-            ]
-          }
+            ],
+          },
         },
-      }
+      };
 
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminClaimStatusUpdateQuery, { email: 1, metaData: 1 })
-      let dealerUser = await supportingFunction.getNotificationEligibleUser(dealerClaimStatusUpdateQuery, { email: 1, metaData: 1 })
-      let customerUsers = await supportingFunction.getNotificationEligibleUser(customerClaimStatusUpdateQuery, { email: 1, metaData: 1 })
-      let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerClaimStatusUpdateQuery, { email: 1, metaData: 1 })
-      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerClaimStatusUpdateQuery, { email: 1, metaData: 1 })
-      //Get all ids 
-      let notificationArray = []
-      const IDs = adminUsers.map(user => user._id)
-      const dealerIds = dealerUser.map(user => user._id)
-      const customerIDs = customerUsers.map(user => user._id)
-      const resellerIDs = resellerUsers.map(user => user._id)
-      const servicerIDs = servicerUsers.map(user => user._id)
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(
+        adminClaimStatusUpdateQuery,
+        { email: 1, metaData: 1 }
+      );
+      let dealerUser = await supportingFunction.getNotificationEligibleUser(
+        dealerClaimStatusUpdateQuery,
+        { email: 1, metaData: 1 }
+      );
+      let customerUsers = await supportingFunction.getNotificationEligibleUser(
+        customerClaimStatusUpdateQuery,
+        { email: 1, metaData: 1 }
+      );
+      let resellerUsers = await supportingFunction.getNotificationEligibleUser(
+        resellerClaimStatusUpdateQuery,
+        { email: 1, metaData: 1 }
+      );
+      let servicerUsers = await supportingFunction.getNotificationEligibleUser(
+        servicerClaimStatusUpdateQuery,
+        { email: 1, metaData: 1 }
+      );
+      //Get all ids
+      let notificationArray = [];
+      const IDs = adminUsers.map((user) => user._id);
+      const dealerIds = dealerUser.map((user) => user._id);
+      const customerIDs = customerUsers.map((user) => user._id);
+      const resellerIDs = resellerUsers.map((user) => user._id);
+      const servicerIDs = servicerUsers.map((user) => user._id);
 
-      const admin = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true } } });
+      const admin = await supportingFunction.getPrimaryUser({
+        metaData: {
+          $elemMatch: {
+            roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"),
+            isPrimary: true,
+          },
+        },
+      });
 
-      let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true } } })
-      let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.customerId, isPrimary: true } } })
-      let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true } } })
-      let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkClaim?.servicerId, isPrimary: true } } })
+      let dealerPrimary = await supportingFunction.getPrimaryUser({
+        metaData: {
+          $elemMatch: { metaId: checkOrder.dealerId, isPrimary: true },
+        },
+      });
+      let customerPrimary = await supportingFunction.getPrimaryUser({
+        metaData: {
+          $elemMatch: { metaId: checkOrder.customerId, isPrimary: true },
+        },
+      });
+      let resellerPrimary = await supportingFunction.getPrimaryUser({
+        metaData: {
+          $elemMatch: { metaId: checkOrder.resellerId, isPrimary: true },
+        },
+      });
+      let servicerPrimary = await supportingFunction.getPrimaryUser({
+        metaData: {
+          $elemMatch: { metaId: checkClaim?.servicerId, isPrimary: true },
+        },
+      });
 
       //Get submitted user
-      const site_url = `${process.env.SITE_URL}`
+      const site_url = `${process.env.SITE_URL}`;
       if (adminUsers.length > 0) {
         let notificationData1 = {
           title: "Claim  Status Updated",
-          description: `Claim # ${checkClaim.unique_key} claim status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}`,
+          description: `Claim # ${
+            checkClaim.unique_key
+          } claim status has been updated to ${matchedData?.label} by ${
+            checkLoginUser.metaData[0]?.firstName +
+            " " +
+            checkLoginUser.metaData[0]?.lastName
+          }`,
           userId: req.teammateId,
           contentId: checkClaim._id,
-          flag: 'claim',
+          flag: "claim",
           redirectionId: `claim-listing/${checkClaim.unique_key}`,
           endPoint: site_url + `claim-listing/${checkClaim.unique_key}`,
-          notificationFor: IDs
+          notificationFor: IDs,
         };
         notificationArray.push(notificationData1);
       }
       if (dealerUser.length > 0) {
         let notificationData1 = {
           title: "Claim  Status Updated",
-          description: `Claim # ${checkClaim.unique_key} claim status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}`,
+          description: `Claim # ${
+            checkClaim.unique_key
+          } claim status has been updated to ${matchedData?.label} by ${
+            checkLoginUser.metaData[0]?.firstName +
+            " " +
+            checkLoginUser.metaData[0]?.lastName
+          }`,
           userId: req.teammateId,
           contentId: checkClaim._id,
-          flag: 'claim',
+          flag: "claim",
           redirectionId: `claim-listing/${checkClaim.unique_key}`,
           endPoint: site_url + `claim-listing/${checkClaim.unique_key}`,
-          notificationFor: dealerIds
+          notificationFor: dealerIds,
         };
         notificationArray.push(notificationData1);
       }
@@ -2056,240 +2816,454 @@ exports.editClaimStatus = async (req, res) => {
           description: `Claim # ${checkClaim.unique_key} claim status has been updated to ${matchedData?.label}`,
           userId: req.teammateId,
           contentId: checkClaim._id,
-          flag: 'claim',
+          flag: "claim",
           redirectionId: `claim-listing/${checkClaim.unique_key}`,
           endPoint: site_url + `claim-listing/${checkClaim.unique_key}`,
-          notificationFor: customerIDs
+          notificationFor: customerIDs,
         };
         notificationArray.push(notificationData1);
       }
       if (resellerUsers.length > 0) {
         let notificationData1 = {
           title: "Claim  Status Updated",
-          description: `Claim # ${checkClaim.unique_key} claim status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+          description: `Claim # ${
+            checkClaim.unique_key
+          } claim status has been updated to ${matchedData?.label} by ${
+            checkLoginUser.metaData[0]?.firstName +
+            " " +
+            checkLoginUser.metaData[0]?.lastName
+          } - ${req.role}`,
           userId: req.teammateId,
           contentId: checkClaim._id,
-          flag: 'claim',
+          flag: "claim",
           redirectionId: `claim-listing/${checkClaim.unique_key}`,
           endPoint: site_url + `claim-listing/${checkClaim.unique_key}`,
-          notificationFor: resellerIDs
+          notificationFor: resellerIDs,
         };
         notificationArray.push(notificationData1);
       }
       if (servicerUsers.length > 0) {
         let notificationData1 = {
           title: "Claim  Status Updated",
-          description: `Claim # ${checkClaim.unique_key} claim status has been updated to ${matchedData?.label} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} `,
+          description: `Claim # ${
+            checkClaim.unique_key
+          } claim status has been updated to ${matchedData?.label} by ${
+            checkLoginUser.metaData[0]?.firstName +
+            " " +
+            checkLoginUser.metaData[0]?.lastName
+          } `,
           userId: req.teammateId,
           contentId: checkClaim._id,
-          flag: 'claim',
+          flag: "claim",
           redirectionId: `claim-listing/${checkClaim.unique_key}`,
           endPoint: site_url + `claim-listing/${checkClaim.unique_key}`,
-          notificationFor: servicerIDs
+          notificationFor: servicerIDs,
         };
         notificationArray.push(notificationData1);
       }
-      let createNotification = await userService.saveNotificationBulk(notificationArray);
+      let createNotification = await userService.saveNotificationBulk(
+        notificationArray
+      );
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
-      if (data.claimStatus == 'rejected') {
+      if (data.claimStatus == "rejected") {
         //Send notification to dealer,customer,reseller
-        let sendRejectionDealerNotification = dealerUser.map(user => user.email);
-        let sendRejectionResellerNotification = resellerUsers.map(user => user.email);
-        let sendRejectionCustomerNotification = customerUsers.map(user => user.email);
+        let sendRejectionDealerNotification = dealerUser.map(
+          (user) => user.email
+        );
+        let sendRejectionResellerNotification = resellerUsers.map(
+          (user) => user.email
+        );
+        let sendRejectionCustomerNotification = customerUsers.map(
+          (user) => user.email
+        );
         let emailData = {
-          darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-          lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+          darkLogo:
+            process.env.API_ENDPOINT +
+            "uploads/logo/" +
+            settingData[0]?.logoDark.fileName,
+          lightLogo:
+            process.env.API_ENDPOINT +
+            "uploads/logo/" +
+            settingData[0]?.logoLight.fileName,
           address: settingData[0]?.address,
           websiteSetting: settingData[0],
           senderName: dealerPrimary.metaData[0].firstName,
           content: `We regret to inform you that your claim ID: ${checkClaim.unique_key} has been reviewed and, unfortunately, does not meet the criteria for approval. After careful assessment, the claim has been rejected due to the following reason:`,
           content1: `Reason for Rejection : ${data.reason}`,
           content2: `If you believe there has been an error or if you would like further clarification, please feel free to reach out to our support team at support@getcover.com. Our team is here to assist you with any questions you may have.`,
-          subject: `Claim Rejection Notice -Claim ID:  ${checkClaim.unique_key}`
-        }
+          subject: `Claim Rejection Notice -Claim ID:  ${checkClaim.unique_key}`,
+        };
         let mailing;
         if (sendRejectionDealerNotification.length > 0) {
-          mailing = await sgMail.send(emailConstant.sendClaimStatusNotification(sendRejectionDealerNotification, ["noreply@getcover.com"], emailData))
-          maillogservice.createMailLogFunction(mailing, emailData, dealerUser, process.env.claim_status)
+          mailing = await sgMail.send(
+            emailConstant.sendClaimStatusNotification(
+              sendRejectionDealerNotification,
+              ["noreply@getcover.com"],
+              emailData
+            )
+          );
+          maillogservice.createMailLogFunction(
+            mailing,
+            emailData,
+            dealerUser,
+            process.env.claim_status
+          );
         }
         emailData = {
-          darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-          lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+          darkLogo:
+            process.env.API_ENDPOINT +
+            "uploads/logo/" +
+            settingData[0]?.logoDark.fileName,
+          lightLogo:
+            process.env.API_ENDPOINT +
+            "uploads/logo/" +
+            settingData[0]?.logoLight.fileName,
           address: settingData[0]?.address,
           websiteSetting: settingData[0],
           senderName: customerPrimary.metaData[0].firstName,
           content: `We regret to inform you that your claim ID: ${checkClaim.unique_key} has been reviewed and, unfortunately, does not meet the criteria for approval. After careful assessment, the claim has been rejected due to the following reason:`,
           content1: `Reason for Rejection : ${data.reason}`,
           content2: `If you believe there has been an error or if you would like further clarification, please feel free to reach out to our support team at support@getcover.com. Our team is here to assist you with any questions you may have.`,
-          subject: `Claim Rejection Notice -Claim ID:  ${checkClaim.unique_key}`
-        }
+          subject: `Claim Rejection Notice -Claim ID:  ${checkClaim.unique_key}`,
+        };
         if (sendRejectionCustomerNotification.length > 0) {
-          mailing = await sgMail.send(emailConstant.sendClaimStatusNotification(sendRejectionCustomerNotification, ["noreply@getcover.com"], emailData))
-          maillogservice.createMailLogFunction(mailing, emailData, customerUsers, process.env.claim_status)
+          mailing = await sgMail.send(
+            emailConstant.sendClaimStatusNotification(
+              sendRejectionCustomerNotification,
+              ["noreply@getcover.com"],
+              emailData
+            )
+          );
+          maillogservice.createMailLogFunction(
+            mailing,
+            emailData,
+            customerUsers,
+            process.env.claim_status
+          );
         }
-        if (resellerPrimary) {// If reseller exist for claim
+        if (resellerPrimary) {
+          // If reseller exist for claim
           emailData = {
-            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            darkLogo:
+              process.env.API_ENDPOINT +
+              "uploads/logo/" +
+              settingData[0]?.logoDark.fileName,
+            lightLogo:
+              process.env.API_ENDPOINT +
+              "uploads/logo/" +
+              settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
             senderName: resellerPrimary?.metaData[0].firstName,
             content: `We regret to inform you that your claim ID: ${checkClaim.unique_key} has been reviewed and, unfortunately, does not meet the criteria for approval. After careful assessment, the claim has been rejected due to the following reason:`,
             content1: `Reason for Rejection : ${data.reason}`,
             content2: `If you believe there has been an error or if you would like further clarification, please feel free to reach out to our support team at support@getcover.com. Our team is here to assist you with any questions you may have.`,
-            subject: `Claim Rejection Notice -Claim ID:  ${checkClaim.unique_key}`
-          }
+            subject: `Claim Rejection Notice -Claim ID:  ${checkClaim.unique_key}`,
+          };
           if (sendRejectionResellerNotification.length > 0) {
-            mailing = await sgMail.send(emailConstant.sendClaimStatusNotification(sendRejectionResellerNotification, ["noreply@getcover.com"], emailData))
-            maillogservice.createMailLogFunction(mailing, emailData, resellerUsers, process.env.claim_status)
+            mailing = await sgMail.send(
+              emailConstant.sendClaimStatusNotification(
+                sendRejectionResellerNotification,
+                ["noreply@getcover.com"],
+                emailData
+              )
+            );
+            maillogservice.createMailLogFunction(
+              mailing,
+              emailData,
+              resellerUsers,
+              process.env.claim_status
+            );
           }
         }
 
         //Email to Servicer
-        const sendRejectionServicerNotification = servicerUsers.map(user => user.email);
+        const sendRejectionServicerNotification = servicerUsers.map(
+          (user) => user.email
+        );
         if (servicerPrimary) {
           emailData = {
-            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            darkLogo:
+              process.env.API_ENDPOINT +
+              "uploads/logo/" +
+              settingData[0]?.logoDark.fileName,
+            lightLogo:
+              process.env.API_ENDPOINT +
+              "uploads/logo/" +
+              settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
             senderName: `${checkServicer.name}`,
             content: `We would like to inform you that Claim ID - ${checkClaim.unique_key} has been rejected, and no further action is needed on your part for this claim. Please halt any ongoing repair work related to this claim immediately`,
             content1: `If you have any questions or require clarification, feel free to contact us`,
-            subject: "Claim Update - No Further Action Required"
-          }
+            subject: "Claim Update - No Further Action Required",
+          };
           if (sendRejectionServicerNotification.length > 0) {
-            mailing = await sgMail.send(emailConstant.sendClaimStatusNotification(sendRejectionServicerNotification, ["noreply@getcover.com"], emailData))
-            maillogservice.createMailLogFunction(mailing, emailData, servicerUsers, process.env.claim_status)
+            mailing = await sgMail.send(
+              emailConstant.sendClaimStatusNotification(
+                sendRejectionServicerNotification,
+                ["noreply@getcover.com"],
+                emailData
+              )
+            );
+            maillogservice.createMailLogFunction(
+              mailing,
+              emailData,
+              servicerUsers,
+              process.env.claim_status
+            );
           }
-
-
         }
         //Email to admin
-        const sendRejectionAdminNotification = adminUsers.map(user => user.email);
+        const sendRejectionAdminNotification = adminUsers.map(
+          (user) => user.email
+        );
         emailData = {
-          darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-          lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+          darkLogo:
+            process.env.API_ENDPOINT +
+            "uploads/logo/" +
+            settingData[0]?.logoDark.fileName,
+          lightLogo:
+            process.env.API_ENDPOINT +
+            "uploads/logo/" +
+            settingData[0]?.logoLight.fileName,
           address: settingData[0]?.address,
           websiteSetting: settingData[0],
           senderName: `Admin`,
           content: `This is to notify you that the claim rejection process for Claim ID - ${checkClaim.unique_key} has been completed successfully. The claim has been marked as rejected, and the customer has been notified with the reason provided`,
-          subject: "Action Notification – Claim Rejection Completed"
-        }
+          subject: "Action Notification – Claim Rejection Completed",
+        };
         if (sendRejectionAdminNotification.length > 0) {
-          mailing = await sgMail.send(emailConstant.sendClaimStatusNotification(sendRejectionAdminNotification, ["noreply@getcover.com"], emailData))
-          maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.claim_status)
+          mailing = await sgMail.send(
+            emailConstant.sendClaimStatusNotification(
+              sendRejectionAdminNotification,
+              ["noreply@getcover.com"],
+              emailData
+            )
+          );
+          maillogservice.createMailLogFunction(
+            mailing,
+            emailData,
+            adminUsers,
+            process.env.claim_status
+          );
         }
-
       }
-      if (data.claimStatus == 'completed') {
-        let updateClaimDate = await claimService.updateClaim(criteria, { claimDate: new Date() }, { new: true })
+      if (data.claimStatus == "completed") {
+        let updateClaimDate = await claimService.updateClaim(
+          criteria,
+          { claimDate: new Date() },
+          { new: true }
+        );
         //Email to dealer,customer,reseller
-        let sendCompletionDealerNotification = dealerUser.map(user => user.email);
-        let sendCompletionResellerNotification = resellerUsers.map(user => user.email);
-        let sendCompletionCustomerNotification = customerUsers.map(user => user.email);
+        let sendCompletionDealerNotification = dealerUser.map(
+          (user) => user.email
+        );
+        let sendCompletionResellerNotification = resellerUsers.map(
+          (user) => user.email
+        );
+        let sendCompletionCustomerNotification = customerUsers.map(
+          (user) => user.email
+        );
         let emailData = {
-          darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-          lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+          darkLogo:
+            process.env.API_ENDPOINT +
+            "uploads/logo/" +
+            settingData[0]?.logoDark.fileName,
+          lightLogo:
+            process.env.API_ENDPOINT +
+            "uploads/logo/" +
+            settingData[0]?.logoLight.fileName,
           address: settingData[0]?.address,
           websiteSetting: settingData[0],
           senderName: `${checkDealer.name}`,
           content: `We are pleased to inform you that your claim Claim ID: - ${checkClaim.unique_key} has been successfully completed. All necessary repairs or services associated with your claim have been finalized`,
           content1: `If you have any further questions or require additional support, please feel free to contact us at support@getcover.com.`,
-          content2: '',
-          subject: `Claim Completion Notification – Claim ID:  ${checkClaim.unique_key}`
-        }
+          content2: "",
+          subject: `Claim Completion Notification – Claim ID:  ${checkClaim.unique_key}`,
+        };
         let mailing;
         if (sendCompletionDealerNotification.length > 0) {
-          mailing = await sgMail.send(emailConstant.sendClaimStatusNotification(sendCompletionDealerNotification, ["noreply@getcover.com"], emailData))
-          maillogservice.createMailLogFunction(mailing, emailData, dealerUser, process.env.claim_status)
+          mailing = await sgMail.send(
+            emailConstant.sendClaimStatusNotification(
+              sendCompletionDealerNotification,
+              ["noreply@getcover.com"],
+              emailData
+            )
+          );
+          maillogservice.createMailLogFunction(
+            mailing,
+            emailData,
+            dealerUser,
+            process.env.claim_status
+          );
         }
         if (checkReseller) {
           // if reseller exist for claim
           emailData = {
-            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            darkLogo:
+              process.env.API_ENDPOINT +
+              "uploads/logo/" +
+              settingData[0]?.logoDark.fileName,
+            lightLogo:
+              process.env.API_ENDPOINT +
+              "uploads/logo/" +
+              settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
             senderName: `${checkReseller.name}`,
             content: `We are pleased to inform you that your claim Claim ID: - ${checkClaim.unique_key} has been successfully completed. All necessary repairs or services associated with your claim have been finalized`,
             content1: `If you have any further questions or require additional support, please feel free to contact us at support@getcover.com.`,
-            content2: '',
-            subject: `Claim Completion Notification – Claim ID:  ${checkClaim.unique_key}`
-          }
+            content2: "",
+            subject: `Claim Completion Notification – Claim ID:  ${checkClaim.unique_key}`,
+          };
           if (sendCompletionResellerNotification.length > 0) {
-            mailing = await sgMail.send(emailConstant.sendClaimStatusNotification(sendCompletionResellerNotification, ["noreply@getcover.com"], emailData))
-            maillogservice.createMailLogFunction(mailing, emailData, resellerUsers, process.env.claim_status)
+            mailing = await sgMail.send(
+              emailConstant.sendClaimStatusNotification(
+                sendCompletionResellerNotification,
+                ["noreply@getcover.com"],
+                emailData
+              )
+            );
+            maillogservice.createMailLogFunction(
+              mailing,
+              emailData,
+              resellerUsers,
+              process.env.claim_status
+            );
           }
         }
 
         emailData = {
-          darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-          lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+          darkLogo:
+            process.env.API_ENDPOINT +
+            "uploads/logo/" +
+            settingData[0]?.logoDark.fileName,
+          lightLogo:
+            process.env.API_ENDPOINT +
+            "uploads/logo/" +
+            settingData[0]?.logoLight.fileName,
           address: settingData[0]?.address,
           websiteSetting: settingData[0],
           senderName: `${checkCustomer.username}`,
           content: `We are pleased to inform you that your claim Claim ID: - ${checkClaim.unique_key} has been successfully completed. All necessary repairs or services associated with your claim have been finalized`,
           content1: `If you have any further questions or require additional support, please feel free to contact us at support@getcover.com.`,
-          content2: '',
-          subject: `Claim Completion Notification – Claim ID:  ${checkClaim.unique_key}`
-        }
+          content2: "",
+          subject: `Claim Completion Notification – Claim ID:  ${checkClaim.unique_key}`,
+        };
         if (sendCompletionCustomerNotification.length > 0) {
-          mailing = await sgMail.send(emailConstant.sendClaimStatusNotification(sendCompletionCustomerNotification, ["noreply@getcover.com"], emailData))
-          maillogservice.createMailLogFunction(mailing, emailData, customerUsers, process.env.claim_status)
+          mailing = await sgMail.send(
+            emailConstant.sendClaimStatusNotification(
+              sendCompletionCustomerNotification,
+              ["noreply@getcover.com"],
+              emailData
+            )
+          );
+          maillogservice.createMailLogFunction(
+            mailing,
+            emailData,
+            customerUsers,
+            process.env.claim_status
+          );
         }
 
         //Email to Servicer
         if (servicerPrimary) {
-          const sendServicerCompletionNotification = servicerUsers.map(user => user.email);
+          const sendServicerCompletionNotification = servicerUsers.map(
+            (user) => user.email
+          );
           emailData = {
-            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            darkLogo:
+              process.env.API_ENDPOINT +
+              "uploads/logo/" +
+              settingData[0]?.logoDark.fileName,
+            lightLogo:
+              process.env.API_ENDPOINT +
+              "uploads/logo/" +
+              settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
             senderName: `${checkServicer.name}`,
             content: `We are pleased to inform you that Claim ID ${checkClaim.unique_key} has been successfully completed. Thank you for your prompt and professional service in handling this claim. Your efforts have been invaluable in ensuring a smooth process for our customer.`,
             content1: `Should you have any questions or require additional information, please do not hesitate to reach out.`,
-            content2: '',
-            subject: "Claim Update – Service Completion Confirmed"
-          }
+            content2: "",
+            subject: "Claim Update – Service Completion Confirmed",
+          };
           if (sendServicerCompletionNotification.length > 0) {
-            mailing = await sgMail.send(emailConstant.sendClaimStatusNotification(sendServicerCompletionNotification, ["noreply@getcover.com"], emailData))
-            maillogservice.createMailLogFunction(mailing, emailData, servicerUsers, process.env.claim_status)
+            mailing = await sgMail.send(
+              emailConstant.sendClaimStatusNotification(
+                sendServicerCompletionNotification,
+                ["noreply@getcover.com"],
+                emailData
+              )
+            );
+            maillogservice.createMailLogFunction(
+              mailing,
+              emailData,
+              servicerUsers,
+              process.env.claim_status
+            );
           }
           // mailing = await sgMail.send(emailConstant.sendClaimStatusNotification(sendServicerCompletionNotification, ["noreply@getcover.com"], emailData))
-
         }
-        //Email to admin       
-        const sendAdminNotification = adminUsers.map(user => user.email);
+        //Email to admin
+        const sendAdminNotification = adminUsers.map((user) => user.email);
         emailData = {
-          darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-          lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+          darkLogo:
+            process.env.API_ENDPOINT +
+            "uploads/logo/" +
+            settingData[0]?.logoDark.fileName,
+          lightLogo:
+            process.env.API_ENDPOINT +
+            "uploads/logo/" +
+            settingData[0]?.logoLight.fileName,
           address: settingData[0]?.address,
           websiteSetting: settingData[0],
           senderName: "Admin",
           content: `This is to inform you that the completion process for Claim ID: ${checkClaim.unique_key} has been successfully carried out. All steps have been finalized, and the customer has been notified of the claim completion`,
-          content2: '',
-          content1: '',
-          subject: "Action Notification – Claim Completion Processed"
-        }
+          content2: "",
+          content1: "",
+          subject: "Action Notification – Claim Completion Processed",
+        };
         if (sendAdminNotification.length > 0) {
-          mailing = await sgMail.send(emailConstant.sendClaimStatusNotification(sendAdminNotification, ['noreply@getcover.com'], emailData))
-          maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.claim_status)
+          mailing = await sgMail.send(
+            emailConstant.sendClaimStatusNotification(
+              sendAdminNotification,
+              ["noreply@getcover.com"],
+              emailData
+            )
+          );
+          maillogservice.createMailLogFunction(
+            mailing,
+            emailData,
+            adminUsers,
+            process.env.claim_status
+          );
         }
-
       }
     }
 
     if (data.hasOwnProperty("claimType")) {
-      let claimType = await claimService.updateClaim(criteria, { claimType: data.claimType }, { new: true })
+      let claimType = await claimService.updateClaim(
+        criteria,
+        { claimType: data.claimType },
+        { new: true }
+      );
     }
-    // Keep history of status in mongodb 
-    let updateStatus = await claimService.updateClaim(criteria, { $push: status }, { new: true })
+    // Keep history of status in mongodb
+    let updateStatus = await claimService.updateClaim(
+      criteria,
+      { $push: status },
+      { new: true }
+    );
 
-    // Update every status 
-    let updateBodyStatus = await claimService.updateClaim(criteria, updateData, { new: true })
+    // Update every status
+    let updateBodyStatus = await claimService.updateClaim(
+      criteria,
+      updateData,
+      { new: true }
+    );
     if (!updateStatus) {
       //Save logs
       let logData = {
@@ -2298,22 +3272,21 @@ exports.editClaimStatus = async (req, res) => {
         body: data,
         response: {
           code: constant.errorCode,
-          message: 'Unable to update status!',
-          result: updateBodyStatus
-        }
-      }
+          message: "Unable to update status!",
+          result: updateBodyStatus,
+        },
+      };
 
-      await LOG(logData).save()
+      await LOG(logData).save();
       res.send({
         code: constant.errorCode,
-        message: 'Unable to update status!'
-      })
+        message: "Unable to update status!",
+      });
       return;
     }
 
-
     let baseDate = new Date(checkContract.coverageStartDate);
-    let newDateToCheck = new Date()
+    let newDateToCheck = new Date();
     const newDayOfMonth = newDateToCheck.getDate();
     const dayOfMonth = baseDate.getDate();
 
@@ -2324,11 +3297,19 @@ exports.editClaimStatus = async (req, res) => {
     // Create a new date with the current year, current month, and the day from baseDate
     let newDateWithSameDay = new Date(currentYear1, currentMonth1, dayOfMonth);
     if (Number(newDayOfMonth) > Number(dayOfMonth)) {
-      newDateWithSameDay = new Date(new Date(newDateWithSameDay).setMonth(newDateWithSameDay.getMonth() - 1));
+      newDateWithSameDay = new Date(
+        new Date(newDateWithSameDay).setMonth(newDateWithSameDay.getMonth() - 1)
+      );
     }
 
-    const monthlyEndDate = new Date(new Date(newDateWithSameDay).setMonth(newDateWithSameDay.getMonth() + 1)); // Ends on August 11, 2024
-    const yearlyEndDate = new Date(new Date(newDateWithSameDay).setFullYear(newDateWithSameDay.getFullYear() + 1)); // Ends on July 11, 2025
+    const monthlyEndDate = new Date(
+      new Date(newDateWithSameDay).setMonth(newDateWithSameDay.getMonth() + 1)
+    ); // Ends on August 11, 2024
+    const yearlyEndDate = new Date(
+      new Date(newDateWithSameDay).setFullYear(
+        newDateWithSameDay.getFullYear() + 1
+      )
+    ); // Ends on July 11, 2025
 
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0); // Start of today (00:00)
@@ -2339,8 +3320,8 @@ exports.editClaimStatus = async (req, res) => {
       {
         $match: {
           contractId: new mongoose.Types.ObjectId(checkClaim.contractId),
-          claimFile: "completed"
-        }
+          claimFile: "completed",
+        },
       },
       {
         $group: {
@@ -2350,100 +3331,162 @@ exports.editClaimStatus = async (req, res) => {
               $cond: [
                 {
                   $and: [
-                    { $gte: ['$createdAt', newDateWithSameDay] },
-                    { $lt: ['$createdAt', monthlyEndDate] }
-                  ]
+                    { $gte: ["$createdAt", newDateWithSameDay] },
+                    { $lt: ["$createdAt", monthlyEndDate] },
+                  ],
                 },
                 1,
-                0
-              ]
-            }
+                0,
+              ],
+            },
           },
           yearlyCount: {
             $sum: {
               $cond: [
                 {
                   $and: [
-                    { $gte: ['$createdAt', newDateWithSameDay] },
-                    { $lt: ['$createdAt', yearlyEndDate] }
-                  ]
+                    { $gte: ["$createdAt", newDateWithSameDay] },
+                    { $lt: ["$createdAt", yearlyEndDate] },
+                  ],
                 },
                 1,
-                0
-              ]
-            }
-          }
-        }
-      }
+                0,
+              ],
+            },
+          },
+        },
+      },
     ];
 
     let forCheckOnly;
 
     //Eligibility true when claim is completed and rejected
-    if (updateBodyStatus.claimFile == 'completed') {
+    if (updateBodyStatus.claimFile == "completed") {
       if (checkContract.isMaxClaimAmount) {
         if (checkContract.productValue > claimTotal[0]?.amount) {
-          const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
-          forCheckOnly = true
-        }
-        else if (checkContract.productValue < claimTotal[0]?.amount) {
-          const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: false }, { new: true })
-          forCheckOnly = false
+          const updateContract = await contractService.updateContract(
+            { _id: checkClaim.contractId },
+            { eligibilty: true },
+            { new: true }
+          );
+          forCheckOnly = true;
+        } else if (checkContract.productValue < claimTotal[0]?.amount) {
+          const updateContract = await contractService.updateContract(
+            { _id: checkClaim.contractId },
+            { eligibilty: false },
+            { new: true }
+          );
+          forCheckOnly = false;
         }
       } else {
-        const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
-        forCheckOnly = true
-
+        const updateContract = await contractService.updateContract(
+          { _id: checkClaim.contractId },
+          { eligibilty: true },
+          { new: true }
+        );
+        forCheckOnly = true;
       }
 
       //Amount reset of the claim in rejected claim
-      if (updateBodyStatus.claimFile == 'rejected') {
-        let updatePrice = await claimService.updateClaim(criteria, { totalAmount: 0, customerClaimAmount: 0, getCoverClaimAmount: 0, customerOverAmount: 0, getcoverOverAmount: 0 }, { new: true })
-        const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
-        forCheckOnly = true
+      if (updateBodyStatus.claimFile == "rejected") {
+        let updatePrice = await claimService.updateClaim(
+          criteria,
+          {
+            totalAmount: 0,
+            customerClaimAmount: 0,
+            getCoverClaimAmount: 0,
+            customerOverAmount: 0,
+            getcoverOverAmount: 0,
+          },
+          { new: true }
+        );
+        const updateContract = await contractService.updateContract(
+          { _id: checkClaim.contractId },
+          { eligibilty: true },
+          { new: true }
+        );
+        forCheckOnly = true;
       }
 
       if (forCheckOnly) {
-        let checkNoOfClaims = await claimService.getClaimWithAggregate(getNoOfClaimQuery)
+        let checkNoOfClaims = await claimService.getClaimWithAggregate(
+          getNoOfClaimQuery
+        );
         if (checkNoOfClaims.length == 0) {
-          checkNoOfClaims = [{
-            "monthlyCount": 0,
-            "yearlyCount": 0
-          }]
+          checkNoOfClaims = [
+            {
+              monthlyCount: 0,
+              yearlyCount: 0,
+            },
+          ];
         }
-        let checkThePeriod = checkContract.noOfClaim
-        let getTotalClaim = await claimService.getClaims({ contractId: checkClaim.contractId, claimFile: "completed" })
-        let noOfTotalClaims = getTotalClaim.length
+        let checkThePeriod = checkContract.noOfClaim;
+        let getTotalClaim = await claimService.getClaims({
+          contractId: checkClaim.contractId,
+          claimFile: "completed",
+        });
+        let noOfTotalClaims = getTotalClaim.length;
         if (checkThePeriod.value != -1) {
           if (checkThePeriod.period == "Monthly") {
-            let eligibility = checkNoOfClaims[0].monthlyCount >= checkThePeriod.value ? false : true
+            let eligibility =
+              checkNoOfClaims[0].monthlyCount >= checkThePeriod.value
+                ? false
+                : true;
             if (eligibility) {
               if (checkContract.noOfClaimPerPeriod != -1) {
-                eligibility = noOfTotalClaims >= checkContract.noOfClaimPerPeriod ? false : true
-
+                eligibility =
+                  noOfTotalClaims >= checkContract.noOfClaimPerPeriod
+                    ? false
+                    : true;
               }
             }
-            const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: eligibility }, { new: true })
+            const updateContract = await contractService.updateContract(
+              { _id: checkClaim.contractId },
+              { eligibilty: eligibility },
+              { new: true }
+            );
           } else {
-            let eligibility = checkNoOfClaims[0].yearlyCount >= checkThePeriod.value ? false : true
+            let eligibility =
+              checkNoOfClaims[0].yearlyCount >= checkThePeriod.value
+                ? false
+                : true;
 
             if (eligibility) {
               if (checkContract.noOfClaimPerPeriod != -1) {
-
-                eligibility = noOfTotalClaims >= checkContract.noOfClaimPerPeriod ? false : true
+                eligibility =
+                  noOfTotalClaims >= checkContract.noOfClaimPerPeriod
+                    ? false
+                    : true;
               }
             }
-            const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: eligibility }, { new: true })
+            const updateContract = await contractService.updateContract(
+              { _id: checkClaim.contractId },
+              { eligibilty: eligibility },
+              { new: true }
+            );
           }
         }
       }
     }
 
-
-    if (updateBodyStatus.claimFile == 'rejected') {
-      let updatePrice = await claimService.updateClaim(criteria, { totalAmount: 0, customerClaimAmount: 0, getCoverClaimAmount: 0, customerOverAmount: 0, getcoverOverAmount: 0 }, { new: true })
-      const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
-      forCheckOnly = true
+    if (updateBodyStatus.claimFile == "rejected") {
+      let updatePrice = await claimService.updateClaim(
+        criteria,
+        {
+          totalAmount: 0,
+          customerClaimAmount: 0,
+          getCoverClaimAmount: 0,
+          customerOverAmount: 0,
+          getcoverOverAmount: 0,
+        },
+        { new: true }
+      );
+      const updateContract = await contractService.updateContract(
+        { _id: checkClaim.contractId },
+        { eligibilty: true },
+        { new: true }
+      );
+      forCheckOnly = true;
     }
 
     //Save logs
@@ -2453,129 +3496,164 @@ exports.editClaimStatus = async (req, res) => {
       body: data,
       response: {
         code: constant.successCode,
-        result: updateBodyStatus
-      }
-    }
-    await LOG(logData).save()
+        result: updateBodyStatus,
+      },
+    };
+    await LOG(logData).save();
 
     res.send({
       code: constant.successCode,
-      message: 'Success!',
-      result: updateBodyStatus
-    })
-
+      message: "Success!",
+      result: updateBodyStatus,
+    });
   } catch (err) {
     //Save logs
     let logData = {
       userId: req.userId,
       endpoint: "claim/editClaimStatus catch",
-      body: req.body ? req.body : { "type": "Catch Error" },
+      body: req.body ? req.body : { type: "Catch Error" },
       response: {
         code: constant.errorCode,
         result: err.message,
-        stack: err.stack
-      }
-    }
-    await LOG(logData).save()
+        stack: err.stack,
+      },
+    };
+    await LOG(logData).save();
 
     res.send({
       code: constant.errorCode,
       message: err.message,
-      stack: err.stack
-    })
+      stack: err.stack,
+    });
   }
-}
+};
 
 //Edit servicer in claim Done
 exports.editServicer = async (req, res) => {
   try {
-    let data = req.body
-    let criteria = { _id: req.params.claimId }
+    let data = req.body;
+    let criteria = { _id: req.params.claimId };
     let settingData = await userService.getSetting({});
-    let checkClaim = await claimService.getClaimById(criteria)
-    let checkContract = await contractService.getContractById({ _id: checkClaim.contractId })
-    const checkOrder = await orderService.getOrder({ _id: checkContract.orderId }, { isDeleted: false })
-    const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId })
-    const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
-    let checkServicer
+    let checkClaim = await claimService.getClaimById(criteria);
+    let checkContract = await contractService.getContractById({
+      _id: checkClaim.contractId,
+    });
+    const checkOrder = await orderService.getOrder(
+      { _id: checkContract.orderId },
+      { isDeleted: false }
+    );
+    const checkCustomer = await customerService.getCustomerById({
+      _id: checkOrder.customerId,
+    });
+    const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`;
+    let checkServicer;
     if (!checkClaim) {
       res.send({
         code: constant.errorCode,
-        message: "Invalid claim ID"
-      })
-      return
+        message: "Invalid claim ID",
+      });
+      return;
     }
     if (req.body.servicerId == "") {
-      req.body.servicerId = null
+      req.body.servicerId = null;
     }
-    let isPureServicer = ''
+    let isPureServicer = "";
     if (req.body.servicerId != "") {
-      criteria = { _id: req.body.servicerId }
+      criteria = { _id: req.body.servicerId };
       checkServicer = await servicerService.getServiceProviderById({
         $or: [
           { _id: req.body.servicerId },
           { dealerId: req.body.servicerId },
           { resellerId: req.body.servicerId },
-        ]
-      })
-      isPureServicer = checkServicer.dealerId != null ? false : checkServicer.resellerId == null ? true : false
+        ],
+      });
+      isPureServicer =
+        checkServicer.dealerId != null
+          ? false
+          : checkServicer.resellerId == null
+          ? true
+          : false;
 
       if (!checkServicer) {
         res.send({
           code: constant.errorCode,
-          message: "Servicer not found!"
-        })
-        return
+          message: "Servicer not found!",
+        });
+        return;
       }
 
       //check servicer price book and category exist in the database
-      let filterPriceBook = checkOrder.productsArray.filter(product => product._id.toString() === checkContract.orderProductId.toString());
-      let priceBookData = {}
-      let checkServicerData = await servicerService.servicerPriceBook({ servicerId: checkServicer._id }, {})
+      let filterPriceBook = checkOrder.productsArray.filter(
+        (product) =>
+          product._id.toString() === checkContract.orderProductId.toString()
+      );
+      let priceBookData = {};
+      let checkServicerData = await servicerService.servicerPriceBook(
+        { servicerId: checkServicer._id },
+        {}
+      );
       if (!checkServicerData) {
-        priceBookData.servicerId = checkServicer._id
+        priceBookData.servicerId = checkServicer._id;
         priceBookData.categoryArray = [
           {
-            categoryId: filterPriceBook[0]?.categoryId
-          }
-        ]
+            categoryId: filterPriceBook[0]?.categoryId,
+          },
+        ];
         priceBookData.priceBookArray = [
           {
-            priceBookId: filterPriceBook[0]?.priceBookId
-          }
-        ]
+            priceBookId: filterPriceBook[0]?.priceBookId,
+          },
+        ];
 
-        const saveData = await servicerService.saveServicerPriceBook(priceBookData)
-      }
-      else {
+        const saveData = await servicerService.saveServicerPriceBook(
+          priceBookData
+        );
+      } else {
         let checkCategoryQuery = {
           categoryArray: {
-            $elemMatch: { categoryId: filterPriceBook[0]?.categoryId }
+            $elemMatch: { categoryId: filterPriceBook[0]?.categoryId },
           },
-          servicerId: checkServicer._id
-        }
-        let checkCategoryData = await servicerService.servicerPriceBook(checkCategoryQuery, {})
+          servicerId: checkServicer._id,
+        };
+        let checkCategoryData = await servicerService.servicerPriceBook(
+          checkCategoryQuery,
+          {}
+        );
         if (!checkCategoryData) {
-          checkServicerData.categoryArray.push({ categoryId: filterPriceBook[0]?.categoryId })
+          checkServicerData.categoryArray.push({
+            categoryId: filterPriceBook[0]?.categoryId,
+          });
         }
         let checkPriceBookQuery = {
           priceBookArray: {
-            $elemMatch: { priceBookId: filterPriceBook[0]?.priceBookId }
+            $elemMatch: { priceBookId: filterPriceBook[0]?.priceBookId },
           },
-          servicerId: checkServicer._id
-        }
-        const checkPriceBookData = await servicerService.servicerPriceBook(checkPriceBookQuery, {})
+          servicerId: checkServicer._id,
+        };
+        const checkPriceBookData = await servicerService.servicerPriceBook(
+          checkPriceBookQuery,
+          {}
+        );
         if (!checkPriceBookData) {
-          checkServicerData.priceBookArray.push({ priceBookId: filterPriceBook[0]?.priceBookId })
+          checkServicerData.priceBookArray.push({
+            priceBookId: filterPriceBook[0]?.priceBookId,
+          });
         }
-        await servicerService.updateServicerPriceBook({ servicerId: checkServicer._id }, checkServicerData, { new: true })
+        await servicerService.updateServicerPriceBook(
+          { servicerId: checkServicer._id },
+          checkServicerData,
+          { new: true }
+        );
       }
 
-      data.servicerId = checkServicer._id
+      data.servicerId = checkServicer._id;
     }
 
-
-    let updateServicer = await claimService.updateClaim({ _id: req.params.claimId }, data, { new: true })
+    let updateServicer = await claimService.updateClaim(
+      { _id: req.params.claimId },
+      data,
+      { new: true }
+    );
     if (!updateServicer) {
       //Save Logs
       let logData = {
@@ -2584,17 +3662,16 @@ exports.editServicer = async (req, res) => {
         body: data,
         response: {
           code: constant.errorCode,
-          message: 'Unable to update servicer!'
-        }
-      }
-      await LOG(logData).save()
+          message: "Unable to update servicer!",
+        },
+      };
+      await LOG(logData).save();
       res.send({
         code: constant.errorCode,
-        message: 'Unable to update servicer!'
-      })
+        message: "Unable to update servicer!",
+      });
       return;
     }
-
 
     //Save Logs
     let logData = {
@@ -2604,15 +3681,17 @@ exports.editServicer = async (req, res) => {
       response: {
         code: constant.successCode,
         message: updateServicer,
-      }
-    }
+      },
+    };
 
-    await LOG(logData).save()
+    await LOG(logData).save();
 
-    //send notification to admin and dealer 
-    let notificationArray = []
-    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
-    const site_url = `${process.env.SITE_URL}`
+    //send notification to admin and dealer
+    let notificationArray = [];
+    const checkLoginUser = await supportingFunction.getPrimaryUser({
+      _id: req.teammateId,
+    });
+    const site_url = `${process.env.SITE_URL}`;
     const adminServicerUpdateQuery = {
       metaData: {
         $elemMatch: {
@@ -2621,28 +3700,40 @@ exports.editServicer = async (req, res) => {
             { status: true },
             {
               $or: [
-                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-              ]
+                {
+                  roleId: new mongoose.Types.ObjectId(
+                    "656f0550d0d6e08fc82379dc"
+                  ),
+                },
+              ],
             },
-
-          ]
-        }
+          ],
+        },
       },
-    }
-    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminServicerUpdateQuery, { email: 1, metaData: 1 })
-    const IDs = adminUsers.map(user => user._id)
+    };
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(
+      adminServicerUpdateQuery,
+      { email: 1, metaData: 1 }
+    );
+    const IDs = adminUsers.map((user) => user._id);
     if (adminUsers.length > 0) {
       let notificationAdmin = {
         title: "Servicer updated Successfully",
-        description: `Servicer for Claim # ${checkClaim.unique_key} has been updated in the system by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        description: `Servicer for Claim # ${
+          checkClaim.unique_key
+        } has been updated in the system by ${
+          checkLoginUser.metaData[0]?.firstName +
+          " " +
+          checkLoginUser.metaData[0]?.lastName
+        }.`,
         userId: req.teammateId,
         contentId: checkClaim._id,
-        flag: 'claim',
+        flag: "claim",
         notificationFor: IDs,
         endPoint: site_url + "claim-listing/" + checkClaim.unique_key,
         redirectionId: "claim-listing/" + checkClaim.unique_key,
       };
-      notificationArray.push(notificationAdmin)
+      notificationArray.push(notificationAdmin);
     }
 
     //Dealer Notification
@@ -2653,29 +3744,36 @@ exports.editServicer = async (req, res) => {
             { "claimNotification.servicerUpdate": true },
             { status: true },
             {
-              $or: [
-                { metaId: checkOrder.dealerId },
-              ]
+              $or: [{ metaId: checkOrder.dealerId }],
             },
-          ]
-        }
+          ],
+        },
       },
-    }
+    };
 
-    let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerAddClaimQuery, { email: 1, metaData: 1 })
-    const dealerIds = dealerUsers.map(user => user._id)
+    let dealerUsers = await supportingFunction.getNotificationEligibleUser(
+      dealerAddClaimQuery,
+      { email: 1, metaData: 1 }
+    );
+    const dealerIds = dealerUsers.map((user) => user._id);
     if (dealerUsers.length > 0) {
       let notificationDealer = {
         title: "Servicer updated Successfully",
-        description: `Servicer for Claim # ${checkClaim.unique_key} has been updated in the system by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        description: `Servicer for Claim # ${
+          checkClaim.unique_key
+        } has been updated in the system by ${
+          checkLoginUser.metaData[0]?.firstName +
+          " " +
+          checkLoginUser.metaData[0]?.lastName
+        }.`,
         userId: req.teammateId,
         contentId: checkClaim._id,
-        flag: 'claim',
+        flag: "claim",
         notificationFor: dealerIds,
         endPoint: site_url + "claim-listing/" + checkClaim.unique_key,
         redirectionId: "claim-listing/" + checkClaim.unique_key,
       };
-      notificationArray.push(notificationDealer)
+      notificationArray.push(notificationDealer);
     }
 
     //Reseller Notification
@@ -2686,29 +3784,36 @@ exports.editServicer = async (req, res) => {
             { "claimNotification.servicerUpdate": true },
             { status: true },
             {
-              $or: [
-                { metaId: checkOrder.resellerId },
-              ]
+              $or: [{ metaId: checkOrder.resellerId }],
             },
-          ]
-        }
+          ],
+        },
       },
-    }
-    let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerAddClaimQuery, { email: 1, metaData: 1 })
-    const resellerIds = resellerUsers.map(user => user._id)
+    };
+    let resellerUsers = await supportingFunction.getNotificationEligibleUser(
+      resellerAddClaimQuery,
+      { email: 1, metaData: 1 }
+    );
+    const resellerIds = resellerUsers.map((user) => user._id);
 
     if (resellerUsers.length > 0) {
       let notificationReseller = {
         title: "Servicer updated Successfully",
-        description: `Servicer for Claim # ${checkClaim.unique_key} has been updated in the system by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        description: `Servicer for Claim # ${
+          checkClaim.unique_key
+        } has been updated in the system by ${
+          checkLoginUser.metaData[0]?.firstName +
+          " " +
+          checkLoginUser.metaData[0]?.lastName
+        }.`,
         userId: req.teammateId,
         contentId: checkClaim._id,
-        flag: 'claim',
+        flag: "claim",
         notificationFor: resellerIds,
         endPoint: site_url + "claim-listing/" + checkClaim.unique_key,
         redirectionId: "claim-listing/" + checkClaim.unique_key,
       };
-      notificationArray.push(notificationReseller)
+      notificationArray.push(notificationReseller);
     }
 
     //Customer Notification
@@ -2719,29 +3824,35 @@ exports.editServicer = async (req, res) => {
             { "claimNotification.servicerUpdate": true },
             { status: true },
             {
-              $or: [
-                { metaId: checkOrder.customerId },
-
-              ]
+              $or: [{ metaId: checkOrder.customerId }],
             },
-          ]
-        }
+          ],
+        },
       },
-    }
-    let customerUsers = await supportingFunction.getNotificationEligibleUser(customerAddClaimQuery, { email: 1, metaData: 1 })
-    const customerIds = customerUsers.map(user => user._id)
+    };
+    let customerUsers = await supportingFunction.getNotificationEligibleUser(
+      customerAddClaimQuery,
+      { email: 1, metaData: 1 }
+    );
+    const customerIds = customerUsers.map((user) => user._id);
     if (customerUsers.length > 0) {
       let notificationCustomer = {
         title: "Servicer updated Successfully",
-        description: `Servicer for Claim # ${checkClaim.unique_key} has been updated in the system by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}`,
+        description: `Servicer for Claim # ${
+          checkClaim.unique_key
+        } has been updated in the system by ${
+          checkLoginUser.metaData[0]?.firstName +
+          " " +
+          checkLoginUser.metaData[0]?.lastName
+        }`,
         userId: req.teammateId,
         contentId: checkClaim._id,
-        flag: 'claim',
+        flag: "claim",
         notificationFor: customerIds,
         endPoint: site_url + "claim-listing/" + checkClaim.unique_key,
         redirectionId: "claim-listing/" + checkClaim.unique_key,
       };
-      notificationArray.push(notificationCustomer)
+      notificationArray.push(notificationCustomer);
     }
 
     //Servicer Notification
@@ -2756,31 +3867,45 @@ exports.editServicer = async (req, res) => {
                 { metaId: checkServicer?._id },
                 { metaId: checkServicer?.dealerId },
                 { metaId: checkServicer?.resellerId },
-              ]
+              ],
             },
-          ]
-        }
+          ],
+        },
       },
-    }
-    let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerAddClaimQuery, { email: 1, metaData: 1 })
-    const servicerIds = servicerUsers.map(user => user._id)
+    };
+    let servicerUsers = await supportingFunction.getNotificationEligibleUser(
+      servicerAddClaimQuery,
+      { email: 1, metaData: 1 }
+    );
+    const servicerIds = servicerUsers.map((user) => user._id);
     if (servicerUsers.length > 0) {
       let notificationServicer = {
         title: "Servicer updated Successfully",
-        description: `You have been assigned a new Claim # ${checkClaim.unique_key} by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName}.`,
+        description: `You have been assigned a new Claim # ${
+          checkClaim.unique_key
+        } by ${
+          checkLoginUser.metaData[0]?.firstName +
+          " " +
+          checkLoginUser.metaData[0]?.lastName
+        }.`,
         userId: req.teammateId,
         contentId: checkClaim._id,
-        flag: 'claim',
+        flag: "claim",
         notificationFor: servicerIds,
         endPoint: site_url + "claim-listing/" + checkClaim.unique_key,
         redirectionId: "claim-listing/" + checkClaim.unique_key,
       };
-      notificationArray.push(notificationServicer)
+      notificationArray.push(notificationServicer);
     }
-    let getPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: req.body.servicerId, isPrimary: true } } })
+    let getPrimary = await supportingFunction.getPrimaryUser({
+      metaData: {
+        $elemMatch: { metaId: req.body.servicerId, isPrimary: true },
+      },
+    });
 
-
-    let createNotification = await userService.saveNotificationBulk(notificationArray);
+    let createNotification = await userService.saveNotificationBulk(
+      notificationArray
+    );
 
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
@@ -2793,26 +3918,45 @@ exports.editServicer = async (req, res) => {
             { status: true },
             {
               $or: [
-                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                {
+                  roleId: new mongoose.Types.ObjectId(
+                    "656f0550d0d6e08fc82379dc"
+                  ),
+                },
                 { metaId: checkServicer?._id },
                 { metaId: checkServicer?.dealerId },
                 { metaId: checkServicer?.resellerId },
-              ]
+              ],
             },
-
-          ]
-        }
+          ],
+        },
       },
-    }
-    let servicerCaseUser = await supportingFunction.getNotificationEligibleUser(servicerCaseNotification, { email: 1, metaData: 1 })
-    let adminUser = servicerCaseUser.filter(user => user.metaData[0]?.roleId.toString() === process.env.super_admin.toString());
-    let servicerUser = servicerCaseUser.filter(user => user.metaData[0]?.roleId.toString() === process.env.servicer.toString());
-    const adminEmail = adminUser.map(user => user.email)
-    const servicerEmail = servicerUser.map(user => user.email)
+    };
+    let servicerCaseUser = await supportingFunction.getNotificationEligibleUser(
+      servicerCaseNotification,
+      { email: 1, metaData: 1 }
+    );
+    let adminUser = servicerCaseUser.filter(
+      (user) =>
+        user.metaData[0]?.roleId.toString() ===
+        process.env.super_admin.toString()
+    );
+    let servicerUser = servicerCaseUser.filter(
+      (user) =>
+        user.metaData[0]?.roleId.toString() === process.env.servicer.toString()
+    );
+    const adminEmail = adminUser.map((user) => user.email);
+    const servicerEmail = servicerUser.map((user) => user.email);
 
     let emailData = {
-      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      darkLogo:
+        process.env.API_ENDPOINT +
+        "uploads/logo/" +
+        settingData[0]?.logoDark.fileName,
+      lightLogo:
+        process.env.API_ENDPOINT +
+        "uploads/logo/" +
+        settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
       senderName: getPrimary ? getPrimary.metaData[0].firstName : "",
@@ -2821,89 +3965,114 @@ exports.editServicer = async (req, res) => {
       manufacturer: checkContract.manufacture,
       subject: `New Device Received for Repair - ID: ${checkClaim.unique_key}`,
       redirectId: base_url,
-      content: `We want to inform you that ${checkCustomer.username} has requested for the repair of a device detailed below:`
-
-    }
-    emailData.senderName = "Admin"
+      content: `We want to inform you that ${checkCustomer.username} has requested for the repair of a device detailed below:`,
+    };
+    emailData.senderName = "Admin";
     let mailing;
     if (adminEmail.length > 0) {
-      mailing = await sgMail.send(emailConstant.sendServicerClaimNotification(adminEmail, ["noreply@getcover.com"], emailData))
-      maillogservice.createMailLogFunction(mailing, emailData, adminUser, process.env.servicer_claim_notification)
+      mailing = await sgMail.send(
+        emailConstant.sendServicerClaimNotification(
+          adminEmail,
+          ["noreply@getcover.com"],
+          emailData
+        )
+      );
+      maillogservice.createMailLogFunction(
+        mailing,
+        emailData,
+        adminUser,
+        process.env.servicer_claim_notification
+      );
     }
-    emailData.senderName = getPrimary ? getPrimary.metaData[0].firstName : ""
+    emailData.senderName = getPrimary ? getPrimary.metaData[0].firstName : "";
     if (servicerEmail.length > 0) {
-      mailing = await sgMail.send(emailConstant.sendServicerClaimNotification(servicerEmail, ["noreply@getcover.com"], emailData))
-      maillogservice.createMailLogFunction(mailing, emailData, servicerUser, process.env.servicer_claim_notification)
+      mailing = await sgMail.send(
+        emailConstant.sendServicerClaimNotification(
+          servicerEmail,
+          ["noreply@getcover.com"],
+          emailData
+        )
+      );
+      maillogservice.createMailLogFunction(
+        mailing,
+        emailData,
+        servicerUser,
+        process.env.servicer_claim_notification
+      );
     }
     res.send({
       code: constant.successCode,
-      message: 'Success!',
+      message: "Success!",
       result: updateServicer,
-      isPureServicer: isPureServicer
-    })
-
-  }
-  catch (err) {
+      isPureServicer: isPureServicer,
+    });
+  } catch (err) {
     //Save logs
     let logData = {
       userId: req.userId,
       endpoint: "editServicer catch",
-      body: req.body ? req.body : { "type": "Catch Error" },
+      body: req.body ? req.body : { type: "Catch Error" },
       response: {
         code: constant.errorCode,
-        result: err.message
-      }
-    }
-    await LOG(logData).save()
+        result: err.message,
+      },
+    };
+    await LOG(logData).save();
     res.send({
       code: constant.errorCode,
-      message: err.message
-    })
+      message: err.message,
+    });
   }
-
-}
+};
 
 // Save bulk claim(21 oct 24)
 
 //Save bulk claim
 
-
 exports.saveBulkClaim = async (req, res) => {
   uploadP(req, res, async (err) => {
     try {
-      let data = req.body
+      let data = req.body;
       let headerLength;
-      const bucketReadUrl = { Bucket: process.env.bucket_name, Key: req.file.key };
+      const bucketReadUrl = {
+        Bucket: process.env.bucket_name,
+        Key: req.file.key,
+      };
       // Await the getObjectFromS3 function to complete
       const result = await getObjectFromS3(bucketReadUrl);
 
       const emailField = req.body.email;
 
-      const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
-
+      const checkLoginUser = await supportingFunction.getPrimaryUser({
+        _id: req.teammateId,
+      });
 
       // // Parse the email field
       const emailArray = JSON.parse(emailField);
 
       //Get all emails of the login user
       let length = [8, 5];
-      let match = {}
-      if (req.role == 'Dealer') {
+      let match = {};
+      if (req.role == "Dealer") {
         length = [4, 7];
-        match = { "order.dealer._id": new mongoose.Types.ObjectId(req.userId) }
+        match = { "order.dealer._id": new mongoose.Types.ObjectId(req.userId) };
       }
 
-      if (req.role == 'Reseller') {
+      if (req.role == "Reseller") {
         length = [4, 7];
-        match = { "order.reseller._id": new mongoose.Types.ObjectId(req.userId) }
+        match = {
+          "order.reseller._id": new mongoose.Types.ObjectId(req.userId),
+        };
       }
 
-      if (req.role == 'Customer') {
+      if (req.role == "Customer") {
         length = [4, 7];
-        match = { "order.customers._id": new mongoose.Types.ObjectId(req.userId) }
+        match = {
+          "order.customers._id": new mongoose.Types.ObjectId(req.userId),
+        };
       }
 
-      headerLength = result.headers
+      headerLength = result.headers;
 
       // if (!length.includes(headerLength.length)) {
       //   res.send({
@@ -2917,11 +4086,11 @@ exports.saveBulkClaim = async (req, res) => {
 
       let totalDataComing = totalDataComing1.map((item, i) => {
         const keys = Object.keys(item);
-        // Check if the "servicerName" header exists    
+        // Check if the "servicerName" header exists
         if (req.role == "Super Admin") {
           if (keys.length >= 8) {
-            let coverageType = item[keys[4]]
-            let dateLoss1 = item[keys[2]]
+            let coverageType = item[keys[4]];
+            let dateLoss1 = item[keys[2]];
             return {
               contractId: item[keys[0]],
               servicerName: item[keys[1]],
@@ -2932,95 +4101,91 @@ exports.saveBulkClaim = async (req, res) => {
               userEmail: item[keys[6]],
               shippingTo: item[keys[7]],
               duplicate: false,
-              exit: false
+              exit: false,
             };
           }
           if (keys.length >= 5) {
-
-            let coverageType = item[keys[4]]
-            let dateLoss1 = item[keys[2]]
+            let coverageType = item[keys[4]];
+            let dateLoss1 = item[keys[2]];
             return {
               contractId: item[keys[0]],
               servicerName: item[keys[1]],
               lossDate: dateLoss1.toString(),
               diagnosis: item[keys[3]],
               coverageType: coverageType,
-              issue: '',
-              userEmail: '',
-              shippingTo: '',
+              issue: "",
+              userEmail: "",
+              shippingTo: "",
               duplicate: false,
-              exit: false
+              exit: false,
             };
-          }
-          else {
+          } else {
             res.send({
               code: constant.errorCode,
-              message: "Invalid File format!"
-            })
-            return
+              message: "Invalid File format!",
+            });
+            return;
           }
-        }
-        else {
+        } else {
           if (keys.length >= 7) {
-
-            let coverageType = item[keys[3]]
-            let dateLoss2 = item[keys[1]]
+            let coverageType = item[keys[3]];
+            let dateLoss2 = item[keys[1]];
             // If "servicerName" does not exist, shift the second item to "lossDate"
             return {
               contractId: item[keys[0]],
-              servicerName: '',
+              servicerName: "",
               lossDate: dateLoss2.toString(),
-              diagnosis: item[keys[2]],  // Assuming diagnosis is now at index 2
+              diagnosis: item[keys[2]], // Assuming diagnosis is now at index 2
               coverageType: coverageType,
               issue: item[keys[4]],
               userEmail: item[keys[5]],
               shippingTo: item[keys[6]],
               duplicate: false,
-              exit: false
+              exit: false,
             };
           }
           if (keys.length >= 4) {
-
-            let coverageType = item[keys[3]]
-            let dateLoss2 = item[keys[1]]
+            let coverageType = item[keys[3]];
+            let dateLoss2 = item[keys[1]];
             // If "servicerName" does not exist, shift the second item to "lossDate"
             return {
               contractId: item[keys[0]],
-              servicerName: '',
+              servicerName: "",
               lossDate: dateLoss2.toString(),
-              diagnosis: item[keys[2]],  // Assuming diagnosis is now at index 2
+              diagnosis: item[keys[2]], // Assuming diagnosis is now at index 2
               coverageType: coverageType,
-              issue: '',
-              userEmail: '',
-              shippingTo: '',
+              issue: "",
+              userEmail: "",
+              shippingTo: "",
               duplicate: false,
-              exit: false
+              exit: false,
             };
-          }
-          else {
+          } else {
             res.send({
               code: constant.errorCode,
-              message: "Invalid File format!"
-            })
-            return
+              message: "Invalid File format!",
+            });
+            return;
           }
-
         }
       });
 
       if (totalDataComing.length === 0) {
         res.send({
           code: constant.errorCode,
-          message: "Invalid file!"
+          message: "Invalid file!",
         });
         return;
       }
 
       // Assign servicer when servicer is empty in the list
       for (let u = 0; u < totalDataComing.length; u++) {
-        let objectToCheck = totalDataComing[u]
+        let objectToCheck = totalDataComing[u];
         if (objectToCheck) {
-          if (objectToCheck.servicerName == '' || objectToCheck.servicerName == null) {
+          if (
+            objectToCheck.servicerName == "" ||
+            objectToCheck.servicerName == null
+          ) {
             let getContractDetail = await contractService.getContractById({
               $and: [
                 {
@@ -3028,149 +4193,154 @@ exports.saveBulkClaim = async (req, res) => {
                     { unique_key: objectToCheck.contractId },
                     { serial: objectToCheck.contractId },
                   ],
-
                 },
-                { eligibilty: true }
+                { eligibilty: true },
               ],
-
             });
-            let getOrderDetail = await orderService.getOrder({ _id: getContractDetail?.orderId })
+            let getOrderDetail = await orderService.getOrder({
+              _id: getContractDetail?.orderId,
+            });
             if (getOrderDetail?.servicerId != null) {
               let getServiceData = await servicerService.getServicerByName({
                 $or: [
                   { _id: getOrderDetail.servicerId },
                   { dealerId: getOrderDetail.servicerId },
                   { resellerId: getOrderDetail.servicerId },
-                ]
-              })
-              totalDataComing[u].servicerName = getServiceData.name
+                ],
+              });
+              totalDataComing[u].servicerName = getServiceData.name;
             }
           }
         }
-
-
       }
       //Trim the space from the sheet data
       totalDataComing = totalDataComing.map((item, i) => {
         if (item.hasOwnProperty("servicerName")) {
           return {
-            contractId: item.contractId?.toString().replace(/\s+/g, ' ').trim(),
-            servicerName: item.servicerName?.toString().replace(/\s+/g, ' ').trim(),
-            coverageType: item.coverageType?.toString().replace(/\s+/g, ' ').trim(),
-            lossDate: item.lossDate?.toString().replace(/\s+/g, ' ').trim(),
-            diagnosis: item.diagnosis?.toString().replace(/\s+/g, ' ').trim(),
-            issue: item.issue?.toString().replace(/\s+/g, ' ').trim(),
-            userEmail: item.userEmail?.toString().replace(/\s+/g, ' ').trim(),
-            shippingTo: item.shippingTo?.toString().replace(/\s+/g, ' ').trim(),
+            contractId: item.contractId?.toString().replace(/\s+/g, " ").trim(),
+            servicerName: item.servicerName
+              ?.toString()
+              .replace(/\s+/g, " ")
+              .trim(),
+            coverageType: item.coverageType
+              ?.toString()
+              .replace(/\s+/g, " ")
+              .trim(),
+            lossDate: item.lossDate?.toString().replace(/\s+/g, " ").trim(),
+            diagnosis: item.diagnosis?.toString().replace(/\s+/g, " ").trim(),
+            issue: item.issue?.toString().replace(/\s+/g, " ").trim(),
+            userEmail: item.userEmail?.toString().replace(/\s+/g, " ").trim(),
+            shippingTo: item.shippingTo?.toString().replace(/\s+/g, " ").trim(),
             duplicate: false,
-            exit: false
+            exit: false,
           };
-        }
-        else {
+        } else {
           return {
-            contractId: item.contractId?.toString().replace(/\s+/g, ' ').trim(),
-            lossDate: item.lossDate?.toString().replace(/\s+/g, ' ').trim(),
-            servicerName: item.servicerName?.toString().replace(/\s+/g, ' ').trim(),
-            coverageType: item.coverageType?.toString().replace(/\s+/g, ' ').trim(),
-            diagnosis: item.diagnosis?.toString().replace(/\s+/g, ' ').trim(),
-            issue: item.issue?.toString().replace(/\s+/g, ' ').trim(),
-            userEmail: item.userEmail?.toString().replace(/\s+/g, ' ').trim(),
-            shippingTo: item.shippingTo?.toString().replace(/\s+/g, ' ').trim(),
+            contractId: item.contractId?.toString().replace(/\s+/g, " ").trim(),
+            lossDate: item.lossDate?.toString().replace(/\s+/g, " ").trim(),
+            servicerName: item.servicerName
+              ?.toString()
+              .replace(/\s+/g, " ")
+              .trim(),
+            coverageType: item.coverageType
+              ?.toString()
+              .replace(/\s+/g, " ")
+              .trim(),
+            diagnosis: item.diagnosis?.toString().replace(/\s+/g, " ").trim(),
+            issue: item.issue?.toString().replace(/\s+/g, " ").trim(),
+            userEmail: item.userEmail?.toString().replace(/\s+/g, " ").trim(),
+            shippingTo: item.shippingTo?.toString().replace(/\s+/g, " ").trim(),
             duplicate: false,
-            exit: false
+            exit: false,
           };
         }
-
       });
 
       //check sheet data is not empty for specific field
       let cache = {};
-      totalDataComing.forEach(data => {
+      totalDataComing.forEach((data) => {
         if (!data.contractId || data.contractId == "") {
-          data.status = "Serial number/Asset ID/Contract number cannot be empty"
-          data.exit = true
+          data.status =
+            "Serial number/Asset ID/Contract number cannot be empty";
+          data.exit = true;
         }
         if (!data.lossDate || data.lossDate == "") {
-          data.status = "Loss date cannot be empty"
-          data.exit = true
+          data.status = "Loss date cannot be empty";
+          data.exit = true;
         }
 
         if (!moment(data.lossDate).isValid()) {
-          data.status = "Date is not valid format"
-          data.exit = true
+          data.status = "Date is not valid format";
+          data.exit = true;
         }
 
         if (new Date(data.lossDate) > new Date()) {
-          data.status = "Date can not greater than today"
-          data.exit = true
+          data.status = "Date can not greater than today";
+          data.exit = true;
         }
-        data.lossDate = data.lossDate
+        data.lossDate = data.lossDate;
         if (!data.diagnosis || data.diagnosis == "") {
-          data.status = "Diagnosis can not be empty"
-          data.exit = true
+          data.status = "Diagnosis can not be empty";
+          data.exit = true;
         }
-
-      })
+      });
 
       //check duplicasy of the contract id
       totalDataComing.forEach((data, i) => {
         if (!data.exit) {
           if (cache[data.contractId?.toLowerCase()]) {
-            data.status = "Duplicate contract id/serial number"
+            data.status = "Duplicate contract id/serial number";
             data.exit = true;
           } else {
             cache[data.contractId?.toLowerCase()] = true;
           }
         }
-      })
+      });
 
       //Check contract is exist or not using contract id
-      const contractArrayPromise = totalDataComing.map(item => {
-        if (!item.exit) return contractService.getContractById({
-          $and: [
-            {
-              $or: [
-                { unique_key: item.contractId },
-                { serial: item.contractId },
-              ],
-            },
-            { eligibilty: true }
-          ],
-
-        });
+      const contractArrayPromise = totalDataComing.map((item) => {
+        if (!item.exit)
+          return contractService.getContractById({
+            $and: [
+              {
+                $or: [
+                  { unique_key: item.contractId },
+                  { serial: item.contractId },
+                ],
+              },
+              { eligibilty: true },
+            ],
+          });
         else {
           return null;
         }
-      })
+      });
 
       // get contract with dealer,reseller, servicer
       const contractArray = await Promise.all(contractArrayPromise);
 
-
       let servicerArray;
       //Check servicer is exist or not using contract id
       if (req.role == "Super Admin") {
-        const servicerArrayPromise = totalDataComing.map(item => {
-          if (!item.exit && item.servicerName != '') {
+        const servicerArrayPromise = totalDataComing.map((item) => {
+          if (!item.exit && item.servicerName != "") {
             const thename = item.servicerName;
             return servicerService.getServiceProviderById({
-              "name":
-                { $regex: new RegExp("^" + thename.toLowerCase(), "i") }
+              name: { $regex: new RegExp("^" + thename.toLowerCase(), "i") },
             });
-          }
-          else {
+          } else {
             return null;
           }
-        })
+        });
         servicerArray = await Promise.all(servicerArrayPromise);
       }
 
       const claimArray = await claimService.getClaims({
-        claimFile: 'open'
+        claimFile: "open",
       });
 
       // Get Contract with dealer, customer, reseller
-      const contractAllDataPromise = totalDataComing.map(item => {
+      const contractAllDataPromise = totalDataComing.map((item) => {
         if (!item.exit) {
           let query = [
             {
@@ -3182,8 +4352,8 @@ exports.saveBulkClaim = async (req, res) => {
                       { serial: item.contractId },
                     ],
                   },
-                  { eligibilty: true }
-                ]
+                  { eligibilty: true },
+                ],
               },
             },
             {
@@ -3206,10 +4376,10 @@ exports.saveBulkClaim = async (req, res) => {
                             localField: "_id",
                             foreignField: "dealerId",
                             as: "dealerServicer",
-                          }
+                          },
                         },
-                      ]
-                    }
+                      ],
+                    },
                   },
                   {
                     $lookup: {
@@ -3217,15 +4387,15 @@ exports.saveBulkClaim = async (req, res) => {
                       localField: "resellerId",
                       foreignField: "_id",
                       as: "reseller",
-                    }
+                    },
                   },
                   {
                     $lookup: {
                       from: "customers",
                       localField: "customerId",
                       foreignField: "_id",
-                      as: "customers"
-                    }
+                      as: "customers",
+                    },
                   },
                   {
                     $lookup: {
@@ -3233,13 +4403,13 @@ exports.saveBulkClaim = async (req, res) => {
                       localField: "servicerId",
                       foreignField: "_id",
                       as: "servicer",
-                    }
+                    },
                   },
                 ],
               },
             },
             {
-              $match: match
+              $match: match,
             },
             {
               $project: {
@@ -3254,47 +4424,69 @@ exports.saveBulkClaim = async (req, res) => {
                 "order.customers": 1,
                 "order.dealer": 1,
                 "order.reseller": 1,
-                "order.servicer": 1
-              }
+                "order.servicer": 1,
+              },
             },
             { $unwind: { path: "$order", preserveNullAndEmptyArrays: true } },
-            { $unwind: { path: "$order.dealer", preserveNullAndEmptyArrays: true } },
-            { $unwind: { path: "$order.reseller", preserveNullAndEmptyArrays: true } },
-            { $unwind: { path: "$order.customers", preserveNullAndEmptyArrays: true } },
-            { $unwind: { path: "$order.servicer", preserveNullAndEmptyArrays: true } },
-            { $limit: 1 }
-          ]
-          return contractService.getAllContracts2(query)
-        }
-        else {
+            {
+              $unwind: {
+                path: "$order.dealer",
+                preserveNullAndEmptyArrays: true,
+              },
+            },
+            {
+              $unwind: {
+                path: "$order.reseller",
+                preserveNullAndEmptyArrays: true,
+              },
+            },
+            {
+              $unwind: {
+                path: "$order.customers",
+                preserveNullAndEmptyArrays: true,
+              },
+            },
+            {
+              $unwind: {
+                path: "$order.servicer",
+                preserveNullAndEmptyArrays: true,
+              },
+            },
+            { $limit: 1 },
+          ];
+          return contractService.getAllContracts2(query);
+        } else {
           return null;
         }
-      })
+      });
 
-      const contractAllDataArray = await Promise.all(contractAllDataPromise)
+      const contractAllDataArray = await Promise.all(contractAllDataPromise);
 
-
-
-      let getCoverageTypeFromOption = await optionService.getOption({ name: "coverage_type" })
+      let getCoverageTypeFromOption = await optionService.getOption({
+        name: "coverage_type",
+      });
       let checkSerialCache = {};
       //Filter data which is contract , servicer and not active
       for (let k = 0; k < totalDataComing.length; k++) {
-        let item = totalDataComing[k]
-        let shipAddress = ''
-        let i = k
+        let item = totalDataComing[k];
+        let shipAddress = "";
+        let i = k;
         if (!item.exit) {
           const contractData = contractArray[i];
           const allDataArray = contractAllDataArray[i];
           const claimData = claimArray;
-          const servicerData = servicerArray == undefined || servicerArray == null ? allDataArray[0]?.order?.servicer : servicerArray[i]
+          const servicerData =
+            servicerArray == undefined || servicerArray == null
+              ? allDataArray[0]?.order?.servicer
+              : servicerArray[i];
           let flag;
           item.contractData = contractData;
-          item.claimType = ''
+          item.claimType = "";
           item.servicerData = servicerData;
-          item.orderData = allDataArray[0]
+          item.orderData = allDataArray[0];
 
           if (!contractData || allDataArray.length == 0) {
-            item.status = "Contract not found"
+            item.status = "Contract not found";
             item.exit = true;
 
             //check contract eligibility reason
@@ -3307,55 +4499,66 @@ exports.saveBulkClaim = async (req, res) => {
                   ],
                 },
               ],
-            })
+            });
             if (checkContractData && checkContractData != null) {
-              item.status = " "
+              item.status = " ";
               if (checkContractData.status != "Active") {
-                item.status = "Contract is not active"
+                item.status = "Contract is not active";
                 item.exit = true;
               }
 
               if (new Date(checkContractData.minDate) > new Date()) {
                 const options = {
-                  year: 'numeric',
-                  month: '2-digit',
-                  day: '2-digit'
+                  year: "numeric",
+                  month: "2-digit",
+                  day: "2-digit",
                 };
-                const formattedDate = new Date(checkContractData.minDate).toLocaleDateString('en-US', options)
-                item.status = "Contract will be eligible on " + " " + formattedDate
+                const formattedDate = new Date(
+                  checkContractData.minDate
+                ).toLocaleDateString("en-US", options);
+                item.status =
+                  "Contract will be eligible on " + " " + formattedDate;
                 item.exit = true;
               }
 
               let claimQuery = [
                 {
-                  $match: { contractId: new mongoose.Types.ObjectId(checkContractData._id) }
+                  $match: {
+                    contractId: new mongoose.Types.ObjectId(
+                      checkContractData._id
+                    ),
+                  },
                 },
                 {
                   $group: {
                     _id: null,
                     totalAmount: { $sum: "$totalAmount" }, // Calculate total amount from all claims
-                    openFileClaimsCount: { // Count of claims where claimfile is "Open"
+                    openFileClaimsCount: {
+                      // Count of claims where claimfile is "Open"
                       $sum: {
                         $cond: {
                           if: { $eq: ["$claimFile", "open"] }, // Assuming "claimFile" field is correct
                           then: 1,
-                          else: 0
-                        }
-                      }
-                    }
-                  }
-                }
-              ]
+                          else: 0,
+                        },
+                      },
+                    },
+                  },
+                },
+              ];
 
-              let checkClaims = await claimService.getClaimWithAggregate(claimQuery)
+              let checkClaims = await claimService.getClaimWithAggregate(
+                claimQuery
+              );
               if (checkClaims[0]) {
                 if (checkClaims[0].openFileClaimsCount > 0) {
-                  item.status = "Contract has open claim"
+                  item.status = "Contract has open claim";
                   item.exit = true;
-
                 }
-                if (checkClaims[0].totalAmount >= checkContractData.productValue) {
-                  item.status = "Claim value exceed the product value limit"
+                if (
+                  checkClaims[0].totalAmount >= checkContractData.productValue
+                ) {
+                  item.status = "Claim value exceed the product value limit";
                   item.exit = true;
                 }
               }
@@ -3363,7 +4566,7 @@ exports.saveBulkClaim = async (req, res) => {
           }
           if (contractData) {
             if (checkSerialCache[contractData?.unique_key?.toLowerCase()]) {
-              item.status = "Duplicate contract id/serial number"
+              item.status = "Duplicate contract id/serial number";
               item.exit = true;
             } else {
               checkSerialCache[contractData.unique_key?.toLowerCase()] = true;
@@ -3373,87 +4576,130 @@ exports.saveBulkClaim = async (req, res) => {
           if (item.coverageType) {
             if (item.coverageType != null || item.coverageType != "") {
               if (contractData) {
-                let checkCoverageTypeForContract = contractData?.coverageType.find(item1 => item1.label == item?.coverageType)
+                let checkCoverageTypeForContract =
+                  contractData?.coverageType.find(
+                    (item1) => item1.label == item?.coverageType
+                  );
                 if (!checkCoverageTypeForContract) {
-                  item.status = "Coverage type is not available for this contract!";
+                  item.status =
+                    "Coverage type is not available for this contract!";
                   item.exit = true;
                 }
-                const checkCoverageValue = getCoverageTypeFromOption.value.filter(option => option.label === item?.coverageType).map(item1 => item1.value);
-                let startDateToCheck = new Date(contractData.coverageStartDate)
-                let coverageTypeDays = contractData?.adhDays
-                let getDeductible = coverageTypeDays?.filter(coverageType => coverageType.value == checkCoverageValue[0])
+                const checkCoverageValue = getCoverageTypeFromOption.value
+                  .filter((option) => option.label === item?.coverageType)
+                  .map((item1) => item1.value);
+                let startDateToCheck = new Date(contractData.coverageStartDate);
+                let coverageTypeDays = contractData?.adhDays;
+                let getDeductible = coverageTypeDays?.filter(
+                  (coverageType) => coverageType.value == checkCoverageValue[0]
+                );
 
-                let checkCoverageTypeDate = startDateToCheck.setDate(startDateToCheck.getDate() + Number(getDeductible[0]?.waitingDays))
-                checkCoverageTypeDate = new Date(checkCoverageTypeDate).setHours(0, 0, 0, 0)
-                let checkLossDate = new Date(item.lossDate).setHours(0, 0, 0, 0)
-                const result = getCoverageTypeFromOption?.value.filter(option => option.label === item?.coverageType).map(item1 => item1.label);
+                let checkCoverageTypeDate = startDateToCheck.setDate(
+                  startDateToCheck.getDate() +
+                    Number(getDeductible[0]?.waitingDays)
+                );
+                checkCoverageTypeDate = new Date(
+                  checkCoverageTypeDate
+                ).setHours(0, 0, 0, 0);
+                let checkLossDate = new Date(item.lossDate).setHours(
+                  0,
+                  0,
+                  0,
+                  0
+                );
+                const result = getCoverageTypeFromOption?.value
+                  .filter((option) => option.label === item?.coverageType)
+                  .map((item1) => item1.label);
 
                 if (new Date(checkCoverageTypeDate) > new Date(checkLossDate)) {
-                  item.status = `Claim not eligible for ${result[0]}.`
+                  item.status = `Claim not eligible for ${result[0]}.`;
                   item.exit = true;
                 }
-                item.claimType = checkCoverageValue[0]
+                item.claimType = checkCoverageValue[0];
               }
-
-
             }
           }
 
           // check login email
-          if (item.userEmail != '') {
-            item.submittedBy = item.userEmail
+          if (item.userEmail != "") {
+            item.submittedBy = item.userEmail;
             if (item.orderData?.order?.customers) {
-              let memberEmail = await userService.getMembers({
-                metaData: { $elemMatch: { metaId: item.orderData?.order?.customers._id } }
-              }, {})
+              let memberEmail = await userService.getMembers(
+                {
+                  metaData: {
+                    $elemMatch: {
+                      metaId: item.orderData?.order?.customers._id,
+                    },
+                  },
+                },
+                {}
+              );
 
               if (memberEmail.length > 0) {
-                const validEmail = memberEmail?.find(member => member.email === item.userEmail);
+                const validEmail = memberEmail?.find(
+                  (member) => member.email === item.userEmail
+                );
                 if (!validEmail || validEmail == undefined) {
-                  item.status = "Invalid Email"
+                  item.status = "Invalid Email";
                   item.exit = true;
                 }
-                let addresses = allDataArray[0]?.order.customers.addresses
+                let addresses = allDataArray[0]?.order.customers.addresses;
 
-                const validAddress = addresses?.find(address => address._id.toString() === validEmail?.metaData[0].addressId.toString());
+                const validAddress = addresses?.find(
+                  (address) =>
+                    address._id.toString() ===
+                    validEmail?.metaData[0].addressId.toString()
+                );
                 if (validAddress) {
-                  shipAddress = validAddress.address + "," + validAddress.city + "," + validAddress.state + "," + validAddress.zip
-
+                  shipAddress =
+                    validAddress.address +
+                    "," +
+                    validAddress.city +
+                    "," +
+                    validAddress.state +
+                    "," +
+                    validAddress.zip;
                 }
               }
             }
           }
 
           // check Shipping address
-          if (item.shippingTo != '') {
+          if (item.shippingTo != "") {
             if (allDataArray[0]?.order.customers) {
-              let shipingAddress = item.shippingTo.split(',');   // Split the string by commas
+              let shipingAddress = item.shippingTo.split(","); // Split the string by commas
               let userZip = shipingAddress[shipingAddress.length - 1];
-              let addresses = allDataArray[0]?.order.customers.addresses
-              addresses.push(
-                {
-                  zip: allDataArray[0]?.order.customers.zip,
-                  state: allDataArray[0]?.order.customers.state,
-                  city: allDataArray[0]?.order.customers.city,
-                  street: allDataArray[0]?.order.customers.street,
-                  country: allDataArray[0]?.order.customers.country,
-                })
+              let addresses = allDataArray[0]?.order.customers.addresses;
+              addresses.push({
+                zip: allDataArray[0]?.order.customers.zip,
+                state: allDataArray[0]?.order.customers.state,
+                city: allDataArray[0]?.order.customers.city,
+                street: allDataArray[0]?.order.customers.street,
+                country: allDataArray[0]?.order.customers.country,
+              });
 
-              const validAddress = addresses?.find(address => Number(address.zip) === Number(userZip));
+              const validAddress = addresses?.find(
+                (address) => Number(address.zip) === Number(userZip)
+              );
               if (!validAddress) {
-                item.status = "Invalid user address!"
+                item.status = "Invalid user address!";
                 item.exit = true;
               }
             }
-            shipAddress = item.shippingTo
+            shipAddress = item.shippingTo;
           }
 
-          item.shippingTo = shipAddress
+          item.shippingTo = shipAddress;
 
-
-          let checkCoverageStartDate = new Date(contractData?.coverageStartDate).setHours(0, 0, 0, 0)
-          if (contractData && new Date(checkCoverageStartDate) > new Date(item.lossDate)) {
-            item.status = "Loss date should be in between coverage start date and present date!"
+          let checkCoverageStartDate = new Date(
+            contractData?.coverageStartDate
+          ).setHours(0, 0, 0, 0);
+          if (
+            contractData &&
+            new Date(checkCoverageStartDate) > new Date(item.lossDate)
+          ) {
+            item.status =
+              "Loss date should be in between coverage start date and present date!";
             item.exit = true;
           }
 
@@ -3461,83 +4707,114 @@ exports.saveBulkClaim = async (req, res) => {
             flag = false;
             if (allDataArray[0]?.order.dealer.dealerServicer.length > 0) {
               //Find Servicer with dealer Servicer
-              const servicerCheck = allDataArray[0]?.order.dealer.dealerServicer.find(item => item.servicerId?.toString() === servicerData._id?.toString())
+              const servicerCheck =
+                allDataArray[0]?.order.dealer.dealerServicer.find(
+                  (item) =>
+                    item.servicerId?.toString() === servicerData._id?.toString()
+                );
               if (servicerCheck) {
-                flag = true
+                flag = true;
               }
               //Check Dealer itself servicer
-              if (allDataArray[0]?.order.dealer?.isServicer && allDataArray[0]?.order.dealer?.accountStatus && allDataArray[0]?.order.dealer._id?.toString() === servicerData.dealerId?.toString()) {
-                flag = true
-
+              if (
+                allDataArray[0]?.order.dealer?.isServicer &&
+                allDataArray[0]?.order.dealer?.accountStatus &&
+                allDataArray[0]?.order.dealer._id?.toString() ===
+                  servicerData.dealerId?.toString()
+              ) {
+                flag = true;
               }
               //Check Dealer Reseller servicer
-              let dealerResellerServicer = await resellerService.getResellers({ dealerId: allDataArray[0]?.order.dealer._id, isServicer: true, status: true })
-              let resellerIds = dealerResellerServicer.map(resellers => resellers._id);
+              let dealerResellerServicer = await resellerService.getResellers({
+                dealerId: allDataArray[0]?.order.dealer._id,
+                isServicer: true,
+                status: true,
+              });
+              let resellerIds = dealerResellerServicer.map(
+                (resellers) => resellers._id
+              );
               if (dealerResellerServicer.length > 0) {
-
-                let dealerResellerServicer = await servicerService.getAllServiceProvider({ resellerId: { $in: resellerIds } })
-                let exists = dealerResellerServicer.some(item => item?._id?.toString() === servicerData?._id?.toString());
+                let dealerResellerServicer =
+                  await servicerService.getAllServiceProvider({
+                    resellerId: { $in: resellerIds },
+                  });
+                let exists = dealerResellerServicer.some(
+                  (item) =>
+                    item?._id?.toString() === servicerData?._id?.toString()
+                );
                 if (exists) {
-                  flag = true
+                  flag = true;
                 }
               }
             }
           }
 
-          if ((item?.servicerName != '' && !servicerData)) {
-            flag = false
+          if (item?.servicerName != "" && !servicerData) {
+            flag = false;
           }
-          if ((!flag && flag != undefined && item.hasOwnProperty("servicerName") && req.role == "Super Admin")) {
-            item.status = "Servicer not found"
+          if (
+            !flag &&
+            flag != undefined &&
+            item.hasOwnProperty("servicerName") &&
+            req.role == "Super Admin"
+          ) {
+            item.status = "Servicer not found";
             item.exit = true;
           }
           if (contractData && contractData.status != "Active") {
             item.status = "Contract is not active";
             item.exit = true;
           }
-
         } else {
-          item.contractData = null
-          item.servicerData = null
+          item.contractData = null;
+          item.servicerData = null;
         }
       }
 
       // return;
       // return;
-      let finalArray = []
+      let finalArray = [];
       //Save bulk claim
 
       let currentYear = new Date().getFullYear();
-      currentYear = "-" + currentYear + "-"
+      currentYear = "-" + currentYear + "-";
       let currentYearWithoutHypen = new Date().getFullYear();
 
-
-      let count = await claimService.getClaimCount({ 'unique_key': { '$regex': currentYear, '$options': 'i' } });
-      let unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
+      let count = await claimService.getClaimCount({
+        unique_key: { $regex: currentYear, $options: "i" },
+      });
+      let unique_key_number = count[0]
+        ? count[0].unique_key_number + 1
+        : 100000;
 
       //Update eligibility when contract is open
-      const updateArrayPromise = totalDataComing.map(item => {
-        if (!item.exit && item.contractData) return contractService.updateContract({ _id: item.contractData._id }, { eligibilty: false }, { new: true });
+      const updateArrayPromise = totalDataComing.map((item) => {
+        if (!item.exit && item.contractData)
+          return contractService.updateContract(
+            { _id: item.contractData._id },
+            { eligibilty: false },
+            { new: true }
+          );
         else {
           return null;
         }
-      })
+      });
       const updateArray = await Promise.all(updateArrayPromise);
       let existArray = {
-        data: {}
+        data: {},
       };
       let emailServicerId = [];
 
-
       totalDataComing.map((data, index) => {
-        let servicerId = data.servicerData?._id
+        let servicerId = data.servicerData?._id;
         // if (data.servicerData?.dealerId) {
         //   servicerId = data.servicerData?.dealerId
         // }
         // if (data.servicerData?.resellerId) {
         //   servicerId = data.servicerData?.resellerId
         // }
-        const issue = data.issue != "" ? data.issue + "-" + data.diagnosis : data.diagnosis
+        const issue =
+          data.issue != "" ? data.issue + "-" + data.diagnosis : data.diagnosis;
         // emailDealerId.push(data.orderData?.order?.dealerId);
         if (!data.exit) {
           let obj = {
@@ -3558,274 +4835,355 @@ exports.saveBulkClaim = async (req, res) => {
             model: data.contractData.model,
             manufacture: data.contractData.manufacture,
             unique_key_number: unique_key_number,
-            unique_key_search: "CC" + currentYearWithoutHypen + unique_key_number,
+            unique_key_search:
+              "CC" + currentYearWithoutHypen + unique_key_number,
             unique_key: "CC" + currentYear + unique_key_number,
             diagnosis: issue,
             lossDate: data.lossDate,
-            claimFile: 'open',
+            claimFile: "open",
             trackStatus: [
               {
                 status: "open",
                 date: new Date(),
-                statusName: 'claim_status',
-                userId: checkLoginUser.metaData[0]?._id
+                statusName: "claim_status",
+                userId: checkLoginUser.metaData[0]?._id,
               },
               {
                 status: "request_submitted",
                 date: new Date(),
-                statusName: 'customer_status',
-                userId: checkLoginUser.metaData[0]?._id
+                statusName: "customer_status",
+                userId: checkLoginUser.metaData[0]?._id,
               },
               {
                 status: "request_sent",
                 date: new Date(),
-                statusName: 'repair_status',
-                userId: checkLoginUser.metaData[0]?._id
-              }
-            ]
-          }
-          unique_key_number++
-          finalArray.push(obj)
-          data.status = 'Add claim successfully!'
+                statusName: "repair_status",
+                userId: checkLoginUser.metaData[0]?._id,
+              },
+            ],
+          };
+          unique_key_number++;
+          finalArray.push(obj);
+          data.status = "Add claim successfully!";
         }
-
-      })
+      });
       //save bulk claim
-      const saveBulkClaim = await claimService.saveBulkClaim(finalArray)
+      const saveBulkClaim = await claimService.saveBulkClaim(finalArray);
 
       //Assign Claim id to the particular contract
       // Add `claimId` based on the matching serials
-      totalDataComing.forEach(item => {
+      totalDataComing.forEach((item) => {
         if (!item.exit) {
-          const matchingData = saveBulkClaim.find(data => data.serial === item.contractData.serial || item.contractData._id.toString() == data.contractId.toString());
+          const matchingData = saveBulkClaim.find(
+            (data) =>
+              data.serial === item.contractData.serial ||
+              item.contractData._id.toString() == data.contractId.toString()
+          );
           if (matchingData) {
             item.claimId = matchingData.unique_key;
           }
         }
       });
 
-
-      let IDs = await supportingFunction.getUserIds()
+      let IDs = await supportingFunction.getUserIds();
       let adminEmail = await supportingFunction.getUserEmails();
-      let new_admin_array = adminEmail.concat(emailArray)
+      let new_admin_array = adminEmail.concat(emailArray);
       //  let new_admin_array = adminEmail
       let toMail = [];
       let ccMail;
       const userId = req.userId;
-      let resellerData
+      let resellerData;
 
       //Get Fail and Passes Entries
-      const counts = totalDataComing.reduce((acc, obj) => {
-        // Increment the count of true or false based on the value of exit
-        if (obj.exit) {
-          acc.trueCount += 1;
-        } else {
-          acc.falseCount += 1;
-        }
-        return acc;
-      }, { trueCount: 0, falseCount: 0 });
-
-      let getDealerIds = []
-      let getResellerIds = []
-      let getCustomerIds = []
-      let getServicerIds = []
-      const csvArray = await Promise.all(totalDataComing.map(async (item, i) => {
-        // Build bulk csv for dealer only
-        let localDateString = new Date(item.lossDate)
-        let formattedDate = localDateString.toLocaleDateString("en-US", {
-          month: "2-digit",
-          day: "2-digit",
-          year: "numeric"
-        })
-        getDealerIds.push(item.orderData?.order?.dealerId)
-        getResellerIds.push(item.orderData?.order?.resellerId)
-        getCustomerIds.push(item.orderData?.order?.customerId)
-        let servicerId = item.servicerData?._id
-        if (item.servicerData?.dealerId) {
-          servicerId = item.servicerData?.dealerId
-        }
-        if (item.servicerData?.resellerId) {
-          servicerId = item.servicerData?.resellerId
-        }
-        getServicerIds.push(servicerId)
-
-        if (req.role === 'Dealer') {
-          const userId = req.userId;
-          ccMail = new_admin_array;
-          let userData = await userService.getUserById1({ metaData: { $elemMatch: { metaId: userId, isPrimary: true } } }, {});
-          if (req.userId.toString() === item.orderData?.order?.dealerId?.toString()) {
-            // For servicer
-            if (!existArray.data[servicerId] && servicerId != undefined && !item.exit && item?.claimType != "theft_and_lost") {
-              emailServicerId.push(servicerId);
-              existArray.data[servicerId] = [];
-            }
-
-            if (servicerId != undefined && !item.exit && item?.claimType != "theft_and_lost") {
-              existArray.data[servicerId].push({
-                "Contract# / Serial#": item.contractId ? item.contractId : "",
-                "Claim#": item.claimId ? item.claimId : "",
-                "Loss Date": item.lossDate ? formattedDate : '',
-                Diagnosis: item.issue ? item.issue + "-" + item.diagnosis : item.diagnosis,
-                "Coverage Type": item.coverageType ? item.coverageType : '',
-                "Submitted By": item.userEmail ? item.userEmail : '',
-                "Ship To": item.shippingTo ? item.shippingTo : ''
-              });
-            }
-
+      const counts = totalDataComing.reduce(
+        (acc, obj) => {
+          // Increment the count of true or false based on the value of exit
+          if (obj.exit) {
+            acc.trueCount += 1;
+          } else {
+            acc.falseCount += 1;
           }
-          return {
-            "Contract#/Serial#": item.contractId ? item.contractId : "",
+          return acc;
+        },
+        { trueCount: 0, falseCount: 0 }
+      );
 
-            "Loss Date": item.lossDate ? formattedDate : '',
-            Diagnosis: item.issue ? item.issue + "-" + item.diagnosis : item.diagnosis,
-            "Coverage Type": item.coverageType ? item.coverageType : '',
-            "Submitted By": item.userEmail ? item.userEmail : '',
-            "Ship To": item.shippingTo ? item.shippingTo : '',
-            Status: item.status ? item.status : '',
-            exit: item.exit
-          };
-        }
-        // Build bulk csv for Reseller only
-        else if (req.role === 'Reseller') {
-          ccMail = new_admin_array;
-          if (req.userId.toString() === item.orderData?.order?.resellerId?.toString()) {
-            // For servicer
-            if (!existArray.data[servicerId] && servicerId != undefined && !item.exit && item?.claimType != "theft_and_lost") {
-              emailServicerId.push(servicerId);
-              existArray.data[servicerId] = [];
-            }
-
-            if (servicerId != undefined && !item.exit && item?.claimType != "theft_and_lost") {
-              existArray.data[servicerId].push({
-                "Contract# / Serial#": item.contractId ? item.contractId : "",
-                "Claim#": item.claimId ? item.claimId : "",
-                "Loss Date": item.lossDate ? formattedDate : '',
-                Diagnosis: item.issue ? item.issue + "-" + item.diagnosis : item.diagnosis,
-                "Coverage Type": item.coverageType ? item.coverageType : '',
-                "Submitted By": item.userEmail ? item.userEmail : '',
-                "Ship To": item.shippingTo ? item.shippingTo : '',
-
-              });
-            }
-
+      let getDealerIds = [];
+      let getResellerIds = [];
+      let getCustomerIds = [];
+      let getServicerIds = [];
+      const csvArray = await Promise.all(
+        totalDataComing.map(async (item, i) => {
+          // Build bulk csv for dealer only
+          let localDateString = new Date(item.lossDate);
+          let formattedDate = localDateString.toLocaleDateString("en-US", {
+            month: "2-digit",
+            day: "2-digit",
+            year: "numeric",
+          });
+          getDealerIds.push(item.orderData?.order?.dealerId);
+          getResellerIds.push(item.orderData?.order?.resellerId);
+          getCustomerIds.push(item.orderData?.order?.customerId);
+          let servicerId = item.servicerData?._id;
+          if (item.servicerData?.dealerId) {
+            servicerId = item.servicerData?.dealerId;
           }
-          return {
-            "Contract# / Serial#": item.contractId ? item.contractId : "",
-            "Loss Date": item.lossDate ? formattedDate : '',
-            Diagnosis: item.issue ? item.issue + "-" + item.diagnosis : item.diagnosis,
-            "Coverage Type": item.coverageType ? item.coverageType : '',
-            "Submitted By": item.userEmail ? item.userEmail : '',
-            "Ship To": item.shippingTo ? item.shippingTo : '',
-            Status: item.status ? item.status : '',
-            exit: item.exit
-          };
-        }
-        // Build bulk csv for Customer only
-        else if (req.role === 'Customer') {
-          ccMail = new_admin_array;
-
-          if (req.userId.toString() === item.orderData?.order?.customerId?.toString()) {
-            // For servicer
-            if (!existArray.data[servicerId] && servicerId != undefined && !item.exit && item?.claimType != "theft_and_lost") {
-              emailServicerId.push(servicerId);
-              existArray.data[servicerId] = [];
-            }
-
-            if (servicerId != undefined && !item.exit && item?.claimType != "theft_and_lost") {
-              existArray.data[servicerId].push({
-                "Contract# / Serial#": item.contractId ? item.contractId : "",
-                "Claim#": item.claimId ? item.claimId : "",
-                "Loss Date": item.lossDate ? formattedDate : '',
-                Diagnosis: item.issue ? item.issue + "-" + item.diagnosis : item.diagnosis,
-                "Coverage Type": item.coverageType ? item.coverageType : '',
-                "Submitted By": item.userEmail ? item.userEmail : '',
-                "Ship To": item.shippingTo ? item.shippingTo : '',
-
-              });
-            }
-
+          if (item.servicerData?.resellerId) {
+            servicerId = item.servicerData?.resellerId;
           }
-          return {
-            "Contract# / Serial#": item.contractId ? item.contractId : "",
-            "Loss Date": item.lossDate ? formattedDate : '',
-            Diagnosis: item.issue ? item.issue + "-" + item.diagnosis : item.diagnosis,
-            "Coverage Type": item.coverageType ? item.coverageType : '',
-            "Submitted By": item.userEmail ? item.userEmail : '',
-            "Ship To": item.shippingTo ? item.shippingTo : '',
-            Status: item.status ? item.status : '',
-            exit: item.exit
-          };
-        } else {
-          toMail = new_admin_array;
-          ccMail = ["noreply@getcover.com"];
-          // For servicer
-          if (!existArray.data[servicerId] && servicerId != undefined && !item.exit && item?.claimType != "theft_and_lost") {
-            emailServicerId.push(servicerId);
-            existArray.data[servicerId] = [];
-          }
+          getServicerIds.push(servicerId);
 
-          if (servicerId != undefined && !item.exit && item?.claimType != "theft_and_lost") {
-            existArray.data[servicerId].push({
+          if (req.role === "Dealer") {
+            const userId = req.userId;
+            ccMail = new_admin_array;
+            let userData = await userService.getUserById1(
+              { metaData: { $elemMatch: { metaId: userId, isPrimary: true } } },
+              {}
+            );
+            if (
+              req.userId.toString() ===
+              item.orderData?.order?.dealerId?.toString()
+            ) {
+              // For servicer
+              if (
+                !existArray.data[servicerId] &&
+                servicerId != undefined &&
+                !item.exit &&
+                item?.claimType != "theft_and_lost"
+              ) {
+                emailServicerId.push(servicerId);
+                existArray.data[servicerId] = [];
+              }
+
+              if (
+                servicerId != undefined &&
+                !item.exit &&
+                item?.claimType != "theft_and_lost"
+              ) {
+                existArray.data[servicerId].push({
+                  "Contract# / Serial#": item.contractId ? item.contractId : "",
+                  "Claim#": item.claimId ? item.claimId : "",
+                  "Loss Date": item.lossDate ? formattedDate : "",
+                  Diagnosis: item.issue
+                    ? item.issue + "-" + item.diagnosis
+                    : item.diagnosis,
+                  "Coverage Type": item.coverageType ? item.coverageType : "",
+                  "Submitted By": item.userEmail ? item.userEmail : "",
+                  "Ship To": item.shippingTo ? item.shippingTo : "",
+                });
+              }
+            }
+            return {
+              "Contract#/Serial#": item.contractId ? item.contractId : "",
+
+              "Loss Date": item.lossDate ? formattedDate : "",
+              Diagnosis: item.issue
+                ? item.issue + "-" + item.diagnosis
+                : item.diagnosis,
+              "Coverage Type": item.coverageType ? item.coverageType : "",
+              "Submitted By": item.userEmail ? item.userEmail : "",
+              "Ship To": item.shippingTo ? item.shippingTo : "",
+              Status: item.status ? item.status : "",
+              exit: item.exit,
+            };
+          }
+          // Build bulk csv for Reseller only
+          else if (req.role === "Reseller") {
+            ccMail = new_admin_array;
+            if (
+              req.userId.toString() ===
+              item.orderData?.order?.resellerId?.toString()
+            ) {
+              // For servicer
+              if (
+                !existArray.data[servicerId] &&
+                servicerId != undefined &&
+                !item.exit &&
+                item?.claimType != "theft_and_lost"
+              ) {
+                emailServicerId.push(servicerId);
+                existArray.data[servicerId] = [];
+              }
+
+              if (
+                servicerId != undefined &&
+                !item.exit &&
+                item?.claimType != "theft_and_lost"
+              ) {
+                existArray.data[servicerId].push({
+                  "Contract# / Serial#": item.contractId ? item.contractId : "",
+                  "Claim#": item.claimId ? item.claimId : "",
+                  "Loss Date": item.lossDate ? formattedDate : "",
+                  Diagnosis: item.issue
+                    ? item.issue + "-" + item.diagnosis
+                    : item.diagnosis,
+                  "Coverage Type": item.coverageType ? item.coverageType : "",
+                  "Submitted By": item.userEmail ? item.userEmail : "",
+                  "Ship To": item.shippingTo ? item.shippingTo : "",
+                });
+              }
+            }
+            return {
               "Contract# / Serial#": item.contractId ? item.contractId : "",
-              "Claim#": item.claimId ? item.claimId : "",
-              "Loss Date": item.lossDate ? formattedDate : '',
-              Diagnosis: item.issue ? item.issue + "-" + item.diagnosis : item.diagnosis,
-              "Coverage Type": item.coverageType ? item.coverageType : '',
-              "Submitted By": item.userEmail ? item.userEmail : '',
-              "Ship To": item.shippingTo ? item.shippingTo : '',
-
-            });
+              "Loss Date": item.lossDate ? formattedDate : "",
+              Diagnosis: item.issue
+                ? item.issue + "-" + item.diagnosis
+                : item.diagnosis,
+              "Coverage Type": item.coverageType ? item.coverageType : "",
+              "Submitted By": item.userEmail ? item.userEmail : "",
+              "Ship To": item.shippingTo ? item.shippingTo : "",
+              Status: item.status ? item.status : "",
+              exit: item.exit,
+            };
           }
+          // Build bulk csv for Customer only
+          else if (req.role === "Customer") {
+            ccMail = new_admin_array;
 
-          return {
-            "Contract# / Serial#": item.contractId ? item.contractId : "",
-            Servicer: item.servicerName || "",
-            "Loss Date": item.lossDate ? formattedDate : '',
-            Diagnosis: item.issue ? item.issue + "-" + item.diagnosis : item.diagnosis,
-            "Coverage Type": item.coverageType ? item.coverageType : '',
-            "Submitted By": item.userEmail ? item.userEmail : '',
-            "Ship To": item.shippingTo ? item.shippingTo : '',
-            Status: item.status ? item.status : '',
-            exit: item.exit
-          };
-        }
-      }));
+            if (
+              req.userId.toString() ===
+              item.orderData?.order?.customerId?.toString()
+            ) {
+              // For servicer
+              if (
+                !existArray.data[servicerId] &&
+                servicerId != undefined &&
+                !item.exit &&
+                item?.claimType != "theft_and_lost"
+              ) {
+                emailServicerId.push(servicerId);
+                existArray.data[servicerId] = [];
+              }
+
+              if (
+                servicerId != undefined &&
+                !item.exit &&
+                item?.claimType != "theft_and_lost"
+              ) {
+                existArray.data[servicerId].push({
+                  "Contract# / Serial#": item.contractId ? item.contractId : "",
+                  "Claim#": item.claimId ? item.claimId : "",
+                  "Loss Date": item.lossDate ? formattedDate : "",
+                  Diagnosis: item.issue
+                    ? item.issue + "-" + item.diagnosis
+                    : item.diagnosis,
+                  "Coverage Type": item.coverageType ? item.coverageType : "",
+                  "Submitted By": item.userEmail ? item.userEmail : "",
+                  "Ship To": item.shippingTo ? item.shippingTo : "",
+                });
+              }
+            }
+            return {
+              "Contract# / Serial#": item.contractId ? item.contractId : "",
+              "Loss Date": item.lossDate ? formattedDate : "",
+              Diagnosis: item.issue
+                ? item.issue + "-" + item.diagnosis
+                : item.diagnosis,
+              "Coverage Type": item.coverageType ? item.coverageType : "",
+              "Submitted By": item.userEmail ? item.userEmail : "",
+              "Ship To": item.shippingTo ? item.shippingTo : "",
+              Status: item.status ? item.status : "",
+              exit: item.exit,
+            };
+          } else {
+            toMail = new_admin_array;
+            ccMail = ["noreply@getcover.com"];
+            // For servicer
+            if (
+              !existArray.data[servicerId] &&
+              servicerId != undefined &&
+              !item.exit &&
+              item?.claimType != "theft_and_lost"
+            ) {
+              emailServicerId.push(servicerId);
+              existArray.data[servicerId] = [];
+            }
+
+            if (
+              servicerId != undefined &&
+              !item.exit &&
+              item?.claimType != "theft_and_lost"
+            ) {
+              existArray.data[servicerId].push({
+                "Contract# / Serial#": item.contractId ? item.contractId : "",
+                "Claim#": item.claimId ? item.claimId : "",
+                "Loss Date": item.lossDate ? formattedDate : "",
+                Diagnosis: item.issue
+                  ? item.issue + "-" + item.diagnosis
+                  : item.diagnosis,
+                "Coverage Type": item.coverageType ? item.coverageType : "",
+                "Submitted By": item.userEmail ? item.userEmail : "",
+                "Ship To": item.shippingTo ? item.shippingTo : "",
+              });
+            }
+
+            return {
+              "Contract# / Serial#": item.contractId ? item.contractId : "",
+              Servicer: item.servicerName || "",
+              "Loss Date": item.lossDate ? formattedDate : "",
+              Diagnosis: item.issue
+                ? item.issue + "-" + item.diagnosis
+                : item.diagnosis,
+              "Coverage Type": item.coverageType ? item.coverageType : "",
+              "Submitted By": item.userEmail ? item.userEmail : "",
+              "Ship To": item.shippingTo ? item.shippingTo : "",
+              Status: item.status ? item.status : "",
+              exit: item.exit,
+            };
+          }
+        })
+      );
 
       //get email of all servicer
-      let emailServicer = await userService.getMembers({ metaData: { $elemMatch: { metaId: { $in: emailServicerId }, isPrimary: true } } }, {});
+      let emailServicer = await userService.getMembers(
+        {
+          metaData: {
+            $elemMatch: { metaId: { $in: emailServicerId }, isPrimary: true },
+          },
+        },
+        {}
+      );
       // If you need to convert existArray.data to a flat array format
       if (emailServicer.length > 0) {
         let flatArray = [];
         for (let servicerId in existArray.data) {
-          let matchData = emailServicer.find(matchServicer => matchServicer.metaData[0].metaId?.toString() === servicerId.toString());
-          let email = matchData ? matchData.email : ''; // Replace servicerId with email if matchData is found
+          let matchData = emailServicer.find(
+            (matchServicer) =>
+              matchServicer.metaData[0].metaId?.toString() ===
+              servicerId.toString()
+          );
+          let email = matchData ? matchData.email : ""; // Replace servicerId with email if matchData is found
           flatArray.push({
             email: email,
-            response: existArray.data[servicerId]
+            response: existArray.data[servicerId],
           });
         }
-        //send email to servicer      
+        //send email to servicer
         for (const item of flatArray) {
-          if (item.email != '') {
+          if (item.email != "") {
             const htmlTableString = convertArrayToHTMLTable(item.response, []);
-            let mailing_servicer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
+            let mailing_servicer = await sgMail.send(
+              emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString)
+            );
           }
-
         }
       }
 
       //Convert Array to HTML table
       function convertArrayToHTMLTable(array, array1) {
-        var htmlContent = '';
+        var htmlContent = "";
         if (array.length > 0) {
-          const header = Object.keys(array[0]).filter(key => key !== 'exit').map(key => `<th>${key}</th>`).join('');
-          const rows = array.map(obj => {
+          const header = Object.keys(array[0])
+            .filter((key) => key !== "exit")
+            .map((key) => `<th>${key}</th>`)
+            .join("");
+          const rows = array.map((obj) => {
             const values = Object.entries(obj)
-              .filter(([key]) => key !== 'exit')  // Exclude 'exit' key
+              .filter(([key]) => key !== "exit") // Exclude 'exit' key
               .map(([, value]) => `<td>${value}</td>`);
 
             values[2] = `${values[2]}`; // Keep this line if you have specific logic for this index
-            return values.join('');
+            return values.join("");
           });
 
           htmlContent += `
@@ -3849,22 +5207,27 @@ exports.saveBulkClaim = async (req, res) => {
             <body>
                 <table>
                     <thead><tr>${header}</tr></thead>
-                    <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
+                    <tbody>${rows
+                      .map((row) => `<tr>${row}</tr>`)
+                      .join("")}</tbody>
                 </table>
             </body>
           </html>`;
         }
 
         if (array1.length > 0) {
-          const header = Object.keys(array1[0]).filter(key => key !== 'exit').map(key => `<th>${key}</th>`).join('');
+          const header = Object.keys(array1[0])
+            .filter((key) => key !== "exit")
+            .map((key) => `<th>${key}</th>`)
+            .join("");
 
-          const rows = array1.map(obj => {
+          const rows = array1.map((obj) => {
             const values = Object.entries(obj)
-              .filter(([key]) => key !== 'exit')  // Exclude 'exit' key
+              .filter(([key]) => key !== "exit") // Exclude 'exit' key
               .map(([, value]) => `<td>${value}</td>`);
 
             values[2] = `${values[2]}`; // Keep this line if you have specific logic for this index
-            return values.join('');
+            return values.join("");
           });
 
           htmlContent += `
@@ -3888,23 +5251,30 @@ exports.saveBulkClaim = async (req, res) => {
             <body>
                 <table>
                 <tr>
-                <td colspan="2" style="text-align:center">Total claims: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</td>
+                <td colspan="2" style="text-align:center">Total claims: ${
+                  parseInt(counts.trueCount) + parseInt(counts.falseCount)
+                }</td>
                 </tr>
                 <tr>
-                    <td span="1" style="text-align:center">Failure claims: ${counts.trueCount}</td>
-                    <td span="1" style="text-align:center">Successful added claims: ${counts.falseCount}</td>
+                    <td span="1" style="text-align:center">Failure claims: ${
+                      counts.trueCount
+                    }</td>
+                    <td span="1" style="text-align:center">Successful added claims: ${
+                      counts.falseCount
+                    }</td>
                 </tr>
                 </table>
                 <table>
                     <thead><tr>${header}</tr></thead>
-                    <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
+                    <tbody>${rows
+                      .map((row) => `<tr>${row}</tr>`)
+                      .join("")}</tbody>
                 </table>
             </body>
           </html>`;
         }
 
         return htmlContent;
-
       }
       let adminBulkQuery = {
         metaData: {
@@ -3912,11 +5282,13 @@ exports.saveBulkClaim = async (req, res) => {
             $and: [
               { "claimNotification.fileBulkClaim": true },
               { status: true },
-              { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") }
-            ]
-          }
+              {
+                roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"),
+              },
+            ],
+          },
         },
-      }
+      };
       let dealerBulkQuery = {
         metaData: {
           $elemMatch: {
@@ -3924,10 +5296,10 @@ exports.saveBulkClaim = async (req, res) => {
               { "claimNotification.fileBulkClaim": true },
               { status: true },
               { metaId: { $in: getDealerIds } },
-            ]
-          }
+            ],
+          },
         },
-      }
+      };
       let resellerBulkQuery = {
         metaData: {
           $elemMatch: {
@@ -3935,10 +5307,10 @@ exports.saveBulkClaim = async (req, res) => {
               { "claimNotification.fileBulkClaim": true },
               { status: true },
               { metaId: { $in: getResellerIds } },
-            ]
-          }
+            ],
+          },
         },
-      }
+      };
       let customerBulkQuery = {
         metaData: {
           $elemMatch: {
@@ -3946,10 +5318,10 @@ exports.saveBulkClaim = async (req, res) => {
               { "claimNotification.fileBulkClaim": true },
               { metaId: { $in: getCustomerIds } },
               { status: true },
-            ]
-          }
+            ],
+          },
         },
-      }
+      };
       let servicerrBulkQuery = {
         metaData: {
           $elemMatch: {
@@ -3957,93 +5329,140 @@ exports.saveBulkClaim = async (req, res) => {
               { "claimNotification.fileBulkClaim": true },
               { status: true },
               { metaId: { $in: getServicerIds } },
-
-            ]
-          }
+            ],
+          },
         },
-      }
+      };
 
-      let adminUsers = await supportingFunction.getNotificationEligibleUser(adminBulkQuery, { email: 1, metaData: 1 })
-      let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerBulkQuery, { email: 1, metaData: 1 })
-      let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerBulkQuery, { email: 1, metaData: 1 })
-      let customerUsers = await supportingFunction.getNotificationEligibleUser(customerBulkQuery, { email: 1, metaData: 1 })
-      let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerrBulkQuery, { email: 1, metaData: 1 })
+      let adminUsers = await supportingFunction.getNotificationEligibleUser(
+        adminBulkQuery,
+        { email: 1, metaData: 1 }
+      );
+      let dealerUsers = await supportingFunction.getNotificationEligibleUser(
+        dealerBulkQuery,
+        { email: 1, metaData: 1 }
+      );
+      let resellerUsers = await supportingFunction.getNotificationEligibleUser(
+        resellerBulkQuery,
+        { email: 1, metaData: 1 }
+      );
+      let customerUsers = await supportingFunction.getNotificationEligibleUser(
+        customerBulkQuery,
+        { email: 1, metaData: 1 }
+      );
+      let servicerUsers = await supportingFunction.getNotificationEligibleUser(
+        servicerrBulkQuery,
+        { email: 1, metaData: 1 }
+      );
       if (saveBulkClaim.length > 0) {
-
-        let notificationArray = []
-        let adminId = adminUsers.map(user => user._id);
-        let dealerId = dealerUsers.map(user => user._id);
-        let resellerId = resellerUsers.map(user => user._id);
-        let customerId = customerUsers.map(user => user._id);
-        let servicerId = servicerUsers.map(user => user._id);
-        const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
-        const base_url = `${process.env.SITE_URL}`
+        let notificationArray = [];
+        let adminId = adminUsers.map((user) => user._id);
+        let dealerId = dealerUsers.map((user) => user._id);
+        let resellerId = resellerUsers.map((user) => user._id);
+        let customerId = customerUsers.map((user) => user._id);
+        let servicerId = servicerUsers.map((user) => user._id);
+        const checkLoginUser = await supportingFunction.getPrimaryUser({
+          _id: req.teammateId,
+        });
+        const base_url = `${process.env.SITE_URL}`;
         let notificationData1;
         if (adminUsers.length > 0) {
           notificationData1 = {
             title: "Bulk Claim added successfully",
-            description: `Bulk claim file ${req.file.originalname} has been uploaded and successfully processed by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+            description: `Bulk claim file ${
+              req.file.originalname
+            } has been uploaded and successfully processed by ${
+              checkLoginUser.metaData[0]?.firstName +
+              " " +
+              checkLoginUser.metaData[0]?.lastName
+            } - ${req.role}`,
             userId: req.teammateId,
-            flag: 'Bulk Claim',
+            flag: "Bulk Claim",
             notificationFor: adminId,
             redirectionId: "/claimList",
-            endPoint: base_url + "claimList"
+            endPoint: base_url + "claimList",
           };
-          notificationArray.push(notificationData1)
+          notificationArray.push(notificationData1);
         }
         if (dealerUsers.length > 0) {
           notificationData1 = {
             title: "Bulk Claim added successfully",
-            description: `Bulk claim file ${req.file.originalname} has been uploaded and successfully processed by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+            description: `Bulk claim file ${
+              req.file.originalname
+            } has been uploaded and successfully processed by ${
+              checkLoginUser.metaData[0]?.firstName +
+              " " +
+              checkLoginUser.metaData[0]?.lastName
+            } - ${req.role}`,
             userId: req.teammateId,
-            flag: 'Bulk Claim',
+            flag: "Bulk Claim",
             notificationFor: dealerId,
             redirectionId: "/claimList",
-            endPoint: base_url + "claimList"
+            endPoint: base_url + "claimList",
           };
-          notificationArray.push(notificationData1)
+          notificationArray.push(notificationData1);
         }
         if (resellerUsers.length > 0) {
           notificationData1 = {
             title: "Bulk Claim added successfully",
-            description: `Bulk claim file ${req.file.originalname} has been uploaded and successfully processed by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+            description: `Bulk claim file ${
+              req.file.originalname
+            } has been uploaded and successfully processed by ${
+              checkLoginUser.metaData[0]?.firstName +
+              " " +
+              checkLoginUser.metaData[0]?.lastName
+            } - ${req.role}`,
             userId: req.teammateId,
-            flag: 'Bulk Claim',
+            flag: "Bulk Claim",
             notificationFor: resellerId,
             redirectionId: "/claimList",
-            endPoint: base_url + "claimList"
+            endPoint: base_url + "claimList",
           };
-          notificationArray.push(notificationData1)
+          notificationArray.push(notificationData1);
         }
         if (customerUsers.length > 0) {
           notificationData1 = {
             title: "Bulk Claim added successfully",
-            description: `Bulk claim file ${req.file.originalname} has been uploaded and successfully processed by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+            description: `Bulk claim file ${
+              req.file.originalname
+            } has been uploaded and successfully processed by ${
+              checkLoginUser.metaData[0]?.firstName +
+              " " +
+              checkLoginUser.metaData[0]?.lastName
+            } - ${req.role}`,
             userId: req.teammateId,
-            flag: 'Bulk Claim',
+            flag: "Bulk Claim",
             notificationFor: customerId,
             redirectionId: "/claimList",
-            endPoint: base_url + "claimList"
+            endPoint: base_url + "claimList",
           };
-          notificationArray.push(notificationData1)
+          notificationArray.push(notificationData1);
         }
         if (servicerUsers.length > 0) {
           notificationData1 = {
             title: "Bulk Claim added successfully",
-            description: `Bulk claim file ${req.file.originalname} has been uploaded and successfully processed by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+            description: `Bulk claim file ${
+              req.file.originalname
+            } has been uploaded and successfully processed by ${
+              checkLoginUser.metaData[0]?.firstName +
+              " " +
+              checkLoginUser.metaData[0]?.lastName
+            } - ${req.role}`,
             userId: req.teammateId,
-            flag: 'Bulk Claim',
+            flag: "Bulk Claim",
             notificationFor: servicerId,
             redirectionId: "/claimList",
-            endPoint: base_url + "claimList"
+            endPoint: base_url + "claimList",
           };
-          notificationArray.push(notificationData1)
+          notificationArray.push(notificationData1);
         }
-        let createNotification = await userService.saveNotificationBulk(notificationArray);
+        let createNotification = await userService.saveNotificationBulk(
+          notificationArray
+        );
       }
-      //Get Failure Claims 
-      const successEntries = csvArray.filter(entry => entry.exit === false);
-      const failureEntries = csvArray.filter(entry => entry.exit === true);
+      //Get Failure Claims
+      const successEntries = csvArray.filter((entry) => entry.exit === false);
+      const failureEntries = csvArray.filter((entry) => entry.exit === true);
 
       let mailing;
       let htmlTableString;
@@ -4056,29 +5475,51 @@ exports.saveBulkClaim = async (req, res) => {
                 { "claimNotification.fileBulkClaim": true },
                 { metaId: req.userId },
                 { status: true },
-              ]
-            }
+              ],
+            },
           },
-        }
-        let allDealer = await supportingFunction.getNotificationEligibleUser(dealerEmailBulkQuery, { email: 1, metaData: 1 })
+        };
+        let allDealer = await supportingFunction.getNotificationEligibleUser(
+          dealerEmailBulkQuery,
+          { email: 1, metaData: 1 }
+        );
 
-        let adminEmail = adminUsers.map(user => user.email);
-        let dealerEmail = allDealer.map(user => user.email);
+        let adminEmail = adminUsers.map((user) => user.email);
+        let dealerEmail = allDealer.map((user) => user.email);
 
         if (failureEntries.length > 0) {
           htmlTableString = convertArrayToHTMLTable([], failureEntries);
           if (dealerEmail.length > 0) {
-            mailing = await sgMail.send(emailConstant.sendCsvFile(dealerEmail, ["noreply@getcover.com"], htmlTableString));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allDealer, htmlTableString, "Bulk Data Report")
+            mailing = await sgMail.send(
+              emailConstant.sendCsvFile(
+                dealerEmail,
+                ["noreply@getcover.com"],
+                htmlTableString
+              )
+            );
+            maillogservice.createMailLogFunctionWithHtml(
+              mailing,
+              allDealer,
+              htmlTableString,
+              "Bulk Data Report"
+            );
           }
           if (adminEmail.length > 0) {
-            mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlTableString));
-            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString, "Bulk Data Report")
+            mailing = await sgMail.send(
+              emailConstant.sendCsvFile(
+                adminEmail,
+                ["noreply@getcover.com"],
+                htmlTableString
+              )
+            );
+            maillogservice.createMailLogFunctionWithHtml(
+              mailing,
+              adminUsers,
+              htmlTableString,
+              "Bulk Data Report"
+            );
           }
-
-        }
-
-        else {
+        } else {
           let htmlContent = `
           <html>
             <head>
@@ -4100,11 +5541,17 @@ exports.saveBulkClaim = async (req, res) => {
             <body>
                 <table>
                 <tr>
-                <td colspan="2" style="text-align:center">Total filed claims: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</td>
+                <td colspan="2" style="text-align:center">Total filed claims: ${
+                  parseInt(counts.trueCount) + parseInt(counts.falseCount)
+                }</td>
                 </tr>
                 <tr>
-                    <td span="1" style="text-align:center">Failure claims: ${counts.trueCount}</td>
-                    <td span="1" style="text-align:center">Successful added claims: ${counts.falseCount}</td>
+                    <td span="1" style="text-align:center">Failure claims: ${
+                      counts.trueCount
+                    }</td>
+                    <td span="1" style="text-align:center">Successful added claims: ${
+                      counts.falseCount
+                    }</td>
                 </tr>
                 </table>
             </body>
@@ -4112,19 +5559,43 @@ exports.saveBulkClaim = async (req, res) => {
 
           //htmlTableString = convertArrayToHTMLTable([], failureEntries);
           if (dealerEmail.length > 0) {
-            mailing = await sgMail.send(emailConstant.sendCsvFile(dealerEmail, ["noreply@getcover.com"], htmlContent));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allDealer, htmlTableString, "Bulk Data Report")
+            mailing = await sgMail.send(
+              emailConstant.sendCsvFile(
+                dealerEmail,
+                ["noreply@getcover.com"],
+                htmlContent
+              )
+            );
+            maillogservice.createMailLogFunctionWithHtml(
+              mailing,
+              allDealer,
+              htmlTableString,
+              "Bulk Data Report"
+            );
           }
           if (adminEmail.length > 0) {
-            mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlContent));
-            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString, "Bulk Data Report")
+            mailing = await sgMail.send(
+              emailConstant.sendCsvFile(
+                adminEmail,
+                ["noreply@getcover.com"],
+                htmlContent
+              )
+            );
+            maillogservice.createMailLogFunctionWithHtml(
+              mailing,
+              adminUsers,
+              htmlTableString,
+              "Bulk Data Report"
+            );
           }
-
         }
         //mailing = await sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
       }
       if (req.role == "Reseller") {
-        const loginReseller = await resellerService.getReseller({ _id: req.userId }, {});
+        const loginReseller = await resellerService.getReseller(
+          { _id: req.userId },
+          {}
+        );
 
         let resellerEmailBulkQuery = {
           metaData: {
@@ -4133,10 +5604,10 @@ exports.saveBulkClaim = async (req, res) => {
                 { "claimNotification.fileBulkClaim": true },
                 { metaId: req.userId },
                 { status: true },
-              ]
-            }
+              ],
+            },
           },
-        }
+        };
         let resellerDealerEmailBulkQuery = {
           metaData: {
             $elemMatch: {
@@ -4144,33 +5615,71 @@ exports.saveBulkClaim = async (req, res) => {
                 { "claimNotification.fileBulkClaim": true },
                 { metaId: loginReseller?.dealerId },
                 { status: true },
-              ]
-            }
+              ],
+            },
           },
-        }
+        };
 
-        let allReseller = await supportingFunction.getNotificationEligibleUser(resellerEmailBulkQuery, { email: 1, metaData: 1 })
-        let allResellersDealer = await supportingFunction.getNotificationEligibleUser(resellerDealerEmailBulkQuery, { email: 1, metaData: 1 })
-        let resellerEmails = allReseller.map(customer => customer.email);
-        let dealerEmails = allResellersDealer.map(customer => customer.email);
-        let adminEmail = adminUsers.map(user => user.email);
+        let allReseller = await supportingFunction.getNotificationEligibleUser(
+          resellerEmailBulkQuery,
+          { email: 1, metaData: 1 }
+        );
+        let allResellersDealer =
+          await supportingFunction.getNotificationEligibleUser(
+            resellerDealerEmailBulkQuery,
+            { email: 1, metaData: 1 }
+          );
+        let resellerEmails = allReseller.map((customer) => customer.email);
+        let dealerEmails = allResellersDealer.map((customer) => customer.email);
+        let adminEmail = adminUsers.map((user) => user.email);
         if (failureEntries.length > 0) {
           htmlTableString = convertArrayToHTMLTable([], failureEntries);
           if (dealerEmails.length > 0) {
-            mailing = await sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlTableString));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allResellersDealer, htmlTableString, "Bulk Data Report")
+            mailing = await sgMail.send(
+              emailConstant.sendCsvFile(
+                dealerEmails,
+                ["noreply@getcover.com"],
+                htmlTableString
+              )
+            );
+            maillogservice.createMailLogFunctionWithHtml(
+              mailing,
+              allResellersDealer,
+              htmlTableString,
+              "Bulk Data Report"
+            );
           }
           if (adminEmail.length > 0) {
-            mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlTableString));
-            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString, "Bulk Data Report")
+            mailing = await sgMail.send(
+              emailConstant.sendCsvFile(
+                adminEmail,
+                ["noreply@getcover.com"],
+                htmlTableString
+              )
+            );
+            maillogservice.createMailLogFunctionWithHtml(
+              mailing,
+              adminUsers,
+              htmlTableString,
+              "Bulk Data Report"
+            );
           }
           if (resellerEmails.length > 0) {
-            mailing = await sgMail.send(emailConstant.sendCsvFile(resellerEmails, ["noreply@getcover.com"], htmlTableString));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allReseller, htmlTableString, "Bulk Data Report")
+            mailing = await sgMail.send(
+              emailConstant.sendCsvFile(
+                resellerEmails,
+                ["noreply@getcover.com"],
+                htmlTableString
+              )
+            );
+            maillogservice.createMailLogFunctionWithHtml(
+              mailing,
+              allReseller,
+              htmlTableString,
+              "Bulk Data Report"
+            );
           }
-        }
-
-        else {
+        } else {
           let htmlContent = `
           <html>
             <head>
@@ -4192,11 +5701,17 @@ exports.saveBulkClaim = async (req, res) => {
             <body>
                 <table>
                 <tr>
-                <td colspan="2" style="text-align:center">Total filed claims: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</td>
+                <td colspan="2" style="text-align:center">Total filed claims: ${
+                  parseInt(counts.trueCount) + parseInt(counts.falseCount)
+                }</td>
                 </tr>
                 <tr>
-                    <td span="1" style="text-align:center">Failure claims: ${counts.trueCount}</td>
-                    <td span="1" style="text-align:center">Successful added claims: ${counts.falseCount}</td>
+                    <td span="1" style="text-align:center">Failure claims: ${
+                      counts.trueCount
+                    }</td>
+                    <td span="1" style="text-align:center">Successful added claims: ${
+                      counts.falseCount
+                    }</td>
                 </tr>
                 </table>
             </body>
@@ -4204,21 +5719,56 @@ exports.saveBulkClaim = async (req, res) => {
 
           //htmlTableString = convertArrayToHTMLTable([], failureEntries);
           if (dealerEmails.length > 0) {
-            mailing = await sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlContent));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allResellersDealer, htmlContent, "Bulk Data Report")
+            mailing = await sgMail.send(
+              emailConstant.sendCsvFile(
+                dealerEmails,
+                ["noreply@getcover.com"],
+                htmlContent
+              )
+            );
+            maillogservice.createMailLogFunctionWithHtml(
+              mailing,
+              allResellersDealer,
+              htmlContent,
+              "Bulk Data Report"
+            );
           }
           if (adminEmail.length > 0) {
-            mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlContent));
-            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlContent, "Bulk Data Report")
+            mailing = await sgMail.send(
+              emailConstant.sendCsvFile(
+                adminEmail,
+                ["noreply@getcover.com"],
+                htmlContent
+              )
+            );
+            maillogservice.createMailLogFunctionWithHtml(
+              mailing,
+              adminUsers,
+              htmlContent,
+              "Bulk Data Report"
+            );
           }
           if (resellerEmails.length > 0) {
-            mailing = await sgMail.send(emailConstant.sendCsvFile(resellerEmails, ["noreply@getcover.com"], htmlContent));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allReseller, htmlContent, "Bulk Data Report")
+            mailing = await sgMail.send(
+              emailConstant.sendCsvFile(
+                resellerEmails,
+                ["noreply@getcover.com"],
+                htmlContent
+              )
+            );
+            maillogservice.createMailLogFunctionWithHtml(
+              mailing,
+              allReseller,
+              htmlContent,
+              "Bulk Data Report"
+            );
           }
         }
       }
       if (req.role == "Customer") {
-        let loginCustomer = await customerService.getCustomerById({ _id: req.userId });
+        let loginCustomer = await customerService.getCustomerById({
+          _id: req.userId,
+        });
 
         let customerEmailBulkQuery = {
           metaData: {
@@ -4227,10 +5777,10 @@ exports.saveBulkClaim = async (req, res) => {
                 { "claimNotification.fileBulkClaim": true },
                 { metaId: req.userId },
                 { status: true },
-              ]
-            }
+              ],
+            },
           },
-        }
+        };
         let customerDealerEmailBulkQuery = {
           metaData: {
             $elemMatch: {
@@ -4238,10 +5788,10 @@ exports.saveBulkClaim = async (req, res) => {
                 { "claimNotification.fileBulkClaim": true },
                 { metaId: loginCustomer?.dealerId },
                 { status: true },
-              ]
-            }
+              ],
+            },
           },
-        }
+        };
         let customerResellerEmailBulkQuery = {
           metaData: {
             $elemMatch: {
@@ -4249,40 +5799,94 @@ exports.saveBulkClaim = async (req, res) => {
                 { "claimNotification.fileBulkClaim": true },
                 { metaId: loginCustomer?.resellerId1 },
                 { status: true },
-              ]
-            }
+              ],
+            },
           },
-        }
-        let adminEmail = adminUsers.map(user => user.email);
+        };
+        let adminEmail = adminUsers.map((user) => user.email);
 
-        let allCustomers = await supportingFunction.getNotificationEligibleUser(customerEmailBulkQuery, { email: 1, metaData: 1 })
-        let allCustomersDealer = await supportingFunction.getNotificationEligibleUser(customerDealerEmailBulkQuery, { email: 1, metaData: 1 })
-        let allCustomersReseller = await supportingFunction.getNotificationEligibleUser(customerResellerEmailBulkQuery, { email: 1, metaData: 1 })
-        let customerEmails = allCustomers.map(customer => customer.email);
-        let dealerEmails = allCustomersDealer.map(customer => customer.email);
-        let resellerEmails = allCustomersReseller.map(customer => customer.email);
+        let allCustomers = await supportingFunction.getNotificationEligibleUser(
+          customerEmailBulkQuery,
+          { email: 1, metaData: 1 }
+        );
+        let allCustomersDealer =
+          await supportingFunction.getNotificationEligibleUser(
+            customerDealerEmailBulkQuery,
+            { email: 1, metaData: 1 }
+          );
+        let allCustomersReseller =
+          await supportingFunction.getNotificationEligibleUser(
+            customerResellerEmailBulkQuery,
+            { email: 1, metaData: 1 }
+          );
+        let customerEmails = allCustomers.map((customer) => customer.email);
+        let dealerEmails = allCustomersDealer.map((customer) => customer.email);
+        let resellerEmails = allCustomersReseller.map(
+          (customer) => customer.email
+        );
         if (failureEntries.length > 0) {
           htmlTableString = convertArrayToHTMLTable([], failureEntries);
           if (dealerEmails.length > 0) {
-            mailing = await sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlTableString));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomersDealer, htmlTableString, "Bulk Data Report")
+            mailing = await sgMail.send(
+              emailConstant.sendCsvFile(
+                dealerEmails,
+                ["noreply@getcover.com"],
+                htmlTableString
+              )
+            );
+            maillogservice.createMailLogFunctionWithHtml(
+              mailing,
+              allCustomersDealer,
+              htmlTableString,
+              "Bulk Data Report"
+            );
           }
           if (adminEmail.length > 0) {
-            mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlTableString));
-            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString, "Bulk Data Report")
+            mailing = await sgMail.send(
+              emailConstant.sendCsvFile(
+                adminEmail,
+                ["noreply@getcover.com"],
+                htmlTableString
+              )
+            );
+            maillogservice.createMailLogFunctionWithHtml(
+              mailing,
+              adminUsers,
+              htmlTableString,
+              "Bulk Data Report"
+            );
           }
           if (resellerEmails.length > 0) {
-            mailing = await sgMail.send(emailConstant.sendCsvFile(resellerEmails, ["noreply@getcover.com"], htmlTableString));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomersReseller, htmlTableString, "Bulk Data Report")
+            mailing = await sgMail.send(
+              emailConstant.sendCsvFile(
+                resellerEmails,
+                ["noreply@getcover.com"],
+                htmlTableString
+              )
+            );
+            maillogservice.createMailLogFunctionWithHtml(
+              mailing,
+              allCustomersReseller,
+              htmlTableString,
+              "Bulk Data Report"
+            );
           }
           if (customerEmails.length > 0) {
-            mailing = await sgMail.send(emailConstant.sendCsvFile(customerEmails, ["noreply@getcover.com"], htmlTableString));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomers, htmlTableString, "Bulk Data Report")
+            mailing = await sgMail.send(
+              emailConstant.sendCsvFile(
+                customerEmails,
+                ["noreply@getcover.com"],
+                htmlTableString
+              )
+            );
+            maillogservice.createMailLogFunctionWithHtml(
+              mailing,
+              allCustomers,
+              htmlTableString,
+              "Bulk Data Report"
+            );
           }
-
-        }
-
-        else {
+        } else {
           let htmlContent = `
           <html>
             <head>
@@ -4304,11 +5908,17 @@ exports.saveBulkClaim = async (req, res) => {
             <body>
                 <table>
                 <tr>
-                <td colspan="2" style="text-align:center">Total filed claims: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</td>
+                <td colspan="2" style="text-align:center">Total filed claims: ${
+                  parseInt(counts.trueCount) + parseInt(counts.falseCount)
+                }</td>
                 </tr>
                 <tr>
-                    <td span="1" style="text-align:center">Failure claims: ${counts.trueCount}</td>
-                    <td span="1" style="text-align:center">Successful added claims: ${counts.falseCount}</td>
+                    <td span="1" style="text-align:center">Failure claims: ${
+                      counts.trueCount
+                    }</td>
+                    <td span="1" style="text-align:center">Successful added claims: ${
+                      counts.falseCount
+                    }</td>
                 </tr>
                 </table>
             </body>
@@ -4316,36 +5926,87 @@ exports.saveBulkClaim = async (req, res) => {
 
           //htmlTableString = convertArrayToHTMLTable([], failureEntries);
           if (dealerEmails.length > 0) {
-            mailing = await sgMail.send(emailConstant.sendCsvFile(dealerEmails, ["noreply@getcover.com"], htmlContent));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomersDealer, htmlContent, "Bulk Data Report")
+            mailing = await sgMail.send(
+              emailConstant.sendCsvFile(
+                dealerEmails,
+                ["noreply@getcover.com"],
+                htmlContent
+              )
+            );
+            maillogservice.createMailLogFunctionWithHtml(
+              mailing,
+              allCustomersDealer,
+              htmlContent,
+              "Bulk Data Report"
+            );
           }
           if (adminEmail.length > 0) {
-            mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlContent));
-            maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlContent, "Bulk Data Report");
+            mailing = await sgMail.send(
+              emailConstant.sendCsvFile(
+                adminEmail,
+                ["noreply@getcover.com"],
+                htmlContent
+              )
+            );
+            maillogservice.createMailLogFunctionWithHtml(
+              mailing,
+              adminUsers,
+              htmlContent,
+              "Bulk Data Report"
+            );
           }
           if (resellerEmails.length > 0) {
-            mailing = await sgMail.send(emailConstant.sendCsvFile(resellerEmails, ["noreply@getcover.com"], htmlContent));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomersReseller, htmlContent, "Bulk Data Report")
+            mailing = await sgMail.send(
+              emailConstant.sendCsvFile(
+                resellerEmails,
+                ["noreply@getcover.com"],
+                htmlContent
+              )
+            );
+            maillogservice.createMailLogFunctionWithHtml(
+              mailing,
+              allCustomersReseller,
+              htmlContent,
+              "Bulk Data Report"
+            );
           }
           if (customerEmails.length > 0) {
-            mailing = await sgMail.send(emailConstant.sendCsvFile(customerEmails, ["noreply@getcover.com"], htmlContent));
-            maillogservice.createMailLogFunctionWithHtml(mailing, allCustomers, htmlContent, "Bulk Data Report")
+            mailing = await sgMail.send(
+              emailConstant.sendCsvFile(
+                customerEmails,
+                ["noreply@getcover.com"],
+                htmlContent
+              )
+            );
+            maillogservice.createMailLogFunctionWithHtml(
+              mailing,
+              allCustomers,
+              htmlContent,
+              "Bulk Data Report"
+            );
           }
-
         }
       }
       //send Email to admin
       if (req.role == "Super Admin") {
-        let adminEmail = adminUsers.map(user => user.email);
+        let adminEmail = adminUsers.map((user) => user.email);
         if (failureEntries.length > 0) {
           htmlTableString = convertArrayToHTMLTable([], failureEntries);
           // let adminEmail = adminUsers.map
-          mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ["noreply@getcover.com"], htmlTableString));
-          maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlTableString, "Bulk Data Report");
-
-        }
-
-        else {
+          mailing = await sgMail.send(
+            emailConstant.sendCsvFile(
+              adminEmail,
+              ["noreply@getcover.com"],
+              htmlTableString
+            )
+          );
+          maillogservice.createMailLogFunctionWithHtml(
+            mailing,
+            adminUsers,
+            htmlTableString,
+            "Bulk Data Report"
+          );
+        } else {
           let htmlContent = `
           <html>
             <head>
@@ -4367,104 +6028,141 @@ exports.saveBulkClaim = async (req, res) => {
             <body>
                 <table>
                 <tr>
-                <td colspan="2" style="text-align:center">Total filed claims: ${parseInt(counts.trueCount) + parseInt(counts.falseCount)}</td>
+                <td colspan="2" style="text-align:center">Total filed claims: ${
+                  parseInt(counts.trueCount) + parseInt(counts.falseCount)
+                }</td>
                 </tr>
                 <tr>
-                    <td span="1" style="text-align:center">Failure claims: ${counts.trueCount}</td>
-                    <td span="1" style="text-align:center">Successful added claims: ${counts.falseCount}</td>
+                    <td span="1" style="text-align:center">Failure claims: ${
+                      counts.trueCount
+                    }</td>
+                    <td span="1" style="text-align:center">Successful added claims: ${
+                      counts.falseCount
+                    }</td>
                 </tr>
                 </table>
             </body>
           </html>`;
 
           //htmlTableString = convertArrayToHTMLTable([], failureEntries);
-          mailing = await sgMail.send(emailConstant.sendCsvFile(adminEmail, ccMail, htmlContent));
-          maillogservice.createMailLogFunctionWithHtml(mailing, adminUsers, htmlContent, "Bulk Data Report");
-
+          mailing = await sgMail.send(
+            emailConstant.sendCsvFile(adminEmail, ccMail, htmlContent)
+          );
+          maillogservice.createMailLogFunctionWithHtml(
+            mailing,
+            adminUsers,
+            htmlContent,
+            "Bulk Data Report"
+          );
         }
-
-
       }
-
 
       res.send({
         code: constant.successCode,
-        message: 'Success!',
-        result: saveBulkClaim
-      })
-
-    }
-    catch (err) {
+        message: "Success!",
+        result: saveBulkClaim,
+      });
+    } catch (err) {
       res.send({
         code: constant.errorCode,
         message: err.message,
-        message_line: err.stack
-      })
+        message_line: err.stack,
+      });
     }
-  })
-
-}
+  });
+};
 //Send message Done
 exports.sendMessages = async (req, res) => {
   try {
-    let data = req.body
+    let data = req.body;
     let emailTo;
-    let criteria = { _id: req.params.claimId }
+    let criteria = { _id: req.params.claimId };
 
-    let checkClaim = await claimService.getClaimById(criteria)
+    let checkClaim = await claimService.getClaimById(criteria);
     if (!checkClaim) {
       res.send({
         code: constant.errorCode,
-        message: "Invalid claim ID"
-      })
-      return
+        message: "Invalid claim ID",
+      });
+      return;
     }
-    let orderData = await orderService.getOrder({ _id: data.orderId }, { isDeleted: false })
-
-
+    let orderData = await orderService.getOrder(
+      { _id: data.orderId },
+      { isDeleted: false }
+    );
 
     let settingData = await userService.getSetting({});
 
-    data.claimId = req.params.claimId
+    data.claimId = req.params.claimId;
     if (!orderData) {
       res.send({
         code: constant.errorCode,
-        message: 'Order is not found for this claim!'
-      })
-      return
+        message: "Order is not found for this claim!",
+      });
+      return;
     }
     let checkServicer = await servicerService.getServiceProviderById({
       $or: [
-        { _id: checkClaim?.servicerId ? checkClaim?.servicerId : orderData?.servicerId },
-        { dealerId: checkClaim?.servicerId ? checkClaim?.servicerId : orderData?.servicerId },
-        { resellerId: checkClaim?.servicerId ? checkClaim?.servicerId : orderData?.servicerId },
-      ]
-    })
+        {
+          _id: checkClaim?.servicerId
+            ? checkClaim?.servicerId
+            : orderData?.servicerId,
+        },
+        {
+          dealerId: checkClaim?.servicerId
+            ? checkClaim?.servicerId
+            : orderData?.servicerId,
+        },
+        {
+          resellerId: checkClaim?.servicerId
+            ? checkClaim?.servicerId
+            : orderData?.servicerId,
+        },
+      ],
+    });
 
-    data.commentedBy = req.userId
+    data.commentedBy = req.userId;
     data.commentedTo = req.userId;
-    data.commentedByUser = req.teammateId
-    const commentByUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
+    data.commentedByUser = req.teammateId;
+    const commentByUser = await supportingFunction.getPrimaryUser({
+      _id: req.teammateId,
+    });
 
-    emailTo = await supportingFunction.getPrimaryUser({ _id: req.teammateId, metaData: { $elemMatch: { isPrimary: true } } })
-    if (data.type == 'Reseller') {
-      data.commentedTo = orderData.resellerId
-      emailTo = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.resellerId, isPrimary: true } } })
-    }
-    else if (data.type == 'Dealer') {
-      data.commentedTo = orderData.dealerId
-      emailTo = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.dealerId, isPrimary: true } } })
-    }
-    else if (data.type == 'Customer') {
-      data.commentedTo = orderData.customerId
-      emailTo = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.customerId, isPrimary: true } } })
-    }
-    else if (data.type == 'Servicer') {
-      data.commentedTo = orderData.servicerId
-      emailTo = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: checkClaim.servicerId, isPrimary: true } } })
+    emailTo = await supportingFunction.getPrimaryUser({
+      _id: req.teammateId,
+      metaData: { $elemMatch: { isPrimary: true } },
+    });
+    if (data.type == "Reseller") {
+      data.commentedTo = orderData.resellerId;
+      emailTo = await supportingFunction.getPrimaryUser({
+        metaData: {
+          $elemMatch: { metaId: orderData.resellerId, isPrimary: true },
+        },
+      });
+    } else if (data.type == "Dealer") {
+      data.commentedTo = orderData.dealerId;
+      emailTo = await supportingFunction.getPrimaryUser({
+        metaData: {
+          $elemMatch: { metaId: orderData.dealerId, isPrimary: true },
+        },
+      });
+    } else if (data.type == "Customer") {
+      data.commentedTo = orderData.customerId;
+      emailTo = await supportingFunction.getPrimaryUser({
+        metaData: {
+          $elemMatch: { metaId: orderData.customerId, isPrimary: true },
+        },
+      });
+    } else if (data.type == "Servicer") {
+      data.commentedTo = orderData.servicerId;
+      emailTo = await supportingFunction.getPrimaryUser({
+        metaData: {
+          $elemMatch: { metaId: checkClaim.servicerId, isPrimary: true },
+        },
+      });
     }
 
-    let sendMessage = await claimService.addMessage(data)
+    let sendMessage = await claimService.addMessage(data);
 
     if (!sendMessage) {
       //Save Logs
@@ -4475,14 +6173,14 @@ exports.sendMessages = async (req, res) => {
         response: {
           code: constant.errorCode,
           message: "Unable to send message",
-          result: sendMessage
-        }
-      }
-      await LOG(logData).save()
+          result: sendMessage,
+        },
+      };
+      await LOG(logData).save();
 
       res.send({
         code: constant.errorCode,
-        message: 'Unable to send message!'
+        message: "Unable to send message!",
       });
       return;
     }
@@ -4493,16 +6191,18 @@ exports.sendMessages = async (req, res) => {
       body: data,
       response: {
         code: constant.successCode,
-        messages: 'Message Sent!',
-        result: sendMessage
-      }
-    }
-    await LOG(logData).save()
+        messages: "Message Sent!",
+        result: sendMessage,
+      },
+    };
+    await LOG(logData).save();
 
     //Send notification to all
     //Get submitted user
-    const checkLoginUser = await supportingFunction.getPrimaryUser({ _id: req.teammateId })
-    const site_url = `${process.env.SITE_URL}`
+    const checkLoginUser = await supportingFunction.getPrimaryUser({
+      _id: req.teammateId,
+    });
+    const site_url = `${process.env.SITE_URL}`;
     const adminCommentQuery = {
       metaData: {
         $elemMatch: {
@@ -4511,14 +6211,17 @@ exports.sendMessages = async (req, res) => {
             { status: true },
             {
               $or: [
-                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
-              ]
+                {
+                  roleId: new mongoose.Types.ObjectId(
+                    "656f0550d0d6e08fc82379dc"
+                  ),
+                },
+              ],
             },
-
-          ]
-        }
+          ],
+        },
       },
-    }
+    };
     const dealerCommentQuery = {
       metaData: {
         $elemMatch: {
@@ -4528,13 +6231,12 @@ exports.sendMessages = async (req, res) => {
             {
               $or: [
                 { metaId: new mongoose.Types.ObjectId(orderData.dealerId) },
-              ]
+              ],
             },
-
-          ]
-        }
+          ],
+        },
       },
-    }
+    };
     const resellerCommentQuery = {
       metaData: {
         $elemMatch: {
@@ -4544,13 +6246,12 @@ exports.sendMessages = async (req, res) => {
             {
               $or: [
                 { metaId: new mongoose.Types.ObjectId(orderData?.resellerId) },
-              ]
+              ],
             },
-
-          ]
-        }
+          ],
+        },
       },
-    }
+    };
     const customerCommentQuery = {
       metaData: {
         $elemMatch: {
@@ -4560,14 +6261,12 @@ exports.sendMessages = async (req, res) => {
             {
               $or: [
                 { metaId: new mongoose.Types.ObjectId(orderData.customerId) },
-              ]
+              ],
             },
-
-          ]
-        }
+          ],
+        },
       },
-    }
-
+    };
 
     const servicerCommentQuery = {
       metaData: {
@@ -4577,111 +6276,184 @@ exports.sendMessages = async (req, res) => {
             { status: true },
             {
               $or: [
-
                 { metaId: new mongoose.Types.ObjectId(checkServicer?._id) },
-                { metaId: new mongoose.Types.ObjectId(checkServicer?.dealerId) },
-                { metaId: new mongoose.Types.ObjectId(checkServicer?.resellerId) },
-              ]
+                {
+                  metaId: new mongoose.Types.ObjectId(checkServicer?.dealerId),
+                },
+                {
+                  metaId: new mongoose.Types.ObjectId(
+                    checkServicer?.resellerId
+                  ),
+                },
+              ],
             },
-
-          ]
-        }
+          ],
+        },
       },
-    }
+    };
 
+    let adminUsers = await supportingFunction.getNotificationEligibleUser(
+      adminCommentQuery,
+      { email: 1, metaData: 1 }
+    );
+    let dealerUsers = await supportingFunction.getNotificationEligibleUser(
+      dealerCommentQuery,
+      { email: 1, metaData: 1 }
+    );
+    let resellerUsers = await supportingFunction.getNotificationEligibleUser(
+      resellerCommentQuery,
+      { email: 1, metaData: 1 }
+    );
+    let customerUsers = await supportingFunction.getNotificationEligibleUser(
+      customerCommentQuery,
+      { email: 1, metaData: 1 }
+    );
+    let servicerUsers = await supportingFunction.getNotificationEligibleUser(
+      servicerCommentQuery,
+      { email: 1, metaData: 1 }
+    );
+    let notificationArray = [];
 
-    let adminUsers = await supportingFunction.getNotificationEligibleUser(adminCommentQuery, { email: 1, metaData: 1 })
-    let dealerUsers = await supportingFunction.getNotificationEligibleUser(dealerCommentQuery, { email: 1, metaData: 1 })
-    let resellerUsers = await supportingFunction.getNotificationEligibleUser(resellerCommentQuery, { email: 1, metaData: 1 })
-    let customerUsers = await supportingFunction.getNotificationEligibleUser(customerCommentQuery, { email: 1, metaData: 1 })
-    let servicerUsers = await supportingFunction.getNotificationEligibleUser(servicerCommentQuery, { email: 1, metaData: 1 })
-    let notificationArray = []
+    let IDs = adminUsers.map((user) => user._id);
+    let adminEmail = adminUsers.map((user) => user.email);
+    let dealerId = dealerUsers.map((user) => user._id);
+    let resellerId = resellerUsers.map((user) => user._id);
+    let customerId = customerUsers.map((user) => user._id);
+    let servicerId = servicerUsers.map((user) => user._id);
 
-    let IDs = adminUsers.map(user => user._id)
-    let adminEmail = adminUsers.map(user => user.email)
-    let dealerId = dealerUsers.map(user => user._id)
-    let resellerId = resellerUsers.map(user => user._id)
-    let customerId = customerUsers.map(user => user._id)
-    let servicerId = servicerUsers.map(user => user._id)
-
-    let dealerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.dealerId, isPrimary: true } } })
-    let customerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.customerId, isPrimary: true } } })
-    let resellerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.resellerId, isPrimary: true } } })
+    let dealerPrimary = await supportingFunction.getPrimaryUser({
+      metaData: { $elemMatch: { metaId: orderData.dealerId, isPrimary: true } },
+    });
+    let customerPrimary = await supportingFunction.getPrimaryUser({
+      metaData: {
+        $elemMatch: { metaId: orderData.customerId, isPrimary: true },
+      },
+    });
+    let resellerPrimary = await supportingFunction.getPrimaryUser({
+      metaData: {
+        $elemMatch: { metaId: orderData.resellerId, isPrimary: true },
+      },
+    });
     // let servicerPrimary = await supportingFunction.getPrimaryUser({ metaData: { $elemMatch: { metaId: orderData.servicerId, isPrimary: true } } })
     let servicerPrimary = await supportingFunction.getPrimaryUser({
       $or: [
-        { metaData: { $elemMatch: { metaId: orderData.servicerId, isPrimary: true } } },
-        { metaData: { $elemMatch: { metaId: orderData.servicerId, isPrimary: true } } },
-        { metaData: { $elemMatch: { metaId: orderData.servicerId, isPrimary: true } } }]
-    })
+        {
+          metaData: {
+            $elemMatch: { metaId: orderData.servicerId, isPrimary: true },
+          },
+        },
+        {
+          metaData: {
+            $elemMatch: { metaId: orderData.servicerId, isPrimary: true },
+          },
+        },
+        {
+          metaData: {
+            $elemMatch: { metaId: orderData.servicerId, isPrimary: true },
+          },
+        },
+      ],
+    });
 
     if (adminUsers.length > 0) {
       let notificationData1 = {
         title: "New Claim Comment added",
-        description: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+        description: `Claim # ${
+          checkClaim.unique_key
+        } A new comment has been added by ${
+          checkLoginUser.metaData[0]?.firstName +
+          " " +
+          checkLoginUser.metaData[0]?.lastName
+        } - ${req.role}`,
         userId: req.teammateId,
         contentId: checkClaim._id,
-        flag: 'claim',
+        flag: "claim",
         endPoint: site_url + "claim-listing/" + checkClaim.unique_key,
         redirectionId: "claim-listing/" + checkClaim.unique_key,
-        notificationFor: IDs
+        notificationFor: IDs,
       };
-      notificationArray.push(notificationData1)
+      notificationArray.push(notificationData1);
     }
     if (dealerUsers.length > 0) {
       let notificationData1 = {
         title: "New Claim Comment added",
-        description: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+        description: `Claim # ${
+          checkClaim.unique_key
+        } A new comment has been added by ${
+          checkLoginUser.metaData[0]?.firstName +
+          " " +
+          checkLoginUser.metaData[0]?.lastName
+        } - ${req.role}`,
         userId: req.teammateId,
         contentId: checkClaim._id,
-        flag: 'claim',
+        flag: "claim",
         endPoint: site_url + "claim-listing/" + checkClaim.unique_key,
         redirectionId: "claim-listing/" + checkClaim.unique_key,
-        notificationFor: dealerId
+        notificationFor: dealerId,
       };
-      notificationArray.push(notificationData1)
+      notificationArray.push(notificationData1);
     }
     if (resellerUsers.length > 0) {
       let notificationData1 = {
         title: "New Claim Comment added",
-        description: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+        description: `Claim # ${
+          checkClaim.unique_key
+        } A new comment has been added by ${
+          checkLoginUser.metaData[0]?.firstName +
+          " " +
+          checkLoginUser.metaData[0]?.lastName
+        } - ${req.role}`,
         userId: req.teammateId,
         contentId: checkClaim._id,
-        flag: 'claim',
+        flag: "claim",
         endPoint: site_url + "claim-listing/" + checkClaim.unique_key,
         redirectionId: "claim-listing/" + checkClaim.unique_key,
-        notificationFor: resellerId
+        notificationFor: resellerId,
       };
-      notificationArray.push(notificationData1)
+      notificationArray.push(notificationData1);
     }
     if (customerUsers.length > 0) {
       let notificationData1 = {
         title: "New Claim Comment added",
-        description: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+        description: `Claim # ${
+          checkClaim.unique_key
+        } A new comment has been added by ${
+          checkLoginUser.metaData[0]?.firstName +
+          " " +
+          checkLoginUser.metaData[0]?.lastName
+        } - ${req.role}`,
         userId: req.teammateId,
         contentId: checkClaim._id,
-        flag: 'claim',
+        flag: "claim",
         endPoint: site_url + "claim-listing/" + checkClaim.unique_key,
         redirectionId: "claim-listing/" + checkClaim.unique_key,
-        notificationFor: customerId
+        notificationFor: customerId,
       };
-      notificationArray.push(notificationData1)
+      notificationArray.push(notificationData1);
     }
     if (servicerUsers.length > 0) {
       let notificationData1 = {
         title: "New Claim Comment added",
-        description: `Claim # ${checkClaim.unique_key} A new comment has been added by ${checkLoginUser.metaData[0]?.firstName + " " + checkLoginUser.metaData[0]?.lastName} - ${req.role}`,
+        description: `Claim # ${
+          checkClaim.unique_key
+        } A new comment has been added by ${
+          checkLoginUser.metaData[0]?.firstName +
+          " " +
+          checkLoginUser.metaData[0]?.lastName
+        } - ${req.role}`,
         userId: req.teammateId,
         contentId: checkClaim._id,
-        flag: 'claim',
+        flag: "claim",
         endPoint: site_url + "claim-listing/" + checkClaim.unique_key,
         redirectionId: "claim-listing/" + checkClaim.unique_key,
-        notificationFor: servicerId
+        notificationFor: servicerId,
       };
-      notificationArray.push(notificationData1)
+      notificationArray.push(notificationData1);
     }
 
-    let createNotification = await userService.saveNotificationBulk(notificationArray);
+    let createNotification = await userService.saveNotificationBulk(
+      notificationArray
+    );
 
     // Send Email code here
     const commentCaseQuery = {
@@ -4692,77 +6464,122 @@ exports.sendMessages = async (req, res) => {
             { status: true },
             {
               $or: [
-                { roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") },
+                {
+                  roleId: new mongoose.Types.ObjectId(
+                    "656f0550d0d6e08fc82379dc"
+                  ),
+                },
                 { metaId: new mongoose.Types.ObjectId(checkServicer?._id) },
-                { metaId: new mongoose.Types.ObjectId(checkServicer?.dealerId) },
-                { metaId: new mongoose.Types.ObjectId(checkServicer?.resellerId) },
-              ]
+                {
+                  metaId: new mongoose.Types.ObjectId(checkServicer?.dealerId),
+                },
+                {
+                  metaId: new mongoose.Types.ObjectId(
+                    checkServicer?.resellerId
+                  ),
+                },
+              ],
             },
-
-          ]
-        }
+          ],
+        },
       },
-    }
-    let commentNotification = await supportingFunction.getNotificationEligibleUser(commentCaseQuery, { email: 1, metaData: 1 })
-    let notificationEmails = commentNotification.map(user => user.email);
-    const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`
+    };
+    let commentNotification =
+      await supportingFunction.getNotificationEligibleUser(commentCaseQuery, {
+        email: 1,
+        metaData: 1,
+      });
+    let notificationEmails = commentNotification.map((user) => user.email);
+    const base_url = `${process.env.SITE_URL}claim-listing/${checkClaim.unique_key}`;
     let emailData = {
-      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      darkLogo:
+        process.env.API_ENDPOINT +
+        "uploads/logo/" +
+        settingData[0]?.logoDark.fileName,
+      lightLogo:
+        process.env.API_ENDPOINT +
+        "uploads/logo/" +
+        settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
-      commentBy: commentByUser.metaData[0].firstName + " " + commentByUser.metaData[0].lastName + "-" + req.role,
+      commentBy:
+        commentByUser.metaData[0].firstName +
+        " " +
+        commentByUser.metaData[0].lastName +
+        "-" +
+        req.role,
       date: new Date().toLocaleDateString("en-US"),
-      senderName: emailTo?.metaData[0].firstName + " " + emailTo?.metaData[0].lastName,
+      senderName:
+        emailTo?.metaData[0].firstName + " " + emailTo?.metaData[0].lastName,
       comment: data.content,
       content: `A new comment has been added to Claim #${checkClaim.unique_key}. Here are the details:`,
       subject: `New Comment on Claim #${checkClaim.unique_key}`,
-      redirectId: base_url
-    }
+      redirectId: base_url,
+    };
 
-    let mailing = await sgMail.send(emailConstant.sendCommentNotification(emailTo?.email, ["noreply@getcover.com"], emailData))
+    let mailing = await sgMail.send(
+      emailConstant.sendCommentNotification(
+        emailTo?.email,
+        ["noreply@getcover.com"],
+        emailData
+      )
+    );
 
-    maillogservice.createMailLogFunction(mailing, emailData, [emailTo], process.env.comment_notification)
+    maillogservice.createMailLogFunction(
+      mailing,
+      emailData,
+      [emailTo],
+      process.env.comment_notification
+    );
 
-    mailing = await sgMail.send(emailConstant.sendCommentNotification(adminEmail, ["noreply@getcover.com"], emailData))
+    mailing = await sgMail.send(
+      emailConstant.sendCommentNotification(
+        adminEmail,
+        ["noreply@getcover.com"],
+        emailData
+      )
+    );
 
-    maillogservice.createMailLogFunction(mailing, emailData, adminUsers, process.env.comment_notification)
+    maillogservice.createMailLogFunction(
+      mailing,
+      emailData,
+      adminUsers,
+      process.env.comment_notification
+    );
 
     res.send({
       code: constant.successCode,
-      messages: 'Message Sent!',
-      result: sendMessage
-    })
-
-  }
-  catch (err) {
+      messages: "Message Sent!",
+      result: sendMessage,
+    });
+  } catch (err) {
     //Save Logs
     let logData = {
       userId: req.userId,
       endpoint: "sendMessages catch",
-      body: req.body ? req.body : { "type": "Catch Error" },
+      body: req.body ? req.body : { type: "Catch Error" },
       response: {
         code: constant.successCode,
-        result: err.message
-      }
-    }
-    await LOG(logData).save()
+        result: err.message,
+      },
+    };
+    await LOG(logData).save();
     res.send({
       code: constant.errorCode,
-      messages: err.message
-    })
-  };
-}
+      messages: err.message,
+    });
+  }
+};
 
 //Automatic completed when servicer shipped after 7 days cron job
 exports.statusClaim = async (req, res) => {
   try {
     const result = await claimService.getClaims({
-      'repairStatus.status': 'servicer_shipped',
-      claimFile: "open"
+      "repairStatus.status": "servicer_shipped",
+      claimFile: "open",
     });
 
-    let updateStatus
+    let updateStatus;
 
     for (let i = 0; i < result.length; i++) {
       let messageData = {};
@@ -4771,74 +6588,99 @@ exports.statusClaim = async (req, res) => {
       const claimId = result[i]._id;
       const customerStatus = result[i].customerStatus;
       //Get latest Servicer Shipped Status
-      const latestServicerShipped = repairStatus[0]?.date
+      const latestServicerShipped = repairStatus[0]?.date;
       //Get Customer last response
-      const customerLastResponseDate = customerStatus[0]?.date
+      const customerLastResponseDate = customerStatus[0]?.date;
       const latestServicerShippedDate = new Date(latestServicerShipped);
       const sevenDaysAfterShippedDate = new Date(latestServicerShippedDate);
-      sevenDaysAfterShippedDate.setDate(sevenDaysAfterShippedDate.getDate() + 14);
-      if (new Date() === sevenDaysAfterShippedDate || new Date() > sevenDaysAfterShippedDate) {
+      sevenDaysAfterShippedDate.setDate(
+        sevenDaysAfterShippedDate.getDate() + 14
+      );
+      if (
+        new Date() === sevenDaysAfterShippedDate ||
+        new Date() > sevenDaysAfterShippedDate
+      ) {
         // Update status for track status
         messageData.trackStatus = [
           {
-            status: 'completed',
+            status: "completed",
             date: new Date(),
             statusName: "claim_status",
-            userId: null
-          }
-        ]
+            userId: null,
+          },
+        ];
 
-        updateStatus = await claimService.updateClaim({ _id: claimId }, {
-          $push: messageData,
-          $set: { claimFile: 'completed', claimDate: new Date(), claimStatus: [{ status: 'completed', date: new Date() }] }
-        }, { new: true })
+        updateStatus = await claimService.updateClaim(
+          { _id: claimId },
+          {
+            $push: messageData,
+            $set: {
+              claimFile: "completed",
+              claimDate: new Date(),
+              claimStatus: [{ status: "completed", date: new Date() }],
+            },
+          },
+          { new: true }
+        );
 
-        const query = { contractId: new mongoose.Types.ObjectId(contractId) }
+        const query = { contractId: new mongoose.Types.ObjectId(contractId) };
 
-        let checkContract = await contractService.getContractById({ _id: contractId })
+        let checkContract = await contractService.getContractById({
+          _id: contractId,
+        });
 
         let claimTotalQuery = [
           { $match: query },
-          { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
+          { $group: { _id: null, amount: { $sum: "$totalAmount" } } },
+        ];
 
-        ]
-
-        let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
+        let claimTotal = await claimService.getClaimWithAggregate(
+          claimTotalQuery
+        );
 
         // Update Eligibilty true and false
         if (checkContract.isMaxClaimAmount) {
           if (checkContract.productValue > claimTotal[0]?.amount) {
             if (!checkContract.notEligibleByCustom) {
-              const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: true }, { new: true })
+              const updateContract = await contractService.updateContract(
+                { _id: contractId },
+                { eligibilty: true },
+                { new: true }
+              );
             }
-          }
-          else if (checkContract.productValue < claimTotal[0]?.amount) {
-            const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: false }, { new: true })
+          } else if (checkContract.productValue < claimTotal[0]?.amount) {
+            const updateContract = await contractService.updateContract(
+              { _id: contractId },
+              { eligibilty: false },
+              { new: true }
+            );
           }
         } else {
           if (!checkContract.notEligibleByCustom) {
-            const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: true }, { new: true })
+            const updateContract = await contractService.updateContract(
+              { _id: contractId },
+              { eligibilty: true },
+              { new: true }
+            );
           }
         }
-
       }
     }
 
     res.send({
       code: constant.successCode,
       //updateStatus
-    })
-  }
-  catch (err) {
+    });
+  } catch (err) {
     res.send({
       code: constant.errorCode,
-      message: err.message
-    })
+      message: err.message,
+    });
   }
-}
+};
 
 //------------------- testing --------------------//
-// s3 bucket 
+// s3 bucket
 const StorageP1 = multerS3({
   s3: s3,
   bucket: process.env.bucket_name,
@@ -4846,10 +6688,11 @@ const StorageP1 = multerS3({
     cb(null, { fieldName: files.fieldname });
   },
   key: (req, files, cb) => {
-    const fileName = files.fieldname + '-' + Date.now() + path.extname(files.originalname);
+    const fileName =
+      files.fieldname + "-" + Date.now() + path.extname(files.originalname);
     const fullPath = `${folderName}/${fileName}`;
     cb(null, fullPath);
-  }
+  },
 });
 
 var imageUploadS3 = multer({
@@ -4857,25 +6700,22 @@ var imageUploadS3 = multer({
   limits: {
     fileSize: 500 * 1024 * 1024, // 500 MB limit
   },
-}).any([
-  { name: "file" },
-  { name: "termCondition" },
-])
+}).any([{ name: "file" }, { name: "termCondition" }]);
 exports.s3Bucket = async (req, res) => {
   try {
     imageUploadS3(req, res, (err) => {
       if (err) {
         return res.send(err.message);
       }
-      res.send({ ddd: 'File uploaded successfully', ttt: req.files });
+      res.send({ ddd: "File uploaded successfully", ttt: req.files });
     });
   } catch (err) {
     res.send({
       code: constant.errorCode,
-      message: err.message
-    })
+      message: err.message,
+    });
   }
-}
+};
 
 exports.checkNumberOfCertainPeriod = async (req, res) => {
   try {
@@ -4891,9 +6731,9 @@ exports.checkNumberOfCertainPeriod = async (req, res) => {
       }
 
       for (let i = 0; i < result.length; i++) {
-        let checkContract = result[i]
+        let checkContract = result[i];
         let baseDate = new Date(checkContract.coverageStartDate);
-        let newDateToCheck = new Date()
+        let newDateToCheck = new Date();
         const newDayOfMonth = newDateToCheck.getDate();
         const dayOfMonth = baseDate.getDate();
 
@@ -4902,13 +6742,29 @@ exports.checkNumberOfCertainPeriod = async (req, res) => {
         const currentMonth1 = new Date().getMonth(); // Note: 0 = January, so this is the current month index
 
         // Create a new date with the current year, current month, and the day from baseDate
-        let newDateWithSameDay = new Date(currentYear1, currentMonth1, dayOfMonth);
+        let newDateWithSameDay = new Date(
+          currentYear1,
+          currentMonth1,
+          dayOfMonth
+        );
         if (Number(newDayOfMonth) > Number(dayOfMonth)) {
-          newDateWithSameDay = new Date(new Date(newDateWithSameDay).setMonth(newDateWithSameDay.getMonth() - 1));
+          newDateWithSameDay = new Date(
+            new Date(newDateWithSameDay).setMonth(
+              newDateWithSameDay.getMonth() - 1
+            )
+          );
         }
 
-        const monthlyEndDate = new Date(new Date(newDateWithSameDay).setMonth(newDateWithSameDay.getMonth() + 1)); // Ends on August 11, 2024
-        const yearlyEndDate = new Date(new Date(newDateWithSameDay).setFullYear(newDateWithSameDay.getFullYear() + 1)); // Ends on July 11, 2025
+        const monthlyEndDate = new Date(
+          new Date(newDateWithSameDay).setMonth(
+            newDateWithSameDay.getMonth() + 1
+          )
+        ); // Ends on August 11, 2024
+        const yearlyEndDate = new Date(
+          new Date(newDateWithSameDay).setFullYear(
+            newDateWithSameDay.getFullYear() + 1
+          )
+        ); // Ends on July 11, 2025
 
         const startOfToday = new Date();
         startOfToday.setHours(0, 0, 0, 0);
@@ -4919,8 +6775,8 @@ exports.checkNumberOfCertainPeriod = async (req, res) => {
           {
             $match: {
               contractId: new mongoose.Types.ObjectId(checkContract._id),
-              claimFile: "completed"
-            }
+              claimFile: "completed",
+            },
           },
           {
             $group: {
@@ -4930,66 +6786,90 @@ exports.checkNumberOfCertainPeriod = async (req, res) => {
                   $cond: [
                     {
                       $and: [
-                        { $gte: ['$createdAt', newDateWithSameDay] },
-                        { $lt: ['$createdAt', monthlyEndDate] }
-                      ]
+                        { $gte: ["$createdAt", newDateWithSameDay] },
+                        { $lt: ["$createdAt", monthlyEndDate] },
+                      ],
                     },
                     1,
-                    0
-                  ]
-                }
+                    0,
+                  ],
+                },
               },
               yearlyCount: {
                 $sum: {
                   $cond: [
                     {
                       $and: [
-                        { $gte: ['$createdAt', newDateWithSameDay] },
-                        { $lt: ['$createdAt', yearlyEndDate] }
-                      ]
+                        { $gte: ["$createdAt", newDateWithSameDay] },
+                        { $lt: ["$createdAt", yearlyEndDate] },
+                      ],
                     },
                     1,
-                    0
-                  ]
-                }
-              }
-            }
-          }
+                    0,
+                  ],
+                },
+              },
+            },
+          },
         ];
 
-        let checkNoOfClaims = await claimService.getClaimWithAggregate(getNoOfClaimQuery)
+        let checkNoOfClaims = await claimService.getClaimWithAggregate(
+          getNoOfClaimQuery
+        );
         if (checkNoOfClaims.length == 0) {
-          checkNoOfClaims = [{
-            "monthlyCount": 0,
-            "yearlyCount": 0
-          }]
+          checkNoOfClaims = [
+            {
+              monthlyCount: 0,
+              yearlyCount: 0,
+            },
+          ];
         }
-        let checkThePeriod = checkContract.noOfClaim
-        let getTotalClaim = await claimService.getClaims({ contractId: checkContract._id, claimFile: "completed" })
-        let noOfTotalClaims = getTotalClaim.length
+        let checkThePeriod = checkContract.noOfClaim;
+        let getTotalClaim = await claimService.getClaims({
+          contractId: checkContract._id,
+          claimFile: "completed",
+        });
+        let noOfTotalClaims = getTotalClaim.length;
         if (checkThePeriod.value != -1) {
           if (checkThePeriod.period == "Monthly") {
-            let eligibility = checkNoOfClaims[0].monthlyCount >= checkThePeriod.value ? false : true
+            let eligibility =
+              checkNoOfClaims[0].monthlyCount >= checkThePeriod.value
+                ? false
+                : true;
             if (eligibility) {
               if (checkContract.noOfClaimPerPeriod != -1) {
-                eligibility = noOfTotalClaims >= checkContract.noOfClaimPerPeriod ? false : true
-
+                eligibility =
+                  noOfTotalClaims >= checkContract.noOfClaimPerPeriod
+                    ? false
+                    : true;
               }
             }
-            const updateContract = await contractService.updateContract({ _id: checkContract._id }, { eligibilty: eligibility }, { new: true })
+            const updateContract = await contractService.updateContract(
+              { _id: checkContract._id },
+              { eligibilty: eligibility },
+              { new: true }
+            );
           } else {
-            let eligibility = checkNoOfClaims[0].yearlyCount >= checkThePeriod.value ? false : true
+            let eligibility =
+              checkNoOfClaims[0].yearlyCount >= checkThePeriod.value
+                ? false
+                : true;
 
             if (eligibility) {
               if (checkContract.noOfClaimPerPeriod != -1) {
-
-                eligibility = noOfTotalClaims >= checkContract.noOfClaimPerPeriod ? false : true
+                eligibility =
+                  noOfTotalClaims >= checkContract.noOfClaimPerPeriod
+                    ? false
+                    : true;
               }
             }
-            const updateContract = await contractService.updateContract({ _id: checkContract._id }, { eligibilty: eligibility }, { new: true })
+            const updateContract = await contractService.updateContract(
+              { _id: checkContract._id },
+              { eligibilty: eligibility },
+              { new: true }
+            );
           }
         }
-
       }
       page++;
     }
@@ -4997,60 +6877,68 @@ exports.checkNumberOfCertainPeriod = async (req, res) => {
     res.send({
       code: constant.successCode,
     });
-
-
-  }
-  catch (err) {
+  } catch (err) {
     res.send({
       code: constant.errorCode,
-      message: err.message
-    })
+      message: err.message,
+    });
   }
-}
+};
 
 exports.sendStaticEmail = async (req, res) => {
   let settingData = await userService.getSetting({});
   let adminCC = await supportingFunction.getUserEmails();
-  const base_url = `${process.env.SITE_URL}claim-listing/CC-2025-100024`
+  const base_url = `${process.env.SITE_URL}claim-listing/CC-2025-100024`;
 
   let emailData = {
-    darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-    lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+    darkLogo:
+      process.env.API_ENDPOINT +
+      "uploads/logo/" +
+      settingData[0]?.logoDark.fileName,
+    lightLogo:
+      process.env.API_ENDPOINT +
+      "uploads/logo/" +
+      settingData[0]?.logoLight.fileName,
     address: settingData[0]?.address,
     websiteSetting: settingData[0],
-    senderName: '',
+    senderName: "",
     content: `The Repair Status has been updated on the claim # CC-2025-100024 to be Request Approved. Please review the information at`,
     subject: `Repair Status Updated for CC- 2025-100024`,
-    redirectId: base_url
-  }
-  let mailing = await sgMail.send(emailConstant.sendEmailTemplate(["bschiffner@natomasunified.org"], ["noreply@getcover.cover"], emailData))
+    redirectId: base_url,
+  };
+  let mailing = await sgMail.send(
+    emailConstant.sendEmailTemplate(
+      ["bschiffner@natomasunified.org"],
+      ["noreply@getcover.cover"],
+      emailData
+    )
+  );
   res.send({
-    response: mailing
-  })
-}
+    response: mailing,
+  });
+};
 
 exports.updateClaimDate = async (req, res) => {
   try {
-
-    let check = await claimService.markAsPaid(
-      {},
-      [
-        {
-          $set: {
-            "trackStatus": {
-              $map: {
-                input: "$trackStatus",
-                as: "statusItem",
-                in: {
-                  $mergeObjects: [
-                    "$$statusItem",
-                    {
-                      "statusName": {
-                        $switch: {
-                          branches: [
-                            {
-                              case: {
-                                $in: ["$$statusItem.status", [
+    let check = await claimService.markAsPaid({}, [
+      {
+        $set: {
+          trackStatus: {
+            $map: {
+              input: "$trackStatus",
+              as: "statusItem",
+              in: {
+                $mergeObjects: [
+                  "$$statusItem",
+                  {
+                    statusName: {
+                      $switch: {
+                        branches: [
+                          {
+                            case: {
+                              $in: [
+                                "$$statusItem.status",
+                                [
                                   "request_sent",
                                   "request_approved",
                                   "product_received",
@@ -5059,49 +6947,51 @@ exports.updateClaimDate = async (req, res) => {
                                   "parts_ordered",
                                   "parts_received",
                                   "repair_complete",
-                                  "servicer_shipped"
-                                ]]
-                              },
-                              then: "repair_status"
+                                  "servicer_shipped",
+                                ],
+                              ],
                             },
-                            {
-                              case: {
-                                $in: ["$$statusItem.status", [
-                                  "open",
-                                  "completed",
-                                  "rejected"
-                                ]]
-                              },
-                              then: "claim_status"
+                            then: "repair_status",
+                          },
+                          {
+                            case: {
+                              $in: [
+                                "$$statusItem.status",
+                                ["open", "completed", "rejected"],
+                              ],
                             },
-                            {
-                              case: {
-                                $in: ["$$statusItem.status", [
+                            then: "claim_status",
+                          },
+                          {
+                            case: {
+                              $in: [
+                                "$$statusItem.status",
+                                [
                                   "request_submitted",
                                   "shipping_label_received",
                                   "product_sent",
-                                  "product_received"
-                                ]]
-                              },
-                              then: "customer_status"
-                            }
-                          ],
-                          default: "Unknown Status"
-                        }
-                      }
-                    }
-                  ]
-                }
-              }
-            }
-          }
-        }
-      ]
-    );
+                                  "product_received",
+                                ],
+                              ],
+                            },
+                            then: "customer_status",
+                          },
+                        ],
+                        default: "Unknown Status",
+                      },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+    ]);
 
     res.send({
-      code:check
-    })
+      code: check,
+    });
     // let baseDate = new Date('2024-07-03');
     // let newDateToCheck = new Date()
     // const newDayOfMonth = newDateToCheck.getDate();
@@ -5186,16 +7076,11 @@ exports.updateClaimDate = async (req, res) => {
     //   }
     // ];
 
-
     // let checkNoOfClaims = await claimService.getClaimWithAggregate(getNoOfClaimQuery)
 
     // res.send({
     //   checkNoOfClaims, getNoOfClaimQuery
     // })
-
-
-
-
 
     // let emailData = {
     //   // darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + "settingData[0]?.logoDark.fileName",
@@ -5210,16 +7095,6 @@ exports.updateClaimDate = async (req, res) => {
     // res.send({
     //   mailing
     // })
-
-
-
-
-
-
-
-
-
-
 
     // let updateObject = {
     //   $set: {
@@ -5258,13 +7133,12 @@ exports.updateClaimDate = async (req, res) => {
     //   }
     // }
     // let updateClaim = await claimService.markAsPaid({ orderId: "GC-2024-100003" }, updateObject, { new: true })
-
   } catch (err) {
     res.send({
-      code: err.stack
-    })
+      code: err.stack,
+    });
   }
-}
+};
 
 exports.uploadPrePostImages = async (req, res) => {
   try {
@@ -5273,63 +7147,77 @@ exports.uploadPrePostImages = async (req, res) => {
       if (file.length > 5) {
         res.send({
           code: constants.errorCode,
-          message: "Upload upto 5 images!"
-        })
-        return
+          message: "Upload upto 5 images!",
+        });
+        return;
       }
 
-      let flag = req.query.flag
-      let checkClaim = await claimService.getClaimById({ _id: req.params.claimId })
+      let flag = req.query.flag;
+      let checkClaim = await claimService.getClaimById({
+        _id: req.params.claimId,
+      });
       if (!checkClaim) {
         res.send({
           code: constant.errorCode,
-          message: "Invalid claim id"
-        })
+          message: "Invalid claim id",
+        });
         return;
       }
-      let preRepairImage = checkClaim.preRepairImage ? checkClaim.preRepairImage : []
-      let postRepairImage = checkClaim.postRepairImage ? checkClaim.postRepairImage : []
-      const checkPreRepairLength = Number(preRepairImage.length) + Number(file.length)
-      const checkPostRepairLength = Number(postRepairImage.length) + Number(file.length)
+      let preRepairImage = checkClaim.preRepairImage
+        ? checkClaim.preRepairImage
+        : [];
+      let postRepairImage = checkClaim.postRepairImage
+        ? checkClaim.postRepairImage
+        : [];
+      const checkPreRepairLength =
+        Number(preRepairImage.length) + Number(file.length);
+      const checkPostRepairLength =
+        Number(postRepairImage.length) + Number(file.length);
       if (checkPostRepairLength > 5 && flag == "postUpload") {
         res.send({
           code: constant.errorCode,
-          message: "You cannot upload more than five images"
-        })
-        return
+          message: "You cannot upload more than five images",
+        });
+        return;
       }
       if (checkPreRepairLength > 5 && flag == "preUpload") {
         res.send({
           code: constant.errorCode,
-          message: "You cannot upload more than five images"
-        })
-        return
+          message: "You cannot upload more than five images",
+        });
+        return;
       }
       let updateClaim;
       if (flag == "preUpload") {
-        preRepairImage = preRepairImage.concat(file)
-        updateClaim = await claimService.updateClaim({ _id: req.params.claimId }, { preRepairImage: preRepairImage }, { new: true })
+        preRepairImage = preRepairImage.concat(file);
+        updateClaim = await claimService.updateClaim(
+          { _id: req.params.claimId },
+          { preRepairImage: preRepairImage },
+          { new: true }
+        );
       }
       if (flag == "postUpload") {
-        postRepairImage = postRepairImage.concat(file)
-        updateClaim = await claimService.updateClaim({ _id: req.params.claimId }, { postRepairImage: postRepairImage }, { new: true })
+        postRepairImage = postRepairImage.concat(file);
+        updateClaim = await claimService.updateClaim(
+          { _id: req.params.claimId },
+          { postRepairImage: postRepairImage },
+          { new: true }
+        );
       }
       res.send({
         code: constant.successCode,
-        message: 'Success!',
-        result: updateClaim
-
-      })
-    })
-  }
-  catch (err) {
+        message: "Success!",
+        result: updateClaim,
+      });
+    });
+  } catch (err) {
     res.send({
       code: constant.errorCode,
-      message: err.message
-    })
-    return
+      message: err.message,
+    });
+    return;
   }
-}
+};
 
 exports.deletePrePostImages = async (req, res) => {
   let data = req.body;
@@ -5339,16 +7227,24 @@ exports.deletePrePostImages = async (req, res) => {
   if (!checkClaim) {
     res.send({
       code: constant.errorCode,
-      message: "Invalid Claim Id!"
+      message: "Invalid Claim Id!",
     });
     return;
   }
-  let update
+  let update;
   if (data.flag == "preUploadImage") {
-    update = await claimService.updateClaim({ _id: req.params.claimId }, { $pull: { "preRepairImage": { key: data.key } } }, { new: true })
+    update = await claimService.updateClaim(
+      { _id: req.params.claimId },
+      { $pull: { preRepairImage: { key: data.key } } },
+      { new: true }
+    );
   }
   if (data.flag == "postUploadImage") {
-    update = await claimService.updateClaim({ _id: req.params.claimId }, { $pull: { "postRepairImage": { key: data.key } } }, { new: true })
+    update = await claimService.updateClaim(
+      { _id: req.params.claimId },
+      { $pull: { postRepairImage: { key: data.key } } },
+      { new: true }
+    );
   }
   if (update) {
     S3Bucket.deleteObject(params, function (err, data) {
@@ -5360,13 +7256,7 @@ exports.deletePrePostImages = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: "Delete Successfully",
-      result: update
-    })
+      result: update,
+    });
   }
-
-}
-
-
-
-
-
+};
