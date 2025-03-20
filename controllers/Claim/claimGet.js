@@ -2962,13 +2962,6 @@ exports.getClaimById = async (req, res) => {
       },
     ];
     let getclaimData = await claimService.getClaimWithAggregate(query);
-    //Get Submmitefd by detail
-    // if (getclaimData.submittedBy != "") {
-    //   query = { email: getclaimData?.submittedBy };
-    //   const userInfo = await userService.getUserById1(query);
-    //   getclaimData.userInfo =
-    //     userInfo.metaData[0]?.firstName + " " + userInfo.metaData[0]?.lastName;
-    // }
 
     let trackingData = getclaimData[0]?.trackStatus;
     for (let i = 0; i < trackingData.length; i++) {
@@ -2990,6 +2983,20 @@ exports.getClaimById = async (req, res) => {
         message: "Unable to fetch the claim detail",
       });
     } else {
+      //Get Submmitefd by detail
+      if (getclaimData[0]?.submittedBy != "") {
+        console.log("email", getclaimData[0].submittedBy);
+
+        query = { email: getclaimData[0]?.submittedBy };
+
+        const userInfo = await userService.getUserById1(query);
+        getclaimData[0].userInfo =
+          userInfo.metaData[0]?.firstName +
+          " " +
+          userInfo.metaData[0]?.lastName;
+      }
+
+      
       res.send({
         code: constant.successCode,
         message: "Success",
