@@ -2067,25 +2067,30 @@ exports.getMessages = async (req, res) => {
     {
       $lookup: {
         from: "users",
-        localField: "commentedTo",
-        foreignField: "metaData.metaId",
-        as: "commentTo",
+        let: { commentedTo: "$commentedTo" }, // Passing commentedTo as a variable
         pipeline: [
           {
             $match: {
-              $and: [
-                // Matching the element in the metaData array with isPrimary and non-null metaId
-                {
-                  metaData: {
-                    $elemMatch: { isPrimary: true, metaId: { $ne: null } },
-                  },
-                },
-              ],
-            },
-          },
+              $expr: {
+                $or: [
+                  { $in: ["$$commentedTo", "$metaData._id"] }, // Match with metaData._id
+                  {
+                    $and: [
+                      { $in: ["$$commentedTo", "$metaData.metaId"] }, // Match with metaData.metaId
+                      {
+                        $in: [true, "$metaData.isPrimary"], // Ensure isPrimary is true
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
         ],
-      },
+        as: "commentTo"
+      }
     },
+    
     { $unwind: { path: "$commentTo", preserveNullAndEmptyArrays: true } },
     {
       $lookup: {
