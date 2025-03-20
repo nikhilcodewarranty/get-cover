@@ -1526,7 +1526,7 @@ exports.getCustomerInformationForClaim = async (req, res) => {
       },
       {
         $project: {
-    
+
           'firstName': { $arrayElemAt: ["$metaData.firstName", 0] },
           'lastName': { $arrayElemAt: ["$metaData.lastName", 0] },
           'metaId': { $arrayElemAt: ["$metaData.metaId", 0] },
@@ -1536,13 +1536,13 @@ exports.getCustomerInformationForClaim = async (req, res) => {
     ]);
 
     let customerObj = {
-      customerUsers:getCustomerUsers,
-      customerAddress:checkCustomer.addresses
+      customerUsers: getCustomerUsers,
+      customerAddress: checkCustomer.addresses
     }
 
     res.send({
-      code:constant.successCode,
-      data:customerObj
+      code: constant.successCode,
+      data: customerObj
     })
   }
   catch (err) {
@@ -1565,14 +1565,32 @@ exports.getMessages = async (req, res) => {
     })
     return;
   }
+  let queryMatch
+  if (req.role != "Super Admin") {
+    queryMatch = {
+      $and: [
+        { claimId: new mongoose.Types.ObjectId(req.params.claimId) },
+        {
+          $or: [
+            { commentedTo: new mongoose.Types.ObjectId(req.userId) },
+            { commentedBy: new mongoose.Types.ObjectId(req.userId) },
+          ]
+        }
+      ]
+    }
+  } else {
+    queryMatch = {
+      $and: [
+        { claimId: new mongoose.Types.ObjectId(req.params.claimId) }
+      ]
+    }
+  }
+
+
 
   let lookupQuery = [
     {
-      $match: {
-        $and: [
-          { claimId: new mongoose.Types.ObjectId(req.params.claimId) }
-        ]
-      },
+      $match: queryMatch
     },
     {
       $lookup: {
