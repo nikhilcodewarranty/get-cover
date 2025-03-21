@@ -1043,7 +1043,7 @@ exports.contractDetailReporting = async (req, res) => {
                         };
                         break;
                     case 'isManufacturerWarranty':
-                        projection["Is manufacturer warranty included"] = {
+                        projection["Is manufacturer warranty included?"] = {
                             $cond: {
                                 if: { $eq: ["$isManufacturerWarranty", true] },
                                 then: "Yes",
@@ -1052,7 +1052,7 @@ exports.contractDetailReporting = async (req, res) => {
                         };
                         break;
                     case 'isMaxClaimAmount':
-                        projection["Is There a Maximum Claim Amount "] = {
+                        projection["Is There a Maximum Claim Amount ?"] = {
                             $cond: {
                                 if: { $eq: ["$isMaxClaimAmount", true] },
                                 then: "Yes",

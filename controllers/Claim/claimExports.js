@@ -1965,7 +1965,7 @@ exports.getClaimDetails = async (req, res) => {
           //   break;
 
           case 'isManufacturerWarranty':
-            projection["Is manufacturer warranty included"] = {
+            projection["Is manufacturer warranty included?"] = {
               $let: {
                 vars: {
                   isWarranty: { $arrayElemAt: ["$contractDetail.contractDetail.isManufacturerWarranty", 0] }
@@ -1982,7 +1982,7 @@ exports.getClaimDetails = async (req, res) => {
             break;
 
           case 'isMaxClaimAmount':
-            projection["Is There a Maximum Claim Amount"] = {
+            projection["Is There a Maximum Claim Amount?"] = {
               $let: {
                 vars: {
                   isMaxClaim: { $arrayElemAt: ["$contractDetail.contractDetail.isMaxClaimAmount", 0] }
