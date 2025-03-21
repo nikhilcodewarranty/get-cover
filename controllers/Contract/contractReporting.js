@@ -1081,6 +1081,9 @@ exports.contractDetailReporting = async (req, res) => {
                     case 'unique_key':
                         projection["Contract ID"] = "$unique_key";
                         break;
+                        case 'venderOrder':
+                            projection["Dealer Purchase Order #"] = "$unique_key";
+                            break;
                     case 'labourWarrantyDate':
                         projection["Labor Warranty Date"] = "$labourWarranty";
                         break;
