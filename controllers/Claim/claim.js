@@ -645,6 +645,7 @@ exports.addClaim = async (req, res, next) => {
     }
 
     data.receiptImage = data.file;
+    data.preRepairImage = data.file;
     let currentYear = new Date().getFullYear();
     let currentYearWithoutHypen = new Date().getFullYear();
 
@@ -6133,28 +6134,28 @@ exports.sendMessages = async (req, res) => {
       metaData: { $elemMatch: { isPrimary: true } },
     });
     if (data.type == "Reseller") {
-      data.commentedTo = orderData.resellerId;
+      data.commentedTo = data.receiverId;
       emailTo = await supportingFunction.getPrimaryUser({
         metaData: {
           $elemMatch: { metaId: orderData.resellerId, isPrimary: true },
         },
       });
     } else if (data.type == "Dealer") {
-      data.commentedTo = orderData.dealerId;
+      data.commentedTo = data.receiverId;
       emailTo = await supportingFunction.getPrimaryUser({
         metaData: {
           $elemMatch: { metaId: orderData.dealerId, isPrimary: true },
         },
       });
     } else if (data.type == "Customer") {
-      data.commentedTo = orderData.customerId;
+      data.commentedTo = data.receiverId;
       emailTo = await supportingFunction.getPrimaryUser({
         metaData: {
           $elemMatch: { metaId: orderData.customerId, isPrimary: true },
         },
       });
     } else if (data.type == "Servicer") {
-      data.commentedTo = orderData.servicerId;
+      data.commentedTo = data.receiverId;
       emailTo = await supportingFunction.getPrimaryUser({
         metaData: {
           $elemMatch: { metaId: checkClaim.servicerId, isPrimary: true },
