@@ -1042,29 +1042,11 @@ exports.contractDetailReporting = async (req, res) => {
                             }
                         };
                         break;
-                    case 'isManufacturerWarranty':
-                        projection["Is manufacturer warranty included?"] = {
-                            $cond: {
-                                if: { $eq: ["$isManufacturerWarranty", true] },
-                                then: "Yes",
-                                else: "No"
-                            }
-                        };
-                        break;
-                    case 'isMaxClaimAmount':
-                        projection["Is There a Maximum Claim Amount ?"] = {
-                            $cond: {
-                                if: { $eq: ["$isMaxClaimAmount", true] },
-                                then: "Yes",
-                                else: "No"
-                            }
-                        };
-                        break;
                     case 'dealerName':
                         projection["Dealer Name"] = { $ifNull: ["$order.dealerName", null] };
                         break;
                     case 'category':
-                        projection["Category Name"] = { $ifNull: ["$priceCategory.name", null] };
+                        projection["category Name"] = { $ifNull: ["$priceCategory.name", null] };
                         break;
                     case 'orderId':
                         projection["Order ID"] = { $ifNull: ["$order.orderDetail.unique_key", null] };
@@ -1078,60 +1060,21 @@ exports.contractDetailReporting = async (req, res) => {
                     case 'customerName':
                         projection["Customer Name"] = { $ifNull: ["$order.customerName", null] };
                         break;
+                        case 'retailPrice':
+                        projection["Retail Price"] = { $ifNull: ["$order.customerName", null] };
+                        break;
                     case 'unique_key':
                         projection["Contract ID"] = "$unique_key";
                         break;
-                        case 'venderOrder':
-                            projection["Dealer Purchase Order #"] = "$unique_key";
-                            break;
-                    case 'labourWarrantyDate':
-                        projection["Labor Warranty Date"] = "$labourWarranty";
-                        break;
-                    case 'partsWarrantyDate':
-                        projection["Parts Warranty Date"] = "$partsWarranty";
-                        break;
                     case 'pName':
-                        projection["Product Sku"] = "$productName";
+                        projection["Product Sku"] = "$pName";
                         break;
                     case 'productName':
-                        projection["Product Name"] = "$pName";
+                        projection["Product Name"] = "$productName";
                         break;
                     case 'vendorOrder':
                         projection["Dealer Purchase Order #"] = "$vendorOrder";
                         break;
-                    case 'noOfClaim':
-                        projection["No of Claims in Coverage Period"] = {
-                            $let: {
-                                vars: {
-                                    claimData: "$noOfClaim" // Directly referencing from the main table
-                                },
-                                in: {
-                                    $cond: {
-                                        if: { $eq: ["$$claimData.value", -1] },
-                                        then: "Unlimited",
-                                        else: { $concat: ["$$claimData.period", "-", { $toString: "$$claimData.value" }] }
-                                    }
-                                }
-                            }
-                        };
-                        break;
-                    case 'noOfClaimPerPeriod':
-                        projection["No of Claim Over the Certain Period"] = {
-                            $let: {
-                                vars: {
-                                    claimValue: "$noOfClaimPerPeriod" // Directly referencing from the main table
-                                },
-                                in: {
-                                    $cond: {
-                                        if: { $eq: ["$$claimValue", -1] },
-                                        then: "Unlimited",
-                                        else: "$$claimValue"
-                                    }
-                                }
-                            }
-                        };
-                        break;
-
                     case 'priceType':
                         projection["Price Type"] = {
                             "$arrayElemAt": [
@@ -1152,7 +1095,7 @@ exports.contractDetailReporting = async (req, res) => {
                             ]
                         };
                         break;
-                    case 'productDescription':
+                    case 'description':
                         projection["Product Description"] = {
                             "$arrayElemAt": [
                                 {
