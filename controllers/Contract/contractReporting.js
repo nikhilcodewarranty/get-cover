@@ -1073,7 +1073,7 @@ exports.contractDetailReporting = async (req, res) => {
                         projection["Product Name"] = "$productName";
                         break;
                     case 'venderOrder':
-                        projection["Dealer Purchase Order #"] = "$vendorOrder";
+                        projection["Dealer Purchase Order #"] = "$venderOrder";
                         break;
                     case 'priceType':
                         projection["Price Type"] = {
