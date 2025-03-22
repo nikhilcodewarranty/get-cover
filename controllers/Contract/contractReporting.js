@@ -1061,8 +1061,9 @@ exports.contractDetailReporting = async (req, res) => {
                         projection["Customer Name"] = { $ifNull: ["$order.customerName", null] };
                         break;
                         case 'retailPrice':
-                        projection["Retail Price"] = { $ifNull: ["$order.retailPrice", null] };
-                        break;
+                            projection["Retail Price"] = { 
+                                $ifNull: [ { $arrayElemAt: ["$order.retailPrice", 0] }, null ] 
+                            };
                     case 'unique_key':
                         projection["Contract ID"] = "$unique_key";
                         break;
