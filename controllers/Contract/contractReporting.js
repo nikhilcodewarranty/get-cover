@@ -1476,6 +1476,12 @@ exports.contractDetailReporting = async (req, res) => {
                                     }
                                 },
                                 {
+                                    "$unwind": {
+                                        "path": "$order.productsArray",
+                                        "preserveNullAndEmptyArrays": true
+                                    }
+                                },
+                                {
                                     "$addFields": {
                                         "firstCategoryId": "$$ROOT.productsArray"
                                     }
