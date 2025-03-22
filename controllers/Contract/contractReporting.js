@@ -1499,7 +1499,7 @@ exports.contractDetailReporting = async (req, res) => {
                                         checking: 1,
                                         categoryData: "$categoryData",
                                         retailPrice: {
-                                            $arrayElemAt: ["$order.productsArray.dealerPriceBookDetails.retailPrice", 0]
+                                            $arrayElemAt: ["$filteredProduct.dealerPriceBookDetails.retailPrice", 0]
                                         }
                                     }
                                 }
