@@ -1349,6 +1349,11 @@ exports.contractDetailReporting = async (req, res) => {
                                     $unwind: { path: "$categoryData", preserveNullAndEmptyArrays: true }
                                 },
                                 {
+                                    $addFields: {
+                                        order1: { $arrayElemAt: ["$order", 0] }
+                                    }
+                                },
+                                {
                                     $project: {
                                         orderDetail: "$$ROOT",
                                         dealerName: "$dealer.name",
@@ -1358,7 +1363,7 @@ exports.contractDetailReporting = async (req, res) => {
                                         category: "$categoryData.name",
                                         firstCategoryId: 1,
                                         retailPrice: {
-                                            $arrayElemAt: ["$order.productsArray.dealerPriceBookDetails.retailPrice", 0]
+                                            $arrayElemAt: ["$order1.productsArray.dealerPriceBookDetails.retailPrice", 0]
                                         }
                                     }
                                 }
