@@ -1492,7 +1492,7 @@ exports.contractDetailReporting = async (req, res) => {
                                     $addFields: {
                                         firstDealerPriceBook: { $arrayElemAt: ["$filteredProduct.dealerPriceBookDetails", 0] }
                                     }
-                                }
+                                },
                                 {
                                     $project: {
                                         orderDetail: "$$ROOT",
